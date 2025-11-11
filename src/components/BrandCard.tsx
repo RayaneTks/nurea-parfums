@@ -20,34 +20,34 @@ export const BrandCard = ({ brand, onClick }: BrandCardProps) => {
 
   return (
     <div
-      className="group relative bg-background/30 border border-border/30 hover:border-primary/30 transition-all duration-500 p-8 flex flex-col min-h-[320px] hover:bg-background/40"
+      className="group relative border-b border-border/15 hover:border-primary/20 transition-all duration-500 py-8 flex flex-col min-h-[260px]"
     >
-      <div className="flex-1 mb-8">
-        <h3 className="font-serif text-3xl mb-4 text-foreground group-hover:text-primary/90 transition-colors duration-300 leading-[1.1] font-light">
+      <div className="flex-1 mb-6">
+        <h3 className="font-serif text-2xl md:text-3xl mb-3 text-foreground group-hover:text-primary/80 transition-colors duration-300 leading-[1.15] font-light">
           {brand.name}
         </h3>
-        <p className="text-[10px] text-muted-foreground/40 uppercase tracking-[0.2em] mb-6 font-light">
+        <p className="text-[9px] text-muted-foreground/30 uppercase tracking-[0.25em] mb-5 font-light">
           {brand.category}
         </p>
         <div className="mb-6">
-          <span className="inline-block px-5 py-2.5 bg-primary/5 text-primary text-[10px] uppercase tracking-[0.2em] border border-primary/20 font-light">
+          <span className="inline-block px-3 py-1.5 bg-primary/5 text-primary/80 text-[8px] uppercase tracking-[0.25em] border border-primary/15 font-light">
             Toute la gamme disponible
           </span>
         </div>
-        <p className="text-sm text-muted-foreground/50 leading-relaxed font-light tracking-wide">
+        <p className="text-xs text-muted-foreground/40 leading-relaxed font-light tracking-wide mb-8">
           Tous les parfums de la collection {brand.name} sont disponibles. Contactez-nous pour découvrir notre sélection complète.
         </p>
       </div>
       
-      <div className="mt-auto pt-6 border-t border-border/20 space-y-3">
+      <div className="mt-auto pt-6 border-t border-border/10 space-y-2.5">
         <Button
           onClick={(e) => {
             e.stopPropagation();
             openSnapchat();
           }}
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-xs rounded-none font-light uppercase tracking-[0.15em] flex items-center justify-center gap-2"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-10 text-[10px] rounded-none font-light uppercase tracking-[0.2em] flex items-center justify-center gap-2"
         >
-          <SnapchatIcon className="h-4 w-4" />
+          <SnapchatIcon className="h-3.5 w-3.5" />
           Snapchat
         </Button>
         <Button
@@ -56,9 +56,9 @@ export const BrandCard = ({ brand, onClick }: BrandCardProps) => {
             openWhatsApp();
           }}
           variant="outline"
-          className="w-full border-border/30 hover:border-primary/40 hover:bg-background/20 h-12 text-xs rounded-none font-light uppercase tracking-[0.15em] flex items-center justify-center gap-2"
+          className="w-full border-border/20 hover:border-primary/30 hover:bg-background/10 h-10 text-[10px] rounded-none font-light uppercase tracking-[0.2em] flex items-center justify-center gap-2"
         >
-          <WhatsAppIcon className="h-4 w-4" />
+          <WhatsAppIcon className="h-3.5 w-3.5" />
           WhatsApp
         </Button>
       </div>

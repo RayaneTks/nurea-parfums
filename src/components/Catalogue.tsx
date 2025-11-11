@@ -62,30 +62,30 @@ export const Catalogue = () => {
   };
 
   return (
-    <section id="catalogue" className="min-h-screen bg-background py-20 md:py-28 border-t border-border/10">
-      <div className="container max-w-7xl mx-auto px-4 md:px-8">
+    <section id="catalogue" className="min-h-screen bg-background py-16 md:py-24 border-t border-border/10">
+      <div className="container max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
         {/* Titre principal */}
-        <div className="mb-12 md:mb-16 text-center">
-          <h2 className="font-serif text-4xl md:text-6xl lg:text-7xl text-foreground tracking-tight mb-4 font-light">
+        <div className="mb-14 md:mb-18 text-center">
+          <h2 className="font-serif text-3xl md:text-5xl lg:text-6xl text-foreground tracking-[-0.02em] mb-2 font-light">
             Catalogue
           </h2>
         </div>
 
         {/* Barre de recherche premium */}
-        <div className="mb-10 max-w-3xl mx-auto">
+        <div className="mb-12 max-w-2xl mx-auto">
           <div className="relative group">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary/70 transition-colors duration-300" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/30 group-focus-within:text-primary/60 transition-colors duration-300" />
             <input
               type="text"
               placeholder="Rechercher un parfum ou une marque"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full h-14 pl-12 pr-12 bg-background/50 border-b border-border/30 text-foreground placeholder:text-muted-foreground/40 text-sm focus:outline-none focus:border-primary/40 transition-all duration-300 font-light"
+              className="w-full h-12 pl-11 pr-11 bg-transparent border-b border-border/20 text-foreground placeholder:text-muted-foreground/30 text-sm focus:outline-none focus:border-primary/30 transition-all duration-300 font-light tracking-wide"
             />
             {searchTerm && (
               <button
                 onClick={clearSearch}
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground/30 hover:text-foreground/60 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/20 hover:text-foreground/50 transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -93,49 +93,52 @@ export const Catalogue = () => {
           </div>
         </div>
 
-        {/* Filtres Catégories */}
-        <div className="mb-6">
-          <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`
-                  px-5 py-2 whitespace-nowrap text-xs font-light uppercase tracking-[0.15em]
-                  transition-all duration-300 border-b border-transparent
-                  ${
-                    selectedCategory === category
-                      ? "text-primary border-primary"
-                      : "text-muted-foreground/50 hover:text-foreground/70 hover:border-primary/20"
-                  }
-                `}
-              >
-                {category}
-              </button>
-            ))}
+        {/* Filtres */}
+        <div className="mb-14 space-y-6">
+          {/* Filtres Catégories */}
+          <div>
+            <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`
+                    px-4 py-2 whitespace-nowrap text-[11px] font-light uppercase tracking-[0.2em]
+                    transition-all duration-300 border-b-2 border-transparent
+                    ${
+                      selectedCategory === category
+                        ? "text-foreground border-foreground/30"
+                        : "text-muted-foreground/40 hover:text-foreground/60 hover:border-foreground/10"
+                    }
+                  `}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Filtres Marques */}
-        <div className="mb-12">
-          <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4">
-            {allBrands.map((brand) => (
-              <button
-                key={brand}
-                onClick={() => setSelectedBrand(brand)}
-                className={`
-                  px-4 py-1.5 whitespace-nowrap text-xs font-light tracking-wide
-                  transition-all duration-300
-                  ${
-                    selectedBrand === brand
-                      ? "text-primary border-b border-primary"
-                      : "text-muted-foreground/40 hover:text-foreground/60"
-                  }
-                `}
-              >
-                {brand}
-              </button>
-            ))}
+          {/* Filtres Marques */}
+          <div>
+            <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
+              {allBrands.map((brand) => (
+                <button
+                  key={brand}
+                  onClick={() => setSelectedBrand(brand)}
+                  className={`
+                    px-3 py-1.5 whitespace-nowrap text-[11px] font-light tracking-wide
+                    transition-all duration-300
+                    ${
+                      selectedBrand === brand
+                        ? "text-foreground/90 border-b border-foreground/20"
+                        : "text-muted-foreground/35 hover:text-foreground/50"
+                    }
+                  `}
+                >
+                  {brand}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -169,11 +172,11 @@ export const Catalogue = () => {
           <>
             {/* Marques complètes */}
             {filteredBrands.length > 0 && (
-              <div className="mb-20">
-                <h3 className="font-serif text-xl md:text-2xl text-foreground/90 mb-10 uppercase tracking-[0.15em] font-light border-b border-border/20 pb-4">
+              <div className="mb-24">
+                <h3 className="font-serif text-lg md:text-xl text-foreground/80 mb-12 uppercase tracking-[0.2em] font-light">
                   Marques - Gamme complète
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
                   {filteredBrands.map((brand) => (
                     <BrandCard 
                       key={brand.id} 
@@ -189,11 +192,11 @@ export const Catalogue = () => {
             {filteredPerfumes.length > 0 && (
               <div>
                 {filteredBrands.length > 0 && (
-                  <h3 className="font-serif text-xl md:text-2xl text-foreground/90 mb-10 uppercase tracking-[0.15em] font-light border-b border-border/20 pb-4">
+                  <h3 className="font-serif text-lg md:text-xl text-foreground/80 mb-12 uppercase tracking-[0.2em] font-light">
                     Parfums
                   </h3>
                 )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
                   {filteredPerfumes.map((perfume) => (
                     <PerfumeCard 
                       key={perfume.id} 
