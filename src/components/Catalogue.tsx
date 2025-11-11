@@ -62,53 +62,53 @@ export const Catalogue = () => {
   };
 
   return (
-    <section id="catalogue" className="min-h-screen bg-background py-16 md:py-24 border-t border-border/10">
-      <div className="container max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+    <section id="catalogue" className="min-h-screen bg-background py-12 md:py-20 border-t border-border/20">
+      <div className="container max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8">
         {/* Titre principal */}
-        <div className="mb-14 md:mb-18 text-center">
-          <h2 className="font-serif text-3xl md:text-5xl lg:text-6xl text-foreground tracking-[-0.02em] mb-2 font-light">
+        <div className="mb-10 md:mb-14 text-center">
+          <h2 className="font-serif text-4xl md:text-6xl lg:text-7xl text-foreground tracking-tight mb-3 font-light">
             Catalogue
           </h2>
         </div>
 
         {/* Barre de recherche premium */}
-        <div className="mb-12 max-w-2xl mx-auto">
+        <div className="mb-10 max-w-3xl mx-auto">
           <div className="relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/30 group-focus-within:text-primary/60 transition-colors duration-300" />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/40 group-focus-within:text-primary/70 transition-colors duration-300" />
             <input
               type="text"
               placeholder="Rechercher un parfum ou une marque"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full h-12 pl-11 pr-11 bg-transparent border-b border-border/20 text-foreground placeholder:text-muted-foreground/30 text-sm focus:outline-none focus:border-primary/30 transition-all duration-300 font-light tracking-wide"
+              className="w-full h-14 md:h-16 pl-14 pr-14 bg-background/50 border-b-2 border-border/30 text-foreground placeholder:text-muted-foreground/40 text-base focus:outline-none focus:border-primary/50 transition-all duration-300 font-light"
             />
             {searchTerm && (
               <button
                 onClick={clearSearch}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/20 hover:text-foreground/50 transition-colors"
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground/30 hover:text-foreground/70 transition-colors"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
             )}
           </div>
         </div>
 
         {/* Filtres */}
-        <div className="mb-14 space-y-6">
+        <div className="mb-12 space-y-4">
           {/* Filtres Catégories */}
           <div>
-            <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
+            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4">
               {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
                   className={`
-                    px-4 py-2 whitespace-nowrap text-[11px] font-light uppercase tracking-[0.2em]
+                    px-6 py-3 whitespace-nowrap text-sm font-light uppercase tracking-wider
                     transition-all duration-300 border-b-2 border-transparent
                     ${
                       selectedCategory === category
-                        ? "text-foreground border-foreground/30"
-                        : "text-muted-foreground/40 hover:text-foreground/60 hover:border-foreground/10"
+                        ? "text-foreground border-primary/50"
+                        : "text-muted-foreground/50 hover:text-foreground/80 hover:border-primary/20"
                     }
                   `}
                 >
@@ -120,18 +120,18 @@ export const Catalogue = () => {
 
           {/* Filtres Marques */}
           <div>
-            <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
+            <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4">
               {allBrands.map((brand) => (
                 <button
                   key={brand}
                   onClick={() => setSelectedBrand(brand)}
                   className={`
-                    px-3 py-1.5 whitespace-nowrap text-[11px] font-light tracking-wide
-                    transition-all duration-300
+                    px-4 py-2 whitespace-nowrap text-xs font-light tracking-wide
+                    transition-all duration-300 border border-transparent rounded-sm
                     ${
                       selectedBrand === brand
-                        ? "text-foreground/90 border-b border-foreground/20"
-                        : "text-muted-foreground/35 hover:text-foreground/50"
+                        ? "text-foreground border-primary/30 bg-primary/5"
+                        : "text-muted-foreground/40 hover:text-foreground/70 hover:border-primary/10 bg-background/30"
                     }
                   `}
                 >
@@ -172,16 +172,16 @@ export const Catalogue = () => {
           <>
             {/* Marques complètes */}
             {filteredBrands.length > 0 && (
-              <div className="mb-20 md:mb-28">
-                <div className="mb-10 md:mb-14">
-                  <h3 className="font-serif text-base md:text-lg text-foreground/70 mb-2 uppercase tracking-[0.3em] font-light">
+              <div className="mb-16 md:mb-20">
+                <div className="mb-8 md:mb-10">
+                  <h3 className="font-serif text-2xl md:text-3xl text-foreground/90 mb-2 uppercase tracking-wider font-light">
                     Marques
                   </h3>
-                  <p className="text-xs text-muted-foreground/40 font-light tracking-wide">
+                  <p className="text-sm text-muted-foreground/50 font-light">
                     Gamme complète disponible
                   </p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px border-b border-border/10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                   {filteredBrands.map((brand) => (
                     <BrandCard 
                       key={brand.id} 
@@ -197,13 +197,13 @@ export const Catalogue = () => {
             {filteredPerfumes.length > 0 && (
               <div>
                 {filteredBrands.length > 0 && (
-                  <div className="mb-10 md:mb-14">
-                    <h3 className="font-serif text-base md:text-lg text-foreground/70 mb-2 uppercase tracking-[0.3em] font-light">
+                  <div className="mb-8 md:mb-10">
+                    <h3 className="font-serif text-2xl md:text-3xl text-foreground/90 mb-2 uppercase tracking-wider font-light">
                       Parfums
                     </h3>
                   </div>
                 )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px border-b border-border/10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                   {filteredPerfumes.map((perfume) => (
                     <PerfumeCard 
                       key={perfume.id} 
