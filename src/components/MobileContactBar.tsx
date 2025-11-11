@@ -17,14 +17,14 @@ export const MobileContactBar = () => {
       <div className="flex gap-3 max-w-lg mx-auto">
         <Button
           onClick={openSnapchat}
-          className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground h-12 rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-2"
+          className="flex-1 bg-[#FFFC00] hover:bg-[#FFFC00]/90 text-background h-12 rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-2"
         >
           <SnapchatIcon className="h-5 w-5" />
           Snapchat
         </Button>
         <Button
           onClick={openWhatsApp}
-          className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground h-12 rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-2"
+          className="flex-1 bg-[#25D366] hover:bg-[#25D366]/90 text-white h-12 rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-2"
         >
           <WhatsAppIcon className="h-5 w-5" />
           WhatsApp

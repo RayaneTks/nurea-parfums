@@ -27,10 +27,10 @@ export const Contact = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <div className="border border-border/50 bg-card/20 backdrop-blur-sm p-8 hover:border-primary/50 transition-all duration-500 flex flex-col">
+          <div className="border border-border/50 bg-card/20 backdrop-blur-sm p-8 hover:border-[#FFFC00]/50 transition-all duration-500 flex flex-col">
             <div className="mb-6">
               <div className="h-16 w-16 flex items-center justify-center mb-6">
-                <SnapchatIcon className="h-10 w-10 text-primary" />
+                <SnapchatIcon className="h-10 w-10 text-[#FFFC00]" />
               </div>
               <h3 className="font-serif text-3xl text-foreground mb-4">Snapchat</h3>
               <p className="text-sm text-muted-foreground/70 leading-relaxed font-light mb-8">
@@ -40,17 +40,17 @@ export const Contact = () => {
             <Button
               size="lg"
               onClick={openSnapchat}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-14 rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-3 mt-auto"
+              className="w-full bg-[#FFFC00] hover:bg-[#FFFC00]/90 text-background h-14 rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-3 mt-auto"
             >
               <SnapchatIcon className="h-5 w-5" />
               Ouvrir Snapchat
             </Button>
           </div>
 
-          <div className="border border-border/50 bg-card/20 backdrop-blur-sm p-8 hover:border-primary/50 transition-all duration-500 flex flex-col">
+          <div className="border border-border/50 bg-card/20 backdrop-blur-sm p-8 hover:border-[#25D366]/50 transition-all duration-500 flex flex-col">
             <div className="mb-6">
               <div className="h-16 w-16 flex items-center justify-center mb-6">
-                <WhatsAppIcon className="h-10 w-10 text-primary" />
+                <WhatsAppIcon className="h-10 w-10 text-[#25D366]" />
               </div>
               <h3 className="font-serif text-3xl text-foreground mb-4">WhatsApp</h3>
               <p className="text-sm text-muted-foreground/70 leading-relaxed font-light mb-8">
@@ -60,7 +60,7 @@ export const Contact = () => {
             <Button
               size="lg"
               onClick={openWhatsApp}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-14 rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-3 mt-auto"
+              className="w-full bg-[#25D366] hover:bg-[#25D366]/90 text-white h-14 rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-3 mt-auto"
             >
               <WhatsAppIcon className="h-5 w-5" />
               Ouvrir WhatsApp
