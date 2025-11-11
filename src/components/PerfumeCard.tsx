@@ -6,18 +6,24 @@ interface PerfumeCardProps {
   onClick: () => void;
 }
 
-// Importer toutes les images de parfums disponibles
+// Importer toutes les images de parfums individuels disponibles
 // Les images doivent être dans src/assets/parfums/ (pas dans complete/)
 // Note: Les fichiers doivent être nommés selon l'ID du parfum (ex: "creed-aventus.png")
 const perfumeImagesModules = import.meta.glob<{ default: string }>(
-  "@/assets/parfums/*.png",
+  "@/assets/parfums/**/*.png",
   { eager: true }
 );
 
 // Créer un mapping des IDs de parfums vers les URLs d'images
+// Exclure les fichiers dans le dossier "complete"
 const perfumeImagesMap = new Map<string, string>();
 Object.entries(perfumeImagesModules).forEach(([path, module]) => {
-  // Extraire le nom du fichier sans l'extension et le chemin
+  // Ignorer les fichiers dans le dossier "complete"
+  if (path.includes("/complete/")) {
+    return;
+  }
+  
+  // Extraire le nom du fichier sans l'extension
   const fileName = path.split("/").pop()?.replace(".png", "") || "";
   if (module.default) {
     perfumeImagesMap.set(fileName.toLowerCase(), module.default);
