@@ -2,129 +2,38 @@
 
 Site web catalogue pour Nuréa Parfums - Sélection de parfums de luxe et grands classiques.
 
-## À propos
+## Description
 
-Nuréa Parfums est un catalogue en ligne présentant une sélection exclusive de parfums de luxe, des grandes marques aux créations de niche. Le site permet aux clients de découvrir notre collection, de rechercher des parfums par marque ou catégorie, et de nous contacter directement via Snapchat ou WhatsApp.
-
-## Technologies utilisées
-
-- **React** 18.3.1 - Bibliothèque UI
-- **TypeScript** - Typage statique
-- **Vite** - Build tool et dev server
-- **Tailwind CSS** - Framework CSS utility-first
-- **shadcn/ui** - Composants UI
-- **React Router** - Navigation
-- **Lucide React** - Icônes
-
-## Installation
-
-### Prérequis
-
-- Node.js 18+ et npm
-- Git
-
-### Installation des dépendances
-
-```bash
-npm install
-```
-
-## Développement
-
-Lancer le serveur de développement :
-
-```bash
-npm run dev
-```
-
-Le site sera accessible sur `http://localhost:5173`
-
-## Build de production
-
-Générer le build de production :
-
-```bash
-npm run build
-```
-
-Les fichiers seront générés dans le dossier `dist/`.
-
-## Prévisualisation du build
-
-Pour prévisualiser le build de production :
-
-```bash
-npm run preview
-```
-
-## Structure du projet
-
-```
-nurea-parfums/
-├── public/          # Fichiers statiques
-├── src/
-│   ├── assets/      # Images et logos
-│   ├── components/  # Composants React
-│   ├── config/      # Configuration (contact, etc.)
-│   ├── data/        # Données des parfums
-│   ├── hooks/       # React hooks personnalisés
-│   ├── lib/         # Utilitaires
-│   ├── pages/       # Pages de l'application
-│   └── index.css    # Styles globaux
-├── index.html       # Point d'entrée HTML
-└── package.json     # Dépendances et scripts
-```
-
-## Configuration
-
-### Liens de contact
-
-Les liens Snapchat et WhatsApp sont configurés dans `src/config/contact.ts`. 
-
-**Important** : Modifiez les URLs avant la mise en production :
-- Remplacez `username` par votre username Snapchat
-- Remplacez `33XXXXXXXXX` par votre numéro WhatsApp (format: code pays + numéro, sans le +)
+Site vitrine présentant le catalogue de parfums de luxe de Nuréa Parfums. Le site permet aux clients de découvrir la collection, rechercher des parfums par marque ou catégorie, et contacter directement la marque via Snapchat ou WhatsApp.
 
 ## Fonctionnalités
 
-- 🎨 Design premium inspiré des marques de luxe
-- 📱 Mobile-first, responsive
-- 🔍 Recherche en temps réel de parfums
-- 🏷️ Filtres par catégorie et marque
-- 💬 Contact direct via Snapchat et WhatsApp
-- 📋 Catalogue complet avec plus de 200 parfums
-- 🎯 Fiches détaillées pour chaque parfum
+- Catalogue complet de parfums de luxe
+- Recherche en temps réel par nom ou marque
+- Filtres par catégorie et marque
+- Fiches détaillées pour chaque parfum
+- Contact direct via Snapchat et WhatsApp
+- Design premium mobile-first
+- Interface responsive
 
-## Données des parfums
+## Technologies
 
-Les données des parfums sont stockées dans `src/data/perfumes.ts`. La structure permet d'ajouter facilement de nouveaux parfums :
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui
 
-```typescript
-{
-  id: string;
-  name: string;
-  brand: string;
-  category: string;
-  tags?: string[];
-  price?: string;
-  availableSizes?: number[];
-}
-```
+## Structure
 
-## Déploiement
-
-Le site peut être déployé sur n'importe quelle plateforme supportant les sites statiques :
-- Vercel
-- Netlify
-- GitHub Pages
-- Cloudflare Pages
-
-## Licence
-
-Propriété de Nuréa Parfums - Tous droits réservés.
+Le site présente plus de 200 parfums organisés par catégories :
+- Grands classiques
+- Louis Vuitton
+- Tom Ford
+- Parfums de niche
+- Cartier
+- Autres références
 
 ## Contact
 
-Pour toute question, contactez-nous via :
-- Snapchat : [Votre username]
-- WhatsApp : [Votre numéro]
+Pour toute demande, contactez-nous via Snapchat ou WhatsApp depuis le site.
