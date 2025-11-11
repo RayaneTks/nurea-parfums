@@ -3,7 +3,8 @@ import { Search, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { PerfumeCard } from "./PerfumeCard";
 import { PerfumeDrawer } from "./PerfumeDrawer";
-import { perfumes, categories, brands, Perfume } from "@/data/perfumes";
+import { BrandCard } from "./BrandCard";
+import { perfumes, fullRangeBrands, categories, allBrands, Perfume, Brand } from "@/data/perfumes";
 import { contactConfig } from "@/config/contact";
 import { SnapchatIcon } from "./icons/SnapchatIcon";
 import { WhatsAppIcon } from "./icons/WhatsAppIcon";
@@ -31,7 +32,17 @@ export const Catalogue = () => {
     });
   }, [searchTerm, selectedCategory, selectedBrand]);
 
-  const showNoResults = searchTerm && filteredPerfumes.length === 0;
+  const filteredBrands = useMemo(() => {
+    return fullRangeBrands.filter((brand) => {
+      const matchesSearch = brand.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === "Tous" || brand.category === selectedCategory;
+      const matchesBrand = selectedBrand === "Tous" || brand.name === selectedBrand;
+      
+      return matchesSearch && matchesCategory && matchesBrand;
+    });
+  }, [searchTerm, selectedCategory, selectedBrand]);
+
+  const showNoResults = searchTerm && filteredPerfumes.length === 0 && filteredBrands.length === 0;
 
   const openSnapchat = () => {
     window.open(contactConfig.snapchat.url, "_blank");
@@ -51,51 +62,51 @@ export const Catalogue = () => {
   };
 
   return (
-    <section id="catalogue" className="min-h-screen bg-background/40 py-24 md:py-32 border-t border-border/20">
-      <div className="container max-w-7xl mx-auto px-4 md:px-6">
+    <section id="catalogue" className="min-h-screen bg-background py-20 md:py-28 border-t border-border/10">
+      <div className="container max-w-7xl mx-auto px-4 md:px-8">
         {/* Titre principal */}
-        <div className="mb-16 md:mb-20 text-center">
-          <h2 className="font-serif text-5xl md:text-7xl lg:text-8xl text-foreground tracking-tight mb-6">
-            Notre Catalogue
+        <div className="mb-12 md:mb-16 text-center">
+          <h2 className="font-serif text-4xl md:text-6xl lg:text-7xl text-foreground tracking-tight mb-4 font-light">
+            Catalogue
           </h2>
         </div>
 
         {/* Barre de recherche premium */}
-        <div className="mb-12 max-w-4xl mx-auto">
+        <div className="mb-10 max-w-3xl mx-auto">
           <div className="relative group">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/60 group-focus-within:text-primary transition-colors duration-300" />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary/70 transition-colors duration-300" />
             <input
               type="text"
               placeholder="Rechercher un parfum ou une marque"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full h-16 pl-14 pr-14 bg-card/30 backdrop-blur-md border border-primary/20 rounded-none text-foreground placeholder:text-muted-foreground/50 text-base focus:outline-none focus:border-primary/50 focus:bg-card/40 transition-all duration-300"
+              className="w-full h-14 pl-12 pr-12 bg-background/50 border-b border-border/30 text-foreground placeholder:text-muted-foreground/40 text-sm focus:outline-none focus:border-primary/40 transition-all duration-300 font-light"
             />
             {searchTerm && (
               <button
                 onClick={clearSearch}
-                className="absolute right-6 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground transition-colors"
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground/30 hover:text-foreground/60 transition-colors"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             )}
           </div>
         </div>
 
         {/* Filtres Catégories */}
-        <div className="mb-8">
-          <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
+        <div className="mb-6">
+          <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4">
             {categories.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
                 className={`
-                  px-6 py-3 rounded-none whitespace-nowrap text-sm font-light uppercase tracking-wider
-                  transition-all duration-300 border-b-2 border-transparent
+                  px-5 py-2 whitespace-nowrap text-xs font-light uppercase tracking-[0.15em]
+                  transition-all duration-300 border-b border-transparent
                   ${
                     selectedCategory === category
-                      ? "text-primary border-primary bg-primary/5"
-                      : "text-muted-foreground hover:text-foreground hover:border-primary/30"
+                      ? "text-primary border-primary"
+                      : "text-muted-foreground/50 hover:text-foreground/70 hover:border-primary/20"
                   }
                 `}
               >
@@ -106,19 +117,19 @@ export const Catalogue = () => {
         </div>
 
         {/* Filtres Marques */}
-        <div className="mb-16">
-          <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
-            {brands.map((brand) => (
+        <div className="mb-12">
+          <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4">
+            {allBrands.map((brand) => (
               <button
                 key={brand}
                 onClick={() => setSelectedBrand(brand)}
                 className={`
-                  px-5 py-2.5 rounded-none whitespace-nowrap text-sm font-light
-                  transition-all duration-300 border border-transparent
+                  px-4 py-1.5 whitespace-nowrap text-xs font-light tracking-wide
+                  transition-all duration-300
                   ${
                     selectedBrand === brand
-                      ? "text-primary border-primary/30 bg-primary/5"
-                      : "text-muted-foreground/70 hover:text-foreground hover:border-primary/20 border-border/50 bg-card/20"
+                      ? "text-primary border-b border-primary"
+                      : "text-muted-foreground/40 hover:text-foreground/60"
                   }
                 `}
               >
@@ -155,15 +166,45 @@ export const Catalogue = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-            {filteredPerfumes.map((perfume) => (
-              <PerfumeCard 
-                key={perfume.id} 
-                perfume={perfume}
-                onClick={() => handlePerfumeClick(perfume)}
-              />
-            ))}
-          </div>
+          <>
+            {/* Marques complètes */}
+            {filteredBrands.length > 0 && (
+              <div className="mb-20">
+                <h3 className="font-serif text-xl md:text-2xl text-foreground/90 mb-10 uppercase tracking-[0.15em] font-light border-b border-border/20 pb-4">
+                  Marques - Gamme complète
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
+                  {filteredBrands.map((brand) => (
+                    <BrandCard 
+                      key={brand.id} 
+                      brand={brand}
+                      onClick={() => {}}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Parfums individuels */}
+            {filteredPerfumes.length > 0 && (
+              <div>
+                {filteredBrands.length > 0 && (
+                  <h3 className="font-serif text-xl md:text-2xl text-foreground/90 mb-10 uppercase tracking-[0.15em] font-light border-b border-border/20 pb-4">
+                    Parfums
+                  </h3>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
+                  {filteredPerfumes.map((perfume) => (
+                    <PerfumeCard 
+                      key={perfume.id} 
+                      perfume={perfume}
+                      onClick={() => handlePerfumeClick(perfume)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
