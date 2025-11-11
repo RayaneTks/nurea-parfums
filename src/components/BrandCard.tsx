@@ -45,46 +45,57 @@ export const BrandCard = ({ brand, onClick }: BrandCardProps) => {
 
   return (
     <div
-      className="group relative border border-border/20 hover:border-primary/30 hover:shadow-lg transition-all duration-500 p-6 md:p-8 flex flex-col min-h-[420px] md:min-h-[460px] bg-background/50 hover:bg-background/70"
+      className="group relative flex flex-col items-center text-center transition-all duration-500"
     >
-      {/* Image de la marque - Plus grande et bien visible */}
-      {brandImage && (
-        <div className="mb-6 h-48 md:h-56 lg:h-64 flex items-center justify-center overflow-hidden bg-background/20 rounded-md p-4">
-          <img
-            src={brandImage}
-            alt={brand.name}
-            className="max-h-full max-w-full object-contain opacity-95 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        </div>
-      )}
+      {/* Container image style Dior - Fond clair avec stand */}
+      <div className="relative w-full mb-6 flex items-center justify-center min-h-[420px] md:min-h-[500px] lg:min-h-[560px] bg-background/20 rounded-sm overflow-hidden">
+        {/* Stand décoratif en bas - Style Dior */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 h-20 bg-background/50 rounded-t-2xl shadow-sm"></div>
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-24 bg-background/30 rounded-t-lg"></div>
+        
+        {/* Image de la marque - Très grande et centrée */}
+        {brandImage && (
+          <div className="relative z-10 w-full h-full flex items-end justify-center pb-8 px-4">
+            <img
+              src={brandImage}
+              alt={brand.name}
+              className="max-h-[420px] md:max-h-[480px] lg:max-h-[520px] w-auto object-contain opacity-100 group-hover:scale-105 transition-transform duration-500"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          </div>
+        )}
 
-      <div className="flex-1 mb-6 flex flex-col">
-        <h3 className="font-serif text-2xl md:text-3xl mb-3 text-foreground group-hover:text-primary/80 transition-colors duration-300 leading-tight font-light">
-          {brand.name}
-        </h3>
-        <p className="text-xs text-muted-foreground/50 uppercase tracking-wider mb-4 font-light">
-          {brand.category}
-        </p>
-        <div className="mb-4">
-          <span className="inline-block px-3 py-1.5 bg-primary/10 text-primary/80 text-xs uppercase tracking-wider border border-primary/20 font-light">
+        {/* Badge "Toute la gamme disponible" */}
+        <div className="absolute top-4 left-4">
+          <span className="px-3 py-1 text-xs uppercase tracking-wider text-muted-foreground/70 bg-background/80 backdrop-blur-sm border border-border/20 font-light">
             Toute la gamme disponible
           </span>
         </div>
-        <p className="text-sm text-muted-foreground/50 leading-relaxed font-light mb-6">
-          Tous les parfums de la collection {brand.name} sont disponibles. Contactez-nous pour découvrir notre sélection complète.
+      </div>
+
+      {/* Informations marque - Style Dior minimaliste */}
+      <div className="w-full text-center mb-6">
+        <h3 className="font-serif text-lg md:text-xl mb-1 text-foreground/90 group-hover:text-foreground transition-colors duration-300 leading-tight font-light">
+          {brand.name}
+        </h3>
+        <p className="text-xs text-muted-foreground/50 mb-4 font-light">
+          {brand.category}
+        </p>
+        <p className="text-xs text-muted-foreground/50 leading-relaxed font-light max-w-xs mx-auto mb-6">
+          Tous les parfums de la collection {brand.name} sont disponibles.
         </p>
       </div>
       
-      <div className="mt-auto pt-6 border-t border-border/20 space-y-3">
+      {/* Boutons contact */}
+      <div className="w-full space-y-2 max-w-xs mx-auto">
         <Button
           onClick={(e) => {
             e.stopPropagation();
             openSnapchat();
           }}
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-11 text-xs rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-2"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-10 text-xs rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-2"
         >
           <SnapchatIcon className="h-4 w-4" />
           Snapchat
@@ -95,7 +106,7 @@ export const BrandCard = ({ brand, onClick }: BrandCardProps) => {
             openWhatsApp();
           }}
           variant="outline"
-          className="w-full border-border/30 hover:border-primary/40 hover:bg-background/10 h-11 text-xs rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-2"
+          className="w-full border-border/30 hover:border-primary/40 hover:bg-background/10 h-10 text-xs rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-2"
         >
           <WhatsAppIcon className="h-4 w-4" />
           WhatsApp
