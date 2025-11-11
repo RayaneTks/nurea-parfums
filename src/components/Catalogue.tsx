@@ -172,11 +172,16 @@ export const Catalogue = () => {
           <>
             {/* Marques complètes */}
             {filteredBrands.length > 0 && (
-              <div className="mb-24">
-                <h3 className="font-serif text-lg md:text-xl text-foreground/80 mb-12 uppercase tracking-[0.2em] font-light">
-                  Marques - Gamme complète
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+              <div className="mb-20 md:mb-28">
+                <div className="mb-10 md:mb-14">
+                  <h3 className="font-serif text-base md:text-lg text-foreground/70 mb-2 uppercase tracking-[0.3em] font-light">
+                    Marques
+                  </h3>
+                  <p className="text-xs text-muted-foreground/40 font-light tracking-wide">
+                    Gamme complète disponible
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px border-b border-border/10">
                   {filteredBrands.map((brand) => (
                     <BrandCard 
                       key={brand.id} 
@@ -192,11 +197,13 @@ export const Catalogue = () => {
             {filteredPerfumes.length > 0 && (
               <div>
                 {filteredBrands.length > 0 && (
-                  <h3 className="font-serif text-lg md:text-xl text-foreground/80 mb-12 uppercase tracking-[0.2em] font-light">
-                    Parfums
-                  </h3>
+                  <div className="mb-10 md:mb-14">
+                    <h3 className="font-serif text-base md:text-lg text-foreground/70 mb-2 uppercase tracking-[0.3em] font-light">
+                      Parfums
+                    </h3>
+                  </div>
                 )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px border-b border-border/10">
                   {filteredPerfumes.map((perfume) => (
                     <PerfumeCard 
                       key={perfume.id} 
