@@ -58,18 +58,18 @@ export const Hero = () => {
             size="lg"
             variant="outline"
             onClick={openSnapchat}
-            className="border-border/50 text-foreground hover:bg-card/50 hover:border-primary/50 h-14 text-base px-10 rounded-none font-light uppercase tracking-wider flex items-center gap-2"
+            className="border-[#FFFC00]/50 text-foreground hover:bg-[#FFFC00]/10 hover:border-[#FFFC00] h-14 text-base px-10 rounded-none font-light uppercase tracking-wider flex items-center gap-2"
           >
-            <SnapchatIcon className="h-5 w-5" />
+            <SnapchatIcon className="h-5 w-5 text-[#FFFC00]" />
             Snapchat
           </Button>
           <Button
             size="lg"
             variant="outline"
             onClick={openWhatsApp}
-            className="border-border/50 text-foreground hover:bg-card/50 hover:border-primary/50 h-14 text-base px-10 rounded-none font-light uppercase tracking-wider flex items-center gap-2"
+            className="border-[#25D366]/50 text-foreground hover:bg-[#25D366]/10 hover:border-[#25D366] h-14 text-base px-10 rounded-none font-light uppercase tracking-wider flex items-center gap-2"
           >
-            <WhatsAppIcon className="h-5 w-5" />
+            <WhatsAppIcon className="h-5 w-5 text-[#25D366]" />
             WhatsApp
           </Button>
         </div>

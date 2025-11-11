@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { PerfumeCard } from "./PerfumeCard";
 import { PerfumeDrawer } from "./PerfumeDrawer";
 import { BrandCard } from "./BrandCard";
+import { BrandDrawer } from "./BrandDrawer";
 import { perfumes, fullRangeBrands, categories, allBrands, Perfume, Brand } from "@/data/perfumes";
 import { contactConfig } from "@/config/contact";
 import { SnapchatIcon } from "./icons/SnapchatIcon";
@@ -14,7 +15,9 @@ export const Catalogue = () => {
   const [selectedCategory, setSelectedCategory] = useState("Tous");
   const [selectedBrand, setSelectedBrand] = useState("Tous");
   const [selectedPerfume, setSelectedPerfume] = useState<Perfume | null>(null);
+  const [selectedBrandDrawer, setSelectedBrandDrawer] = useState<Brand | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [brandDrawerOpen, setBrandDrawerOpen] = useState(false);
 
   const filteredPerfumes = useMemo(() => {
     return perfumes.filter((perfume) => {
@@ -55,6 +58,11 @@ export const Catalogue = () => {
   const handlePerfumeClick = (perfume: Perfume) => {
     setSelectedPerfume(perfume);
     setDrawerOpen(true);
+  };
+
+  const handleBrandClick = (brand: Brand) => {
+    setSelectedBrandDrawer(brand);
+    setBrandDrawerOpen(true);
   };
 
   const clearSearch = () => {
@@ -171,7 +179,7 @@ export const Catalogue = () => {
                 <Button
                   size="lg"
                   onClick={openSnapchat}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground h-14 text-base rounded-none px-8 font-light uppercase tracking-wider flex items-center gap-3"
+                  className="bg-[#FFFC00] hover:bg-[#FFFC00]/90 text-background h-14 text-base rounded-none px-8 font-light uppercase tracking-wider flex items-center gap-3"
                 >
                   <SnapchatIcon className="h-5 w-5" />
                   Snapchat
@@ -179,7 +187,7 @@ export const Catalogue = () => {
                 <Button
                   size="lg"
                   onClick={openWhatsApp}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground h-14 text-base rounded-none px-8 font-light uppercase tracking-wider flex items-center gap-3"
+                  className="bg-[#25D366] hover:bg-[#25D366]/90 text-white h-14 text-base rounded-none px-8 font-light uppercase tracking-wider flex items-center gap-3"
                 >
                   <WhatsAppIcon className="h-5 w-5" />
                   WhatsApp
@@ -196,12 +204,12 @@ export const Catalogue = () => {
                       Marques - Gamme complète
                     </h3>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8 lg:gap-10">
                     {filteredBrands.map((brand) => (
                       <BrandCard 
                         key={brand.id} 
                         brand={brand}
-                        onClick={() => {}}
+                        onClick={() => handleBrandClick(brand)}
                       />
                     ))}
                   </div>
@@ -218,7 +226,7 @@ export const Catalogue = () => {
                       </h3>
                     </div>
                   )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8 lg:gap-10">
                     {filteredPerfumes.map((perfume) => (
                       <PerfumeCard 
                         key={perfume.id} 
@@ -238,6 +246,12 @@ export const Catalogue = () => {
         perfume={selectedPerfume}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
+      />
+
+      <BrandDrawer
+        brand={selectedBrandDrawer}
+        open={brandDrawerOpen}
+        onOpenChange={setBrandDrawerOpen}
       />
     </section>
   );

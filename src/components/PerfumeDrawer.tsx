@@ -97,7 +97,7 @@ export const PerfumeDrawer = ({ perfume, open, onOpenChange }: PerfumeDrawerProp
           <div className="space-y-4">
             <Button
               onClick={openSnapchat}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-14 text-base rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-3"
+              className="w-full bg-[#FFFC00] hover:bg-[#FFFC00]/90 text-background h-14 text-base rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-3"
               size="lg"
             >
               <SnapchatIcon className="h-5 w-5" />
@@ -105,7 +105,7 @@ export const PerfumeDrawer = ({ perfume, open, onOpenChange }: PerfumeDrawerProp
             </Button>
             <Button
               onClick={openWhatsApp}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-14 text-base rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-3"
+              className="w-full bg-[#25D366] hover:bg-[#25D366]/90 text-white h-14 text-base rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-3"
               size="lg"
             >
               <WhatsAppIcon className="h-5 w-5" />
