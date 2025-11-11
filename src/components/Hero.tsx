@@ -1,5 +1,6 @@
 import { Button } from "./ui/button";
 import logo from "@/assets/nurea-logo-transparent.png";
+import bgImage from "@/assets/bg.png";
 import { contactConfig } from "@/config/contact";
 import { SnapchatIcon } from "./icons/SnapchatIcon";
 import { WhatsAppIcon } from "./icons/WhatsAppIcon";
@@ -20,7 +21,13 @@ export const Hero = () => {
 
   return (
     <section id="hero" className="min-h-screen flex items-center justify-center px-4 bg-background relative overflow-hidden pt-20">
-      <div className="absolute inset-0" />
+      {/* Background image with opacity */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
+        style={{ backgroundImage: `url(${bgImage})` }}
+      />
+      {/* Overlay for better text readability */}
+      <div className="absolute inset-0 bg-background/40" />
       
       <div className="container max-w-6xl mx-auto text-center relative z-10 py-24 md:py-32">
         <div className="mb-16 flex justify-center">
