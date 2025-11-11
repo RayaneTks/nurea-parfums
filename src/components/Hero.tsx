@@ -60,7 +60,7 @@ export const Hero = () => {
             onClick={openSnapchat}
             className="border-[#FFFC00]/50 text-foreground hover:bg-[#FFFC00]/10 hover:border-[#FFFC00] h-14 text-base px-10 rounded-none font-light uppercase tracking-wider flex items-center gap-2"
           >
-            <SnapchatIcon className="h-5 w-5 text-[#FFFC00]" />
+            <SnapchatIcon className="h-5 w-5 opacity-90" />
             Snapchat
           </Button>
           <Button

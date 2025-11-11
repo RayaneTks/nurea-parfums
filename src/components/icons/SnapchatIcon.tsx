@@ -1,12 +1,17 @@
-export const SnapchatIcon = ({ className }: { className?: string }) => {
+import snapchatIcon from "@/assets/snapchat-icon.png";
+
+interface SnapchatIconProps {
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+export const SnapchatIcon = ({ className, style }: SnapchatIconProps) => {
   return (
     <img
-      src="https://img.icons8.com/ios/50/snapchat--v1.png"
+      src={snapchatIcon}
       alt="Snapchat"
       className={className}
-      width="24"
-      height="24"
-      style={{ filter: 'brightness(0) saturate(100%)' }}
+      style={style}
     />
   );
 };
