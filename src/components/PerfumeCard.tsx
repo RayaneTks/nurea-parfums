@@ -42,54 +42,63 @@ export const PerfumeCard = ({ perfume, onClick }: PerfumeCardProps) => {
   return (
     <div
       onClick={onClick}
-      className="group relative cursor-pointer border border-border/20 hover:border-primary/30 hover:shadow-lg transition-all duration-500 p-6 md:p-8 flex flex-col min-h-[380px] md:min-h-[420px] bg-background/50 hover:bg-background/70"
+      className="group relative cursor-pointer flex flex-col items-center text-center transition-all duration-500"
     >
-      {/* Image du parfum - Plus grande et bien visible */}
-      <div className="mb-6 h-48 md:h-56 lg:h-64 flex items-center justify-center overflow-hidden bg-background/20 rounded-md p-4">
-        {perfumeImage && !imageError ? (
-          <img
-            src={perfumeImage}
-            alt={perfume.name}
-            className="max-h-full max-w-full object-contain opacity-95 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground/10">
-            <div className="text-center">
-              <div className="w-16 h-16 border border-muted-foreground/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                <div className="w-8 h-8 border border-muted-foreground/20 rounded-sm"></div>
+      {/* Container image style Dior - Fond clair avec stand */}
+      <div className="relative w-full mb-6 flex items-center justify-center min-h-[420px] md:min-h-[500px] lg:min-h-[560px] bg-background/20 rounded-sm overflow-hidden">
+        {/* Stand décoratif en bas - Style Dior */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 h-20 bg-background/50 rounded-t-2xl shadow-sm"></div>
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-24 bg-background/30 rounded-t-lg"></div>
+        
+        {/* Image du parfum - Très grande et centrée */}
+        <div className="relative z-10 w-full h-full flex items-end justify-center pb-8 px-4">
+          {perfumeImage && !imageError ? (
+            <img
+              src={perfumeImage}
+              alt={perfume.name}
+              className="max-h-[420px] md:max-h-[480px] lg:max-h-[520px] w-auto object-contain opacity-100 group-hover:scale-105 transition-transform duration-500"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-24 h-24 border-2 border-muted-foreground/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 border border-muted-foreground/20 rounded-sm"></div>
+                </div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground/30 font-light">Image à venir</div>
               </div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground/30 font-light">Image à venir</div>
             </div>
+          )}
+        </div>
+
+        {/* Tags/Badges en overlay (optionnel) */}
+        {perfume.tags && perfume.tags.length > 0 && (
+          <div className="absolute top-4 left-4 flex flex-col gap-2">
+            {perfume.tags.map((tag, index) => (
+              <span
+                key={tag}
+                className="px-3 py-1 text-xs uppercase tracking-wider text-muted-foreground/70 bg-background/80 backdrop-blur-sm border border-border/20 font-light"
+              >
+                {tag}
+              </span>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Tags */}
-      {perfume.tags && perfume.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4">
-          {perfume.tags.map((tag) => (
-            <span
-              key={tag}
-              className="px-2 py-1 text-xs uppercase tracking-wider text-primary/70 bg-primary/5 border border-primary/10 font-light"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
-      
-      {/* Informations */}
-      <div className="flex-1 flex flex-col">
-        <h3 className="font-serif text-2xl md:text-3xl mb-2 text-foreground group-hover:text-primary/80 transition-colors duration-300 leading-tight font-light">
+      {/* Informations produit - Style Dior minimaliste */}
+      <div className="w-full text-center">
+        <h3 className="font-serif text-lg md:text-xl mb-1 text-foreground/90 group-hover:text-foreground transition-colors duration-300 leading-tight font-light">
           {perfume.name}
         </h3>
-        <p className="text-sm text-muted-foreground/60 mb-3 font-light">
+        <p className="text-xs text-muted-foreground/50 mb-2 font-light">
           {perfume.brand}
         </p>
-        <p className="text-xs text-muted-foreground/40 uppercase tracking-wider mt-auto font-light">
-          {perfume.category}
-        </p>
+        {perfume.category !== "Tous" && (
+          <p className="text-[10px] text-muted-foreground/40 uppercase tracking-wider font-light">
+            {perfume.category}
+          </p>
+        )}
       </div>
     </div>
   );
