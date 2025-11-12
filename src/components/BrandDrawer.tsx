@@ -18,10 +18,8 @@ import rabanneImage from "@/assets/parfums/complete/RABANNE.png";
 import dgImage from "@/assets/parfums/complete/D&G.png";
 import jpgImage from "@/assets/parfums/complete/JPG.png";
 import azzaroImage from "@/assets/parfums/complete/AZZARO.png";
-import lacosteImage from "@/assets/parfums/complete/LACOSTE.png";
 import guerlainImage from "@/assets/parfums/complete/GUERLAIN.png";
 import diorImage from "@/assets/parfums/complete/DIOR.png";
-import armaniImage from "@/assets/parfums/complete/ARMANI.png";
 import bossImage from "@/assets/parfums/complete/BOSS.png";
 
 interface BrandDrawerProps {
@@ -35,11 +33,10 @@ const brandImages: Record<string, string> = {
   "Dolce & Gabbana": dgImage,
   "Jean Paul Gaultier": jpgImage,
   "Azzaro": azzaroImage,
-  "Lacoste": lacosteImage,
   "Guerlain": guerlainImage,
   "Dior": diorImage,
-  "Armani": armaniImage,
   "Hugo Boss": bossImage,
+  "Xerjoff": "", // Pas d'image pour Xerjoff
 };
 
 export const BrandDrawer = ({ brand, open, onOpenChange }: BrandDrawerProps) => {
