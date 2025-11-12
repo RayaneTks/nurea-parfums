@@ -20,7 +20,7 @@ export const Hero = () => {
   };
 
   return (
-    <section id="hero" className="min-h-screen flex items-center justify-center px-4 bg-background relative overflow-hidden pt-20">
+    <section id="hero" className="min-h-screen flex items-center justify-center px-4 bg-background relative overflow-hidden pt-16 md:pt-20">
       {/* Background image with opacity */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
