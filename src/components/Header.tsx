@@ -1,10 +1,18 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Filter } from "lucide-react";
 import logo from "@/assets/nurea-logo-transparent.png";
 import { Button } from "./ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-export const Header = () => {
+interface HeaderProps {
+  onFilterClick?: () => void;
+  hasActiveFilters?: boolean;
+  activeFiltersCount?: number;
+}
+
+export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0 }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -42,14 +50,33 @@ export const Header = () => {
           </button>
         </nav>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden text-foreground/80 hover:text-foreground hover:bg-transparent h-8 w-8"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
+        <div className="flex items-center gap-2 md:hidden">
+          {/* Bouton filtre mobile - Simple comme Amazon/Sephora */}
+          {isMobile && onFilterClick && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onFilterClick}
+              className="h-8 px-2.5 text-xs font-light text-foreground/70 hover:text-foreground"
+            >
+              <Filter className="h-3.5 w-3.5 mr-1.5" />
+              Filtres
+              {hasActiveFilters && activeFiltersCount > 0 && (
+                <span className="ml-1.5 h-4 w-4 rounded-full bg-foreground text-[10px] text-background flex items-center justify-center font-medium">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-foreground/80 active:text-foreground active:bg-transparent h-8 w-8"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
       </div>
 
       {mobileMenuOpen && (
