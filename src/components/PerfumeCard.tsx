@@ -98,51 +98,51 @@ export const PerfumeCard = ({ perfume, onClick, variant = "desktop" }: PerfumeCa
     );
   }
 
-  // Version Mobile : Nom au-dessus, carte pleine largeur - Image agrandie
+  // Version Mobile : Carousel plein écran avec nom au-dessus et image pleine écran
   return (
-    <div className="w-full pb-20">
-      {/* Nom du parfum au-dessus - Compact */}
-      <div className="mb-2 px-2 text-center">
-        <h3 className="font-serif text-base text-foreground font-light leading-tight mb-0.5">
+    <div className="w-full pb-16">
+      {/* Nom du parfum au-dessus - Style élégant */}
+      <div className="mb-4 px-4 text-center">
+        <h3 className="font-serif text-xl text-foreground font-light leading-tight mb-1.5">
           {perfume.name}
         </h3>
-        <p className="text-[11px] text-muted-foreground/70 font-light">
+        <p className="text-sm text-muted-foreground/80 font-light mb-1">
           {perfume.brand}
         </p>
         {perfume.category && (
-          <p className="text-[9px] text-muted-foreground/50 uppercase tracking-wider font-light mt-0.5">
+          <p className="text-xs text-muted-foreground/60 uppercase tracking-wider font-light">
             {perfume.category}
           </p>
         )}
       </div>
 
-      {/* Card avec image - Image agrandie */}
+      {/* Card avec image - Image pleine écran */}
       <Card
         onClick={onClick}
         className={cn(
           "relative cursor-pointer overflow-hidden",
           "bg-background/50 border-border/30",
           "active:scale-[0.98] transition-transform duration-200",
-          "w-full shadow-md"
+          "w-full shadow-lg"
         )}
       >
-        {/* Container image - Image agrandie pour mobile */}
-        <div className="relative w-full overflow-hidden h-[calc(100vh-200px)] min-h-[400px] max-h-[500px]">
+        {/* Container image - Hauteur optimisée pour mobile plein écran */}
+        <div className="relative w-full overflow-hidden h-[calc(100vh-280px)] min-h-[450px] max-h-[600px]">
           {/* Image du parfum */}
           {perfumeImage && !imageError ? (
             <img
               src={perfumeImage}
               alt={perfume.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-center"
               onError={() => setImageError(true)}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-background/5">
               <div className="text-center">
-                <div className="w-12 h-12 border border-muted-foreground/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <div className="w-6 h-6 border border-muted-foreground/15 rounded-sm"></div>
+                <div className="w-16 h-16 border border-muted-foreground/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <div className="w-8 h-8 border border-muted-foreground/15 rounded-sm"></div>
                 </div>
-                <div className="text-[8px] uppercase tracking-wider text-muted-foreground/20 font-light">Image à venir</div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground/20 font-light">Image à venir</div>
               </div>
             </div>
           )}

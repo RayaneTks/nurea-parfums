@@ -107,17 +107,17 @@ export const BrandDrawer = ({ brand, open, onOpenChange }: BrandDrawerProps) => 
             <Button
               size="lg"
               onClick={openSnapchat}
-              className="bg-[#FFFC00] hover:bg-[#FFFC00]/90 text-background h-14 text-base rounded-none px-8 font-light uppercase tracking-wider flex items-center gap-3"
+              className="bg-[#FFFC00] active:bg-[#FFFC00]/90 text-background h-14 text-base rounded-none px-8 font-light uppercase tracking-wider flex items-center gap-3"
             >
-              <SnapchatIcon className="h-5 w-5" />
+              <SnapchatIcon className="h-5 w-5 text-background" />
               Écrire sur Snapchat
             </Button>
             <Button
               size="lg"
               onClick={openWhatsApp}
-              className="bg-[#25D366] hover:bg-[#25D366]/90 text-white h-14 text-base rounded-none px-8 font-light uppercase tracking-wider flex items-center gap-3"
+              className="bg-[#25D366] active:bg-[#25D366]/90 text-white h-14 text-base rounded-none px-8 font-light uppercase tracking-wider flex items-center gap-3"
             >
-              <WhatsAppIcon className="h-5 w-5" />
+              <WhatsAppIcon className="h-5 w-5 text-white" />
               Écrire sur WhatsApp
             </Button>
           </div>

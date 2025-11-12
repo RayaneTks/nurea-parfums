@@ -30,7 +30,7 @@ export const Contact = () => {
           <div className="border border-border/50 bg-card/20 backdrop-blur-sm p-8 hover:border-[#FFFC00]/50 transition-all duration-500 flex flex-col">
             <div className="mb-6">
               <div className="h-16 w-16 flex items-center justify-center mb-6">
-                <SnapchatIcon className="h-10 w-10 opacity-90" />
+                <SnapchatIcon className="h-10 w-10 text-[#FFFC00]" />
               </div>
               <h3 className="font-serif text-3xl text-foreground mb-4">Snapchat</h3>
               <p className="text-sm text-muted-foreground/70 leading-relaxed font-light mb-8">
@@ -40,9 +40,9 @@ export const Contact = () => {
             <Button
               size="lg"
               onClick={openSnapchat}
-              className="w-full bg-[#FFFC00] hover:bg-[#FFFC00]/90 text-background h-14 rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-3 mt-auto"
+              className="w-full bg-[#FFFC00] active:bg-[#FFFC00]/90 text-background h-14 rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-3 mt-auto"
             >
-              <SnapchatIcon className="h-5 w-5 opacity-90" />
+              <SnapchatIcon className="h-5 w-5 text-background" />
               Ouvrir Snapchat
             </Button>
           </div>
