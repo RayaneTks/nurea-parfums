@@ -16,13 +16,13 @@ export const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/98 backdrop-blur-md border-b border-border/30">
-      <div className="container mx-auto px-4 md:px-6 py-4 md:py-5 flex items-center justify-between">
+      <div className="container mx-auto px-3 md:px-6 py-2 md:py-5 flex items-center justify-between">
         <button
           onClick={() => scrollToSection("hero")}
-          className="flex items-center gap-3 transition-opacity hover:opacity-80 group"
+          className="flex items-center gap-2 md:gap-3 transition-opacity hover:opacity-80 group"
         >
-          <img src={logo} alt="Nuréa Parfums" className="h-10 w-10 md:h-12 md:w-12 opacity-90 group-hover:opacity-100 transition-opacity" />
-          <span className="font-serif text-lg md:text-xl text-foreground hidden sm:inline font-light tracking-wide">
+          <img src={logo} alt="Nuréa Parfums" className="h-8 w-8 md:h-12 md:w-12 opacity-90 group-hover:opacity-100 transition-opacity" />
+          <span className="font-serif text-base md:text-xl text-foreground hidden sm:inline font-light tracking-wide">
             Nuréa Parfums
           </span>
         </button>
@@ -45,10 +45,10 @@ export const Header = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden text-foreground/80 hover:text-foreground hover:bg-transparent"
+          className="md:hidden text-foreground/80 hover:text-foreground hover:bg-transparent h-8 w-8"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
-          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
       </div>
 

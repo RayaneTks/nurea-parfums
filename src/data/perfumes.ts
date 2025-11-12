@@ -112,10 +112,8 @@ export const fullRangeBrands: Brand[] = [
   { id: "dolce-gabbana", name: "Dolce & Gabbana", category: "Grands classiques", fullRange: true },
   { id: "jean-paul-gaultier", name: "Jean Paul Gaultier", category: "Grands classiques", fullRange: true },
   { id: "azzaro", name: "Azzaro", category: "Grands classiques", fullRange: true },
-  { id: "lacoste", name: "Lacoste", category: "Grands classiques", fullRange: true },
   { id: "guerlain", name: "Guerlain", category: "Grands classiques", fullRange: true },
   { id: "dior", name: "Dior", category: "Grands classiques", fullRange: true },
-  { id: "armani", name: "Armani", category: "Grands classiques", fullRange: true },
   { id: "hugo-boss", name: "Hugo Boss", category: "Grands classiques", fullRange: true },
   { id: "xerjoff", name: "Xerjoff", category: "Niche", fullRange: true },
 ];
