@@ -74,24 +74,42 @@ export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0
         </div>
       </div>
 
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-background/98 backdrop-blur-md border-t border-border/30">
-          <nav className="container mx-auto px-4 py-6 flex flex-col gap-6">
+      {/* Menu mobile overlay avec animation */}
+      <div
+        className={`
+          md:hidden fixed inset-0 z-[200] transition-opacity duration-300
+          ${mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
+        `}
+        onClick={() => setMobileMenuOpen(false)}
+      >
+        {/* Overlay sombre */}
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+        
+        {/* Menu slide depuis la droite */}
+        <div
+          className={`
+            absolute right-0 top-0 h-full w-[280px] bg-background/98 backdrop-blur-md border-l border-border/30 shadow-xl
+            transform transition-transform duration-300 ease-out
+            ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"}
+          `}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <nav className="flex flex-col gap-2 p-6 pt-20">
             <button
               onClick={() => scrollToSection("catalogue")}
-              className="text-left text-foreground/80 hover:text-primary transition-colors duration-300 py-2 font-light uppercase tracking-wider text-sm"
+              className="text-left text-foreground/80 hover:text-primary transition-colors duration-300 py-3 px-4 font-light uppercase tracking-wider text-sm hover:bg-background/50 rounded-sm"
             >
               Catalogue
             </button>
             <button
               onClick={() => scrollToSection("contact")}
-              className="text-left text-foreground/80 hover:text-primary transition-colors duration-300 py-2 font-light uppercase tracking-wider text-sm"
+              className="text-left text-foreground/80 hover:text-primary transition-colors duration-300 py-3 px-4 font-light uppercase tracking-wider text-sm hover:bg-background/50 rounded-sm"
             >
               Contact
             </button>
           </nav>
         </div>
-      )}
+      </div>
     </header>
   );
 };

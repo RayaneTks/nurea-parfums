@@ -81,7 +81,7 @@ export const BrandDrawer = ({ brand, open, onOpenChange }: BrandDrawerProps) => 
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="bg-background border-t border-border/50 max-h-[90vh] rounded-t-none">
+      <DrawerContent className="bg-background border-t border-border/50 max-h-[90vh] rounded-t-none overflow-y-auto">
         <DrawerHeader className="text-left border-b border-border/30 pb-6 px-6 pt-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
@@ -105,7 +105,7 @@ export const BrandDrawer = ({ brand, open, onOpenChange }: BrandDrawerProps) => 
           </div>
         </DrawerHeader>
 
-        <div className="px-6 py-8 overflow-y-auto flex-1">
+        <div className="px-6 py-8 overflow-y-auto flex-1 min-h-0">
           {/* Carrousel d'images de la marque */}
           {brandImage && (
             <div className="mb-8">
