@@ -3,6 +3,7 @@ export interface Perfume {
   name: string;
   brand: string;
   category: string;
+  gender?: "homme" | "femme" | "unisexe";
   tags?: string[];
   price?: string;
   availableSizes?: number[];
@@ -21,10 +22,10 @@ export const allSizes = [25, 30, 35, 40, 50, 60, 80, 100, 120];
 // Parfums individuels
 export const perfumes: Perfume[] = [
   // Creed
-  { id: "creed-aventus", name: "Aventus", brand: "Creed", category: "Niche", tags: ["Best-seller"] },
+  { id: "creed-aventus", name: "Aventus", brand: "Creed", category: "Niche", gender: "homme", tags: ["Best-seller"] },
 
   // Tiziana Terenzi
-  { id: "kirke", name: "Kirke", brand: "Tiziana Terenzi", category: "Niche" },
+  { id: "kirke", name: "Kirke", brand: "Tiziana Terenzi", category: "Niche", gender: "femme" },
 
   // Gucci
   { id: "gucci-oud", name: "Oud Intense", brand: "Gucci", category: "Grands classiques" },
@@ -33,8 +34,8 @@ export const perfumes: Perfume[] = [
   { id: "bad-boy", name: "Bad Boy", brand: "Carolina Herrera", category: "Grands classiques" },
 
   // Maison Francis Kurkdjian
-  { id: "baccarat-rouge", name: "Baccarat Rouge 540", brand: "Maison Francis Kurkdjian", category: "Niche", tags: ["Best-seller"] },
-  { id: "grand-soir", name: "Grand Soir", brand: "Maison Francis Kurkdjian", category: "Niche" },
+  { id: "baccarat-rouge", name: "Baccarat Rouge 540", brand: "Maison Francis Kurkdjian", category: "Niche", gender: "unisexe", tags: ["Best-seller"] },
+  { id: "grand-soir", name: "Grand Soir", brand: "Maison Francis Kurkdjian", category: "Niche", gender: "unisexe" },
 
   // Tom Ford
   { id: "tf-velvet-orchid", name: "Velvet Orchid", brand: "Tom Ford", category: "Tom Ford", tags: ["Collection privée"] },

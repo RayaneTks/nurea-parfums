@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, Filter } from "lucide-react";
+import { Filter } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "@/assets/nurea-logo-transparent.png";
 import { Button } from "./ui/button";
@@ -13,15 +13,39 @@ interface HeaderProps {
 
 export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0 }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Gérer l'animation de fermeture
+  const handleCloseMenu = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setMobileMenuOpen(false);
+      setIsClosing(false);
+    }, 500); // Durée de l'animation
+  };
+
+  // Gérer l'animation d'ouverture
+  const handleOpenMenu = () => {
+    setMobileMenuOpen(true);
+    setIsOpening(true);
+    // Utiliser requestAnimationFrame pour permettre au DOM de se mettre à jour
+    // puis déclencher l'animation rapidement
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsOpening(false);
+      });
+    });
+  };
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
-      setMobileMenuOpen(false);
+      handleCloseMenu();
     }
   };
 
@@ -64,52 +88,99 @@ export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0
 
         <div className="flex items-center gap-2 md:hidden">
           <Button
-            variant="ghost"
+            className={`group h-11 w-11 border-border/30 hover:bg-background/50 hover:border-primary/40 active:bg-background/70 ${mobileMenuOpen ? 'aria-expanded' : ''}`}
+            variant="outline"
             size="icon"
-            className="text-foreground/80 active:text-foreground active:bg-transparent h-11 w-11"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={() => {
+              if (mobileMenuOpen) {
+                handleCloseMenu();
+              } else {
+                handleOpenMenu();
+              }
+            }}
+            aria-expanded={mobileMenuOpen}
+            aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
           >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <svg
+              className="pointer-events-none text-foreground/80 group-hover:text-foreground"
+              width={20}
+              height={20}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M4 12H20"
+                className={`origin-center transition-all duration-300 [transition-timing-function:cubic-bezier(.5,.85,.25,1.1)] ${
+                  mobileMenuOpen 
+                    ? 'translate-y-0 rotate-[45deg]' 
+                    : '-translate-y-[7px]'
+                }`}
+              />
+              <path
+                d="M4 12H20"
+                className={`origin-center transition-all duration-300 [transition-timing-function:cubic-bezier(.5,.85,.25,1.8)] ${
+                  mobileMenuOpen ? 'opacity-0' : 'opacity-100'
+                }`}
+              />
+              <path
+                d="M4 12H20"
+                className={`origin-center transition-all duration-300 [transition-timing-function:cubic-bezier(.5,.85,.25,1.1)] ${
+                  mobileMenuOpen 
+                    ? 'translate-y-0 rotate-[-45deg]' 
+                    : 'translate-y-[7px]'
+                }`}
+              />
+            </svg>
           </Button>
         </div>
       </div>
 
-      {/* Menu mobile overlay avec animation */}
-      <div
-        className={`
-          md:hidden fixed inset-0 z-[200] transition-opacity duration-300
-          ${mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
-        `}
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        {/* Overlay sombre */}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-        
-        {/* Menu slide depuis la droite */}
-        <div
-          className={`
-            absolute right-0 top-0 h-full w-[280px] bg-background/98 backdrop-blur-md border-l border-border/30 shadow-xl
-            transform transition-transform duration-300 ease-out
-            ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"}
-          `}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <nav className="flex flex-col gap-2 p-6 pt-20">
-            <button
-              onClick={() => scrollToSection("catalogue")}
-              className="text-left text-foreground/80 hover:text-primary transition-colors duration-300 py-3 px-4 font-light uppercase tracking-wider text-sm hover:bg-background/50 rounded-sm"
-            >
-              Catalogue
-            </button>
-            <button
-              onClick={() => scrollToSection("contact")}
-              className="text-left text-foreground/80 hover:text-primary transition-colors duration-300 py-3 px-4 font-light uppercase tracking-wider text-sm hover:bg-background/50 rounded-sm"
-            >
-              Contact
-            </button>
-          </nav>
-        </div>
-      </div>
+      {mobileMenuOpen && (
+        <>
+          {/* Overlay pour fermer le menu en cliquant en dehors */}
+          <div
+            className={`md:hidden fixed inset-0 z-[150] bg-black/20 backdrop-blur-sm transition-opacity ${
+              isClosing 
+                ? "duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] opacity-0" 
+                : isOpening 
+                ? "duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] opacity-0" 
+                : "duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] opacity-100"
+            }`}
+            onClick={handleCloseMenu}
+          />
+          
+          {/* Menu avec animation */}
+          <div
+            className={`md:hidden fixed top-[56px] left-0 right-0 z-[200] bg-background border-t border-border/30 shadow-2xl transition-all ${
+              isClosing 
+                ? "duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] -translate-y-full opacity-0" 
+                : isOpening
+                ? "duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] -translate-y-full opacity-0"
+                : "duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] translate-y-0 opacity-100"
+            }`}
+          >
+            <nav className="container mx-auto px-4 py-6 flex flex-col gap-2">
+              <button
+                onClick={() => scrollToSection("catalogue")}
+                className="text-left text-foreground hover:text-primary transition-colors duration-200 py-3 px-2 font-light uppercase tracking-wider text-sm min-h-[48px] flex items-center rounded-sm hover:bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2"
+              >
+                Catalogue
+              </button>
+              <button
+                onClick={() => scrollToSection("contact")}
+                className="text-left text-foreground hover:text-primary transition-colors duration-200 py-3 px-2 font-light uppercase tracking-wider text-sm min-h-[48px] flex items-center rounded-sm hover:bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2"
+              >
+                Contact
+              </button>
+            </nav>
+          </div>
+        </>
+      )}
     </header>
   );
 };

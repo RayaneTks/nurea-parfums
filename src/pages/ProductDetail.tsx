@@ -47,13 +47,58 @@ export const ProductDetail = () => {
 
   const perfume = useMemo(() => {
     if (!brand || !name) return null;
-    const perfumeName = decodeURIComponent(name);
-    const brandName = decodeURIComponent(brand);
-    return perfumes.find(
-      (p) =>
-        p.name.toLowerCase() === perfumeName.toLowerCase() &&
-        p.brand.toLowerCase() === brandName.toLowerCase()
-    );
+    
+    try {
+      const perfumeName = decodeURIComponent(name).trim();
+      const brandName = decodeURIComponent(brand).trim();
+      
+      // Log pour débogage
+      console.log('Recherche parfum:', { perfumeName, brandName });
+      
+      // Recherche exacte d'abord
+      let found = perfumes.find(
+        (p) =>
+          p.name.toLowerCase().trim() === perfumeName.toLowerCase() &&
+          p.brand.toLowerCase().trim() === brandName.toLowerCase()
+      );
+      
+      // Si pas trouvé, recherche plus flexible (gère les espaces multiples, etc.)
+      if (!found) {
+        found = perfumes.find(
+          (p) =>
+            p.name.toLowerCase().replace(/\s+/g, ' ').trim() === perfumeName.toLowerCase().replace(/\s+/g, ' ').trim() &&
+            p.brand.toLowerCase().replace(/\s+/g, ' ').trim() === brandName.toLowerCase().replace(/\s+/g, ' ').trim()
+        );
+      }
+      
+      // Si toujours pas trouvé, recherche par ID si disponible dans l'URL
+      if (!found && name.includes('-')) {
+        const possibleId = name.toLowerCase();
+        found = perfumes.find((p) => p.id.toLowerCase() === possibleId);
+      }
+      
+      // Si toujours pas trouvé, recherche partielle par nom
+      if (!found) {
+        found = perfumes.find(
+          (p) =>
+            p.name.toLowerCase().includes(perfumeName.toLowerCase()) &&
+            p.brand.toLowerCase().trim() === brandName.toLowerCase()
+        );
+      }
+      
+      if (!found) {
+        console.warn('Parfum non trouvé:', { 
+          searchedName: perfumeName, 
+          searchedBrand: brandName,
+          availablePerfumesForBrand: perfumes.filter(p => p.brand.toLowerCase() === brandName.toLowerCase()).map(p => ({ id: p.id, name: p.name }))
+        });
+      }
+      
+      return found || null;
+    } catch (error) {
+      console.error('Error decoding URL parameters:', error);
+      return null;
+    }
   }, [brand, name]);
 
   if (!perfume) {

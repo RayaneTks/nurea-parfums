@@ -36,7 +36,11 @@ export const BrandCard = ({ brand, onClick, variant = "desktop" }: BrandCardProp
   if (variant === "desktop") {
     return (
     <Card
-      onClick={onClick}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick();
+      }}
       className={cn(
         "group relative cursor-pointer overflow-hidden rounded-xl",
         "bg-background/50 border-0",
@@ -106,7 +110,11 @@ export const BrandCard = ({ brand, onClick, variant = "desktop" }: BrandCardProp
 
       {/* Card avec image - Image pleine écran */}
       <Card
-        onClick={onClick}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick();
+        }}
         className={cn(
           "relative cursor-pointer overflow-hidden",
           "bg-background/50 border-border/30",
