@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { Search, X, Filter } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { PerfumeCard } from "./PerfumeCard";
 import { PerfumeDrawer } from "./PerfumeDrawer";
@@ -32,6 +33,7 @@ interface CatalogueProps {
 }
 
 export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCountChange }: CatalogueProps) => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Tous");
   const [selectedBrand, setSelectedBrand] = useState("Tous");
@@ -40,7 +42,12 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [brandDrawerOpen, setBrandDrawerOpen] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [openDetailsId, setOpenDetailsId] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  
+  const handleDetailsToggle = (perfumeId: string) => {
+    setOpenDetailsId(prev => prev === perfumeId ? null : perfumeId);
+  };
 
   // Fonction wrapper stable qui toggle toujours l'état actuel
   const toggleMobileFilters = useCallback(() => {
@@ -114,8 +121,16 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
   };
 
   const handlePerfumeClick = (perfume: Perfume) => {
-    setSelectedPerfume(perfume);
-    setDrawerOpen(true);
+    // Sur mobile, naviguer vers la page produit détaillée
+    if (isMobile) {
+      const brand = encodeURIComponent(perfume.brand);
+      const name = encodeURIComponent(perfume.name);
+      navigate(`/parfums/${brand}/${name}`);
+    } else {
+      // Sur desktop, ouvrir le drawer
+      setSelectedPerfume(perfume);
+      setDrawerOpen(true);
+    }
   };
 
   const handleBrandClick = (brand: Brand) => {
@@ -132,24 +147,24 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
       <div className="w-full">
         {/* Navbar de filtres - Version Desktop */}
         {!isMobile && (
-          <div className="sticky top-[64px] md:top-[72px] z-40 bg-background/98 backdrop-blur-md border-b border-border/20">
+          <div className="sticky top-[56px] md:top-[64px] z-40 bg-background/98 backdrop-blur-md border-b border-border/20">
             <div className="container max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-              {/* Barre de recherche intégrée */}
-              <div className="py-4 border-b border-border/10">
-                <div className="max-w-2xl mx-auto">
+              {/* Barre de recherche améliorée */}
+              <div className="py-5 border-b border-border/10">
+                <div className="max-w-[600px] mx-auto px-4">
                   <div className="relative group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/40 group-focus-within:text-foreground/70 transition-colors duration-300" />
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-primary/40 group-focus-within:text-primary transition-colors duration-300 z-10" />
                     <input
                       type="text"
                       placeholder="Rechercher un parfum ou une marque"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full h-12 pl-12 pr-12 bg-transparent border-b border-border/20 text-foreground placeholder:text-muted-foreground/40 text-sm focus:outline-none focus:border-foreground/40 transition-all duration-300 font-light"
+                      className="w-full h-12 pl-12 pr-12 rounded-full bg-background/5 border border-primary/30 text-foreground placeholder:text-muted-foreground/40 text-base focus:outline-none focus:border-primary focus:bg-background/8 focus:shadow-[0_0_0_3px_rgba(183,148,90,0.1)] transition-all duration-300 font-light"
                     />
                     {searchTerm && (
                       <button
                         onClick={clearSearch}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/30 hover:text-foreground/70 transition-colors"
+                        className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-foreground/70 transition-colors p-1"
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -158,68 +173,77 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
                 </div>
               </div>
 
-              {/* Navigation horizontale */}
-              <nav className="flex items-center justify-center gap-8 md:gap-12 py-4 overflow-x-auto scrollbar-hide">
-                <button
-                  onClick={() => {
-                    setSelectedCategory("Tous");
-                    setSelectedBrand("Tous");
-                  }}
-                  className={`
-                    whitespace-nowrap text-sm font-light tracking-wide
-                    transition-all duration-300 border-b-2 border-transparent pb-2
-                    ${
-                      selectedCategory === "Tous" && selectedBrand === "Tous"
-                        ? "text-foreground border-foreground"
-                        : "text-muted-foreground/60 hover:text-foreground/80 hover:border-foreground/30"
-                    }
-                  `}
-                >
-                  Voir Tout
-                </button>
-                {categories.filter(cat => cat !== "Tous").map((category) => (
+              {/* Navigation horizontale scrollable */}
+              <div className="overflow-x-auto -webkit-overflow-scrolling-touch scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent relative">
+                <nav className="flex items-center gap-3 py-4 min-w-min px-4">
                   <button
-                    key={category}
                     onClick={() => {
-                      setSelectedCategory(category);
+                      setSelectedCategory("Tous");
                       setSelectedBrand("Tous");
                     }}
                     className={`
-                      whitespace-nowrap text-sm font-light tracking-wide
-                      transition-all duration-300 border-b-2 border-transparent pb-2
+                      flex-shrink-0 px-5 py-2.5 rounded-full text-sm font-medium
+                      transition-all duration-300 whitespace-nowrap
+                      border min-h-[44px]
                       ${
-                        selectedCategory === category
-                          ? "text-foreground border-foreground"
-                          : "text-muted-foreground/60 hover:text-foreground/80 hover:border-foreground/30"
+                        selectedCategory === "Tous" && selectedBrand === "Tous"
+                          ? "bg-primary text-background border-primary"
+                          : "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:border-primary/50"
                       }
+                      focus:outline-2 focus:outline-primary focus:outline-offset-2
                     `}
                   >
-                    {category}
+                    Voir Tout
                   </button>
-                ))}
-              </nav>
+                  {categories.filter(cat => cat !== "Tous").map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => {
+                        setSelectedCategory(category);
+                        setSelectedBrand("Tous");
+                      }}
+                      className={`
+                        flex-shrink-0 px-5 py-2.5 rounded-full text-sm font-medium
+                        transition-all duration-300 whitespace-nowrap
+                        border min-h-[44px]
+                        ${
+                          selectedCategory === category
+                            ? "bg-primary text-background border-primary"
+                            : "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:border-primary/50"
+                        }
+                        focus:outline-2 focus:outline-primary focus:outline-offset-2
+                      `}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </nav>
+              </div>
 
               {/* Filtres marques (optionnel, affiché si besoin) */}
               {selectedCategory !== "Tous" && (
                 <div className="pb-4 border-b border-border/10">
-                  <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-                    {allBrands.map((brand) => (
-                      <button
-                        key={brand}
-                        onClick={() => setSelectedBrand(brand)}
-                        className={`
-                          px-4 py-1.5 whitespace-nowrap text-xs font-light tracking-wide
-                          transition-all duration-300 border border-transparent rounded-full
-                          ${
-                            selectedBrand === brand
-                              ? "text-foreground border-foreground/30 bg-foreground/5"
-                              : "text-muted-foreground/50 hover:text-foreground/70 hover:border-foreground/20"
-                          }
-                        `}
-                      >
-                        {brand}
-                      </button>
-                    ))}
+                  <div className="overflow-x-auto -webkit-overflow-scrolling-touch scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent relative">
+                    <div className="flex gap-3 min-w-min px-4">
+                      {allBrands.map((brand) => (
+                        <button
+                          key={brand}
+                          onClick={() => setSelectedBrand(brand)}
+                          className={`
+                            flex-shrink-0 px-4 py-2 whitespace-nowrap text-xs font-medium
+                            transition-all duration-300 border rounded-full min-h-[44px]
+                            ${
+                              selectedBrand === brand
+                                ? "bg-primary text-background border-primary"
+                                : "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:border-primary/50"
+                            }
+                            focus:outline-2 focus:outline-primary focus:outline-offset-2
+                          `}
+                        >
+                          {brand}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -227,6 +251,76 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
           </div>
         )}
         
+
+        {/* Barre de recherche et filtres sticky mobile */}
+        {isMobile && (
+          <div className="sticky top-[56px] z-40 bg-background/98 backdrop-blur-md border-b border-border/20 shadow-sm">
+            <div className="container mx-auto px-4 py-2">
+              {/* Barre de recherche améliorée */}
+              <div className="relative mb-2">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40 z-10" />
+                <input
+                  type="text"
+                  placeholder="Rechercher un parfum ou une marque"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full h-10 pl-10 pr-10 rounded-full bg-background/5 border border-primary/30 text-foreground placeholder:text-muted-foreground/40 text-sm focus:outline-none focus:border-primary focus:bg-background/8 focus:shadow-[0_0_0_3px_rgba(183,148,90,0.1)] transition-all font-light"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={clearSearch}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 active:text-foreground/70 p-1"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Filtres scrollables horizontaux avec touch targets 44px */}
+              <div className="overflow-x-auto -webkit-overflow-scrolling-touch scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent relative">
+                <div className="flex gap-2 min-w-min pb-1">
+                  <button
+                    onClick={() => {
+                      setSelectedCategory("Tous");
+                      setSelectedBrand("Tous");
+                    }}
+                    className={`
+                      flex-shrink-0 px-3 py-2 rounded-full text-xs font-medium
+                      transition-all duration-300 whitespace-nowrap border min-h-[40px]
+                      ${
+                        selectedCategory === "Tous" && selectedBrand === "Tous"
+                          ? "bg-primary text-background border-primary"
+                          : "bg-primary/10 text-primary border-primary/30 active:bg-primary/20"
+                      }
+                    `}
+                  >
+                    Tous
+                  </button>
+                  {categories.filter(cat => cat !== "Tous").map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => {
+                        setSelectedCategory(category);
+                        setSelectedBrand("Tous");
+                      }}
+                      className={`
+                        flex-shrink-0 px-3 py-2 rounded-full text-xs font-medium
+                        transition-all duration-300 whitespace-nowrap border min-h-[40px]
+                        ${
+                          selectedCategory === category
+                            ? "bg-primary text-background border-primary"
+                            : "bg-primary/10 text-primary border-primary/30 active:bg-primary/20"
+                        }
+                      `}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Menu latéral mobile - Simple et épuré */}
         {isMobile && (
@@ -238,28 +332,6 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
                 </SheetHeader>
                 
                 <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5">
-                  {/* Barre de recherche */}
-                  <div>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
-                      <input
-                        type="text"
-                        placeholder="Rechercher..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full h-10 pl-9 pr-9 bg-background border border-border/30 rounded-md text-foreground placeholder:text-muted-foreground/40 text-sm focus:outline-none focus:border-foreground/50 transition-all font-light"
-                      />
-                      {searchTerm && (
-                        <button
-                          onClick={clearSearch}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 active:text-foreground/70"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
                   {/* Catégories */}
                   <div>
                     <h3 className="text-xs font-medium mb-2.5 text-foreground/70 uppercase tracking-wider">Catégories</h3>
@@ -348,7 +420,7 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
         )}
 
         {/* Contenu principal - Style inspiré des grands sites de parfums */}
-        <div className="container max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-3 md:py-16 lg:py-20">
+        <div className="container max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-2 md:py-16 lg:py-20">
           {showNoResults ? (
             <div className="text-center py-12 md:py-24 px-4">
               <p className="text-sm md:text-xl text-foreground/70 mb-6 md:mb-10 max-w-2xl mx-auto leading-relaxed font-light">
@@ -378,16 +450,16 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
             <>
               {/* Marques complètes - Layout amélioré */}
               {filteredBrands.length > 0 && (
-                <div className="mb-12 md:mb-24">
-                  <div className="mb-8 md:mb-10 text-center px-2">
-                    <h3 className="font-serif text-lg md:text-2xl text-foreground/90 mb-2 md:mb-2 uppercase tracking-wider font-light">
+                <div className="mb-6 md:mb-24">
+                  <div className="mb-4 md:mb-10 text-center px-2">
+                    <h3 className="font-serif text-base md:text-2xl text-foreground/90 mb-2 md:mb-2 uppercase tracking-wider font-light">
                       Marques - Gamme complète
                     </h3>
                   </div>
                   
-                  {/* Version Desktop : Grille de 3 colonnes */}
+                  {/* Version Desktop : Grille optimisée avec minmax */}
                   {!isMobile && (
-                    <div className="grid grid-cols-3 gap-8 lg:gap-10 xl:gap-12">
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6 px-4 py-8 max-w-[1400px] mx-auto">
                       {filteredBrands.map((brand) => (
                         <BrandCard 
                           key={brand.id} 
@@ -443,9 +515,9 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
                     </div>
                   )}
                   
-                  {/* Version Desktop : Grille de 3 colonnes */}
+                  {/* Version Desktop : Grille optimisée avec minmax et spacing */}
                   {!isMobile && (
-                    <div className="grid grid-cols-3 gap-8 lg:gap-10 xl:gap-12">
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6 px-4 py-8 max-w-[1400px] mx-auto">
                       {filteredPerfumes.map((perfume) => (
                         <PerfumeCard 
                           key={perfume.id} 
@@ -457,34 +529,19 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
                     </div>
                   )}
 
-                  {/* Version Mobile : Carousel plein écran avec nom au-dessus */}
+                  {/* Version Mobile : Grille 2 colonnes avec spacing optimisé */}
                   {isMobile && (
-                    <div className="relative w-full -mx-3">
-                      <Carousel
-                        opts={{
-                          align: "start",
-                          loop: false,
-                        }}
-                        className="w-full"
-                      >
-                        <CarouselContent className="ml-0">
-                          {filteredPerfumes.map((perfume) => (
-                            <CarouselItem key={perfume.id} className="pl-3 basis-full">
-                              <PerfumeCard 
-                                perfume={perfume}
-                                onClick={() => handlePerfumeClick(perfume)}
-                                variant="mobile"
-                              />
-                            </CarouselItem>
-                          ))}
-                        </CarouselContent>
-                        {filteredPerfumes.length > 1 && (
-                          <>
-                            <CarouselPrevious className="left-2 bg-background/95 border-border/50 active:bg-background shadow-lg h-9 w-9 z-10" />
-                            <CarouselNext className="right-2 bg-background/95 border-border/50 active:bg-background shadow-lg h-9 w-9 z-10" />
-                          </>
-                        )}
-                      </Carousel>
+                    <div className="grid grid-cols-2 gap-3 px-4 py-4">
+                      {filteredPerfumes.map((perfume) => (
+                        <PerfumeCard 
+                          key={perfume.id}
+                          perfume={perfume}
+                          onClick={() => handlePerfumeClick(perfume)}
+                          variant="mobile"
+                          isDetailsOpen={openDetailsId === perfume.id}
+                          onDetailsToggle={handleDetailsToggle}
+                        />
+                      ))}
                     </div>
                   )}
                 </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Menu, X, Filter } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import logo from "@/assets/nurea-logo-transparent.png";
 import { Button } from "./ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -13,6 +14,8 @@ interface HeaderProps {
 export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0 }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -22,15 +25,24 @@ export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0
     }
   };
 
+  const handleLogoClick = () => {
+    if (location.pathname !== "/") {
+      navigate("/");
+    } else {
+      // Si on est déjà sur l'index, scroller vers le haut
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/98 backdrop-blur-md border-b border-border/30">
-      <div className="container mx-auto px-3 md:px-6 py-2 md:py-5 flex items-center justify-between">
+    <header className="sticky top-0 left-0 right-0 z-[100] bg-background/98 backdrop-blur-md border-b border-border/30 shadow-sm">
+      <div className="container mx-auto px-4 md:px-6 py-2 md:py-4 flex items-center justify-between">
         <button
-          onClick={() => scrollToSection("hero")}
-          className="flex items-center gap-2 md:gap-3 transition-opacity hover:opacity-80 group"
+          onClick={handleLogoClick}
+          className="flex items-center gap-2 md:gap-3 transition-opacity hover:opacity-80 group min-h-[44px] min-w-[44px]"
         >
           <img src={logo} alt="Nuréa Parfums" className="h-8 w-8 md:h-12 md:w-12 opacity-90 group-hover:opacity-100 transition-opacity" />
-          <span className="font-serif text-base md:text-xl text-foreground hidden sm:inline font-light tracking-wide">
+          <span className="font-serif text-sm md:text-xl text-foreground hidden sm:inline font-light tracking-wide">
             Nuréa Parfums
           </span>
         </button>
@@ -38,40 +50,23 @@ export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0
         <nav className="hidden md:flex gap-8">
           <button
             onClick={() => scrollToSection("catalogue")}
-            className="text-sm text-foreground/80 hover:text-primary transition-colors duration-300 font-light uppercase tracking-wider"
+            className="text-sm text-foreground/80 hover:text-primary transition-colors duration-300 font-light uppercase tracking-wider min-h-[44px] px-2"
           >
             Catalogue
           </button>
           <button
             onClick={() => scrollToSection("contact")}
-            className="text-sm text-foreground/80 hover:text-primary transition-colors duration-300 font-light uppercase tracking-wider"
+            className="text-sm text-foreground/80 hover:text-primary transition-colors duration-300 font-light uppercase tracking-wider min-h-[44px] px-2"
           >
             Contact
           </button>
         </nav>
 
         <div className="flex items-center gap-2 md:hidden">
-          {/* Bouton filtre mobile - Simple comme Amazon/Sephora */}
-          {isMobile && onFilterClick && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onFilterClick}
-              className="h-8 px-2.5 text-xs font-light text-foreground/70 hover:text-foreground"
-            >
-              <Filter className="h-3.5 w-3.5 mr-1.5" />
-              Filtres
-              {hasActiveFilters && activeFiltersCount > 0 && (
-                <span className="ml-1.5 h-4 w-4 rounded-full bg-foreground text-[10px] text-background flex items-center justify-center font-medium">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </Button>
-          )}
           <Button
             variant="ghost"
             size="icon"
-            className="text-foreground/80 active:text-foreground active:bg-transparent h-8 w-8"
+            className="text-foreground/80 active:text-foreground active:bg-transparent h-11 w-11"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
