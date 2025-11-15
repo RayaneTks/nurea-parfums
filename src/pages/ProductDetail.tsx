@@ -286,12 +286,6 @@ export const ProductDetail = () => {
               </p>
             </div>
 
-            {/* Badge authenticité */}
-            <div className="mb-4 md:mb-6">
-              <Badge className="bg-primary/10 text-primary/90 border border-primary/20 text-[10px] md:text-xs font-light uppercase tracking-wider px-2 md:px-3 py-1 md:py-1.5">
-                ✓ Authenticité garantie
-              </Badge>
-            </div>
 
             {/* CTA sticky bottom sur mobile */}
             {isMobile ? (

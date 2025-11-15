@@ -49,10 +49,10 @@ export const Hero = () => {
         {/* Badges de réassurance */}
         <div className="flex flex-wrap gap-3 justify-center mb-12 max-w-3xl mx-auto">
           <div className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-sm">
-            <span className="text-xs uppercase tracking-wider text-primary/90 font-light">100% Authentiques</span>
+            <span className="text-xs uppercase tracking-wider text-primary/90 font-light">Prix cassés</span>
           </div>
           <div className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-sm">
-            <span className="text-xs uppercase tracking-wider text-primary/90 font-light">Stocks actualisés</span>
+            <span className="text-xs uppercase tracking-wider text-primary/90 font-light">Qualité premium</span>
           </div>
           <div className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-sm">
             <span className="text-xs uppercase tracking-wider text-primary/90 font-light">Conseils personnalisés</span>

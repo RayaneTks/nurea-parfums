@@ -3,8 +3,8 @@ import { Check } from "lucide-react";
 export const WhyNurea = () => {
   const advantages = [
     {
-      title: "100% Authentiques",
-      description: "Tous nos parfums sont garantis authentiques et proviennent de sources certifiées.",
+      title: "Prix cassés jamais vus",
+      description: "Profitez de vos parfums préférés à prix cassé jamais vu pour très peu cher.",
     },
     {
       title: "Conseils personnalisés",
