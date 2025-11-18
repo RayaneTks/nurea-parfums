@@ -600,11 +600,13 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
                   <div className="space-y-8 md:space-y-12">
                     {Object.entries(perfumesByBrand).map(([brand, brandPerfumes]) => (
                       <div key={brand} className="space-y-4 md:space-y-6">
-                        {/* En-tête de marque */}
-                        <div className="px-4 md:px-6">
-                          <h4 className="font-serif text-base md:text-lg text-foreground/80 font-light border-b border-border/30 pb-2">
+                        {/* En-tête de marque avec traits décoratifs */}
+                        <div className="px-4 md:px-6 flex items-center justify-center gap-3 md:gap-4">
+                          <div className="flex-1 h-px bg-border/30"></div>
+                          <h4 className="font-serif text-sm md:text-base text-foreground/80 font-light whitespace-nowrap">
                             {brand}
                           </h4>
+                          <div className="flex-1 h-px bg-border/30"></div>
                         </div>
                         
                         {/* Version Desktop : Grille optimisée */}
