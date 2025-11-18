@@ -48,17 +48,6 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
     setOpenDetailsId(prev => prev === perfumeId ? null : perfumeId);
   };
 
-  // Restaurer la position de scroll si elle a été sauvegardée
-  useEffect(() => {
-    const savedScrollPosition = sessionStorage.getItem('catalogueScrollPosition');
-    if (savedScrollPosition) {
-      // Attendre que le DOM soit prêt avant de restaurer la position
-      setTimeout(() => {
-        window.scrollTo(0, parseInt(savedScrollPosition, 10));
-        sessionStorage.removeItem('catalogueScrollPosition');
-      }, 100);
-    }
-  }, []);
 
   // Fonction wrapper stable qui toggle toujours l'état actuel
   const toggleMobileFilters = useCallback(() => {
@@ -117,6 +106,24 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
       return matchesSearch && matchesCategory && matchesBrand && matchesGender;
     });
   }, [searchTerm, selectedCategory, selectedBrand, selectedGender]);
+
+  // Grouper les parfums par marque pour une meilleure organisation
+  const perfumesByBrand = useMemo(() => {
+    const grouped: Record<string, typeof filteredPerfumes> = {};
+    filteredPerfumes.forEach((perfume) => {
+      if (!grouped[perfume.brand]) {
+        grouped[perfume.brand] = [];
+      }
+      grouped[perfume.brand].push(perfume);
+    });
+    // Trier les marques par ordre alphabétique
+    return Object.keys(grouped)
+      .sort()
+      .reduce((acc, brand) => {
+        acc[brand] = grouped[brand];
+        return acc;
+      }, {} as Record<string, typeof filteredPerfumes>);
+  }, [filteredPerfumes]);
 
   const filteredBrands = useMemo(() => {
     return fullRangeBrands.filter((brand) => {
@@ -551,7 +558,7 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
                       <Carousel
                         opts={{
                           align: "start",
-                          loop: false,
+                          loop: true,
                         }}
                         className="w-full"
                       >
@@ -578,46 +585,60 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
                 </div>
               )}
 
-              {/* Parfums individuels - Layout amélioré */}
+              {/* Parfums individuels - Organisés par marque */}
               {filteredPerfumes.length > 0 && (
                 <div>
                   {filteredBrands.length > 0 && (
-                    <div className="mb-8 md:mb-10 text-center px-2">
-                      <h3 className="font-serif text-lg md:text-2xl text-foreground/90 mb-2 md:mb-2 uppercase tracking-wider font-light">
+                    <div className="mb-6 md:mb-8 text-center px-2">
+                      <h3 className="font-serif text-lg md:text-xl text-foreground/90 mb-1 md:mb-2 uppercase tracking-wider font-light">
                         Parfums
                       </h3>
                     </div>
                   )}
                   
-                  {/* Version Desktop : Grille optimisée avec minmax et spacing */}
-                  {!isMobile && (
-                    <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6 px-4 py-8 max-w-[1400px] mx-auto">
-                      {filteredPerfumes.map((perfume) => (
-                        <PerfumeCard 
-                          key={perfume.id} 
-                          perfume={perfume}
-                          onClick={() => handlePerfumeClick(perfume)}
-                          variant="desktop"
-                        />
-                      ))}
-                    </div>
-                  )}
+                  {/* Parfums groupés par marque */}
+                  <div className="space-y-8 md:space-y-12">
+                    {Object.entries(perfumesByBrand).map(([brand, brandPerfumes]) => (
+                      <div key={brand} className="space-y-4 md:space-y-6">
+                        {/* En-tête de marque */}
+                        <div className="px-4 md:px-6">
+                          <h4 className="font-serif text-base md:text-lg text-foreground/80 font-light border-b border-border/30 pb-2">
+                            {brand}
+                          </h4>
+                        </div>
+                        
+                        {/* Version Desktop : Grille optimisée */}
+                        {!isMobile && (
+                          <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4 md:gap-5 px-4 md:px-6 max-w-[1400px] mx-auto">
+                            {brandPerfumes.map((perfume) => (
+                              <PerfumeCard 
+                                key={perfume.id} 
+                                perfume={perfume}
+                                onClick={() => handlePerfumeClick(perfume)}
+                                variant="desktop"
+                              />
+                            ))}
+                          </div>
+                        )}
 
-                  {/* Version Mobile : Grille 2 colonnes avec spacing optimisé */}
-                  {isMobile && (
-                    <div className="grid grid-cols-2 gap-3 px-4 py-4">
-                      {filteredPerfumes.map((perfume) => (
-                        <PerfumeCard 
-                          key={perfume.id}
-                          perfume={perfume}
-                          onClick={() => handlePerfumeClick(perfume)}
-                          variant="mobile"
-                          isDetailsOpen={openDetailsId === perfume.id}
-                          onDetailsToggle={handleDetailsToggle}
-                        />
-                      ))}
-                    </div>
-                  )}
+                        {/* Version Mobile : Grille 2 colonnes */}
+                        {isMobile && (
+                          <div className="grid grid-cols-2 gap-3 px-4">
+                            {brandPerfumes.map((perfume) => (
+                              <PerfumeCard 
+                                key={perfume.id}
+                                perfume={perfume}
+                                onClick={() => handlePerfumeClick(perfume)}
+                                variant="mobile"
+                                isDetailsOpen={openDetailsId === perfume.id}
+                                onDetailsToggle={handleDetailsToggle}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </>

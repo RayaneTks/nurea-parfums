@@ -116,45 +116,26 @@ export const PerfumeCard = ({ perfume, onClick, variant = "desktop", isDetailsOp
             </div>
           )}
           
-          {/* Overlay avec infos produit en bas - toujours visible */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/95 via-black/70 to-transparent text-center">
-            <h3 className="font-serif text-lg font-semibold text-[#e8dcc4] mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] line-clamp-2">
+          {/* Overlay avec infos produit en bas - simplifié */}
+          <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-center">
+            <h3 className="font-serif text-base font-light text-white mb-0.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] line-clamp-2">
               {perfume.name}
             </h3>
-            <p className="text-xs text-primary/90 mb-1.5 font-light line-clamp-1">
-              {perfume.brand}
-            </p>
-            {shouldShowCategory && (
-              <span className="inline-block px-2 py-0.5 bg-primary/20 border border-primary/40 rounded-lg text-[10px] text-primary uppercase tracking-wider font-light">
-                {perfume.category}
-              </span>
-            )}
           </div>
 
-          {/* Overlay détails au hover - prix, tailles, etc. */}
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-4 text-center">
-            <h3 className="font-serif text-xl font-semibold text-[#e8dcc4] mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+          {/* Overlay détails au hover - simplifié */}
+          <div className="absolute inset-0 bg-black/75 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-4 text-center">
+            <h3 className="font-serif text-lg font-light text-white mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
               {perfume.name}
             </h3>
-            <p className="text-sm text-primary/90 mb-3 font-light">
+            <p className="text-xs text-primary/80 mb-2 font-light">
               {perfume.brand}
             </p>
-            {perfume.price ? (
-              <p className="text-lg font-medium text-foreground mb-4">
-                {perfume.price}
-              </p>
-            ) : (
-              <p className="text-sm text-muted-foreground/70 mb-4 font-light">
-                Demander le prix
-              </p>
+            {perfume.tags?.includes("Best-seller") && (
+              <span className="text-[10px] text-primary/90 uppercase tracking-wider font-light">
+                Best-seller
+              </span>
             )}
-            <div className="flex flex-wrap gap-2 justify-center mb-4">
-              {sizes.slice(0, 3).map((size) => (
-                <Badge key={size} className="bg-primary/20 text-primary border border-primary/40 text-xs">
-                  {size}ml
-                </Badge>
-              ))}
-            </div>
           </div>
         </div>
       </Card>
@@ -197,49 +178,30 @@ export const PerfumeCard = ({ perfume, onClick, variant = "desktop", isDetailsOp
           </div>
         )}
         
-        {/* Overlay avec infos produit en bas - toujours visible */}
+        {/* Overlay avec infos produit en bas - simplifié */}
         <div className={cn(
-          "absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/95 via-black/70 to-transparent text-center transition-opacity duration-300",
+          "absolute bottom-0 left-0 right-0 p-2.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-center transition-opacity duration-300",
           showDetails && "opacity-0"
         )}>
-          <h3 className="font-serif text-sm font-semibold text-[#e8dcc4] mb-0.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] line-clamp-2">
+          <h3 className="font-serif text-xs font-light text-white mb-0 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] line-clamp-1">
             {perfume.name}
           </h3>
-          <p className="text-[10px] text-primary/90 mb-1 font-light line-clamp-1">
-            {perfume.brand}
-          </p>
-          {shouldShowCategory && (
-            <span className="inline-block px-1.5 py-0.5 bg-primary/20 border border-primary/40 rounded text-[9px] text-primary uppercase tracking-wider font-light">
-              {perfume.category}
-            </span>
-          )}
         </div>
 
-        {/* Overlay détails au clic sur mobile - prix, tailles, CTA */}
+        {/* Overlay détails au clic sur mobile - simplifié */}
         {showDetails && (
           <div className="absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center z-20 animate-[fadeIn_0.3s_ease_forwards]">
-            <h3 className="font-serif text-lg font-semibold text-[#e8dcc4] mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+            <h3 className="font-serif text-base font-light text-white mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
               {perfume.name}
             </h3>
-            <p className="text-xs text-primary/90 mb-2 font-light">
+            <p className="text-[10px] text-primary/80 mb-3 font-light">
               {perfume.brand}
             </p>
-            {perfume.price ? (
-              <p className="text-base font-medium text-foreground mb-3">
-                {perfume.price}
-              </p>
-            ) : (
-              <p className="text-xs text-muted-foreground/70 mb-3 font-light">
-                Demander le prix
-              </p>
+            {perfume.tags?.includes("Best-seller") && (
+              <span className="text-[9px] text-primary/90 uppercase tracking-wider font-light mb-3">
+                Best-seller
+              </span>
             )}
-            <div className="flex flex-wrap gap-1.5 justify-center mb-4">
-              {sizes.slice(0, 3).map((size) => (
-                <Badge key={size} className="bg-primary/20 text-primary border border-primary/40 text-[10px] px-2 py-0.5">
-                  {size}ml
-                </Badge>
-              ))}
-            </div>
             <Button
               onClick={(e) => {
                 e.stopPropagation();
@@ -251,7 +213,7 @@ export const PerfumeCard = ({ perfume, onClick, variant = "desktop", isDetailsOp
             </Button>
             <button
               onClick={handleCloseDetails}
-              className="mt-3 text-[10px] text-muted-foreground/60 font-light underline"
+              className="mt-2 text-[10px] text-muted-foreground/60 font-light underline"
             >
               Fermer
             </button>

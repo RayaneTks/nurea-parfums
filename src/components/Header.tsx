@@ -60,18 +60,18 @@ export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0
 
   return (
     <header className="sticky top-0 left-0 right-0 z-[100] bg-background/98 backdrop-blur-md border-b border-border/30 shadow-sm">
-      <div className="container mx-auto px-4 md:px-6 py-2 md:py-4 flex items-center justify-between">
+      <div className="container mx-auto px-4 md:px-6 py-2.5 md:py-4 flex items-center justify-between">
         <button
           onClick={handleLogoClick}
-          className="flex items-center gap-2 md:gap-3 transition-opacity hover:opacity-80 group min-h-[44px] min-w-[44px]"
+          className="flex items-center gap-2 md:gap-3 transition-opacity hover:opacity-80 active:opacity-70 group min-h-[44px] min-w-[44px]"
         >
-          <img src={logo} alt="Nuréa Parfums" className="h-8 w-8 md:h-12 md:w-12 opacity-90 group-hover:opacity-100 transition-opacity" />
+          <img src={logo} alt="Nuréa Parfums" className="h-9 w-9 md:h-12 md:w-12 opacity-90 group-hover:opacity-100 transition-opacity" />
           <span className="font-serif text-sm md:text-xl text-foreground hidden sm:inline font-light tracking-wide">
             Nuréa Parfums
           </span>
         </button>
 
-        <nav className="hidden md:flex gap-8">
+        <nav className="hidden md:flex items-center gap-8">
           <button
             onClick={() => scrollToSection("catalogue")}
             className="text-sm text-foreground/80 hover:text-primary transition-colors duration-300 font-light uppercase tracking-wider min-h-[44px] px-2"
@@ -87,8 +87,27 @@ export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0
         </nav>
 
         <div className="flex items-center gap-2 md:hidden">
+          {onFilterClick && (
+            <Button
+              variant="outline"
+              onClick={onFilterClick}
+              className={`relative h-10 w-10 rounded-full border-primary/30 p-0 ${
+                hasActiveFilters
+                  ? "bg-primary/20 border-primary/50"
+                  : "bg-background/5 active:bg-primary/10"
+              }`}
+              aria-label="Ouvrir les filtres"
+            >
+              <Filter className="h-4 w-4 text-primary" />
+              {activeFiltersCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-background text-[10px] flex items-center justify-center font-medium">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </Button>
+          )}
           <Button
-            className={`group h-11 w-11 border-border/30 hover:bg-background/50 hover:border-primary/40 active:bg-background/70 ${mobileMenuOpen ? 'aria-expanded' : ''}`}
+            className={`group h-10 w-10 border-border/30 hover:bg-background/50 hover:border-primary/40 active:bg-background/70 transition-all ${mobileMenuOpen ? 'bg-background/50 border-primary/40' : ''}`}
             variant="outline"
             size="icon"
             onClick={() => {
@@ -102,7 +121,7 @@ export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0
             aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
           >
             <svg
-              className="pointer-events-none text-foreground/80 group-hover:text-foreground"
+              className="pointer-events-none text-foreground/80 group-hover:text-foreground transition-colors"
               width={20}
               height={20}
               viewBox="0 0 24 24"
@@ -164,16 +183,16 @@ export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0
                 : "duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] translate-y-0 opacity-100"
             }`}
           >
-            <nav className="container mx-auto px-4 py-6 flex flex-col gap-2">
+            <nav className="container mx-auto px-4 py-5 flex flex-col gap-1">
               <button
                 onClick={() => scrollToSection("catalogue")}
-                className="text-left text-foreground hover:text-primary transition-colors duration-200 py-3 px-2 font-light uppercase tracking-wider text-sm min-h-[48px] flex items-center rounded-sm hover:bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2"
+                className="text-center text-foreground hover:text-primary active:text-primary transition-colors duration-200 py-3.5 px-4 font-light uppercase tracking-wider text-sm min-h-[48px] flex items-center justify-center rounded-lg hover:bg-background/50 active:bg-background/70 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2"
               >
                 Catalogue
               </button>
               <button
                 onClick={() => scrollToSection("contact")}
-                className="text-left text-foreground hover:text-primary transition-colors duration-200 py-3 px-2 font-light uppercase tracking-wider text-sm min-h-[48px] flex items-center rounded-sm hover:bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2"
+                className="text-center text-foreground hover:text-primary active:text-primary transition-colors duration-200 py-3.5 px-4 font-light uppercase tracking-wider text-sm min-h-[48px] flex items-center justify-center rounded-lg hover:bg-background/50 active:bg-background/70 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2"
               >
                 Contact
               </button>
