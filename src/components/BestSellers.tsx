@@ -22,6 +22,10 @@ export const BestSellers = () => {
   if (bestSellers.length === 0) return null;
 
   const handlePerfumeClick = (perfume: typeof perfumes[0]) => {
+    // Sauvegarder la position de scroll avant de naviguer
+    const scrollPosition = window.scrollY;
+    sessionStorage.setItem('catalogueScrollPosition', scrollPosition.toString());
+    
     const brand = encodeURIComponent(perfume.brand);
     const name = encodeURIComponent(perfume.name);
     navigate(`/parfums/${brand}/${name}`);

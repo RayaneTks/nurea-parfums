@@ -28,10 +28,22 @@ const Index = () => {
   // Scroller vers le catalogue si on arrive depuis une autre page avec le hash
   useEffect(() => {
     if (location.hash === "#catalogue" || location.state?.scrollToCatalogue) {
-      setTimeout(() => {
-        const catalogueSection = document.getElementById("catalogue");
-        catalogueSection?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+      // Vérifier si on a une position de scroll sauvegardée
+      const savedScrollPosition = sessionStorage.getItem('catalogueScrollPosition');
+      
+      if (savedScrollPosition) {
+        // Restaurer la position de scroll sauvegardée
+        setTimeout(() => {
+          window.scrollTo(0, parseInt(savedScrollPosition, 10));
+          sessionStorage.removeItem('catalogueScrollPosition');
+        }, 100);
+      } else {
+        // Sinon, scroller vers le catalogue
+        setTimeout(() => {
+          const catalogueSection = document.getElementById("catalogue");
+          catalogueSection?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
     }
   }, [location]);
 

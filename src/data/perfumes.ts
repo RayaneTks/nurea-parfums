@@ -51,8 +51,7 @@ export const perfumes: Perfume[] = [
   // Franck Olivier
   { id: "oud-touch", name: "Oud Touch", brand: "Franck Olivier", category: "Autres" },
   { id: "eau-passion", name: "Eau Passion", brand: "Franck Olivier", category: "Autres" },
-  { id: "sun-java-black", name: "Sun Java Black", brand: "Franck Olivier", category: "Autres" },
-  { id: "sun-java-white", name: "Sun Java White", brand: "Franck Olivier", category: "Autres" },
+  { id: "sun-java", name: "Sun Java", brand: "Franck Olivier", category: "Autres" },
 
   // Cartier
   { id: "declaration", name: "Déclaration", brand: "Cartier", category: "Cartier" },

@@ -40,9 +40,13 @@ export const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const [imageError, setImageError] = useState(false);
 
-  // Scroll vers le haut quand on arrive sur la page
+  // Scroll vers le haut quand on arrive sur la page (sauf si on vient du catalogue)
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // Ne pas scroller si on vient du catalogue (la position sera restaurée au retour)
+    const savedScrollPosition = sessionStorage.getItem('catalogueScrollPosition');
+    if (!savedScrollPosition) {
+      window.scrollTo(0, 0);
+    }
   }, [brand, name]);
 
   const perfume = useMemo(() => {

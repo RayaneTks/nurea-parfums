@@ -48,6 +48,18 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
     setOpenDetailsId(prev => prev === perfumeId ? null : perfumeId);
   };
 
+  // Restaurer la position de scroll si elle a été sauvegardée
+  useEffect(() => {
+    const savedScrollPosition = sessionStorage.getItem('catalogueScrollPosition');
+    if (savedScrollPosition) {
+      // Attendre que le DOM soit prêt avant de restaurer la position
+      setTimeout(() => {
+        window.scrollTo(0, parseInt(savedScrollPosition, 10));
+        sessionStorage.removeItem('catalogueScrollPosition');
+      }, 100);
+    }
+  }, []);
+
   // Fonction wrapper stable qui toggle toujours l'état actuel
   const toggleMobileFilters = useCallback(() => {
     setMobileFiltersOpen((prev) => !prev);
@@ -129,6 +141,10 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
   const handlePerfumeClick = (perfume: Perfume) => {
     // Sur mobile, naviguer vers la page produit détaillée
     if (isMobile) {
+      // Sauvegarder la position de scroll avant de naviguer
+      const scrollPosition = window.scrollY;
+      sessionStorage.setItem('catalogueScrollPosition', scrollPosition.toString());
+      
       const brand = encodeURIComponent(perfume.brand);
       const name = encodeURIComponent(perfume.name);
       navigate(`/parfums/${brand}/${name}`);
