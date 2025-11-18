@@ -163,7 +163,7 @@ export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0
         <>
           {/* Overlay pour fermer le menu en cliquant en dehors */}
           <div
-            className={`md:hidden fixed inset-0 z-[150] bg-black/20 backdrop-blur-sm transition-opacity ${
+            className={`md:hidden fixed inset-0 z-[110] bg-black/20 backdrop-blur-sm transition-opacity ${
               isClosing 
                 ? "duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] opacity-0" 
                 : isOpening 
@@ -175,7 +175,7 @@ export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0
           
           {/* Menu avec animation */}
           <div
-            className={`md:hidden fixed top-[56px] left-0 right-0 z-[200] bg-background border-t border-border/30 shadow-2xl transition-all ${
+            className={`md:hidden fixed top-[56px] left-0 right-0 z-[120] bg-background border-t border-border/30 shadow-2xl transition-all ${
               isClosing 
                 ? "duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] -translate-y-full opacity-0" 
                 : isOpening
