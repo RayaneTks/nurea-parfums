@@ -87,25 +87,6 @@ export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0
         </nav>
 
         <div className="flex items-center gap-2 md:hidden">
-          {onFilterClick && (
-            <Button
-              variant="outline"
-              onClick={onFilterClick}
-              className={`relative h-10 w-10 rounded-full border-primary/30 p-0 ${
-                hasActiveFilters
-                  ? "bg-primary/20 border-primary/50"
-                  : "bg-background/5 active:bg-primary/10"
-              }`}
-              aria-label="Ouvrir les filtres"
-            >
-              <Filter className="h-4 w-4 text-primary" />
-              {activeFiltersCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-background text-[10px] flex items-center justify-center font-medium">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </Button>
-          )}
           <Button
             className={`group h-10 w-10 border-border/30 hover:bg-background/50 hover:border-primary/40 active:bg-background/70 transition-all ${mobileMenuOpen ? 'bg-background/50 border-primary/40' : ''}`}
             variant="outline"

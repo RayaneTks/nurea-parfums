@@ -274,7 +274,7 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
 
             {/* Sidebar Desktop pour les filtres */}
             <Sheet open={desktopFiltersOpen} onOpenChange={setDesktopFiltersOpen}>
-              <SheetContent side="right" className="w-[400px] sm:w-[450px] p-0 top-[64px] md:top-[64px] h-[calc(100vh-64px)] border-l border-border/20">
+              <SheetContent side="right" className="w-[400px] sm:w-[450px] p-0 top-0 h-screen border-l border-border/20">
                 <div className="flex flex-col h-full">
                   <SheetHeader className="px-6 pt-6 pb-4 border-b border-border/20 bg-background flex items-center justify-between">
                     <SheetTitle className="text-left text-base md:text-lg font-medium text-foreground uppercase tracking-wider">FILTER</SheetTitle>
@@ -431,9 +431,9 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
         {isMobile && (
           <div className="sticky top-[56px] z-40 bg-background/98 backdrop-blur-md border-b border-border/20 shadow-sm">
             <div className="container mx-auto px-4 py-3">
-              <div className="flex items-center gap-3">
-                {/* Barre de recherche */}
-                <div className="flex-1">
+              <div className="flex items-center justify-center gap-3">
+                {/* Barre de recherche centrée */}
+                <div className="flex-1 max-w-[600px]">
                   <div className="relative group">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40 z-10" />
                     <input
@@ -458,7 +458,7 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
                 <Button
                   variant="outline"
                   onClick={() => setMobileFiltersOpen(true)}
-                  className={`relative min-h-[40px] min-w-[40px] rounded-full border-primary/30 p-0 ${
+                  className={`relative min-h-[40px] min-w-[40px] rounded-full border-primary/30 p-0 flex-shrink-0 ${
                     activeFiltersCount > 0
                       ? "bg-primary/20 border-primary/50"
                       : "bg-background/5 active:bg-primary/10"
@@ -479,7 +479,7 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
         {/* Menu latéral mobile - Style amélioré */}
         {isMobile && (
           <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
-            <SheetContent side="right" className="w-[85vw] max-w-sm p-0 top-[56px] h-[calc(100vh-56px)] border-l border-border/20">
+            <SheetContent side="right" className="w-[85vw] max-w-sm p-0 top-0 h-screen border-l border-border/20">
               <div className="flex flex-col h-full">
                 <SheetHeader className="px-4 pt-5 pb-4 border-b border-border/20 bg-background flex items-center justify-between">
                   <SheetTitle className="text-left text-sm font-medium text-foreground uppercase tracking-wider">FILTER</SheetTitle>
