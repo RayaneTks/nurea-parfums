@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { Search, X, Filter } from "lucide-react";
+import { Search, X, Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { PerfumeCard } from "./PerfumeCard";
@@ -42,7 +42,19 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [desktopFiltersOpen, setDesktopFiltersOpen] = useState(false);
   const [openDetailsId, setOpenDetailsId] = useState<string | null>(null);
+  const [expandedFilterSections, setExpandedFilterSections] = useState<Record<string, boolean>>({
+    genre: true,
+    category: true,
+    brand: false,
+  });
   const isMobile = useIsMobile();
+
+  const toggleFilterSection = (section: string) => {
+    setExpandedFilterSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
   
   const handleDetailsToggle = (perfumeId: string) => {
     setOpenDetailsId(prev => prev === perfumeId ? null : perfumeId);
@@ -134,6 +146,43 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
       return matchesSearch && matchesCategory && matchesBrand;
     });
   }, [searchTerm, selectedCategory, selectedBrand]);
+
+  // Calculer les compteurs pour chaque option de filtre
+  const filterCounts = useMemo(() => {
+    // Compteur par genre
+    const genderCounts = {
+      tous: perfumes.length,
+      homme: perfumes.filter(p => p.gender === "homme" || !p.gender || p.gender === "unisexe").length,
+      femme: perfumes.filter(p => p.gender === "femme" || !p.gender || p.gender === "unisexe").length,
+    };
+
+    // Compteur par catégorie
+    const categoryCounts: Record<string, number> = {};
+    categories.forEach(cat => {
+      if (cat === "Tous") {
+        categoryCounts[cat] = perfumes.length;
+      } else {
+        categoryCounts[cat] = perfumes.filter(p => p.category === cat).length;
+      }
+    });
+
+    // Compteur par marque (seulement si une catégorie est sélectionnée)
+    const brandCounts: Record<string, number> = {};
+    if (selectedCategory !== "Tous") {
+      allBrands.forEach(brand => {
+        if (brand === "Tous") {
+          brandCounts[brand] = filteredPerfumes.length;
+        } else {
+          brandCounts[brand] = perfumes.filter(p => 
+            p.brand === brand && 
+            (selectedCategory === "Tous" || p.category === selectedCategory)
+          ).length;
+        }
+      });
+    }
+
+    return { genderCounts, categoryCounts, brandCounts };
+  }, [perfumes, categories, allBrands, selectedCategory, filteredPerfumes]);
 
   const showNoResults = searchTerm && filteredPerfumes.length === 0 && filteredBrands.length === 0;
 
@@ -227,86 +276,131 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
             <Sheet open={desktopFiltersOpen} onOpenChange={setDesktopFiltersOpen}>
               <SheetContent side="right" className="w-[400px] sm:w-[450px] p-0 top-[64px] md:top-[64px] z-[101] h-[calc(100vh-64px)] border-l border-border/20">
                 <div className="flex flex-col h-full">
-                  <SheetHeader className="px-6 pt-6 pb-4 border-b border-border/20 bg-background">
-                    <SheetTitle className="text-left text-lg font-light text-foreground">Filtres</SheetTitle>
+                  <SheetHeader className="px-6 pt-6 pb-4 border-b border-border/20 bg-background flex items-center justify-between">
+                    <SheetTitle className="text-left text-base md:text-lg font-medium text-foreground uppercase tracking-wider">FILTER</SheetTitle>
+                    <button
+                      onClick={() => setDesktopFiltersOpen(false)}
+                      className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                      aria-label="Fermer"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
                   </SheetHeader>
                   
-                  <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 bg-background">
-                    {/* Filtre Genre */}
-                    <div>
-                      <h3 className="text-sm font-medium mb-3 text-foreground uppercase tracking-wider">Genre</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {(["tous", "homme", "femme"] as const).map((gender) => (
-                          <button
-                            key={gender}
-                            onClick={() => setSelectedGender(gender)}
-                            className={`px-4 py-2.5 rounded-full text-sm font-light transition-all duration-200 min-h-[44px] ${
-                              selectedGender === gender
-                                ? "bg-primary text-background border border-primary shadow-sm"
-                                : "bg-background border border-border/40 text-foreground hover:bg-background/80 hover:border-primary/40 active:scale-[0.98]"
-                            }`}
-                          >
-                            {gender === "tous" ? "Tous" : gender === "homme" ? "Homme" : "Femme"}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Catégories */}
-                    <div>
-                      <h3 className="text-sm font-medium mb-3 text-foreground uppercase tracking-wider">Catégories</h3>
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => {
-                            setSelectedCategory("Tous");
-                            setSelectedBrand("Tous");
-                          }}
-                          className={`px-4 py-2.5 rounded-full text-sm font-light transition-all duration-200 min-h-[44px] ${
-                            selectedCategory === "Tous" && selectedBrand === "Tous"
-                              ? "bg-primary text-background border border-primary shadow-sm"
-                              : "bg-background border border-border/40 text-foreground hover:bg-background/80 hover:border-primary/40 active:scale-[0.98]"
-                          }`}
-                        >
-                          Tous
-                        </button>
-                        {categories.filter(cat => cat !== "Tous").map((category) => (
-                          <button
-                            key={category}
-                            onClick={() => {
-                              setSelectedCategory(category);
-                              setSelectedBrand("Tous");
-                            }}
-                            className={`px-4 py-2.5 rounded-full text-sm font-light transition-all duration-200 min-h-[44px] ${
-                              selectedCategory === category
-                                ? "bg-primary text-background border border-primary shadow-sm"
-                                : "bg-background border border-border/40 text-foreground hover:bg-background/80 hover:border-primary/40 active:scale-[0.98]"
-                            }`}
-                          >
-                            {category}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Marques */}
-                    {selectedCategory !== "Tous" && (
-                      <div>
-                        <h3 className="text-sm font-medium mb-3 text-foreground uppercase tracking-wider">Marques</h3>
-                        <div className="flex flex-wrap gap-2 max-h-[300px] overflow-y-auto">
-                          {allBrands.map((brand) => (
-                            <button
-                              key={brand}
-                              onClick={() => setSelectedBrand(brand)}
-                              className={`px-4 py-2.5 rounded-full text-sm font-light transition-all duration-200 min-h-[44px] ${
-                                selectedBrand === brand
-                                  ? "bg-primary text-background border border-primary shadow-sm"
-                                  : "bg-background border border-border/40 text-foreground hover:bg-background/80 hover:border-primary/40 active:scale-[0.98]"
-                              }`}
-                            >
-                              {brand}
-                            </button>
+                  <div className="flex-1 overflow-y-auto px-6 py-4 space-y-0 bg-background">
+                    {/* Filtre Genre - Section pliable */}
+                    <div className="border-b border-border/20">
+                      <button
+                        onClick={() => toggleFilterSection("genre")}
+                        className="w-full flex items-center justify-between py-4 text-left"
+                      >
+                        <h3 className="text-sm font-medium text-foreground uppercase tracking-wider">GENRE</h3>
+                        {expandedFilterSections.genre ? (
+                          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </button>
+                      {expandedFilterSections.genre && (
+                        <div className="pb-4 space-y-2">
+                          {(["tous", "homme", "femme"] as const).map((gender) => (
+                            <label key={gender} className="flex items-center gap-3 py-2 cursor-pointer hover:bg-background/50 rounded px-2 -mx-2">
+                              <input
+                                type="radio"
+                                name="gender"
+                                checked={selectedGender === gender}
+                                onChange={() => setSelectedGender(gender)}
+                                className="w-4 h-4 text-primary border-border/40 focus:ring-primary/50"
+                              />
+                              <span className="text-sm text-foreground font-light flex-1">
+                                {gender === "tous" ? "Tous" : gender === "homme" ? "Homme" : "Femme"}
+                              </span>
+                              <span className="text-xs text-muted-foreground/60">
+                                ({filterCounts.genderCounts[gender]})
+                              </span>
+                            </label>
                           ))}
                         </div>
+                      )}
+                    </div>
+
+                    {/* Catégories - Section pliable */}
+                    <div className="border-b border-border/20">
+                      <button
+                        onClick={() => toggleFilterSection("category")}
+                        className="w-full flex items-center justify-between py-4 text-left"
+                      >
+                        <h3 className="text-sm font-medium text-foreground uppercase tracking-wider">CATÉGORIE</h3>
+                        {expandedFilterSections.category ? (
+                          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </button>
+                      {expandedFilterSections.category && (
+                        <div className="pb-4 space-y-2">
+                          {categories.map((category) => (
+                            <label key={category} className="flex items-center gap-3 py-2 cursor-pointer hover:bg-background/50 rounded px-2 -mx-2">
+                              <input
+                                type="radio"
+                                name="category"
+                                checked={selectedCategory === category}
+                                onChange={() => {
+                                  setSelectedCategory(category);
+                                  setSelectedBrand("Tous");
+                                }}
+                                className="w-4 h-4 text-primary border-border/40 focus:ring-primary/50"
+                              />
+                              <span className="text-sm text-foreground font-light flex-1 capitalize">
+                                {category}
+                              </span>
+                              <span className="text-xs text-muted-foreground/60">
+                                ({filterCounts.categoryCounts[category] || 0})
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Marques - Section pliable */}
+                    {selectedCategory !== "Tous" && (
+                      <div className="border-b border-border/20">
+                        <button
+                          onClick={() => toggleFilterSection("brand")}
+                          className="w-full flex items-center justify-between py-4 text-left"
+                        >
+                          <h3 className="text-sm font-medium text-foreground uppercase tracking-wider">MARQUE</h3>
+                          {expandedFilterSections.brand ? (
+                            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </button>
+                        {expandedFilterSections.brand && (
+                          <div className="pb-4 space-y-2 max-h-[400px] overflow-y-auto">
+                            {allBrands.map((brand) => {
+                              const count = filterCounts.brandCounts[brand] || 0;
+                              return (
+                                <label key={brand} className="flex items-center gap-3 py-2 cursor-pointer hover:bg-background/50 rounded px-2 -mx-2">
+                                  <input
+                                    type="radio"
+                                    name="brand"
+                                    checked={selectedBrand === brand}
+                                    onChange={() => setSelectedBrand(brand)}
+                                    className="w-4 h-4 text-primary border-border/40 focus:ring-primary/50"
+                                  />
+                                  <span className="text-sm text-foreground font-light flex-1">
+                                    {brand}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground/60">
+                                    ({count})
+                                  </span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -382,118 +476,154 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
           </div>
         )}
 
-        {/* Menu latéral mobile - Simple et épuré */}
+        {/* Menu latéral mobile - Style amélioré */}
         {isMobile && (
           <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
             <SheetContent side="right" className="w-[85vw] max-w-sm p-0 top-[56px] z-[101] h-[calc(100vh-56px)] border-l border-border/20">
               <div className="flex flex-col h-full">
-                <SheetHeader className="px-4 pt-5 pb-4 border-b border-border/20 bg-background">
-                  <SheetTitle className="text-left text-base font-light text-foreground">Filtres</SheetTitle>
+                <SheetHeader className="px-4 pt-5 pb-4 border-b border-border/20 bg-background flex items-center justify-between">
+                  <SheetTitle className="text-left text-sm font-medium text-foreground uppercase tracking-wider">FILTER</SheetTitle>
+                  <button
+                    onClick={() => setMobileFiltersOpen(false)}
+                    className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                    aria-label="Fermer"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
                 </SheetHeader>
                 
-                <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5 bg-background">
-                  {/* Filtre Genre */}
-                  <div>
-                    <h3 className="text-xs font-medium mb-2.5 text-foreground uppercase tracking-wider">Genre</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {(["tous", "homme", "femme"] as const).map((gender) => (
-                        <button
-                          key={gender}
-                          onClick={() => setSelectedGender(gender)}
-                          className={`px-3 py-2 rounded-full text-xs font-light transition-all duration-200 min-h-[40px] ${
-                            selectedGender === gender
-                              ? "bg-primary text-background border border-primary shadow-sm"
-                              : "bg-background border border-border/40 text-foreground active:bg-background/80 active:scale-[0.98]"
-                          }`}
-                        >
-                          {gender === "tous" ? "Tous" : gender === "homme" ? "Homme" : "Femme"}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Catégories */}
-                  <div>
-                    <h3 className="text-xs font-medium mb-2.5 text-foreground uppercase tracking-wider">Catégories</h3>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedCategory("Tous");
-                          setSelectedBrand("Tous");
-                        }}
-                        className={`px-3 py-2 rounded-full text-xs font-light transition-all duration-200 min-h-[40px] ${
-                          selectedCategory === "Tous" && selectedBrand === "Tous"
-                            ? "bg-primary text-background border border-primary shadow-sm"
-                            : "bg-background border border-border/40 text-foreground active:bg-background/80 active:scale-[0.98]"
-                        }`}
-                      >
-                        Tous
-                      </button>
-                      {categories.filter(cat => cat !== "Tous").map((category) => (
-                        <button
-                          key={category}
-                          onClick={() => {
-                            setSelectedCategory(category);
-                            setSelectedBrand("Tous");
-                          }}
-                          className={`px-3 py-2 rounded-full text-xs font-light transition-all duration-200 min-h-[40px] ${
-                            selectedCategory === category
-                              ? "bg-primary text-background border border-primary shadow-sm"
-                              : "bg-background border border-border/40 text-foreground active:bg-background/80 active:scale-[0.98]"
-                          }`}
-                        >
-                          {category}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Marques */}
-                  {selectedCategory !== "Tous" && (
-                    <div>
-                      <h3 className="text-xs font-medium mb-2.5 text-foreground uppercase tracking-wider">Marques</h3>
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => setSelectedBrand("Tous")}
-                          className={`px-3 py-2 rounded-full text-xs font-light transition-all duration-200 min-h-[40px] ${
-                            selectedBrand === "Tous"
-                              ? "bg-primary text-background border border-primary shadow-sm"
-                              : "bg-background border border-border/40 text-foreground active:bg-background/80 active:scale-[0.98]"
-                          }`}
-                        >
-                          Toutes
-                        </button>
-                        {allBrands.map((brand) => (
-                          <button
-                            key={brand}
-                            onClick={() => setSelectedBrand(brand)}
-                            className={`px-3 py-2 rounded-full text-xs font-light transition-all duration-200 min-h-[40px] ${
-                              selectedBrand === brand
-                                ? "bg-primary text-background border border-primary shadow-sm"
-                                : "bg-background border border-border/40 text-foreground active:bg-background/80 active:scale-[0.98]"
-                            }`}
-                          >
-                            {brand}
-                          </button>
+                <div className="flex-1 overflow-y-auto px-4 py-4 space-y-0 bg-background">
+                  {/* Filtre Genre - Section pliable */}
+                  <div className="border-b border-border/20">
+                    <button
+                      onClick={() => toggleFilterSection("genre")}
+                      className="w-full flex items-center justify-between py-3 text-left"
+                    >
+                      <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">GENRE</h3>
+                      {expandedFilterSections.genre ? (
+                        <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </button>
+                    {expandedFilterSections.genre && (
+                      <div className="pb-3 space-y-2">
+                        {(["tous", "homme", "femme"] as const).map((gender) => (
+                          <label key={gender} className="flex items-center gap-3 py-2 cursor-pointer hover:bg-background/50 rounded px-2 -mx-2">
+                            <input
+                              type="radio"
+                              name="gender-mobile"
+                              checked={selectedGender === gender}
+                              onChange={() => setSelectedGender(gender)}
+                              className="w-4 h-4 text-primary border-border/40 focus:ring-primary/50"
+                            />
+                            <span className="text-xs text-foreground font-light flex-1">
+                              {gender === "tous" ? "Tous" : gender === "homme" ? "Homme" : "Femme"}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground/60">
+                              ({filterCounts.genderCounts[gender]})
+                            </span>
+                          </label>
                         ))}
                       </div>
+                    )}
+                  </div>
+
+                  {/* Catégories - Section pliable */}
+                  <div className="border-b border-border/20">
+                    <button
+                      onClick={() => toggleFilterSection("category")}
+                      className="w-full flex items-center justify-between py-3 text-left"
+                    >
+                      <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">CATÉGORIE</h3>
+                      {expandedFilterSections.category ? (
+                        <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </button>
+                    {expandedFilterSections.category && (
+                      <div className="pb-3 space-y-2">
+                        {categories.map((category) => (
+                          <label key={category} className="flex items-center gap-3 py-2 cursor-pointer hover:bg-background/50 rounded px-2 -mx-2">
+                            <input
+                              type="radio"
+                              name="category-mobile"
+                              checked={selectedCategory === category}
+                              onChange={() => {
+                                setSelectedCategory(category);
+                                setSelectedBrand("Tous");
+                              }}
+                              className="w-4 h-4 text-primary border-border/40 focus:ring-primary/50"
+                            />
+                            <span className="text-xs text-foreground font-light flex-1 capitalize">
+                              {category}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground/60">
+                              ({filterCounts.categoryCounts[category] || 0})
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Marques - Section pliable */}
+                  {selectedCategory !== "Tous" && (
+                    <div className="border-b border-border/20">
+                      <button
+                        onClick={() => toggleFilterSection("brand")}
+                        className="w-full flex items-center justify-between py-3 text-left"
+                      >
+                        <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">MARQUE</h3>
+                        {expandedFilterSections.brand ? (
+                          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </button>
+                      {expandedFilterSections.brand && (
+                        <div className="pb-3 space-y-2 max-h-[300px] overflow-y-auto">
+                          {allBrands.map((brand) => {
+                            const count = filterCounts.brandCounts[brand] || 0;
+                            return (
+                              <label key={brand} className="flex items-center gap-3 py-2 cursor-pointer hover:bg-background/50 rounded px-2 -mx-2">
+                                <input
+                                  type="radio"
+                                  name="brand-mobile"
+                                  checked={selectedBrand === brand}
+                                  onChange={() => setSelectedBrand(brand)}
+                                  className="w-4 h-4 text-primary border-border/40 focus:ring-primary/50"
+                                />
+                                <span className="text-xs text-foreground font-light flex-1">
+                                  {brand}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground/60">
+                                  ({count})
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
+                </div>
 
-                  {/* Bouton réinitialiser */}
-                  {(selectedCategory !== "Tous" || selectedBrand !== "Tous" || selectedGender !== "tous" || searchTerm) && (
-                    <button
-                      onClick={() => {
-                        setSelectedCategory("Tous");
-                        setSelectedBrand("Tous");
-                        setSelectedGender("tous");
-                        setSearchTerm("");
-                      }}
-                      className="w-full px-3 py-2 text-xs text-muted-foreground/70 active:text-foreground/80 font-light border border-border/30 rounded-md active:bg-background/80 transition-colors"
-                    >
-                      Réinitialiser
-                    </button>
-                  )}
+                {/* Footer avec bouton réinitialiser */}
+                <div className="px-4 py-4 border-t border-border/20">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedCategory("Tous");
+                      setSelectedBrand("Tous");
+                      setSelectedGender("tous");
+                      setSearchTerm("");
+                    }}
+                    className="w-full min-h-[44px] text-xs"
+                  >
+                    Réinitialiser les filtres
+                  </Button>
                 </div>
               </div>
             </SheetContent>
@@ -600,13 +730,18 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
                   <div className="space-y-8 md:space-y-12">
                     {Object.entries(perfumesByBrand).map(([brand, brandPerfumes]) => (
                       <div key={brand} className="space-y-4 md:space-y-6">
-                        {/* En-tête de marque avec traits décoratifs */}
-                        <div className="px-4 md:px-6 flex items-center justify-center gap-3 md:gap-4">
-                          <div className="flex-1 h-px bg-border/30"></div>
-                          <h4 className="font-serif text-sm md:text-base text-foreground/80 font-light whitespace-nowrap">
-                            {brand}
-                          </h4>
-                          <div className="flex-1 h-px bg-border/30"></div>
+                        {/* En-tête de marque avec compteur */}
+                        <div className="px-4 md:px-6">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs md:text-sm text-muted-foreground/60 uppercase tracking-wider font-light">
+                              Parfums
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-serif text-lg md:text-xl text-foreground font-light">
+                              {brand} <span className="text-sm md:text-base text-muted-foreground/60 font-normal">({brandPerfumes.length})</span>
+                            </h4>
+                          </div>
                         </div>
                         
                         {/* Version Desktop : Grille optimisée */}
