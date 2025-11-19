@@ -60,13 +60,13 @@ export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0
 
   return (
     <header className="sticky top-0 left-0 right-0 z-[100] bg-background/98 backdrop-blur-md border-b border-border/30 shadow-sm">
-      <div className="container mx-auto px-4 md:px-6 py-2.5 md:py-4 flex items-center justify-between">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-4 flex items-center justify-between">
         <button
           onClick={handleLogoClick}
           className="flex items-center gap-2 md:gap-3 transition-opacity hover:opacity-80 active:opacity-70 group min-h-[44px] min-w-[44px]"
         >
-          <img src={logo} alt="Nuréa Parfums" className="h-9 w-9 md:h-12 md:w-12 opacity-90 group-hover:opacity-100 transition-opacity" />
-          <span className="font-serif text-sm md:text-xl text-foreground hidden sm:inline font-light tracking-wide">
+          <img src={logo} alt="Nuréa Parfums" className="h-8 w-8 sm:h-9 sm:w-9 md:h-12 md:w-12 opacity-90 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+          <span className="font-serif text-xs sm:text-sm md:text-xl text-foreground hidden sm:inline font-light tracking-wide">
             Nuréa Parfums
           </span>
         </button>
@@ -88,7 +88,7 @@ export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0
 
         <div className="flex items-center gap-2 md:hidden">
           <Button
-            className={`group h-10 w-10 border-border/30 hover:bg-background/50 hover:border-primary/40 active:bg-background/70 transition-all ${mobileMenuOpen ? 'bg-background/50 border-primary/40' : ''}`}
+            className={`group h-9 w-9 sm:h-10 sm:w-10 border-border/30 hover:bg-background/50 hover:border-primary/40 active:bg-background/70 transition-all ${mobileMenuOpen ? 'bg-background/50 border-primary/40' : ''}`}
             variant="outline"
             size="icon"
             onClick={() => {
@@ -102,7 +102,7 @@ export const Header = ({ onFilterClick, hasActiveFilters, activeFiltersCount = 0
             aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
           >
             <svg
-              className="pointer-events-none text-foreground/80 group-hover:text-foreground transition-colors"
+              className="pointer-events-none text-foreground/80 group-hover:text-foreground transition-colors w-5 h-5 sm:w-5 sm:h-5"
               width={20}
               height={20}
               viewBox="0 0 24 24"

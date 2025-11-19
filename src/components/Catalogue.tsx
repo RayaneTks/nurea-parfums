@@ -226,29 +226,29 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
       <div className="w-full">
         {/* Barre avec bouton filtres et nombre de produits - Version Desktop */}
         {!isMobile && (
-          <div className="sticky top-[56px] md:top-[64px] z-40 bg-background/98 backdrop-blur-md border-b border-border/20">
-            <div className="container max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-              <div className="flex items-center justify-between py-4">
+          <div className="hidden md:block sticky top-[56px] lg:top-[64px] z-40 bg-background/98 backdrop-blur-md border-b border-border/20">
+            <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between py-3 sm:py-4">
                 {/* Bouton Afficher/Masquer les filtres */}
                 <button
                   onClick={() => setDesktopFiltersOpen(!desktopFiltersOpen)}
-                  className="flex items-center gap-2 text-foreground hover:text-primary transition-colors font-light uppercase tracking-wider text-sm"
+                  className="flex items-center gap-2 text-foreground hover:text-primary transition-colors font-light uppercase tracking-wider text-xs sm:text-sm min-h-[44px] px-2"
                 >
                   {desktopFiltersOpen ? (
                     <>
-                      <ChevronLeft className="h-4 w-4" />
-                      <span>Masquer les filtres</span>
+                      <ChevronLeft className="h-4 w-4 flex-shrink-0" />
+                      <span className="whitespace-nowrap">Masquer les filtres</span>
                     </>
                   ) : (
                     <>
-                      <ChevronRight className="h-4 w-4" />
-                      <span>Afficher les filtres</span>
+                      <ChevronRight className="h-4 w-4 flex-shrink-0" />
+                      <span className="whitespace-nowrap">Afficher les filtres</span>
                     </>
                   )}
                 </button>
                 
                 {/* Nombre de produits */}
-                <div className="text-foreground/80 text-sm font-light">
+                <div className="text-foreground/80 text-xs sm:text-sm font-light whitespace-nowrap">
                   {filteredPerfumes.length + filteredBrands.length} Produit{filteredPerfumes.length + filteredBrands.length > 1 ? 's' : ''}
                 </div>
               </div>
@@ -258,12 +258,12 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
 
         {/* Sidebar Desktop pour les filtres */}
         {!isMobile && (
-          <div className="flex">
+          <div className="hidden md:flex">
             {/* Sidebar gauche pour les filtres */}
             {desktopFiltersOpen && (
               <div className="w-[280px] flex-shrink-0 border-r border-border/20 bg-background">
                 <div className="sticky top-[120px] h-[calc(100vh-120px)] overflow-y-auto">
-                  <div className="p-6">
+                  <div className="p-4 lg:p-6">
                     {/* Barre de recherche pour les marques */}
                     <div className="mb-6">
                       <div className="relative">
@@ -402,8 +402,8 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
             )}
             
             {/* Contenu principal */}
-            <div className="flex-1">
-              <div className="container max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-2 md:py-16 lg:py-20">
+            <div className="flex-1 min-w-0">
+              <div className="container max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-12 lg:py-16 xl:py-20">
                 {showNoResults ? (
                   <div className="text-center py-12 md:py-24 px-4">
                     <p className="text-sm md:text-xl text-foreground/70 mb-6 md:mb-10 max-w-2xl mx-auto leading-relaxed font-light">
@@ -433,13 +433,13 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
                   <>
                     {/* Marques complètes */}
                     {filteredBrands.length > 0 && (
-                      <div className="mb-6 md:mb-24">
-                        <div className="mb-4 md:mb-10 text-center px-2">
-                          <h3 className="font-serif text-base md:text-2xl text-foreground/90 mb-2 md:mb-2 uppercase tracking-wider font-light">
+                      <div className="mb-4 sm:mb-6 md:mb-24">
+                        <div className="mb-3 sm:mb-4 md:mb-10 text-center px-2 sm:px-3">
+                          <h3 className="font-serif text-sm sm:text-base md:text-xl lg:text-2xl text-foreground/90 mb-2 sm:mb-3 md:mb-4 uppercase tracking-wider font-light">
                             Marques - Gamme complète
                           </h3>
                         </div>
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6 px-4 py-8 max-w-[1400px] mx-auto">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4 sm:gap-5 lg:gap-6 px-3 sm:px-4 lg:px-8 py-6 sm:py-8 max-w-[1400px] mx-auto">
                           {filteredBrands.map((brand) => (
                             <BrandCard 
                               key={brand.id} 
@@ -456,21 +456,21 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
                     {filteredPerfumes.length > 0 && (
                       <div>
                         {filteredBrands.length > 0 && (
-                          <div className="mb-6 md:mb-12 text-center px-2">
-                            <h3 className="font-serif text-base md:text-2xl text-foreground/90 mb-2 md:mb-4 uppercase tracking-wider font-light">
+                          <div className="mb-4 sm:mb-6 md:mb-12 text-center px-2 sm:px-3">
+                            <h3 className="font-serif text-sm sm:text-base md:text-xl lg:text-2xl text-foreground/90 mb-2 sm:mb-3 md:mb-4 uppercase tracking-wider font-light">
                               Parfums individuels
                             </h3>
                           </div>
                         )}
                         
                         {Object.entries(perfumesByBrand).map(([brand, brandPerfumes]) => (
-                          <div key={brand} className="mb-8 md:mb-16">
+                          <div key={brand} className="mb-6 sm:mb-8 md:mb-12 lg:mb-16">
                             {/* En-tête de marque */}
-                            <div className="px-4 md:px-6 flex items-center justify-center gap-3 md:gap-4 mb-4 md:mb-8">
+                            <div className="px-3 sm:px-4 md:px-6 flex items-center justify-center gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4 md:mb-8">
                               <div className="flex-1 h-px bg-border/30"></div>
                               <div className="text-center">
-                                <p className="text-[10px] md:text-xs text-muted-foreground/60 uppercase tracking-wider mb-1 font-light">Parfums</p>
-                                <h4 className="font-serif text-sm md:text-base text-foreground/80 font-light whitespace-nowrap">
+                                <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground/60 uppercase tracking-wider mb-0.5 sm:mb-1 font-light">Parfums</p>
+                                <h4 className="font-serif text-xs sm:text-sm md:text-base text-foreground/80 font-light whitespace-nowrap">
                                   {brand} ({brandPerfumes.length})
                                 </h4>
                               </div>
@@ -478,7 +478,7 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
                             </div>
 
                             {/* Grille de parfums */}
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-6 px-3 md:px-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-3 md:gap-4 lg:gap-6 px-2 sm:px-3 md:px-4">
                               {brandPerfumes.map((perfume) => (
                                 <PerfumeCard
                                   key={perfume.id}
@@ -500,27 +500,27 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
 
         {/* Barre Trier et Filtrer - Version Mobile */}
         {isMobile && (
-          <div className="sticky top-[56px] z-40 bg-background/98 backdrop-blur-md border-b border-border/20 shadow-sm">
+          <div className="md:hidden sticky top-[56px] z-40 bg-background/98 backdrop-blur-md border-b border-border/20 shadow-sm">
             <div className="flex items-center border-t border-border/20">
               {/* Bouton Trier */}
               <button
-                className="flex-1 flex items-center justify-center gap-2 py-4 px-4 border-r border-border/20 hover:bg-background/30 active:bg-background/50 transition-colors"
+                className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-3.5 sm:py-4 px-2 sm:px-4 border-r border-border/20 hover:bg-background/30 active:bg-background/50 transition-colors min-h-[48px]"
               >
-                <ArrowUpDown className="h-5 w-5 text-primary" />
-                <span className="text-foreground font-bold text-sm uppercase tracking-wider">Trier</span>
+                <ArrowUpDown className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <span className="text-foreground font-bold text-xs sm:text-sm uppercase tracking-wider">Trier</span>
               </button>
               
               {/* Bouton Filtrer */}
               <button
                 onClick={() => setMobileFiltersOpen(true)}
-                className={`flex-1 flex items-center justify-center gap-2 py-4 px-4 relative hover:bg-background/30 active:bg-background/50 transition-colors ${
+                className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-3.5 sm:py-4 px-2 sm:px-4 relative hover:bg-background/30 active:bg-background/50 transition-colors min-h-[48px] ${
                   activeFiltersCount > 0 ? "bg-primary/10" : ""
                 }`}
               >
-                <Filter className="h-5 w-5 text-primary" />
-                <span className="text-foreground font-bold text-sm uppercase tracking-wider">Filtrer</span>
+                <Filter className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <span className="text-foreground font-bold text-xs sm:text-sm uppercase tracking-wider">Filtrer</span>
                 {activeFiltersCount > 0 && (
-                  <span className="absolute top-2 right-2 h-4 w-4 rounded-full bg-primary text-background text-[9px] flex items-center justify-center font-medium">
+                  <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 h-4 w-4 rounded-full bg-primary text-background text-[9px] flex items-center justify-center font-medium">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -538,7 +538,7 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
               setBrandSearchTerm("");
             }
           }}>
-            <SheetContent side="right" className="w-full max-w-sm p-0 top-0 h-screen border-l border-border/20">
+            <SheetContent side="right" className="w-full max-w-[90vw] sm:max-w-sm p-0 top-0 h-screen border-l border-border/20">
               <div className="flex flex-col h-full bg-background">
                 {/* Page principale FILTRES */}
                 {filterPage === "main" && (
@@ -798,7 +798,7 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
 
         {/* Contenu principal Mobile */}
         {isMobile && (
-          <div className="container max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-2 md:py-16 lg:py-20">
+          <div className="md:hidden container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
             {showNoResults ? (
               <div className="text-center py-12 md:py-24 px-4">
                 <p className="text-sm md:text-xl text-foreground/70 mb-6 md:mb-10 max-w-2xl mx-auto leading-relaxed font-light">
@@ -827,13 +827,13 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
             ) : (
               <>
                 {/* Marques complètes - Mobile */}
-                {filteredBrands.length > 0 && (
-                  <div className="mb-6 md:mb-24">
-                    <div className="mb-4 md:mb-10 text-center px-2">
-                      <h3 className="font-serif text-base md:text-2xl text-foreground/90 mb-2 md:mb-2 uppercase tracking-wider font-light">
-                        Marques - Gamme complète
-                      </h3>
-                    </div>
+                    {filteredBrands.length > 0 && (
+                      <div className="mb-4 sm:mb-6 md:mb-24">
+                        <div className="mb-3 sm:mb-4 md:mb-10 text-center px-2 sm:px-3">
+                          <h3 className="font-serif text-sm sm:text-base md:text-xl lg:text-2xl text-foreground/90 mb-2 sm:mb-3 md:mb-4 uppercase tracking-wider font-light">
+                            Marques - Gamme complète
+                          </h3>
+                        </div>
                     <div className="relative w-full -mx-3">
                       <Carousel
                         opts={{
@@ -868,25 +868,25 @@ export const Catalogue = ({ onFilterButtonClick, onFiltersChange, onFiltersCount
                 {filteredPerfumes.length > 0 && (
                   <div>
                     {filteredBrands.length > 0 && (
-                      <div className="mb-6 md:mb-8 text-center px-2">
-                        <h3 className="font-serif text-lg md:text-xl text-foreground/90 mb-1 md:mb-2 uppercase tracking-wider font-light">
+                      <div className="mb-4 sm:mb-6 md:mb-8 text-center px-2 sm:px-3">
+                        <h3 className="font-serif text-sm sm:text-base md:text-lg lg:text-xl text-foreground/90 mb-1 sm:mb-2 uppercase tracking-wider font-light">
                           Parfums
                         </h3>
                       </div>
                     )}
                     {Object.entries(perfumesByBrand).map(([brand, brandPerfumes]) => (
-                      <div key={brand} className="mb-8 md:mb-16">
-                        <div className="px-4 md:px-6 flex items-center justify-center gap-3 md:gap-4 mb-4 md:mb-8">
+                      <div key={brand} className="mb-6 sm:mb-8 md:mb-12 lg:mb-16">
+                        <div className="px-3 sm:px-4 md:px-6 flex items-center justify-center gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4 md:mb-8">
                           <div className="flex-1 h-px bg-border/30"></div>
                           <div className="text-center">
-                            <p className="text-[10px] md:text-xs text-muted-foreground/60 uppercase tracking-wider mb-1 font-light">Parfums</p>
-                            <h4 className="font-serif text-sm md:text-base text-foreground/80 font-light whitespace-nowrap">
+                            <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground/60 uppercase tracking-wider mb-0.5 sm:mb-1 font-light">Parfums</p>
+                            <h4 className="font-serif text-xs sm:text-sm md:text-base text-foreground/80 font-light whitespace-nowrap">
                               {brand} ({brandPerfumes.length})
                             </h4>
                           </div>
                           <div className="flex-1 h-px bg-border/30"></div>
                         </div>
-                        <div className="grid grid-cols-2 gap-3 px-4">
+                        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 px-2 sm:px-3">
                           {brandPerfumes.map((perfume) => (
                             <PerfumeCard 
                               key={perfume.id}
