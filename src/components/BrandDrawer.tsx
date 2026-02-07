@@ -83,7 +83,7 @@ export const BrandDrawer = ({ brand, open, onOpenChange }: BrandDrawerProps) => 
   const brandPerfumes = useMemo(() => {
     if (!brand) return [];
     return perfumes.filter((p) => p.brand === brand.name);
-  }, [brand?.name]);
+  }, [brand]);
 
   if (!brand) return null;
 
@@ -306,4 +306,3 @@ export const BrandDrawer = ({ brand, open, onOpenChange }: BrandDrawerProps) => 
     </Drawer>
   );
 };
-

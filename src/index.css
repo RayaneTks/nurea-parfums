@@ -2,166 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 30 8% 8%;
-    --foreground: 45 50% 85%;
+    --background: 28 12% 7%;
+    --foreground: 42 42% 88%;
 
-    --card: 30 8% 12%;
-    --card-foreground: 45 50% 85%;
+    --card: 28 12% 11%;
+    --card-foreground: 42 42% 88%;
 
-    --popover: 30 8% 10%;
-    --popover-foreground: 45 50% 85%;
+    --popover: 28 12% 10%;
+    --popover-foreground: 42 42% 88%;
 
-    --primary: 45 65% 60%;
-    --primary-foreground: 30 8% 8%;
+    --primary: 42 68% 62%;
+    --primary-foreground: 24 13% 9%;
 
-    --secondary: 40 35% 88%;
-    --secondary-foreground: 30 8% 12%;
+    --secondary: 30 18% 82%;
+    --secondary-foreground: 24 13% 12%;
 
-    --muted: 30 8% 15%;
-    --muted-foreground: 45 30% 65%;
+    --muted: 29 12% 17%;
+    --muted-foreground: 42 22% 69%;
 
-    --accent: 45 65% 60%;
-    --accent-foreground: 30 8% 8%;
-
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 45 50% 95%;
-
-    --border: 45 30% 25%;
-    --input: 45 30% 20%;
-    --ring: 45 65% 60%;
-
-    --radius: 0.75rem;
-
-    --luxury-gold: 45 65% 60%;
-    --luxury-gold-light: 45 70% 70%;
-    --luxury-dark: 30 8% 8%;
-    --luxury-ivory: 40 35% 88%;
-
-    /* Premium spacing and effects */
-    --section-padding: 6rem;
-    --section-padding-mobile: 3rem;
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.2);
-    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.15);
-
-    --sidebar-background: 30 8% 10%;
-    --sidebar-foreground: 45 50% 85%;
-    --sidebar-primary: 45 65% 60%;
-    --sidebar-primary-foreground: 30 8% 8%;
-    --sidebar-accent: 30 8% 15%;
-    --sidebar-accent-foreground: 45 50% 85%;
-    --sidebar-border: 45 30% 25%;
-    --sidebar-ring: 45 65% 60%;
-  }
-
-  .dark {
-    --background: 30 8% 8%;
-    --foreground: 45 50% 85%;
-
-    --card: 30 8% 12%;
-    --card-foreground: 45 50% 85%;
-
-    --popover: 30 8% 10%;
-    --popover-foreground: 45 50% 85%;
-
-    --primary: 45 65% 60%;
-    --primary-foreground: 30 8% 8%;
-
-    --secondary: 40 35% 88%;
-    --secondary-foreground: 30 8% 12%;
-
-    --muted: 30 8% 15%;
-    --muted-foreground: 45 30% 65%;
-
-    --accent: 45 65% 60%;
-    --accent-foreground: 30 8% 8%;
+    --accent: 42 68% 62%;
+    --accent-foreground: 24 13% 9%;
 
     --destructive: 0 72% 51%;
-    --destructive-foreground: 45 50% 95%;
+    --destructive-foreground: 42 42% 88%;
 
-    --border: 45 30% 25%;
-    --input: 45 30% 20%;
-    --ring: 45 65% 60%;
+    --border: 42 26% 24%;
+    --input: 42 26% 22%;
+    --ring: 42 68% 62%;
 
-    --sidebar-background: 30 8% 10%;
-    --sidebar-foreground: 45 50% 85%;
-    --sidebar-primary: 45 65% 60%;
-    --sidebar-primary-foreground: 30 8% 8%;
-    --sidebar-accent: 30 8% 15%;
-    --sidebar-accent-foreground: 45 50% 85%;
-    --sidebar-border: 45 30% 25%;
-    --sidebar-ring: 45 65% 60%;
+    --radius: 0.8rem;
+
+    --sidebar-background: 28 12% 10%;
+    --sidebar-foreground: 42 42% 88%;
+    --sidebar-primary: 42 68% 62%;
+    --sidebar-primary-foreground: 24 13% 9%;
+    --sidebar-accent: 28 12% 16%;
+    --sidebar-accent-foreground: 42 42% 88%;
+    --sidebar-border: 42 26% 24%;
+    --sidebar-ring: 42 68% 62%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    padding-bottom: 0;
+    font-family: "Manrope", "Segoe UI", sans-serif;
+    background-image:
+      radial-gradient(circle at 0% 0%, hsl(var(--primary) / 0.12), transparent 28%),
+      radial-gradient(circle at 100% 100%, hsl(var(--primary) / 0.08), transparent 34%);
+    background-attachment: fixed;
+    text-rendering: geometricPrecision;
+    min-height: 100vh;
   }
 
-  @media (max-width: 768px) {
-    body {
-      padding-bottom: 0;
-    }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    letter-spacing: -0.01em;
   }
 
-  h1, h2, h3, h4 {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-weight: 500;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-  }
-
-  h1 {
-    font-weight: 500;
-  }
-
-  h2 {
-    font-weight: 500;
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
   }
 }
 
 @layer components {
-  .section-luxury {
-    padding: var(--section-padding-mobile) 1rem;
-  }
-
-  @media (min-width: 768px) {
-    .section-luxury {
-      padding: var(--section-padding) 2rem;
-    }
-  }
-
-  .filter-pill {
-    transition: var(--transition-smooth);
-    border: 1px solid hsl(var(--border));
-    background: hsl(var(--card));
-  }
-
-  .filter-pill:hover {
-    border-color: hsl(var(--primary));
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.1);
-  }
-
-  .filter-pill.active {
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-    border-color: hsl(var(--primary));
-    box-shadow: var(--shadow-glow);
-  }
-
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -169,54 +87,5 @@ All colors MUST be HSL.
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
-  }
-
-  /* Animations pour les images */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  /* Skeleton loading */
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-    100% {
-      background-position: 200% 0;
-    }
-  }
-
-  .card-skeleton {
-    background: linear-gradient(
-      90deg,
-      hsl(var(--primary) / 0.05) 25%,
-      hsl(var(--primary) / 0.1) 50%,
-      hsl(var(--primary) / 0.05) 75%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-  }
-
-  /* Scrollbar personnalisée pour les filtres */
-  .scrollbar-thin::-webkit-scrollbar {
-    height: 4px;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.3);
-    border-radius: 2px;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.5);
   }
 }

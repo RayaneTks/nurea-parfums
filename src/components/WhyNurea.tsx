@@ -1,61 +1,53 @@
-import { Check } from "lucide-react";
+import { MessageCircleHeart, ShieldCheck, Sparkles, Truck } from "lucide-react";
+
+const valueProps = [
+  {
+    title: "Selection qualitative",
+    description: "Chaque reference est selectionnee pour proposer des senteurs reconnues et des collections recherchees.",
+    icon: Sparkles,
+  },
+  {
+    title: "Conseil rapide",
+    description: "Une reponse claire et personnalisee selon vos preferences, via WhatsApp ou Snapchat.",
+    icon: MessageCircleHeart,
+  },
+  {
+    title: "Parcours transparent",
+    description: "Filtres lisibles, pages marque et categorie dediees pour trouver rapidement la bonne fragrance.",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Commande simplifiee",
+    description: "Validation de la disponibilite puis confirmation rapide avec les tailles et modalites.",
+    icon: Truck,
+  },
+];
 
 export const WhyNurea = () => {
-  const advantages = [
-    {
-      title: "Prix cassés jamais vus",
-      description: "Profitez de vos parfums préférés à prix cassé jamais vu pour très peu cher.",
-    },
-    {
-      title: "Conseils personnalisés",
-      description: "Notre équipe vous guide dans votre choix selon vos préférences et votre style.",
-    },
-    {
-      title: "Stocks actualisés",
-      description: "Nous mettons à jour régulièrement notre catalogue pour vous garantir la disponibilité.",
-    },
-    {
-      title: "Réponse rapide",
-      description: "Nous répondons à vos questions en moins de 2 heures, 7 jours sur 7.",
-    },
-  ];
-
   return (
-    <section className="py-16 md:py-24 bg-background/50 border-t border-border/10">
-      <div className="container max-w-6xl mx-auto px-4 md:px-6">
-        <div className="text-center mb-8 md:mb-12 lg:mb-16 px-4">
-          <h2 className="font-serif text-2xl md:text-4xl lg:text-5xl xl:text-6xl text-foreground mb-3 md:mb-4 tracking-tight font-light">
-            Pourquoi Nuréa ?
-          </h2>
-          <p className="text-sm md:text-base lg:text-lg text-muted-foreground/80 max-w-2xl mx-auto font-light">
-            Votre partenaire de confiance pour les parfums de luxe
-          </p>
+    <section className="border-t border-border/30 bg-background px-3 py-12 sm:px-4 sm:py-16">
+      <div className="mx-auto w-full max-w-7xl">
+        <div className="mb-6 space-y-2">
+          <p className="text-xs uppercase tracking-[0.16em] text-primary/85">Experience d'achat</p>
+          <h2 className="font-serif text-3xl text-foreground sm:text-4xl">Pourquoi choisir Nurea</h2>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4 md:gap-6">
-          {advantages.map((advantage, index) => (
-            <div
-              key={index}
-              className="p-4 md:p-6 lg:p-8 border border-border/30 bg-background/50 backdrop-blur-sm hover:border-primary/30 transition-all rounded-xl"
-            >
-              <div className="flex items-start gap-3 md:gap-4">
-                <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Check className="h-4 w-4 md:h-5 md:w-5 text-primary/90" />
+        <div className="grid gap-3 sm:grid-cols-2">
+          {valueProps.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <article key={item.title} className="rounded-2xl border border-border/35 bg-card/35 p-4 sm:p-5">
+                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/12 text-primary">
+                  <Icon className="h-5 w-5" />
                 </div>
-                <div>
-                  <h3 className="font-serif text-lg md:text-xl lg:text-2xl text-foreground mb-1.5 md:mb-2 font-light">
-                    {advantage.title}
-                  </h3>
-                  <p className="text-xs md:text-sm lg:text-base text-muted-foreground/70 leading-relaxed font-light">
-                    {advantage.description}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
+                <h3 className="font-serif text-xl text-foreground">{item.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{item.description}</p>
+              </article>
+            );
+          })}
         </div>
       </div>
     </section>
   );
 };
-

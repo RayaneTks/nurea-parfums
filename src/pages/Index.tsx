@@ -1,59 +1,75 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Header } from "@/components/Header";
-import { Hero } from "@/components/Hero";
 import { BestSellers } from "@/components/BestSellers";
-import { WhyNurea } from "@/components/WhyNurea";
-import { HowToOrder } from "@/components/HowToOrder";
 import { Catalogue } from "@/components/Catalogue";
 import { Contact } from "@/components/Contact";
 import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
+import { Hero } from "@/components/Hero";
+import { HowToOrder } from "@/components/HowToOrder";
+import { Seo } from "@/components/Seo";
+import { WhyNurea } from "@/components/WhyNurea";
+import { SITE_NAME, SITE_URL } from "@/lib/catalog";
 
 const Index = () => {
-  const filterMenuRef = useRef<(() => void) | null>(null);
-  const [hasActiveFilters, setHasActiveFilters] = useState(false);
-  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
   const location = useLocation();
 
-  const setOpenFilterMenu = useCallback((fn: () => void) => {
-    filterMenuRef.current = fn;
-  }, []);
-
-  const handleFilterClick = useCallback(() => {
-    if (filterMenuRef.current) {
-      filterMenuRef.current();
-    }
-  }, []);
-
-  // Scroller vers le catalogue si on arrive depuis une autre page avec le hash
   useEffect(() => {
-    // Vérifier s'il y a une position de scroll sauvegardée à restaurer
-    const savedScrollPosition = sessionStorage.getItem('catalogueScrollPosition');
-    
-    if (savedScrollPosition) {
-      // Restaurer la position de scroll sauvegardée
-      setTimeout(() => {
-        window.scrollTo({ top: parseInt(savedScrollPosition, 10), behavior: 'instant' });
-        sessionStorage.removeItem('catalogueScrollPosition');
-      }, 200);
-    } else if (location.hash === "#catalogue" || location.state?.scrollToCatalogue) {
-      // Sinon, scroller vers le catalogue si demandé
-      setTimeout(() => {
-        const catalogueSection = document.getElementById("catalogue");
-        catalogueSection?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+    const sectionId = (location.state as { scrollToSection?: string } | null)?.scrollToSection;
+
+    if (!sectionId) {
+      return;
     }
-  }, [location]);
+
+    const timer = window.setTimeout(() => {
+      const section = document.getElementById(sectionId);
+      section?.scrollIntoView({ behavior: "smooth" });
+    }, 120);
+
+    return () => window.clearTimeout(timer);
+  }, [location.state]);
 
   return (
     <div className="min-h-screen bg-background">
-      <Header onFilterClick={handleFilterClick} hasActiveFilters={hasActiveFilters} activeFiltersCount={activeFiltersCount} />
+      <Seo
+        title="Parfums de luxe, niche et grands classiques"
+        description="Nurea Parfums propose un catalogue premium de parfums avec navigation intuitive par marque et categorie, optimisee mobile-first."
+        canonicalPath="/"
+        keywords={[
+          "parfums luxe",
+          "parfums niche",
+          "catalogue parfums",
+          "parfumerie en ligne",
+          "Nurea Parfums",
+        ]}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: SITE_NAME,
+              url: SITE_URL,
+            },
+            {
+              "@type": "WebSite",
+              name: SITE_NAME,
+              url: SITE_URL,
+              potentialAction: {
+                "@type": "SearchAction",
+                target: `${SITE_URL}/catalogue?search={search_term_string}`,
+                "query-input": "required name=search_term_string",
+              },
+            },
+          ],
+        }}
+      />
+      <Header />
       <main>
         <Hero />
+        <Catalogue />
         <BestSellers />
         <WhyNurea />
         <HowToOrder />
-        <Catalogue onFilterButtonClick={setOpenFilterMenu} onFiltersChange={setHasActiveFilters} onFiltersCountChange={setActiveFiltersCount} />
         <Contact />
       </main>
       <Footer />

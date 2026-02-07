@@ -7,6 +7,10 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { ProductDetail } from "./pages/ProductDetail";
 import { BrandDetail } from "./pages/BrandDetail";
+import CataloguePage from "./pages/CataloguePage";
+import CategoriesPage from "./pages/CategoriesPage";
+import CategoryDetail from "./pages/CategoryDetail";
+import BrandsPage from "./pages/BrandsPage";
 
 const queryClient = new QueryClient();
 
@@ -18,9 +22,12 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/catalogue" element={<CataloguePage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/categories/:categorySlug" element={<CategoryDetail />} />
+          <Route path="/marques" element={<BrandsPage />} />
           <Route path="/parfums/:brand/:name" element={<ProductDetail />} />
           <Route path="/marques/:brandId" element={<BrandDetail />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

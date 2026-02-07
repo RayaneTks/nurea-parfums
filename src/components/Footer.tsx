@@ -1,27 +1,32 @@
+import { Link } from "react-router-dom";
 import logo from "@/assets/nurea-logo-transparent.png";
 
 export const Footer = () => {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="py-16 md:py-20 px-4 bg-background border-t border-border/30">
-      <div className="container max-w-7xl mx-auto">
-        <div className="flex flex-col items-center gap-8">
-          <img src={logo} alt="Nuréa Parfums" className="h-14 w-14 md:h-16 md:w-16 opacity-70" />
-          
-          <div className="text-center">
-            <p className="text-xs md:text-sm text-muted-foreground/60 mb-6 font-light">
-              Nuréa Parfums - Tous droits réservés
-            </p>
-            <div className="flex gap-6 justify-center text-xs text-muted-foreground/50 font-light">
-              <button className="hover:text-primary/80 transition-colors duration-300 uppercase tracking-wider">
-                Mentions légales
-              </button>
-              <span className="text-muted-foreground/30">·</span>
-              <button className="hover:text-primary/80 transition-colors duration-300 uppercase tracking-wider">
-                Conditions
-              </button>
-            </div>
-          </div>
+    <footer className="border-t border-border/30 bg-card/25 px-4 py-10">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <img src={logo} alt="Nurea Parfums" className="h-11 w-11 opacity-85" loading="lazy" decoding="async" />
+          <p className="mt-3 text-sm text-muted-foreground">Parfums de niche et grands classiques.</p>
+          <p className="mt-2 text-xs text-muted-foreground/80">© {currentYear} Nurea Parfums</p>
         </div>
+
+        <nav className="flex flex-wrap gap-4 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+          <Link to="/catalogue" className="transition-colors hover:text-primary">
+            Catalogue
+          </Link>
+          <Link to="/marques" className="transition-colors hover:text-primary">
+            Marques
+          </Link>
+          <Link to="/categories" className="transition-colors hover:text-primary">
+            Categories
+          </Link>
+          <Link to="/" className="transition-colors hover:text-primary">
+            Contact
+          </Link>
+        </nav>
       </div>
     </footer>
   );

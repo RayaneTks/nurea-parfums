@@ -1,95 +1,73 @@
-import { Button } from "./ui/button";
+import { Link } from "react-router-dom";
+import { ArrowRight, Sparkles } from "lucide-react";
 import logo from "@/assets/nurea-logo-transparent.png";
 import bgImage from "@/assets/bg.png";
-import { contactConfig } from "@/config/contact";
-import { SnapchatIcon } from "./icons/SnapchatIcon";
-import { WhatsAppIcon } from "./icons/WhatsAppIcon";
+import { Button } from "@/components/ui/button";
+import { categories, fullRangeBrands, perfumes } from "@/data/perfumes";
 
 export const Hero = () => {
-  const scrollToCatalogue = () => {
-    const catalogueSection = document.getElementById("catalogue");
-    catalogueSection?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const openSnapchat = () => {
-    window.open(contactConfig.snapchat.url, "_blank");
-  };
-
-  const openWhatsApp = () => {
-    window.open(contactConfig.whatsapp.url, "_blank");
-  };
+  const categoryCount = categories.filter((category) => category !== "Tous").length;
+  const perfumeCount = perfumes.length;
+  const brandCount = new Set(perfumes.map((perfume) => perfume.brand)).size + fullRangeBrands.length;
 
   return (
-    <section id="hero" className="min-h-screen flex items-center justify-center px-4 bg-background relative overflow-hidden pt-16 md:pt-20">
-      {/* Background image with opacity */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
-        style={{ backgroundImage: `url(${bgImage})` }}
+    <section
+      id="hero"
+      className="relative overflow-hidden border-b border-border/30 bg-gradient-to-b from-background via-background to-card/40 px-4 pb-16 pt-10 sm:pb-20 sm:pt-14"
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-15"
+        style={{
+          backgroundImage: `radial-gradient(circle at 10% 15%, hsl(var(--primary) / 0.38), transparent 35%), radial-gradient(circle at 92% 80%, hsl(var(--primary) / 0.2), transparent 34%), url(${bgImage})`,
+          backgroundSize: "auto, auto, cover",
+          backgroundPosition: "center",
+        }}
       />
-      {/* Overlay for better text readability */}
-      <div className="absolute inset-0 bg-background/40" />
-      
-      <div className="container max-w-6xl mx-auto text-center relative z-10 py-24 md:py-32">
-        <div className="mb-16 flex justify-center">
-          <img 
-            src={logo} 
-            alt="Nuréa Parfums" 
-            className="h-28 md:h-40 lg:h-48 w-auto object-contain opacity-90"
-          />
-        </div>
-        
-        <h1 className="font-serif text-4xl md:text-6xl lg:text-8xl xl:text-9xl mb-6 md:mb-8 text-foreground tracking-tight leading-[0.9] font-medium px-4">
-          Nuréa Parfums
-        </h1>
-        
-        <p className="text-base md:text-lg lg:text-xl xl:text-2xl text-muted-foreground/80 max-w-2xl mx-auto mb-12 md:mb-16 lg:mb-20 leading-relaxed font-light px-4">
-          Sélection de parfums de luxe et grands classiques, à portée de main.
-        </p>
 
-        {/* Badges de réassurance */}
-        <div className="flex flex-wrap gap-3 justify-center mb-12 max-w-3xl mx-auto">
-          <div className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-sm">
-            <span className="text-xs uppercase tracking-wider text-primary/90 font-light">Prix cassés</span>
-          </div>
-          <div className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-sm">
-            <span className="text-xs uppercase tracking-wider text-primary/90 font-light">Qualité premium</span>
-          </div>
-          <div className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-sm">
-            <span className="text-xs uppercase tracking-wider text-primary/90 font-light">Conseils personnalisés</span>
-          </div>
-        </div>
+      <div className="relative mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+        <div className="space-y-7">
+          <img src={logo} alt="Nurea Parfums" className="h-20 w-20 opacity-90 sm:h-24 sm:w-24" loading="eager" decoding="async" />
 
-        {/* CTA principal */}
-        <div className="flex flex-col items-center gap-3 md:gap-4 max-w-2xl mx-auto mb-8 px-4">
-          <Button
-            size="lg"
-            onClick={scrollToCatalogue}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] md:h-14 text-sm md:text-base px-8 md:px-12 rounded-none font-light uppercase tracking-wider shadow-lg w-full md:w-auto"
-          >
-            Voir le catalogue
-          </Button>
-          
-          {/* CTA secondaires */}
-          <div className="flex flex-row gap-3 justify-center w-full md:w-auto">
-            <Button
-              size="default"
-              variant="outline"
-              onClick={openSnapchat}
-              className="border-[#FFFC00]/50 text-foreground hover:bg-[#FFFC00]/10 hover:border-[#FFFC00] min-h-[44px] md:h-11 text-sm px-4 md:px-6 rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-2"
-            >
-              <SnapchatIcon className="h-4 w-4 opacity-90" />
-              Snapchat
+          <div className="space-y-4">
+            <p className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1 text-xs uppercase tracking-[0.2em] text-primary">
+              <Sparkles className="h-3.5 w-3.5" />
+              Collection Nurea
+            </p>
+            <h1 className="max-w-3xl font-serif text-4xl leading-[0.92] text-foreground sm:text-5xl lg:text-6xl">
+              Catalogue de parfums premium, simple a explorer sur mobile et desktop
+            </h1>
+            <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Retrouvez rapidement les parfums de niche et les grands classiques, filtrez par categorie, marque ou genre, puis
+              contactez-nous directement sur Snapchat ou WhatsApp.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button asChild className="h-12 px-7 text-sm uppercase tracking-[0.16em] sm:h-11">
+              <Link to="/catalogue">
+                Ouvrir le catalogue
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </Button>
-            <Button
-              size="default"
-              variant="outline"
-              onClick={openWhatsApp}
-              className="border-[#25D366]/50 text-foreground hover:bg-[#25D366]/10 hover:border-[#25D366] min-h-[44px] md:h-11 text-sm px-4 md:px-6 rounded-none font-light uppercase tracking-wider flex items-center justify-center gap-2"
-            >
-              <WhatsAppIcon className="h-4 w-4 text-[#25D366]" />
-              WhatsApp
+            <Button asChild variant="outline" className="h-12 border-primary/40 bg-card/20 px-7 text-sm uppercase tracking-[0.16em] sm:h-11">
+              <Link to="/categories">Explorer les categories</Link>
             </Button>
           </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 rounded-2xl border border-border/40 bg-card/35 p-4 backdrop-blur-xl sm:p-5">
+          <article className="rounded-xl border border-border/30 bg-background/50 p-3 text-center sm:p-4">
+            <p className="text-2xl font-semibold text-primary sm:text-3xl">{perfumeCount}+</p>
+            <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">Parfums</p>
+          </article>
+          <article className="rounded-xl border border-border/30 bg-background/50 p-3 text-center sm:p-4">
+            <p className="text-2xl font-semibold text-primary sm:text-3xl">{brandCount}+</p>
+            <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">Marques</p>
+          </article>
+          <article className="rounded-xl border border-border/30 bg-background/50 p-3 text-center sm:p-4">
+            <p className="text-2xl font-semibold text-primary sm:text-3xl">{categoryCount}</p>
+            <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">Categories</p>
+          </article>
         </div>
       </div>
     </section>
