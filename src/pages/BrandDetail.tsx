@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { contactConfig } from "@/config/contact";
 import { perfumes } from "@/data/perfumes";
 import { buildProductPath, resolveBrandFromParam, SITE_URL } from "@/lib/catalog";
+import { buildSnapchatUrl, buildWhatsappUrl } from "@/lib/contact";
 import { getBrandImage, getPerfumeImage } from "@/lib/perfume-media";
 
 export const BrandDetail = () => {
@@ -33,7 +34,9 @@ export const BrandDetail = () => {
     );
   }
 
-  const contactMessage = encodeURIComponent(`Bonjour, je souhaite des informations sur ${resolvedBrand.name}.`);
+  const contactMessage = `Bonjour, je souhaite des informations sur ${resolvedBrand.name}.`;
+  const snapchatUrl = buildSnapchatUrl(contactConfig.snapchat.url);
+  const whatsappUrl = buildWhatsappUrl(contactConfig.whatsapp.url, contactMessage);
   const canonicalPath = `/marques/${brandId}`;
 
   return (
@@ -84,16 +87,28 @@ export const BrandDetail = () => {
               </p>
 
               <div className="mt-6 grid gap-2 sm:grid-cols-2">
-                <Button asChild className="h-11 bg-[#FFFC00] text-black hover:bg-[#FFFC00]/90">
-                  <a href={`${contactConfig.snapchat.url}?text=${contactMessage}`} target="_blank" rel="noreferrer">
-                    Contacter via Snapchat
-                  </a>
-                </Button>
-                <Button asChild className="h-11 bg-[#25D366] text-white hover:bg-[#25D366]/90">
-                  <a href={`${contactConfig.whatsapp.url}?text=${contactMessage}`} target="_blank" rel="noreferrer">
-                    Contacter via WhatsApp
-                  </a>
-                </Button>
+                {snapchatUrl ? (
+                  <Button asChild className="h-11 bg-[#FFFC00] text-black hover:bg-[#FFFC00]/90">
+                    <a href={snapchatUrl} target="_blank" rel="noreferrer">
+                      Contacter via Snapchat
+                    </a>
+                  </Button>
+                ) : (
+                  <Button disabled className="h-11 bg-[#FFFC00] text-black">
+                    Snapchat indisponible
+                  </Button>
+                )}
+                {whatsappUrl ? (
+                  <Button asChild className="h-11 bg-[#25D366] text-white hover:bg-[#25D366]/90">
+                    <a href={whatsappUrl} target="_blank" rel="noreferrer">
+                      Contacter via WhatsApp
+                    </a>
+                  </Button>
+                ) : (
+                  <Button disabled className="h-11 bg-[#25D366] text-white">
+                    WhatsApp indisponible
+                  </Button>
+                )}
               </div>
             </div>
           </section>

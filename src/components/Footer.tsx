@@ -1,8 +1,20 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "@/assets/nurea-logo-transparent.png";
 
 export const Footer = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const currentYear = new Date().getFullYear();
+
+  const goToContact = () => {
+    if (location.pathname === "/") {
+      const section = document.getElementById("contact");
+      section?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
+    navigate("/", { state: { scrollToSection: "contact" } });
+  };
 
   return (
     <footer className="border-t border-border/30 bg-card/25 px-4 py-10">
@@ -23,9 +35,9 @@ export const Footer = () => {
           <Link to="/categories" className="transition-colors hover:text-primary">
             Categories
           </Link>
-          <Link to="/" className="transition-colors hover:text-primary">
+          <button type="button" onClick={goToContact} className="transition-colors hover:text-primary">
             Contact
-          </Link>
+          </button>
         </nav>
       </div>
     </footer>

@@ -40,6 +40,7 @@ export const Header = (_props: HeaderProps) => {
     const query = searchTerm.trim();
     if (!query) {
       navigate("/catalogue");
+      setMobileOpen(false);
       return;
     }
 
@@ -109,6 +110,16 @@ export const Header = (_props: HeaderProps) => {
               placeholder="Rechercher un parfum ou une marque"
               className="h-10 w-full rounded-md border border-border/60 bg-card/40 pl-10 pr-3 text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-primary focus:outline-none"
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                aria-label="Vider la recherche"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
           <Button type="submit" size="sm" className="h-10 px-4">
             Rechercher

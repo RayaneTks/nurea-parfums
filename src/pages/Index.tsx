@@ -17,17 +17,18 @@ const Index = () => {
   useEffect(() => {
     const sectionId = (location.state as { scrollToSection?: string } | null)?.scrollToSection;
 
-    if (!sectionId) {
-      return;
-    }
+    const hashSection = location.hash?.replace("#", "");
+    const targetSectionId = sectionId || hashSection;
+
+    if (!targetSectionId) return;
 
     const timer = window.setTimeout(() => {
-      const section = document.getElementById(sectionId);
+      const section = document.getElementById(targetSectionId);
       section?.scrollIntoView({ behavior: "smooth" });
     }, 120);
 
     return () => window.clearTimeout(timer);
-  }, [location.state]);
+  }, [location.state, location.hash]);
 
   return (
     <div className="min-h-screen bg-background">

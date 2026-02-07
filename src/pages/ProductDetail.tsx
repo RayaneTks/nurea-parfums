@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { contactConfig } from "@/config/contact";
 import { defaultSizes, perfumes } from "@/data/perfumes";
 import { buildBrandPath, buildProductPath, normalizeText, SITE_URL } from "@/lib/catalog";
+import { buildSnapchatUrl, buildWhatsappUrl } from "@/lib/contact";
 import { getPerfumeImage } from "@/lib/perfume-media";
 
 export const ProductDetail = () => {
@@ -51,9 +52,11 @@ export const ProductDetail = () => {
   const sizes = perfume.availableSizes || defaultSizes;
   const canonicalPath = buildProductPath(perfume);
 
-  const contactMessage = encodeURIComponent(
-    `Bonjour, je souhaite des infos pour ${perfume.name} de ${perfume.brand}${selectedSize ? ` en ${selectedSize} ml` : ""}.`
-  );
+  const contactMessage = `Bonjour, je souhaite des infos pour ${perfume.name} de ${perfume.brand}${
+    selectedSize ? ` en ${selectedSize} ml` : ""
+  }.`;
+  const snapchatUrl = buildSnapchatUrl(contactConfig.snapchat.url);
+  const whatsappUrl = buildWhatsappUrl(contactConfig.whatsapp.url, contactMessage);
 
   const shareProduct = async () => {
     const url = `${SITE_URL}${canonicalPath}`;
@@ -101,7 +104,11 @@ export const ProductDetail = () => {
       <main className="px-3 py-8 sm:px-4 sm:py-12">
         <div className="mx-auto w-full max-w-7xl space-y-8">
           <div className="flex items-center justify-between">
-            <Button variant="ghost" className="h-10 px-2 text-sm" onClick={() => navigate(-1)}>
+            <Button
+              variant="ghost"
+              className="h-10 px-2 text-sm"
+              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/catalogue"))}
+            >
               <ArrowLeft className="mr-1 h-4 w-4" />
               Retour
             </Button>
@@ -165,16 +172,28 @@ export const ProductDetail = () => {
               </div>
 
               <div className="mt-6 grid gap-2 sm:grid-cols-2">
-                <Button asChild className="h-11 bg-[#FFFC00] text-black hover:bg-[#FFFC00]/90">
-                  <a href={`${contactConfig.snapchat.url}?text=${contactMessage}`} target="_blank" rel="noreferrer">
-                    Contacter Snapchat
-                  </a>
-                </Button>
-                <Button asChild className="h-11 bg-[#25D366] text-white hover:bg-[#25D366]/90">
-                  <a href={`${contactConfig.whatsapp.url}?text=${contactMessage}`} target="_blank" rel="noreferrer">
-                    Contacter WhatsApp
-                  </a>
-                </Button>
+                {snapchatUrl ? (
+                  <Button asChild className="h-11 bg-[#FFFC00] text-black hover:bg-[#FFFC00]/90">
+                    <a href={snapchatUrl} target="_blank" rel="noreferrer">
+                      Contacter Snapchat
+                    </a>
+                  </Button>
+                ) : (
+                  <Button disabled className="h-11 bg-[#FFFC00] text-black">
+                    Snapchat indisponible
+                  </Button>
+                )}
+                {whatsappUrl ? (
+                  <Button asChild className="h-11 bg-[#25D366] text-white hover:bg-[#25D366]/90">
+                    <a href={whatsappUrl} target="_blank" rel="noreferrer">
+                      Contacter WhatsApp
+                    </a>
+                  </Button>
+                ) : (
+                  <Button disabled className="h-11 bg-[#25D366] text-white">
+                    WhatsApp indisponible
+                  </Button>
+                )}
               </div>
 
               <div className="mt-5 border-t border-border/35 pt-4">
