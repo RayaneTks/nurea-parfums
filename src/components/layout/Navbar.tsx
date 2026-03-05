@@ -29,6 +29,18 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenFilters }) => {
 
   const closeMenu = () => setMenuOpen(false);
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (menuOpen) {
+      document.documentElement.style.overflow = "hidden";
+    } else {
+      document.documentElement.style.overflow = "";
+    }
+    return () => {
+      document.documentElement.style.overflow = "";
+    };
+  }, [menuOpen]);
+
   return (
     <nav
       className={`fixed top-0 w-full z-40 transition-all duration-500 ${
@@ -115,18 +127,18 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenFilters }) => {
         </div>
       </div>
 
-      {/* Menu burger mobile (panneau gauche) */}
+      {/* Menu burger mobile (panneau gauche) - z-[100] au-dessus de la nav pour éviter les conflits en scroll */}
       <>
         <button
           type="button"
           onClick={closeMenu}
-          className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 md:hidden ${
+          className={`fixed inset-0 z-[100] bg-black/50 transition-opacity duration-300 md:hidden ${
             menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           }`}
           aria-label="Fermer le menu"
         />
         <div
-          className={`fixed left-0 top-0 z-50 flex h-full w-[min(280px,85vw)] flex-col gap-8 border-r border-[#111111]/10 bg-[#FDFCF8] px-6 py-8 shadow-xl transition-transform duration-300 dark:border-[#FDFCF8]/10 dark:bg-[#0A0A0A] md:hidden ${
+          className={`fixed left-0 top-0 z-[110] flex h-full w-[min(280px,85vw)] flex-col gap-8 border-r border-[#111111]/10 bg-[#FDFCF8] px-6 py-8 shadow-xl transition-transform duration-300 ease-out dark:border-[#FDFCF8]/10 dark:bg-[#0A0A0A] md:hidden ${
             menuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
           role="dialog"
@@ -197,7 +209,6 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenFilters }) => {
               </button>
             </div>
           </div>
-        </div>
       </>
     </nav>
   );
