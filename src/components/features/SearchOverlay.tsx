@@ -15,6 +15,7 @@ interface SearchOverlayProps {
   selectedCategory: Category;
   setSelectedCategory: (value: Category) => void;
   onResetFilters: () => void;
+  resultsCount: number;
 }
 
 export const SearchOverlay: FC<SearchOverlayProps> = ({
@@ -27,7 +28,13 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
   selectedCategory,
   setSelectedCategory,
   onResetFilters,
+  resultsCount,
 }) => {
+  const hasActiveFilters =
+    searchTerm.trim() !== "" ||
+    selectedBrand !== "Toutes" ||
+    selectedCategory !== "Tout voir";
+
   return (
     <div
       className={`fixed inset-0 z-50 flex flex-col bg-[#FDFCF8] transition-transform duration-700 ease-[cubic-bezier(0.85,0,0.15,1)] dark:bg-[#0A0A0A] ${
@@ -72,10 +79,8 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
               {allBrands.map((brand) => (
                 <li key={brand}>
                   <button
-                    onClick={() => {
-                      setSelectedBrand(brand);
-                      onClose();
-                    }}
+                    onClick={() => setSelectedBrand(brand)}
+                    type="button"
                     className={`text-lg font-serif transition-colors md:text-xl ${
                       selectedBrand === brand
                         ? "italic text-[#111111] dark:text-[#FDFCF8]"
@@ -96,10 +101,8 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
               {categories.map((category) => (
                 <li key={category}>
                   <button
-                    onClick={() => {
-                      setSelectedCategory(category);
-                      onClose();
-                    }}
+                    onClick={() => setSelectedCategory(category)}
+                    type="button"
                     className={`text-lg font-serif transition-colors md:text-xl ${
                       selectedCategory === category
                         ? "italic text-[#111111] dark:text-[#FDFCF8]"
@@ -115,13 +118,30 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
         </div>
       </div>
 
-      <div className="flex justify-center border-t border-[#111111]/10 p-6 md:p-12 dark:border-[#FDFCF8]/10">
-        <button
-          onClick={onResetFilters}
-          className="text-xs uppercase tracking-[0.2em] text-[#888888] underline underline-offset-8 transition-colors hover:text-[#111111] dark:text-[#A0A0A0] dark:hover:text-[#FDFCF8]"
-        >
-          Réinitialiser les critères
-        </button>
+      <div className="flex flex-col gap-4 border-t border-[#111111]/10 p-6 md:flex-row md:items-center md:justify-between md:p-12 dark:border-[#FDFCF8]/10">
+        <div className="flex flex-wrap items-center gap-3">
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={onResetFilters}
+              className="rounded-full border border-[#111111]/30 bg-transparent px-4 py-2 text-xs uppercase tracking-widest text-[#888888] transition-colors hover:border-[#111111] hover:text-[#111111] dark:border-[#FDFCF8]/30 dark:text-[#A0A0A0] dark:hover:border-[#FDFCF8] dark:hover:text-[#FDFCF8]"
+            >
+              Tout effacer
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-[#888888] dark:text-[#A0A0A0]">
+            {resultsCount} résultat{resultsCount !== 1 ? "s" : ""}
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full bg-[#111111] px-8 py-3 text-xs font-medium uppercase tracking-widest text-[#FDFCF8] transition-colors hover:bg-[#333333] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#E5E4E0]"
+          >
+            Voir le catalogue
+          </button>
+        </div>
       </div>
     </div>
   );

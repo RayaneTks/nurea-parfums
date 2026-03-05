@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/features/Hero";
 import { PerfumeCard } from "@/components/features/PerfumeCard";
@@ -58,6 +58,11 @@ export const HomePageClient = () => {
     setSelectedBrand("Toutes");
   };
 
+  const hasActiveFilters =
+    searchTerm.trim() !== "" ||
+    selectedBrand !== "Toutes" ||
+    selectedCategory !== "Tout voir";
+
   return (
     <div className="flex min-h-screen flex-col bg-[#FDFCF8] text-[#111111] transition-colors duration-700 dark:bg-[#0A0A0A] dark:text-[#FDFCF8] selection:bg-[#111111] selection:text-[#FDFCF8] dark:selection:bg-[#FDFCF8] dark:selection:text-[#0A0A0A]">
       <Navbar scrolled={scrolled} onOpenFilters={() => setIsFilterOpen(true)} />
@@ -99,9 +104,67 @@ export const HomePageClient = () => {
             onClick={() => setIsFilterOpen(true)}
             className="flex shrink-0 items-center gap-3 text-xs uppercase tracking-widest text-[#111111] transition-colors hover:text-[#8C7A6B] dark:text-[#FDFCF8] dark:hover:text-[#C29B62]"
           >
-            <SlidersHorizontal size={16} strokeWidth={1.5} /> Affiner
+            <SlidersHorizontal size={16} strokeWidth={1.5} />
+            Affiner
+            {hasActiveFilters && (
+              <span className="flex h-2 w-2 rounded-full bg-[#8C7A6B] dark:bg-[#C29B62]" aria-hidden />
+            )}
           </button>
         </div>
+
+        {hasActiveFilters && (
+          <div className="mb-8 flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-xs uppercase tracking-widest text-[#888888] dark:text-[#A0A0A0]">
+              Filtres actifs :
+            </span>
+            {searchTerm.trim() !== "" && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#111111]/20 bg-[#F5F4F0] px-3 py-1.5 text-xs dark:border-[#FDFCF8]/20 dark:bg-[#141414]">
+                Recherche « {searchTerm.trim()} »
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  className="rounded-full p-0.5 transition-colors hover:bg-[#111111]/10 dark:hover:bg-[#FDFCF8]/10"
+                  aria-label="Retirer la recherche"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+            {selectedBrand !== "Toutes" && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#111111]/20 bg-[#F5F4F0] px-3 py-1.5 text-xs dark:border-[#FDFCF8]/20 dark:bg-[#141414]">
+                Marque {selectedBrand}
+                <button
+                  type="button"
+                  onClick={() => setSelectedBrand("Toutes")}
+                  className="rounded-full p-0.5 transition-colors hover:bg-[#111111]/10 dark:hover:bg-[#FDFCF8]/10"
+                  aria-label="Retirer le filtre marque"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+            {selectedCategory !== "Tout voir" && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#111111]/20 bg-[#F5F4F0] px-3 py-1.5 text-xs dark:border-[#FDFCF8]/20 dark:bg-[#141414]">
+                {selectedCategory}
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory("Tout voir")}
+                  className="rounded-full p-0.5 transition-colors hover:bg-[#111111]/10 dark:hover:bg-[#FDFCF8]/10"
+                  aria-label="Retirer le filtre catégorie"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="ml-1 text-xs uppercase tracking-widest text-[#888888] underline underline-offset-2 transition-colors hover:text-[#111111] dark:text-[#A0A0A0] dark:hover:text-[#FDFCF8]"
+            >
+              Tout effacer
+            </button>
+          </div>
+        )}
 
         {filteredPerfumes.length === 0 ? (
           <div className="py-32 text-center font-serif text-2xl text-[#888888] dark:text-[#A0A0A0]">
@@ -131,6 +194,7 @@ export const HomePageClient = () => {
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
         onResetFilters={handleResetFilters}
+        resultsCount={filteredPerfumes.length}
       />
 
       <Footer />
