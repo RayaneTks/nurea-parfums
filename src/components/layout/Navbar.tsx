@@ -116,19 +116,22 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenFilters }) => {
       </div>
 
       {/* Menu burger mobile (panneau gauche) */}
-      {menuOpen && (
-        <>
-          <button
-            type="button"
-            onClick={closeMenu}
-            className="fixed inset-0 z-40 bg-black/50 md:hidden"
-            aria-label="Fermer le menu"
-          />
-          <div
-            className="fixed left-0 top-0 z-50 flex h-full w-[min(280px,85vw)] flex-col gap-8 border-r border-[#111111]/10 bg-[#FDFCF8] px-6 py-8 shadow-xl transition-transform dark:border-[#FDFCF8]/10 dark:bg-[#0A0A0A] md:hidden"
-            role="dialog"
-            aria-label="Menu principal"
-          >
+      <>
+        <button
+          type="button"
+          onClick={closeMenu}
+          className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 md:hidden ${
+            menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
+          aria-label="Fermer le menu"
+        />
+        <div
+          className={`fixed left-0 top-0 z-50 flex h-full w-[min(280px,85vw)] flex-col gap-8 border-r border-[#111111]/10 bg-[#FDFCF8] px-6 py-8 shadow-xl transition-transform duration-300 dark:border-[#FDFCF8]/10 dark:bg-[#0A0A0A] md:hidden ${
+            menuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+          role="dialog"
+          aria-label="Menu principal"
+        >
             <div className="flex items-center justify-between">
               <span className="font-serif text-lg font-semibold tracking-widest uppercase text-[#111111] dark:text-[#FDFCF8]">
                 Menu
@@ -166,7 +169,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenFilters }) => {
                 Contact Privé
               </Link>
             </nav>
-            <div className="mt-auto pt-6 border-t border-[#111111]/10 dark:border-[#FDFCF8]/10">
+            <div className="mt-auto border-t border-[#111111]/10 pt-6 dark:border-[#FDFCF8]/10">
               <p className="mb-3 text-xs uppercase tracking-widest text-[#888888] dark:text-[#A0A0A0]">
                 Thème
               </p>
@@ -194,8 +197,8 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenFilters }) => {
               </button>
             </div>
           </div>
-        </>
-      )}
+        </div>
+      </>
     </nav>
   );
 };
