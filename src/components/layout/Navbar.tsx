@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
+import { createPortal } from "react-dom";
 import { Menu, Moon, Search, Sun, X } from "lucide-react";
 import { useEffect, useState, type FC } from "react";
 
@@ -127,89 +128,95 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenFilters }) => {
         </div>
       </div>
 
-      {/* Menu burger mobile (panneau gauche) - z-[100] au-dessus de la nav pour éviter les conflits en scroll */}
-      <>
-        <button
-          type="button"
-          onClick={closeMenu}
-          className={`fixed inset-0 z-[100] bg-black/50 transition-opacity duration-300 md:hidden ${
-            menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-          }`}
-          aria-label="Fermer le menu"
-        />
-        <div
-          className={`fixed left-0 top-0 z-[110] flex h-full w-[min(280px,85vw)] flex-col gap-8 border-r border-[#111111]/10 bg-[#FDFCF8] px-6 py-8 shadow-xl transition-transform duration-300 ease-out dark:border-[#FDFCF8]/10 dark:bg-[#0A0A0A] md:hidden ${
-            menuOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-          role="dialog"
-          aria-label="Menu principal"
-        >
-            <div className="flex items-center justify-between">
-              <span className="font-serif text-lg font-semibold tracking-widest uppercase text-[#111111] dark:text-[#FDFCF8]">
-                Menu
-              </span>
-              <button
-                type="button"
-                onClick={closeMenu}
-                className="rounded-full p-2 transition-colors hover:bg-[#111111]/10 dark:hover:bg-[#FDFCF8]/10"
-                aria-label="Fermer le menu"
-              >
-                <X size={20} className="text-[#111111] dark:text-[#FDFCF8]" />
-              </button>
-            </div>
-            <nav className="flex flex-col gap-6">
-              <Link
-                href="/"
-                onClick={closeMenu}
-                className={`text-sm uppercase tracking-[0.2em] ${
-                  isHome
-                    ? "font-medium text-[#8C7A6B] dark:text-[#C29B62]"
-                    : "text-[#111111] dark:text-[#FDFCF8]"
-                }`}
-              >
-                La Collection
-              </Link>
-              <Link
-                href="/contact"
-                onClick={closeMenu}
-                className={`text-sm uppercase tracking-[0.2em] ${
-                  isContact
-                    ? "font-medium text-[#8C7A6B] dark:text-[#C29B62]"
-                    : "text-[#111111] dark:text-[#FDFCF8]"
-                }`}
-              >
-                Contact Privé
-              </Link>
-            </nav>
-            <div className="mt-auto border-t border-[#111111]/10 pt-6 dark:border-[#FDFCF8]/10">
-              <p className="mb-3 text-xs uppercase tracking-widest text-[#888888] dark:text-[#A0A0A0]">
-                Thème
-              </p>
-              <button
-                type="button"
-                onClick={handleToggleTheme}
-                className="flex h-10 w-full items-center gap-3 rounded-lg border border-[#111111]/20 px-4 transition-colors hover:bg-[#111111]/5 dark:border-[#FDFCF8]/20 dark:hover:bg-[#FDFCF8]/5"
-                aria-label="Basculer le thème"
-              >
-                {mounted ? (
-                  isDark ? (
-                    <>
-                      <Sun size={18} className="text-[#111111] dark:text-[#FDFCF8]" />
-                      <span className="text-sm text-[#111111] dark:text-[#FDFCF8]">Mode clair</span>
-                    </>
+      {/* Menu burger mobile : rendu en portail dans body pour toujours couvrir le viewport (catalogue, scroll, etc.) */}
+      {mounted &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <>
+            <button
+              type="button"
+              onClick={closeMenu}
+              className={`fixed inset-0 z-[9998] bg-black/50 transition-opacity duration-300 md:hidden ${
+                menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+              }`}
+              aria-label="Fermer le menu"
+            />
+            <div
+              className={`fixed left-0 top-0 z-[9999] flex h-full w-[min(280px,85vw)] flex-col gap-8 border-r border-[#111111]/10 bg-[#FDFCF8] px-6 py-8 shadow-xl transition-transform duration-300 ease-out dark:border-[#FDFCF8]/10 dark:bg-[#0A0A0A] md:hidden ${
+                menuOpen ? "translate-x-0" : "-translate-x-full"
+              }`}
+              role="dialog"
+              aria-label="Menu principal"
+              aria-hidden={!menuOpen}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-serif text-lg font-semibold tracking-widest uppercase text-[#111111] dark:text-[#FDFCF8]">
+                  Menu
+                </span>
+                <button
+                  type="button"
+                  onClick={closeMenu}
+                  className="rounded-full p-2 transition-colors hover:bg-[#111111]/10 dark:hover:bg-[#FDFCF8]/10"
+                  aria-label="Fermer le menu"
+                >
+                  <X size={20} className="text-[#111111] dark:text-[#FDFCF8]" />
+                </button>
+              </div>
+              <nav className="flex flex-col gap-6">
+                <Link
+                  href="/"
+                  onClick={closeMenu}
+                  className={`text-sm uppercase tracking-[0.2em] ${
+                    isHome
+                      ? "font-medium text-[#8C7A6B] dark:text-[#C29B62]"
+                      : "text-[#111111] dark:text-[#FDFCF8]"
+                  }`}
+                >
+                  La Collection
+                </Link>
+                <Link
+                  href="/contact"
+                  onClick={closeMenu}
+                  className={`text-sm uppercase tracking-[0.2em] ${
+                    isContact
+                      ? "font-medium text-[#8C7A6B] dark:text-[#C29B62]"
+                      : "text-[#111111] dark:text-[#FDFCF8]"
+                  }`}
+                >
+                  Contact Privé
+                </Link>
+              </nav>
+              <div className="mt-auto border-t border-[#111111]/10 pt-6 dark:border-[#FDFCF8]/10">
+                <p className="mb-3 text-xs uppercase tracking-widest text-[#888888] dark:text-[#A0A0A0]">
+                  Thème
+                </p>
+                <button
+                  type="button"
+                  onClick={handleToggleTheme}
+                  className="flex h-10 w-full items-center gap-3 rounded-lg border border-[#111111]/20 px-4 transition-colors hover:bg-[#111111]/5 dark:border-[#FDFCF8]/20 dark:hover:bg-[#FDFCF8]/5"
+                  aria-label="Basculer le thème"
+                >
+                  {mounted ? (
+                    isDark ? (
+                      <>
+                        <Sun size={18} className="text-[#111111] dark:text-[#FDFCF8]" />
+                        <span className="text-sm text-[#111111] dark:text-[#FDFCF8]">Mode clair</span>
+                      </>
+                    ) : (
+                      <>
+                        <Moon size={18} className="text-[#111111] dark:text-[#FDFCF8]" />
+                        <span className="text-sm text-[#111111] dark:text-[#FDFCF8]">Mode sombre</span>
+                      </>
+                    )
                   ) : (
-                    <>
-                      <Moon size={18} className="text-[#111111] dark:text-[#FDFCF8]" />
-                      <span className="text-sm text-[#111111] dark:text-[#FDFCF8]">Mode sombre</span>
-                    </>
-                  )
-                ) : (
-                  <span className="h-[18px] w-[18px]" aria-hidden />
-                )}
-              </button>
+                    <span className="h-[18px] w-[18px]" aria-hidden />
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
-      </>
+          </>,
+          document.body
+        )}
     </nav>
   );
 };
