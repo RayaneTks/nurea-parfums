@@ -1,0 +1,3 @@
+module.exports=[38380,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(44720);a.n(d("[project]/Desktop/nurea-parfums/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},91177,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(44720);a.n(d("[project]/Desktop/nurea-parfums/node_modules/next/dist/client/components/builtin/global-error.js"))},67932,a=>{"use strict";a.i(38380);var b=a.i(91177);a.n(b)}];
+
+//# sourceMappingURL=f8ac5_next_dist_client_components_builtin_global-error_a138da40.js.map

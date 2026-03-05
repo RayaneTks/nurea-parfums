@@ -1,0 +1,5 @@
+1:"$Sreact.fragment"
+2:I[71463,["/_next/static/chunks/34b6e0c1477b720c.js","/_next/static/chunks/d631f77c86de4ade.js"],"ViewportBoundary"]
+3:I[71463,["/_next/static/chunks/34b6e0c1477b720c.js","/_next/static/chunks/d631f77c86de4ade.js"],"MetadataBoundary"]
+4:"$Sreact.suspense"
+0:{"buildId":"7RcLDTxCyraLY0RMXOfZS","rsc":["$","$1","h",{"children":[null,["$","$L2",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","div",null,{"hidden":true,"children":["$","$L3",null,{"children":["$","$4",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Contact | Nurea Parfums"}],["$","meta","1",{"name":"description","content":"Contactez Nurea Parfums par e-mail, WhatsApp ou Snapchat pour toute question, recommandation ou disponibilité."}],["$","meta","2",{"name":"robots","content":"index, follow"}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"loading":null,"isPartial":false}

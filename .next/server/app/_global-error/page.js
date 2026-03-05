@@ -1,0 +1,10 @@
+var R=require("../../chunks/ssr/[turbopack]_runtime.js")("server/app/_global-error/page.js")
+R.c("server/chunks/ssr/f8ac5_next_fd616662._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__8ac83308._.js")
+R.c("server/chunks/ssr/f8ac5_next_dist_4698337d._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__60487abc._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__6f4397be._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__25c11cec._.js")
+R.c("server/chunks/ssr/3d860_nurea-parfums__next-internal_server_app__global-error_page_actions_8147a5fb.js")
+R.m(26983)
+module.exports=R.m(26983).exports
