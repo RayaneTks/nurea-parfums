@@ -30,7 +30,7 @@ export const PerfumeCard = ({ perfume, onClick, variant = "desktop" }: PerfumeCa
               alt={`${perfume.name} - ${perfume.brand}`}
               loading="lazy"
               decoding="async"
-              className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+              className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105 brightness-100 dark:brightness-100"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-muted/30">

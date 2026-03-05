@@ -1,10 +1,12 @@
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import logo from "@/assets/nurea-logo-transparent.png";
 import bgImage from "@/assets/bg.png";
 import { Button } from "@/components/ui/button";
 
 export const Hero = () => {
+  const logoSrc = typeof logo === "string" ? logo : (logo as { src: string }).src;
+
   return (
     <section id="hero" className="relative overflow-hidden border-b border-border/30 px-4 pb-14 pt-10 sm:pb-16 sm:pt-14">
       <div
@@ -18,7 +20,7 @@ export const Hero = () => {
 
       <div className="relative mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-6">
-          <img src={logo} alt="Nurea Parfums" className="h-20 w-20 opacity-90 sm:h-24 sm:w-24" loading="eager" decoding="async" />
+          <img src={logoSrc} alt="Nurea Parfums" className="h-20 w-20 opacity-90 sm:h-24 sm:w-24" loading="eager" decoding="async" />
 
           <div className="space-y-3">
             <p className="text-[10px] uppercase tracking-[0.24em] text-primary/90">Maison Nurea</p>
@@ -33,13 +35,13 @@ export const Hero = () => {
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button asChild className="h-12 px-7 text-sm uppercase tracking-[0.14em] sm:h-11">
-              <Link to="/catalogue">
+              <Link href="/catalogue">
                 Voir le catalogue
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
             <Button asChild variant="outline" className="h-12 border-primary/40 bg-card/25 px-7 text-sm uppercase tracking-[0.14em] sm:h-11">
-              <Link to="/marques">Explorer les marques</Link>
+              <Link href="/marques">Explorer les marques</Link>
             </Button>
           </div>
         </div>

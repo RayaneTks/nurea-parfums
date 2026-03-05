@@ -6,26 +6,16 @@ import guerlainImage from "@/assets/parfums/complete/GUERLAIN.png";
 import diorImage from "@/assets/parfums/complete/DIOR.png";
 import bossImage from "@/assets/parfums/complete/BOSS.png";
 
-const perfumeImagesModules = import.meta.glob<{ default: string }>("@/assets/parfums/**/*.{png,jpeg,jpg}", {
-  eager: true,
-});
+/**
+ * Retourne l'URL publique attendue pour une image de parfum.
+ * Convention: placer les fichiers dans /public/parfums/{id}.png
+ */
+export const getPerfumeImage = (perfumeId: string): string | null => {
+  if (!perfumeId) return null;
+  return `/parfums/${perfumeId}.png`;
+};
 
-const perfumeImagesMap = new Map<string, string>();
-
-Object.entries(perfumeImagesModules).forEach(([path, module]) => {
-  if (path.includes("/complete/")) {
-    return;
-  }
-
-  const fileName = path.split("/").pop()?.replace(/\.(png|jpeg|jpg)$/i, "") || "";
-  if (module.default) {
-    perfumeImagesMap.set(fileName.toLowerCase(), module.default);
-  }
-});
-
-export const getPerfumeImage = (perfumeId: string): string | null => perfumeImagesMap.get(perfumeId.toLowerCase()) || null;
-
-const brandImages: Record<string, string> = {
+const brandImages = {
   Rabanne: rabanneImage,
   "Dolce & Gabbana": dgImage,
   "Jean Paul Gaultier": jpgImage,
@@ -35,4 +25,8 @@ const brandImages: Record<string, string> = {
   "Hugo Boss": bossImage,
 };
 
-export const getBrandImage = (brandName: string): string | null => brandImages[brandName] ?? null;
+export const getBrandImage = (brandName: string): string | null => {
+  const img = brandImages[brandName as keyof typeof brandImages];
+  if (!img) return null;
+  return typeof img === "string" ? img : (img as { src: string }).src;
+};

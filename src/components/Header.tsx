@@ -1,5 +1,8 @@
+"use client";
+
 import { FormEvent, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, Search, X } from "lucide-react";
 import logo from "@/assets/nurea-logo-transparent.png";
 import { Button } from "@/components/ui/button";
@@ -20,31 +23,33 @@ const mainNavItems = [
 ];
 
 export const Header = (_props: HeaderProps) => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
+  const currentPath = pathname ?? "/";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const isHome = location.pathname === "/";
+  const isHome = currentPath === "/";
+
+  const logoSrc = typeof logo === "string" ? logo : (logo as { src: string }).src;
 
   const activePath = useMemo(() => {
-    if (location.pathname.startsWith("/catalogue")) return "/catalogue";
-    if (location.pathname.startsWith("/marques")) return "/marques";
-    if (location.pathname.startsWith("/categories")) return "/categories";
+    if (currentPath.startsWith("/catalogue")) return "/catalogue";
+    if (currentPath.startsWith("/marques")) return "/marques";
+    if (currentPath.startsWith("/categories")) return "/categories";
     return "/";
-  }, [location.pathname]);
+  }, [currentPath]);
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const query = searchTerm.trim();
     if (!query) {
-      navigate("/catalogue");
-      setMobileOpen(false);
+      router.push("/catalogue");
       return;
     }
 
-    navigate(`/catalogue?search=${encodeURIComponent(query)}`);
+    router.push(`/catalogue?search=${encodeURIComponent(query)}`);
     setMobileOpen(false);
   };
 
@@ -56,7 +61,7 @@ export const Header = (_props: HeaderProps) => {
       return;
     }
 
-    navigate("/", { state: { scrollToSection: "contact" } });
+    router.push("/#contact");
     setMobileOpen(false);
   };
 
@@ -64,12 +69,12 @@ export const Header = (_props: HeaderProps) => {
     <header className="sticky top-0 z-[90] border-b border-border/40 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-3 px-4 sm:px-6">
         <Link
-          to="/"
+          href="/"
           className="group inline-flex min-w-0 items-center gap-3 rounded-md py-1 pr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Retour a l'accueil Nurea Parfums"
         >
           <img
-            src={logo}
+            src={logoSrc}
             alt="Nurea Parfums"
             className="h-9 w-9 flex-shrink-0 opacity-90 transition-opacity group-hover:opacity-100"
             loading="eager"
@@ -82,7 +87,7 @@ export const Header = (_props: HeaderProps) => {
           {mainNavItems.map((item) => (
             <Link
               key={item.to}
-              to={item.to}
+              href={item.to}
               className={cn(
                 "rounded-md px-3 py-2 text-sm transition-colors",
                 activePath === item.to ? "bg-primary/15 text-primary" : "text-foreground/75 hover:text-foreground"
@@ -110,16 +115,6 @@ export const Header = (_props: HeaderProps) => {
               placeholder="Rechercher un parfum ou une marque"
               className="h-10 w-full rounded-md border border-border/60 bg-card/40 pl-10 pr-3 text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-primary focus:outline-none"
             />
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={() => setSearchTerm("")}
-                className="absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-                aria-label="Vider la recherche"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
           </div>
           <Button type="submit" size="sm" className="h-10 px-4">
             Rechercher
@@ -173,7 +168,7 @@ export const Header = (_props: HeaderProps) => {
                   {mainNavItems.map((item) => (
                     <Link
                       key={item.to}
-                      to={item.to}
+                      href={item.to}
                       onClick={() => setMobileOpen(false)}
                       className={cn(
                         "block rounded-md px-3 py-3 text-sm",

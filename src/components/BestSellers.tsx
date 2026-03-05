@@ -1,11 +1,13 @@
+"use client";
+
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { PerfumeCard } from "@/components/PerfumeCard";
 import { perfumes } from "@/data/perfumes";
 import { buildProductPath } from "@/lib/catalog";
 
 export const BestSellers = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const bestSellers = useMemo(() => perfumes.filter((perfume) => perfume.tags?.includes("Best-seller")).slice(0, 8), []);
 
@@ -26,7 +28,12 @@ export const BestSellers = () => {
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
           {bestSellers.map((perfume) => (
-            <PerfumeCard key={perfume.id} perfume={perfume} variant="mobile" onClick={() => navigate(buildProductPath(perfume))} />
+            <PerfumeCard
+              key={perfume.id}
+              perfume={perfume}
+              variant="mobile"
+              onClick={() => router.push(buildProductPath(perfume))}
+            />
           ))}
         </div>
       </div>

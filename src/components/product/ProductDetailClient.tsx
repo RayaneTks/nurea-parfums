@@ -1,45 +1,49 @@
-import { useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ArrowLeft, Share2 } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { Seo } from "@/components/Seo";
 import { Button } from "@/components/ui/button";
 import { contactConfig } from "@/config/contact";
 import { defaultSizes, perfumes } from "@/data/perfumes";
 import { buildBrandPath, buildProductPath, normalizeText, SITE_URL } from "@/lib/catalog";
-import { buildSnapchatUrl, buildWhatsappUrl } from "@/lib/contact";
 import { getPerfumeImage } from "@/lib/perfume-media";
 
-export const ProductDetail = () => {
-  const navigate = useNavigate();
-  const { brand, name } = useParams<{ brand: string; name: string }>();
+type ProductDetailParams = {
+  brand: string;
+  name: string;
+};
+
+const findPerfume = ({ brand, name }: ProductDetailParams) => {
+  const decodedBrand = decodeURIComponent(brand);
+  const decodedName = decodeURIComponent(name);
+
+  return (
+    perfumes.find(
+      (candidate) =>
+        normalizeText(candidate.brand) === normalizeText(decodedBrand) &&
+        normalizeText(candidate.name) === normalizeText(decodedName),
+    ) ?? null
+  );
+};
+
+export const ProductDetailClient = ({ params }: { params: ProductDetailParams }) => {
+  const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
 
-  const perfume = useMemo(() => {
-    if (!brand || !name) return null;
-
-    const decodedBrand = decodeURIComponent(brand);
-    const decodedName = decodeURIComponent(name);
-
-    return (
-      perfumes.find(
-        (candidate) =>
-          normalizeText(candidate.brand) === normalizeText(decodedBrand) &&
-          normalizeText(candidate.name) === normalizeText(decodedName)
-      ) ?? null
-    );
-  }, [brand, name]);
+  const perfume = findPerfume(params);
 
   if (!perfume) {
     return (
       <div className="min-h-screen bg-background">
-        <Seo title="Produit introuvable" description="Le parfum recherche est introuvable." canonicalPath="/catalogue" noIndex />
         <Header />
         <main className="mx-auto max-w-4xl px-4 py-20 text-center">
           <h1 className="font-serif text-4xl text-foreground">Produit introuvable</h1>
-          <p className="mt-3 text-muted-foreground">Le lien n'est plus valide ou le produit a ete retire.</p>
-          <Link to="/catalogue" className="mt-6 inline-flex text-primary hover:text-primary/80">
+          <p className="mt-3 text-muted-foreground">Le lien n&apos;est plus valide ou le produit a été retiré.</p>
+          <Link href="/catalogue" className="mt-6 inline-flex text-primary hover:text-primary/80">
             Retour au catalogue
           </Link>
         </main>
@@ -52,11 +56,11 @@ export const ProductDetail = () => {
   const sizes = perfume.availableSizes || defaultSizes;
   const canonicalPath = buildProductPath(perfume);
 
-  const contactMessage = `Bonjour, je souhaite des infos pour ${perfume.name} de ${perfume.brand}${
-    selectedSize ? ` en ${selectedSize} ml` : ""
-  }.`;
-  const snapchatUrl = buildSnapchatUrl(contactConfig.snapchat.url);
-  const whatsappUrl = buildWhatsappUrl(contactConfig.whatsapp.url, contactMessage);
+  const contactMessage = encodeURIComponent(
+    `Bonjour, je souhaite des infos pour ${perfume.name} de ${perfume.brand}${
+      selectedSize ? ` en ${selectedSize} ml` : ""
+    }.`,
+  );
 
   const shareProduct = async () => {
     const url = `${SITE_URL}${canonicalPath}`;
@@ -64,7 +68,7 @@ export const ProductDetail = () => {
       if (navigator.share) {
         await navigator.share({
           title: `${perfume.name} - ${perfume.brand}`,
-          text: `Decouvrez ${perfume.name} sur Nurea Parfums`,
+          text: `Découvrez ${perfume.name} sur Nurea Parfums`,
           url,
         });
         return;
@@ -77,29 +81,14 @@ export const ProductDetail = () => {
   };
 
   const relatedPerfumes = perfumes
-    .filter((candidate) => candidate.id !== perfume.id && (candidate.brand === perfume.brand || candidate.category === perfume.category))
+    .filter(
+      (candidate) =>
+        candidate.id !== perfume.id && (candidate.brand === perfume.brand || candidate.category === perfume.category),
+    )
     .slice(0, 4);
 
   return (
     <div className="min-h-screen bg-background">
-      <Seo
-        title={`${perfume.name} - ${perfume.brand}`}
-        description={`${perfume.name} par ${perfume.brand}. Consultez les tailles disponibles et contactez Nurea Parfums.`}
-        canonicalPath={canonicalPath}
-        type="product"
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "Product",
-          name: perfume.name,
-          brand: {
-            "@type": "Brand",
-            name: perfume.brand,
-          },
-          category: perfume.category,
-          url: `${SITE_URL}${canonicalPath}`,
-          description: `${perfume.name} de ${perfume.brand} disponible en plusieurs contenances.`,
-        }}
-      />
       <Header />
       <main className="px-3 py-8 sm:px-4 sm:py-12">
         <div className="mx-auto w-full max-w-7xl space-y-8">
@@ -107,7 +96,9 @@ export const ProductDetail = () => {
             <Button
               variant="ghost"
               className="h-10 px-2 text-sm"
-              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/catalogue"))}
+              onClick={() => {
+                router.back();
+              }}
             >
               <ArrowLeft className="mr-1 h-4 w-4" />
               Retour
@@ -124,13 +115,13 @@ export const ProductDetail = () => {
                 <img
                   src={image}
                   alt={`${perfume.name} - ${perfume.brand}`}
-                  className="h-full w-full object-cover object-center"
+                  className="h-full w-full object-cover object-center brightness-100 dark:brightness-100"
                   loading="eager"
                   decoding="async"
                 />
               ) : (
                 <div className="flex min-h-80 items-center justify-center bg-muted/30">
-                  <p className="text-sm text-muted-foreground">Image a venir</p>
+                  <p className="text-sm text-muted-foreground">Image à venir</p>
                 </div>
               )}
             </div>
@@ -172,32 +163,20 @@ export const ProductDetail = () => {
               </div>
 
               <div className="mt-6 grid gap-2 sm:grid-cols-2">
-                {snapchatUrl ? (
-                  <Button asChild className="h-11 bg-[#FFFC00] text-black hover:bg-[#FFFC00]/90">
-                    <a href={snapchatUrl} target="_blank" rel="noreferrer">
-                      Contacter Snapchat
-                    </a>
-                  </Button>
-                ) : (
-                  <Button disabled className="h-11 bg-[#FFFC00] text-black">
-                    Snapchat indisponible
-                  </Button>
-                )}
-                {whatsappUrl ? (
-                  <Button asChild className="h-11 bg-[#25D366] text-white hover:bg-[#25D366]/90">
-                    <a href={whatsappUrl} target="_blank" rel="noreferrer">
-                      Contacter WhatsApp
-                    </a>
-                  </Button>
-                ) : (
-                  <Button disabled className="h-11 bg-[#25D366] text-white">
-                    WhatsApp indisponible
-                  </Button>
-                )}
+                <Button asChild className="h-11 bg-[#FFFC00] text-black hover:bg-[#FFFC00]/90">
+                  <a href={`${contactConfig.snapchat.url}?text=${contactMessage}`} target="_blank" rel="noreferrer">
+                    Contacter Snapchat
+                  </a>
+                </Button>
+                <Button asChild className="h-11 bg-[#25D366] text-white hover:bg-[#25D366]/90">
+                  <a href={`${contactConfig.whatsapp.url}?text=${contactMessage}`} target="_blank" rel="noreferrer">
+                    Contacter WhatsApp
+                  </a>
+                </Button>
               </div>
 
               <div className="mt-5 border-t border-border/35 pt-4">
-                <Link to={buildBrandPath(perfume.brand)} className="text-sm text-primary hover:text-primary/80">
+                <Link href={buildBrandPath(perfume.brand)} className="text-sm text-primary hover:text-primary/80">
                   Voir toute la marque {perfume.brand}
                 </Link>
               </div>
@@ -214,7 +193,7 @@ export const ProductDetail = () => {
                   return (
                     <Link
                       key={related.id}
-                      to={buildProductPath(related)}
+                      href={buildProductPath(related)}
                       className="overflow-hidden rounded-2xl border border-border/35 bg-card/35 transition-all hover:-translate-y-1 hover:border-primary/45"
                     >
                       <div className="aspect-[4/5] overflow-hidden border-b border-border/30">
@@ -222,13 +201,13 @@ export const ProductDetail = () => {
                           <img
                             src={relatedImage}
                             alt={`${related.name} - ${related.brand}`}
-                            className="h-full w-full object-cover object-center"
+                            className="h-full w-full object-cover object-center brightness-100 dark:brightness-100"
                             loading="lazy"
                             decoding="async"
                           />
                         ) : (
                           <div className="flex h-full items-center justify-center bg-muted/30">
-                            <p className="text-xs text-muted-foreground">Image a venir</p>
+                            <p className="text-xs text-muted-foreground">Image à venir</p>
                           </div>
                         )}
                       </div>
@@ -248,3 +227,4 @@ export const ProductDetail = () => {
     </div>
   );
 };
+

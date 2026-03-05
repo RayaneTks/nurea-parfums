@@ -17,7 +17,7 @@ import { WhatsAppIcon } from "./icons/WhatsAppIcon";
 import { contactConfig } from "@/config/contact";
 import { Brand, perfumes } from "@/data/perfumes";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Carousel,
@@ -27,35 +27,7 @@ import {
   CarouselPrevious,
 } from "./ui/carousel";
 
-// Importer toutes les images de parfums pour les afficher dans la liste
-const perfumeImagesModules = import.meta.glob<{ default: string }>(
-  "@/assets/parfums/**/*.{png,jpeg,jpg}",
-  { eager: true }
-);
-
-const perfumeImagesMap = new Map<string, string>();
-Object.entries(perfumeImagesModules).forEach(([path, module]) => {
-  if (path.includes("/complete/")) {
-    return;
-  }
-  const fileName = path.split("/").pop()?.replace(/\.(png|jpeg|jpg)$/i, "") || "";
-  if (module.default) {
-    perfumeImagesMap.set(fileName.toLowerCase(), module.default);
-  }
-});
-
-const getPerfumeImage = (perfumeId: string): string | null => {
-  return perfumeImagesMap.get(perfumeId.toLowerCase()) || null;
-};
-
-// Import des images de marques
-import rabanneImage from "@/assets/parfums/complete/RABANNE.png";
-import dgImage from "@/assets/parfums/complete/D&G.png";
-import jpgImage from "@/assets/parfums/complete/JPG.png";
-import azzaroImage from "@/assets/parfums/complete/AZZARO.png";
-import guerlainImage from "@/assets/parfums/complete/GUERLAIN.png";
-import diorImage from "@/assets/parfums/complete/DIOR.png";
-import bossImage from "@/assets/parfums/complete/BOSS.png";
+import { getPerfumeImage, getBrandImage } from "@/lib/perfume-media";
 
 interface BrandDrawerProps {
   brand: Brand | null;
@@ -63,19 +35,8 @@ interface BrandDrawerProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const brandImages: Record<string, string> = {
-  "Rabanne": rabanneImage,
-  "Dolce & Gabbana": dgImage,
-  "Jean Paul Gaultier": jpgImage,
-  "Azzaro": azzaroImage,
-  "Guerlain": guerlainImage,
-  "Dior": diorImage,
-  "Hugo Boss": bossImage,
-  "Xerjoff": "", // Pas d'image pour Xerjoff
-};
-
 export const BrandDrawer = ({ brand, open, onOpenChange }: BrandDrawerProps) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const isMobile = useIsMobile();
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   
@@ -87,7 +48,7 @@ export const BrandDrawer = ({ brand, open, onOpenChange }: BrandDrawerProps) => 
 
   if (!brand) return null;
 
-  const brandImage = brandImages[brand.name] || null;
+  const brandImage = getBrandImage(brand.name);
 
   const openSnapchat = () => {
     const message = encodeURIComponent(`Bonjour, je suis intéressé(e) par la gamme ${brand.name}`);
@@ -113,7 +74,7 @@ export const BrandDrawer = ({ brand, open, onOpenChange }: BrandDrawerProps) => 
     
     const brandEncoded = encodeURIComponent(perfume.brand);
     const nameEncoded = encodeURIComponent(perfume.name);
-    navigate(`/parfums/${brandEncoded}/${nameEncoded}`);
+    router.push(`/parfums/${brandEncoded}/${nameEncoded}`);
     onOpenChange(false);
   };
 
@@ -217,7 +178,7 @@ export const BrandDrawer = ({ brand, open, onOpenChange }: BrandDrawerProps) => 
                           <img
                             src={perfumeImage}
                             alt={perfume.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 brightness-100 dark:brightness-100"
                           />
                         </div>
                       )}
