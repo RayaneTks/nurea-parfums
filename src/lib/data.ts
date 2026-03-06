@@ -199,3 +199,56 @@ export const mockPerfumes: Perfume[] = [
 export const normalizeText = (text: string | null | undefined): string =>
   text?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || "";
 
+/** Pour la recherche floue : enlève accents + réduit les répétitions de lettres (bacarra → bacara, baccarat → bacarat). */
+export const normalizeForFuzzy = (text: string): string => {
+  const n = normalizeText(text).replace(/\s+/g, " ");
+  return n.replace(/(.)\1+/g, "$1");
+};
+
+/** Distance de Levenshtein entre deux chaînes. */
+function levenshtein(a: string, b: string): number {
+  const an = a.length;
+  const bn = b.length;
+  const dp: number[][] = Array(an + 1)
+    .fill(null)
+    .map(() => Array(bn + 1).fill(0));
+  for (let i = 0; i <= an; i++) dp[i][0] = i;
+  for (let j = 0; j <= bn; j++) dp[0][j] = j;
+  for (let i = 1; i <= an; i++) {
+    for (let j = 1; j <= bn; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost
+      );
+    }
+  }
+  return dp[an][bn];
+}
+
+/** Retourne true si la requête matche le parfum (exact ou flou : typos, bacarra → Baccarat). */
+export function fuzzySearchMatch(perfume: Perfume, query: string): boolean {
+  const q = query.trim();
+  if (!q) return true;
+  const nq = normalizeForFuzzy(q);
+  const nqLen = nq.length;
+  const targets = [
+    normalizeForFuzzy(perfume.name),
+    normalizeForFuzzy(perfume.brand),
+    ...(perfume.tags ?? []).map((t) => normalizeForFuzzy(t)),
+  ];
+  for (const target of targets) {
+    if (target.includes(nq)) return true;
+    if (nqLen >= 3 && target.length >= 2) {
+      const maxDist = nqLen <= 4 ? 1 : nqLen <= 7 ? 2 : 3;
+      if (levenshtein(nq, target) <= maxDist) return true;
+      const words = target.split(/\s+/);
+      for (const word of words) {
+        if (word.length >= 2 && levenshtein(nq, word) <= maxDist) return true;
+      }
+    }
+  }
+  return false;
+}
+

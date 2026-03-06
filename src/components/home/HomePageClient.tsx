@@ -10,7 +10,7 @@ import { Footer } from "@/components/layout/Footer";
 import {
   categories,
   mockPerfumes,
-  normalizeText,
+  fuzzySearchMatch,
   type Category,
 } from "@/lib/data";
 
@@ -33,21 +33,13 @@ export const HomePageClient = () => {
   }, []);
 
   const filteredPerfumes = useMemo(() => {
-    const normalizedSearch = normalizeText(searchTerm);
-
     return mockPerfumes.filter((perfume) => {
-      const matchSearch =
-        !normalizedSearch ||
-        normalizeText(perfume.name).includes(normalizedSearch) ||
-        normalizeText(perfume.brand).includes(normalizedSearch);
-
+      const matchSearch = fuzzySearchMatch(perfume, searchTerm);
       const matchCategory =
         selectedCategory === "Tout voir" ||
         perfume.category === selectedCategory;
-
       const matchBrand =
         selectedBrand === "Toutes" || perfume.brand === selectedBrand;
-
       return matchSearch && matchCategory && matchBrand;
     });
   }, [searchTerm, selectedCategory, selectedBrand]);
@@ -195,6 +187,7 @@ export const HomePageClient = () => {
         setSelectedCategory={setSelectedCategory}
         onResetFilters={handleResetFilters}
         resultsCount={filteredPerfumes.length}
+        searchResults={filteredPerfumes}
       />
 
       <Footer />

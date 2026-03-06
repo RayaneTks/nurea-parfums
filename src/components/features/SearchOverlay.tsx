@@ -1,9 +1,10 @@
 "use client";
 
 import type { FC } from "react";
+import Image from "next/image";
 import { Search, X } from "lucide-react";
 import { allBrands, categories } from "@/lib/data";
-import type { Category } from "@/lib/data";
+import type { Category, Perfume } from "@/lib/data";
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -16,7 +17,11 @@ interface SearchOverlayProps {
   setSelectedCategory: (value: Category) => void;
   onResetFilters: () => void;
   resultsCount: number;
+  /** Résultats filtrés pour affichage en direct pendant la saisie */
+  searchResults: Perfume[];
 }
+
+const PREVIEW_MAX = 8;
 
 export const SearchOverlay: FC<SearchOverlayProps> = ({
   isOpen,
@@ -29,6 +34,7 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
   setSelectedCategory,
   onResetFilters,
   resultsCount,
+  searchResults,
 }) => {
   const hasActiveFilters =
     searchTerm.trim() !== "" ||
@@ -69,6 +75,55 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
             strokeWidth={1}
           />
         </div>
+
+        {/* Résultats en direct pendant la saisie */}
+        {searchTerm.trim() !== "" && (
+          <div className="mb-12">
+            <h4 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#8C7A6B] dark:text-[#C29B62]">
+              {resultsCount > 0
+                ? `${resultsCount} résultat${resultsCount !== 1 ? "s" : ""}`
+                : "Aucun résultat"}
+            </h4>
+            {resultsCount > 0 ? (
+              <ul className="space-y-3">
+                {searchResults.slice(0, PREVIEW_MAX).map((perfume) => (
+                  <li key={perfume.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedBrand(perfume.brand);
+                        onClose();
+                      }}
+                      className="flex w-full items-center gap-4 rounded-lg border border-[#111111]/10 py-3 px-4 text-left transition-colors hover:bg-[#111111]/5 dark:border-[#FDFCF8]/10 dark:hover:bg-[#FDFCF8]/5"
+                    >
+                      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-[#F5F4F0] dark:bg-[#141414]">
+                        <Image
+                          src={perfume.image}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          sizes="48px"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-serif text-base text-[#111111] dark:text-[#FDFCF8]">
+                          {perfume.name}
+                        </p>
+                        <p className="truncate text-xs text-[#888888] dark:text-[#A0A0A0]">
+                          {perfume.brand}
+                        </p>
+                      </div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-[#888888] dark:text-[#A0A0A0]">
+                Essayez un autre terme (ex. nom, marque) ou vérifiez l&apos;orthographe.
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="grid gap-16 md:grid-cols-2">
           <div>
