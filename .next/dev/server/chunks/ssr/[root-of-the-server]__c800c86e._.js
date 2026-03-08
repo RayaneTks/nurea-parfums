@@ -28,12 +28,15 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/app-dir/link.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next-themes/dist/index.mjs [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$dom$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-dom.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$menu$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Menu$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/menu.js [app-ssr] (ecmascript) <export default as Menu>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$moon$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Moon$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/moon.js [app-ssr] (ecmascript) <export default as Moon>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/search.js [app-ssr] (ecmascript) <export default as Search>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sun$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Sun$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/sun.js [app-ssr] (ecmascript) <export default as Sun>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/x.js [app-ssr] (ecmascript) <export default as X>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
 "use client";
+;
 ;
 ;
 ;
@@ -44,6 +47,7 @@ const Navbar = ({ scrolled, onOpenFilters })=>{
     const pathname = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["usePathname"])();
     const { resolvedTheme, setTheme } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useTheme"])();
     const [mounted, setMounted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [menuOpen, setMenuOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>setMounted(true), []);
     const isHome = pathname === "/";
     const isContact = pathname === "/contact";
@@ -51,155 +55,335 @@ const Navbar = ({ scrolled, onOpenFilters })=>{
     const handleToggleTheme = ()=>{
         setTheme(isDark ? "light" : "dark");
     };
+    const closeMenu = ()=>setMenuOpen(false);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        if (typeof document === "undefined") return;
+        if (menuOpen) {
+            document.documentElement.style.overflow = "hidden";
+        } else {
+            document.documentElement.style.overflow = "";
+        }
+        return ()=>{
+            document.documentElement.style.overflow = "";
+        };
+    }, [
+        menuOpen
+    ]);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("nav", {
         className: `fixed top-0 w-full z-40 transition-all duration-500 ${scrolled ? "bg-[#FDFCF8]/95 dark:bg-[#0A0A0A]/95 backdrop-blur-md py-4 shadow-sm" : "bg-transparent py-6"}`,
-        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "mx-auto flex max-w-[1400px] items-center justify-between px-6 md:px-12",
-            children: [
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                    className: "md:hidden",
-                    "aria-label": "Ouvrir le menu",
-                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$menu$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Menu$3e$__["Menu"], {
-                        size: 24,
-                        className: "text-[#111111] dark:text-[#FDFCF8]"
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/layout/Navbar.tsx",
-                        lineNumber: 39,
-                        columnNumber: 11
-                    }, ("TURBOPACK compile-time value", void 0))
-                }, void 0, false, {
-                    fileName: "[project]/src/components/layout/Navbar.tsx",
-                    lineNumber: 38,
-                    columnNumber: 9
-                }, ("TURBOPACK compile-time value", void 0)),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
-                    href: "/",
-                    className: "font-serif text-2xl font-semibold tracking-widest uppercase text-center md:static md:translate-x-0 absolute left-1/2 -translate-x-1/2 cursor-pointer",
-                    children: "Nurea"
-                }, void 0, false, {
-                    fileName: "[project]/src/components/layout/Navbar.tsx",
-                    lineNumber: 42,
-                    columnNumber: 9
-                }, ("TURBOPACK compile-time value", void 0)),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "hidden items-center gap-10 text-xs uppercase tracking-[0.2em] md:flex",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
-                            href: "/",
-                            className: `relative transition-colors after:absolute after:-bottom-2 after:left-0 after:h-[1px] after:w-full after:bg-[#111111] after:transition-transform after:duration-300 dark:after:bg-[#FDFCF8] ${isHome ? "text-[#8C7A6B] dark:text-[#C29B62] after:scale-x-100" : "text-[#111111] dark:text-[#FDFCF8] after:scale-x-0 hover:text-[#8C7A6B] hover:after:scale-x-100 dark:hover:text-[#C29B62]"}`,
-                            children: "La Collection"
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "mx-auto flex max-w-[1400px] items-center justify-between px-6 md:px-12",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        className: "md:hidden",
+                        onClick: ()=>setMenuOpen(true),
+                        "aria-label": "Ouvrir le menu",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$menu$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Menu$3e$__["Menu"], {
+                            size: 24,
+                            className: "text-[#111111] dark:text-[#FDFCF8]"
                         }, void 0, false, {
                             fileName: "[project]/src/components/layout/Navbar.tsx",
-                            lineNumber: 50,
-                            columnNumber: 11
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
-                            href: "/contact",
-                            className: `relative transition-colors after:absolute after:-bottom-2 after:left-0 after:h-[1px] after:w-full after:bg-[#111111] after:transition-transform after:duration-300 dark:after:bg-[#FDFCF8] ${isContact ? "text-[#8C7A6B] dark:text-[#C29B62] after:scale-x-100" : "text-[#111111] dark:text-[#FDFCF8] after:scale-x-0 hover:text-[#8C7A6B] hover:after:scale-x-100 dark:hover:text-[#C29B62]"}`,
-                            children: "Contact Privé"
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/layout/Navbar.tsx",
-                            lineNumber: 60,
+                            lineNumber: 59,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/src/components/layout/Navbar.tsx",
-                    lineNumber: 49,
-                    columnNumber: 9
-                }, ("TURBOPACK compile-time value", void 0)),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "flex items-center gap-4",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            onClick: handleToggleTheme,
-                            className: "hidden h-8 w-8 items-center justify-center rounded-full border border-transparent transition-all hover:border-[#111111] dark:hover:border-[#FDFCF8] md:flex",
-                            "aria-label": "Basculer le thème",
-                            children: mounted ? isDark ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sun$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Sun$3e$__["Sun"], {
-                                size: 14
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                        lineNumber: 54,
+                        columnNumber: 9
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
+                        href: "/",
+                        className: "font-serif text-2xl font-semibold tracking-widest uppercase text-center md:static md:translate-x-0 absolute left-1/2 -translate-x-1/2 cursor-pointer",
+                        children: "Nurea"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                        lineNumber: 62,
+                        columnNumber: 9
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "hidden items-center gap-10 text-xs uppercase tracking-[0.2em] md:flex",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                href: "/",
+                                className: `relative transition-colors after:absolute after:-bottom-2 after:left-0 after:h-[1px] after:w-full after:bg-[#111111] after:transition-transform after:duration-300 dark:after:bg-[#FDFCF8] ${isHome ? "text-[#8C7A6B] dark:text-[#C29B62] after:scale-x-100" : "text-[#111111] dark:text-[#FDFCF8] after:scale-x-0 hover:text-[#8C7A6B] hover:after:scale-x-100 dark:hover:text-[#C29B62]"}`,
+                                children: "La Collection"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/layout/Navbar.tsx",
+                                lineNumber: 70,
+                                columnNumber: 11
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                href: "/contact",
+                                className: `relative transition-colors after:absolute after:-bottom-2 after:left-0 after:h-[1px] after:w-full after:bg-[#111111] after:transition-transform after:duration-300 dark:after:bg-[#FDFCF8] ${isContact ? "text-[#8C7A6B] dark:text-[#C29B62] after:scale-x-100" : "text-[#111111] dark:text-[#FDFCF8] after:scale-x-0 hover:text-[#8C7A6B] hover:after:scale-x-100 dark:hover:text-[#C29B62]"}`,
+                                children: "Contact Privé"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/layout/Navbar.tsx",
                                 lineNumber: 80,
-                                columnNumber: 17
-                            }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$moon$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Moon$3e$__["Moon"], {
-                                size: 14
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/layout/Navbar.tsx",
-                                lineNumber: 82,
-                                columnNumber: 17
-                            }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "h-[14px] w-[14px]",
-                                "aria-hidden": true
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/layout/Navbar.tsx",
-                                lineNumber: 85,
-                                columnNumber: 15
+                                columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0))
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/layout/Navbar.tsx",
-                            lineNumber: 73,
-                            columnNumber: 11
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        isHome && onOpenFilters && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                    onClick: onOpenFilters,
-                                    className: "flex items-center gap-2 md:hidden",
-                                    "aria-label": "Ouvrir la recherche",
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
-                                        size: 20
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/components/layout/Navbar.tsx",
-                                        lineNumber: 96,
-                                        columnNumber: 17
-                                    }, ("TURBOPACK compile-time value", void 0))
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                        lineNumber: 69,
+                        columnNumber: 9
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center gap-4",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: handleToggleTheme,
+                                className: "hidden h-8 w-8 items-center justify-center rounded-full border border-transparent transition-all hover:border-[#111111] dark:hover:border-[#FDFCF8] md:flex",
+                                "aria-label": "Basculer le thème",
+                                children: mounted ? isDark ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sun$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Sun$3e$__["Sun"], {
+                                    size: 14
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Navbar.tsx",
-                                    lineNumber: 91,
-                                    columnNumber: 15
-                                }, ("TURBOPACK compile-time value", void 0)),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "hidden items-center gap-6 md:flex",
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                        onClick: onOpenFilters,
-                                        className: "flex items-center gap-2 text-xs uppercase tracking-[0.1em] transition-colors hover:text-[#8C7A6B] dark:hover:text-[#C29B62]",
-                                        children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
-                                                size: 14
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/components/layout/Navbar.tsx",
-                                                lineNumber: 103,
-                                                columnNumber: 19
-                                            }, ("TURBOPACK compile-time value", void 0)),
-                                            " Recherche"
-                                        ]
-                                    }, void 0, true, {
-                                        fileName: "[project]/src/components/layout/Navbar.tsx",
-                                        lineNumber: 99,
-                                        columnNumber: 17
-                                    }, ("TURBOPACK compile-time value", void 0))
+                                    lineNumber: 100,
+                                    columnNumber: 17
+                                }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$moon$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Moon$3e$__["Moon"], {
+                                    size: 14
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Navbar.tsx",
-                                    lineNumber: 98,
+                                    lineNumber: 102,
+                                    columnNumber: 17
+                                }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "h-[14px] w-[14px]",
+                                    "aria-hidden": true
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/layout/Navbar.tsx",
+                                    lineNumber: 105,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0))
-                            ]
-                        }, void 0, true)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/src/components/layout/Navbar.tsx",
-                    lineNumber: 72,
-                    columnNumber: 9
-                }, ("TURBOPACK compile-time value", void 0))
-            ]
-        }, void 0, true, {
-            fileName: "[project]/src/components/layout/Navbar.tsx",
-            lineNumber: 37,
-            columnNumber: 7
-        }, ("TURBOPACK compile-time value", void 0))
-    }, void 0, false, {
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/layout/Navbar.tsx",
+                                lineNumber: 93,
+                                columnNumber: 11
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            isHome && onOpenFilters && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        onClick: onOpenFilters,
+                                        className: "flex items-center gap-2 md:hidden",
+                                        "aria-label": "Ouvrir la recherche",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
+                                            size: 20
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/layout/Navbar.tsx",
+                                            lineNumber: 116,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 111,
+                                        columnNumber: 15
+                                    }, ("TURBOPACK compile-time value", void 0)),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "hidden items-center gap-6 md:flex",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            onClick: onOpenFilters,
+                                            className: "flex items-center gap-2 text-xs uppercase tracking-[0.1em] transition-colors hover:text-[#8C7A6B] dark:hover:text-[#C29B62]",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
+                                                    size: 14
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/layout/Navbar.tsx",
+                                                    lineNumber: 123,
+                                                    columnNumber: 19
+                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                " Recherche"
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/src/components/layout/Navbar.tsx",
+                                            lineNumber: 119,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 118,
+                                        columnNumber: 15
+                                    }, ("TURBOPACK compile-time value", void 0))
+                                ]
+                            }, void 0, true)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                        lineNumber: 92,
+                        columnNumber: 9
+                    }, ("TURBOPACK compile-time value", void 0))
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/layout/Navbar.tsx",
+                lineNumber: 53,
+                columnNumber: 7
+            }, ("TURBOPACK compile-time value", void 0)),
+            mounted && typeof document !== "undefined" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$dom$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["createPortal"])(/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        type: "button",
+                        onClick: closeMenu,
+                        className: `fixed inset-0 z-[9998] bg-black/50 transition-opacity duration-300 md:hidden ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`,
+                        "aria-label": "Fermer le menu"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                        lineNumber: 136,
+                        columnNumber: 13
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: `fixed left-0 top-0 z-[9999] flex h-full w-[min(280px,85vw)] flex-col gap-8 border-r border-[#111111]/10 bg-[#FDFCF8] px-6 py-8 shadow-xl transition-transform duration-300 ease-out dark:border-[#FDFCF8]/10 dark:bg-[#0A0A0A] md:hidden ${menuOpen ? "translate-x-0" : "-translate-x-full"}`,
+                        role: "dialog",
+                        "aria-label": "Menu principal",
+                        "aria-hidden": !menuOpen,
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex items-center justify-between",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "font-serif text-lg font-semibold tracking-widest uppercase text-[#111111] dark:text-[#FDFCF8]",
+                                        children: "Menu"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 153,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0)),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        type: "button",
+                                        onClick: closeMenu,
+                                        className: "rounded-full p-2 transition-colors hover:bg-[#111111]/10 dark:hover:bg-[#FDFCF8]/10",
+                                        "aria-label": "Fermer le menu",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
+                                            size: 20,
+                                            className: "text-[#111111] dark:text-[#FDFCF8]"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/layout/Navbar.tsx",
+                                            lineNumber: 162,
+                                            columnNumber: 19
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 156,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0))
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/layout/Navbar.tsx",
+                                lineNumber: 152,
+                                columnNumber: 15
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("nav", {
+                                className: "flex flex-col gap-6",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                        href: "/",
+                                        onClick: closeMenu,
+                                        className: `text-sm uppercase tracking-[0.2em] ${isHome ? "font-medium text-[#8C7A6B] dark:text-[#C29B62]" : "text-[#111111] dark:text-[#FDFCF8]"}`,
+                                        children: "La Collection"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 166,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0)),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                        href: "/contact",
+                                        onClick: closeMenu,
+                                        className: `text-sm uppercase tracking-[0.2em] ${isContact ? "font-medium text-[#8C7A6B] dark:text-[#C29B62]" : "text-[#111111] dark:text-[#FDFCF8]"}`,
+                                        children: "Contact Privé"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 177,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0))
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/layout/Navbar.tsx",
+                                lineNumber: 165,
+                                columnNumber: 15
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "mt-auto border-t border-[#111111]/10 pt-6 dark:border-[#FDFCF8]/10",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "mb-3 text-xs uppercase tracking-widest text-[#888888] dark:text-[#A0A0A0]",
+                                        children: "Thème"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 190,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0)),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        type: "button",
+                                        onClick: handleToggleTheme,
+                                        className: "flex h-10 w-full items-center gap-3 rounded-lg border border-[#111111]/20 px-4 transition-colors hover:bg-[#111111]/5 dark:border-[#FDFCF8]/20 dark:hover:bg-[#FDFCF8]/5",
+                                        "aria-label": "Basculer le thème",
+                                        children: mounted ? isDark ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sun$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Sun$3e$__["Sun"], {
+                                                    size: 18,
+                                                    className: "text-[#111111] dark:text-[#FDFCF8]"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/layout/Navbar.tsx",
+                                                    lineNumber: 202,
+                                                    columnNumber: 25
+                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-sm text-[#111111] dark:text-[#FDFCF8]",
+                                                    children: "Mode clair"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/layout/Navbar.tsx",
+                                                    lineNumber: 203,
+                                                    columnNumber: 25
+                                                }, ("TURBOPACK compile-time value", void 0))
+                                            ]
+                                        }, void 0, true) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$moon$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Moon$3e$__["Moon"], {
+                                                    size: 18,
+                                                    className: "text-[#111111] dark:text-[#FDFCF8]"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/layout/Navbar.tsx",
+                                                    lineNumber: 207,
+                                                    columnNumber: 25
+                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-sm text-[#111111] dark:text-[#FDFCF8]",
+                                                    children: "Mode sombre"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/layout/Navbar.tsx",
+                                                    lineNumber: 208,
+                                                    columnNumber: 25
+                                                }, ("TURBOPACK compile-time value", void 0))
+                                            ]
+                                        }, void 0, true) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "h-[18px] w-[18px]",
+                                            "aria-hidden": true
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/layout/Navbar.tsx",
+                                            lineNumber: 212,
+                                            columnNumber: 21
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 193,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0))
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/layout/Navbar.tsx",
+                                lineNumber: 189,
+                                columnNumber: 15
+                            }, ("TURBOPACK compile-time value", void 0))
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                        lineNumber: 144,
+                        columnNumber: 13
+                    }, ("TURBOPACK compile-time value", void 0))
+                ]
+            }, void 0, true), document.body)
+        ]
+    }, void 0, true, {
         fileName: "[project]/src/components/layout/Navbar.tsx",
-        lineNumber: 30,
+        lineNumber: 46,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -213,9 +397,11 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/image.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/arrow-right.js [app-ssr] (ecmascript) <export default as ArrowRight>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next-themes/dist/index.mjs [app-ssr] (ecmascript)");
 "use client";
+;
 ;
 ;
 ;
@@ -243,26 +429,29 @@ const Hero = ()=>{
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "absolute inset-0 z-0 overflow-hidden",
                 children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
                         src: "/branding/bg.png",
-                        alt: "Fond Nurea Parfums",
-                        className: `h-full w-full object-cover transition-all duration-1000 ease-[cubic-bezier(0.4,0,0.2,1)] ${isDark ? "opacity-20 grayscale-[20%] mix-blend-lighten" : "opacity-[0.15] grayscale-[50%] mix-blend-multiply"}`
+                        alt: "",
+                        fill: true,
+                        priority: true,
+                        sizes: "100vw",
+                        className: `object-cover transition-all duration-1000 ease-[cubic-bezier(0.4,0,0.2,1)] ${isDark ? "opacity-20 grayscale-[20%] mix-blend-lighten" : "opacity-[0.15] grayscale-[50%] mix-blend-multiply"}`
                     }, void 0, false, {
                         fileName: "[project]/src/components/features/Hero.tsx",
-                        lineNumber: 33,
+                        lineNumber: 34,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "absolute inset-0 bg-gradient-to-b from-transparent via-[#FDFCF8]/60 to-[#FDFCF8] transition-colors duration-1000 dark:via-[#0A0A0A]/80 dark:to-[#0A0A0A]"
                     }, void 0, false, {
                         fileName: "[project]/src/components/features/Hero.tsx",
-                        lineNumber: 42,
+                        lineNumber: 46,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/features/Hero.tsx",
-                lineNumber: 32,
+                lineNumber: 33,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -273,18 +462,18 @@ const Hero = ()=>{
                         children: "Maison de Haute Parfumerie"
                     }, void 0, false, {
                         fileName: "[project]/src/components/features/Hero.tsx",
-                        lineNumber: 46,
+                        lineNumber: 50,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                        className: "mb-8 font-serif text-5xl font-light leading-[1.1] text-[#111111] animate-[fadeInUp_1.2s_ease-out] md:text-7xl lg:text-8xl dark:text-[#FDFCF8]",
+                        className: "mb-8 font-serif text-5xl font-light leading-[1.1] text-[#222222] animate-[fadeInUp_1.2s_ease-out] md:text-7xl lg:text-8xl dark:text-[#FDFCF8]",
                         children: [
                             "L'Élégance de ",
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {
                                 className: "hidden md:block"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/features/Hero.tsx",
-                                lineNumber: 50,
+                                lineNumber: 54,
                                 columnNumber: 30
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -292,51 +481,51 @@ const Hero = ()=>{
                                 children: "l'Invisible."
                             }, void 0, false, {
                                 fileName: "[project]/src/components/features/Hero.tsx",
-                                lineNumber: 51,
+                                lineNumber: 55,
                                 columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/features/Hero.tsx",
-                        lineNumber: 49,
+                        lineNumber: 53,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                         className: "mb-12 max-w-md text-sm leading-relaxed text-[#888888] animate-[fadeInUp_1.4s_ease-out] md:text-base dark:text-[#A0A0A0]",
-                        children: "Explorez notre sélection privée. Des fragrances iconiques aux créations de niche les plus confidentielles, trouvez votre signature olfactive."
+                        children: "Une sélection privée de créations d'exception. Des grandes Maisons aux nez les plus confidentiels, chaque fragrance est une invitation au voyage."
                     }, void 0, false, {
                         fileName: "[project]/src/components/features/Hero.tsx",
-                        lineNumber: 55,
+                        lineNumber: 59,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
                         href: "#collection",
                         onClick: handleScrollToCollection,
-                        className: "group flex h-16 w-16 items-center justify-center rounded-full border border-[#111111] text-[#111111] transition-all duration-500 hover:bg-[#111111] hover:text-[#FDFCF8] animate-[fadeInUp_1.6s_ease-out] dark:border-[#FDFCF8] dark:text-[#FDFCF8] dark:hover:bg-[#FDFCF8] dark:hover:text-[#0A0A0A]",
+                        className: "group flex h-16 w-16 items-center justify-center rounded-full border border-[#222222] text-[#222222] transition-all duration-500 hover:bg-[#222222] hover:text-[#FDFCF8] animate-[fadeInUp_1.6s_ease-out] dark:border-[#FDFCF8] dark:text-[#FDFCF8] dark:hover:bg-[#FDFCF8] dark:hover:text-[#0A0A0A]",
                         "aria-label": "Descendre vers la collection",
                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__["ArrowRight"], {
                             size: 20,
                             className: "transition-transform duration-500 group-hover:translate-y-1 group-hover:rotate-90"
                         }, void 0, false, {
                             fileName: "[project]/src/components/features/Hero.tsx",
-                            lineNumber: 66,
+                            lineNumber: 70,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     }, void 0, false, {
                         fileName: "[project]/src/components/features/Hero.tsx",
-                        lineNumber: 60,
+                        lineNumber: 64,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/features/Hero.tsx",
-                lineNumber: 45,
+                lineNumber: 49,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/features/Hero.tsx",
-        lineNumber: 31,
+        lineNumber: 32,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -351,8 +540,12 @@ __turbopack_context__.s([
     ()=>allBrands,
     "categories",
     ()=>categories,
+    "fuzzySearchMatch",
+    ()=>fuzzySearchMatch,
     "mockPerfumes",
     ()=>mockPerfumes,
+    "normalizeForFuzzy",
+    ()=>normalizeForFuzzy,
     "normalizeText",
     ()=>normalizeText
 ]);
@@ -396,9 +589,15 @@ const mockPerfumes = [
         name: "Gamme complète Rabanne",
         brand: "Rabanne",
         category: "Gammes Complètes",
-        image: "/parfums/complete/RABANNE.png",
+        image: "/parfums/complete/RABANNE.webp",
         tags: [
             "Gamme complète"
+        ],
+        classics: [
+            "1 Million",
+            "Invictus",
+            "Fame",
+            "Phantom"
         ]
     },
     {
@@ -406,9 +605,15 @@ const mockPerfumes = [
         name: "Gamme complète Dior",
         brand: "Dior",
         category: "Gammes Complètes",
-        image: "/parfums/complete/DIOR.png",
+        image: "/parfums/complete/DIOR.webp",
         tags: [
             "Gamme complète"
+        ],
+        classics: [
+            "Sauvage",
+            "J'adore",
+            "Bois d'Argent",
+            "Gris Dior"
         ]
     },
     {
@@ -416,9 +621,15 @@ const mockPerfumes = [
         name: "Gamme complète Jean Paul Gaultier",
         brand: "Jean Paul Gaultier",
         category: "Gammes Complètes",
-        image: "/parfums/complete/JPG.png",
+        image: "/parfums/complete/JPG.webp",
         tags: [
             "Gamme complète"
+        ],
+        classics: [
+            "Le Mâle",
+            "Scandal",
+            "Classique",
+            "La Belle"
         ]
     },
     {
@@ -426,9 +637,15 @@ const mockPerfumes = [
         name: "Gamme complète Hermès",
         brand: "Hermès",
         category: "Gammes Complètes",
-        image: "/parfums/complete/HERMES.png",
+        image: "/parfums/complete/HERMES.webp",
         tags: [
             "Gamme complète"
+        ],
+        classics: [
+            "Terre d'Hermès",
+            "Twilly",
+            "H24",
+            "Un Jardin sur le Nil"
         ]
     },
     {
@@ -436,7 +653,7 @@ const mockPerfumes = [
         name: "Gamme complète Lacoste",
         brand: "Lacoste",
         category: "Gammes Complètes",
-        image: "/parfums/complete/LACOSTE.png",
+        image: "/parfums/complete/LACOSTE.webp",
         tags: [
             "Gamme complète"
         ]
@@ -446,7 +663,7 @@ const mockPerfumes = [
         name: "Gamme complète Azzaro",
         brand: "Azzaro",
         category: "Gammes Complètes",
-        image: "/parfums/complete/AZZARO.png",
+        image: "/parfums/complete/AZZARO.webp",
         tags: [
             "Gamme complète"
         ]
@@ -456,9 +673,15 @@ const mockPerfumes = [
         name: "Gamme complète Guerlain",
         brand: "Guerlain",
         category: "Gammes Complètes",
-        image: "/parfums/complete/GUERLAIN.png",
+        image: "/parfums/complete/GUERLAIN.webp",
         tags: [
             "Gamme complète"
+        ],
+        classics: [
+            "Shalimar",
+            "Habit Rouge",
+            "L'Homme Idéal",
+            "Aqua Allegoria"
         ]
     },
     {
@@ -466,7 +689,7 @@ const mockPerfumes = [
         name: "Gamme complète Hugo Boss",
         brand: "Hugo Boss",
         category: "Gammes Complètes",
-        image: "/parfums/complete/BOSS.png",
+        image: "/parfums/complete/BOSS.webp",
         tags: [
             "Gamme complète"
         ]
@@ -477,9 +700,18 @@ const mockPerfumes = [
         name: "Baccarat Rouge 540",
         brand: "Maison Francis Kurkdjian",
         category: "Sélections Individuelles",
-        image: "/parfums/baccarat-rouge.jpeg",
+        image: "/parfums/baccarat-rouge.webp",
         tags: [
             "Signature"
+        ],
+        aliases: [
+            "bakara",
+            "bacara",
+            "bacarras",
+            "rouj",
+            "kurkian",
+            "mfk",
+            "francis"
         ]
     },
     {
@@ -487,9 +719,14 @@ const mockPerfumes = [
         name: "Aventus",
         brand: "Creed",
         category: "Sélections Individuelles",
-        image: "/parfums/creed-aventus.png",
+        image: "/parfums/creed-aventus.webp",
         tags: [
             "Iconique"
+        ],
+        aliases: [
+            "cred",
+            "aventu",
+            "aventhus"
         ]
     },
     {
@@ -497,42 +734,47 @@ const mockPerfumes = [
         name: "Eros",
         brand: "Versace",
         category: "Sélections Individuelles",
-        image: "/parfums/eros.png"
+        image: "/parfums/eros.webp"
     },
     {
         id: 12,
         name: "Kirke",
         brand: "Tiziana Terenzi",
         category: "Sélections Individuelles",
-        image: "/parfums/kirke.png"
+        image: "/parfums/kirke.webp",
+        aliases: [
+            "kirk",
+            "terenzi",
+            "tiziana"
+        ]
     },
     {
         id: 13,
         name: "Oud Touch",
         brand: "Franck Olivier",
         category: "Sélections Individuelles",
-        image: "/parfums/oud-touch.png"
+        image: "/parfums/oud-touch.webp"
     },
     {
         id: 14,
         name: "Pasha",
         brand: "Cartier",
         category: "Sélections Individuelles",
-        image: "/parfums/pasha.png"
+        image: "/parfums/pasha.webp"
     },
     {
         id: 15,
         name: "Sun Java",
         brand: "Franck Olivier",
         category: "Sélections Individuelles",
-        image: "/parfums/sun-java.png"
+        image: "/parfums/sun-java.webp"
     },
     {
         id: 16,
         name: "Zara Tobacco",
         brand: "Zara",
         category: "Sélections Individuelles",
-        image: "/parfums/zara-tobacco.png"
+        image: "/parfums/zara-tobacco.webp"
     },
     // Nouveautés
     {
@@ -540,7 +782,7 @@ const mockPerfumes = [
         name: "MYSLF",
         brand: "Yves Saint Laurent",
         category: "Nouveautés",
-        image: "/parfums/myslf.png",
+        image: "/parfums/myslf.webp",
         tags: [
             "Nouveauté"
         ]
@@ -550,13 +792,55 @@ const mockPerfumes = [
         name: "Y Elixir",
         brand: "Yves Saint Laurent",
         category: "Nouveautés",
-        image: "/parfums/y-elixir.png",
+        image: "/parfums/y-elixir.webp",
         tags: [
             "Nouveauté"
         ]
     }
 ];
 const normalizeText = (text)=>text?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || "";
+const normalizeForFuzzy = (text)=>{
+    const n = normalizeText(text).replace(/\s+/g, " ");
+    return n.replace(/(.)\1+/g, "$1");
+};
+/** Distance de Levenshtein entre deux chaînes. */ function levenshtein(a, b) {
+    const an = a.length;
+    const bn = b.length;
+    const dp = Array(an + 1).fill(null).map(()=>Array(bn + 1).fill(0));
+    for(let i = 0; i <= an; i++)dp[i][0] = i;
+    for(let j = 0; j <= bn; j++)dp[0][j] = j;
+    for(let i = 1; i <= an; i++){
+        for(let j = 1; j <= bn; j++){
+            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+            dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+        }
+    }
+    return dp[an][bn];
+}
+function fuzzySearchMatch(perfume, query) {
+    const q = query.trim();
+    if (!q) return true;
+    const nq = normalizeForFuzzy(q);
+    const nqLen = nq.length;
+    const targets = [
+        normalizeForFuzzy(perfume.name),
+        normalizeForFuzzy(perfume.brand),
+        ...(perfume.tags ?? []).map((t)=>normalizeForFuzzy(t)),
+        ...(perfume.aliases ?? []).map((a)=>normalizeForFuzzy(a))
+    ];
+    for (const target of targets){
+        if (target.includes(nq)) return true;
+        if (nqLen >= 3 && target.length >= 2) {
+            const maxDist = nqLen <= 4 ? 1 : nqLen <= 7 ? 2 : 3;
+            if (levenshtein(nq, target) <= maxDist) return true;
+            const words = target.split(/\s+/);
+            for (const word of words){
+                if (word.length >= 2 && levenshtein(nq, word) <= maxDist) return true;
+            }
+        }
+    }
+    return false;
+}
 }),
 "[project]/src/components/features/PerfumeCard.tsx [app-ssr] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
@@ -566,106 +850,185 @@ __turbopack_context__.s([
     ()=>PerfumeCard
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/image.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/arrow-right.js [app-ssr] (ecmascript) <export default as ArrowRight>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/data.ts [app-ssr] (ecmascript)");
 "use client";
 ;
 ;
 ;
+;
 const PerfumeCard = ({ perfume, activeItem, setActiveItem })=>{
     const isActive = activeItem === perfume.id;
+    const isGammeComplete = perfume.category === "Gammes Complètes";
+    const getWhatsappLink = (messageText)=>{
+        return `https://wa.me/${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CONTACT"].whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? ""}?text=${encodeURIComponent(messageText)}`;
+    };
+    const defaultMessage = `Bonjour, je souhaite des informations sur « ${perfume.name} » de ${perfume.brand}.`;
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "group flex cursor-pointer flex-col",
         onClick: ()=>setActiveItem(isActive ? null : perfume.id),
         onMouseLeave: ()=>setActiveItem(null),
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "relative mb-6 aspect-[3/4] overflow-hidden bg-[#F5F4F0]",
+                className: "relative mb-6 aspect-[3/4] overflow-hidden bg-[#F5F4F0] dark:bg-[#141414]",
                 children: [
                     perfume.tags && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "absolute left-4 top-4 z-20",
                         children: perfume.tags.map((tag)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "text-[10px] font-medium uppercase tracking-[0.2em] text-[#111111] dark:text-[#FDFCF8]",
+                                className: "text-[10px] font-medium uppercase tracking-[0.2em] text-[#222222] dark:text-[#FDFCF8]",
                                 children: [
                                     "• ",
                                     tag
                                 ]
                             }, tag, true, {
                                 fileName: "[project]/src/components/features/PerfumeCard.tsx",
-                                lineNumber: 31,
+                                lineNumber: 41,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)))
                     }, void 0, false, {
                         fileName: "[project]/src/components/features/PerfumeCard.tsx",
-                        lineNumber: 29,
+                        lineNumber: 39,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
                         src: perfume.image,
                         alt: perfume.name,
-                        className: "h-full w-full object-cover transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105"
+                        fill: true,
+                        sizes: "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
+                        className: "object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03]"
                     }, void 0, false, {
                         fileName: "[project]/src/components/features/PerfumeCard.tsx",
-                        lineNumber: 41,
+                        lineNumber: 51,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: `absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-[#FDFCF8]/90 p-8 backdrop-blur-sm transition-all duration-500 ease-out dark:bg-[#0A0A0A]/90 ${isActive ? "translate-y-0 opacity-100 pointer-events-auto" : "translate-y-4 opacity-0 pointer-events-none md:group-hover:translate-y-0 md:group-hover:opacity-100 md:group-hover:pointer-events-auto"}`,
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                className: "mb-4 text-center font-serif text-xl",
-                                children: "Acquérir cette création"
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/features/PerfumeCard.tsx",
-                                lineNumber: 54,
-                                columnNumber: 11
-                            }, ("TURBOPACK compile-time value", void 0)),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
-                                href: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CONTACT"].whatsapp,
-                                className: "flex w-full items-center justify-between bg-[#111111] px-6 py-4 text-xs uppercase tracking-[0.15em] text-[#FDFCF8] transition-colors hover:bg-[#8C7A6B] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#C29B62]",
-                                children: [
-                                    "Via WhatsApp ",
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__["ArrowRight"], {
-                                        size: 14
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/components/features/PerfumeCard.tsx",
-                                        lineNumber: 61,
-                                        columnNumber: 26
-                                    }, ("TURBOPACK compile-time value", void 0))
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/src/components/features/PerfumeCard.tsx",
-                                lineNumber: 57,
-                                columnNumber: 11
-                            }, ("TURBOPACK compile-time value", void 0)),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
-                                href: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CONTACT"].snapchat,
-                                className: "flex w-full items-center justify-between border border-[#111111] bg-transparent px-6 py-4 text-xs uppercase tracking-[0.15em] text-[#111111] transition-colors hover:bg-[#F5F4F0] dark:border-[#FDFCF8] dark:text-[#FDFCF8] dark:hover:bg-[#141414]",
-                                children: [
-                                    "Via Snapchat ",
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__["ArrowRight"], {
-                                        size: 14
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/components/features/PerfumeCard.tsx",
-                                        lineNumber: 67,
-                                        columnNumber: 26
-                                    }, ("TURBOPACK compile-time value", void 0))
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/src/components/features/PerfumeCard.tsx",
-                                lineNumber: 63,
-                                columnNumber: 11
-                            }, ("TURBOPACK compile-time value", void 0))
-                        ]
-                    }, void 0, true, {
+                        className: `absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#FDFCF8]/95 p-8 backdrop-blur-md transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] dark:bg-[#0A0A0A]/95 ${isActive ? "translate-y-0 opacity-100 pointer-events-auto" : "translate-y-8 opacity-0 pointer-events-none md:group-hover:translate-y-0 md:group-hover:opacity-100 md:group-hover:pointer-events-auto"}`,
+                        children: isGammeComplete && perfume.classics ? /* Layout spécial pour les Gammes Complètes */ /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "w-full flex h-full flex-col justify-center",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "mb-8 text-center font-serif text-xl tracking-wide text-[#222222] dark:text-[#FDFCF8]",
+                                    children: "Classiques de la Maison"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/features/PerfumeCard.tsx",
+                                    lineNumber: 70,
+                                    columnNumber: 15
+                                }, ("TURBOPACK compile-time value", void 0)),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex flex-col gap-3 overflow-y-auto no-scrollbar pb-4",
+                                    children: perfume.classics.map((classic)=>{
+                                        const classicMsg = `Bonjour, je souhaite acquérir « ${classic} » de ${perfume.brand}.`;
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
+                                            href: getWhatsappLink(classicMsg),
+                                            target: "_blank",
+                                            rel: "noopener noreferrer",
+                                            onClick: (e)=>e.stopPropagation(),
+                                            className: "group/btn flex w-full items-center justify-between border border-[#222222]/20 px-5 py-3 text-xs uppercase tracking-[0.1em] text-[#222222] transition-all hover:border-[#222222] hover:bg-[#222222] hover:text-[#FDFCF8] dark:border-[#FDFCF8]/20 dark:text-[#FDFCF8] dark:hover:border-[#FDFCF8] dark:hover:bg-[#FDFCF8] dark:hover:text-[#0A0A0A]",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "truncate pr-4 font-medium",
+                                                    children: classic
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/features/PerfumeCard.tsx",
+                                                    lineNumber: 85,
+                                                    columnNumber: 23
+                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__["ArrowRight"], {
+                                                    size: 14,
+                                                    className: "shrink-0 transition-transform duration-300 group-hover/btn:-rotate-45"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/features/PerfumeCard.tsx",
+                                                    lineNumber: 88,
+                                                    columnNumber: 23
+                                                }, ("TURBOPACK compile-time value", void 0))
+                                            ]
+                                        }, classic, true, {
+                                            fileName: "[project]/src/components/features/PerfumeCard.tsx",
+                                            lineNumber: 77,
+                                            columnNumber: 21
+                                        }, ("TURBOPACK compile-time value", void 0));
+                                    })
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/features/PerfumeCard.tsx",
+                                    lineNumber: 73,
+                                    columnNumber: 15
+                                }, ("TURBOPACK compile-time value", void 0))
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/components/features/PerfumeCard.tsx",
+                            lineNumber: 69,
+                            columnNumber: 13
+                        }, ("TURBOPACK compile-time value", void 0)) : /* Layout Standard (Sélections Individuelles / Nouveautés) */ /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "w-full flex flex-col gap-4",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "mb-4 text-center font-serif text-xl text-[#222222] dark:text-[#FDFCF8]",
+                                    children: "Acquérir cette création"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/features/PerfumeCard.tsx",
+                                    lineNumber: 100,
+                                    columnNumber: 15
+                                }, ("TURBOPACK compile-time value", void 0)),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
+                                    href: getWhatsappLink(defaultMessage),
+                                    target: "_blank",
+                                    rel: "noopener noreferrer",
+                                    onClick: (e)=>e.stopPropagation(),
+                                    className: "group/btn flex w-full items-center justify-between bg-[#222222] px-6 py-4 text-xs font-semibold uppercase tracking-[0.15em] text-[#FDFCF8] transition-colors hover:bg-[#8C7A6B] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#C29B62]",
+                                    children: [
+                                        "WhatsApp",
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__["ArrowRight"], {
+                                            size: 14,
+                                            className: "transition-transform duration-300 group-hover/btn:-rotate-45"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/features/PerfumeCard.tsx",
+                                            lineNumber: 111,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/src/components/features/PerfumeCard.tsx",
+                                    lineNumber: 103,
+                                    columnNumber: 15
+                                }, ("TURBOPACK compile-time value", void 0)),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
+                                    href: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CONTACT"].snapchat,
+                                    target: "_blank",
+                                    rel: "noopener noreferrer",
+                                    onClick: (e)=>e.stopPropagation(),
+                                    className: "group/btn flex w-full items-center justify-between bg-[#222222] px-6 py-4 text-xs font-semibold uppercase tracking-[0.15em] text-[#FDFCF8] transition-colors hover:bg-[#FFD100] hover:text-[#0A0A0A] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#FFD100]",
+                                    children: [
+                                        "Snapchat",
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__["ArrowRight"], {
+                                            size: 14,
+                                            className: "transition-transform duration-300 group-hover/btn:-rotate-45"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/features/PerfumeCard.tsx",
+                                            lineNumber: 124,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/src/components/features/PerfumeCard.tsx",
+                                    lineNumber: 116,
+                                    columnNumber: 15
+                                }, ("TURBOPACK compile-time value", void 0))
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/components/features/PerfumeCard.tsx",
+                            lineNumber: 99,
+                            columnNumber: 13
+                        }, ("TURBOPACK compile-time value", void 0))
+                    }, void 0, false, {
                         fileName: "[project]/src/components/features/PerfumeCard.tsx",
-                        lineNumber: 47,
+                        lineNumber: 60,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/features/PerfumeCard.tsx",
-                lineNumber: 27,
+                lineNumber: 37,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -676,35 +1039,35 @@ const PerfumeCard = ({ perfume, activeItem, setActiveItem })=>{
                         children: perfume.brand
                     }, void 0, false, {
                         fileName: "[project]/src/components/features/PerfumeCard.tsx",
-                        lineNumber: 73,
+                        lineNumber: 135,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                        className: "mb-2 font-serif text-2xl text-[#111111] md:text-3xl dark:text-[#FDFCF8]",
+                        className: "mb-2 font-serif text-2xl text-[#222222] md:text-3xl dark:text-[#FDFCF8]",
                         children: perfume.name
                     }, void 0, false, {
                         fileName: "[project]/src/components/features/PerfumeCard.tsx",
-                        lineNumber: 76,
+                        lineNumber: 138,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "mt-auto text-xs uppercase tracking-widest text-[#888888] dark:text-[#A0A0A0]",
-                        children: "Disponibilité sur demande"
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                        className: "mt-auto inline-block text-xs uppercase tracking-widest text-[#888888] transition-colors duration-500 group-hover:text-[#8C7A6B] dark:text-[#A0A0A0] dark:group-hover:text-[#C29B62]",
+                        children: isGammeComplete ? "Découvrir la gamme →" : "Demander la disponibilité →"
                     }, void 0, false, {
                         fileName: "[project]/src/components/features/PerfumeCard.tsx",
-                        lineNumber: 79,
+                        lineNumber: 141,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/features/PerfumeCard.tsx",
-                lineNumber: 72,
+                lineNumber: 134,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/features/PerfumeCard.tsx",
-        lineNumber: 22,
+        lineNumber: 32,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -717,6 +1080,7 @@ __turbopack_context__.s([
     ()=>SearchOverlay
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/image.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/search.js [app-ssr] (ecmascript) <export default as Search>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/x.js [app-ssr] (ecmascript) <export default as X>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/data.ts [app-ssr] (ecmascript)");
@@ -724,9 +1088,12 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5
 ;
 ;
 ;
-const SearchOverlay = ({ isOpen, onClose, searchTerm, setSearchTerm, selectedBrand, setSelectedBrand, selectedCategory, setSelectedCategory, onResetFilters })=>{
+;
+const PREVIEW_MAX = 8;
+const SearchOverlay = ({ isOpen, onClose, searchTerm, setSearchTerm, selectedBrand, setSelectedBrand, selectedCategory, setSelectedCategory, onResetFilters, resultsCount, searchResults })=>{
+    const hasActiveFilters = searchTerm.trim() !== "" || selectedBrand !== "Toutes" || selectedCategory !== "Tout voir";
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: `fixed inset-0 z-50 flex flex-col bg-[#FDFCF8] transition-transform duration-700 ease-[cubic-bezier(0.85,0,0.15,1)] dark:bg-[#0A0A0A] ${isOpen ? "translate-x-0" : "translate-x-full"}`,
+        className: `fixed inset-0 z-50 flex flex-col bg-[#FDFCF8]/95 backdrop-blur-md transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] dark:bg-[#0A0A0A]/95 ${isOpen ? "translate-x-0 opacity-100" : "translate-x-12 opacity-0 pointer-events-none"}`,
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "flex items-center justify-between border-b border-[#111111]/10 p-6 md:p-12 dark:border-[#FDFCF8]/10",
@@ -736,7 +1103,7 @@ const SearchOverlay = ({ isOpen, onClose, searchTerm, setSearchTerm, selectedBra
                         children: "Recherche"
                     }, void 0, false, {
                         fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                        lineNumber: 38,
+                        lineNumber: 51,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -748,18 +1115,18 @@ const SearchOverlay = ({ isOpen, onClose, searchTerm, setSearchTerm, selectedBra
                             strokeWidth: 1
                         }, void 0, false, {
                             fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                            lineNumber: 46,
+                            lineNumber: 59,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     }, void 0, false, {
                         fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                        lineNumber: 41,
+                        lineNumber: 54,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                lineNumber: 37,
+                lineNumber: 50,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -773,10 +1140,11 @@ const SearchOverlay = ({ isOpen, onClose, searchTerm, setSearchTerm, selectedBra
                                 placeholder: "Que recherchez-vous ?",
                                 value: searchTerm,
                                 onChange: (event)=>setSearchTerm(event.target.value),
+                                autoFocus: true,
                                 className: "w-full border-b border-[#111111] bg-transparent py-4 text-2xl font-serif text-[#111111] placeholder:text-[#111111]/20 focus:outline-none focus:border-[#8C7A6B] md:py-8 md:text-4xl dark:border-[#FDFCF8] dark:text-[#FDFCF8] dark:placeholder:text-[#FDFCF8]/20 dark:focus:border-[#C29B62]"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                                lineNumber: 52,
+                                lineNumber: 65,
                                 columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
@@ -785,14 +1153,108 @@ const SearchOverlay = ({ isOpen, onClose, searchTerm, setSearchTerm, selectedBra
                                 strokeWidth: 1
                             }, void 0, false, {
                                 fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                                lineNumber: 59,
+                                lineNumber: 73,
                                 columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                        lineNumber: 51,
+                        lineNumber: 64,
                         columnNumber: 9
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    searchTerm.trim() !== "" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "mb-12",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
+                                className: "mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#8C7A6B] dark:text-[#C29B62]",
+                                children: resultsCount > 0 ? `${resultsCount} résultat${resultsCount !== 1 ? "s" : ""}` : "Aucun résultat"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                                lineNumber: 83,
+                                columnNumber: 13
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            resultsCount > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
+                                className: "space-y-3",
+                                children: searchResults.slice(0, PREVIEW_MAX).map((perfume)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            type: "button",
+                                            onClick: ()=>{
+                                                setSelectedBrand(perfume.brand);
+                                                onClose();
+                                            },
+                                            className: "flex w-full items-center gap-4 rounded-lg border border-[#111111]/10 py-3 px-4 text-left transition-colors hover:bg-[#111111]/5 dark:border-[#FDFCF8]/10 dark:hover:bg-[#FDFCF8]/5",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "relative h-12 w-12 shrink-0 overflow-hidden rounded bg-[#F5F4F0] dark:bg-[#141414]",
+                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                                        src: perfume.image,
+                                                        alt: "",
+                                                        fill: true,
+                                                        className: "object-cover",
+                                                        sizes: "48px"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                                                        lineNumber: 101,
+                                                        columnNumber: 25
+                                                    }, ("TURBOPACK compile-time value", void 0))
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                                                    lineNumber: 100,
+                                                    columnNumber: 23
+                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "min-w-0 flex-1",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                            className: "truncate font-serif text-base text-[#111111] dark:text-[#FDFCF8]",
+                                                            children: perfume.name
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                                                            lineNumber: 110,
+                                                            columnNumber: 25
+                                                        }, ("TURBOPACK compile-time value", void 0)),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                            className: "truncate text-xs text-[#888888] dark:text-[#A0A0A0]",
+                                                            children: perfume.brand
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                                                            lineNumber: 113,
+                                                            columnNumber: 25
+                                                        }, ("TURBOPACK compile-time value", void 0))
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                                                    lineNumber: 109,
+                                                    columnNumber: 23
+                                                }, ("TURBOPACK compile-time value", void 0))
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                                            lineNumber: 92,
+                                            columnNumber: 21
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    }, perfume.id, false, {
+                                        fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                                        lineNumber: 91,
+                                        columnNumber: 19
+                                    }, ("TURBOPACK compile-time value", void 0)))
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                                lineNumber: 89,
+                                columnNumber: 15
+                            }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                className: "text-sm text-[#888888] dark:text-[#A0A0A0]",
+                                children: "Essayez un autre terme (ex. nom, marque) ou vérifiez l'orthographe."
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                                lineNumber: 122,
+                                columnNumber: 15
+                            }, ("TURBOPACK compile-time value", void 0))
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                        lineNumber: 82,
+                        columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "grid gap-16 md:grid-cols-2",
@@ -804,38 +1266,36 @@ const SearchOverlay = ({ isOpen, onClose, searchTerm, setSearchTerm, selectedBra
                                         children: "Maisons de Parfum"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                                        lineNumber: 68,
+                                        lineNumber: 131,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
                                         className: "space-y-4",
                                         children: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["allBrands"].map((brand)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                    onClick: ()=>{
-                                                        setSelectedBrand(brand);
-                                                        onClose();
-                                                    },
+                                                    onClick: ()=>setSelectedBrand(brand),
+                                                    type: "button",
                                                     className: `text-lg font-serif transition-colors md:text-xl ${selectedBrand === brand ? "italic text-[#111111] dark:text-[#FDFCF8]" : "text-[#888888] hover:text-[#111111] dark:text-[#A0A0A0] dark:hover:text-[#FDFCF8]"}`,
                                                     children: brand
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                                                    lineNumber: 74,
+                                                    lineNumber: 137,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             }, brand, false, {
                                                 fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                                                lineNumber: 73,
+                                                lineNumber: 136,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)))
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                                        lineNumber: 71,
+                                        lineNumber: 134,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                                lineNumber: 67,
+                                lineNumber: 130,
                                 columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -845,72 +1305,111 @@ const SearchOverlay = ({ isOpen, onClose, searchTerm, setSearchTerm, selectedBra
                                         children: "Familles & Collections"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                                        lineNumber: 92,
+                                        lineNumber: 153,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
                                         className: "space-y-4",
                                         children: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["categories"].map((category)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                    onClick: ()=>{
-                                                        setSelectedCategory(category);
-                                                        onClose();
-                                                    },
+                                                    onClick: ()=>setSelectedCategory(category),
+                                                    type: "button",
                                                     className: `text-lg font-serif transition-colors md:text-xl ${selectedCategory === category ? "italic text-[#111111] dark:text-[#FDFCF8]" : "text-[#888888] hover:text-[#111111] dark:text-[#A0A0A0] dark:hover:text-[#FDFCF8]"}`,
                                                     children: category
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                                                    lineNumber: 98,
+                                                    lineNumber: 159,
                                                     columnNumber: 19
                                                 }, ("TURBOPACK compile-time value", void 0))
                                             }, category, false, {
                                                 fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                                                lineNumber: 97,
+                                                lineNumber: 158,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)))
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                                        lineNumber: 95,
+                                        lineNumber: 156,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                                lineNumber: 91,
+                                lineNumber: 152,
                                 columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                        lineNumber: 66,
+                        lineNumber: 129,
                         columnNumber: 9
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                lineNumber: 50,
+                lineNumber: 63,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "flex justify-center border-t border-[#111111]/10 p-6 md:p-12 dark:border-[#FDFCF8]/10",
-                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                    onClick: onResetFilters,
-                    className: "text-xs uppercase tracking-[0.2em] text-[#888888] underline underline-offset-8 transition-colors hover:text-[#111111] dark:text-[#A0A0A0] dark:hover:text-[#FDFCF8]",
-                    children: "Réinitialiser les critères"
-                }, void 0, false, {
-                    fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                    lineNumber: 119,
-                    columnNumber: 9
-                }, ("TURBOPACK compile-time value", void 0))
-            }, void 0, false, {
+                className: "flex flex-col gap-4 border-t border-[#111111]/10 p-6 md:flex-row md:items-center md:justify-between md:p-12 dark:border-[#FDFCF8]/10",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex flex-wrap items-center gap-3",
+                        children: hasActiveFilters && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                            type: "button",
+                            onClick: onResetFilters,
+                            className: "rounded-full border border-[#111111]/30 bg-transparent px-4 py-2 text-xs uppercase tracking-widest text-[#888888] transition-colors hover:border-[#111111] hover:text-[#111111] dark:border-[#FDFCF8]/30 dark:text-[#A0A0A0] dark:hover:border-[#FDFCF8] dark:hover:text-[#FDFCF8]",
+                            children: "Tout effacer"
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                            lineNumber: 180,
+                            columnNumber: 13
+                        }, ("TURBOPACK compile-time value", void 0))
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                        lineNumber: 178,
+                        columnNumber: 9
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center gap-4",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "text-sm text-[#888888] dark:text-[#A0A0A0]",
+                                children: [
+                                    resultsCount,
+                                    " résultat",
+                                    resultsCount !== 1 ? "s" : ""
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                                lineNumber: 190,
+                                columnNumber: 11
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                type: "button",
+                                onClick: onClose,
+                                className: "rounded-full bg-[#111111] px-8 py-3 text-xs font-medium uppercase tracking-widest text-[#FDFCF8] transition-colors hover:bg-[#333333] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#E5E4E0]",
+                                children: "Voir le catalogue"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                                lineNumber: 193,
+                                columnNumber: 11
+                            }, ("TURBOPACK compile-time value", void 0))
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/features/SearchOverlay.tsx",
+                        lineNumber: 189,
+                        columnNumber: 9
+                    }, ("TURBOPACK compile-time value", void 0))
+                ]
+            }, void 0, true, {
                 fileName: "[project]/src/components/features/SearchOverlay.tsx",
-                lineNumber: 118,
+                lineNumber: 177,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/features/SearchOverlay.tsx",
-        lineNumber: 32,
+        lineNumber: 45,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -941,7 +1440,7 @@ const Footer = ()=>{
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "mb-6 font-serif text-3xl tracking-widest uppercase",
-                                    children: "Nurea"
+                                    children: "Nuréa"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Footer.tsx",
                                     lineNumber: 11,
@@ -949,7 +1448,7 @@ const Footer = ()=>{
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                     className: "mx-auto max-w-xs text-sm font-light text-[#888888] md:mx-0",
-                                    children: "La quintessence de la parfumerie mondiale, sélectionnée avec soin pour les amateurs d'exception."
+                                    children: "La quintessence de la parfumerie mondiale, curatée pour les esprits raffinés."
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Footer.tsx",
                                     lineNumber: 14,
@@ -974,8 +1473,17 @@ const Footer = ()=>{
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
                                     href: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CONTACT"].whatsapp,
-                                    className: "font-serif text-xl transition-colors hover:text-[#C29B62]",
-                                    children: "WhatsApp"
+                                    target: "_blank",
+                                    rel: "noopener noreferrer",
+                                    className: "group font-serif text-xl transition-all hover:text-[#C29B62]",
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "inline-block transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-2",
+                                        children: "WhatsApp"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Footer.tsx",
+                                        lineNumber: 30,
+                                        columnNumber: 15
+                                    }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Footer.tsx",
                                     lineNumber: 24,
@@ -983,11 +1491,20 @@ const Footer = ()=>{
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
                                     href: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CONTACT"].snapchat,
-                                    className: "font-serif text-xl transition-colors hover:text-[#C29B62]",
-                                    children: "Snapchat"
+                                    target: "_blank",
+                                    rel: "noopener noreferrer",
+                                    className: "group font-serif text-xl transition-all hover:text-[#FFD100]",
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "inline-block transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-2",
+                                        children: "Snapchat"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Footer.tsx",
+                                        lineNumber: 40,
+                                        columnNumber: 15
+                                    }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Footer.tsx",
-                                    lineNumber: 30,
+                                    lineNumber: 34,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
@@ -1004,7 +1521,7 @@ const Footer = ()=>{
                                     children: "Informations"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Footer.tsx",
-                                    lineNumber: 39,
+                                    lineNumber: 47,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -1013,7 +1530,7 @@ const Footer = ()=>{
                                     children: "Nous écrire"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Footer.tsx",
-                                    lineNumber: 42,
+                                    lineNumber: 50,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
@@ -1022,13 +1539,13 @@ const Footer = ()=>{
                                     children: "Mentions Légales"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Footer.tsx",
-                                    lineNumber: 48,
+                                    lineNumber: 56,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/layout/Footer.tsx",
-                            lineNumber: 38,
+                            lineNumber: 46,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
@@ -1042,11 +1559,11 @@ const Footer = ()=>{
                     children: [
                         "© ",
                         new Date().getFullYear(),
-                        " Nurea Parfums. Tous droits réservés."
+                        " Nuréa Parfums. Tous droits réservés."
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/layout/Footer.tsx",
-                    lineNumber: 57,
+                    lineNumber: 65,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
@@ -1072,6 +1589,7 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sliders$2d$horizontal$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__SlidersHorizontal$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/sliders-horizontal.js [app-ssr] (ecmascript) <export default as SlidersHorizontal>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/x.js [app-ssr] (ecmascript) <export default as X>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$layout$2f$Navbar$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/layout/Navbar.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$features$2f$Hero$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/features/Hero.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$features$2f$PerfumeCard$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/features/PerfumeCard.tsx [app-ssr] (ecmascript)");
@@ -1103,9 +1621,8 @@ const HomePageClient = ()=>{
         return ()=>window.removeEventListener("scroll", handleScroll);
     }, []);
     const filteredPerfumes = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>{
-        const normalizedSearch = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["normalizeText"])(searchTerm);
         return __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["mockPerfumes"].filter((perfume)=>{
-            const matchSearch = !normalizedSearch || (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["normalizeText"])(perfume.name).includes(normalizedSearch) || (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["normalizeText"])(perfume.brand).includes(normalizedSearch);
+            const matchSearch = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["fuzzySearchMatch"])(perfume, searchTerm);
             const matchCategory = selectedCategory === "Tout voir" || perfume.category === selectedCategory;
             const matchBrand = selectedBrand === "Toutes" || perfume.brand === selectedBrand;
             return matchSearch && matchCategory && matchBrand;
@@ -1120,6 +1637,7 @@ const HomePageClient = ()=>{
         setSelectedCategory("Tout voir");
         setSelectedBrand("Toutes");
     };
+    const hasActiveFilters = searchTerm.trim() !== "" || selectedBrand !== "Toutes" || selectedCategory !== "Tout voir";
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "flex min-h-screen flex-col bg-[#FDFCF8] text-[#111111] transition-colors duration-700 dark:bg-[#0A0A0A] dark:text-[#FDFCF8] selection:bg-[#111111] selection:text-[#FDFCF8] dark:selection:bg-[#FDFCF8] dark:selection:text-[#0A0A0A]",
         children: [
@@ -1128,12 +1646,12 @@ const HomePageClient = ()=>{
                 onOpenFilters: ()=>setIsFilterOpen(true)
             }, void 0, false, {
                 fileName: "[project]/src/components/home/HomePageClient.tsx",
-                lineNumber: 63,
+                lineNumber: 60,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$features$2f$Hero$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Hero"], {}, void 0, false, {
                 fileName: "[project]/src/components/home/HomePageClient.tsx",
-                lineNumber: 65,
+                lineNumber: 62,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
@@ -1153,12 +1671,12 @@ const HomePageClient = ()=>{
                                             children: "La Collection"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/home/HomePageClient.tsx",
-                                            lineNumber: 74,
+                                            lineNumber: 71,
                                             columnNumber: 15
                                         }, ("TURBOPACK compile-time value", void 0))
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/home/HomePageClient.tsx",
-                                        lineNumber: 73,
+                                        lineNumber: 70,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1172,24 +1690,24 @@ const HomePageClient = ()=>{
                                                         className: "absolute -bottom-2 left-0 h-[1px] w-full bg-[#111111] dark:bg-[#FDFCF8]"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/home/HomePageClient.tsx",
-                                                        lineNumber: 91,
+                                                        lineNumber: 88,
                                                         columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, category, true, {
                                                 fileName: "[project]/src/components/home/HomePageClient.tsx",
-                                                lineNumber: 80,
+                                                lineNumber: 77,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)))
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/home/HomePageClient.tsx",
-                                        lineNumber: 78,
+                                        lineNumber: 75,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/home/HomePageClient.tsx",
-                                lineNumber: 72,
+                                lineNumber: 69,
                                 columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1201,49 +1719,177 @@ const HomePageClient = ()=>{
                                         strokeWidth: 1.5
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/home/HomePageClient.tsx",
-                                        lineNumber: 102,
+                                        lineNumber: 99,
                                         columnNumber: 13
                                     }, ("TURBOPACK compile-time value", void 0)),
-                                    " Affiner"
+                                    "Affiner",
+                                    hasActiveFilters && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "flex h-2 w-2 rounded-full bg-[#8C7A6B] dark:bg-[#C29B62]",
+                                        "aria-hidden": true
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/home/HomePageClient.tsx",
+                                        lineNumber: 102,
+                                        columnNumber: 15
+                                    }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/home/HomePageClient.tsx",
-                                lineNumber: 98,
+                                lineNumber: 95,
                                 columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/home/HomePageClient.tsx",
-                        lineNumber: 71,
+                        lineNumber: 68,
                         columnNumber: 9
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    hasActiveFilters && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "mb-8 flex flex-wrap items-center gap-2",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "mr-1 text-xs uppercase tracking-widest text-[#888888] dark:text-[#A0A0A0]",
+                                children: "Filtres actifs :"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/home/HomePageClient.tsx",
+                                lineNumber: 109,
+                                columnNumber: 13
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            searchTerm.trim() !== "" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "inline-flex items-center gap-1.5 rounded-full border border-[#111111]/20 bg-[#F5F4F0] px-3 py-1.5 text-xs dark:border-[#FDFCF8]/20 dark:bg-[#141414]",
+                                children: [
+                                    "Recherche « ",
+                                    searchTerm.trim(),
+                                    " »",
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        type: "button",
+                                        onClick: ()=>setSearchTerm(""),
+                                        className: "rounded-full p-0.5 transition-colors hover:bg-[#111111]/10 dark:hover:bg-[#FDFCF8]/10",
+                                        "aria-label": "Retirer la recherche",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
+                                            size: 12
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/home/HomePageClient.tsx",
+                                            lineNumber: 121,
+                                            columnNumber: 19
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/home/HomePageClient.tsx",
+                                        lineNumber: 115,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0))
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/home/HomePageClient.tsx",
+                                lineNumber: 113,
+                                columnNumber: 15
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            selectedBrand !== "Toutes" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "inline-flex items-center gap-1.5 rounded-full border border-[#111111]/20 bg-[#F5F4F0] px-3 py-1.5 text-xs dark:border-[#FDFCF8]/20 dark:bg-[#141414]",
+                                children: [
+                                    "Marque ",
+                                    selectedBrand,
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        type: "button",
+                                        onClick: ()=>setSelectedBrand("Toutes"),
+                                        className: "rounded-full p-0.5 transition-colors hover:bg-[#111111]/10 dark:hover:bg-[#FDFCF8]/10",
+                                        "aria-label": "Retirer le filtre marque",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
+                                            size: 12
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/home/HomePageClient.tsx",
+                                            lineNumber: 134,
+                                            columnNumber: 19
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/home/HomePageClient.tsx",
+                                        lineNumber: 128,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0))
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/home/HomePageClient.tsx",
+                                lineNumber: 126,
+                                columnNumber: 15
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            selectedCategory !== "Tout voir" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "inline-flex items-center gap-1.5 rounded-full border border-[#111111]/20 bg-[#F5F4F0] px-3 py-1.5 text-xs dark:border-[#FDFCF8]/20 dark:bg-[#141414]",
+                                children: [
+                                    selectedCategory,
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        type: "button",
+                                        onClick: ()=>setSelectedCategory("Tout voir"),
+                                        className: "rounded-full p-0.5 transition-colors hover:bg-[#111111]/10 dark:hover:bg-[#FDFCF8]/10",
+                                        "aria-label": "Retirer le filtre catégorie",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
+                                            size: 12
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/home/HomePageClient.tsx",
+                                            lineNumber: 147,
+                                            columnNumber: 19
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/home/HomePageClient.tsx",
+                                        lineNumber: 141,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0))
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/home/HomePageClient.tsx",
+                                lineNumber: 139,
+                                columnNumber: 15
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                type: "button",
+                                onClick: handleResetFilters,
+                                className: "ml-1 text-xs uppercase tracking-widest text-[#888888] underline underline-offset-2 transition-colors hover:text-[#111111] dark:text-[#A0A0A0] dark:hover:text-[#FDFCF8]",
+                                children: "Tout effacer"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/home/HomePageClient.tsx",
+                                lineNumber: 151,
+                                columnNumber: 13
+                            }, ("TURBOPACK compile-time value", void 0))
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/home/HomePageClient.tsx",
+                        lineNumber: 108,
+                        columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)),
                     filteredPerfumes.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "py-32 text-center font-serif text-2xl text-[#888888] dark:text-[#A0A0A0]",
                         children: "Aucune création ne correspond à votre recherche."
                     }, void 0, false, {
                         fileName: "[project]/src/components/home/HomePageClient.tsx",
-                        lineNumber: 107,
+                        lineNumber: 162,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "animate-stagger grid grid-cols-1 gap-x-8 gap-y-20 md:grid-cols-2 lg:grid-cols-3",
-                        children: filteredPerfumes.map((perfume)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$features$2f$PerfumeCard$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PerfumeCard"], {
-                                perfume: perfume,
-                                activeItem: activeItem,
-                                setActiveItem: setActiveItem
+                        children: filteredPerfumes.map((perfume, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                style: {
+                                    '--stagger-index': index
+                                },
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$features$2f$PerfumeCard$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PerfumeCard"], {
+                                    perfume: perfume,
+                                    activeItem: activeItem,
+                                    setActiveItem: setActiveItem
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/home/HomePageClient.tsx",
+                                    lineNumber: 172,
+                                    columnNumber: 17
+                                }, ("TURBOPACK compile-time value", void 0))
                             }, perfume.id, false, {
                                 fileName: "[project]/src/components/home/HomePageClient.tsx",
-                                lineNumber: 113,
+                                lineNumber: 168,
                                 columnNumber: 15
                             }, ("TURBOPACK compile-time value", void 0)))
                     }, void 0, false, {
                         fileName: "[project]/src/components/home/HomePageClient.tsx",
-                        lineNumber: 111,
+                        lineNumber: 166,
                         columnNumber: 11
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/home/HomePageClient.tsx",
-                lineNumber: 67,
+                lineNumber: 64,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$features$2f$SearchOverlay$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SearchOverlay"], {
@@ -1255,21 +1901,23 @@ const HomePageClient = ()=>{
                 setSelectedBrand: setSelectedBrand,
                 selectedCategory: selectedCategory,
                 setSelectedCategory: setSelectedCategory,
-                onResetFilters: handleResetFilters
+                onResetFilters: handleResetFilters,
+                resultsCount: filteredPerfumes.length,
+                searchResults: filteredPerfumes
             }, void 0, false, {
                 fileName: "[project]/src/components/home/HomePageClient.tsx",
-                lineNumber: 124,
+                lineNumber: 183,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$layout$2f$Footer$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Footer"], {}, void 0, false, {
                 fileName: "[project]/src/components/home/HomePageClient.tsx",
-                lineNumber: 136,
+                lineNumber: 197,
                 columnNumber: 7
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/home/HomePageClient.tsx",
-        lineNumber: 62,
+        lineNumber: 59,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };

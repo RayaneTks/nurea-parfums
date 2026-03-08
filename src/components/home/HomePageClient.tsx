@@ -164,13 +164,17 @@ export const HomePageClient = () => {
           </div>
         ) : (
           <div className="animate-stagger grid grid-cols-1 gap-x-8 gap-y-20 md:grid-cols-2 lg:grid-cols-3">
-            {filteredPerfumes.map((perfume) => (
-              <PerfumeCard
+            {filteredPerfumes.map((perfume, index) => (
+              <div
                 key={perfume.id}
-                perfume={perfume}
-                activeItem={activeItem}
-                setActiveItem={setActiveItem}
-              />
+                style={{ '--stagger-index': index } as React.CSSProperties}
+              >
+                <PerfumeCard
+                  perfume={perfume}
+                  activeItem={activeItem}
+                  setActiveItem={setActiveItem}
+                />
+              </div>
             ))}
           </div>
         )}

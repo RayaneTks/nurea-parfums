@@ -18,6 +18,8 @@ export interface Perfume {
   category: Category;
   image: string;
   tags?: string[];
+  aliases?: string[];
+  classics?: string[];
 }
 
 export const categories: Category[] = [
@@ -57,39 +59,43 @@ export const mockPerfumes: Perfume[] = [
     name: "Gamme complète Rabanne",
     brand: "Rabanne",
     category: "Gammes Complètes",
-    image: "/parfums/complete/RABANNE.png",
+    image: "/parfums/complete/RABANNE.webp",
     tags: ["Gamme complète"],
+    classics: ["1 Million", "Invictus", "Fame", "Phantom"],
   },
   {
     id: 2,
     name: "Gamme complète Dior",
     brand: "Dior",
     category: "Gammes Complètes",
-    image: "/parfums/complete/DIOR.png",
+    image: "/parfums/complete/DIOR.webp",
     tags: ["Gamme complète"],
+    classics: ["Sauvage", "J'adore", "Bois d'Argent", "Gris Dior"],
   },
   {
     id: 3,
     name: "Gamme complète Jean Paul Gaultier",
     brand: "Jean Paul Gaultier",
     category: "Gammes Complètes",
-    image: "/parfums/complete/JPG.png",
+    image: "/parfums/complete/JPG.webp",
     tags: ["Gamme complète"],
+    classics: ["Le Mâle", "Scandal", "Classique", "La Belle"],
   },
   {
     id: 4,
     name: "Gamme complète Hermès",
     brand: "Hermès",
     category: "Gammes Complètes",
-    image: "/parfums/complete/HERMES.png",
+    image: "/parfums/complete/HERMES.webp",
     tags: ["Gamme complète"],
+    classics: ["Terre d'Hermès", "Twilly", "H24", "Un Jardin sur le Nil"],
   },
   {
     id: 5,
     name: "Gamme complète Lacoste",
     brand: "Lacoste",
     category: "Gammes Complètes",
-    image: "/parfums/complete/LACOSTE.png",
+    image: "/parfums/complete/LACOSTE.webp",
     tags: ["Gamme complète"],
   },
   {
@@ -97,7 +103,7 @@ export const mockPerfumes: Perfume[] = [
     name: "Gamme complète Azzaro",
     brand: "Azzaro",
     category: "Gammes Complètes",
-    image: "/parfums/complete/AZZARO.png",
+    image: "/parfums/complete/AZZARO.webp",
     tags: ["Gamme complète"],
   },
   {
@@ -105,15 +111,16 @@ export const mockPerfumes: Perfume[] = [
     name: "Gamme complète Guerlain",
     brand: "Guerlain",
     category: "Gammes Complètes",
-    image: "/parfums/complete/GUERLAIN.png",
+    image: "/parfums/complete/GUERLAIN.webp",
     tags: ["Gamme complète"],
+    classics: ["Shalimar", "Habit Rouge", "L'Homme Idéal", "Aqua Allegoria"],
   },
   {
     id: 8,
     name: "Gamme complète Hugo Boss",
     brand: "Hugo Boss",
     category: "Gammes Complètes",
-    image: "/parfums/complete/BOSS.png",
+    image: "/parfums/complete/BOSS.webp",
     tags: ["Gamme complète"],
   },
 
@@ -123,58 +130,61 @@ export const mockPerfumes: Perfume[] = [
     name: "Baccarat Rouge 540",
     brand: "Maison Francis Kurkdjian",
     category: "Sélections Individuelles",
-    image: "/parfums/baccarat-rouge.jpeg",
+    image: "/parfums/baccarat-rouge.webp",
     tags: ["Signature"],
+    aliases: ["bakara", "bacara", "bacarras", "rouj", "kurkian", "mfk", "francis"],
   },
   {
     id: 10,
     name: "Aventus",
     brand: "Creed",
     category: "Sélections Individuelles",
-    image: "/parfums/creed-aventus.png",
+    image: "/parfums/creed-aventus.webp",
     tags: ["Iconique"],
+    aliases: ["cred", "aventu", "aventhus"],
   },
   {
     id: 11,
     name: "Eros",
     brand: "Versace",
     category: "Sélections Individuelles",
-    image: "/parfums/eros.png",
+    image: "/parfums/eros.webp",
   },
   {
     id: 12,
     name: "Kirke",
     brand: "Tiziana Terenzi",
     category: "Sélections Individuelles",
-    image: "/parfums/kirke.png",
+    image: "/parfums/kirke.webp",
+    aliases: ["kirk", "terenzi", "tiziana"],
   },
   {
     id: 13,
     name: "Oud Touch",
     brand: "Franck Olivier",
     category: "Sélections Individuelles",
-    image: "/parfums/oud-touch.png",
+    image: "/parfums/oud-touch.webp",
   },
   {
     id: 14,
     name: "Pasha",
     brand: "Cartier",
     category: "Sélections Individuelles",
-    image: "/parfums/pasha.png",
+    image: "/parfums/pasha.webp",
   },
   {
     id: 15,
     name: "Sun Java",
     brand: "Franck Olivier",
     category: "Sélections Individuelles",
-    image: "/parfums/sun-java.png",
+    image: "/parfums/sun-java.webp",
   },
   {
     id: 16,
     name: "Zara Tobacco",
     brand: "Zara",
     category: "Sélections Individuelles",
-    image: "/parfums/zara-tobacco.png",
+    image: "/parfums/zara-tobacco.webp",
   },
 
   // Nouveautés
@@ -183,7 +193,7 @@ export const mockPerfumes: Perfume[] = [
     name: "MYSLF",
     brand: "Yves Saint Laurent",
     category: "Nouveautés",
-    image: "/parfums/myslf.png",
+    image: "/parfums/myslf.webp",
     tags: ["Nouveauté"],
   },
   {
@@ -191,7 +201,7 @@ export const mockPerfumes: Perfume[] = [
     name: "Y Elixir",
     brand: "Yves Saint Laurent",
     category: "Nouveautés",
-    image: "/parfums/y-elixir.png",
+    image: "/parfums/y-elixir.webp",
     tags: ["Nouveauté"],
   },
 ];
@@ -237,6 +247,7 @@ export function fuzzySearchMatch(perfume: Perfume, query: string): boolean {
     normalizeForFuzzy(perfume.name),
     normalizeForFuzzy(perfume.brand),
     ...(perfume.tags ?? []).map((t) => normalizeForFuzzy(t)),
+    ...(perfume.aliases ?? []).map((a) => normalizeForFuzzy(a)),
   ];
   for (const target of targets) {
     if (target.includes(nq)) return true;

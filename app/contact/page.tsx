@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { ContactPageClient } from "@/components/contact/ContactPageClient";
 
 export const metadata: Metadata = {
-  title: "Contact",
+  title: "Conciergerie Privée",
   description:
-    "Contactez Nurea Parfums par e-mail, WhatsApp ou Snapchat pour toute question, recommandation ou disponibilité.",
+    "Contactez la conciergerie Nuréa Parfums par WhatsApp, Snapchat ou e-mail pour toute acquisition, recommandation ou renseignement.",
 };
 
 export default function ContactPage() {

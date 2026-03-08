@@ -43,8 +43,8 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col bg-[#FDFCF8] transition-transform duration-700 ease-[cubic-bezier(0.85,0,0.15,1)] dark:bg-[#0A0A0A] ${
-        isOpen ? "translate-x-0" : "translate-x-full"
+      className={`fixed inset-0 z-50 flex flex-col bg-[#FDFCF8]/95 backdrop-blur-md transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] dark:bg-[#0A0A0A]/95 ${
+        isOpen ? "translate-x-0 opacity-100" : "translate-x-12 opacity-0 pointer-events-none"
       }`}
     >
       <div className="flex items-center justify-between border-b border-[#111111]/10 p-6 md:p-12 dark:border-[#FDFCF8]/10">
@@ -67,6 +67,7 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
             placeholder="Que recherchez-vous ?"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
+            autoFocus
             className="w-full border-b border-[#111111] bg-transparent py-4 text-2xl font-serif text-[#111111] placeholder:text-[#111111]/20 focus:outline-none focus:border-[#8C7A6B] md:py-8 md:text-4xl dark:border-[#FDFCF8] dark:text-[#FDFCF8] dark:placeholder:text-[#FDFCF8]/20 dark:focus:border-[#C29B62]"
           />
           <Search

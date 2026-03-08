@@ -100,7 +100,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "C:\\Users\\User",
+    "outputFileTracingRoot": "C:\\Users\\User\\Desktop\\nurea-parfums",
     "cacheComponents": false,
     "cacheLife": {
       "default": {
@@ -293,12 +293,12 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.mjs",
     "turbopack": {
-      "root": "C:\\Users\\User"
+      "root": "C:\\Users\\User\\Desktop\\nurea-parfums"
     },
     "distDirRoot": ".next"
   },
   "appDir": "C:\\Users\\User\\Desktop\\nurea-parfums",
-  "relativeAppDir": "Desktop\\nurea-parfums",
+  "relativeAppDir": "",
   "files": [
     ".next\\routes-manifest.json",
     ".next\\server\\pages-manifest.json",

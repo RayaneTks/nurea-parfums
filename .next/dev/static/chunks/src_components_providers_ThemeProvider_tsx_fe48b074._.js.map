@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/User/Desktop/nurea-parfums/src/components/providers/ThemeProvider.tsx"],"sourcesContent":["\"use client\";\r\n\r\nimport type { ReactNode } from \"react\";\r\nimport { ThemeProvider as NextThemesProvider } from \"next-themes\";\r\n\r\ninterface ThemeProviderProps {\r\n  children: ReactNode;\r\n}\r\n\r\nexport const ThemeProvider = ({ children }: ThemeProviderProps) => {\r\n  return (\r\n    <NextThemesProvider\r\n      attribute=\"class\"\r\n      defaultTheme=\"system\"\r\n      enableSystem\r\n    >\r\n      {children}\r\n    </NextThemesProvider>\r\n  );\r\n};\r\n\r\n"],"names":[],"mappings":";;;;;AAGA;AAHA;;;AASO,MAAM,gBAAgB,CAAC,EAAE,QAAQ,EAAsB;IAC5D,qBACE,6LAAC,oKAAkB;QACjB,WAAU;QACV,cAAa;QACb,YAAY;kBAEX;;;;;;AAGP;KAVa"}}]
+}

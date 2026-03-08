@@ -28,12 +28,15 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/app-dir/link.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next-themes/dist/index.mjs [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$dom$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-dom.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$menu$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Menu$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/menu.js [app-ssr] (ecmascript) <export default as Menu>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$moon$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Moon$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/moon.js [app-ssr] (ecmascript) <export default as Moon>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/search.js [app-ssr] (ecmascript) <export default as Search>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sun$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Sun$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/sun.js [app-ssr] (ecmascript) <export default as Sun>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/x.js [app-ssr] (ecmascript) <export default as X>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
 "use client";
+;
 ;
 ;
 ;
@@ -44,6 +47,7 @@ const Navbar = ({ scrolled, onOpenFilters })=>{
     const pathname = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["usePathname"])();
     const { resolvedTheme, setTheme } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$themes$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useTheme"])();
     const [mounted, setMounted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [menuOpen, setMenuOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>setMounted(true), []);
     const isHome = pathname === "/";
     const isContact = pathname === "/contact";
@@ -51,155 +55,335 @@ const Navbar = ({ scrolled, onOpenFilters })=>{
     const handleToggleTheme = ()=>{
         setTheme(isDark ? "light" : "dark");
     };
+    const closeMenu = ()=>setMenuOpen(false);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        if (typeof document === "undefined") return;
+        if (menuOpen) {
+            document.documentElement.style.overflow = "hidden";
+        } else {
+            document.documentElement.style.overflow = "";
+        }
+        return ()=>{
+            document.documentElement.style.overflow = "";
+        };
+    }, [
+        menuOpen
+    ]);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("nav", {
         className: `fixed top-0 w-full z-40 transition-all duration-500 ${scrolled ? "bg-[#FDFCF8]/95 dark:bg-[#0A0A0A]/95 backdrop-blur-md py-4 shadow-sm" : "bg-transparent py-6"}`,
-        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "mx-auto flex max-w-[1400px] items-center justify-between px-6 md:px-12",
-            children: [
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                    className: "md:hidden",
-                    "aria-label": "Ouvrir le menu",
-                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$menu$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Menu$3e$__["Menu"], {
-                        size: 24,
-                        className: "text-[#111111] dark:text-[#FDFCF8]"
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/layout/Navbar.tsx",
-                        lineNumber: 39,
-                        columnNumber: 11
-                    }, ("TURBOPACK compile-time value", void 0))
-                }, void 0, false, {
-                    fileName: "[project]/src/components/layout/Navbar.tsx",
-                    lineNumber: 38,
-                    columnNumber: 9
-                }, ("TURBOPACK compile-time value", void 0)),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
-                    href: "/",
-                    className: "font-serif text-2xl font-semibold tracking-widest uppercase text-center md:static md:translate-x-0 absolute left-1/2 -translate-x-1/2 cursor-pointer",
-                    children: "Nurea"
-                }, void 0, false, {
-                    fileName: "[project]/src/components/layout/Navbar.tsx",
-                    lineNumber: 42,
-                    columnNumber: 9
-                }, ("TURBOPACK compile-time value", void 0)),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "hidden items-center gap-10 text-xs uppercase tracking-[0.2em] md:flex",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
-                            href: "/",
-                            className: `relative transition-colors after:absolute after:-bottom-2 after:left-0 after:h-[1px] after:w-full after:bg-[#111111] after:transition-transform after:duration-300 dark:after:bg-[#FDFCF8] ${isHome ? "text-[#8C7A6B] dark:text-[#C29B62] after:scale-x-100" : "text-[#111111] dark:text-[#FDFCF8] after:scale-x-0 hover:text-[#8C7A6B] hover:after:scale-x-100 dark:hover:text-[#C29B62]"}`,
-                            children: "La Collection"
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "mx-auto flex max-w-[1400px] items-center justify-between px-6 md:px-12",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        className: "md:hidden",
+                        onClick: ()=>setMenuOpen(true),
+                        "aria-label": "Ouvrir le menu",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$menu$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Menu$3e$__["Menu"], {
+                            size: 24,
+                            className: "text-[#111111] dark:text-[#FDFCF8]"
                         }, void 0, false, {
                             fileName: "[project]/src/components/layout/Navbar.tsx",
-                            lineNumber: 50,
-                            columnNumber: 11
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
-                            href: "/contact",
-                            className: `relative transition-colors after:absolute after:-bottom-2 after:left-0 after:h-[1px] after:w-full after:bg-[#111111] after:transition-transform after:duration-300 dark:after:bg-[#FDFCF8] ${isContact ? "text-[#8C7A6B] dark:text-[#C29B62] after:scale-x-100" : "text-[#111111] dark:text-[#FDFCF8] after:scale-x-0 hover:text-[#8C7A6B] hover:after:scale-x-100 dark:hover:text-[#C29B62]"}`,
-                            children: "Contact Privé"
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/layout/Navbar.tsx",
-                            lineNumber: 60,
+                            lineNumber: 59,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/src/components/layout/Navbar.tsx",
-                    lineNumber: 49,
-                    columnNumber: 9
-                }, ("TURBOPACK compile-time value", void 0)),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "flex items-center gap-4",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            onClick: handleToggleTheme,
-                            className: "hidden h-8 w-8 items-center justify-center rounded-full border border-transparent transition-all hover:border-[#111111] dark:hover:border-[#FDFCF8] md:flex",
-                            "aria-label": "Basculer le thème",
-                            children: mounted ? isDark ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sun$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Sun$3e$__["Sun"], {
-                                size: 14
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                        lineNumber: 54,
+                        columnNumber: 9
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
+                        href: "/",
+                        className: "font-serif text-2xl font-semibold tracking-widest uppercase text-center md:static md:translate-x-0 absolute left-1/2 -translate-x-1/2 cursor-pointer",
+                        children: "Nurea"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                        lineNumber: 62,
+                        columnNumber: 9
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "hidden items-center gap-10 text-xs uppercase tracking-[0.2em] md:flex",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                href: "/",
+                                className: `relative transition-colors after:absolute after:-bottom-2 after:left-0 after:h-[1px] after:w-full after:bg-[#111111] after:transition-transform after:duration-300 dark:after:bg-[#FDFCF8] ${isHome ? "text-[#8C7A6B] dark:text-[#C29B62] after:scale-x-100" : "text-[#111111] dark:text-[#FDFCF8] after:scale-x-0 hover:text-[#8C7A6B] hover:after:scale-x-100 dark:hover:text-[#C29B62]"}`,
+                                children: "La Collection"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/layout/Navbar.tsx",
+                                lineNumber: 70,
+                                columnNumber: 11
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                href: "/contact",
+                                className: `relative transition-colors after:absolute after:-bottom-2 after:left-0 after:h-[1px] after:w-full after:bg-[#111111] after:transition-transform after:duration-300 dark:after:bg-[#FDFCF8] ${isContact ? "text-[#8C7A6B] dark:text-[#C29B62] after:scale-x-100" : "text-[#111111] dark:text-[#FDFCF8] after:scale-x-0 hover:text-[#8C7A6B] hover:after:scale-x-100 dark:hover:text-[#C29B62]"}`,
+                                children: "Contact Privé"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/layout/Navbar.tsx",
                                 lineNumber: 80,
-                                columnNumber: 17
-                            }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$moon$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Moon$3e$__["Moon"], {
-                                size: 14
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/layout/Navbar.tsx",
-                                lineNumber: 82,
-                                columnNumber: 17
-                            }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "h-[14px] w-[14px]",
-                                "aria-hidden": true
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/layout/Navbar.tsx",
-                                lineNumber: 85,
-                                columnNumber: 15
+                                columnNumber: 11
                             }, ("TURBOPACK compile-time value", void 0))
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/layout/Navbar.tsx",
-                            lineNumber: 73,
-                            columnNumber: 11
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        isHome && onOpenFilters && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                    onClick: onOpenFilters,
-                                    className: "flex items-center gap-2 md:hidden",
-                                    "aria-label": "Ouvrir la recherche",
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
-                                        size: 20
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/components/layout/Navbar.tsx",
-                                        lineNumber: 96,
-                                        columnNumber: 17
-                                    }, ("TURBOPACK compile-time value", void 0))
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                        lineNumber: 69,
+                        columnNumber: 9
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center gap-4",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: handleToggleTheme,
+                                className: "hidden h-8 w-8 items-center justify-center rounded-full border border-transparent transition-all hover:border-[#111111] dark:hover:border-[#FDFCF8] md:flex",
+                                "aria-label": "Basculer le thème",
+                                children: mounted ? isDark ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sun$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Sun$3e$__["Sun"], {
+                                    size: 14
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Navbar.tsx",
-                                    lineNumber: 91,
-                                    columnNumber: 15
-                                }, ("TURBOPACK compile-time value", void 0)),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "hidden items-center gap-6 md:flex",
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                        onClick: onOpenFilters,
-                                        className: "flex items-center gap-2 text-xs uppercase tracking-[0.1em] transition-colors hover:text-[#8C7A6B] dark:hover:text-[#C29B62]",
-                                        children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
-                                                size: 14
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/components/layout/Navbar.tsx",
-                                                lineNumber: 103,
-                                                columnNumber: 19
-                                            }, ("TURBOPACK compile-time value", void 0)),
-                                            " Recherche"
-                                        ]
-                                    }, void 0, true, {
-                                        fileName: "[project]/src/components/layout/Navbar.tsx",
-                                        lineNumber: 99,
-                                        columnNumber: 17
-                                    }, ("TURBOPACK compile-time value", void 0))
+                                    lineNumber: 100,
+                                    columnNumber: 17
+                                }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$moon$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Moon$3e$__["Moon"], {
+                                    size: 14
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Navbar.tsx",
-                                    lineNumber: 98,
+                                    lineNumber: 102,
+                                    columnNumber: 17
+                                }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "h-[14px] w-[14px]",
+                                    "aria-hidden": true
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/layout/Navbar.tsx",
+                                    lineNumber: 105,
                                     columnNumber: 15
                                 }, ("TURBOPACK compile-time value", void 0))
-                            ]
-                        }, void 0, true)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/src/components/layout/Navbar.tsx",
-                    lineNumber: 72,
-                    columnNumber: 9
-                }, ("TURBOPACK compile-time value", void 0))
-            ]
-        }, void 0, true, {
-            fileName: "[project]/src/components/layout/Navbar.tsx",
-            lineNumber: 37,
-            columnNumber: 7
-        }, ("TURBOPACK compile-time value", void 0))
-    }, void 0, false, {
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/layout/Navbar.tsx",
+                                lineNumber: 93,
+                                columnNumber: 11
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            isHome && onOpenFilters && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        onClick: onOpenFilters,
+                                        className: "flex items-center gap-2 md:hidden",
+                                        "aria-label": "Ouvrir la recherche",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
+                                            size: 20
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/layout/Navbar.tsx",
+                                            lineNumber: 116,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 111,
+                                        columnNumber: 15
+                                    }, ("TURBOPACK compile-time value", void 0)),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "hidden items-center gap-6 md:flex",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            onClick: onOpenFilters,
+                                            className: "flex items-center gap-2 text-xs uppercase tracking-[0.1em] transition-colors hover:text-[#8C7A6B] dark:hover:text-[#C29B62]",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
+                                                    size: 14
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/layout/Navbar.tsx",
+                                                    lineNumber: 123,
+                                                    columnNumber: 19
+                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                " Recherche"
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/src/components/layout/Navbar.tsx",
+                                            lineNumber: 119,
+                                            columnNumber: 17
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 118,
+                                        columnNumber: 15
+                                    }, ("TURBOPACK compile-time value", void 0))
+                                ]
+                            }, void 0, true)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                        lineNumber: 92,
+                        columnNumber: 9
+                    }, ("TURBOPACK compile-time value", void 0))
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/layout/Navbar.tsx",
+                lineNumber: 53,
+                columnNumber: 7
+            }, ("TURBOPACK compile-time value", void 0)),
+            mounted && typeof document !== "undefined" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$dom$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["createPortal"])(/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        type: "button",
+                        onClick: closeMenu,
+                        className: `fixed inset-0 z-[9998] bg-black/50 transition-opacity duration-300 md:hidden ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`,
+                        "aria-label": "Fermer le menu"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                        lineNumber: 136,
+                        columnNumber: 13
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: `fixed left-0 top-0 z-[9999] flex h-full w-[min(280px,85vw)] flex-col gap-8 border-r border-[#111111]/10 bg-[#FDFCF8] px-6 py-8 shadow-xl transition-transform duration-300 ease-out dark:border-[#FDFCF8]/10 dark:bg-[#0A0A0A] md:hidden ${menuOpen ? "translate-x-0" : "-translate-x-full"}`,
+                        role: "dialog",
+                        "aria-label": "Menu principal",
+                        "aria-hidden": !menuOpen,
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex items-center justify-between",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "font-serif text-lg font-semibold tracking-widest uppercase text-[#111111] dark:text-[#FDFCF8]",
+                                        children: "Menu"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 153,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0)),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        type: "button",
+                                        onClick: closeMenu,
+                                        className: "rounded-full p-2 transition-colors hover:bg-[#111111]/10 dark:hover:bg-[#FDFCF8]/10",
+                                        "aria-label": "Fermer le menu",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
+                                            size: 20,
+                                            className: "text-[#111111] dark:text-[#FDFCF8]"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/layout/Navbar.tsx",
+                                            lineNumber: 162,
+                                            columnNumber: 19
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 156,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0))
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/layout/Navbar.tsx",
+                                lineNumber: 152,
+                                columnNumber: 15
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("nav", {
+                                className: "flex flex-col gap-6",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                        href: "/",
+                                        onClick: closeMenu,
+                                        className: `text-sm uppercase tracking-[0.2em] ${isHome ? "font-medium text-[#8C7A6B] dark:text-[#C29B62]" : "text-[#111111] dark:text-[#FDFCF8]"}`,
+                                        children: "La Collection"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 166,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0)),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                        href: "/contact",
+                                        onClick: closeMenu,
+                                        className: `text-sm uppercase tracking-[0.2em] ${isContact ? "font-medium text-[#8C7A6B] dark:text-[#C29B62]" : "text-[#111111] dark:text-[#FDFCF8]"}`,
+                                        children: "Contact Privé"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 177,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0))
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/layout/Navbar.tsx",
+                                lineNumber: 165,
+                                columnNumber: 15
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "mt-auto border-t border-[#111111]/10 pt-6 dark:border-[#FDFCF8]/10",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "mb-3 text-xs uppercase tracking-widest text-[#888888] dark:text-[#A0A0A0]",
+                                        children: "Thème"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 190,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0)),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        type: "button",
+                                        onClick: handleToggleTheme,
+                                        className: "flex h-10 w-full items-center gap-3 rounded-lg border border-[#111111]/20 px-4 transition-colors hover:bg-[#111111]/5 dark:border-[#FDFCF8]/20 dark:hover:bg-[#FDFCF8]/5",
+                                        "aria-label": "Basculer le thème",
+                                        children: mounted ? isDark ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sun$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Sun$3e$__["Sun"], {
+                                                    size: 18,
+                                                    className: "text-[#111111] dark:text-[#FDFCF8]"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/layout/Navbar.tsx",
+                                                    lineNumber: 202,
+                                                    columnNumber: 25
+                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-sm text-[#111111] dark:text-[#FDFCF8]",
+                                                    children: "Mode clair"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/layout/Navbar.tsx",
+                                                    lineNumber: 203,
+                                                    columnNumber: 25
+                                                }, ("TURBOPACK compile-time value", void 0))
+                                            ]
+                                        }, void 0, true) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$moon$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Moon$3e$__["Moon"], {
+                                                    size: 18,
+                                                    className: "text-[#111111] dark:text-[#FDFCF8]"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/layout/Navbar.tsx",
+                                                    lineNumber: 207,
+                                                    columnNumber: 25
+                                                }, ("TURBOPACK compile-time value", void 0)),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-sm text-[#111111] dark:text-[#FDFCF8]",
+                                                    children: "Mode sombre"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/layout/Navbar.tsx",
+                                                    lineNumber: 208,
+                                                    columnNumber: 25
+                                                }, ("TURBOPACK compile-time value", void 0))
+                                            ]
+                                        }, void 0, true) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "h-[18px] w-[18px]",
+                                            "aria-hidden": true
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/layout/Navbar.tsx",
+                                            lineNumber: 212,
+                                            columnNumber: 21
+                                        }, ("TURBOPACK compile-time value", void 0))
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                                        lineNumber: 193,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0))
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/layout/Navbar.tsx",
+                                lineNumber: 189,
+                                columnNumber: 15
+                            }, ("TURBOPACK compile-time value", void 0))
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/layout/Navbar.tsx",
+                        lineNumber: 144,
+                        columnNumber: 13
+                    }, ("TURBOPACK compile-time value", void 0))
+                ]
+            }, void 0, true), document.body)
+        ]
+    }, void 0, true, {
         fileName: "[project]/src/components/layout/Navbar.tsx",
-        lineNumber: 30,
+        lineNumber: 46,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -214,8 +398,12 @@ __turbopack_context__.s([
     ()=>allBrands,
     "categories",
     ()=>categories,
+    "fuzzySearchMatch",
+    ()=>fuzzySearchMatch,
     "mockPerfumes",
     ()=>mockPerfumes,
+    "normalizeForFuzzy",
+    ()=>normalizeForFuzzy,
     "normalizeText",
     ()=>normalizeText
 ]);
@@ -259,9 +447,15 @@ const mockPerfumes = [
         name: "Gamme complète Rabanne",
         brand: "Rabanne",
         category: "Gammes Complètes",
-        image: "/parfums/complete/RABANNE.png",
+        image: "/parfums/complete/RABANNE.webp",
         tags: [
             "Gamme complète"
+        ],
+        classics: [
+            "1 Million",
+            "Invictus",
+            "Fame",
+            "Phantom"
         ]
     },
     {
@@ -269,9 +463,15 @@ const mockPerfumes = [
         name: "Gamme complète Dior",
         brand: "Dior",
         category: "Gammes Complètes",
-        image: "/parfums/complete/DIOR.png",
+        image: "/parfums/complete/DIOR.webp",
         tags: [
             "Gamme complète"
+        ],
+        classics: [
+            "Sauvage",
+            "J'adore",
+            "Bois d'Argent",
+            "Gris Dior"
         ]
     },
     {
@@ -279,9 +479,15 @@ const mockPerfumes = [
         name: "Gamme complète Jean Paul Gaultier",
         brand: "Jean Paul Gaultier",
         category: "Gammes Complètes",
-        image: "/parfums/complete/JPG.png",
+        image: "/parfums/complete/JPG.webp",
         tags: [
             "Gamme complète"
+        ],
+        classics: [
+            "Le Mâle",
+            "Scandal",
+            "Classique",
+            "La Belle"
         ]
     },
     {
@@ -289,9 +495,15 @@ const mockPerfumes = [
         name: "Gamme complète Hermès",
         brand: "Hermès",
         category: "Gammes Complètes",
-        image: "/parfums/complete/HERMES.png",
+        image: "/parfums/complete/HERMES.webp",
         tags: [
             "Gamme complète"
+        ],
+        classics: [
+            "Terre d'Hermès",
+            "Twilly",
+            "H24",
+            "Un Jardin sur le Nil"
         ]
     },
     {
@@ -299,7 +511,7 @@ const mockPerfumes = [
         name: "Gamme complète Lacoste",
         brand: "Lacoste",
         category: "Gammes Complètes",
-        image: "/parfums/complete/LACOSTE.png",
+        image: "/parfums/complete/LACOSTE.webp",
         tags: [
             "Gamme complète"
         ]
@@ -309,7 +521,7 @@ const mockPerfumes = [
         name: "Gamme complète Azzaro",
         brand: "Azzaro",
         category: "Gammes Complètes",
-        image: "/parfums/complete/AZZARO.png",
+        image: "/parfums/complete/AZZARO.webp",
         tags: [
             "Gamme complète"
         ]
@@ -319,9 +531,15 @@ const mockPerfumes = [
         name: "Gamme complète Guerlain",
         brand: "Guerlain",
         category: "Gammes Complètes",
-        image: "/parfums/complete/GUERLAIN.png",
+        image: "/parfums/complete/GUERLAIN.webp",
         tags: [
             "Gamme complète"
+        ],
+        classics: [
+            "Shalimar",
+            "Habit Rouge",
+            "L'Homme Idéal",
+            "Aqua Allegoria"
         ]
     },
     {
@@ -329,7 +547,7 @@ const mockPerfumes = [
         name: "Gamme complète Hugo Boss",
         brand: "Hugo Boss",
         category: "Gammes Complètes",
-        image: "/parfums/complete/BOSS.png",
+        image: "/parfums/complete/BOSS.webp",
         tags: [
             "Gamme complète"
         ]
@@ -340,9 +558,18 @@ const mockPerfumes = [
         name: "Baccarat Rouge 540",
         brand: "Maison Francis Kurkdjian",
         category: "Sélections Individuelles",
-        image: "/parfums/baccarat-rouge.jpeg",
+        image: "/parfums/baccarat-rouge.webp",
         tags: [
             "Signature"
+        ],
+        aliases: [
+            "bakara",
+            "bacara",
+            "bacarras",
+            "rouj",
+            "kurkian",
+            "mfk",
+            "francis"
         ]
     },
     {
@@ -350,9 +577,14 @@ const mockPerfumes = [
         name: "Aventus",
         brand: "Creed",
         category: "Sélections Individuelles",
-        image: "/parfums/creed-aventus.png",
+        image: "/parfums/creed-aventus.webp",
         tags: [
             "Iconique"
+        ],
+        aliases: [
+            "cred",
+            "aventu",
+            "aventhus"
         ]
     },
     {
@@ -360,42 +592,47 @@ const mockPerfumes = [
         name: "Eros",
         brand: "Versace",
         category: "Sélections Individuelles",
-        image: "/parfums/eros.png"
+        image: "/parfums/eros.webp"
     },
     {
         id: 12,
         name: "Kirke",
         brand: "Tiziana Terenzi",
         category: "Sélections Individuelles",
-        image: "/parfums/kirke.png"
+        image: "/parfums/kirke.webp",
+        aliases: [
+            "kirk",
+            "terenzi",
+            "tiziana"
+        ]
     },
     {
         id: 13,
         name: "Oud Touch",
         brand: "Franck Olivier",
         category: "Sélections Individuelles",
-        image: "/parfums/oud-touch.png"
+        image: "/parfums/oud-touch.webp"
     },
     {
         id: 14,
         name: "Pasha",
         brand: "Cartier",
         category: "Sélections Individuelles",
-        image: "/parfums/pasha.png"
+        image: "/parfums/pasha.webp"
     },
     {
         id: 15,
         name: "Sun Java",
         brand: "Franck Olivier",
         category: "Sélections Individuelles",
-        image: "/parfums/sun-java.png"
+        image: "/parfums/sun-java.webp"
     },
     {
         id: 16,
         name: "Zara Tobacco",
         brand: "Zara",
         category: "Sélections Individuelles",
-        image: "/parfums/zara-tobacco.png"
+        image: "/parfums/zara-tobacco.webp"
     },
     // Nouveautés
     {
@@ -403,7 +640,7 @@ const mockPerfumes = [
         name: "MYSLF",
         brand: "Yves Saint Laurent",
         category: "Nouveautés",
-        image: "/parfums/myslf.png",
+        image: "/parfums/myslf.webp",
         tags: [
             "Nouveauté"
         ]
@@ -413,13 +650,55 @@ const mockPerfumes = [
         name: "Y Elixir",
         brand: "Yves Saint Laurent",
         category: "Nouveautés",
-        image: "/parfums/y-elixir.png",
+        image: "/parfums/y-elixir.webp",
         tags: [
             "Nouveauté"
         ]
     }
 ];
 const normalizeText = (text)=>text?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || "";
+const normalizeForFuzzy = (text)=>{
+    const n = normalizeText(text).replace(/\s+/g, " ");
+    return n.replace(/(.)\1+/g, "$1");
+};
+/** Distance de Levenshtein entre deux chaînes. */ function levenshtein(a, b) {
+    const an = a.length;
+    const bn = b.length;
+    const dp = Array(an + 1).fill(null).map(()=>Array(bn + 1).fill(0));
+    for(let i = 0; i <= an; i++)dp[i][0] = i;
+    for(let j = 0; j <= bn; j++)dp[0][j] = j;
+    for(let i = 1; i <= an; i++){
+        for(let j = 1; j <= bn; j++){
+            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+            dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+        }
+    }
+    return dp[an][bn];
+}
+function fuzzySearchMatch(perfume, query) {
+    const q = query.trim();
+    if (!q) return true;
+    const nq = normalizeForFuzzy(q);
+    const nqLen = nq.length;
+    const targets = [
+        normalizeForFuzzy(perfume.name),
+        normalizeForFuzzy(perfume.brand),
+        ...(perfume.tags ?? []).map((t)=>normalizeForFuzzy(t)),
+        ...(perfume.aliases ?? []).map((a)=>normalizeForFuzzy(a))
+    ];
+    for (const target of targets){
+        if (target.includes(nq)) return true;
+        if (nqLen >= 3 && target.length >= 2) {
+            const maxDist = nqLen <= 4 ? 1 : nqLen <= 7 ? 2 : 3;
+            if (levenshtein(nq, target) <= maxDist) return true;
+            const words = target.split(/\s+/);
+            for (const word of words){
+                if (word.length >= 2 && levenshtein(nq, word) <= maxDist) return true;
+            }
+        }
+    }
+    return false;
+}
 }),
 "[project]/src/components/layout/Footer.tsx [app-ssr] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
@@ -447,7 +726,7 @@ const Footer = ()=>{
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "mb-6 font-serif text-3xl tracking-widest uppercase",
-                                    children: "Nurea"
+                                    children: "Nuréa"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Footer.tsx",
                                     lineNumber: 11,
@@ -455,7 +734,7 @@ const Footer = ()=>{
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                     className: "mx-auto max-w-xs text-sm font-light text-[#888888] md:mx-0",
-                                    children: "La quintessence de la parfumerie mondiale, sélectionnée avec soin pour les amateurs d'exception."
+                                    children: "La quintessence de la parfumerie mondiale, curatée pour les esprits raffinés."
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Footer.tsx",
                                     lineNumber: 14,
@@ -480,8 +759,17 @@ const Footer = ()=>{
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
                                     href: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CONTACT"].whatsapp,
-                                    className: "font-serif text-xl transition-colors hover:text-[#C29B62]",
-                                    children: "WhatsApp"
+                                    target: "_blank",
+                                    rel: "noopener noreferrer",
+                                    className: "group font-serif text-xl transition-all hover:text-[#C29B62]",
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "inline-block transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-2",
+                                        children: "WhatsApp"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Footer.tsx",
+                                        lineNumber: 30,
+                                        columnNumber: 15
+                                    }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Footer.tsx",
                                     lineNumber: 24,
@@ -489,11 +777,20 @@ const Footer = ()=>{
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
                                     href: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CONTACT"].snapchat,
-                                    className: "font-serif text-xl transition-colors hover:text-[#C29B62]",
-                                    children: "Snapchat"
+                                    target: "_blank",
+                                    rel: "noopener noreferrer",
+                                    className: "group font-serif text-xl transition-all hover:text-[#FFD100]",
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "inline-block transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-2",
+                                        children: "Snapchat"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/layout/Footer.tsx",
+                                        lineNumber: 40,
+                                        columnNumber: 15
+                                    }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Footer.tsx",
-                                    lineNumber: 30,
+                                    lineNumber: 34,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
@@ -510,7 +807,7 @@ const Footer = ()=>{
                                     children: "Informations"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Footer.tsx",
-                                    lineNumber: 39,
+                                    lineNumber: 47,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -519,7 +816,7 @@ const Footer = ()=>{
                                     children: "Nous écrire"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Footer.tsx",
-                                    lineNumber: 42,
+                                    lineNumber: 50,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
@@ -528,13 +825,13 @@ const Footer = ()=>{
                                     children: "Mentions Légales"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/layout/Footer.tsx",
-                                    lineNumber: 48,
+                                    lineNumber: 56,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/layout/Footer.tsx",
-                            lineNumber: 38,
+                            lineNumber: 46,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
@@ -548,11 +845,11 @@ const Footer = ()=>{
                     children: [
                         "© ",
                         new Date().getFullYear(),
-                        " Nurea Parfums. Tous droits réservés."
+                        " Nuréa Parfums. Tous droits réservés."
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/layout/Footer.tsx",
-                    lineNumber: 57,
+                    lineNumber: 65,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
@@ -593,6 +890,7 @@ const ContactSection = ()=>{
         message: ""
     });
     const [isSubmitting, setIsSubmitting] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [isSubmitted, setIsSubmitted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const handleContactSubmit = (event)=>{
         event.preventDefault();
         setIsSubmitting(true);
@@ -604,9 +902,7 @@ const ContactSection = ()=>{
                 subject: "",
                 message: ""
             });
-            // Pour l'instant on reste sur un simple feedback natif,
-            // libre à toi de remplacer par un toast ou une intégration réelle.
-            alert("Votre message a été transmis à notre conciergerie avec succès.");
+            setIsSubmitted(true);
         }, 1500);
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
@@ -619,14 +915,14 @@ const ContactSection = ()=>{
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                             className: "mb-6 block text-xs uppercase tracking-[0.4em] text-[#8C7A6B] md:text-sm dark:text-[#C29B62]",
-                            children: "Commandes & Informations"
+                            children: "Conciergerie Privée"
                         }, void 0, false, {
                             fileName: "[project]/src/components/features/ContactSection.tsx",
-                            lineNumber: 43,
+                            lineNumber: 40,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                            className: "mb-8 font-serif text-5xl font-light leading-[1.1] text-[#111111] md:text-7xl dark:text-[#FDFCF8]",
+                            className: "mb-8 font-serif text-5xl font-light leading-[1.1] text-[#222222] md:text-7xl dark:text-[#FDFCF8]",
                             children: [
                                 "L'Art de",
                                 " ",
@@ -635,13 +931,13 @@ const ContactSection = ()=>{
                                     children: "l'Échange."
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/features/ContactSection.tsx",
-                                    lineNumber: 48,
+                                    lineNumber: 45,
                                     columnNumber: 13
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/features/ContactSection.tsx",
-                            lineNumber: 46,
+                            lineNumber: 43,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -649,13 +945,13 @@ const ContactSection = ()=>{
                             children: "Notre Maison opère exclusivement sur commande via nos réseaux dédiés. Pour toute acquisition ou conseil olfactif, nous nous tenons à votre entière disposition."
                         }, void 0, false, {
                             fileName: "[project]/src/components/features/ContactSection.tsx",
-                            lineNumber: 52,
+                            lineNumber: 49,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/features/ContactSection.tsx",
-                    lineNumber: 42,
+                    lineNumber: 39,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0)),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -670,7 +966,7 @@ const ContactSection = ()=>{
                                         children: "Commander via nos réseaux"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                        lineNumber: 62,
+                                        lineNumber: 59,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -678,7 +974,7 @@ const ContactSection = ()=>{
                                         children: "Toutes nos créations sont disponibles sur commande. Échangez directement avec nous sur nos plateformes pour réserver votre pièce ou obtenir une recommandation personnalisée."
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                        lineNumber: 65,
+                                        lineNumber: 62,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -686,16 +982,18 @@ const ContactSection = ()=>{
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
                                                 href: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CONTACT"].whatsapp,
-                                                className: "group flex items-center justify-between border border-[#111111] p-6 transition-all duration-500 hover:bg-[#111111] hover:text-[#FDFCF8] dark:border-[#FDFCF8] dark:hover:bg-[#FDFCF8] dark:hover:text-[#0A0A0A]",
+                                                target: "_blank",
+                                                rel: "noopener noreferrer",
+                                                className: "group flex items-center justify-between bg-[#222222] p-6 text-[#FDFCF8] transition-all duration-500 hover:bg-[#8C7A6B] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#C29B62]",
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 className: "mb-1 block text-xs font-semibold uppercase tracking-[0.2em]",
-                                                                children: "Message & Commandes"
+                                                                children: "Messages & Commandes"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                                lineNumber: 76,
+                                                                lineNumber: 75,
                                                                 columnNumber: 21
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -703,13 +1001,13 @@ const ContactSection = ()=>{
                                                                 children: "WhatsApp"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                                lineNumber: 79,
+                                                                lineNumber: 78,
                                                                 columnNumber: 21
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                        lineNumber: 75,
+                                                        lineNumber: 74,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__["ArrowRight"], {
@@ -718,27 +1016,29 @@ const ContactSection = ()=>{
                                                         className: "transition-transform duration-500 group-hover:-rotate-45"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                        lineNumber: 81,
+                                                        lineNumber: 80,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                lineNumber: 71,
+                                                lineNumber: 68,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
                                                 href: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$data$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CONTACT"].snapchat,
-                                                className: "group flex items-center justify-between border border-[#111111] p-6 transition-all duration-500 hover:bg-[#111111] hover:text-[#FDFCF8] dark:border-[#FDFCF8] dark:hover:bg-[#FDFCF8] dark:hover:text-[#0A0A0A]",
+                                                target: "_blank",
+                                                rel: "noopener noreferrer",
+                                                className: "group flex items-center justify-between bg-[#222222] p-6 text-[#FDFCF8] transition-all duration-500 hover:bg-[#FFD100] hover:text-[#0A0A0A] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#FFD100]",
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 className: "mb-1 block text-xs font-semibold uppercase tracking-[0.2em]",
-                                                                children: "Découvertes & Story"
+                                                                children: "Contacter sur Snapchat"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                                lineNumber: 92,
+                                                                lineNumber: 93,
                                                                 columnNumber: 21
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -746,13 +1046,13 @@ const ContactSection = ()=>{
                                                                 children: "Snapchat"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                                lineNumber: 95,
+                                                                lineNumber: 96,
                                                                 columnNumber: 21
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                        lineNumber: 91,
+                                                        lineNumber: 92,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__["ArrowRight"], {
@@ -761,30 +1061,30 @@ const ContactSection = ()=>{
                                                         className: "transition-transform duration-500 group-hover:-rotate-45"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                        lineNumber: 97,
+                                                        lineNumber: 98,
                                                         columnNumber: 19
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                lineNumber: 87,
+                                                lineNumber: 86,
                                                 columnNumber: 17
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                        lineNumber: 70,
+                                        lineNumber: 67,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                lineNumber: 61,
+                                lineNumber: 58,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/components/features/ContactSection.tsx",
-                            lineNumber: 60,
+                            lineNumber: 57,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0)),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -797,10 +1097,42 @@ const ContactSection = ()=>{
                                         children: "Nous écrire"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                        lineNumber: 109,
+                                        lineNumber: 110,
                                         columnNumber: 15
                                     }, ("TURBOPACK compile-time value", void 0)),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
+                                    isSubmitted ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "flex flex-col items-center justify-center py-16 text-center animate-[fadeInUp_0.6s_ease-out]",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "mb-4 text-xs uppercase tracking-[0.4em] text-[#8C7A6B] dark:text-[#C29B62]",
+                                                children: "Message transmis"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/features/ContactSection.tsx",
+                                                lineNumber: 114,
+                                                columnNumber: 19
+                                            }, ("TURBOPACK compile-time value", void 0)),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
+                                                className: "mb-4 font-serif text-3xl",
+                                                children: "Merci pour votre confiance."
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/features/ContactSection.tsx",
+                                                lineNumber: 117,
+                                                columnNumber: 19
+                                            }, ("TURBOPACK compile-time value", void 0)),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                className: "max-w-sm text-sm text-[#888888] dark:text-[#A0A0A0]",
+                                                children: "Notre conciergerie reviendra vers vous dans les plus brefs délais."
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/features/ContactSection.tsx",
+                                                lineNumber: 120,
+                                                columnNumber: 19
+                                            }, ("TURBOPACK compile-time value", void 0))
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/features/ContactSection.tsx",
+                                        lineNumber: 113,
+                                        columnNumber: 17
+                                    }, ("TURBOPACK compile-time value", void 0)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
                                         onSubmit: handleContactSubmit,
                                         className: "space-y-8",
                                         children: [
@@ -819,12 +1151,12 @@ const ContactSection = ()=>{
                                                                         ...formState,
                                                                         name: event.target.value
                                                                     }),
-                                                                className: "peer block w-full border-b border-[#111111]/10 bg-transparent py-3 text-sm outline-none transition-colors focus:border-[#8C7A6B] dark:border-[#FDFCF8]/10 dark:focus:border-[#C29B62]",
+                                                                className: "peer block w-full border-b border-[#222222]/10 bg-transparent py-3 text-sm outline-none transition-colors focus:border-[#8C7A6B] dark:border-[#FDFCF8]/10 dark:focus:border-[#C29B62]",
                                                                 placeholder: " "
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                                lineNumber: 113,
-                                                                columnNumber: 21
+                                                                lineNumber: 129,
+                                                                columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
                                                                 htmlFor: "name",
@@ -832,14 +1164,14 @@ const ContactSection = ()=>{
                                                                 children: "Nom & Prénom"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                                lineNumber: 127,
-                                                                columnNumber: 21
+                                                                lineNumber: 143,
+                                                                columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                        lineNumber: 112,
-                                                        columnNumber: 19
+                                                        lineNumber: 128,
+                                                        columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         className: "relative",
@@ -853,33 +1185,33 @@ const ContactSection = ()=>{
                                                                         ...formState,
                                                                         email: event.target.value
                                                                     }),
-                                                                className: "peer block w-full border-b border-[#111111]/10 bg-transparent py-3 text-sm outline-none transition-colors focus:border-[#8C7A6B] dark:border-[#FDFCF8]/10 dark:focus:border-[#C29B62]",
+                                                                className: "peer block w-full border-b border-[#222222]/10 bg-transparent py-3 text-sm outline-none transition-colors focus:border-[#8C7A6B] dark:border-[#FDFCF8]/10 dark:focus:border-[#C29B62]",
                                                                 placeholder: " "
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                                lineNumber: 139,
-                                                                columnNumber: 21
+                                                                lineNumber: 155,
+                                                                columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0)),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
                                                                 htmlFor: "email",
                                                                 className: `absolute left-0 top-3 text-sm text-[#888888] transition-all peer-focus:-top-4 peer-focus:text-[10px] peer-focus:tracking-[0.2em] peer-focus:uppercase dark:text-[#A0A0A0] ${formState.email ? "-top-4 text-[10px] tracking-[0.2em] uppercase" : ""}`,
-                                                                children: "Courriel"
+                                                                children: "E-mail"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                                lineNumber: 153,
-                                                                columnNumber: 21
+                                                                lineNumber: 169,
+                                                                columnNumber: 23
                                                             }, ("TURBOPACK compile-time value", void 0))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                        lineNumber: 138,
-                                                        columnNumber: 19
+                                                        lineNumber: 154,
+                                                        columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                lineNumber: 111,
-                                                columnNumber: 17
+                                                lineNumber: 127,
+                                                columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "relative",
@@ -893,12 +1225,12 @@ const ContactSection = ()=>{
                                                                 ...formState,
                                                                 subject: event.target.value
                                                             }),
-                                                        className: "peer block w-full border-b border-[#111111]/10 bg-transparent py-3 text-sm outline-none transition-colors focus:border-[#8C7A6B] dark:border-[#FDFCF8]/10 dark:focus:border-[#C29B62]",
+                                                        className: "peer block w-full border-b border-[#222222]/10 bg-transparent py-3 text-sm outline-none transition-colors focus:border-[#8C7A6B] dark:border-[#FDFCF8]/10 dark:focus:border-[#C29B62]",
                                                         placeholder: " "
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                        lineNumber: 167,
-                                                        columnNumber: 19
+                                                        lineNumber: 183,
+                                                        columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
                                                         htmlFor: "subject",
@@ -906,14 +1238,14 @@ const ContactSection = ()=>{
                                                         children: "Sujet de votre demande"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                        lineNumber: 181,
-                                                        columnNumber: 19
+                                                        lineNumber: 197,
+                                                        columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                lineNumber: 166,
-                                                columnNumber: 17
+                                                lineNumber: 182,
+                                                columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "relative pt-2",
@@ -927,12 +1259,12 @@ const ContactSection = ()=>{
                                                                 ...formState,
                                                                 message: event.target.value
                                                             }),
-                                                        className: "peer block w-full resize-none border-b border-[#111111]/10 bg-transparent py-3 text-sm outline-none transition-colors focus:border-[#8C7A6B] dark:border-[#FDFCF8]/10 dark:focus:border-[#C29B62]",
+                                                        className: "peer block w-full resize-none border-b border-[#222222]/10 bg-transparent py-3 text-sm outline-none transition-colors focus:border-[#8C7A6B] dark:border-[#FDFCF8]/10 dark:focus:border-[#C29B62]",
                                                         placeholder: " "
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                        lineNumber: 194,
-                                                        columnNumber: 19
+                                                        lineNumber: 210,
+                                                        columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
                                                         htmlFor: "message",
@@ -940,66 +1272,66 @@ const ContactSection = ()=>{
                                                         children: "Votre message"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                        lineNumber: 208,
-                                                        columnNumber: 19
+                                                        lineNumber: 224,
+                                                        columnNumber: 21
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                lineNumber: 193,
-                                                columnNumber: 17
+                                                lineNumber: 209,
+                                                columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                 type: "submit",
                                                 disabled: isSubmitting,
-                                                className: "mt-8 flex w-full items-center justify-center gap-3 px-10 py-4 text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50 md:w-auto bg-[#111111] text-[#FDFCF8] hover:bg-[#8C7A6B] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#C29B62]",
+                                                className: "mt-8 flex w-full items-center justify-center gap-3 px-10 py-4 text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50 md:w-auto bg-[#222222] text-[#FDFCF8] hover:bg-[#8C7A6B] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#C29B62]",
                                                 children: [
                                                     isSubmitting ? "Envoi en cours..." : "Envoyer la demande",
                                                     !isSubmitting && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$send$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Send$3e$__["Send"], {
                                                         size: 14
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                        lineNumber: 226,
-                                                        columnNumber: 37
+                                                        lineNumber: 242,
+                                                        columnNumber: 39
                                                     }, ("TURBOPACK compile-time value", void 0))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                                lineNumber: 220,
-                                                columnNumber: 17
+                                                lineNumber: 236,
+                                                columnNumber: 19
                                             }, ("TURBOPACK compile-time value", void 0))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/features/ContactSection.tsx",
-                                        lineNumber: 110,
-                                        columnNumber: 15
+                                        lineNumber: 126,
+                                        columnNumber: 17
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/features/ContactSection.tsx",
-                                lineNumber: 108,
+                                lineNumber: 109,
                                 columnNumber: 13
                             }, ("TURBOPACK compile-time value", void 0))
                         }, void 0, false, {
                             fileName: "[project]/src/components/features/ContactSection.tsx",
-                            lineNumber: 107,
+                            lineNumber: 108,
                             columnNumber: 11
                         }, ("TURBOPACK compile-time value", void 0))
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/features/ContactSection.tsx",
-                    lineNumber: 59,
+                    lineNumber: 56,
                     columnNumber: 9
                 }, ("TURBOPACK compile-time value", void 0))
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/features/ContactSection.tsx",
-            lineNumber: 41,
+            lineNumber: 38,
             columnNumber: 7
         }, ("TURBOPACK compile-time value", void 0))
     }, void 0, false, {
         fileName: "[project]/src/components/features/ContactSection.tsx",
-        lineNumber: 40,
+        lineNumber: 37,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { Cormorant_Garamond, Montserrat } from "next/font/google";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
 
 const serif = Cormorant_Garamond({
   subsets: ["latin"],
@@ -11,21 +11,21 @@ const serif = Cormorant_Garamond({
   variable: "--font-serif",
 });
 
-const sans = Montserrat({
+const sans = Manrope({
   subsets: ["latin"],
   display: "swap",
-  weight: ["200", "300", "400", "500"],
+  weight: ["200", "300", "400", "500", "600"],
   variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://nureaparfums.com"),
   title: {
-    default: "Nurea Parfums | Catalogue premium de parfums",
-    template: "%s | Nurea Parfums",
+    default: "Nuréa Parfums | Haute Parfumerie — Conciergerie Privée",
+    template: "%s | Nuréa Parfums",
   },
   description:
-    "Nurea Parfums: catalogue de parfums de luxe, marques iconiques et sélections niche. Navigation mobile-first par catégorie, marque et recherche.",
+    "Découvrez notre sélection privée de haute parfumerie. Des grandes Maisons aux créations de niche les plus confidentielles, Nuréa vous accompagne vers votre signature olfactive.",
   robots: {
     index: true,
     follow: true,
@@ -45,4 +45,3 @@ export default function RootLayout({ children }: RootLayoutProps) {
     </html>
   );
 }
-
