@@ -43,14 +43,25 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
 
   return (
     <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-500 ease-out-expo ${
+      className={`fixed inset-x-0 top-0 z-50 pt-[env(safe-area-inset-top,0px)] transition-all duration-500 ease-out-expo [transform:translateZ(0)] ${
         scrolled
           ? "backdrop-blur-2xl py-2.5 border-b border-[var(--nurea-border)]"
           : "bg-transparent py-4 md:py-5"
       }`}
       style={scrolled ? { backgroundColor: "var(--nurea-overlay)" } : undefined}
     >
-      <div className="mx-auto flex max-w-[1200px] items-center justify-between px-4 md:px-10">
+      {/* iOS / encoche : bandeau opaque sous la zone système quand la nav est transparente,
+          pour ne pas laisser voir le hero « au-dessus » de la barre d’outils */}
+      {!scrolled && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 z-0 bg-[var(--nurea-bg)]"
+          style={{
+            height: "env(safe-area-inset-top, 0px)",
+          }}
+        />
+      )}
+      <div className="relative z-10 mx-auto flex max-w-[1200px] items-center justify-between px-4 md:px-10">
         {/* Burger — mobile only */}
         <button
           className="md:hidden flex items-center justify-center h-10 w-10 -ml-2 text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] active:scale-95 transition-all"
@@ -159,7 +170,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
 
             {/* Full-screen panel */}
             <div
-              className={`fixed inset-0 z-[61] flex flex-col bg-[var(--nurea-bg)] transition-all duration-500 ease-out-expo md:hidden ${
+              className={`fixed inset-0 z-[61] flex flex-col bg-[var(--nurea-bg)] pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] transition-all duration-500 ease-out-expo md:hidden ${
                 menuOpen
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 -translate-y-full pointer-events-none"

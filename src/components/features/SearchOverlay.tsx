@@ -56,7 +56,7 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
       aria-label="Recherche"
       aria-hidden={!isOpen}
       {...(!isOpen ? { inert: true as unknown as boolean } : {})}
-      className={`fixed inset-0 z-[55] flex flex-col bg-[var(--nurea-bg)]/[0.97] backdrop-blur-3xl transition-all duration-500 ease-out-expo ${
+      className={`fixed inset-0 z-[55] flex flex-col bg-[var(--nurea-bg)]/[0.97] pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-3xl transition-all duration-500 ease-out-expo ${
         isOpen
           ? "opacity-100 pointer-events-auto"
           : "opacity-0 pointer-events-none"
