@@ -46,7 +46,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                   {perfume.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-block bg-[var(--nurea-accent-solid)] px-2.5 py-1 text-[8px] font-medium uppercase tracking-[0.15em] text-white md:text-[9px] md:px-3 md:py-1.5"
+                      className="inline-block bg-[var(--nurea-accent-solid)] px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-white md:text-[11px] md:px-3.5 md:py-1.5"
                     >
                       {tag}
                     </span>
@@ -61,7 +61,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
               delay={120}
               className="flex flex-col justify-center bg-[var(--nurea-surface)] px-6 py-12 md:px-14 md:py-20 lg:px-20"
             >
-              <span className="mb-3 text-[9px] font-medium uppercase tracking-[0.35em] text-[var(--nurea-accent)] md:text-[10px]">
+              <span className="mb-3 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
                 {perfume.brand}
               </span>
               <h2 className="mb-5 font-serif text-[clamp(26px,4vw,42px)] leading-[1.08] text-[var(--nurea-text)]">
@@ -77,7 +77,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                   perfume.name
                 )}
               </h2>
-              <p className="mb-8 text-[12px] leading-[1.85] text-[var(--nurea-text-muted)] max-w-[360px] md:text-[13px]">
+              <p className="mb-8 text-[13px] leading-[1.85] text-[var(--nurea-text-muted)] max-w-[360px] md:text-[14px]">
                 Une fragrance d&apos;exception selectionnee pour sa singularite
                 et son caractere. Disponible sur commande exclusive.
               </p>

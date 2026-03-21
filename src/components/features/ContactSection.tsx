@@ -1,8 +1,9 @@
 "use client";
 
 import type { FC, FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import { ArrowRight, Send } from "lucide-react";
 import { CONTACT } from "@/lib/data";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
@@ -15,6 +16,18 @@ interface ContactFormState {
 }
 
 export const ContactSection: FC = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = !mounted || resolvedTheme === "dark";
+
+  const whatsappIcon = isDark
+    ? "/branding/icons/nurea_icon_whatsapp_ivory.svg"
+    : "/branding/icons/nurea_icon_whatsapp_bordeaux.svg";
+  const snapchatIcon = isDark
+    ? "/branding/icons/nurea_icon_snapchat_ivory.svg"
+    : "/branding/icons/nurea_icon_snapchat_bordeaux.svg";
+
   const [formState, setFormState] = useState<ContactFormState>({
     name: "",
     email: "",
@@ -42,14 +55,14 @@ export const ContactSection: FC = () => {
       <div className="mx-auto max-w-[1200px] px-4 md:px-10 pt-28 pb-16 md:pt-40 md:pb-24">
         {/* Hero compact */}
         <ScrollReveal className="mx-auto mb-16 max-w-2xl text-center md:mb-24">
-          <span className="mb-4 block text-[9px] font-medium uppercase tracking-[0.4em] text-[var(--nurea-accent)] md:text-[10px]">
+          <span className="mb-4 block text-[11px] font-medium uppercase tracking-[0.35em] text-[var(--nurea-accent)] md:text-[12px]">
             Conciergerie Privee
           </span>
           <h1 className="mb-5 font-serif text-[clamp(30px,6vw,52px)] leading-[1.08] text-[var(--nurea-text)]">
             L&apos;Art de{" "}
             <em className="italic">l&apos;Echange</em>
           </h1>
-          <p className="mx-auto max-w-md text-[12px] leading-[1.85] text-[var(--nurea-text-muted)] md:text-[13px]">
+          <p className="mx-auto max-w-md text-[13px] leading-[1.85] text-[var(--nurea-text-muted)] md:text-[14px]">
             Notre Maison opere exclusivement sur commande via nos reseaux
             dedies. Pour toute acquisition ou conseil olfactif, nous nous tenons
             a votre entiere disposition.
@@ -70,7 +83,7 @@ export const ContactSection: FC = () => {
         <div className="mx-auto grid max-w-4xl gap-12 md:grid-cols-2 md:gap-16">
           {/* Left: Social CTAs */}
           <ScrollReveal direction="left" className="flex flex-col gap-4">
-            <h2 className="mb-1 text-[9px] font-medium uppercase tracking-[0.35em] text-[var(--nurea-text-muted)]">
+            <h2 className="mb-1 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-text-muted)]">
               Commander
             </h2>
 
@@ -80,16 +93,16 @@ export const ContactSection: FC = () => {
               rel="noopener noreferrer"
               className="group relative flex items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-5 transition-all duration-500 hover:border-[var(--nurea-accent)] hover:bg-[var(--nurea-surface-hover)] active:scale-[0.99]"
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors duration-300 group-hover:border-[var(--nurea-accent)]">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors duration-300 group-hover:border-[var(--nurea-accent)]">
                 <Image
-                  src="/branding/icons/nurea_icon_whatsapp_ivory.svg"
+                  src={whatsappIcon}
                   alt=""
-                  width={20}
-                  height={20}
+                  width={22}
+                  height={22}
                 />
               </span>
               <div className="flex-1 min-w-0">
-                <span className="block text-[8px] uppercase tracking-[0.2em] text-[var(--nurea-text-muted)] mb-0.5 md:text-[9px]">
+                <span className="block text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] mb-0.5 md:text-[11px]">
                   Messages &amp; Commandes
                 </span>
                 <span className="font-serif text-base text-[var(--nurea-text)] md:text-lg">
@@ -108,16 +121,16 @@ export const ContactSection: FC = () => {
               rel="noopener noreferrer"
               className="group relative flex items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-5 transition-all duration-500 hover:border-[#FFD100] hover:bg-[var(--nurea-surface-hover)] active:scale-[0.99]"
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors duration-300 group-hover:border-[#FFD100]">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors duration-300 group-hover:border-[#FFD100]">
                 <Image
-                  src="/branding/icons/nurea_icon_snapchat_ivory.svg"
+                  src={snapchatIcon}
                   alt=""
-                  width={20}
-                  height={20}
+                  width={22}
+                  height={22}
                 />
               </span>
               <div className="flex-1 min-w-0">
-                <span className="block text-[8px] uppercase tracking-[0.2em] text-[var(--nurea-text-muted)] mb-0.5 md:text-[9px]">
+                <span className="block text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] mb-0.5 md:text-[11px]">
                   Contacter sur Snapchat
                 </span>
                 <span className="font-serif text-base text-[var(--nurea-text)] md:text-lg">
@@ -132,7 +145,7 @@ export const ContactSection: FC = () => {
 
             {/* Email */}
             <div className="mt-3 border-t border-[var(--nurea-border)] pt-5">
-              <span className="block text-[8px] uppercase tracking-[0.2em] text-[var(--nurea-text-muted)] mb-1.5 md:text-[9px]">
+              <span className="block text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] mb-1.5 md:text-[11px]">
                 Correspondance
               </span>
               <a
@@ -147,7 +160,7 @@ export const ContactSection: FC = () => {
           {/* Right: Form */}
           <ScrollReveal direction="right" delay={120}>
             <div className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-6 md:p-8">
-              <h3 className="mb-1.5 text-[9px] font-medium uppercase tracking-[0.35em] text-[var(--nurea-text-muted)]">
+              <h3 className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-text-muted)]">
                 Nous ecrire
               </h3>
               <p className="mb-7 font-serif text-lg text-[var(--nurea-text)] md:text-xl">
@@ -163,7 +176,7 @@ export const ContactSection: FC = () => {
                     height={48}
                     className="mb-6 opacity-45"
                   />
-                  <span className="mb-2 text-[9px] uppercase tracking-[0.3em] text-[var(--nurea-accent)]">
+                  <span className="mb-2 text-[11px] uppercase tracking-[0.25em] text-[var(--nurea-accent)]">
                     Message transmis
                   </span>
                   <h4 className="mb-3 font-serif text-xl text-[var(--nurea-text)]">

@@ -93,13 +93,13 @@ export const HomePageClient = () => {
         <ScrollReveal className="mb-8 md:mb-12">
           <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <span className="block mb-2 text-[9px] font-medium uppercase tracking-[0.35em] text-[var(--nurea-accent)] md:text-[10px]">
+              <span className="block mb-2 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
                 Catalogue
               </span>
               <h2 className="font-serif text-[clamp(24px,5vw,36px)] text-[var(--nurea-text)] leading-tight">
                 La Collection
               </h2>
-              <span className="mt-1.5 block text-[10px] tracking-[0.1em] text-[var(--nurea-text-muted)]">
+              <span className="mt-1.5 block text-[11px] tracking-[0.1em] text-[var(--nurea-text-muted)]">
                 {filteredPerfumes.length} creation
                 {filteredPerfumes.length !== 1 ? "s" : ""}
               </span>
@@ -125,7 +125,7 @@ export const HomePageClient = () => {
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`shrink-0 px-3 py-2.5 text-[10px] font-medium uppercase tracking-[0.12em] transition-all duration-300 relative md:px-4 md:py-3 md:text-[11px] ${
+                className={`shrink-0 px-3.5 py-3 text-[11px] font-medium uppercase tracking-[0.12em] transition-all duration-300 relative md:px-4 md:py-3 md:text-[12px] ${
                   selectedCategory === category
                     ? "text-[var(--nurea-accent)]"
                     : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
@@ -147,7 +147,7 @@ export const HomePageClient = () => {
         {/* Active filters */}
         {hasActiveFilters && (
           <div className="mb-6 flex flex-wrap items-center gap-1.5 animate-fade-in-up">
-            <span className="mr-1 text-[8px] uppercase tracking-[0.25em] text-[var(--nurea-text-muted)]">
+            <span className="mr-1 text-[10px] uppercase tracking-[0.2em] text-[var(--nurea-text-muted)]">
               Filtres :
             </span>
             {searchTerm.trim() !== "" && (
@@ -170,7 +170,7 @@ export const HomePageClient = () => {
             )}
             <button
               onClick={handleResetFilters}
-              className="ml-1 text-[8px] uppercase tracking-[0.15em] text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors"
+              className="ml-1 text-[10px] uppercase tracking-[0.12em] text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors"
             >
               Tout effacer
             </button>
@@ -229,14 +229,14 @@ const FilterChip = ({
   label: string;
   onRemove: () => void;
 }) => (
-  <span className="inline-flex items-center gap-1 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-2.5 py-1 text-[9px] text-[var(--nurea-text)]">
+  <span className="inline-flex items-center gap-1.5 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-1.5 text-[10px] text-[var(--nurea-text)]">
     {label}
     <button
       onClick={onRemove}
       className="text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors"
       aria-label={`Retirer ${label}`}
     >
-      <X size={9} />
+      <X size={11} />
     </button>
   </span>
 );

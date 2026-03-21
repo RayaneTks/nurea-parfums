@@ -45,9 +45,10 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-500 ease-out-expo ${
         scrolled
-          ? "bg-[var(--nurea-bg)]/90 backdrop-blur-2xl py-2.5 border-b border-[var(--nurea-border)]"
+          ? "backdrop-blur-2xl py-2.5 border-b border-[var(--nurea-border)]"
           : "bg-transparent py-4 md:py-5"
       }`}
+      style={scrolled ? { backgroundColor: isDark ? "rgba(10, 5, 8, 0.92)" : "rgba(248, 244, 240, 0.92)" } : undefined}
     >
       <div className="mx-auto flex max-w-[1200px] items-center justify-between px-4 md:px-10">
         {/* Burger — mobile only */}
@@ -70,7 +71,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
               alt="Nurea Parfums"
               width={160}
               height={44}
-              className="h-9 w-auto md:h-11"
+              className="h-11 w-auto md:h-14"
               priority
             />
           ) : (
@@ -81,10 +82,10 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
         </Link>
 
         {/* Nav desktop */}
-        <div className="hidden items-center gap-10 text-[10px] uppercase tracking-[0.2em] font-medium md:flex">
+        <div className="hidden items-center gap-10 text-[11px] uppercase tracking-[0.2em] font-medium md:flex">
           <Link
             href="/"
-            className={`py-1 transition-colors duration-300 ${
+            className={`py-1.5 transition-colors duration-300 ${
               isHome
                 ? "text-[var(--nurea-accent)]"
                 : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
@@ -94,7 +95,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
           </Link>
           <Link
             href="/contact"
-            className={`py-1 transition-colors duration-300 ${
+            className={`py-1.5 transition-colors duration-300 ${
               isContact
                 ? "text-[var(--nurea-accent)]"
                 : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
@@ -109,17 +110,17 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
           {/* Theme toggle — desktop only */}
           <button
             onClick={toggleTheme}
-            className="hidden h-9 w-9 items-center justify-center text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] transition-colors md:flex"
+            className="hidden h-10 w-10 items-center justify-center text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] transition-colors md:flex"
             aria-label="Basculer le theme"
           >
             {mounted ? (
               isDark ? (
-                <Sun size={15} strokeWidth={1.5} />
+                <Sun size={17} strokeWidth={1.5} />
               ) : (
-                <Moon size={15} strokeWidth={1.5} />
+                <Moon size={17} strokeWidth={1.5} />
               )
             ) : (
-              <span className="h-[15px] w-[15px]" />
+              <span className="h-[17px] w-[17px]" />
             )}
           </button>
 
@@ -131,8 +132,8 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
               aria-label="Rechercher"
             >
               <Search size={18} strokeWidth={1.5} className="md:hidden" />
-              <span className="hidden md:flex items-center gap-2 text-[10px] uppercase tracking-[0.15em]">
-                <Search size={13} strokeWidth={1.5} />
+              <span className="hidden md:flex items-center gap-2 text-[11px] uppercase tracking-[0.15em]">
+                <Search size={14} strokeWidth={1.5} />
                 Recherche
               </span>
             </button>
@@ -169,8 +170,8 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
               {...(!menuOpen ? { inert: true as unknown as boolean } : {})}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-4 py-4">
-                <span className="text-[9px] uppercase tracking-[0.4em] text-[var(--nurea-text-muted)]">
+              <div className="flex items-center justify-between px-5 py-4">
+                <span className="text-[11px] uppercase tracking-[0.35em] text-[var(--nurea-text-muted)]">
                   Menu
                 </span>
                 <button
@@ -209,21 +210,21 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
               </nav>
 
               {/* Footer */}
-              <div className="flex items-center justify-between px-4 py-5 border-t border-[var(--nurea-border)]">
+              <div className="flex items-center justify-between px-5 py-5 border-t border-[var(--nurea-border)]">
                 <Image
-                  src="/branding/monogram/np-free-cuivre.png"
+                  src={isDark ? "/branding/monogram/np-free-cuivre.png" : "/branding/monogram/np-free-bordeaux.png"}
                   alt=""
-                  width={32}
-                  height={32}
+                  width={36}
+                  height={36}
                   className="opacity-30"
                 />
                 <button
                   onClick={toggleTheme}
-                  className="flex items-center gap-2 text-[11px] text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] transition-colors"
+                  className="flex items-center gap-2.5 text-[12px] text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] transition-colors min-h-[44px]"
                   aria-label="Basculer le theme"
                 >
                   {mounted &&
-                    (isDark ? <Sun size={14} /> : <Moon size={14} />)}
+                    (isDark ? <Sun size={16} /> : <Moon size={16} />)}
                   <span>{isDark ? "Mode clair" : "Mode sombre"}</span>
                 </button>
               </div>

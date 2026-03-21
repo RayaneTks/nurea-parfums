@@ -13,35 +13,35 @@
     --nurea-bg: #0A0508;
     --nurea-surface: #140E12;
     --nurea-surface-hover: #1C1418;
-    --nurea-accent: #BB5B5B;
-    --nurea-accent-hover: #CC6A6A;
+    --nurea-accent: #C46A6A;
+    --nurea-accent-hover: #D47A7A;
     --nurea-accent-solid: #8B3A3A;
-    --nurea-accent-subtle: rgba(139, 58, 58, 0.12);
+    --nurea-accent-subtle: rgba(139, 58, 58, 0.14);
     --nurea-text: #F0E6E0;
-    --nurea-text-muted: #907080;
-    --nurea-text-subtle: #4D3A42;
+    --nurea-text-muted: #B89AA8;
+    --nurea-text-subtle: #6B5060;
     --nurea-cuivre: #C4956A;
-    --nurea-border: rgba(139, 58, 58, 0.10);
-    --nurea-border-hover: rgba(139, 58, 58, 0.25);
-    --nurea-glow: rgba(139, 58, 58, 0.04);
+    --nurea-border: rgba(139, 58, 58, 0.12);
+    --nurea-border-hover: rgba(139, 58, 58, 0.30);
+    --nurea-glow: rgba(139, 58, 58, 0.06);
     color-scheme: dark;
   }
 
   /* ─── Light mode ──────────────────────────────────────── */
   .light {
-    --nurea-bg: #F8F4F0;
+    --nurea-bg: #FAF6F2;
     --nurea-surface: #FFFFFF;
-    --nurea-surface-hover: #F0EBE6;
+    --nurea-surface-hover: #F2EDE8;
     --nurea-accent: #8B3A3A;
     --nurea-accent-hover: #A44545;
-    --nurea-accent-solid: #8B3A3A;
+    --nurea-accent-solid: #7A3030;
     --nurea-accent-subtle: rgba(139, 58, 58, 0.08);
     --nurea-text: #1A1215;
-    --nurea-text-muted: #8A7580;
-    --nurea-text-subtle: #B0A0A8;
-    --nurea-cuivre: #C4956A;
-    --nurea-border: rgba(139, 58, 58, 0.10);
-    --nurea-border-hover: rgba(139, 58, 58, 0.25);
+    --nurea-text-muted: #6B5560;
+    --nurea-text-subtle: #9A8890;
+    --nurea-cuivre: #B0845A;
+    --nurea-border: rgba(100, 40, 40, 0.12);
+    --nurea-border-hover: rgba(100, 40, 40, 0.28);
     --nurea-glow: rgba(139, 58, 58, 0.06);
     color-scheme: light;
   }
@@ -211,18 +211,18 @@
 .catalogue-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 14px;
 }
 @media (min-width: 768px) {
   .catalogue-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
+    gap: 18px;
   }
 }
 @media (min-width: 1024px) {
   .catalogue-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
+    gap: 22px;
   }
 }
 
@@ -289,8 +289,8 @@
   align-items: center;
   gap: 10px;
   border: 1px solid var(--nurea-border-hover);
-  padding: 13px 22px;
-  font-size: 10px;
+  padding: 14px 24px;
+  font-size: 11px;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.15em;
@@ -300,6 +300,7 @@
   background: transparent;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  min-height: 48px;
 }
 .btn-nurea:hover {
   background: var(--nurea-accent-subtle);
