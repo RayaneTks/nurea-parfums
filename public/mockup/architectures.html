@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuréa — 3 Architectures de Page</title>
+<link href="https://fonts.googleapis.com/css2?family=GFS+Didot&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0508;
+    --surface: #140E12;
+    --surface-hover: #1E151A;
+    --accent: #8B3A3A;
+    --text: #F0E6E0;
+    --text-muted: #6E5560;
+    --text-subtle: #4A3A42;
+    --cuivre: #C4956A;
+    --border: rgba(139,58,58,0.12);
+    --border-hover: rgba(139,58,58,0.3);
+    --serif: 'GFS Didot', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); }
+  img { display:block; max-width:100%; }
+
+  /* ========== INTRO ========== */
+  .intro {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 24px;
+    position: relative;
+  }
+  .intro::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(139,58,58,0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .intro-overline {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+  .intro h1 {
+    font-family: var(--serif);
+    font-size: clamp(32px, 6vw, 56px);
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  .intro p {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.8;
+    max-width: 500px;
+  }
+  .intro-nav {
+    display: flex;
+    gap: 20px;
+    margin-top: 48px;
+  }
+  .intro-nav a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border: 1px solid var(--border-hover);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    transition: all 0.3s;
+  }
+  .intro-nav a:hover {
+    background: rgba(139,58,58,0.12);
+    border-color: var(--accent);
+  }
+  .intro-nav .badge {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--text);
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+  }
+
+  /* ========== SECTION WRAPPER ========== */
+  .direction {
+    min-height: 100vh;
+    border-top: 1px solid var(--border);
+    padding: 80px 0 120px;
+  }
+  .direction-header {
+    text-align: center;
+    padding: 0 24px 60px;
+  }
+  .direction-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--cuivre);
+    margin-bottom: 16px;
+  }
+  .direction-title {
+    font-family: var(--serif);
+    font-size: clamp(28px, 5vw, 44px);
+    margin-bottom: 12px;
+  }
+  .direction-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* ========== DIRECTION A : DÉFILÉ ÉDITORIAL ========== */
+  .editorial-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 80vh;
+    border-bottom: 1px solid var(--border);
+  }
+  .editorial-section:nth-child(even) .editorial-img { order: 2; }
+  .editorial-section:nth-child(even) .editorial-content { order: 1; }
+
+  .editorial-img {
+    position: relative;
+    overflow: hidden;
+    min-height: 500px;
+  }
+  .editorial-img img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .editorial-img .editorial-tag {
+    position: absolute;
+    top: 24px; left: 24px;
+    background: var(--accent);
+    color: var(--text);
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding: 4px 10px;
+    z-index: 2;
+  }
+  .editorial-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px;
+    background: var(--surface);
+  }
+  .editorial-brand {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .editorial-name {
+    font-family: var(--serif);
+    font-size: clamp(24px, 4vw, 40px);
+    line-height: 1.15;
+    margin-bottom: 24px;
+  }
+  .editorial-text {
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+    max-width: 400px;
+  }
+  .editorial-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--border-hover);
+    padding: 14px 24px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    transition: all 0.3s;
+    width: fit-content;
+  }
+  .editorial-cta:hover {
+    background: rgba(139,58,58,0.15);
+    border-color: var(--accent);
+  }
+
+  /* Horizontal carousel for gamme complète */
+  .editorial-carousel {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .editorial-carousel::-webkit-scrollbar { display: none; }
+  .editorial-carousel-item {
+    flex: 0 0 280px;
+    scroll-snap-align: start;
+    padding: 20px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .editorial-carousel-item:hover {
+    background: var(--surface-hover);
+    border-color: var(--accent);
+  }
+  .editorial-carousel-item .arrow {
+    color: var(--accent);
+    font-size: 16px;
+  }
+
+  /* ========== DIRECTION B : GALERIE ASYMÉTRIQUE ========== */
+  .masonry {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 12px;
+    grid-auto-rows: 80px;
+  }
+
+  .masonry-item {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .masonry-item img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s cubic-bezier(0.16,1,0.3,1);
+  }
+  .masonry-item:hover img { transform: scale(1.04); }
+
+  .masonry-info {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 20px;
+    background: linear-gradient(transparent, rgba(10,5,8,0.9));
+    z-index: 2;
+  }
+  .masonry-brand {
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .masonry-name {
+    font-family: var(--serif);
+    font-size: 16px;
+    color: var(--text);
+  }
+
+  /* Grid placement */
+  .m-large { grid-column: span 7; grid-row: span 5; }
+  .m-medium { grid-column: span 5; grid-row: span 5; }
+  .m-wide { grid-column: span 8; grid-row: span 4; }
+  .m-small { grid-column: span 4; grid-row: span 4; }
+  .m-tall { grid-column: span 4; grid-row: span 6; }
+
+  /* Editorial insert */
+  .masonry-editorial {
+    grid-column: span 12;
+    padding: 60px 40px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  .masonry-editorial .sep {
+    width: 80px;
+    height: 1px;
+    background: var(--accent);
+    opacity: 0.4;
+  }
+  .masonry-editorial blockquote {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-style: italic;
+    color: var(--text-muted);
+    max-width: 500px;
+    line-height: 1.5;
+  }
+
+  /* ========== DIRECTION C : VITRINE IMMERSIVE ========== */
+  .vitrine-hero {
+    height: 60vh;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    padding: 40px;
+  }
+  .vitrine-hero img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.3;
+  }
+  .vitrine-hero-content {
+    position: relative;
+    z-index: 2;
+  }
+  .vitrine-hero-content h2 {
+    font-family: var(--serif);
+    font-size: clamp(28px, 5vw, 48px);
+    margin-bottom: 8px;
+  }
+  .vitrine-hero-content p {
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .vitrine-block {
+    padding: 60px 0;
+    border-top: 1px solid var(--border);
+  }
+  .vitrine-block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    margin-bottom: 32px;
+  }
+  .vitrine-block-title {
+    font-family: var(--serif);
+    font-size: 24px;
+  }
+  .vitrine-block-subtitle {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+  }
+
+  .vitrine-carousel {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 0 40px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .vitrine-carousel::-webkit-scrollbar { display: none; }
+
+  .vitrine-card {
+    flex: 0 0 300px;
+    scroll-snap-align: start;
+    cursor: pointer;
+  }
+  .vitrine-card-img {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3/4;
+    overflow: hidden;
+    background: var(--surface);
+    margin-bottom: 12px;
+  }
+  .vitrine-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+  }
+  .vitrine-card:hover .vitrine-card-img img { transform: scale(1.03); }
+  .vitrine-card-brand {
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .vitrine-card-name {
+    font-family: var(--serif);
+    font-size: 16px;
+  }
+
+  .vitrine-transition {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    gap: 16px;
+  }
+  .vitrine-transition .line {
+    width: 60px;
+    height: 1px;
+    background: var(--accent);
+    opacity: 0.3;
+  }
+  .vitrine-transition .monogram {
+    width: 32px;
+    height: 32px;
+    opacity: 0.2;
+  }
+
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 768px) {
+    .editorial-section {
+      grid-template-columns: 1fr;
+    }
+    .editorial-section:nth-child(even) .editorial-img { order: 1; }
+    .editorial-section:nth-child(even) .editorial-content { order: 2; }
+    .editorial-img { min-height: 350px; }
+    .editorial-content { padding: 40px 24px; }
+
+    .masonry {
+      grid-template-columns: repeat(6, 1fr);
+      grid-auto-rows: 60px;
+    }
+    .m-large { grid-column: span 6; grid-row: span 4; }
+    .m-medium { grid-column: span 6; grid-row: span 4; }
+    .m-wide { grid-column: span 6; grid-row: span 3; }
+    .m-small { grid-column: span 3; grid-row: span 3; }
+    .m-tall { grid-column: span 3; grid-row: span 4; }
+
+    .intro-nav { flex-direction: column; }
+
+    .vitrine-card { flex: 0 0 260px; }
+    .vitrine-carousel { padding: 0 20px; }
+    .vitrine-block-header { padding: 0 20px; }
+    .vitrine-hero { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ INTRO ============ -->
+<section class="intro">
+  <div class="intro-overline">Nuréa Parfums — Nouveau Site</div>
+  <h1>3 Architectures<br><em>Radicalement Différentes</em></h1>
+  <p>
+    Même palette. Même typographie. Même brand kit.<br>
+    Mais des structures de page, des interactions et des expériences fondamentalement différentes.
+  </p>
+  <nav class="intro-nav">
+    <a href="#dir-a"><span class="badge">A</span> Défilé Éditorial</a>
+    <a href="#dir-b"><span class="badge">B</span> Galerie Asymétrique</a>
+    <a href="#dir-c"><span class="badge">C</span> Vitrine Immersive</a>
+  </nav>
+</section>
+
+<!-- ============ DIRECTION A : DÉFILÉ ÉDITORIAL ============ -->
+<section class="direction" id="dir-a">
+  <div class="direction-header">
+    <div class="direction-label">Direction A</div>
+    <h2 class="direction-title">Défilé Éditorial</h2>
+    <p class="direction-desc">
+      Chaque parfum occupe une section plein écran. Image immersive d'un côté, texte et CTA de l'autre.
+      On feuillette le catalogue comme un magazine de mode. Linéaire, cinématique, narratif.
+    </p>
+  </div>
+
+  <!-- Parfum 1 — image gauche -->
+  <div class="editorial-section">
+    <div class="editorial-img">
+      <span class="editorial-tag">Signature</span>
+      <img src="/parfums/baccarat-rouge.webp" alt="Baccarat Rouge 540">
+    </div>
+    <div class="editorial-content">
+      <div class="editorial-brand">Maison Francis Kurkdjian</div>
+      <h3 class="editorial-name">Baccarat<br>Rouge 540</h3>
+      <p class="editorial-text">
+        Une fusion de jasmin, de safran et d'ambre gris dans un sillage inoubliable.
+        Le parfum qui a redéfini la haute parfumerie contemporaine.
+      </p>
+      <a class="editorial-cta" href="#">
+        Acquérir cette création
+        <span style="color:var(--accent)">→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Parfum 2 — image droite (inversé auto) -->
+  <div class="editorial-section">
+    <div class="editorial-img">
+      <span class="editorial-tag">Iconique</span>
+      <img src="/parfums/creed-aventus.webp" alt="Aventus">
+    </div>
+    <div class="editorial-content">
+      <div class="editorial-brand">Creed</div>
+      <h3 class="editorial-name">Aventus</h3>
+      <p class="editorial-text">
+        Inspiré par la vie héroïque d'un empereur. Notes de tête d'ananas et de bouleau,
+        un fond de musc et de chêne. La définition du charisme.
+      </p>
+      <a class="editorial-cta" href="#">
+        Acquérir cette création
+        <span style="color:var(--accent)">→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Gamme complète — section spéciale -->
+  <div class="editorial-section">
+    <div class="editorial-img">
+      <span class="editorial-tag">Gamme complète</span>
+      <img src="/parfums/complete/DIOR.webp" alt="Gamme Dior">
+    </div>
+    <div class="editorial-content">
+      <div class="editorial-brand">Dior</div>
+      <h3 class="editorial-name">La Maison<br>Dior</h3>
+      <p class="editorial-text">
+        L'intégralité de la gamme Dior, disponible sur commande.
+        Sélectionnez votre classique parmi les créations emblématiques de la Maison.
+      </p>
+      <div class="editorial-carousel">
+        <div class="editorial-carousel-item">
+          <span>Sauvage</span>
+          <span class="arrow">↗</span>
+        </div>
+        <div class="editorial-carousel-item">
+          <span>J'adore</span>
+          <span class="arrow">↗</span>
+        </div>
+        <div class="editorial-carousel-item">
+          <span>Bois d'Argent</span>
+          <span class="arrow">↗</span>
+        </div>
+        <div class="editorial-carousel-item">
+          <span>Gris Dior</span>
+          <span class="arrow">↗</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DIRECTION B : GALERIE ASYMÉTRIQUE ============ -->
+<section class="direction" id="dir-b">
+  <div class="direction-header">
+    <div class="direction-label">Direction B</div>
+    <h2 class="direction-title">Galerie Asymétrique</h2>
+    <p class="direction-desc">
+      Une grille volontairement cassée — images de tailles différentes, maçonnerie organique.
+      Des éléments éditoriaux (citations, séparateurs) s'insèrent entre les parfums.
+      L'oeil explore, découvre, s'étonne.
+    </p>
+  </div>
+
+  <div class="masonry">
+    <!-- Grande image -->
+    <div class="masonry-item m-large">
+      <img src="/parfums/baccarat-rouge.webp" alt="">
+      <div class="masonry-info">
+        <div class="masonry-brand">Maison Francis Kurkdjian</div>
+        <div class="masonry-name">Baccarat Rouge 540</div>
+      </div>
+    </div>
+    <!-- Moyenne image -->
+    <div class="masonry-item m-medium">
+      <img src="/parfums/creed-aventus.webp" alt="">
+      <div class="masonry-info">
+        <div class="masonry-brand">Creed</div>
+        <div class="masonry-name">Aventus</div>
+      </div>
+    </div>
+
+    <!-- Insert éditorial -->
+    <div class="masonry-editorial">
+      <div class="sep"></div>
+      <blockquote>« Le parfum est la forme la plus intense du souvenir. »</blockquote>
+      <div class="sep"></div>
+    </div>
+
+    <!-- Ligne variée -->
+    <div class="masonry-item m-wide">
+      <img src="/parfums/complete/DIOR.webp" alt="">
+      <div class="masonry-info">
+        <div class="masonry-brand">Dior</div>
+        <div class="masonry-name">Gamme complète Dior</div>
+      </div>
+    </div>
+    <div class="masonry-item m-small">
+      <img src="/parfums/eros.webp" alt="">
+      <div class="masonry-info">
+        <div class="masonry-brand">Versace</div>
+        <div class="masonry-name">Eros</div>
+      </div>
+    </div>
+
+    <!-- Tall + small -->
+    <div class="masonry-item m-tall">
+      <img src="/parfums/kirke.webp" alt="">
+      <div class="masonry-info">
+        <div class="masonry-brand">Tiziana Terenzi</div>
+        <div class="masonry-name">Kirke</div>
+      </div>
+    </div>
+    <div class="masonry-item m-medium" style="grid-column: span 5; grid-row: span 3;">
+      <img src="/parfums/complete/HERMES.webp" alt="">
+      <div class="masonry-info">
+        <div class="masonry-brand">Hermès</div>
+        <div class="masonry-name">Gamme complète Hermès</div>
+      </div>
+    </div>
+    <div class="masonry-item m-small" style="grid-column: span 3; grid-row: span 3;">
+      <img src="/parfums/pasha.webp" alt="">
+      <div class="masonry-info">
+        <div class="masonry-brand">Cartier</div>
+        <div class="masonry-name">Pasha</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DIRECTION C : VITRINE IMMERSIVE ============ -->
+<section class="direction" id="dir-c">
+  <div class="direction-header">
+    <div class="direction-label">Direction C</div>
+    <h2 class="direction-title">Vitrine Immersive</h2>
+    <p class="direction-desc">
+      Le catalogue est présenté en blocs thématiques séparés par des transitions visuelles.
+      Chaque bloc est un carrousel horizontal. Comme une galerie d'art où on avance de salle en salle.
+    </p>
+  </div>
+
+  <!-- Bloc Signatures -->
+  <div class="vitrine-hero">
+    <img src="/parfums/baccarat-rouge.webp" alt="">
+    <div class="vitrine-hero-content">
+      <h2>Sélections<br>Individuelles</h2>
+      <p>Les pièces rares, choisies pour leur singularité.</p>
+    </div>
+  </div>
+
+  <div class="vitrine-block">
+    <div class="vitrine-block-header">
+      <h3 class="vitrine-block-title">Pièces Signatures</h3>
+      <span class="vitrine-block-subtitle">Swipe pour explorer →</span>
+    </div>
+    <div class="vitrine-carousel">
+      <div class="vitrine-card">
+        <div class="vitrine-card-img"><img src="/parfums/baccarat-rouge.webp" alt=""></div>
+        <div class="vitrine-card-brand">Maison Francis Kurkdjian</div>
+        <div class="vitrine-card-name">Baccarat Rouge 540</div>
+      </div>
+      <div class="vitrine-card">
+        <div class="vitrine-card-img"><img src="/parfums/creed-aventus.webp" alt=""></div>
+        <div class="vitrine-card-brand">Creed</div>
+        <div class="vitrine-card-name">Aventus</div>
+      </div>
+      <div class="vitrine-card">
+        <div class="vitrine-card-img"><img src="/parfums/eros.webp" alt=""></div>
+        <div class="vitrine-card-brand">Versace</div>
+        <div class="vitrine-card-name">Eros</div>
+      </div>
+      <div class="vitrine-card">
+        <div class="vitrine-card-img"><img src="/parfums/kirke.webp" alt=""></div>
+        <div class="vitrine-card-brand">Tiziana Terenzi</div>
+        <div class="vitrine-card-name">Kirke</div>
+      </div>
+      <div class="vitrine-card">
+        <div class="vitrine-card-img"><img src="/parfums/oud-touch.webp" alt=""></div>
+        <div class="vitrine-card-brand">Franck Olivier</div>
+        <div class="vitrine-card-name">Oud Touch</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transition visuelle -->
+  <div class="vitrine-transition">
+    <div class="line"></div>
+    <img class="monogram" src="/branding/monogram/np-free-cuivre.png" alt="">
+    <div class="line"></div>
+  </div>
+
+  <!-- Bloc Gammes -->
+  <div class="vitrine-hero" style="height:40vh;">
+    <img src="/parfums/complete/DIOR.webp" alt="">
+    <div class="vitrine-hero-content">
+      <h2>Les Grandes<br>Maisons</h2>
+      <p>Gammes complètes disponibles sur commande.</p>
+    </div>
+  </div>
+
+  <div class="vitrine-block">
+    <div class="vitrine-block-header">
+      <h3 class="vitrine-block-title">Gammes Complètes</h3>
+      <span class="vitrine-block-subtitle">8 maisons disponibles</span>
+    </div>
+    <div class="vitrine-carousel">
+      <div class="vitrine-card">
+        <div class="vitrine-card-img"><img src="/parfums/complete/RABANNE.webp" alt=""></div>
+        <div class="vitrine-card-brand">Rabanne</div>
+        <div class="vitrine-card-name">Gamme complète</div>
+      </div>
+      <div class="vitrine-card">
+        <div class="vitrine-card-img"><img src="/parfums/complete/DIOR.webp" alt=""></div>
+        <div class="vitrine-card-brand">Dior</div>
+        <div class="vitrine-card-name">Gamme complète</div>
+      </div>
+      <div class="vitrine-card">
+        <div class="vitrine-card-img"><img src="/parfums/complete/JPG.webp" alt=""></div>
+        <div class="vitrine-card-brand">Jean Paul Gaultier</div>
+        <div class="vitrine-card-name">Gamme complète</div>
+      </div>
+      <div class="vitrine-card">
+        <div class="vitrine-card-img"><img src="/parfums/complete/HERMES.webp" alt=""></div>
+        <div class="vitrine-card-brand">Hermès</div>
+        <div class="vitrine-card-name">Gamme complète</div>
+      </div>
+      <div class="vitrine-card">
+        <div class="vitrine-card-img"><img src="/parfums/complete/GUERLAIN.webp" alt=""></div>
+        <div class="vitrine-card-brand">Guerlain</div>
+        <div class="vitrine-card-name">Gamme complète</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER VOTE ============ -->
+<section style="padding: 80px 24px; text-align:center; border-top: 1px solid var(--border);">
+  <div class="direction-label" style="margin-bottom:16px;">Ton choix</div>
+  <h2 style="font-family:var(--serif); font-size:28px; margin-bottom:12px;">Quelle architecture te parle ?</h2>
+  <p style="color:var(--text-muted); font-size:13px; margin-bottom:40px;">
+    Tu peux aussi mixer : prendre le hero de C avec la grille de B, etc.
+  </p>
+  <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+    <div style="border:1px solid var(--border-hover); padding:20px 32px; cursor:pointer; transition:all 0.3s;"
+         onmouseover="this.style.borderColor='var(--accent)'; this.style.background='rgba(139,58,58,0.1)'"
+         onmouseout="this.style.borderColor='var(--border-hover)'; this.style.background='transparent'">
+      <div style="font-family:var(--serif); font-size:20px; margin-bottom:4px;">A</div>
+      <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em;">Défilé Éditorial</div>
+    </div>
+    <div style="border:1px solid var(--border-hover); padding:20px 32px; cursor:pointer; transition:all 0.3s;"
+         onmouseover="this.style.borderColor='var(--accent)'; this.style.background='rgba(139,58,58,0.1)'"
+         onmouseout="this.style.borderColor='var(--border-hover)'; this.style.background='transparent'">
+      <div style="font-family:var(--serif); font-size:20px; margin-bottom:4px;">B</div>
+      <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em;">Galerie Asymétrique</div>
+    </div>
+    <div style="border:1px solid var(--border-hover); padding:20px 32px; cursor:pointer; transition:all 0.3s;"
+         onmouseover="this.style.borderColor='var(--accent)'; this.style.background='rgba(139,58,58,0.1)'"
+         onmouseout="this.style.borderColor='var(--border-hover)'; this.style.background='transparent'">
+      <div style="font-family:var(--serif); font-size:20px; margin-bottom:4px;">C</div>
+      <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em;">Vitrine Immersive</div>
+    </div>
+    <div style="border:1px solid var(--border-hover); padding:20px 32px; cursor:pointer; transition:all 0.3s;"
+         onmouseover="this.style.borderColor='var(--cuivre)'; this.style.background='rgba(196,149,106,0.1)'"
+         onmouseout="this.style.borderColor='var(--border-hover)'; this.style.background='transparent'">
+      <div style="font-family:var(--serif); font-size:20px; margin-bottom:4px;">Mix</div>
+      <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em;">Dis-moi quoi de chaque</div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

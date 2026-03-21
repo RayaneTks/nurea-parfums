@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuréa Parfums — 3 Directions de Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Bodoni:ital,wght@0,400;0,700;1,400&family=Work+Sans:wght@300;400;500;600&family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300&family=Lexend:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a0a; color: #fff; scroll-behavior: smooth; overflow-x: hidden; }
+
+/* ========== INTRO ========== */
+.intro {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  position: relative;
+}
+.intro::before {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 120px;
+  background: linear-gradient(to bottom, transparent, #555, transparent);
+  bottom: 40px;
+  animation: slideLine 2s infinite;
+}
+@keyframes slideLine {
+  0% { opacity: 0; transform: translateY(-20px); }
+  50% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(20px); }
+}
+.intro h1 {
+  font-family: 'Libre Bodoni', serif;
+  font-weight: 400;
+  font-size: 18px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 24px;
+}
+.intro h2 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(28px, 5vw, 48px);
+  line-height: 1.2;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #fff 30%, #888);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.intro p {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 15px;
+  color: #666;
+  max-width: 520px;
+  line-height: 1.8;
+  margin-bottom: 48px;
+}
+.intro .nav-dots {
+  display: flex;
+  gap: 32px;
+}
+.intro .nav-dots a {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #555;
+  text-decoration: none;
+  padding: 8px 0;
+  border-bottom: 1px solid transparent;
+  transition: all 0.3s;
+}
+.intro .nav-dots a:hover { color: #fff; border-bottom-color: #fff; }
+
+/* ========== SECTION COMMON ========== */
+.direction {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+.direction-label {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  z-index: 10;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+/* ====================================================
+   DIRECTION A — "VELOURS NUIT"
+   Palace parisien nocturne
+   Bordeaux profond + Ivoire chaud + Noir bleuté
+   Libre Bodoni + Work Sans
+   ==================================================== */
+#dir-a { background: #0c0a0e; }
+#dir-a .direction-label { color: #A8625A; font-family: 'Work Sans', sans-serif; }
+
+.velours-hero {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 60px 40px;
+}
+.velours-hero::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(168,98,90,0.12) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.velours-center {
+  text-align: center;
+  max-width: 700px;
+  position: relative;
+  z-index: 2;
+}
+.velours-center .overline {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #A8625A;
+  margin-bottom: 32px;
+  display: block;
+}
+.velours-center h1 {
+  font-family: 'Libre Bodoni', serif;
+  font-weight: 400;
+  font-size: clamp(44px, 7vw, 80px);
+  line-height: 1.05;
+  color: #F2EDE6;
+  margin-bottom: 24px;
+  font-style: italic;
+}
+.velours-center .tagline {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: #8a8086;
+  letter-spacing: 0.08em;
+  line-height: 1.8;
+  margin-bottom: 48px;
+}
+.velours-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #F2EDE6;
+  text-decoration: none;
+  padding: 16px 40px;
+  border: 1px solid rgba(168,98,90,0.4);
+  transition: all 0.4s;
+}
+.velours-cta:hover {
+  background: rgba(168,98,90,0.15);
+  border-color: #A8625A;
+}
+.velours-line {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 1px;
+  height: 80px;
+  background: linear-gradient(to bottom, #A8625A, transparent);
+}
+
+/* Velours catalogue cards */
+.velours-catalogue {
+  padding: 80px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.velours-catalogue h2 {
+  font-family: 'Libre Bodoni', serif;
+  font-weight: 400;
+  font-size: 32px;
+  color: #F2EDE6;
+  text-align: center;
+  margin-bottom: 12px;
+}
+.velours-catalogue .subtitle {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 13px;
+  color: #665e5e;
+  text-align: center;
+  letter-spacing: 0.1em;
+  margin-bottom: 60px;
+}
+.velours-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.velours-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 400px;
+  background: #13101a;
+  overflow: hidden;
+  transition: background 0.4s;
+}
+.velours-card:hover { background: #1a1520; }
+.velours-card:nth-child(even) { direction: rtl; }
+.velours-card:nth-child(even) > * { direction: ltr; }
+.velours-card-img {
+  background: #1a1520;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.velours-card-img::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(168,98,90,0.08), transparent);
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+.velours-card:hover .velours-card-img::after { opacity: 1; }
+.velours-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+  transition: opacity 0.5s, transform 0.6s;
+}
+.velours-card:hover .velours-card-img img {
+  opacity: 1;
+  transform: scale(1.03);
+}
+.velours-card-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px;
+}
+.velours-card-info .brand {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #A8625A;
+  margin-bottom: 16px;
+}
+.velours-card-info h3 {
+  font-family: 'Libre Bodoni', serif;
+  font-weight: 400;
+  font-size: 28px;
+  color: #F2EDE6;
+  margin-bottom: 12px;
+  font-style: italic;
+}
+.velours-card-info .price {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 300;
+  color: #A8625A;
+  margin-bottom: 24px;
+}
+.velours-card-info .card-cta {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8a8086;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.3s;
+}
+.velours-card-info .card-cta:hover { color: #F2EDE6; }
+
+/* Stats bar */
+.velours-stats {
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+  padding: 60px 40px;
+  border-top: 1px solid rgba(168,98,90,0.1);
+  border-bottom: 1px solid rgba(168,98,90,0.1);
+  margin: 0 40px;
+}
+.velours-stats .stat { text-align: center; }
+.velours-stats .stat-number {
+  font-family: 'Libre Bodoni', serif;
+  font-size: 36px;
+  color: #A8625A;
+  display: block;
+}
+.velours-stats .stat-label {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #665e5e;
+  margin-top: 8px;
+  display: block;
+}
+
+/* ====================================================
+   DIRECTION B — "NOIR ABSOLU"
+   Galerie d'art contemporain
+   Noir pur + Blanc cassé + Vert de gris
+   Syne 800 + Instrument Sans
+   ==================================================== */
+#dir-b { background: #000; }
+#dir-b .direction-label { color: #7B9E87; font-family: 'Instrument Sans', sans-serif; }
+
+.absolu-hero {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+}
+.absolu-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(123,158,135,0.03) 1px, transparent 1px),
+    linear-gradient(rgba(123,158,135,0.03) 1px, transparent 1px);
+  background-size: 80px 80px;
+  pointer-events: none;
+}
+.absolu-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px;
+  position: relative;
+  z-index: 2;
+}
+.absolu-left .overline {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #7B9E87;
+  margin-bottom: 40px;
+}
+.absolu-left h1 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(48px, 6vw, 72px);
+  line-height: 0.95;
+  color: #F5F0EB;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+.absolu-left h1 span {
+  display: block;
+  color: #7B9E87;
+  font-size: 0.5em;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-top: 8px;
+  text-transform: none;
+}
+.absolu-left .desc {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.8;
+  max-width: 400px;
+  margin-bottom: 48px;
+}
+.absolu-cta {
+  display: inline-flex;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #000;
+  background: #7B9E87;
+  text-decoration: none;
+  padding: 18px 44px;
+  transition: all 0.3s;
+}
+.absolu-cta:hover { background: #F5F0EB; }
+
+.absolu-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.absolu-right .visual-block {
+  width: 320px;
+  height: 480px;
+  background: #111;
+  border: 1px solid #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.absolu-right .visual-block::before {
+  content: 'NURÉA';
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 60px;
+  color: rgba(123,158,135,0.06);
+  position: absolute;
+  transform: rotate(-90deg);
+  white-space: nowrap;
+}
+.absolu-right .visual-block img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(60%);
+  transition: filter 0.5s;
+}
+.absolu-right .visual-block:hover img {
+  filter: grayscale(0%);
+}
+.absolu-right .accent-line {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 80px;
+  height: 2px;
+  background: #7B9E87;
+  transform: translateY(-50%);
+}
+
+/* Absolu catalogue - editorial grid */
+.absolu-catalogue {
+  padding: 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.absolu-catalogue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 60px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #7B9E87;
+}
+.absolu-catalogue-header h2 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 48px;
+  color: #F5F0EB;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.absolu-catalogue-header .count {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 13px;
+  color: #555;
+}
+.absolu-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+}
+.absolu-item {
+  border: 1px solid #1a1a1a;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 360px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s;
+  cursor: pointer;
+}
+.absolu-item:hover { border-color: #7B9E87; }
+.absolu-item.span-7 { grid-column: span 7; }
+.absolu-item.span-5 { grid-column: span 5; }
+.absolu-item.span-4 { grid-column: span 4; }
+.absolu-item.span-8 { grid-column: span 8; }
+.absolu-item.span-6 { grid-column: span 6; }
+.absolu-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.8));
+  pointer-events: none;
+}
+.absolu-item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.3;
+  filter: grayscale(70%);
+  transition: opacity 0.5s, filter 0.5s;
+}
+.absolu-item:hover img {
+  opacity: 0.5;
+  filter: grayscale(20%);
+}
+.absolu-item .number {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 48px;
+  color: rgba(123,158,135,0.08);
+}
+.absolu-item .item-brand {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #7B9E87;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 2;
+}
+.absolu-item h3 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #F5F0EB;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 2;
+}
+.absolu-item .item-price {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 15px;
+  color: #888;
+  margin-top: 8px;
+  position: relative;
+  z-index: 2;
+}
+/* Green reveal line on hover */
+.absolu-item::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #7B9E87;
+  transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.absolu-item:hover::after { width: 100%; }
+
+/* ====================================================
+   DIRECTION C — "SÉPIA SACRÉ"
+   Cabinet de curiosités
+   Ambre/Caramel + Parchemin + Brun profond
+   Fraunces + Lexend
+   ==================================================== */
+#dir-c { background: #0F0B08; }
+#dir-c .direction-label { color: #B4783C; font-family: 'Lexend', sans-serif; }
+
+.sepia-hero {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.sepia-hero::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 380px;
+  height: 380px;
+  border: 1px solid rgba(180,120,60,0.12);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.sepia-hero::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 420px;
+  height: 420px;
+  border: 1px solid rgba(180,120,60,0.06);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.sepia-center {
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+.sepia-center .emblem {
+  font-family: 'Fraunces', serif;
+  font-size: 64px;
+  font-weight: 300;
+  color: rgba(180,120,60,0.15);
+  margin-bottom: 24px;
+  font-style: italic;
+}
+.sepia-center h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-optical-sizing: auto;
+  font-size: clamp(40px, 6vw, 68px);
+  color: #EDE4D5;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+.sepia-center h1 em {
+  font-weight: 300;
+  font-style: italic;
+  color: #B4783C;
+}
+.sepia-center .tagline {
+  font-family: 'Lexend', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: #6b5d4f;
+  letter-spacing: 0.15em;
+  margin-bottom: 48px;
+}
+.sepia-search-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Lexend', sans-serif;
+  font-size: 12px;
+  color: #5a4e40;
+  padding: 10px 24px;
+  border: 1px solid rgba(180,120,60,0.15);
+  border-radius: 40px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.sepia-search-hint:hover {
+  border-color: rgba(180,120,60,0.4);
+  color: #B4783C;
+}
+.sepia-search-hint kbd {
+  font-family: 'Lexend', sans-serif;
+  font-size: 10px;
+  background: rgba(180,120,60,0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #B4783C;
+}
+
+/* Sepia catalogue - horizontal scroll */
+.sepia-catalogue {
+  padding: 80px 0 80px 80px;
+}
+.sepia-catalogue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 48px;
+  padding-right: 80px;
+}
+.sepia-catalogue-header h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-size: 36px;
+  color: #EDE4D5;
+}
+.sepia-catalogue-header h2 em {
+  font-weight: 300;
+  font-style: italic;
+  color: #B4783C;
+}
+.sepia-catalogue-header .nav-arrows {
+  display: flex;
+  gap: 8px;
+}
+.sepia-catalogue-header .nav-arrows button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(180,120,60,0.2);
+  background: transparent;
+  color: #B4783C;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sepia-catalogue-header .nav-arrows button:hover {
+  background: rgba(180,120,60,0.1);
+  border-color: #B4783C;
+}
+.sepia-scroll {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding-bottom: 24px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.sepia-scroll::-webkit-scrollbar { display: none; }
+.sepia-card {
+  flex: 0 0 320px;
+  scroll-snap-align: start;
+  position: relative;
+  cursor: pointer;
+}
+.sepia-card-img {
+  width: 320px;
+  height: 420px;
+  background: #1a1510;
+  border: 1px solid rgba(180,120,60,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.3s;
+}
+.sepia-card:hover .sepia-card-img { border-color: rgba(180,120,60,0.3); }
+.sepia-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: sepia(30%) brightness(0.9);
+  transition: filter 0.4s, transform 0.5s;
+}
+.sepia-card:hover .sepia-card-img img {
+  filter: sepia(10%) brightness(1);
+  transform: scale(1.03);
+}
+.sepia-card-img .card-number {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  font-family: 'Fraunces', serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: rgba(180,120,60,0.3);
+  font-style: italic;
+}
+.sepia-card-body {
+  padding: 20px 4px;
+}
+.sepia-card-body .brand {
+  font-family: 'Lexend', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #B4783C;
+  margin-bottom: 6px;
+}
+.sepia-card-body h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 400;
+  font-size: 20px;
+  color: #EDE4D5;
+  margin-bottom: 6px;
+}
+.sepia-card-body .price {
+  font-family: 'Lexend', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: #6b5d4f;
+}
+
+/* ========== SECTION DIVIDERS ========== */
+.section-divider {
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  position: relative;
+}
+.section-divider::before {
+  content: '';
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, #333, transparent);
+}
+.section-divider .label {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #333;
+}
+
+/* ========== FOOTER ========== */
+.mockup-footer {
+  text-align: center;
+  padding: 80px 40px;
+  border-top: 1px solid #1a1a1a;
+}
+.mockup-footer p {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 13px;
+  color: #444;
+  margin-bottom: 8px;
+}
+.mockup-footer .hint {
+  font-size: 11px;
+  color: #333;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .absolu-hero { grid-template-columns: 1fr; }
+  .absolu-left { padding: 60px 24px; }
+  .absolu-right { display: none; }
+  .absolu-catalogue { padding: 40px 24px; }
+  .absolu-grid { grid-template-columns: 1fr; }
+  .absolu-item.span-7, .absolu-item.span-5, .absolu-item.span-4,
+  .absolu-item.span-8, .absolu-item.span-6 { grid-column: span 1; }
+  .velours-card { grid-template-columns: 1fr; }
+  .velours-card:nth-child(even) { direction: ltr; }
+  .velours-card-info { padding: 32px 24px; }
+  .velours-stats { flex-direction: column; gap: 32px; }
+  .sepia-catalogue { padding: 40px 0 40px 24px; }
+  .sepia-catalogue-header { padding-right: 24px; }
+  .intro .nav-dots { flex-direction: column; gap: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== INTRO ==================== -->
+<section class="intro">
+  <h1>Nuréa Parfums</h1>
+  <h2>3 Directions Créatives</h2>
+  <p>
+    Trois univers radicalement différents. Chaque direction propose sa propre identité
+    visuelle, sa palette, sa typographie et son architecture. Scrollez pour explorer.
+  </p>
+  <div class="nav-dots">
+    <a href="#dir-a">A · Velours Nuit</a>
+    <a href="#dir-b">B · Noir Absolu</a>
+    <a href="#dir-c">C · Sépia Sacré</a>
+  </div>
+</section>
+
+<!-- ==================== DIRECTION A — VELOURS NUIT ==================== -->
+<div class="section-divider">
+  <div class="label">Direction A</div>
+</div>
+
+<section id="dir-a" class="direction">
+  <div class="direction-label">Velours Nuit</div>
+
+  <!-- Hero -->
+  <div class="velours-hero">
+    <div class="velours-center">
+      <span class="overline">Maison de Parfums — Depuis 2023</span>
+      <h1>L'Art de la<br>Séduction</h1>
+      <p class="tagline">
+        Des fragrances d'exception sélectionnées avec exigence.<br>
+        Un catalogue vivant, une invitation au voyage olfactif.
+      </p>
+      <a href="#" class="velours-cta">
+        Découvrir la Collection →
+      </a>
+    </div>
+    <div class="velours-line"></div>
+  </div>
+
+  <!-- Catalogue -->
+  <div class="velours-catalogue">
+    <h2>Nos Sélections</h2>
+    <p class="subtitle">Pièces rares & fragrances signatures</p>
+
+    <div class="velours-cards">
+      <div class="velours-card">
+        <div class="velours-card-img">
+          <img src="/parfums/baccarat-rouge.webp" alt="Baccarat Rouge 540">
+        </div>
+        <div class="velours-card-info">
+          <span class="brand">Maison Alhambra</span>
+          <h3>Baroque Rouge 540</h3>
+          <div class="price">40 €</div>
+          <a href="#" class="card-cta">Commander via WhatsApp →</a>
+        </div>
+      </div>
+
+      <div class="velours-card">
+        <div class="velours-card-img">
+          <img src="/parfums/tf-tobacco-vanille.webp" alt="Tobacco Vanille">
+        </div>
+        <div class="velours-card-info">
+          <span class="brand">Tom Ford</span>
+          <h3>Tobacco Vanille</h3>
+          <div class="price">45 €</div>
+          <a href="#" class="card-cta">Commander via WhatsApp →</a>
+        </div>
+      </div>
+
+      <div class="velours-card">
+        <div class="velours-card-img">
+          <img src="/parfums/creed-aventus.webp" alt="Creed Aventus">
+        </div>
+        <div class="velours-card-info">
+          <span class="brand">Creed</span>
+          <h3>Aventus</h3>
+          <div class="price">50 €</div>
+          <a href="#" class="card-cta">Commander via WhatsApp →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="velours-stats">
+    <div class="stat">
+      <span class="stat-number">18+</span>
+      <span class="stat-label">Fragrances</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number">6</span>
+      <span class="stat-label">Marques</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number">24h</span>
+      <span class="stat-label">Livraison</span>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== DIRECTION B — NOIR ABSOLU ==================== -->
+<div class="section-divider">
+  <div class="label">Direction B</div>
+</div>
+
+<section id="dir-b" class="direction">
+  <div class="direction-label">Noir Absolu</div>
+
+  <!-- Hero -->
+  <div class="absolu-hero">
+    <div class="absolu-left">
+      <div class="overline">Collection 2024 — 2025</div>
+      <h1>
+        NURÉA
+        <span>L'exigence olfactive</span>
+      </h1>
+      <p class="desc">
+        Un catalogue de parfums sélectionnés avec une précision absolue.
+        Chaque pièce est choisie pour sa singularité, sa tenue et son sillage.
+      </p>
+      <a href="#" class="absolu-cta">Explorer →</a>
+    </div>
+    <div class="absolu-right">
+      <div class="visual-block">
+        <img src="/parfums/tf-black-orchid.webp" alt="Tom Ford Black Orchid">
+      </div>
+      <div class="accent-line"></div>
+    </div>
+  </div>
+
+  <!-- Catalogue - Editorial Grid -->
+  <div class="absolu-catalogue">
+    <div class="absolu-catalogue-header">
+      <h2>Catalogue</h2>
+      <span class="count">18 fragrances disponibles</span>
+    </div>
+
+    <div class="absolu-grid">
+      <div class="absolu-item span-7">
+        <img src="/parfums/grand-soir.webp" alt="Grand Soir">
+        <span class="number">01</span>
+        <span class="item-brand">Maison Francis Kurkdjian</span>
+        <h3>Grand Soir</h3>
+        <span class="item-price">45 €</span>
+      </div>
+      <div class="absolu-item span-5">
+        <img src="/parfums/erba-pura.webp" alt="Erba Pura">
+        <span class="number">02</span>
+        <span class="item-brand">Sospiro</span>
+        <h3>Erba Pura</h3>
+        <span class="item-price">40 €</span>
+      </div>
+      <div class="absolu-item span-4">
+        <img src="/parfums/nishane-hacivat.webp" alt="Hacivat">
+        <span class="number">03</span>
+        <span class="item-brand">Nishane</span>
+        <h3>Hacivat</h3>
+        <span class="item-price">45 €</span>
+      </div>
+      <div class="absolu-item span-8">
+        <img src="/parfums/oud-touch.webp" alt="Oud Touch">
+        <span class="number">04</span>
+        <span class="item-brand">Fragrance Du Bois</span>
+        <h3>Oud Touch</h3>
+        <span class="item-price">35 €</span>
+      </div>
+      <div class="absolu-item span-6">
+        <img src="/parfums/la-nuit.webp" alt="La Nuit de L'Homme">
+        <span class="number">05</span>
+        <span class="item-brand">Yves Saint Laurent</span>
+        <h3>La Nuit de L'Homme</h3>
+        <span class="item-price">35 €</span>
+      </div>
+      <div class="absolu-item span-6">
+        <img src="/parfums/spicebomb.webp" alt="Spicebomb">
+        <span class="number">06</span>
+        <span class="item-brand">Viktor & Rolf</span>
+        <h3>Spicebomb Extreme</h3>
+        <span class="item-price">40 €</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== DIRECTION C — SÉPIA SACRÉ ==================== -->
+<div class="section-divider">
+  <div class="label">Direction C</div>
+</div>
+
+<section id="dir-c" class="direction">
+  <div class="direction-label">Sépia Sacré</div>
+
+  <!-- Hero -->
+  <div class="sepia-hero">
+    <div class="sepia-center">
+      <div class="emblem">N</div>
+      <h1>Nuréa <em>Parfums</em></h1>
+      <p class="tagline">Cabinet de curiosités olfactives — Collection permanente</p>
+      <div class="sepia-search-hint">
+        Rechercher une fragrance...
+        <kbd>⌘K</kbd>
+      </div>
+    </div>
+  </div>
+
+  <!-- Catalogue - Horizontal Scroll -->
+  <div class="sepia-catalogue">
+    <div class="sepia-catalogue-header">
+      <h2>La Collection <em>Nuréa</em></h2>
+      <div class="nav-arrows">
+        <button>←</button>
+        <button>→</button>
+      </div>
+    </div>
+
+    <div class="sepia-scroll">
+      <div class="sepia-card">
+        <div class="sepia-card-img">
+          <span class="card-number">i.</span>
+          <img src="/parfums/tf-bitter-peach.webp" alt="Bitter Peach">
+        </div>
+        <div class="sepia-card-body">
+          <span class="brand">Tom Ford</span>
+          <h3>Bitter Peach</h3>
+          <span class="price">45 €</span>
+        </div>
+      </div>
+
+      <div class="sepia-card">
+        <div class="sepia-card-img">
+          <span class="card-number">ii.</span>
+          <img src="/parfums/gucci-oud.webp" alt="Gucci Oud">
+        </div>
+        <div class="sepia-card-body">
+          <span class="brand">Gucci</span>
+          <h3>Gucci Oud</h3>
+          <span class="price">40 €</span>
+        </div>
+      </div>
+
+      <div class="sepia-card">
+        <div class="sepia-card-img">
+          <span class="card-number">iii.</span>
+          <img src="/parfums/kirke.webp" alt="Kirke">
+        </div>
+        <div class="sepia-card-body">
+          <span class="brand">Tiziana Terenzi</span>
+          <h3>Kirke</h3>
+          <span class="price">45 €</span>
+        </div>
+      </div>
+
+      <div class="sepia-card">
+        <div class="sepia-card-img">
+          <span class="card-number">iv.</span>
+          <img src="/parfums/orto-parisi.webp" alt="Orto Parisi">
+        </div>
+        <div class="sepia-card-body">
+          <span class="brand">Orto Parisi</span>
+          <h3>Terroni</h3>
+          <span class="price">40 €</span>
+        </div>
+      </div>
+
+      <div class="sepia-card">
+        <div class="sepia-card-img">
+          <span class="card-number">v.</span>
+          <img src="/parfums/tf-cafe-rose.webp" alt="Café Rose">
+        </div>
+        <div class="sepia-card-body">
+          <span class="brand">Tom Ford</span>
+          <h3>Café Rose</h3>
+          <span class="price">45 €</span>
+        </div>
+      </div>
+
+      <div class="sepia-card">
+        <div class="sepia-card-img">
+          <span class="card-number">vi.</span>
+          <img src="/parfums/erba-gold.webp" alt="Erba Gold">
+        </div>
+        <div class="sepia-card-body">
+          <span class="brand">Sospiro</span>
+          <h3>Erba Gold</h3>
+          <span class="price">40 €</span>
+        </div>
+      </div>
+
+      <div class="sepia-card">
+        <div class="sepia-card-img">
+          <span class="card-number">vii.</span>
+          <img src="/parfums/tf-neroli.webp" alt="Neroli Portofino">
+        </div>
+        <div class="sepia-card-body">
+          <span class="brand">Tom Ford</span>
+          <h3>Neroli Portofino</h3>
+          <span class="price">45 €</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="mockup-footer">
+  <p>Nuréa Parfums — Mockup de directions créatives</p>
+  <p class="hint">Ce document est un aperçu statique pour validation de direction artistique</p>
+</footer>
+
+</body>
+</html>

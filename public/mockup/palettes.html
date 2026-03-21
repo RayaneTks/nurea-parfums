@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuréa — Palettes de Couleurs</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Bodoni:ital,wght@0,400;0,700;1,400&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #060606; color: #fff; font-family: 'Work Sans', sans-serif; overflow-x: hidden; }
+
+/* ========== INTRO ========== */
+.intro {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 24px;
+}
+.intro h1 {
+  font-family: 'Libre Bodoni', serif;
+  font-weight: 400;
+  font-size: 16px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: 20px;
+}
+.intro h2 {
+  font-family: 'Libre Bodoni', serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(28px, 5vw, 44px);
+  color: #eee;
+  margin-bottom: 16px;
+}
+.intro p {
+  font-size: 14px;
+  color: #555;
+  max-width: 500px;
+  line-height: 1.8;
+  margin-bottom: 48px;
+}
+.intro .scroll-arrow {
+  width: 1px;
+  height: 80px;
+  background: linear-gradient(to bottom, #444, transparent);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+/* ========== PALETTE SECTION ========== */
+.palette-section {
+  padding: 80px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-top: 1px solid #151515;
+}
+.palette-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 48px;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.palette-header .number {
+  font-family: 'Libre Bodoni', serif;
+  font-size: 64px;
+  font-weight: 400;
+  line-height: 1;
+  color: #1a1a1a;
+}
+.palette-header .info { flex: 1; min-width: 200px; }
+.palette-header h3 {
+  font-family: 'Libre Bodoni', serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: 28px;
+  color: #eee;
+  margin-bottom: 8px;
+}
+.palette-header .subtitle {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 12px;
+}
+.palette-header .description {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.7;
+  max-width: 500px;
+}
+
+/* Color swatches */
+.swatches {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 180px;
+}
+.swatch {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px;
+  position: relative;
+  transition: flex 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: pointer;
+}
+.swatch:hover { flex: 2; }
+.swatch .swatch-name {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  opacity: 0.8;
+}
+.swatch .swatch-hex {
+  font-size: 11px;
+  font-family: monospace;
+  opacity: 0.5;
+}
+
+/* Preview mockup */
+.preview {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #1a1a1a;
+}
+.preview-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.preview-nav .logo {
+  font-family: 'Libre Bodoni', serif;
+  font-size: 16px;
+  font-style: italic;
+  letter-spacing: 0.05em;
+  text-transform: none;
+}
+.preview-nav .links {
+  display: flex;
+  gap: 24px;
+  font-size: 10px;
+}
+.preview-hero {
+  padding: 60px 24px;
+  text-align: center;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.preview-hero .overline {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.preview-hero h4 {
+  font-family: 'Libre Bodoni', serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: 32px;
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+.preview-hero .cta-btn {
+  display: inline-block;
+  padding: 12px 32px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid;
+  transition: all 0.3s;
+}
+.preview-cards {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+}
+.preview-card {
+  flex: 1;
+  padding: 20px 16px;
+  text-align: center;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.preview-card .card-img {
+  width: 60px;
+  height: 80px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  background-size: cover;
+  background-position: center;
+}
+.preview-card .card-brand {
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.preview-card .card-name {
+  font-family: 'Libre Bodoni', serif;
+  font-size: 13px;
+  font-style: italic;
+}
+.preview-card .card-price {
+  font-size: 12px;
+  margin-top: 6px;
+  font-weight: 300;
+}
+
+/* ========== PALETTE 1 — ONYX & OR ROSE ========== */
+.p1-bg { background: #0B0A0D; }
+.p1-accent { color: #C4956A; }
+.p1-text { color: #E8E0D8; }
+.p1-muted { color: #6B6168; }
+.p1-surface { background: #141219; }
+
+/* ========== PALETTE 2 — NUIT BORDEAUX ========== */
+.p2-bg { background: #0A0508; }
+.p2-accent { color: #8B3A3A; }
+.p2-text { color: #F0E6E0; }
+.p2-muted { color: #6E5560; }
+.p2-surface { background: #140E12; }
+
+/* ========== PALETTE 3 — CHARBON & CHAMPAGNE ========== */
+.p3-bg { background: #0C0C0C; }
+.p3-accent { color: #D4C5A0; }
+.p3-text { color: #F5F0EA; }
+.p3-muted { color: #6B6860; }
+.p3-surface { background: #161614; }
+
+/* ========== PALETTE 4 — ENCRE & CUIVRE ========== */
+.p4-bg { background: #08080C; }
+.p4-accent { color: #B87B4A; }
+.p4-text { color: #EDE5DC; }
+.p4-muted { color: #5E5A6E; }
+.p4-surface { background: #111118; }
+
+/* ========== PALETTE 5 — NOIR ABSOLU & IVOIRE ========== */
+.p5-bg { background: #050505; }
+.p5-accent { color: #E8DCC8; }
+.p5-text { color: #FAFAF5; }
+.p5-muted { color: #5A5A55; }
+.p5-surface { background: #111111; }
+
+/* ========== FOOTER ========== */
+.page-footer {
+  text-align: center;
+  padding: 80px 24px;
+  border-top: 1px solid #111;
+}
+.page-footer p {
+  font-size: 12px;
+  color: #333;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 640px) {
+  .swatches { height: 120px; flex-wrap: wrap; }
+  .swatch { min-width: 30%; }
+  .preview-cards { flex-direction: column; }
+  .preview-nav .links { display: none; }
+  .palette-header { flex-direction: column; }
+  .palette-header .number { font-size: 48px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== INTRO ==================== -->
+<section class="intro">
+  <h1>Nuréa Parfums</h1>
+  <h2>Choix de la Palette</h2>
+  <p>
+    Avant de designer le site, validons l'univers coloré.
+    5 palettes pensées pour un catalogue de parfums haut de gamme, dark mode first.
+    Chaque palette est montrée en contexte sur un mini-preview du site.
+  </p>
+  <div class="scroll-arrow"></div>
+</section>
+
+<!-- ====================================================
+     PALETTE 1 — ONYX & OR ROSE
+     ==================================================== -->
+<section class="palette-section">
+  <div class="palette-header">
+    <span class="number">01</span>
+    <div class="info">
+      <h3>Onyx & Or Rose</h3>
+      <p class="subtitle">Sophistication dorée — Chaleur discrète</p>
+      <p class="description">
+        Noir profond violet avec un accent or rose / cuivré. Évoque les flacons luxueux,
+        les écrins de parfumerie. Chaleureux sans être criard. L'or rose fonctionne sur
+        les CTA, les prix, les accents typographiques.
+      </p>
+    </div>
+  </div>
+
+  <div class="swatches">
+    <div class="swatch" style="background: #0B0A0D; color: #999;">
+      <span class="swatch-name">Fond</span>
+      <span class="swatch-hex">#0B0A0D</span>
+    </div>
+    <div class="swatch" style="background: #141219; color: #888;">
+      <span class="swatch-name">Surface</span>
+      <span class="swatch-hex">#141219</span>
+    </div>
+    <div class="swatch" style="background: #C4956A; color: #0B0A0D;">
+      <span class="swatch-name">Accent</span>
+      <span class="swatch-hex">#C4956A</span>
+    </div>
+    <div class="swatch" style="background: #E8E0D8; color: #0B0A0D;">
+      <span class="swatch-name">Texte</span>
+      <span class="swatch-hex">#E8E0D8</span>
+    </div>
+    <div class="swatch" style="background: #6B6168; color: #E8E0D8;">
+      <span class="swatch-name">Muted</span>
+      <span class="swatch-hex">#6B6168</span>
+    </div>
+  </div>
+
+  <div class="preview p1-bg">
+    <div class="preview-nav p1-surface" style="border-bottom: 1px solid #1E1A24;">
+      <span class="logo p1-text">Nuréa</span>
+      <div class="links p1-muted">
+        <span>Collection</span>
+        <span>Contact</span>
+      </div>
+    </div>
+    <div class="preview-hero">
+      <span class="overline p1-accent">Maison de Parfums</span>
+      <h4 class="p1-text">L'Art de la Séduction</h4>
+      <a href="#" class="cta-btn p1-accent" style="border-color: #C4956A;">Découvrir →</a>
+    </div>
+    <div class="preview-cards">
+      <div class="preview-card p1-surface">
+        <div class="card-img" style="background-image: url('/parfums/tf-tobacco-vanille.webp');"></div>
+        <span class="card-brand p1-accent">Tom Ford</span>
+        <span class="card-name p1-text">Tobacco Vanille</span>
+        <span class="card-price p1-muted">45 €</span>
+      </div>
+      <div class="preview-card p1-surface">
+        <div class="card-img" style="background-image: url('/parfums/creed-aventus.webp');"></div>
+        <span class="card-brand p1-accent">Creed</span>
+        <span class="card-name p1-text">Aventus</span>
+        <span class="card-price p1-muted">50 €</span>
+      </div>
+      <div class="preview-card p1-surface">
+        <div class="card-img" style="background-image: url('/parfums/baccarat-rouge.webp');"></div>
+        <span class="card-brand p1-accent">MFK</span>
+        <span class="card-name p1-text">Baccarat Rouge</span>
+        <span class="card-price p1-muted">40 €</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================
+     PALETTE 2 — NUIT BORDEAUX
+     ==================================================== -->
+<section class="palette-section">
+  <div class="palette-header">
+    <span class="number">02</span>
+    <div class="info">
+      <h3>Nuit Bordeaux</h3>
+      <p class="subtitle">Velours sombre — Passion contenue</p>
+      <p class="description">
+        Noir avec des sous-tons violacés et un accent bordeaux/lie-de-vin profond.
+        Intense et sensuel, rappelle les notes de fond orientales. Idéal pour un
+        catalogue de parfums avec du caractère. Le bordeaux fonctionne sur les
+        hover states et les éléments de navigation.
+      </p>
+    </div>
+  </div>
+
+  <div class="swatches">
+    <div class="swatch" style="background: #0A0508; color: #999;">
+      <span class="swatch-name">Fond</span>
+      <span class="swatch-hex">#0A0508</span>
+    </div>
+    <div class="swatch" style="background: #140E12; color: #888;">
+      <span class="swatch-name">Surface</span>
+      <span class="swatch-hex">#140E12</span>
+    </div>
+    <div class="swatch" style="background: #8B3A3A; color: #F0E6E0;">
+      <span class="swatch-name">Accent</span>
+      <span class="swatch-hex">#8B3A3A</span>
+    </div>
+    <div class="swatch" style="background: #F0E6E0; color: #0A0508;">
+      <span class="swatch-name">Texte</span>
+      <span class="swatch-hex">#F0E6E0</span>
+    </div>
+    <div class="swatch" style="background: #6E5560; color: #F0E6E0;">
+      <span class="swatch-name">Muted</span>
+      <span class="swatch-hex">#6E5560</span>
+    </div>
+  </div>
+
+  <div class="preview p2-bg">
+    <div class="preview-nav p2-surface" style="border-bottom: 1px solid #221820;">
+      <span class="logo p2-text">Nuréa</span>
+      <div class="links p2-muted">
+        <span>Collection</span>
+        <span>Contact</span>
+      </div>
+    </div>
+    <div class="preview-hero">
+      <span class="overline p2-accent">Maison de Parfums</span>
+      <h4 class="p2-text">L'Art de la Séduction</h4>
+      <a href="#" class="cta-btn p2-accent" style="border-color: #8B3A3A;">Découvrir →</a>
+    </div>
+    <div class="preview-cards">
+      <div class="preview-card p2-surface">
+        <div class="card-img" style="background-image: url('/parfums/tf-black-orchid.webp');"></div>
+        <span class="card-brand p2-accent">Tom Ford</span>
+        <span class="card-name p2-text">Black Orchid</span>
+        <span class="card-price p2-muted">45 €</span>
+      </div>
+      <div class="preview-card p2-surface">
+        <div class="card-img" style="background-image: url('/parfums/la-nuit.webp');"></div>
+        <span class="card-brand p2-accent">YSL</span>
+        <span class="card-name p2-text">La Nuit</span>
+        <span class="card-price p2-muted">35 €</span>
+      </div>
+      <div class="preview-card p2-surface">
+        <div class="card-img" style="background-image: url('/parfums/spicebomb.webp');"></div>
+        <span class="card-brand p2-accent">V&R</span>
+        <span class="card-name p2-text">Spicebomb</span>
+        <span class="card-price p2-muted">40 €</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================
+     PALETTE 3 — CHARBON & CHAMPAGNE
+     ==================================================== -->
+<section class="palette-section">
+  <div class="palette-header">
+    <span class="number">03</span>
+    <div class="info">
+      <h3>Charbon & Champagne</h3>
+      <p class="subtitle">Élégance neutre — Luxe discret</p>
+      <p class="description">
+        Noir chaud tirant vers le charbon avec un accent champagne / doré pâle.
+        La palette la plus "maison de luxe classique". Sobre, intemporelle, ne vieillit
+        jamais. Parfaite pour laisser les visuels produits briller sans distraction.
+        Proche d'un Byredo, Aesop, Le Labo.
+      </p>
+    </div>
+  </div>
+
+  <div class="swatches">
+    <div class="swatch" style="background: #0C0C0C; color: #999;">
+      <span class="swatch-name">Fond</span>
+      <span class="swatch-hex">#0C0C0C</span>
+    </div>
+    <div class="swatch" style="background: #161614; color: #888;">
+      <span class="swatch-name">Surface</span>
+      <span class="swatch-hex">#161614</span>
+    </div>
+    <div class="swatch" style="background: #D4C5A0; color: #0C0C0C;">
+      <span class="swatch-name">Accent</span>
+      <span class="swatch-hex">#D4C5A0</span>
+    </div>
+    <div class="swatch" style="background: #F5F0EA; color: #0C0C0C;">
+      <span class="swatch-name">Texte</span>
+      <span class="swatch-hex">#F5F0EA</span>
+    </div>
+    <div class="swatch" style="background: #6B6860; color: #F5F0EA;">
+      <span class="swatch-name">Muted</span>
+      <span class="swatch-hex">#6B6860</span>
+    </div>
+  </div>
+
+  <div class="preview p3-bg">
+    <div class="preview-nav p3-surface" style="border-bottom: 1px solid #222220;">
+      <span class="logo p3-text">Nuréa</span>
+      <div class="links p3-muted">
+        <span>Collection</span>
+        <span>Contact</span>
+      </div>
+    </div>
+    <div class="preview-hero">
+      <span class="overline p3-accent">Maison de Parfums</span>
+      <h4 class="p3-text">L'Art de la Séduction</h4>
+      <a href="#" class="cta-btn p3-accent" style="border-color: #D4C5A0;">Découvrir →</a>
+    </div>
+    <div class="preview-cards">
+      <div class="preview-card p3-surface">
+        <div class="card-img" style="background-image: url('/parfums/grand-soir.webp');"></div>
+        <span class="card-brand p3-accent">MFK</span>
+        <span class="card-name p3-text">Grand Soir</span>
+        <span class="card-price p3-muted">45 €</span>
+      </div>
+      <div class="preview-card p3-surface">
+        <div class="card-img" style="background-image: url('/parfums/erba-pura.webp');"></div>
+        <span class="card-brand p3-accent">Sospiro</span>
+        <span class="card-name p3-text">Erba Pura</span>
+        <span class="card-price p3-muted">40 €</span>
+      </div>
+      <div class="preview-card p3-surface">
+        <div class="card-img" style="background-image: url('/parfums/kirke.webp');"></div>
+        <span class="card-brand p3-accent">Tiziana T.</span>
+        <span class="card-name p3-text">Kirke</span>
+        <span class="card-price p3-muted">45 €</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================
+     PALETTE 4 — ENCRE & CUIVRE
+     ==================================================== -->
+<section class="palette-section">
+  <div class="palette-header">
+    <span class="number">04</span>
+    <div class="info">
+      <h3>Encre & Cuivre</h3>
+      <p class="subtitle">Profondeur nocturne — Accent métallique</p>
+      <p class="description">
+        Noir encré avec des sous-tons bleu nuit très subtils et un accent cuivré intense.
+        Plus masculin et affirmé que l'or rose. Rappelle les détails en cuivre des
+        flacons orientaux. Le bleu nuit dans le fond crée une profondeur que le noir pur
+        n'a pas. Ambiance Clive Christian, Amouage.
+      </p>
+    </div>
+  </div>
+
+  <div class="swatches">
+    <div class="swatch" style="background: #08080C; color: #999;">
+      <span class="swatch-name">Fond</span>
+      <span class="swatch-hex">#08080C</span>
+    </div>
+    <div class="swatch" style="background: #111118; color: #888;">
+      <span class="swatch-name">Surface</span>
+      <span class="swatch-hex">#111118</span>
+    </div>
+    <div class="swatch" style="background: #B87B4A; color: #08080C;">
+      <span class="swatch-name">Accent</span>
+      <span class="swatch-hex">#B87B4A</span>
+    </div>
+    <div class="swatch" style="background: #EDE5DC; color: #08080C;">
+      <span class="swatch-name">Texte</span>
+      <span class="swatch-hex">#EDE5DC</span>
+    </div>
+    <div class="swatch" style="background: #5E5A6E; color: #EDE5DC;">
+      <span class="swatch-name">Muted</span>
+      <span class="swatch-hex">#5E5A6E</span>
+    </div>
+  </div>
+
+  <div class="preview p4-bg">
+    <div class="preview-nav p4-surface" style="border-bottom: 1px solid #1A1A22;">
+      <span class="logo p4-text">Nuréa</span>
+      <div class="links p4-muted">
+        <span>Collection</span>
+        <span>Contact</span>
+      </div>
+    </div>
+    <div class="preview-hero">
+      <span class="overline p4-accent">Maison de Parfums</span>
+      <h4 class="p4-text">L'Art de la Séduction</h4>
+      <a href="#" class="cta-btn p4-accent" style="border-color: #B87B4A;">Découvrir →</a>
+    </div>
+    <div class="preview-cards">
+      <div class="preview-card p4-surface">
+        <div class="card-img" style="background-image: url('/parfums/oud-touch.webp');"></div>
+        <span class="card-brand p4-accent">Frag. Du Bois</span>
+        <span class="card-name p4-text">Oud Touch</span>
+        <span class="card-price p4-muted">35 €</span>
+      </div>
+      <div class="preview-card p4-surface">
+        <div class="card-img" style="background-image: url('/parfums/nishane-hacivat.webp');"></div>
+        <span class="card-brand p4-accent">Nishane</span>
+        <span class="card-name p4-text">Hacivat</span>
+        <span class="card-price p4-muted">45 €</span>
+      </div>
+      <div class="preview-card p4-surface">
+        <div class="card-img" style="background-image: url('/parfums/gucci-oud.webp');"></div>
+        <span class="card-brand p4-accent">Gucci</span>
+        <span class="card-name p4-text">Gucci Oud</span>
+        <span class="card-price p4-muted">40 €</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================
+     PALETTE 5 — NOIR ABSOLU & IVOIRE
+     ==================================================== -->
+<section class="palette-section">
+  <div class="palette-header">
+    <span class="number">05</span>
+    <div class="info">
+      <h3>Noir Absolu & Ivoire</h3>
+      <p class="subtitle">Minimalisme radical — Pureté graphique</p>
+      <p class="description">
+        Noir pur + ivoire chaud, presque sans couleur d'accent. Le luxe par la
+        retenue absolue. L'accent est l'ivoire lui-même — pas de couleur "forte".
+        Les images produits deviennent les seules sources de couleur sur la page.
+        Ambiance Tom Ford, Byredo, Aesop. Le plus risqué mais potentiellement le
+        plus élégant.
+      </p>
+    </div>
+  </div>
+
+  <div class="swatches">
+    <div class="swatch" style="background: #050505; color: #999;">
+      <span class="swatch-name">Fond</span>
+      <span class="swatch-hex">#050505</span>
+    </div>
+    <div class="swatch" style="background: #111111; color: #888;">
+      <span class="swatch-name">Surface</span>
+      <span class="swatch-hex">#111111</span>
+    </div>
+    <div class="swatch" style="background: #E8DCC8; color: #050505;">
+      <span class="swatch-name">Accent</span>
+      <span class="swatch-hex">#E8DCC8</span>
+    </div>
+    <div class="swatch" style="background: #FAFAF5; color: #050505;">
+      <span class="swatch-name">Texte</span>
+      <span class="swatch-hex">#FAFAF5</span>
+    </div>
+    <div class="swatch" style="background: #5A5A55; color: #FAFAF5;">
+      <span class="swatch-name">Muted</span>
+      <span class="swatch-hex">#5A5A55</span>
+    </div>
+  </div>
+
+  <div class="preview p5-bg">
+    <div class="preview-nav p5-surface" style="border-bottom: 1px solid #1C1C1C;">
+      <span class="logo p5-text">Nuréa</span>
+      <div class="links p5-muted">
+        <span>Collection</span>
+        <span>Contact</span>
+      </div>
+    </div>
+    <div class="preview-hero">
+      <span class="overline p5-accent">Maison de Parfums</span>
+      <h4 class="p5-text">L'Art de la Séduction</h4>
+      <a href="#" class="cta-btn p5-accent" style="border-color: #E8DCC8;">Découvrir →</a>
+    </div>
+    <div class="preview-cards">
+      <div class="preview-card p5-surface">
+        <div class="card-img" style="background-image: url('/parfums/tf-soleil-blanc.webp');"></div>
+        <span class="card-brand p5-accent">Tom Ford</span>
+        <span class="card-name p5-text">Soleil Blanc</span>
+        <span class="card-price p5-muted">45 €</span>
+      </div>
+      <div class="preview-card p5-surface">
+        <div class="card-img" style="background-image: url('/parfums/tf-velvet-orchid.webp');"></div>
+        <span class="card-brand p5-accent">Tom Ford</span>
+        <span class="card-name p5-text">Velvet Orchid</span>
+        <span class="card-price p5-muted">45 €</span>
+      </div>
+      <div class="preview-card p5-surface">
+        <div class="card-img" style="background-image: url('/parfums/orto-parisi.webp');"></div>
+        <span class="card-brand p5-accent">Orto Parisi</span>
+        <span class="card-name p5-text">Terroni</span>
+        <span class="card-price p5-muted">40 €</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="page-footer">
+  <p>Nuréa Parfums — Validation palette couleurs avant design</p>
+</footer>
+
+</body>
+</html>
