@@ -10,7 +10,8 @@ export const Hero: FC = () => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const isDark = !mounted || resolvedTheme === "dark";
+  const isDark = resolvedTheme === "dark";
+  const showThemeContent = mounted;
 
   const handleScroll = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -21,9 +22,9 @@ export const Hero: FC = () => {
   };
 
   return (
-    <header className="relative flex min-h-[100svh] items-center justify-center overflow-hidden">
+    <header className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[var(--nurea-bg)]">
       {/* Background image + overlays — dark mode only */}
-      {isDark && (
+      {showThemeContent && isDark && (
         <>
           <Image
             src="/branding/visuel-hero.png"
@@ -48,7 +49,7 @@ export const Hero: FC = () => {
       )}
 
       {/* Light mode — warm layered gradients */}
-      {!isDark && (
+      {showThemeContent && !isDark && (
         <>
           <div
             className="absolute inset-0"

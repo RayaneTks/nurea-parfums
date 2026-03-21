@@ -24,7 +24,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const isDark = !mounted || resolvedTheme === "dark";
+  const isDark = resolvedTheme === "dark";
   const isActive = activeItem === perfume.id;
   const isGammeComplete = perfume.category === "Gammes Compl\u00e8tes";
 
@@ -35,7 +35,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
     ? "/branding/icons/nurea_icon_snapchat_ivory.svg"
     : "/branding/icons/nurea_icon_snapchat_bordeaux.svg";
 
-  const overlayBg = isDark ? "rgba(10, 5, 8, 0.92)" : "rgba(250, 246, 242, 0.95)";
+  const overlayBg = "var(--nurea-overlay)";
 
   const getWhatsappLink = (msg: string) => {
     const num = CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? "";
@@ -163,7 +163,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="group/btn flex w-full items-center justify-between border border-[var(--nurea-border-hover)] px-4 py-3 text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--nurea-text)] transition-all duration-300 hover:bg-[#FFD100]/10 hover:border-[#FFD100] md:text-[11px] md:px-5 md:py-3.5 min-h-[44px]"
+                className="group/btn flex w-full items-center justify-between border border-[var(--nurea-border-hover)] px-4 py-3 text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--nurea-text)] transition-all duration-300 hover:bg-[var(--nurea-snapchat)]/10 hover:border-[var(--nurea-snapchat)] md:text-[11px] md:px-5 md:py-3.5 min-h-[44px]"
               >
                 <span className="flex items-center gap-2.5">
                   <Image

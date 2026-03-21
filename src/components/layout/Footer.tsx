@@ -43,6 +43,7 @@ export const Footer: FC = () => {
             width={120}
             height={12}
             className="max-w-[140px] opacity-25"
+            style={{ height: "auto" }}
           />
         </ScrollReveal>
 
@@ -80,7 +81,7 @@ export const Footer: FC = () => {
             className="group flex flex-col items-center gap-2 transition-all duration-300"
             aria-label="Snapchat"
           >
-            <span className="flex h-16 w-16 items-center justify-center border border-[var(--nurea-border-hover)] transition-all duration-300 group-hover:border-[#FFD100] group-hover:bg-[#FFD100]/5">
+            <span className="flex h-16 w-16 items-center justify-center border border-[var(--nurea-border-hover)] transition-all duration-300 group-hover:border-[var(--nurea-snapchat)] group-hover:bg-[var(--nurea-snapchat)]/5">
               <Image
                 src={
                   isDark
@@ -93,7 +94,7 @@ export const Footer: FC = () => {
                 className="transition-transform duration-300 group-hover:scale-110"
               />
             </span>
-            <span className="text-[10px] uppercase tracking-[0.2em] text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[#FFD100] md:text-[11px]">
+            <span className="text-[10px] uppercase tracking-[0.2em] text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-snapchat)] md:text-[11px]">
               Snapchat
             </span>
           </a>

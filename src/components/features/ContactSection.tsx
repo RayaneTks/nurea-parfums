@@ -48,7 +48,7 @@ export const ContactSection: FC = () => {
   };
 
   return (
-    <main className="relative w-full flex-1">
+    <main className="relative w-full">
       {/* Decorative glow */}
       <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[350px] w-[500px] bg-[var(--nurea-accent)] opacity-[0.025] blur-[100px]" />
 
@@ -77,6 +77,7 @@ export const ContactSection: FC = () => {
             width={100}
             height={10}
             className="max-w-[90px] opacity-25"
+            style={{ height: "auto" }}
           />
         </ScrollReveal>
 
@@ -119,9 +120,9 @@ export const ContactSection: FC = () => {
               href={CONTACT.snapchat}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative flex items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-5 transition-all duration-500 hover:border-[#FFD100] hover:bg-[var(--nurea-surface-hover)] active:scale-[0.99]"
+              className="group relative flex items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-5 transition-all duration-500 hover:border-[var(--nurea-snapchat)] hover:bg-[var(--nurea-surface-hover)] active:scale-[0.99]"
             >
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors duration-300 group-hover:border-[#FFD100]">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors duration-300 group-hover:border-[var(--nurea-snapchat)]">
                 <Image
                   src={snapchatIcon}
                   alt=""

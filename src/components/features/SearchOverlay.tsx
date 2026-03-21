@@ -1,6 +1,7 @@
 "use client";
 
 import type { FC } from "react";
+import { useEffect } from "react";
 import Image from "next/image";
 import { Search, X } from "lucide-react";
 import { allBrands, categories } from "@/lib/data";
@@ -35,6 +36,15 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
   resultsCount,
   searchResults,
 }) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   const hasActiveFilters =
     searchTerm.trim() !== "" ||
     selectedBrand !== "Toutes" ||

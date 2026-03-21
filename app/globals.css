@@ -21,9 +21,12 @@
     --nurea-text-muted: #B89AA8;
     --nurea-text-subtle: #6B5060;
     --nurea-cuivre: #C4956A;
+    --nurea-snapchat: #FFD100;
     --nurea-border: rgba(139, 58, 58, 0.12);
     --nurea-border-hover: rgba(139, 58, 58, 0.30);
     --nurea-glow: rgba(139, 58, 58, 0.06);
+    --nurea-overlay: rgba(10, 5, 8, 0.92);
+    --nurea-overlay-light: rgba(10, 5, 8, 0.72);
     color-scheme: dark;
   }
 
@@ -40,9 +43,12 @@
     --nurea-text-muted: #6B5560;
     --nurea-text-subtle: #9A8890;
     --nurea-cuivre: #B0845A;
+    --nurea-snapchat: #FFD100;
     --nurea-border: rgba(100, 40, 40, 0.12);
     --nurea-border-hover: rgba(100, 40, 40, 0.28);
     --nurea-glow: rgba(139, 58, 58, 0.06);
+    --nurea-overlay: rgba(248, 244, 240, 0.92);
+    --nurea-overlay-light: rgba(250, 246, 242, 0.95);
     color-scheme: light;
   }
 
@@ -66,7 +72,7 @@
   }
 
   ::selection {
-    background: var(--nurea-accent);
+    background: var(--nurea-accent-solid);
     color: #F0E6E0;
   }
 }
