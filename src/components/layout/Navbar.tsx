@@ -43,17 +43,12 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
 
   return (
     <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-500 ease-out-expo pt-[env(safe-area-inset-top)] ${
+      className={`fixed top-0 w-full z-50 transition-all duration-500 ease-out-expo ${
         scrolled
           ? "backdrop-blur-2xl py-2.5 border-b border-[var(--nurea-border)]"
-          : "py-4 md:py-5"
+          : "bg-transparent py-4 md:py-5"
       }`}
-      style={{
-        backgroundColor: scrolled ? "var(--nurea-overlay)" : undefined,
-        backgroundImage: scrolled
-          ? undefined
-          : "linear-gradient(to bottom, var(--nurea-bg) 0%, var(--nurea-bg) 40%, transparent 100%)",
-      }}
+      style={scrolled ? { backgroundColor: "var(--nurea-overlay)" } : undefined}
     >
       <div className="mx-auto flex max-w-[1200px] items-center justify-between px-4 md:px-10">
         {/* Burger — mobile only */}
