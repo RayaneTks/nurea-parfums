@@ -254,7 +254,7 @@
   mix-blend-mode: overlay;
 }
 
-/* Zone fixe sous la barre : même couleur que le fond (rebond scroll, iOS, encoche) */
+/* Aligné sur la hauteur réelle du header (Navbar) — pas de bande qui dépasse sous la barre */
 .nurea-viewport-top-shield {
   position: fixed;
   top: 0;
@@ -262,8 +262,14 @@
   right: 0;
   z-index: 45;
   pointer-events: none;
-  height: calc(env(safe-area-inset-top, 0px) + 6.75rem);
   background-color: var(--nurea-bg);
+  /* safe-area + min-h barre (58px mobile / 68px md, comme Navbar) */
+  height: calc(env(safe-area-inset-top, 0px) + 3.625rem);
+}
+@media (min-width: 768px) {
+  .nurea-viewport-top-shield {
+    height: calc(env(safe-area-inset-top, 0px) + 4.25rem);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
