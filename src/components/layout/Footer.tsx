@@ -1,70 +1,131 @@
+"use client";
+
 import Link from "next/link";
-import type { FC } from "react";
+import Image from "next/image";
+import { useTheme } from "next-themes";
+import { useEffect, useState, type FC } from "react";
 import { CONTACT } from "@/lib/data";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
 export const Footer: FC = () => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const isDark = resolvedTheme === "dark";
+
   return (
-    <footer className="mt-auto bg-[#0A0A0A] pt-24 pb-12 text-[#FDFCF8]">
-      <div className="mx-auto max-w-[1400px] px-6 md:px-12">
-        <div className="mb-20 grid gap-12 text-center md:grid-cols-3 md:gap-8 md:text-left">
-          <div>
-            <div className="mb-6 font-serif text-3xl tracking-widest uppercase">
-              Nuréa
-            </div>
-            <p className="mx-auto max-w-xs text-sm font-light text-[#888888] md:mx-0">
-              La quintessence de la parfumerie mondiale,
-              curatée pour les esprits raffinés.
-            </p>
-          </div>
+    <footer className="relative mt-auto border-t border-[var(--nurea-border)] bg-[var(--nurea-bg)]">
+      {/* Top accent line */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-1/2 top-0 -translate-x-1/2 h-[1px] w-[50%] bg-gradient-to-r from-transparent via-[var(--nurea-accent)] to-transparent opacity-15" />
+      </div>
 
-          <div className="flex flex-col gap-4">
-            <span className="mb-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#555555]">
-              Conseil &amp; Commande
-            </span>
-            <a
-              href={CONTACT.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group font-serif text-xl transition-all hover:text-[#C29B62]"
-            >
-              <span className="inline-block transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-2">
-                WhatsApp
-              </span>
-            </a>
-            <a
-              href={CONTACT.snapchat}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group font-serif text-xl transition-all hover:text-[#FFD100]"
-            >
-              <span className="inline-block transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-2">
-                Snapchat
-              </span>
-            </a>
-          </div>
+      <div className="mx-auto max-w-[1200px] px-4 py-16 md:px-10 md:py-20">
+        {/* Monogram */}
+        <ScrollReveal direction="scale" className="flex flex-col items-center gap-6 mb-12">
+          {mounted && (
+            <Image
+              src={
+                isDark
+                  ? "/branding/monogram/np-circle-cuivre.png"
+                  : "/branding/monogram/np-circle-bordeaux.png"
+              }
+              alt="Nurea Parfums"
+              width={60}
+              height={60}
+              className="h-[60px] w-[60px] opacity-40 transition-opacity duration-500 hover:opacity-70"
+            />
+          )}
+          <Image
+            src="/branding/separators/nurea_separator_copper.svg"
+            alt=""
+            width={120}
+            height={12}
+            className="max-w-[120px] opacity-20"
+          />
+        </ScrollReveal>
 
-          <div className="flex flex-col gap-4 md:items-end">
-            <span className="mb-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#555555]">
-              Informations
+        {/* Social links */}
+        <ScrollReveal className="flex items-center justify-center gap-7 mb-10" delay={80}>
+          <a
+            href={CONTACT.whatsapp}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex flex-col items-center gap-1.5 transition-all duration-300"
+            aria-label="WhatsApp"
+          >
+            <span className="flex h-11 w-11 items-center justify-center border border-[var(--nurea-border-hover)] transition-all duration-300 group-hover:border-[var(--nurea-accent)] group-hover:bg-[var(--nurea-accent-subtle)]">
+              <Image
+                src={
+                  isDark
+                    ? "/branding/icons/nurea_icon_whatsapp_ivory.svg"
+                    : "/branding/icons/nurea_icon_whatsapp_bordeaux.svg"
+                }
+                alt="WhatsApp"
+                width={18}
+                height={18}
+                className="transition-transform duration-300 group-hover:scale-110"
+              />
             </span>
+            <span className="text-[7px] uppercase tracking-[0.25em] text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-accent)]">
+              WhatsApp
+            </span>
+          </a>
+
+          <a
+            href={CONTACT.snapchat}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex flex-col items-center gap-1.5 transition-all duration-300"
+            aria-label="Snapchat"
+          >
+            <span className="flex h-11 w-11 items-center justify-center border border-[var(--nurea-border-hover)] transition-all duration-300 group-hover:border-[#FFD100] group-hover:bg-[#FFD100]/5">
+              <Image
+                src={
+                  isDark
+                    ? "/branding/icons/nurea_icon_snapchat_ivory.svg"
+                    : "/branding/icons/nurea_icon_snapchat_bordeaux.svg"
+                }
+                alt="Snapchat"
+                width={18}
+                height={18}
+                className="transition-transform duration-300 group-hover:scale-110"
+              />
+            </span>
+            <span className="text-[7px] uppercase tracking-[0.25em] text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[#FFD100]">
+              Snapchat
+            </span>
+          </a>
+        </ScrollReveal>
+
+        {/* Navigation & text */}
+        <ScrollReveal className="flex flex-col items-center gap-4 text-center" delay={160}>
+          <p className="font-serif text-xs italic text-[var(--nurea-text-muted)] md:text-sm">
+            Maison de Haute Parfumerie
+          </p>
+
+          <div className="flex items-center gap-5 text-[9px] uppercase tracking-[0.2em] text-[var(--nurea-text-muted)] md:text-[10px]">
+            <Link
+              href="/"
+              className="transition-colors duration-300 hover:text-[var(--nurea-accent)]"
+            >
+              Collection
+            </Link>
+            <span className="h-2.5 w-[1px] bg-[var(--nurea-border-hover)]" />
             <Link
               href="/contact"
-              className="text-sm transition-colors hover:text-[#C29B62]"
+              className="transition-colors duration-300 hover:text-[var(--nurea-accent)]"
             >
-              Nous écrire
+              Contact
             </Link>
-            <a
-              href="#"
-              className="text-sm transition-colors hover:text-[#C29B62]"
-            >
-              Mentions Légales
-            </a>
           </div>
-        </div>
 
-        <div className="border-t border-[#FDFCF8]/10 pt-8 text-center text-xs uppercase tracking-widest text-[#555555]">
-          © {new Date().getFullYear()} Nuréa Parfums. Tous droits réservés.
-        </div>
+          <p className="mt-1 text-[8px] tracking-[0.15em] text-[var(--nurea-text-subtle)]">
+            &copy; {new Date().getFullYear()} Nurea Parfums. Tous droits
+            reserves.
+          </p>
+        </ScrollReveal>
       </div>
     </footer>
   );

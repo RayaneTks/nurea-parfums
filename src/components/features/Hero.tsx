@@ -1,77 +1,104 @@
 "use client";
 
 import type { FC, MouseEvent } from "react";
-import { useEffect, useState } from "react";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
-import { useTheme } from "next-themes";
+import { ChevronDown } from "lucide-react";
 
 export const Hero: FC = () => {
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const isDark = mounted && resolvedTheme === "dark";
-
-  const handleScrollToCollection = (
-    event: MouseEvent<HTMLAnchorElement>,
-  ) => {
-    event.preventDefault();
-
-    const section = document.getElementById("collection");
-    if (!section) return;
-
-    section.scrollIntoView({ behavior: "smooth", block: "start" });
+  const handleScroll = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const el = document.getElementById("collection");
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
     window.history.pushState(null, "", "#collection");
   };
 
   return (
-    <header className="relative flex min-h-[90vh] items-center justify-center px-6 pt-20 md:min-h-screen">
-      <div className="absolute inset-0 z-0 overflow-hidden">
+    <header className="relative flex min-h-[100svh] items-center justify-center overflow-hidden">
+      {/* Monogramme NP — large watermark */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <Image
-          src="/branding/bg.png"
+          src="/branding/monogram/np-free-cuivre.png"
           alt=""
-          fill
+          width={600}
+          height={600}
+          className="w-[260px] h-[260px] md:w-[420px] md:h-[420px] lg:w-[520px] lg:h-[520px] opacity-[0.03] select-none"
+          style={{ animation: "heroMonogramFloat 10s ease-in-out infinite" }}
           priority
-          sizes="100vw"
-          className={`object-cover transition-all duration-1000 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-            isDark
-              ? "opacity-20 grayscale-[20%] mix-blend-lighten"
-              : "opacity-[0.15] grayscale-[50%] mix-blend-multiply"
-          }`}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#FDFCF8]/60 to-[#FDFCF8] transition-colors duration-1000 dark:via-[#0A0A0A]/80 dark:to-[#0A0A0A]" />
       </div>
 
-      <div className="relative z-10 mt-12 flex max-w-4xl flex-col items-center text-center md:mt-0">
-        <span className="mb-6 block text-xs uppercase tracking-[0.4em] text-[#8C7A6B] animate-[fadeInUp_1s_ease-out] md:text-sm dark:text-[#C29B62]">
-          Maison de Haute Parfumerie
+      {/* Radial glow */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] md:w-[700px] md:h-[700px] pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(139,58,58,0.06) 0%, transparent 60%)",
+        }}
+      />
+
+      {/* Decorative side lines — desktop only */}
+      <div className="absolute left-6 top-1/2 -translate-y-1/2 hidden lg:block">
+        <div
+          className="w-[1px] h-28 bg-gradient-to-b from-transparent via-[var(--nurea-accent)] to-transparent opacity-15"
+          style={{
+            animation:
+              "heroLineGrow 1.4s cubic-bezier(0.16,1,0.3,1) 1s both",
+            transformOrigin: "top",
+          }}
+        />
+      </div>
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 hidden lg:block">
+        <div
+          className="w-[1px] h-28 bg-gradient-to-b from-transparent via-[var(--nurea-accent)] to-transparent opacity-15"
+          style={{
+            animation:
+              "heroLineGrow 1.4s cubic-bezier(0.16,1,0.3,1) 1.2s both",
+            transformOrigin: "top",
+          }}
+        />
+      </div>
+
+      {/* Content */}
+      <div className="hero-stagger relative z-10 flex max-w-2xl flex-col items-center text-center px-5">
+        <span className="mb-5 text-[9px] font-medium uppercase tracking-[0.5em] text-[var(--nurea-accent)] md:text-[10px]">
+          Maison de Parfums
         </span>
-        <h1 className="mb-8 font-serif text-5xl font-light leading-[1.1] text-[#222222] animate-[fadeInUp_1.2s_ease-out] md:text-7xl lg:text-8xl dark:text-[#FDFCF8]">
-          L&apos;Élégance de <br className="hidden md:block" />
-          <span className="italic text-[#8C7A6B] dark:text-[#C29B62]">
-            l&apos;Invisible.
-          </span>
+
+        <h1 className="mb-4 font-serif text-[clamp(36px,8.5vw,72px)] leading-[1.04] text-[var(--nurea-text)]">
+          L&apos;Art de la
+          <br />
+          <em className="not-italic" style={{ fontStyle: "italic" }}>
+            Seduction
+          </em>
         </h1>
-        <p className="mb-12 max-w-md text-sm leading-relaxed text-[#888888] animate-[fadeInUp_1.4s_ease-out] md:text-base dark:text-[#A0A0A0]">
-          Une sélection privée de créations d&apos;exception.
-          Des grandes Maisons aux nez les plus confidentiels,
-          chaque fragrance est une invitation au voyage.
+
+        <p className="mb-9 max-w-sm text-[12px] leading-[1.85] text-[var(--nurea-text-muted)] md:text-[14px] md:max-w-md">
+          Des fragrances d&apos;exception selectionnees avec exigence.
+          <br className="hidden md:block" />
+          Un catalogue vivant, une invitation au voyage olfactif.
         </p>
+
         <a
           href="#collection"
-          onClick={handleScrollToCollection}
-          className="group flex h-16 w-16 items-center justify-center rounded-full border border-[#222222] text-[#222222] transition-all duration-500 hover:bg-[#222222] hover:text-[#FDFCF8] animate-[fadeInUp_1.6s_ease-out] dark:border-[#FDFCF8] dark:text-[#FDFCF8] dark:hover:bg-[#FDFCF8] dark:hover:text-[#0A0A0A]"
-          aria-label="Descendre vers la collection"
+          onClick={handleScroll}
+          className="btn-nurea group"
+          aria-label="Decouvrir la collection"
         >
-          <ArrowRight
-            size={20}
-            className="transition-transform duration-500 group-hover:translate-y-1 group-hover:rotate-90"
+          Decouvrir la Collection
+          <ChevronDown
+            size={14}
+            className="transition-transform duration-500 group-hover:translate-y-1"
           />
         </a>
+      </div>
+
+      {/* Bottom pulse line */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
+        <div
+          className="w-[1px] h-16 bg-gradient-to-b from-[var(--nurea-accent)] to-transparent"
+          style={{ animation: "heroPulse 3s ease-in-out infinite" }}
+        />
       </div>
     </header>
   );

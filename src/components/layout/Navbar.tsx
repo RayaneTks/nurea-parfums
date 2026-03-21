@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { createPortal } from "react-dom";
@@ -9,10 +10,10 @@ import { useEffect, useState, type FC } from "react";
 
 interface NavbarProps {
   scrolled: boolean;
-  onOpenFilters?: () => void;
+  onOpenSearch?: () => void;
 }
 
-export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenFilters }) => {
+export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -24,152 +25,172 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenFilters }) => {
   const isContact = pathname === "/contact";
   const isDark = resolvedTheme === "dark";
 
-  const handleToggleTheme = () => {
-    setTheme(isDark ? "light" : "dark");
-  };
-
+  const toggleTheme = () => setTheme(isDark ? "light" : "dark");
   const closeMenu = () => setMenuOpen(false);
 
+  /* Lock scroll when menu is open */
   useEffect(() => {
     if (typeof document === "undefined") return;
-    if (menuOpen) {
-      document.documentElement.style.overflow = "hidden";
-    } else {
-      document.documentElement.style.overflow = "";
-    }
+    document.documentElement.style.overflow = menuOpen ? "hidden" : "";
     return () => {
       document.documentElement.style.overflow = "";
     };
   }, [menuOpen]);
 
+  const logoSrc = isDark
+    ? "/branding/logos/nurea-logo-horizontal-dark.png"
+    : "/branding/logos/nurea-logo-horizontal-light.png";
+
   return (
     <nav
-      className={`fixed top-0 w-full z-40 transition-all duration-500 ${
+      className={`fixed top-0 w-full z-50 transition-all duration-500 ease-out-expo ${
         scrolled
-          ? "bg-[#FDFCF8]/95 dark:bg-[#0A0A0A]/95 backdrop-blur-md py-4 shadow-sm"
-          : "bg-transparent py-6"
+          ? "bg-[var(--nurea-bg)]/90 backdrop-blur-2xl py-2.5 border-b border-[var(--nurea-border)]"
+          : "bg-transparent py-4 md:py-5"
       }`}
     >
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 md:px-12">
+      <div className="mx-auto flex max-w-[1200px] items-center justify-between px-4 md:px-10">
+        {/* Burger — mobile only */}
         <button
-          className="md:hidden"
+          className="md:hidden flex items-center justify-center h-10 w-10 -ml-2 text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] active:scale-95 transition-all"
           onClick={() => setMenuOpen(true)}
           aria-label="Ouvrir le menu"
         >
-          <Menu size={24} className="text-[#111111] dark:text-[#FDFCF8]" />
+          <Menu size={20} strokeWidth={1.5} />
         </button>
 
+        {/* Logo */}
         <Link
           href="/"
-          className="font-serif text-2xl font-semibold tracking-widest uppercase text-center md:static md:translate-x-0 absolute left-1/2 -translate-x-1/2 cursor-pointer"
+          className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0"
         >
-          Nurea
+          {mounted ? (
+            <Image
+              src={logoSrc}
+              alt="Nurea Parfums"
+              width={130}
+              height={36}
+              className="h-6 w-auto md:h-8"
+              priority
+            />
+          ) : (
+            <span className="font-serif text-base tracking-[0.2em] text-[var(--nurea-text)]">
+              NUREA
+            </span>
+          )}
         </Link>
 
-        <div className="hidden items-center gap-10 text-xs uppercase tracking-[0.2em] md:flex">
+        {/* Nav desktop */}
+        <div className="hidden items-center gap-10 text-[10px] uppercase tracking-[0.2em] font-medium md:flex">
           <Link
             href="/"
-            className={`relative transition-colors after:absolute after:-bottom-2 after:left-0 after:h-[1px] after:w-full after:bg-[#111111] after:transition-transform after:duration-300 dark:after:bg-[#FDFCF8] ${
+            className={`py-1 transition-colors duration-300 ${
               isHome
-                ? "text-[#8C7A6B] dark:text-[#C29B62] after:scale-x-100"
-                : "text-[#111111] dark:text-[#FDFCF8] after:scale-x-0 hover:text-[#8C7A6B] hover:after:scale-x-100 dark:hover:text-[#C29B62]"
+                ? "text-[var(--nurea-accent)]"
+                : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
             }`}
           >
-            La Collection
+            Collection
           </Link>
           <Link
             href="/contact"
-            className={`relative transition-colors after:absolute after:-bottom-2 after:left-0 after:h-[1px] after:w-full after:bg-[#111111] after:transition-transform after:duration-300 dark:after:bg-[#FDFCF8] ${
+            className={`py-1 transition-colors duration-300 ${
               isContact
-                ? "text-[#8C7A6B] dark:text-[#C29B62] after:scale-x-100"
-                : "text-[#111111] dark:text-[#FDFCF8] after:scale-x-0 hover:text-[#8C7A6B] hover:after:scale-x-100 dark:hover:text-[#C29B62]"
+                ? "text-[var(--nurea-accent)]"
+                : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
             }`}
           >
-            Contact Privé
+            Contact
           </Link>
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* Actions */}
+        <div className="flex items-center gap-1">
+          {/* Theme toggle — desktop only */}
           <button
-            onClick={handleToggleTheme}
-            className="hidden h-8 w-8 items-center justify-center rounded-full border border-transparent transition-all hover:border-[#111111] dark:hover:border-[#FDFCF8] md:flex"
-            aria-label="Basculer le thème"
+            onClick={toggleTheme}
+            className="hidden h-9 w-9 items-center justify-center text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] transition-colors md:flex"
+            aria-label="Basculer le theme"
           >
             {mounted ? (
               isDark ? (
-                <Sun size={14} />
+                <Sun size={15} strokeWidth={1.5} />
               ) : (
-                <Moon size={14} />
+                <Moon size={15} strokeWidth={1.5} />
               )
             ) : (
-              <span className="h-[14px] w-[14px]" aria-hidden />
+              <span className="h-[15px] w-[15px]" />
             )}
           </button>
 
-          {isHome && onOpenFilters && (
-            <>
-              <button
-                onClick={onOpenFilters}
-                className="flex items-center gap-2 md:hidden"
-                aria-label="Ouvrir la recherche"
-              >
-                <Search size={20} />
-              </button>
-              <div className="hidden items-center gap-6 md:flex">
-                <button
-                  onClick={onOpenFilters}
-                  className="flex items-center gap-2 text-xs uppercase tracking-[0.1em] transition-colors hover:text-[#8C7A6B] dark:hover:text-[#C29B62]"
-                >
-                  <Search size={14} /> Recherche
-                </button>
-              </div>
-            </>
+          {/* Search trigger */}
+          {isHome && onOpenSearch && (
+            <button
+              onClick={onOpenSearch}
+              className="flex items-center justify-center h-10 w-10 -mr-2 md:mr-0 text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] active:scale-95 transition-all"
+              aria-label="Rechercher"
+            >
+              <Search size={18} strokeWidth={1.5} className="md:hidden" />
+              <span className="hidden md:flex items-center gap-2 text-[10px] uppercase tracking-[0.15em]">
+                <Search size={13} strokeWidth={1.5} />
+                Recherche
+              </span>
+            </button>
           )}
         </div>
       </div>
 
-      {/* Menu burger mobile : rendu en portail dans body pour toujours couvrir le viewport (catalogue, scroll, etc.) */}
+      {/* ── Mobile menu (portal) ── */}
       {mounted &&
         typeof document !== "undefined" &&
         createPortal(
           <>
-            <button
-              type="button"
-              onClick={closeMenu}
-              className={`fixed inset-0 z-[9998] bg-black/50 transition-opacity duration-300 md:hidden ${
-                menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-              }`}
-              aria-label="Fermer le menu"
-            />
+            {/* Backdrop */}
             <div
-              className={`fixed left-0 top-0 z-[9999] flex h-full w-[min(280px,85vw)] flex-col gap-8 border-r border-[#111111]/10 bg-[#FDFCF8] px-6 py-8 shadow-xl transition-transform duration-300 ease-out dark:border-[#FDFCF8]/10 dark:bg-[#0A0A0A] md:hidden ${
-                menuOpen ? "translate-x-0" : "-translate-x-full"
+              className={`fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm transition-opacity duration-400 md:hidden ${
+                menuOpen
+                  ? "opacity-100 pointer-events-auto"
+                  : "opacity-0 pointer-events-none"
+              }`}
+              onClick={closeMenu}
+              aria-hidden="true"
+            />
+
+            {/* Full-screen panel */}
+            <div
+              className={`fixed inset-0 z-[61] flex flex-col bg-[var(--nurea-bg)] transition-all duration-500 ease-out-expo md:hidden ${
+                menuOpen
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 -translate-y-full pointer-events-none"
               }`}
               role="dialog"
               aria-label="Menu principal"
               aria-hidden={!menuOpen}
+              {...(!menuOpen ? { inert: true as unknown as boolean } : {})}
             >
-              <div className="flex items-center justify-between">
-                <span className="font-serif text-lg font-semibold tracking-widest uppercase text-[#111111] dark:text-[#FDFCF8]">
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-4">
+                <span className="text-[9px] uppercase tracking-[0.4em] text-[var(--nurea-text-muted)]">
                   Menu
                 </span>
                 <button
-                  type="button"
                   onClick={closeMenu}
-                  className="rounded-full p-2 transition-colors hover:bg-[#111111]/10 dark:hover:bg-[#FDFCF8]/10"
-                  aria-label="Fermer le menu"
+                  className="flex items-center justify-center h-10 w-10 text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] transition-colors"
+                  aria-label="Fermer"
                 >
-                  <X size={20} className="text-[#111111] dark:text-[#FDFCF8]" />
+                  <X size={20} strokeWidth={1.5} />
                 </button>
               </div>
-              <nav className="flex flex-col gap-6">
+
+              {/* Links */}
+              <nav className="flex flex-col items-center justify-center flex-1 gap-10">
                 <Link
                   href="/"
                   onClick={closeMenu}
-                  className={`text-sm uppercase tracking-[0.2em] ${
+                  className={`font-serif text-[32px] transition-colors active:scale-95 ${
                     isHome
-                      ? "font-medium text-[#8C7A6B] dark:text-[#C29B62]"
-                      : "text-[#111111] dark:text-[#FDFCF8]"
+                      ? "text-[var(--nurea-accent)]"
+                      : "text-[var(--nurea-text)]"
                   }`}
                 >
                   La Collection
@@ -177,40 +198,33 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenFilters }) => {
                 <Link
                   href="/contact"
                   onClick={closeMenu}
-                  className={`text-sm uppercase tracking-[0.2em] ${
+                  className={`font-serif text-[32px] transition-colors active:scale-95 ${
                     isContact
-                      ? "font-medium text-[#8C7A6B] dark:text-[#C29B62]"
-                      : "text-[#111111] dark:text-[#FDFCF8]"
+                      ? "text-[var(--nurea-accent)]"
+                      : "text-[var(--nurea-text)]"
                   }`}
                 >
-                  Contact Privé
+                  Contact
                 </Link>
               </nav>
-              <div className="mt-auto border-t border-[#111111]/10 pt-6 dark:border-[#FDFCF8]/10">
-                <p className="mb-3 text-xs uppercase tracking-widest text-[#888888] dark:text-[#A0A0A0]">
-                  Thème
-                </p>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between px-4 py-5 border-t border-[var(--nurea-border)]">
+                <Image
+                  src="/branding/monogram/np-free-cuivre.png"
+                  alt=""
+                  width={22}
+                  height={22}
+                  className="opacity-25"
+                />
                 <button
-                  type="button"
-                  onClick={handleToggleTheme}
-                  className="flex h-10 w-full items-center gap-3 rounded-lg border border-[#111111]/20 px-4 transition-colors hover:bg-[#111111]/5 dark:border-[#FDFCF8]/20 dark:hover:bg-[#FDFCF8]/5"
-                  aria-label="Basculer le thème"
+                  onClick={toggleTheme}
+                  className="flex items-center gap-2 text-[11px] text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] transition-colors"
+                  aria-label="Basculer le theme"
                 >
-                  {mounted ? (
-                    isDark ? (
-                      <>
-                        <Sun size={18} className="text-[#111111] dark:text-[#FDFCF8]" />
-                        <span className="text-sm text-[#111111] dark:text-[#FDFCF8]">Mode clair</span>
-                      </>
-                    ) : (
-                      <>
-                        <Moon size={18} className="text-[#111111] dark:text-[#FDFCF8]" />
-                        <span className="text-sm text-[#111111] dark:text-[#FDFCF8]">Mode sombre</span>
-                      </>
-                    )
-                  ) : (
-                    <span className="h-[18px] w-[18px]" aria-hidden />
-                  )}
+                  {mounted &&
+                    (isDark ? <Sun size={14} /> : <Moon size={14} />)}
+                  <span>{isDark ? "Mode clair" : "Mode sombre"}</span>
                 </button>
               </div>
             </div>

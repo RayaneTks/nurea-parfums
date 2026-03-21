@@ -30,6 +30,8 @@ dist-ssr
 
 # Build outputs
 build
+.next
+out
 *.tsbuildinfo
 
 # Coverage

@@ -2,8 +2,10 @@
 
 import type { FC, FormEvent } from "react";
 import { useState } from "react";
+import Image from "next/image";
 import { ArrowRight, Send } from "lucide-react";
 import { CONTACT } from "@/lib/data";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
 interface ContactFormState {
   name: string;
@@ -25,7 +27,6 @@ export const ContactSection: FC = () => {
   const handleContactSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
-
     setTimeout(() => {
       setIsSubmitting(false);
       setFormState({ name: "", email: "", subject: "", message: "" });
@@ -34,177 +35,177 @@ export const ContactSection: FC = () => {
   };
 
   return (
-    <main className="w-full max-w-[1400px] mx-auto px-6 md:px-12 py-32 md:py-48 animate-[fadeInUp_0.6s_ease-out]">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-24 text-center">
-          <span className="mb-6 block text-xs uppercase tracking-[0.4em] text-[#8C7A6B] md:text-sm dark:text-[#C29B62]">
-            Conciergerie Privée
+    <main className="relative w-full flex-1">
+      {/* Decorative glow */}
+      <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[350px] w-[500px] bg-[var(--nurea-accent)] opacity-[0.025] blur-[100px]" />
+
+      <div className="mx-auto max-w-[1200px] px-4 md:px-10 pt-28 pb-16 md:pt-40 md:pb-24">
+        {/* Hero compact */}
+        <ScrollReveal className="mx-auto mb-16 max-w-2xl text-center md:mb-24">
+          <span className="mb-4 block text-[9px] font-medium uppercase tracking-[0.4em] text-[var(--nurea-accent)] md:text-[10px]">
+            Conciergerie Privee
           </span>
-          <h1 className="mb-8 font-serif text-5xl font-light leading-[1.1] text-[#222222] md:text-7xl dark:text-[#FDFCF8]">
+          <h1 className="mb-5 font-serif text-[clamp(30px,6vw,52px)] leading-[1.08] text-[var(--nurea-text)]">
             L&apos;Art de{" "}
-            <span className="italic text-[#8C7A6B] dark:text-[#C29B62]">
-              l&apos;Échange.
-            </span>
+            <em className="italic">l&apos;Echange</em>
           </h1>
-          <p className="mx-auto max-w-lg text-sm font-light leading-relaxed text-[#888888] md:text-base dark:text-[#A0A0A0]">
-            Notre Maison opère exclusivement sur commande via nos réseaux
-            dédiés. Pour toute acquisition ou conseil olfactif, nous nous tenons
-            à votre entière disposition.
+          <p className="mx-auto max-w-md text-[12px] leading-[1.85] text-[var(--nurea-text-muted)] md:text-[13px]">
+            Notre Maison opere exclusivement sur commande via nos reseaux
+            dedies. Pour toute acquisition ou conseil olfactif, nous nous tenons
+            a votre entiere disposition.
           </p>
-        </div>
+        </ScrollReveal>
 
-        <div className="grid gap-16 md:grid-cols-12 md:gap-24">
-          <div className="space-y-12 md:col-span-5">
-            <div>
-              <h3 className="mb-6 font-serif text-2xl">
-                Commander via nos réseaux
-              </h3>
-              <p className="mb-8 text-sm font-light leading-relaxed text-[#888888] dark:text-[#A0A0A0]">
-                Toutes nos créations sont disponibles sur commande. Échangez
-                directement avec nous sur nos plateformes pour réserver votre
-                pièce ou obtenir une recommandation personnalisée.
-              </p>
-              <div className="space-y-4">
-                <a
-                  href={CONTACT.whatsapp}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center justify-between bg-[#222222] p-6 text-[#FDFCF8] transition-all duration-500 hover:bg-[#8C7A6B] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#C29B62]"
-                >
-                  <div>
-                    <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]">
-                      Messages &amp; Commandes
-                    </span>
-                    <span className="font-serif text-xl">WhatsApp</span>
-                  </div>
-                  <ArrowRight
-                    size={20}
-                    strokeWidth={1.5}
-                    className="transition-transform duration-500 group-hover:-rotate-45"
-                  />
-                </a>
-                <a
-                  href={CONTACT.snapchat}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center justify-between bg-[#222222] p-6 text-[#FDFCF8] transition-all duration-500 hover:bg-[#FFD100] hover:text-[#0A0A0A] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#FFD100]"
-                >
-                  <div>
-                    <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]">
-                      Contacter sur Snapchat
-                    </span>
-                    <span className="font-serif text-xl">Snapchat</span>
-                  </div>
-                  <ArrowRight
-                    size={20}
-                    strokeWidth={1.5}
-                    className="transition-transform duration-500 group-hover:-rotate-45"
-                  />
-                </a>
+        {/* Separator */}
+        <ScrollReveal direction="scale" className="flex justify-center mb-16 md:mb-24">
+          <Image
+            src="/branding/separators/nurea_separator_copper.svg"
+            alt=""
+            width={100}
+            height={10}
+            className="max-w-[90px] opacity-25"
+          />
+        </ScrollReveal>
+
+        <div className="mx-auto grid max-w-4xl gap-12 md:grid-cols-2 md:gap-16">
+          {/* Left: Social CTAs */}
+          <ScrollReveal direction="left" className="flex flex-col gap-4">
+            <h2 className="mb-1 text-[9px] font-medium uppercase tracking-[0.35em] text-[var(--nurea-text-muted)]">
+              Commander
+            </h2>
+
+            <a
+              href={CONTACT.whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative flex items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-5 transition-all duration-500 hover:border-[var(--nurea-accent)] hover:bg-[var(--nurea-surface-hover)] active:scale-[0.99]"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors duration-300 group-hover:border-[var(--nurea-accent)]">
+                <Image
+                  src="/branding/icons/nurea_icon_whatsapp_ivory.svg"
+                  alt=""
+                  width={20}
+                  height={20}
+                />
+              </span>
+              <div className="flex-1 min-w-0">
+                <span className="block text-[8px] uppercase tracking-[0.2em] text-[var(--nurea-text-muted)] mb-0.5 md:text-[9px]">
+                  Messages &amp; Commandes
+                </span>
+                <span className="font-serif text-base text-[var(--nurea-text)] md:text-lg">
+                  WhatsApp
+                </span>
               </div>
-            </div>
-          </div>
+              <ArrowRight
+                size={15}
+                className="shrink-0 text-[var(--nurea-accent)] transition-transform duration-300 group-hover:-rotate-45"
+              />
+            </a>
 
-          <div className="md:col-span-7">
-            <div className="bg-[#F5F4F0] p-8 md:p-12 dark:bg-[#141414]">
-              <h3 className="mb-8 font-serif text-2xl">Nous écrire</h3>
+            <a
+              href={CONTACT.snapchat}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative flex items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-5 transition-all duration-500 hover:border-[#FFD100] hover:bg-[var(--nurea-surface-hover)] active:scale-[0.99]"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors duration-300 group-hover:border-[#FFD100]">
+                <Image
+                  src="/branding/icons/nurea_icon_snapchat_ivory.svg"
+                  alt=""
+                  width={20}
+                  height={20}
+                />
+              </span>
+              <div className="flex-1 min-w-0">
+                <span className="block text-[8px] uppercase tracking-[0.2em] text-[var(--nurea-text-muted)] mb-0.5 md:text-[9px]">
+                  Contacter sur Snapchat
+                </span>
+                <span className="font-serif text-base text-[var(--nurea-text)] md:text-lg">
+                  Snapchat
+                </span>
+              </div>
+              <ArrowRight
+                size={15}
+                className="shrink-0 text-[var(--nurea-text-muted)] transition-transform duration-300 group-hover:-rotate-45"
+              />
+            </a>
+
+            {/* Email */}
+            <div className="mt-3 border-t border-[var(--nurea-border)] pt-5">
+              <span className="block text-[8px] uppercase tracking-[0.2em] text-[var(--nurea-text-muted)] mb-1.5 md:text-[9px]">
+                Correspondance
+              </span>
+              <a
+                href={`mailto:${CONTACT.email}`}
+                className="font-serif text-sm text-[var(--nurea-text)] transition-colors duration-300 hover:text-[var(--nurea-accent)]"
+              >
+                {CONTACT.email}
+              </a>
+            </div>
+          </ScrollReveal>
+
+          {/* Right: Form */}
+          <ScrollReveal direction="right" delay={120}>
+            <div className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-6 md:p-8">
+              <h3 className="mb-1.5 text-[9px] font-medium uppercase tracking-[0.35em] text-[var(--nurea-text-muted)]">
+                Nous ecrire
+              </h3>
+              <p className="mb-7 font-serif text-lg text-[var(--nurea-text)] md:text-xl">
+                Un message, une demande
+              </p>
 
               {isSubmitted ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center animate-[fadeInUp_0.6s_ease-out]">
-                  <span className="mb-4 text-xs uppercase tracking-[0.4em] text-[#8C7A6B] dark:text-[#C29B62]">
+                <div className="flex flex-col items-center justify-center py-14 text-center animate-fade-in-up">
+                  <Image
+                    src="/branding/monogram/np-circle-cuivre.png"
+                    alt=""
+                    width={48}
+                    height={48}
+                    className="mb-6 opacity-45"
+                  />
+                  <span className="mb-2 text-[9px] uppercase tracking-[0.3em] text-[var(--nurea-accent)]">
                     Message transmis
                   </span>
-                  <h4 className="mb-4 font-serif text-3xl">
+                  <h4 className="mb-3 font-serif text-xl text-[var(--nurea-text)]">
                     Merci pour votre confiance.
                   </h4>
-                  <p className="max-w-sm text-sm text-[#888888] dark:text-[#A0A0A0]">
+                  <p className="max-w-xs text-[12px] leading-[1.8] text-[var(--nurea-text-muted)]">
                     Notre conciergerie reviendra vers vous dans les plus brefs
-                    délais.
+                    delais.
                   </p>
                 </div>
               ) : (
-                <form onSubmit={handleContactSubmit} className="space-y-8">
-                  <div className="grid gap-8 md:grid-cols-2">
-                    <div className="relative">
-                      <input
-                        type="text"
-                        id="name"
-                        required
-                        value={formState.name}
-                        onChange={(event) =>
-                          setFormState({
-                            ...formState,
-                            name: event.target.value,
-                          })
-                        }
-                        className="peer block w-full border-b border-[#222222]/10 bg-transparent py-3 text-sm outline-none transition-colors focus:border-[#8C7A6B] dark:border-[#FDFCF8]/10 dark:focus:border-[#C29B62]"
-                        placeholder=" "
-                      />
-                      <label
-                        htmlFor="name"
-                        className={`absolute left-0 top-3 text-sm text-[#888888] transition-all peer-focus:-top-4 peer-focus:text-[10px] peer-focus:tracking-[0.2em] peer-focus:uppercase dark:text-[#A0A0A0] ${
-                          formState.name
-                            ? "-top-4 text-[10px] tracking-[0.2em] uppercase"
-                            : ""
-                        }`}
-                      >
-                        Nom &amp; Prénom
-                      </label>
-                    </div>
-                    <div className="relative">
-                      <input
-                        type="email"
-                        id="email"
-                        required
-                        value={formState.email}
-                        onChange={(event) =>
-                          setFormState({
-                            ...formState,
-                            email: event.target.value,
-                          })
-                        }
-                        className="peer block w-full border-b border-[#222222]/10 bg-transparent py-3 text-sm outline-none transition-colors focus:border-[#8C7A6B] dark:border-[#FDFCF8]/10 dark:focus:border-[#C29B62]"
-                        placeholder=" "
-                      />
-                      <label
-                        htmlFor="email"
-                        className={`absolute left-0 top-3 text-sm text-[#888888] transition-all peer-focus:-top-4 peer-focus:text-[10px] peer-focus:tracking-[0.2em] peer-focus:uppercase dark:text-[#A0A0A0] ${
-                          formState.email
-                            ? "-top-4 text-[10px] tracking-[0.2em] uppercase"
-                            : ""
-                        }`}
-                      >
-                        E-mail
-                      </label>
-                    </div>
+                <form onSubmit={handleContactSubmit} className="space-y-6">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <FloatingInput
+                      id="name"
+                      label="Nom & Prenom"
+                      type="text"
+                      value={formState.name}
+                      onChange={(v) =>
+                        setFormState({ ...formState, name: v })
+                      }
+                    />
+                    <FloatingInput
+                      id="email"
+                      label="E-mail"
+                      type="email"
+                      value={formState.email}
+                      onChange={(v) =>
+                        setFormState({ ...formState, email: v })
+                      }
+                    />
                   </div>
 
-                  <div className="relative">
-                    <input
-                      type="text"
-                      id="subject"
-                      required
-                      value={formState.subject}
-                      onChange={(event) =>
-                        setFormState({
-                          ...formState,
-                          subject: event.target.value,
-                        })
-                      }
-                      className="peer block w-full border-b border-[#222222]/10 bg-transparent py-3 text-sm outline-none transition-colors focus:border-[#8C7A6B] dark:border-[#FDFCF8]/10 dark:focus:border-[#C29B62]"
-                      placeholder=" "
-                    />
-                    <label
-                      htmlFor="subject"
-                      className={`absolute left-0 top-3 text-sm text-[#888888] transition-all peer-focus:-top-4 peer-focus:text-[10px] peer-focus:tracking-[0.2em] peer-focus:uppercase dark:text-[#A0A0A0] ${
-                        formState.subject
-                          ? "-top-4 text-[10px] tracking-[0.2em] uppercase"
-                          : ""
-                      }`}
-                    >
-                      Sujet de votre demande
-                    </label>
-                  </div>
+                  <FloatingInput
+                    id="subject"
+                    label="Sujet de votre demande"
+                    type="text"
+                    value={formState.subject}
+                    onChange={(v) =>
+                      setFormState({ ...formState, subject: v })
+                    }
+                  />
 
                   <div className="relative pt-2">
                     <textarea
@@ -212,20 +213,20 @@ export const ContactSection: FC = () => {
                       required
                       rows={4}
                       value={formState.message}
-                      onChange={(event) =>
+                      onChange={(e) =>
                         setFormState({
                           ...formState,
-                          message: event.target.value,
+                          message: e.target.value,
                         })
                       }
-                      className="peer block w-full resize-none border-b border-[#222222]/10 bg-transparent py-3 text-sm outline-none transition-colors focus:border-[#8C7A6B] dark:border-[#FDFCF8]/10 dark:focus:border-[#C29B62]"
+                      className="peer block w-full resize-none border-b border-[var(--nurea-border)] bg-transparent py-3 text-[12px] text-[var(--nurea-text)] outline-none transition-colors duration-300 focus:border-[var(--nurea-accent)] md:text-[13px]"
                       placeholder=" "
                     />
                     <label
                       htmlFor="message"
-                      className={`absolute left-0 top-5 text-sm text-[#888888] transition-all peer-focus:-top-2 peer-focus:text-[10px] peer-focus:tracking-[0.2em] peer-focus:uppercase dark:text-[#A0A0A0] ${
+                      className={`absolute left-0 top-5 text-[12px] text-[var(--nurea-text-muted)] transition-all duration-300 peer-focus:-top-1 peer-focus:text-[8px] peer-focus:tracking-[0.2em] peer-focus:uppercase peer-focus:text-[var(--nurea-accent)] md:text-[13px] ${
                         formState.message
-                          ? "-top-2 text-[10px] tracking-[0.2em] uppercase"
+                          ? "-top-1 text-[8px] tracking-[0.2em] uppercase text-[var(--nurea-accent)]"
                           : ""
                       }`}
                     >
@@ -236,17 +237,63 @@ export const ContactSection: FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="mt-8 flex w-full items-center justify-center gap-3 px-10 py-4 text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50 md:w-auto bg-[#222222] text-[#FDFCF8] hover:bg-[#8C7A6B] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#C29B62]"
+                    className="btn-nurea mt-3 w-full justify-center disabled:opacity-50"
                   >
-                    {isSubmitting ? "Envoi en cours..." : "Envoyer la demande"}
-                    {!isSubmitting && <Send size={14} />}
+                    {isSubmitting ? (
+                      "Envoi en cours..."
+                    ) : (
+                      <>
+                        Envoyer la demande
+                        <Send
+                          size={12}
+                          className="text-[var(--nurea-accent)]"
+                        />
+                      </>
+                    )}
                   </button>
                 </form>
               )}
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </main>
   );
 };
+
+/* Floating label input */
+const FloatingInput = ({
+  id,
+  label,
+  type,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  type: string;
+  value: string;
+  onChange: (v: string) => void;
+}) => (
+  <div className="relative">
+    <input
+      type={type}
+      id={id}
+      required
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="peer block w-full border-b border-[var(--nurea-border)] bg-transparent py-3 text-[12px] text-[var(--nurea-text)] outline-none transition-colors duration-300 focus:border-[var(--nurea-accent)] md:text-[13px]"
+      placeholder=" "
+    />
+    <label
+      htmlFor={id}
+      className={`absolute left-0 top-3 text-[12px] text-[var(--nurea-text-muted)] transition-all duration-300 peer-focus:-top-4 peer-focus:text-[8px] peer-focus:tracking-[0.2em] peer-focus:uppercase peer-focus:text-[var(--nurea-accent)] md:text-[13px] ${
+        value
+          ? "-top-4 text-[8px] tracking-[0.2em] uppercase text-[var(--nurea-accent)]"
+          : ""
+      }`}
+    >
+      {label}
+    </label>
+  </div>
+);

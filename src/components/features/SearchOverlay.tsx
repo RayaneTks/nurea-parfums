@@ -17,11 +17,10 @@ interface SearchOverlayProps {
   setSelectedCategory: (value: Category) => void;
   onResetFilters: () => void;
   resultsCount: number;
-  /** Résultats filtrés pour affichage en direct pendant la saisie */
   searchResults: Perfume[];
 }
 
-const PREVIEW_MAX = 8;
+const PREVIEW_MAX = 6;
 
 export const SearchOverlay: FC<SearchOverlayProps> = ({
   isOpen,
@@ -43,104 +42,111 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col bg-[#FDFCF8]/95 backdrop-blur-md transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] dark:bg-[#0A0A0A]/95 ${
-        isOpen ? "translate-x-0 opacity-100" : "translate-x-12 opacity-0 pointer-events-none"
+      role="dialog"
+      aria-label="Recherche"
+      aria-hidden={!isOpen}
+      {...(!isOpen ? { inert: true as unknown as boolean } : {})}
+      className={`fixed inset-0 z-[55] flex flex-col bg-[var(--nurea-bg)]/[0.97] backdrop-blur-3xl transition-all duration-500 ease-out-expo ${
+        isOpen
+          ? "opacity-100 pointer-events-auto"
+          : "opacity-0 pointer-events-none"
       }`}
     >
-      <div className="flex items-center justify-between border-b border-[#111111]/10 p-6 md:p-12 dark:border-[#FDFCF8]/10">
-        <span className="font-serif text-2xl font-semibold tracking-widest uppercase">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 md:px-10 md:py-4">
+        <span className="font-serif text-lg text-[var(--nurea-text)] md:text-xl">
           Recherche
         </span>
         <button
           onClick={onClose}
-          className="flex h-12 w-12 items-center justify-center rounded-full transition-colors hover:bg-[#F5F4F0] dark:hover:bg-[#141414]"
-          aria-label="Fermer la recherche"
+          className="flex items-center justify-center h-10 w-10 text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors"
+          aria-label="Fermer"
         >
-          <X size={24} strokeWidth={1} />
+          <X size={20} strokeWidth={1.5} />
         </button>
       </div>
 
-      <div className="mx-auto flex-1 w-full max-w-4xl overflow-y-auto p-6 md:p-12">
-        <div className="relative mb-16">
+      {/* Content */}
+      <div className="mx-auto flex-1 w-full max-w-2xl overflow-y-auto px-4 py-5 md:px-10 md:py-8">
+        {/* Search input */}
+        <div className="relative mb-8">
           <input
             type="text"
             placeholder="Que recherchez-vous ?"
             value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            autoFocus
-            className="w-full border-b border-[#111111] bg-transparent py-4 text-2xl font-serif text-[#111111] placeholder:text-[#111111]/20 focus:outline-none focus:border-[#8C7A6B] md:py-8 md:text-4xl dark:border-[#FDFCF8] dark:text-[#FDFCF8] dark:placeholder:text-[#FDFCF8]/20 dark:focus:border-[#C29B62]"
+            onChange={(e) => setSearchTerm(e.target.value)}
+            autoFocus={isOpen}
+            className="w-full border-b border-[var(--nurea-border-hover)] bg-transparent py-3 font-serif italic text-[clamp(20px,4vw,32px)] text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] focus:outline-none focus:border-[var(--nurea-accent)] transition-colors duration-300"
           />
           <Search
-            size={24}
-            className="absolute right-0 top-1/2 -translate-y-1/2 text-[#111111]/50 dark:text-[#FDFCF8]/50"
-            strokeWidth={1}
+            size={16}
+            className="absolute right-0 top-1/2 -translate-y-1/2 text-[var(--nurea-text-muted)]"
+            strokeWidth={1.5}
           />
         </div>
 
-        {/* Résultats en direct pendant la saisie */}
+        {/* Live results */}
         {searchTerm.trim() !== "" && (
-          <div className="mb-12">
-            <h4 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#8C7A6B] dark:text-[#C29B62]">
+          <div className="mb-8 animate-fade-in-up">
+            <p className="mb-3 text-[10px] tracking-[0.15em] text-[var(--nurea-text-muted)]">
               {resultsCount > 0
-                ? `${resultsCount} résultat${resultsCount !== 1 ? "s" : ""}`
-                : "Aucun résultat"}
-            </h4>
+                ? `${resultsCount} resultat${resultsCount !== 1 ? "s" : ""}`
+                : "Aucun resultat"}
+            </p>
             {resultsCount > 0 ? (
-              <ul className="space-y-3">
+              <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-3">
                 {searchResults.slice(0, PREVIEW_MAX).map((perfume) => (
-                  <li key={perfume.id}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedBrand(perfume.brand);
-                        onClose();
-                      }}
-                      className="flex w-full items-center gap-4 rounded-lg border border-[#111111]/10 py-3 px-4 text-left transition-colors hover:bg-[#111111]/5 dark:border-[#FDFCF8]/10 dark:hover:bg-[#FDFCF8]/5"
-                    >
-                      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-[#F5F4F0] dark:bg-[#141414]">
-                        <Image
-                          src={perfume.image}
-                          alt=""
-                          fill
-                          className="object-cover"
-                          sizes="48px"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-serif text-base text-[#111111] dark:text-[#FDFCF8]">
-                          {perfume.name}
-                        </p>
-                        <p className="truncate text-xs text-[#888888] dark:text-[#A0A0A0]">
-                          {perfume.brand}
-                        </p>
-                      </div>
-                    </button>
-                  </li>
+                  <button
+                    key={perfume.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedBrand(perfume.brand);
+                      onClose();
+                    }}
+                    className="group flex flex-col text-left transition-all active:scale-[0.98]"
+                  >
+                    <div className="relative aspect-[3/4] w-full overflow-hidden bg-[var(--nurea-surface)] mb-1.5">
+                      <Image
+                        src={perfume.image}
+                        alt=""
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="150px"
+                      />
+                    </div>
+                    <span className="text-[7px] uppercase tracking-[0.2em] text-[var(--nurea-accent)] md:text-[8px]">
+                      {perfume.brand}
+                    </span>
+                    <span className="text-[11px] font-serif text-[var(--nurea-text)] truncate md:text-[12px]">
+                      {perfume.name}
+                    </span>
+                  </button>
                 ))}
-              </ul>
+              </div>
             ) : (
-              <p className="text-sm text-[#888888] dark:text-[#A0A0A0]">
-                Essayez un autre terme (ex. nom, marque) ou vérifiez l&apos;orthographe.
+              <p className="text-[12px] text-[var(--nurea-text-muted)]">
+                Essayez un autre terme ou verifiez l&apos;orthographe.
               </p>
             )}
           </div>
         )}
 
-        <div className="grid gap-16 md:grid-cols-2">
+        {/* Filters */}
+        <div className="grid gap-8 md:grid-cols-2 md:gap-10">
           <div>
-            <h4 className="mb-8 text-xs font-semibold uppercase tracking-[0.2em] text-[#8C7A6B] dark:text-[#C29B62]">
-              Maisons de Parfum
+            <h4 className="mb-4 text-[9px] uppercase tracking-[0.3em] text-[var(--nurea-text-muted)]">
+              Maisons
             </h4>
-            <ul className="space-y-4">
+            <ul className="space-y-2">
               {allBrands.map((brand) => (
                 <li key={brand}>
                   <button
                     onClick={() => setSelectedBrand(brand)}
                     type="button"
-                    className={`text-lg font-serif transition-colors md:text-xl ${
+                    className={`text-[12px] transition-colors duration-300 md:text-[13px] ${
                       selectedBrand === brand
-                        ? "italic text-[#111111] dark:text-[#FDFCF8]"
-                        : "text-[#888888] hover:text-[#111111] dark:text-[#A0A0A0] dark:hover:text-[#FDFCF8]"
+                        ? "text-[var(--nurea-accent)] italic"
+                        : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
                     }`}
                   >
                     {brand}
@@ -150,19 +156,19 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
             </ul>
           </div>
           <div>
-            <h4 className="mb-8 text-xs font-semibold uppercase tracking-[0.2em] text-[#8C7A6B] dark:text-[#C29B62]">
-              Familles &amp; Collections
+            <h4 className="mb-4 text-[9px] uppercase tracking-[0.3em] text-[var(--nurea-text-muted)]">
+              Collections
             </h4>
-            <ul className="space-y-4">
+            <ul className="space-y-2">
               {categories.map((category) => (
                 <li key={category}>
                   <button
                     onClick={() => setSelectedCategory(category)}
                     type="button"
-                    className={`text-lg font-serif transition-colors md:text-xl ${
+                    className={`text-[12px] transition-colors duration-300 md:text-[13px] ${
                       selectedCategory === category
-                        ? "italic text-[#111111] dark:text-[#FDFCF8]"
-                        : "text-[#888888] hover:text-[#111111] dark:text-[#A0A0A0] dark:hover:text-[#FDFCF8]"
+                        ? "text-[var(--nurea-accent)] italic"
+                        : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
                     }`}
                   >
                     {category}
@@ -174,30 +180,24 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 border-t border-[#111111]/10 p-6 md:flex-row md:items-center md:justify-between md:p-12 dark:border-[#FDFCF8]/10">
-        <div className="flex flex-wrap items-center gap-3">
+      {/* Footer */}
+      <div className="flex items-center justify-between border-t border-[var(--nurea-border)] px-4 py-3 md:px-10 md:py-4">
+        <div className="flex items-center gap-3">
           {hasActiveFilters && (
             <button
-              type="button"
               onClick={onResetFilters}
-              className="rounded-full border border-[#111111]/30 bg-transparent px-4 py-2 text-xs uppercase tracking-widest text-[#888888] transition-colors hover:border-[#111111] hover:text-[#111111] dark:border-[#FDFCF8]/30 dark:text-[#A0A0A0] dark:hover:border-[#FDFCF8] dark:hover:text-[#FDFCF8]"
+              className="text-[9px] uppercase tracking-[0.15em] text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors"
             >
               Tout effacer
             </button>
           )}
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-[#888888] dark:text-[#A0A0A0]">
-            {resultsCount} résultat{resultsCount !== 1 ? "s" : ""}
+          <span className="text-[10px] text-[var(--nurea-text-subtle)]">
+            {resultsCount} creation{resultsCount !== 1 ? "s" : ""}
           </span>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full bg-[#111111] px-8 py-3 text-xs font-medium uppercase tracking-widest text-[#FDFCF8] transition-colors hover:bg-[#333333] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#E5E4E0]"
-          >
-            Voir le catalogue
-          </button>
         </div>
+        <button onClick={onClose} className="btn-nurea text-[9px]">
+          Voir le catalogue
+        </button>
       </div>
     </div>
   );

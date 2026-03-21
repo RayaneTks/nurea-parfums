@@ -1,34 +1,50 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { GFS_Didot, Inter } from "next/font/google";
 
-const serif = Cormorant_Garamond({
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["300", "400", "600"],
+const serif = GFS_Didot({
+  weight: "400",
+  subsets: ["greek"],
   variable: "--font-serif",
+  display: "swap",
 });
 
-const sans = Manrope({
+const sans = Inter({
   subsets: ["latin"],
-  display: "swap",
-  weight: ["200", "300", "400", "500", "600"],
   variable: "--font-sans",
+  display: "swap",
 });
+
+export const viewport: Viewport = {
+  themeColor: "#0A0508",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://nureaparfums.com"),
   title: {
-    default: "Nuréa Parfums | Haute Parfumerie — Conciergerie Privée",
-    template: "%s | Nuréa Parfums",
+    default: "Nurea Parfums — Maison de Haute Parfumerie",
+    template: "%s | Nurea Parfums",
   },
   description:
-    "Découvrez notre sélection privée de haute parfumerie. Des grandes Maisons aux créations de niche les plus confidentielles, Nuréa vous accompagne vers votre signature olfactive.",
-  robots: {
-    index: true,
-    follow: true,
+    "Decouvrez notre selection privee de parfums d'exception. Fragrances rares et signatures olfactives, disponibles sur commande.",
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "Nurea Parfums",
+    title: "Nurea Parfums — Maison de Haute Parfumerie",
+    description:
+      "Selection privee de parfums d'exception. Fragrances rares disponibles sur commande.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Nurea Parfums",
+    description: "Maison de Haute Parfumerie — Fragrances d'exception sur commande.",
   },
 };
 
@@ -38,8 +54,10 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="fr" suppressHydrationWarning>
-      <body className={`${sans.variable} ${serif.variable} font-sans antialiased`}>
+    <html lang="fr" className="dark" suppressHydrationWarning>
+      <body
+        className={`${serif.variable} ${sans.variable} font-sans antialiased`}
+      >
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

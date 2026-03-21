@@ -10,39 +10,44 @@ interface PerfumeCardProps {
   perfume: Perfume;
   activeItem: number | null;
   setActiveItem: (id: number | null) => void;
+  featured?: boolean;
 }
 
 export const PerfumeCard: FC<PerfumeCardProps> = ({
   perfume,
   activeItem,
   setActiveItem,
+  featured = false,
 }) => {
   const isActive = activeItem === perfume.id;
-  const isGammeComplete = perfume.category === "Gammes Complètes";
+  const isGammeComplete = perfume.category === "Gammes Compl\u00e8tes";
 
-  const getWhatsappLink = (messageText: string) => {
-    return `https://wa.me/${CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? ""}?text=${encodeURIComponent(
-      messageText
-    )}`;
+  const getWhatsappLink = (msg: string) => {
+    const num = CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? "";
+    return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
   };
 
-  const defaultMessage = `Bonjour, je souhaite des informations sur « ${perfume.name} » de ${perfume.brand}.`;
+  const defaultMsg = `Bonjour, je souhaite des informations sur « ${perfume.name} » de ${perfume.brand}.`;
 
   return (
     <div
-      className="group flex cursor-pointer flex-col"
+      className={`group flex flex-col cursor-pointer card-hover ${
+        featured ? "card-featured" : ""
+      }`}
       onClick={() => setActiveItem(isActive ? null : perfume.id)}
       onMouseLeave={() => setActiveItem(null)}
     >
-      <div className="relative mb-6 aspect-[3/4] overflow-hidden bg-[#F5F4F0] dark:bg-[#141414]">
+      {/* Image container */}
+      <div className="relative aspect-[3/4] overflow-hidden bg-[var(--nurea-surface)]">
+        {/* Tags */}
         {perfume.tags && (
-          <div className="absolute left-4 top-4 z-20">
+          <div className="absolute left-0 top-2.5 z-20 flex flex-col gap-1 md:top-3">
             {perfume.tags.map((tag) => (
               <span
                 key={tag}
-                className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#222222] dark:text-[#FDFCF8]"
+                className="inline-block bg-[var(--nurea-accent-solid)] px-2 py-0.5 text-[7px] font-medium uppercase tracking-[0.18em] text-white md:text-[8px] md:px-2.5 md:py-1"
               >
-                • {tag}
+                {tag}
               </span>
             ))}
           </div>
@@ -52,42 +57,45 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
           src={perfume.image}
           alt={perfume.name}
           fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03]"
+          sizes={
+            featured
+              ? "(max-width: 768px) 100vw, 66vw"
+              : "(max-width: 768px) 50vw, 33vw"
+          }
+          className="object-cover card-image-zoom"
         />
 
-        {/* Hover / Click Overlay */}
+        {/* Overlay CTA */}
         <div
-          className={`absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#FDFCF8]/95 p-8 backdrop-blur-md transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] dark:bg-[#0A0A0A]/95 ${
+          className={`absolute inset-0 z-10 flex flex-col items-center justify-center p-4 card-overlay ${
             isActive
-              ? "translate-y-0 opacity-100 pointer-events-auto"
-              : "translate-y-8 opacity-0 pointer-events-none md:group-hover:translate-y-0 md:group-hover:opacity-100 md:group-hover:pointer-events-auto"
+              ? "opacity-100 pointer-events-auto backdrop-blur-xl bg-[var(--nurea-bg)]/85"
+              : "opacity-0 pointer-events-none backdrop-blur-none bg-transparent md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-hover:backdrop-blur-xl md:group-hover:bg-[var(--nurea-bg)]/85"
           }`}
         >
           {isGammeComplete && perfume.classics ? (
-            /* Layout spécial pour les Gammes Complètes */
-            <div className="w-full flex h-full flex-col justify-center">
-              <p className="mb-8 text-center font-serif text-xl tracking-wide text-[#222222] dark:text-[#FDFCF8]">
+            <div className="w-full flex h-full flex-col justify-center max-w-[260px]">
+              <p className="mb-4 text-center font-serif text-sm text-[var(--nurea-text)] md:text-base">
                 Classiques de la Maison
               </p>
-              <div className="flex flex-col gap-3 overflow-y-auto no-scrollbar pb-4">
+              <div className="flex flex-col gap-1.5 overflow-y-auto no-scrollbar max-h-[240px]">
                 {perfume.classics.map((classic) => {
-                  const classicMsg = `Bonjour, je souhaite acquérir « ${classic} » de ${perfume.brand}.`;
+                  const msg = `Bonjour, je souhaite acquerir « ${classic} » de ${perfume.brand}.`;
                   return (
                     <a
                       key={classic}
-                      href={getWhatsappLink(classicMsg)}
+                      href={getWhatsappLink(msg)}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="group/btn flex w-full items-center justify-between border border-[#222222]/20 px-5 py-3 text-xs uppercase tracking-[0.1em] text-[#222222] transition-all hover:border-[#222222] hover:bg-[#222222] hover:text-[#FDFCF8] dark:border-[#FDFCF8]/20 dark:text-[#FDFCF8] dark:hover:border-[#FDFCF8] dark:hover:bg-[#FDFCF8] dark:hover:text-[#0A0A0A]"
+                      className="group/btn flex w-full items-center justify-between border border-[var(--nurea-border-hover)] px-3 py-2 text-[8px] uppercase tracking-[0.12em] text-[var(--nurea-text)] transition-all duration-300 hover:bg-[var(--nurea-accent-subtle)] hover:border-[var(--nurea-accent)] md:text-[9px] md:px-4 md:py-2.5"
                     >
-                      <span className="truncate pr-4 font-medium">
+                      <span className="truncate pr-2 font-medium">
                         {classic}
                       </span>
                       <ArrowRight
-                        size={14}
-                        className="shrink-0 transition-transform duration-300 group-hover/btn:-rotate-45"
+                        size={10}
+                        className="shrink-0 text-[var(--nurea-accent)] transition-transform duration-300 group-hover/btn:-rotate-45"
                       />
                     </a>
                   );
@@ -95,22 +103,30 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
               </div>
             </div>
           ) : (
-            /* Layout Standard (Sélections Individuelles / Nouveautés) */
-            <div className="w-full flex flex-col gap-4">
-              <p className="mb-4 text-center font-serif text-xl text-[#222222] dark:text-[#FDFCF8]">
-                Acquérir cette création
+            <div className="w-full flex flex-col gap-2 max-w-[240px]">
+              <p className="mb-2 text-center font-serif text-sm text-[var(--nurea-text)] md:text-base">
+                Acquerir cette creation
               </p>
               <a
-                href={getWhatsappLink(defaultMessage)}
+                href={getWhatsappLink(defaultMsg)}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="group/btn flex w-full items-center justify-between bg-[#222222] px-6 py-4 text-xs font-semibold uppercase tracking-[0.15em] text-[#FDFCF8] transition-colors hover:bg-[#8C7A6B] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#C29B62]"
+                className="group/btn flex w-full items-center justify-between border border-[var(--nurea-border-hover)] px-3 py-2.5 text-[8px] font-medium uppercase tracking-[0.15em] text-[var(--nurea-text)] transition-all duration-300 hover:bg-[var(--nurea-accent-subtle)] hover:border-[var(--nurea-accent)] md:text-[9px] md:px-4 md:py-3"
               >
-                WhatsApp
+                <span className="flex items-center gap-2">
+                  <Image
+                    src="/branding/icons/nurea_icon_whatsapp_ivory.svg"
+                    alt=""
+                    width={13}
+                    height={13}
+                    className="opacity-70"
+                  />
+                  WhatsApp
+                </span>
                 <ArrowRight
-                  size={14}
-                  className="transition-transform duration-300 group-hover/btn:-rotate-45"
+                  size={10}
+                  className="text-[var(--nurea-accent)] transition-transform duration-300 group-hover/btn:-rotate-45"
                 />
               </a>
               <a
@@ -118,12 +134,21 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="group/btn flex w-full items-center justify-between bg-[#222222] px-6 py-4 text-xs font-semibold uppercase tracking-[0.15em] text-[#FDFCF8] transition-colors hover:bg-[#FFD100] hover:text-[#0A0A0A] dark:bg-[#FDFCF8] dark:text-[#0A0A0A] dark:hover:bg-[#FFD100]"
+                className="group/btn flex w-full items-center justify-between border border-[var(--nurea-border-hover)] px-3 py-2.5 text-[8px] font-medium uppercase tracking-[0.15em] text-[var(--nurea-text)] transition-all duration-300 hover:bg-[#FFD100]/10 hover:border-[#FFD100] md:text-[9px] md:px-4 md:py-3"
               >
-                Snapchat
+                <span className="flex items-center gap-2">
+                  <Image
+                    src="/branding/icons/nurea_icon_snapchat_ivory.svg"
+                    alt=""
+                    width={13}
+                    height={13}
+                    className="opacity-70"
+                  />
+                  Snapchat
+                </span>
                 <ArrowRight
-                  size={14}
-                  className="transition-transform duration-300 group-hover/btn:-rotate-45"
+                  size={10}
+                  className="text-[var(--nurea-text-muted)] transition-transform duration-300 group-hover/btn:-rotate-45"
                 />
               </a>
             </div>
@@ -131,15 +156,16 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col text-center">
-        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#8C7A6B] dark:text-[#C29B62]">
+      {/* Info */}
+      <div className="flex flex-col pt-2.5 md:pt-3">
+        <span className="mb-0.5 text-[7px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[8px]">
           {perfume.brand}
-        </p>
-        <h3 className="mb-2 font-serif text-2xl text-[#222222] md:text-3xl dark:text-[#FDFCF8]">
+        </span>
+        <h3 className="font-serif text-[13px] text-[var(--nurea-text)] leading-tight md:text-[16px]">
           {perfume.name}
         </h3>
-        <span className="mt-auto inline-block text-xs uppercase tracking-widest text-[#888888] transition-colors duration-500 group-hover:text-[#8C7A6B] dark:text-[#A0A0A0] dark:group-hover:text-[#C29B62]">
-          {isGammeComplete ? "Découvrir la gamme →" : "Demander la disponibilité →"}
+        <span className="mt-1 text-[9px] uppercase tracking-[0.12em] text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-accent)] md:text-[10px]">
+          {isGammeComplete ? "Decouvrir la gamme \u2192" : "Demander \u2192"}
         </span>
       </div>
     </div>
