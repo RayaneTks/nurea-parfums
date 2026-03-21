@@ -60,6 +60,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body
         className={`${serif.variable} ${sans.variable} font-sans antialiased`}
       >
+        <div className="nurea-viewport-top-shield" aria-hidden />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

@@ -56,23 +56,24 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
       aria-label="Recherche"
       aria-hidden={!isOpen}
       {...(!isOpen ? { inert: true as unknown as boolean } : {})}
-      className={`fixed inset-0 z-[55] flex flex-col bg-[var(--nurea-bg)]/[0.97] pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-3xl transition-all duration-500 ease-out-expo ${
+      className={`fixed inset-0 z-[55] flex flex-col bg-[var(--nurea-bg)] pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] transition-all duration-500 ease-out-expo ${
         isOpen
           ? "opacity-100 pointer-events-auto"
           : "opacity-0 pointer-events-none"
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 md:px-10 md:py-4">
-        <span className="font-serif text-lg text-[var(--nurea-text)] md:text-xl">
+      <div className="flex min-h-[58px] items-center justify-between border-b border-[var(--nurea-border)] px-4 md:min-h-[68px] md:px-10">
+        <span className="font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
           Recherche
         </span>
         <button
+          type="button"
           onClick={onClose}
-          className="flex items-center justify-center h-10 w-10 text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors"
+          className="flex h-11 w-11 items-center justify-center text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-accent)]"
           aria-label="Fermer"
         >
-          <X size={20} strokeWidth={1.5} />
+          <X size={22} strokeWidth={1.5} />
         </button>
       </div>
 

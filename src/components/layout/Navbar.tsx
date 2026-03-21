@@ -43,60 +43,49 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
 
   return (
     <nav
-      className={`fixed inset-x-0 top-0 z-50 pt-[env(safe-area-inset-top,0px)] transition-all duration-500 ease-out-expo [transform:translateZ(0)] ${
+      className={`fixed inset-x-0 top-0 z-50 pt-[env(safe-area-inset-top,0px)] transition-all duration-500 ease-out-expo [transform:translateZ(0)] border-b ${
         scrolled
-          ? "backdrop-blur-2xl py-2.5 border-b border-[var(--nurea-border)]"
-          : "bg-transparent py-4 md:py-5"
+          ? "border-[var(--nurea-border)] bg-[var(--nurea-overlay)] backdrop-blur-2xl"
+          : "border-[var(--nurea-border)]/0 bg-[var(--nurea-bg)]"
       }`}
-      style={scrolled ? { backgroundColor: "var(--nurea-overlay)" } : undefined}
     >
-      {/* iOS / encoche : bandeau opaque sous la zone système quand la nav est transparente,
-          pour ne pas laisser voir le hero « au-dessus » de la barre d’outils */}
-      {!scrolled && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 z-0 bg-[var(--nurea-bg)]"
-          style={{
-            height: "env(safe-area-inset-top, 0px)",
-          }}
-        />
-      )}
-      <div className="relative z-10 mx-auto flex max-w-[1200px] items-center justify-between px-4 md:px-10">
+      <div className="relative z-10 mx-auto flex min-h-[58px] max-w-[1200px] items-center justify-between px-4 md:min-h-[68px] md:px-10">
         {/* Burger — mobile only */}
         <button
-          className="md:hidden flex items-center justify-center h-10 w-10 -ml-2 text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] active:scale-95 transition-all"
+          type="button"
+          className="md:hidden -ml-1 flex h-11 w-11 shrink-0 items-center justify-center text-[var(--nurea-text-muted)] transition-all hover:text-[var(--nurea-text)] active:scale-95"
           onClick={() => setMenuOpen(true)}
           aria-label="Ouvrir le menu"
         >
-          <Menu size={20} strokeWidth={1.5} />
+          <Menu size={22} strokeWidth={1.5} />
         </button>
 
-        {/* Logo */}
+        {/* Logo — dimensions affichées plus grandes (marges transparentes dans le fichier) */}
         <Link
           href="/"
-          className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0"
+          className="absolute left-1/2 flex -translate-x-1/2 items-center md:static md:translate-x-0"
         >
           {mounted ? (
             <Image
               src={logoSrc}
               alt="Nurea Parfums"
-              width={160}
-              height={44}
-              className="h-11 w-auto md:h-14"
+              width={260}
+              height={72}
+              className="h-[54px] w-auto md:h-[62px]"
               priority
             />
           ) : (
-            <span className="font-serif text-base tracking-[0.2em] text-[var(--nurea-text)]">
+            <span className="font-serif text-lg tracking-[0.2em] text-[var(--nurea-text)]">
               NUREA
             </span>
           )}
         </Link>
 
         {/* Nav desktop */}
-        <div className="hidden items-center gap-10 text-[11px] uppercase tracking-[0.2em] font-medium md:flex">
+        <div className="hidden items-center gap-10 text-[12px] uppercase tracking-[0.2em] font-medium md:flex">
           <Link
             href="/"
-            className={`py-1.5 transition-colors duration-300 ${
+            className={`py-2 transition-colors duration-300 ${
               isHome
                 ? "text-[var(--nurea-accent)]"
                 : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
@@ -106,7 +95,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
           </Link>
           <Link
             href="/contact"
-            className={`py-1.5 transition-colors duration-300 ${
+            className={`py-2 transition-colors duration-300 ${
               isContact
                 ? "text-[var(--nurea-accent)]"
                 : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
@@ -117,34 +106,36 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
           {/* Theme toggle — desktop only */}
           <button
+            type="button"
             onClick={toggleTheme}
-            className="relative hidden h-10 w-10 items-center justify-center text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] transition-colors md:flex"
+            className="relative hidden h-11 w-11 items-center justify-center text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-text)] md:flex"
             aria-label="Basculer le theme"
           >
             {mounted ? (
               isDark ? (
-                <Sun size={17} strokeWidth={1.5} />
+                <Sun size={18} strokeWidth={1.5} />
               ) : (
-                <Moon size={17} strokeWidth={1.5} />
+                <Moon size={18} strokeWidth={1.5} />
               )
             ) : (
-              <span className="h-[17px] w-[17px]" />
+              <span className="h-[18px] w-[18px]" />
             )}
           </button>
 
           {/* Search trigger */}
           {isHome && onOpenSearch && (
             <button
+              type="button"
               onClick={onOpenSearch}
-              className="relative flex items-center justify-center h-10 w-10 md:w-auto md:h-auto md:py-2 md:pl-2 md:pr-3 text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] active:scale-95 transition-all"
+              className="relative flex h-11 w-11 shrink-0 items-center justify-center text-[var(--nurea-text-muted)] transition-all hover:text-[var(--nurea-text)] active:scale-95 md:h-auto md:w-auto md:rounded-none md:py-2.5 md:pl-2 md:pr-3"
               aria-label="Rechercher"
             >
-              <Search size={18} strokeWidth={1.5} className="md:hidden" />
-              <span className="hidden md:flex items-center gap-2 text-[11px] uppercase tracking-[0.15em]">
-                <Search size={14} strokeWidth={1.5} />
+              <Search size={20} strokeWidth={1.5} className="md:hidden" />
+              <span className="hidden items-center gap-2 text-[12px] uppercase tracking-[0.15em] md:flex">
+                <Search size={15} strokeWidth={1.5} />
                 Recherche
               </span>
             </button>
@@ -181,25 +172,27 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
               {...(!menuOpen ? { inert: true as unknown as boolean } : {})}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4">
-                <span className="text-[11px] uppercase tracking-[0.35em] text-[var(--nurea-text-muted)]">
+              <div className="flex min-h-[58px] items-center justify-between px-5">
+                <span className="text-[12px] font-medium uppercase tracking-[0.35em] text-[var(--nurea-text-muted)]">
                   Menu
                 </span>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5">
                   <button
+                    type="button"
                     onClick={toggleTheme}
-                    className="flex items-center justify-center h-10 w-10 text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] transition-colors"
+                    className="flex h-11 w-11 items-center justify-center text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-text)]"
                     aria-label="Basculer le theme"
                   >
                     {mounted &&
-                      (isDark ? <Sun size={17} strokeWidth={1.5} /> : <Moon size={17} strokeWidth={1.5} />)}
+                      (isDark ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />)}
                   </button>
                   <button
+                    type="button"
                     onClick={closeMenu}
-                    className="flex items-center justify-center h-10 w-10 text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)] transition-colors"
+                    className="flex h-11 w-11 items-center justify-center text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-text)]"
                     aria-label="Fermer"
                   >
-                    <X size={20} strokeWidth={1.5} />
+                    <X size={22} strokeWidth={1.5} />
                   </button>
                 </div>
               </div>
