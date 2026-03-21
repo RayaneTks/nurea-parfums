@@ -32,9 +32,9 @@ export const Footer: FC = () => {
                   : "/branding/monogram/np-circle-bordeaux.png"
               }
               alt="Nurea Parfums"
-              width={60}
-              height={60}
-              className="h-[60px] w-[60px] opacity-40 transition-opacity duration-500 hover:opacity-70"
+              width={72}
+              height={72}
+              className="h-[72px] w-[72px] opacity-45 transition-opacity duration-500 hover:opacity-70"
             />
           )}
           <Image
@@ -42,12 +42,12 @@ export const Footer: FC = () => {
             alt=""
             width={120}
             height={12}
-            className="max-w-[120px] opacity-20"
+            className="max-w-[140px] opacity-25"
           />
         </ScrollReveal>
 
         {/* Social links */}
-        <ScrollReveal className="flex items-center justify-center gap-7 mb-10" delay={80}>
+        <ScrollReveal className="flex items-center justify-center gap-10 mb-12" delay={80}>
           <a
             href={CONTACT.whatsapp}
             target="_blank"
@@ -55,7 +55,7 @@ export const Footer: FC = () => {
             className="group flex flex-col items-center gap-1.5 transition-all duration-300"
             aria-label="WhatsApp"
           >
-            <span className="flex h-11 w-11 items-center justify-center border border-[var(--nurea-border-hover)] transition-all duration-300 group-hover:border-[var(--nurea-accent)] group-hover:bg-[var(--nurea-accent-subtle)]">
+            <span className="flex h-14 w-14 items-center justify-center border border-[var(--nurea-border-hover)] transition-all duration-300 group-hover:border-[var(--nurea-accent)] group-hover:bg-[var(--nurea-accent-subtle)]">
               <Image
                 src={
                   isDark
@@ -63,12 +63,12 @@ export const Footer: FC = () => {
                     : "/branding/icons/nurea_icon_whatsapp_bordeaux.svg"
                 }
                 alt="WhatsApp"
-                width={18}
-                height={18}
+                width={24}
+                height={24}
                 className="transition-transform duration-300 group-hover:scale-110"
               />
             </span>
-            <span className="text-[7px] uppercase tracking-[0.25em] text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-accent)]">
+            <span className="text-[8px] uppercase tracking-[0.25em] text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-accent)] md:text-[9px]">
               WhatsApp
             </span>
           </a>
@@ -80,7 +80,7 @@ export const Footer: FC = () => {
             className="group flex flex-col items-center gap-1.5 transition-all duration-300"
             aria-label="Snapchat"
           >
-            <span className="flex h-11 w-11 items-center justify-center border border-[var(--nurea-border-hover)] transition-all duration-300 group-hover:border-[#FFD100] group-hover:bg-[#FFD100]/5">
+            <span className="flex h-14 w-14 items-center justify-center border border-[var(--nurea-border-hover)] transition-all duration-300 group-hover:border-[#FFD100] group-hover:bg-[#FFD100]/5">
               <Image
                 src={
                   isDark
@@ -88,12 +88,12 @@ export const Footer: FC = () => {
                     : "/branding/icons/nurea_icon_snapchat_bordeaux.svg"
                 }
                 alt="Snapchat"
-                width={18}
-                height={18}
+                width={24}
+                height={24}
                 className="transition-transform duration-300 group-hover:scale-110"
               />
             </span>
-            <span className="text-[7px] uppercase tracking-[0.25em] text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[#FFD100]">
+            <span className="text-[8px] uppercase tracking-[0.25em] text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[#FFD100] md:text-[9px]">
               Snapchat
             </span>
           </a>

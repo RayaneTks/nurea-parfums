@@ -112,15 +112,15 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="group/btn flex w-full items-center justify-between border border-[var(--nurea-border-hover)] px-3 py-2.5 text-[8px] font-medium uppercase tracking-[0.15em] text-[var(--nurea-text)] transition-all duration-300 hover:bg-[var(--nurea-accent-subtle)] hover:border-[var(--nurea-accent)] md:text-[9px] md:px-4 md:py-3"
+                className="group/btn flex w-full items-center justify-between border border-[var(--nurea-border-hover)] px-4 py-3 text-[9px] font-medium uppercase tracking-[0.15em] text-[var(--nurea-text)] transition-all duration-300 hover:bg-[var(--nurea-accent-subtle)] hover:border-[var(--nurea-accent)] md:text-[10px] md:px-5 md:py-3.5"
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2.5">
                   <Image
                     src="/branding/icons/nurea_icon_whatsapp_ivory.svg"
                     alt=""
-                    width={13}
-                    height={13}
-                    className="opacity-70"
+                    width={18}
+                    height={18}
+                    className="opacity-80"
                   />
                   WhatsApp
                 </span>
@@ -134,15 +134,15 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="group/btn flex w-full items-center justify-between border border-[var(--nurea-border-hover)] px-3 py-2.5 text-[8px] font-medium uppercase tracking-[0.15em] text-[var(--nurea-text)] transition-all duration-300 hover:bg-[#FFD100]/10 hover:border-[#FFD100] md:text-[9px] md:px-4 md:py-3"
+                className="group/btn flex w-full items-center justify-between border border-[var(--nurea-border-hover)] px-4 py-3 text-[9px] font-medium uppercase tracking-[0.15em] text-[var(--nurea-text)] transition-all duration-300 hover:bg-[#FFD100]/10 hover:border-[#FFD100] md:text-[10px] md:px-5 md:py-3.5"
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2.5">
                   <Image
                     src="/branding/icons/nurea_icon_snapchat_ivory.svg"
                     alt=""
-                    width={13}
-                    height={13}
-                    className="opacity-70"
+                    width={18}
+                    height={18}
+                    className="opacity-80"
                   />
                   Snapchat
                 </span>

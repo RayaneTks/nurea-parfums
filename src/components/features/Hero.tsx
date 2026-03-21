@@ -15,6 +15,29 @@ export const Hero: FC = () => {
 
   return (
     <header className="relative flex min-h-[100svh] items-center justify-center overflow-hidden">
+      {/* Background image — packshot Nurea */}
+      <Image
+        src="/branding/visuel-hero.png"
+        alt=""
+        fill
+        sizes="100vw"
+        className="object-cover object-[center_30%]"
+        priority
+      />
+      {/* Dark gradient overlay for text legibility */}
+      {/* Multi-layer overlay for text legibility */}
+      <div
+        className="absolute inset-0"
+        style={{ background: "rgba(10, 5, 8, 0.72)" }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(10,5,8,0.5) 0%, rgba(10,5,8,0.2) 35%, rgba(10,5,8,0.4) 60%, rgba(10,5,8,0.85) 100%)",
+        }}
+      />
+
       {/* Monogramme NP — large watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <Image
@@ -22,9 +45,8 @@ export const Hero: FC = () => {
           alt=""
           width={600}
           height={600}
-          className="w-[260px] h-[260px] md:w-[420px] md:h-[420px] lg:w-[520px] lg:h-[520px] opacity-[0.03] select-none"
+          className="w-[260px] h-[260px] md:w-[420px] md:h-[420px] lg:w-[520px] lg:h-[520px] opacity-[0.04] select-none"
           style={{ animation: "heroMonogramFloat 10s ease-in-out infinite" }}
-          priority
         />
       </div>
 
@@ -33,7 +55,7 @@ export const Hero: FC = () => {
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] md:w-[700px] md:h-[700px] pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, rgba(139,58,58,0.06) 0%, transparent 60%)",
+            "radial-gradient(circle, rgba(139,58,58,0.08) 0%, transparent 60%)",
         }}
       />
 

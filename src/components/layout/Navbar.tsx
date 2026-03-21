@@ -68,9 +68,9 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
             <Image
               src={logoSrc}
               alt="Nurea Parfums"
-              width={130}
-              height={36}
-              className="h-6 w-auto md:h-8"
+              width={160}
+              height={44}
+              className="h-9 w-auto md:h-11"
               priority
             />
           ) : (
@@ -213,9 +213,9 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
                 <Image
                   src="/branding/monogram/np-free-cuivre.png"
                   alt=""
-                  width={22}
-                  height={22}
-                  className="opacity-25"
+                  width={32}
+                  height={32}
+                  className="opacity-30"
                 />
                 <button
                   onClick={toggleTheme}
