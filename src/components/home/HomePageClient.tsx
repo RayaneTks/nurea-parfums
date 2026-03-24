@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { X } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Search, X } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/features/Hero";
 import { FeaturedSection } from "@/components/features/FeaturedSection";
 import { PerfumeCard } from "@/components/features/PerfumeCard";
-import { SearchOverlay } from "@/components/features/SearchOverlay";
 import { Footer } from "@/components/layout/Footer";
 import { Separator } from "@/components/ui/Separator";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
@@ -30,18 +29,43 @@ const FEATURED_IDS = [9, 10]; // Baccarat Rouge 540 & Aventus
 
 type SortKey = "default" | "name" | "brand";
 
+const CATALOG_SEARCH_ID = "catalog-search";
+
+function categoryFromSearchParams(p: URLSearchParams): Category {
+  const raw = p.get("cat");
+  if (!raw) return "Tout voir";
+  try {
+    const decoded = decodeURIComponent(raw);
+    return categories.includes(decoded as Category) ? (decoded as Category) : "Tout voir";
+  } catch {
+    return "Tout voir";
+  }
+}
+
+function sortFromSearchParams(p: URLSearchParams): SortKey {
+  const s = p.get("sort");
+  if (s === "name" || s === "brand") return s;
+  return "default";
+}
+
 export const HomePageClient = () => {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] =
-    useState<Category>("Tout voir");
-  const [selectedBrand, setSelectedBrand] = useState<string>("Toutes");
-  const [sortKey, setSortKey] = useState<SortKey>("default");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get("q")?.trim() ?? "");
+  const [selectedCategory, setSelectedCategory] = useState<Category>(() =>
+    categoryFromSearchParams(searchParams)
+  );
+  const [sortKey, setSortKey] = useState<SortKey>(() => sortFromSearchParams(searchParams));
   const [scrolled, setScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState<number | null>(null);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const isFirstLayoutRef = useRef(true);
   const prevFeaturedRef = useRef(true);
+  const collectionAnchorYRef = useRef<number | null>(null);
+  const paramsStringRef = useRef<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -49,26 +73,35 @@ export const HomePageClient = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /** Paramètre ?q= (SEO / SearchAction) : préremplit la recherche catalogue. */
+  /** Navigation interne / retour navigateur : réapplique l’URL sans scroll forcé vers le hero. */
   useEffect(() => {
-    const q = searchParams.get("q");
-    if (!q) return;
-    try {
-      setSearchTerm(decodeURIComponent(q));
-    } catch {
-      setSearchTerm(q);
+    const curr = searchParams.toString();
+    if (paramsStringRef.current === null) {
+      paramsStringRef.current = curr;
+      return;
     }
+    if (paramsStringRef.current === curr) return;
+    paramsStringRef.current = curr;
+    setSearchTerm(searchParams.get("q")?.trim() ?? "");
+    setSelectedCategory(categoryFromSearchParams(searchParams));
+    setSortKey(sortFromSearchParams(searchParams));
   }, [searchParams]);
 
-  /**
-   * Une recherche texte porte sur tout le catalogue (nom + marque + classiques).
-   * Si une marque était sélectionnée, elle masquait les résultats : on la réinitialise.
-   */
+  /** URL reflète filtres + tri (replace, sans scroll) — partageable et cohérent avec le bouton retour. */
   useEffect(() => {
-    if (searchTerm.trim() !== "") {
-      setSelectedBrand("Toutes");
-    }
-  }, [searchTerm]);
+    const t = window.setTimeout(() => {
+      const next = new URLSearchParams();
+      const q = searchTerm.trim();
+      if (q) next.set("q", q);
+      if (selectedCategory !== "Tout voir") next.set("cat", selectedCategory);
+      if (sortKey !== "default") next.set("sort", sortKey);
+      const qs = next.toString();
+      const href = qs ? `${pathname}?${qs}` : pathname;
+      if (qs === searchParams.toString()) return;
+      router.replace(href, { scroll: false });
+    }, 280);
+    return () => window.clearTimeout(t);
+  }, [searchTerm, selectedCategory, sortKey, pathname, router, searchParams]);
 
   const featuredPerfumes = useMemo(
     () => mockPerfumes.filter((p) => FEATURED_IDS.includes(p.id)),
@@ -76,19 +109,13 @@ export const HomePageClient = () => {
   );
 
   const filteredPerfumes = useMemo(() => {
-    const searching = searchTerm.trim() !== "";
     return mockPerfumes.filter((perfume) => {
       const matchSearch = fuzzySearchMatch(perfume, searchTerm);
       const matchCategory =
-        selectedCategory === "Tout voir" ||
-        perfume.category === selectedCategory;
-      const matchBrand =
-        searching ||
-        selectedBrand === "Toutes" ||
-        perfume.brand === selectedBrand;
-      return matchSearch && matchCategory && matchBrand;
+        selectedCategory === "Tout voir" || perfume.category === selectedCategory;
+      return matchSearch && matchCategory;
     });
-  }, [searchTerm, selectedCategory, selectedBrand]);
+  }, [searchTerm, selectedCategory]);
 
   const sortedPerfumes = useMemo(() => {
     const list = [...filteredPerfumes];
@@ -112,27 +139,26 @@ export const HomePageClient = () => {
     return list;
   }, [filteredPerfumes, sortKey, searchTerm]);
 
-  const handleResetFilters = () => {
-    setSearchTerm("");
-    setSelectedCategory("Tout voir");
-    setSelectedBrand("Toutes");
-    setSortKey("default");
-  };
-
   const hasCollectionFilters =
-    searchTerm.trim() !== "" ||
-    selectedBrand !== "Toutes" ||
-    selectedCategory !== "Tout voir";
+    searchTerm.trim() !== "" || selectedCategory !== "Tout voir";
 
-  const hasActiveFilters =
-    hasCollectionFilters || sortKey !== "default";
+  const hasActiveFilters = hasCollectionFilters || sortKey !== "default";
 
   const showFeatured = !hasCollectionFilters;
 
+  /** Tant que la section « À la une » est masquée, mémorise la position du catalogue pour compenser le saut quand elle réapparaît. */
+  useLayoutEffect(() => {
+    if (!showFeatured) {
+      const el = document.getElementById("collection");
+      if (el) {
+        collectionAnchorYRef.current = el.getBoundingClientRect().top + window.scrollY;
+      }
+    }
+  });
+
   /**
-   * Quand la section « À la une » disparaît (filtres actifs), une grande partie du contenu au-dessus du
-   * catalogue est retirée : le scroll absolu reste identique, d’où l’impression de « téléportation ».
-   * On réancre uniquement dans ce sens (pas quand la section réapparaît, pour ne pas masquer l’éditorial).
+   * Filtres actifs : ancrer le catalogue (évite le vide sous le hero).
+   * Filtres effacés : conserver la position du catalogue (pas de retour au hero).
    */
   useLayoutEffect(() => {
     if (isFirstLayoutRef.current) {
@@ -143,11 +169,25 @@ export const HomePageClient = () => {
     const prev = prevFeaturedRef.current;
     prevFeaturedRef.current = showFeatured;
     if (prev && !showFeatured) {
-      document
-        .getElementById("collection")
-        ?.scrollIntoView({ block: "start", behavior: "auto" });
+      document.getElementById("collection")?.scrollIntoView({ block: "start", behavior: "auto" });
+    } else if (!prev && showFeatured) {
+      const before = collectionAnchorYRef.current;
+      const el = document.getElementById("collection");
+      if (el && before != null) {
+        const after = el.getBoundingClientRect().top + window.scrollY;
+        const delta = after - before;
+        if (Math.abs(delta) > 0.5) {
+          window.scrollTo({ top: window.scrollY + delta, behavior: "auto" });
+        }
+      }
     }
   }, [showFeatured]);
+
+  const handleResetFilters = useCallback(() => {
+    setSearchTerm("");
+    setSelectedCategory("Tout voir");
+    setSortKey("default");
+  }, []);
 
   const externalHint = useMemo(
     () => (searchTerm.trim() ? findExternalPerfumeHint(searchTerm) : null),
@@ -182,12 +222,16 @@ export const HomePageClient = () => {
     return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
   }, [searchTerm]);
 
+  const focusCatalogSearch = useCallback(() => {
+    document.getElementById("collection")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.requestAnimationFrame(() => {
+      searchInputRef.current?.focus({ preventScroll: true });
+    });
+  }, []);
+
   return (
     <div className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
-      <Navbar
-        scrolled={scrolled}
-        onOpenSearch={() => setIsFilterOpen(true)}
-      />
+      <Navbar scrolled={scrolled} onOpenSearch={focusCatalogSearch} />
 
       {/* HERO */}
       <Hero />
@@ -222,10 +266,45 @@ export const HomePageClient = () => {
           </div>
         </ScrollReveal>
 
-        {/* Onglets + tri + recherche — sticky pour parcourir de longs catalogues */}
+        {/* Recherche unique + filtres — sticky */}
         <div className="sticky z-30 -mx-4 mb-6 border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)]/95 px-4 pb-3 backdrop-blur-md [top:calc(env(safe-area-inset-top,0px)+3.625rem)] md:top-[calc(env(safe-area-inset-top,0px)+4.25rem)] md:mx-0 md:px-0">
           <ScrollReveal className="mb-0" delay={80}>
-            <div className="no-scrollbar flex gap-0.5 overflow-x-auto border-b border-[var(--nurea-border)]/80">
+            <div className="relative mb-3">
+              <label htmlFor={CATALOG_SEARCH_ID} className="sr-only">
+                Rechercher un parfum, une maison, une marque ou un mot-clé
+              </label>
+              <Search
+                size={18}
+                className="pointer-events-none absolute left-0 top-1/2 z-[1] -translate-y-1/2 text-[var(--nurea-text-muted)]"
+                strokeWidth={1.5}
+                aria-hidden
+              />
+              <input
+                id={CATALOG_SEARCH_ID}
+                ref={searchInputRef}
+                type="search"
+                name="q"
+                autoComplete="off"
+                enterKeyHint="search"
+                inputMode="search"
+                placeholder="Parfum, maison, marque, note…"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full min-h-[48px] border-b border-[var(--nurea-border-hover)] bg-transparent py-3 pl-9 pr-11 text-base leading-snug text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] focus:border-[var(--nurea-accent)] focus:outline-none transition-colors duration-300 touch-manipulation md:min-h-[52px] md:text-[15px]"
+              />
+              {searchTerm.trim() !== "" && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-0 top-1/2 z-[1] flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-accent)] active:scale-95"
+                  aria-label="Effacer la recherche"
+                >
+                  <X size={18} strokeWidth={1.5} />
+                </button>
+              )}
+            </div>
+
+            <div className="no-scrollbar flex gap-0.5 overflow-x-auto border-b border-[var(--nurea-border)]/80 pb-px">
               {categories.map((category) => (
                 <button
                   type="button"
@@ -250,8 +329,8 @@ export const HomePageClient = () => {
             </div>
           </ScrollReveal>
 
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-            <label className="flex min-w-[min(100%,220px)] flex-1 items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <label className="flex min-w-[min(100%,200px)] flex-1 items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
               Trier
               <select
                 value={sortKey}
@@ -264,16 +343,6 @@ export const HomePageClient = () => {
                 <option value="brand">Marque (A-Z)</option>
               </select>
             </label>
-            <button
-              type="button"
-              onClick={() => setIsFilterOpen(true)}
-              className="btn-nurea shrink-0 text-[10px] md:text-[11px]"
-            >
-              Affiner la recherche
-              {hasActiveFilters && (
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--nurea-accent)]" />
-              )}
-            </button>
           </div>
         </div>
 
@@ -287,12 +356,6 @@ export const HomePageClient = () => {
               <FilterChip
                 label={`\u00AB ${searchTerm.trim()} \u00BB`}
                 onRemove={() => setSearchTerm("")}
-              />
-            )}
-            {selectedBrand !== "Toutes" && (
-              <FilterChip
-                label={selectedBrand}
-                onRemove={() => setSelectedBrand("Toutes")}
               />
             )}
             {selectedCategory !== "Tout voir" && (
@@ -310,7 +373,7 @@ export const HomePageClient = () => {
             <button
               type="button"
               onClick={handleResetFilters}
-              className="ml-1 text-[10px] uppercase tracking-[0.12em] text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors"
+              className="ml-1 min-h-[44px] px-1 text-[10px] uppercase tracking-[0.12em] text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors touch-manipulation"
             >
               Tout effacer
             </button>
@@ -393,20 +456,6 @@ export const HomePageClient = () => {
           </div>
         )}
       </main>
-
-      <SearchOverlay
-        isOpen={isFilterOpen}
-        onClose={() => setIsFilterOpen(false)}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedBrand={selectedBrand}
-        setSelectedBrand={setSelectedBrand}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        onResetFilters={handleResetFilters}
-        resultsCount={filteredPerfumes.length}
-        searchResults={filteredPerfumes}
-      />
 
       <Footer />
     </div>
