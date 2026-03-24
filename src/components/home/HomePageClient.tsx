@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/features/Hero";
@@ -14,6 +16,8 @@ import {
   categories,
   mockPerfumes,
   fuzzySearchMatch,
+  suggestSimilarPerfumes,
+  CONTACT,
   type Category,
 } from "@/lib/data";
 
@@ -23,6 +27,7 @@ const FEATURED_IDS = [9, 10]; // Baccarat Rouge 540 & Aventus
 type SortKey = "default" | "name" | "brand";
 
 export const HomePageClient = () => {
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] =
     useState<Category>("Tout voir");
@@ -31,12 +36,25 @@ export const HomePageClient = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState<number | null>(null);
+  const isFirstLayoutRef = useRef(true);
+  const prevFeaturedRef = useRef(true);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  /** Paramètre ?q= (SEO / SearchAction) : préremplit la recherche catalogue. */
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (!q) return;
+    try {
+      setSearchTerm(decodeURIComponent(q));
+    } catch {
+      setSearchTerm(q);
+    }
+  }, [searchParams]);
 
   const featuredPerfumes = useMemo(
     () => mockPerfumes.filter((p) => FEATURED_IDS.includes(p.id)),
@@ -91,6 +109,39 @@ export const HomePageClient = () => {
 
   const showFeatured = !hasCollectionFilters;
 
+  /**
+   * Quand la section « À la une » disparaît (filtres actifs), une grande partie du contenu au-dessus du
+   * catalogue est retirée : le scroll absolu reste identique, d’où l’impression de « téléportation ».
+   * On réancre uniquement dans ce sens (pas quand la section réapparaît, pour ne pas masquer l’éditorial).
+   */
+  useLayoutEffect(() => {
+    if (isFirstLayoutRef.current) {
+      isFirstLayoutRef.current = false;
+      prevFeaturedRef.current = showFeatured;
+      return;
+    }
+    const prev = prevFeaturedRef.current;
+    prevFeaturedRef.current = showFeatured;
+    if (prev && !showFeatured) {
+      document
+        .getElementById("collection")
+        ?.scrollIntoView({ block: "start", behavior: "auto" });
+    }
+  }, [showFeatured]);
+
+  const inspirationWhenEmpty = useMemo(() => {
+    if (searchTerm.trim() !== "") {
+      return suggestSimilarPerfumes(searchTerm, mockPerfumes, 6);
+    }
+    return mockPerfumes.slice(0, 6);
+  }, [searchTerm]);
+
+  const conciergeWhatsappHref = useMemo(() => {
+    const num = CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? "";
+    const msg = `Bonjour, je cherche « ${searchTerm.trim() || "un parfum"} ». Est-ce que vous pouvez me le procurer ou me proposer une alternative ?`;
+    return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+  }, [searchTerm]);
+
   return (
     <div className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
       <Navbar
@@ -113,7 +164,7 @@ export const HomePageClient = () => {
       {/* LA COLLECTION */}
       <main
         id="collection"
-        className="w-full flex-grow max-w-[1200px] mx-auto px-4 md:px-10 py-14 pb-[max(3.5rem,env(safe-area-inset-bottom,0px))] md:py-20"
+        className="scroll-mt-[calc(env(safe-area-inset-top,0px)+3.75rem)] md:scroll-mt-[calc(env(safe-area-inset-top,0px)+4.5rem)] w-full flex-grow max-w-[1200px] mx-auto px-4 md:px-10 py-14 pb-[max(3.5rem,env(safe-area-inset-bottom,0px))] md:py-20"
       >
         {/* Header */}
         <ScrollReveal className="mb-8 md:mb-12">
@@ -217,6 +268,7 @@ export const HomePageClient = () => {
               />
             )}
             <button
+              type="button"
               onClick={handleResetFilters}
               className="ml-1 text-[10px] uppercase tracking-[0.12em] text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors"
             >
@@ -227,13 +279,64 @@ export const HomePageClient = () => {
 
         {/* Grid or empty state */}
         {sortedPerfumes.length === 0 ? (
-          <div className="py-24 text-center">
-            <p className="font-serif text-xl text-[var(--nurea-text)] mb-2 md:text-2xl">
-              Aucune creation trouvee
-            </p>
-            <p className="text-[12px] text-[var(--nurea-text-muted)]">
-              Essayez une autre recherche ou explorez nos categories.
-            </p>
+          <div className="py-16 md:py-20">
+            <div className="mx-auto max-w-xl text-center">
+              {searchTerm.trim() !== "" ? (
+                <>
+                  <p className="font-serif text-xl text-[var(--nurea-text)] mb-3 md:text-2xl">
+                    Vous recherchez « {searchTerm.trim()} » ?
+                  </p>
+                  <p className="text-[13px] leading-relaxed text-[var(--nurea-text-muted)] mb-2">
+                    Ce parfum n&apos;est pas au catalogue pour le moment. Voici des
+                    créations qui s&apos;en rapprochent — ou contactez la
+                    conciergerie : nous pouvons parfois vous le procurer sur demande.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-serif text-xl text-[var(--nurea-text)] mb-3 md:text-2xl">
+                    Aucune création ne correspond à ces filtres
+                  </p>
+                  <p className="text-[13px] text-[var(--nurea-text-muted)] mb-2">
+                    Élargissez la recherche ou explorez nos suggestions ci-dessous.
+                  </p>
+                </>
+              )}
+              <div className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+                <a
+                  href={conciergeWhatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-nurea text-[10px] md:text-[11px]"
+                >
+                  Demander par WhatsApp
+                </a>
+                <Link
+                  href="/contact"
+                  className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors"
+                >
+                  Conciergerie
+                </Link>
+              </div>
+            </div>
+            <div className="mt-12">
+              <p className="mb-5 text-center text-[10px] uppercase tracking-[0.28em] text-[var(--nurea-text-muted)]">
+                {searchTerm.trim() !== ""
+                  ? "Vous pourriez aimer"
+                  : "Inspirations"}
+              </p>
+              <div className="catalogue-grid stagger-grid">
+                {inspirationWhenEmpty.map((perfume) => (
+                  <PerfumeCard
+                    key={perfume.id}
+                    perfume={perfume}
+                    activeItem={activeItem}
+                    setActiveItem={setActiveItem}
+                    featured={perfume.category === "Gammes Complètes"}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
           <div className="catalogue-grid stagger-grid">

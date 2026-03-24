@@ -58,6 +58,11 @@
 
   html {
     scroll-behavior: smooth;
+    /* Barre de navigation fixe + ancres (#collection, scrollIntoView) */
+    scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 3.75rem);
+    @media (min-width: 768px) {
+      scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 4.5rem);
+    }
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;

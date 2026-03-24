@@ -106,14 +106,19 @@ export const Footer: FC = () => {
             Maison de Haute Parfumerie
           </p>
 
-          <div className="flex items-center gap-6 text-[11px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] md:text-[12px]">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] md:text-[12px]">
             <Link
               href="/"
               className="transition-colors duration-300 hover:text-[var(--nurea-accent)] py-1"
             >
               Collection
             </Link>
-            <span className="h-3 w-[1px] bg-[var(--nurea-border-hover)]" />
+            <Link
+              href="/marque"
+              className="transition-colors duration-300 hover:text-[var(--nurea-accent)] py-1"
+            >
+              Marque
+            </Link>
             <Link
               href="/contact"
               className="transition-colors duration-300 hover:text-[var(--nurea-accent)] py-1"

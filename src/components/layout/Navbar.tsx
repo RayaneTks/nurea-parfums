@@ -23,6 +23,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
 
   const isHome = pathname === "/";
   const isContact = pathname === "/contact";
+  const isMarque = pathname === "/marque";
   const isDark = resolvedTheme === "dark";
 
   const toggleTheme = () => setTheme(isDark ? "light" : "dark");
@@ -82,7 +83,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
         </Link>
 
         {/* Nav desktop */}
-        <div className="hidden items-center gap-10 text-[12px] uppercase tracking-[0.2em] font-medium md:flex">
+        <div className="hidden items-center gap-8 text-[12px] uppercase tracking-[0.2em] font-medium md:flex lg:gap-10">
           <Link
             href="/"
             className={`py-2 transition-colors duration-300 ${
@@ -92,6 +93,16 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
             }`}
           >
             Collection
+          </Link>
+          <Link
+            href="/marque"
+            className={`py-2 transition-colors duration-300 ${
+              isMarque
+                ? "text-[var(--nurea-accent)]"
+                : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
+            }`}
+          >
+            Marque
           </Link>
           <Link
             href="/contact"
@@ -209,6 +220,17 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
                   }`}
                 >
                   La Collection
+                </Link>
+                <Link
+                  href="/marque"
+                  onClick={closeMenu}
+                  className={`font-serif text-[32px] transition-colors active:scale-95 ${
+                    isMarque
+                      ? "text-[var(--nurea-accent)]"
+                      : "text-[var(--nurea-text)]"
+                  }`}
+                >
+                  Notre marque
                 </Link>
                 <Link
                   href="/contact"

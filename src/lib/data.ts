@@ -330,6 +330,31 @@ export const normalizeForFuzzy = (text: string): string => {
   return n.replace(/(.)\1+/g, "$1");
 };
 
+/**
+ * Approximation phonétique (français / saisie « comme ça se prononce ») pour comparer requête et textes.
+ * Ne remplace pas une vraie phonétique API, mais aide pour ph/qu/ch, etc.
+ */
+export const phoneticFold = (text: string): string => {
+  let x = normalizeForFuzzy(text).replace(/\s+/g, " ");
+  x = x.replace(/ph/g, "f");
+  x = x.replace(/qu/g, "k");
+  x = x.replace(/ch/g, "c");
+  x = x.replace(/gn/g, "n");
+  x = x.replace(/ae/g, "e");
+  x = x.replace(/oe/g, "e");
+  return x.replace(/(.)\1+/g, "$1");
+};
+
+function collectSearchTargets(perfume: Perfume): string[] {
+  return [
+    normalizeForFuzzy(perfume.name),
+    normalizeForFuzzy(perfume.brand),
+    ...(perfume.tags ?? []).map((t) => normalizeForFuzzy(t)),
+    ...(perfume.aliases ?? []).map((a) => normalizeForFuzzy(a)),
+    ...(perfume.classics ?? []).map((c) => normalizeForFuzzy(c)),
+  ];
+}
+
 /** Distance de Levenshtein entre deux chaînes. */
 function levenshtein(a: string, b: string): number {
   const an = a.length;
@@ -357,24 +382,61 @@ export function fuzzySearchMatch(perfume: Perfume, query: string): boolean {
   const q = query.trim();
   if (!q) return true;
   const nq = normalizeForFuzzy(q);
+  const nqPh = phoneticFold(q);
   const nqLen = nq.length;
-  const targets = [
-    normalizeForFuzzy(perfume.name),
-    normalizeForFuzzy(perfume.brand),
-    ...(perfume.tags ?? []).map((t) => normalizeForFuzzy(t)),
-    ...(perfume.aliases ?? []).map((a) => normalizeForFuzzy(a)),
-  ];
-  for (const target of targets) {
+  const targets = collectSearchTargets(perfume);
+  const phTargets = targets.map((t) => phoneticFold(t));
+
+  for (let i = 0; i < targets.length; i++) {
+    const target = targets[i];
+    const targetPh = phTargets[i];
     if (target.includes(nq)) return true;
-    if (nqLen >= 3 && target.length >= 2) {
-      const maxDist = nqLen <= 4 ? 1 : nqLen <= 7 ? 2 : 3;
+    if (nqPh.length >= 2 && targetPh.includes(nqPh)) return true;
+    if (nqLen >= 2 && target.length >= 2) {
+      const maxDist = nqLen <= 4 ? 2 : nqLen <= 7 ? 3 : 4;
       if (levenshtein(nq, target) <= maxDist) return true;
+      if (levenshtein(nqPh, targetPh) <= maxDist) return true;
       const words = target.split(/\s+/);
       for (const word of words) {
         if (word.length >= 2 && levenshtein(nq, word) <= maxDist) return true;
+        if (word.length >= 2 && levenshtein(nqPh, phoneticFold(word)) <= maxDist)
+          return true;
       }
     }
   }
   return false;
+}
+
+/** Distance minimale requête ↔ parfum (pour suggestions quand aucun résultat exact). */
+function rawDistanceToPerfume(query: string, perfume: Perfume): number {
+  const q = normalizeForFuzzy(query);
+  const qPh = phoneticFold(query);
+  let best = Infinity;
+  for (const target of collectSearchTargets(perfume)) {
+    const tPh = phoneticFold(target);
+    best = Math.min(best, levenshtein(qPh, tPh));
+    best = Math.min(best, levenshtein(q, target));
+    for (const word of target.split(/\s+/)) {
+      if (word.length >= 1) best = Math.min(best, levenshtein(q, word));
+      if (word.length >= 2)
+        best = Math.min(best, levenshtein(qPh, phoneticFold(word)));
+    }
+  }
+  return best;
+}
+
+/** Suggestions les plus proches de la requête (style « vous cherchez X ? voici Y »). */
+export function suggestSimilarPerfumes(
+  query: string,
+  perfumes: Perfume[],
+  limit = 6
+): Perfume[] {
+  const q = query.trim();
+  if (!q) return perfumes.slice(0, limit);
+  return [...perfumes]
+    .map((p) => ({ p, s: rawDistanceToPerfume(q, p) }))
+    .sort((a, b) => a.s - b.s)
+    .slice(0, limit)
+    .map((x) => x.p);
 }
 

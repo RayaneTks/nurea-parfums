@@ -3,13 +3,17 @@
 import type { FC } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useTheme } from "next-themes";
 import { Search, X } from "lucide-react";
 import {
   allBrands,
   categories,
   getPerfumeImage,
+  mockPerfumes,
   normalizeText,
+  suggestSimilarPerfumes,
+  CONTACT,
 } from "@/lib/data";
 import type { Category, Perfume } from "@/lib/data";
 
@@ -80,6 +84,18 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
     searchTerm.trim() !== "" ||
     selectedBrand !== "Toutes" ||
     selectedCategory !== "Tout voir";
+
+  const noMatchSuggestions = useMemo(() => {
+    const q = searchTerm.trim();
+    if (!q) return mockPerfumes.slice(0, 6);
+    return suggestSimilarPerfumes(q, mockPerfumes, 6);
+  }, [searchTerm]);
+
+  const conciergeWhatsappHref = useMemo(() => {
+    const num = CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? "";
+    const msg = `Bonjour, je cherche « ${searchTerm.trim() || "un parfum"} ». Est-ce que vous pouvez me le procurer ou me proposer une alternative ?`;
+    return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+  }, [searchTerm]);
 
   return (
     <div
@@ -171,9 +187,66 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
                 ))}
               </div>
             ) : (
-              <p className="text-[12px] text-[var(--nurea-text-muted)]">
-                Essayez un autre terme ou verifiez l&apos;orthographe.
-              </p>
+              <div className="space-y-4">
+                <p className="text-[12px] leading-relaxed text-[var(--nurea-text-muted)]">
+                  Nous n&apos;avons pas « {searchTerm.trim()} » en catalogue pour
+                  l&apos;instant. Voici des idées proches — ou demandez à la
+                  conciergerie si nous pouvons vous le procurer.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href={conciergeWhatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-nurea text-[9px]"
+                  >
+                    WhatsApp
+                  </a>
+                  <Link
+                    href="/contact"
+                    onClick={onClose}
+                    className="inline-flex items-center border border-[var(--nurea-border-hover)] px-3 py-2 text-[9px] uppercase tracking-[0.12em] text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)]"
+                  >
+                    Conciergerie
+                  </Link>
+                </div>
+                <p className="text-[9px] uppercase tracking-[0.2em] text-[var(--nurea-text-subtle)]">
+                  Vous pourriez aimer
+                </p>
+                <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-3">
+                  {noMatchSuggestions.map((perfume) => (
+                    <button
+                      key={perfume.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedBrand(perfume.brand);
+                        onClose();
+                      }}
+                      className="group flex flex-col text-left transition-all active:scale-[0.98]"
+                    >
+                      <div className="relative aspect-[3/4] w-full overflow-hidden bg-[var(--nurea-surface)] mb-1.5">
+                        <Image
+                          src={
+                            mounted
+                              ? getPerfumeImage(perfume, activeTheme)
+                              : perfume.image
+                          }
+                          alt=""
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          sizes="150px"
+                        />
+                      </div>
+                      <span className="text-[7px] uppercase tracking-[0.2em] text-[var(--nurea-accent)] md:text-[8px]">
+                        {perfume.brand}
+                      </span>
+                      <span className="text-[11px] font-serif text-[var(--nurea-text)] truncate md:text-[12px]">
+                        {perfume.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -258,7 +331,7 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
             {resultsCount} creation{resultsCount !== 1 ? "s" : ""}
           </span>
         </div>
-        <button onClick={onClose} className="btn-nurea text-[9px]">
+        <button type="button" onClick={onClose} className="btn-nurea text-[9px]">
           Voir le catalogue
         </button>
       </div>
