@@ -17,6 +17,10 @@ import {
   mockPerfumes,
   fuzzySearchMatch,
   suggestSimilarPerfumes,
+  findExternalPerfumeHint,
+  getPerfumesByIds,
+  compareSearchRelevance,
+  EXTERNAL_SEARCH_FALLBACK_MESSAGE,
   CONTACT,
   type Category,
 } from "@/lib/data";
@@ -56,26 +60,42 @@ export const HomePageClient = () => {
     }
   }, [searchParams]);
 
+  /**
+   * Une recherche texte porte sur tout le catalogue (nom + marque + classiques).
+   * Si une marque était sélectionnée, elle masquait les résultats : on la réinitialise.
+   */
+  useEffect(() => {
+    if (searchTerm.trim() !== "") {
+      setSelectedBrand("Toutes");
+    }
+  }, [searchTerm]);
+
   const featuredPerfumes = useMemo(
     () => mockPerfumes.filter((p) => FEATURED_IDS.includes(p.id)),
     []
   );
 
   const filteredPerfumes = useMemo(() => {
+    const searching = searchTerm.trim() !== "";
     return mockPerfumes.filter((perfume) => {
       const matchSearch = fuzzySearchMatch(perfume, searchTerm);
       const matchCategory =
         selectedCategory === "Tout voir" ||
         perfume.category === selectedCategory;
       const matchBrand =
-        selectedBrand === "Toutes" || perfume.brand === selectedBrand;
+        searching ||
+        selectedBrand === "Toutes" ||
+        perfume.brand === selectedBrand;
       return matchSearch && matchCategory && matchBrand;
     });
   }, [searchTerm, selectedCategory, selectedBrand]);
 
   const sortedPerfumes = useMemo(() => {
     const list = [...filteredPerfumes];
-    if (sortKey === "name") {
+    const q = searchTerm.trim();
+    if (q && sortKey === "default") {
+      list.sort((a, b) => compareSearchRelevance(a, b, q));
+    } else if (sortKey === "name") {
       list.sort((a, b) =>
         a.name.localeCompare(b.name, "fr", { sensitivity: "base" })
       );
@@ -90,7 +110,7 @@ export const HomePageClient = () => {
       });
     }
     return list;
-  }, [filteredPerfumes, sortKey]);
+  }, [filteredPerfumes, sortKey, searchTerm]);
 
   const handleResetFilters = () => {
     setSearchTerm("");
@@ -129,12 +149,32 @@ export const HomePageClient = () => {
     }
   }, [showFeatured]);
 
+  const externalHint = useMemo(
+    () => (searchTerm.trim() ? findExternalPerfumeHint(searchTerm) : null),
+    [searchTerm]
+  );
+
   const inspirationWhenEmpty = useMemo(() => {
-    if (searchTerm.trim() !== "") {
-      return suggestSimilarPerfumes(searchTerm, mockPerfumes, 6);
+    if (!searchTerm.trim()) return mockPerfumes.slice(0, 6);
+    if (externalHint) {
+      const fromHint = getPerfumesByIds(
+        externalHint.similarCatalogIds,
+        mockPerfumes
+      );
+      const rest = suggestSimilarPerfumes(searchTerm, mockPerfumes, 6);
+      const merged: typeof mockPerfumes = [];
+      const seen = new Set<number>();
+      for (const p of [...fromHint, ...rest]) {
+        if (merged.length >= 6) break;
+        if (!seen.has(p.id)) {
+          seen.add(p.id);
+          merged.push(p);
+        }
+      }
+      return merged;
     }
-    return mockPerfumes.slice(0, 6);
-  }, [searchTerm]);
+    return suggestSimilarPerfumes(searchTerm, mockPerfumes, 6);
+  }, [searchTerm, externalHint]);
 
   const conciergeWhatsappHref = useMemo(() => {
     const num = CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? "";
@@ -284,12 +324,13 @@ export const HomePageClient = () => {
               {searchTerm.trim() !== "" ? (
                 <>
                   <p className="font-serif text-xl text-[var(--nurea-text)] mb-3 md:text-2xl">
-                    Vous recherchez « {searchTerm.trim()} » ?
+                    {externalHint
+                      ? `« ${externalHint.displayName} »`
+                      : `Vous recherchez « ${searchTerm.trim()} »`}{" "}
+                    ?
                   </p>
                   <p className="text-[13px] leading-relaxed text-[var(--nurea-text-muted)] mb-2">
-                    Ce parfum n&apos;est pas au catalogue pour le moment. Voici des
-                    créations qui s&apos;en rapprochent — ou contactez la
-                    conciergerie : nous pouvons parfois vous le procurer sur demande.
+                    {externalHint?.caption ?? EXTERNAL_SEARCH_FALLBACK_MESSAGE}
                   </p>
                 </>
               ) : (

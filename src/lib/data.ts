@@ -1,3 +1,8 @@
+import {
+  EXTERNAL_PERFUME_HINTS,
+  type ExternalPerfumeHint,
+} from "./externalSearchHints";
+
 export const CONTACT = {
   whatsapp:
     "https://wa.me/1234567890?text=Bonjour,%20je%20souhaite%20des%20informations%20sur%20un%20parfum",
@@ -355,6 +360,11 @@ function collectSearchTargets(perfume: Perfume): string[] {
   ];
 }
 
+/** Tout le texte indexable d'un parfum (nom, marque, tags, alias, classiques). */
+export function combinedSearchHaystack(perfume: Perfume): string {
+  return collectSearchTargets(perfume).join(" ");
+}
+
 /** Distance de Levenshtein entre deux chaînes. */
 function levenshtein(a: string, b: string): number {
   const an = a.length;
@@ -377,33 +387,77 @@ function levenshtein(a: string, b: string): number {
   return dp[an][bn];
 }
 
-/** Retourne true si la requête matche le parfum (exact ou flou : typos, bacarra → Baccarat). */
+function maxDistForToken(len: number): number {
+  if (len <= 3) return 2;
+  if (len <= 6) return 3;
+  return 4;
+}
+
+/** Un mot de la requête matche le parfum (sous-chaîne, typo, phonétique, préfixe). */
+function tokenMatchesQueryWord(
+  token: string,
+  words: string[],
+  haystack: string
+): boolean {
+  if (token.length < 2) return true;
+  if (haystack.includes(token)) return true;
+  const maxD = maxDistForToken(token.length);
+  const tPh = phoneticFold(token);
+  for (const w of words) {
+    if (w.length < 2) continue;
+    if (levenshtein(token, w) <= maxD) return true;
+    if (levenshtein(tPh, phoneticFold(w)) <= maxD) return true;
+    if (token.length >= 3 && w.length >= 3) {
+      if (w.startsWith(token.slice(0, 3)) || token.startsWith(w.slice(0, 3)))
+        return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Recherche tolérante : nom, marque, tags, alias, classiques.
+ * — Phrase entière ou partie du catalogue (includes).
+ * — Plusieurs mots : une partie des mots suffit (recherche « boostée » type moteur).
+ * — Typos / phonétique par mot.
+ */
 export function fuzzySearchMatch(perfume: Perfume, query: string): boolean {
   const q = query.trim();
   if (!q) return true;
+  const haystack = combinedSearchHaystack(perfume);
   const nq = normalizeForFuzzy(q);
+  const hayPh = phoneticFold(haystack);
   const nqPh = phoneticFold(q);
-  const nqLen = nq.length;
-  const targets = collectSearchTargets(perfume);
-  const phTargets = targets.map((t) => phoneticFold(t));
 
-  for (let i = 0; i < targets.length; i++) {
-    const target = targets[i];
-    const targetPh = phTargets[i];
-    if (target.includes(nq)) return true;
-    if (nqPh.length >= 2 && targetPh.includes(nqPh)) return true;
-    if (nqLen >= 2 && target.length >= 2) {
-      const maxDist = nqLen <= 4 ? 2 : nqLen <= 7 ? 3 : 4;
-      if (levenshtein(nq, target) <= maxDist) return true;
-      if (levenshtein(nqPh, targetPh) <= maxDist) return true;
-      const words = target.split(/\s+/);
-      for (const word of words) {
-        if (word.length >= 2 && levenshtein(nq, word) <= maxDist) return true;
-        if (word.length >= 2 && levenshtein(nqPh, phoneticFold(word)) <= maxDist)
-          return true;
-      }
-    }
+  if (haystack.includes(nq)) return true;
+  if (nqPh.length >= 3 && hayPh.includes(nqPh)) return true;
+
+  const name = normalizeForFuzzy(perfume.name);
+  const brand = normalizeForFuzzy(perfume.brand);
+  const words = haystack.split(/\s+/).filter((w) => w.length > 0);
+  const tokens = nq.split(/\s+/).filter((t) => t.length > 0);
+  const meaningful = tokens.filter((t) => t.length >= 2);
+
+  if (meaningful.length === 0) return true;
+
+  if (meaningful.length === 1) {
+    const t = meaningful[0];
+    return tokenMatchesQueryWord(t, words, haystack);
   }
+
+  let hits = 0;
+  for (const t of meaningful) {
+    if (tokenMatchesQueryWord(t, words, haystack)) hits++;
+  }
+  const need = Math.max(1, Math.ceil(meaningful.length * 0.4));
+  if (hits >= need) return true;
+
+  const phraseMax =
+    nq.length <= 6 ? 3 : nq.length <= 14 ? 5 : Math.min(8, Math.floor(nq.length / 2));
+  if (levenshtein(nq, name) <= phraseMax) return true;
+  if (levenshtein(nq, brand) <= phraseMax) return true;
+  if (levenshtein(nq, `${brand} ${name}`) <= phraseMax + 2) return true;
+
   return false;
 }
 
@@ -440,3 +494,94 @@ export function suggestSimilarPerfumes(
     .map((x) => x.p);
 }
 
+function maxQueryLen(hint: ExternalPerfumeHint): number {
+  return Math.max(0, ...hint.queries.map((q) => q.length));
+}
+
+export function findExternalPerfumeHint(query: string): ExternalPerfumeHint | null {
+  const raw = query.trim();
+  if (raw.length < 2) return null;
+  const nq = normalizeForFuzzy(raw);
+  const tokens = nq.split(/\s+/).filter((t) => t.length >= 2);
+
+  const hintsSorted = [...EXTERNAL_PERFUME_HINTS].sort(
+    (a, b) => maxQueryLen(b) - maxQueryLen(a)
+  );
+
+  for (const hint of hintsSorted) {
+    for (const hqRaw of hint.queries) {
+      const hq = normalizeForFuzzy(hqRaw);
+      if (hq.length < 2) continue;
+      if (nq.includes(hq) || hq.includes(nq)) return hint;
+      if (levenshtein(nq, hq) <= Math.min(4, 1 + Math.floor(hq.length / 5)))
+        return hint;
+      const hqTokens = hq.split(/\s+/).filter((t) => t.length >= 2);
+      let overlap = 0;
+      for (const t of tokens) {
+        if (
+          hqTokens.some(
+            (ht) =>
+              ht.includes(t) ||
+              t.includes(ht) ||
+              levenshtein(t, ht) <= 2
+          )
+        )
+          overlap++;
+      }
+      if (tokens.length >= 2 && overlap >= 2) return hint;
+      if (tokens.length === 1 && overlap >= 1) return hint;
+    }
+  }
+  return null;
+}
+
+export function getPerfumesByIds(
+  ids: number[],
+  perfumes: Perfume[]
+): Perfume[] {
+  const byId = new Map(perfumes.map((p) => [p.id, p]));
+  const out: Perfume[] = [];
+  const seen = new Set<number>();
+  for (const id of ids) {
+    const p = byId.get(id);
+    if (p && !seen.has(p.id)) {
+      seen.add(p.id);
+      out.push(p);
+    }
+  }
+  return out;
+}
+
+export function searchRelevanceScore(perfume: Perfume, query: string): number {
+  const q = normalizeForFuzzy(query.trim());
+  if (!q) return 0;
+  const name = normalizeForFuzzy(perfume.name);
+  const brand = normalizeForFuzzy(perfume.brand);
+  const hay = combinedSearchHaystack(perfume);
+  let score = 0;
+  if (name === q) score += 800;
+  else if (name.startsWith(q)) score += 500;
+  else if (name.includes(q)) score += 400;
+  else if (
+    q.split(/\s+/).filter((t) => t.length >= 2).every((t) => name.includes(t))
+  )
+    score += 380;
+  if (brand.includes(q)) score += 300;
+  if (hay.includes(q)) score += 200;
+  score += Math.max(0, 120 - Math.min(119, rawDistanceToPerfume(query, perfume)));
+  return score;
+}
+
+export function compareSearchRelevance(
+  a: Perfume,
+  b: Perfume,
+  query: string
+): number {
+  return searchRelevanceScore(b, query) - searchRelevanceScore(a, query);
+}
+
+export type { ExternalPerfumeHint } from "./externalSearchHints";
+export {
+  EXTERNAL_PERFUME_HINTS,
+  EXTERNAL_SEARCH_FALLBACK_MESSAGE,
+} from "./externalSearchHints";

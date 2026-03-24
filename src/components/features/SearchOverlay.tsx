@@ -13,6 +13,9 @@ import {
   mockPerfumes,
   normalizeText,
   suggestSimilarPerfumes,
+  findExternalPerfumeHint,
+  getPerfumesByIds,
+  EXTERNAL_SEARCH_FALLBACK_MESSAGE,
   CONTACT,
 } from "@/lib/data";
 import type { Category, Perfume } from "@/lib/data";
@@ -85,11 +88,33 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
     selectedBrand !== "Toutes" ||
     selectedCategory !== "Tout voir";
 
+  const externalHint = useMemo(
+    () => (searchTerm.trim() ? findExternalPerfumeHint(searchTerm) : null),
+    [searchTerm]
+  );
+
   const noMatchSuggestions = useMemo(() => {
     const q = searchTerm.trim();
     if (!q) return mockPerfumes.slice(0, 6);
+    if (externalHint) {
+      const fromHint = getPerfumesByIds(
+        externalHint.similarCatalogIds,
+        mockPerfumes
+      );
+      const rest = suggestSimilarPerfumes(q, mockPerfumes, 6);
+      const merged: Perfume[] = [];
+      const seen = new Set<number>();
+      for (const p of [...fromHint, ...rest]) {
+        if (merged.length >= 6) break;
+        if (!seen.has(p.id)) {
+          seen.add(p.id);
+          merged.push(p);
+        }
+      }
+      return merged;
+    }
     return suggestSimilarPerfumes(q, mockPerfumes, 6);
-  }, [searchTerm]);
+  }, [searchTerm, externalHint]);
 
   const conciergeWhatsappHref = useMemo(() => {
     const num = CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? "";
@@ -130,7 +155,7 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
         <div className="relative mb-8">
           <input
             type="text"
-            placeholder="Que recherchez-vous ?"
+            placeholder="Nom de parfum, maison, note (oud, vanille)..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             autoFocus={isOpen}
@@ -189,9 +214,23 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
             ) : (
               <div className="space-y-4">
                 <p className="text-[12px] leading-relaxed text-[var(--nurea-text-muted)]">
-                  Nous n&apos;avons pas « {searchTerm.trim()} » en catalogue pour
-                  l&apos;instant. Voici des idées proches — ou demandez à la
-                  conciergerie si nous pouvons vous le procurer.
+                  {externalHint ? (
+                    <>
+                      <span className="font-medium text-[var(--nurea-text)]">
+                        {externalHint.displayName}
+                      </span>
+                      {" — "}
+                      {externalHint.caption ?? EXTERNAL_SEARCH_FALLBACK_MESSAGE}
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-medium text-[var(--nurea-text)]">
+                        « {searchTerm.trim()} »
+                      </span>
+                      {" — "}
+                      {EXTERNAL_SEARCH_FALLBACK_MESSAGE}
+                    </>
+                  )}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <a
