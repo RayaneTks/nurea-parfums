@@ -40,6 +40,9 @@ coverage
 
 # Testing
 .nyc_output
+test-results/
+playwright-report/
+playwright/.cache/
 
 # Temporary files
 *.tmp

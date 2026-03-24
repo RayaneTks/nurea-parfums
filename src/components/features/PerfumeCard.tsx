@@ -51,15 +51,6 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
     };
   }, [isActive, setActiveItem]);
 
-  const handleMouseLeave = () => {
-    if (typeof window === "undefined") return;
-    if (
-      window.matchMedia("(hover: hover) and (pointer: fine)").matches
-    ) {
-      setActiveItem(null);
-    }
-  };
-
   const toggleActive = () => setActiveItem(isActive ? null : perfume.id);
 
   const onCardKeyDown = (e: ReactKeyboardEvent) => {
@@ -96,14 +87,19 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         featured ? "card-featured" : ""
       }`}
       onClick={toggleActive}
-      onMouseLeave={handleMouseLeave}
       onKeyDown={onCardKeyDown}
     >
       {/* Image container */}
       <div className="relative aspect-[3/4] overflow-hidden bg-[var(--nurea-surface)]">
-        {/* Tags */}
+        {/* Tags — masqués quand l’overlay est ouvert (sinon z-20 au-dessus du panneau, surtout gênant sur mobile) */}
         {perfume.tags && (
-          <div className="absolute left-0 top-2.5 z-20 flex flex-col gap-1 md:top-3">
+          <div
+            data-testid="perfume-tag-strip"
+            className={`absolute left-0 top-2.5 z-20 flex flex-col gap-1 transition-opacity duration-200 md:top-3 ${
+              isActive ? "pointer-events-none opacity-0" : "opacity-100"
+            }`}
+            aria-hidden={isActive}
+          >
             {perfume.tags.map((tag) => (
               <span
                 key={tag}
@@ -127,12 +123,12 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
           className="object-cover card-image-zoom"
         />
 
-        {/* Overlay CTA */}
+        {/* Overlay CTA — z-[15] pour rester au-dessus des tags si jamais visibles */}
         <div
-          className={`absolute inset-0 z-10 flex flex-col items-center justify-center p-3 sm:p-4 card-overlay ${
+          className={`absolute inset-0 z-[15] flex min-h-0 flex-col items-stretch justify-center p-0 sm:p-1 card-overlay ${
             isActive
               ? "opacity-100 pointer-events-auto backdrop-blur-2xl"
-              : "opacity-0 pointer-events-none backdrop-blur-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-hover:backdrop-blur-2xl"
+              : "pointer-events-none opacity-0 backdrop-blur-none md:group-hover:opacity-100 md:group-hover:backdrop-blur-2xl"
           }`}
           style={
             isActive
@@ -151,36 +147,38 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
           }}
         >
           {isGammeComplete && perfume.classics ? (
-            <div className="w-full flex h-full flex-col justify-center max-w-[260px]">
-              <p className="mb-3 text-center font-serif text-[15px] leading-snug text-[var(--nurea-text)] md:text-lg">
+            <div className="flex h-full min-h-0 w-full max-w-[min(100%,280px)] flex-col px-3 pb-3 pt-4 sm:px-4 sm:pb-4 sm:pt-5">
+              <p className="mb-2 shrink-0 text-center font-serif text-[14px] leading-snug text-[var(--nurea-text)] sm:mb-3 sm:text-[15px] md:text-lg">
                 Classiques de la Maison
               </p>
-              <div className="flex flex-col gap-2 overflow-y-auto no-scrollbar max-h-[min(50vh,260px)]">
-                {perfume.classics.map((classic) => {
-                  const msg = `Bonjour, je souhaite acquerir « ${classic} » de ${perfume.brand}.`;
-                  return (
-                    <a
-                      key={classic}
-                      href={getWhatsappLink(msg)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="group/btn flex w-full items-center justify-between border border-[var(--nurea-border-hover)] px-4 py-3 text-[11px] uppercase tracking-[0.12em] text-[var(--nurea-text)] transition-all duration-300 hover:bg-[var(--nurea-accent-subtle)] hover:border-[var(--nurea-accent)] md:text-[12px] md:px-5 md:py-3.5 min-h-[44px]"
-                    >
-                      <span className="truncate pr-2 font-medium">
-                        {classic}
-                      </span>
-                      <ArrowRight
-                        size={13}
-                        className="shrink-0 text-[var(--nurea-accent)] transition-transform duration-300 group-hover/btn:-rotate-45"
-                      />
-                    </a>
-                  );
-                })}
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
+                <div className="flex flex-col gap-2 pb-1">
+                  {perfume.classics.map((classic) => {
+                    const msg = `Bonjour, je souhaite acquerir « ${classic} » de ${perfume.brand}.`;
+                    return (
+                      <a
+                        key={classic}
+                        href={getWhatsappLink(msg)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="group/btn flex w-full min-h-[44px] shrink-0 items-center justify-between border border-[var(--nurea-border-hover)] px-3 py-2.5 text-[11px] uppercase tracking-[0.12em] text-[var(--nurea-text)] transition-all duration-300 hover:bg-[var(--nurea-accent-subtle)] hover:border-[var(--nurea-accent)] sm:px-4 sm:py-3 md:text-[12px] md:px-5"
+                      >
+                        <span className="min-w-0 flex-1 truncate pr-2 text-left font-medium">
+                          {classic}
+                        </span>
+                        <ArrowRight
+                          size={13}
+                          className="shrink-0 text-[var(--nurea-accent)] transition-transform duration-300 group-hover/btn:-rotate-45"
+                        />
+                      </a>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           ) : (
-            <div className="w-full flex flex-col gap-2.5 max-w-[240px]">
+            <div className="mx-auto flex w-full max-w-[240px] flex-col gap-2.5 self-center px-3 py-2 sm:px-4">
               <p className="mb-2 text-center font-serif text-[15px] leading-snug text-[var(--nurea-text)] md:text-lg">
                 Acquerir cette creation
               </p>
