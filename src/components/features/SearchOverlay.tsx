@@ -1,10 +1,16 @@
 "use client";
 
 import type { FC } from "react";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import { Search, X } from "lucide-react";
-import { allBrands, categories } from "@/lib/data";
+import {
+  allBrands,
+  categories,
+  getPerfumeImage,
+  normalizeText,
+} from "@/lib/data";
 import type { Category, Perfume } from "@/lib/data";
 
 interface SearchOverlayProps {
@@ -36,6 +42,11 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
   resultsCount,
   searchResults,
 }) => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const activeTheme = resolvedTheme === "dark" ? "dark" : "light";
+
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -44,6 +55,17 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
+
+  const [brandQuery, setBrandQuery] = useState("");
+  useEffect(() => {
+    if (!isOpen) setBrandQuery("");
+  }, [isOpen]);
+
+  const filteredBrands = useMemo(() => {
+    const q = normalizeText(brandQuery).trim();
+    if (!q) return allBrands;
+    return allBrands.filter((b) => normalizeText(b).includes(q));
+  }, [brandQuery]);
 
   const hasActiveFilters =
     searchTerm.trim() !== "" ||
@@ -118,7 +140,11 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
                   >
                     <div className="relative aspect-[3/4] w-full overflow-hidden bg-[var(--nurea-surface)] mb-1.5">
                       <Image
-                        src={perfume.image}
+                        src={
+                          mounted
+                            ? getPerfumeImage(perfume, activeTheme)
+                            : perfume.image
+                        }
                         alt=""
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -148,23 +174,39 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
             <h4 className="mb-4 text-[9px] uppercase tracking-[0.3em] text-[var(--nurea-text-muted)]">
               Maisons
             </h4>
-            <ul className="space-y-2">
-              {allBrands.map((brand) => (
-                <li key={brand}>
-                  <button
-                    onClick={() => setSelectedBrand(brand)}
-                    type="button"
-                    className={`text-[12px] transition-colors duration-300 md:text-[13px] ${
-                      selectedBrand === brand
-                        ? "text-[var(--nurea-accent)] italic"
-                        : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
-                    }`}
-                  >
-                    {brand}
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <div className="mb-3">
+              <input
+                type="search"
+                value={brandQuery}
+                onChange={(e) => setBrandQuery(e.target.value)}
+                placeholder="Filtrer les maisons..."
+                aria-label="Filtrer les maisons"
+                className="w-full border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-[12px] text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] focus:outline-none focus:border-[var(--nurea-accent)] transition-colors"
+              />
+            </div>
+            {filteredBrands.length === 0 ? (
+              <p className="text-[12px] text-[var(--nurea-text-muted)]">
+                Aucune maison ne correspond.
+              </p>
+            ) : (
+              <ul className="max-h-[min(50vh,420px)] space-y-2 overflow-y-auto pr-1">
+                {filteredBrands.map((brand) => (
+                  <li key={brand}>
+                    <button
+                      onClick={() => setSelectedBrand(brand)}
+                      type="button"
+                      className={`text-left text-[12px] transition-colors duration-300 md:text-[13px] ${
+                        selectedBrand === brand
+                          ? "text-[var(--nurea-accent)] italic"
+                          : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
+                      }`}
+                    >
+                      {brand}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
           <div>
             <h4 className="mb-4 text-[9px] uppercase tracking-[0.3em] text-[var(--nurea-text-muted)]">

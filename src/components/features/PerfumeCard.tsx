@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { ArrowRight } from "lucide-react";
 import type { Perfume } from "@/lib/data";
-import { CONTACT } from "@/lib/data";
+import { CONTACT, getPerfumeImage } from "@/lib/data";
 
 interface PerfumeCardProps {
   perfume: Perfume;
@@ -27,6 +27,9 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
   const isDark = resolvedTheme === "dark";
   const isActive = activeItem === perfume.id;
   const isGammeComplete = perfume.category === "Gammes Compl\u00e8tes";
+  const imageSrc = mounted
+    ? getPerfumeImage(perfume, isDark ? "dark" : "light")
+    : perfume.image;
 
   const whatsappIcon = isDark
     ? "/branding/icons/nurea_icon_whatsapp_ivory.svg"
@@ -69,7 +72,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         )}
 
         <Image
-          src={perfume.image}
+          src={imageSrc}
           alt={perfume.name}
           fill
           sizes={

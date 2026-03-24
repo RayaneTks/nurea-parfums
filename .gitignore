@@ -44,3 +44,13 @@ coverage
 # Temporary files
 *.tmp
 *.temp
+
+# Captures / audits locaux (ne pas versionner)
+audit-*.png
+Visuel.png
+screen.png
+
+# Outils agents locaux
+.claude/
+.omc/
+.superpowers/

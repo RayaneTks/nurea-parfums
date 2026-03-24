@@ -1,10 +1,12 @@
 "use client";
 
 import type { FC } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import { ArrowRight } from "lucide-react";
 import type { Perfume } from "@/lib/data";
-import { CONTACT } from "@/lib/data";
+import { CONTACT, getPerfumeImage } from "@/lib/data";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
 interface FeaturedSectionProps {
@@ -12,6 +14,11 @@ interface FeaturedSectionProps {
 }
 
 export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const activeTheme = resolvedTheme === "dark" ? "dark" : "light";
+
   const getWhatsappLink = (msg: string) => {
     const num = CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? "";
     return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
@@ -34,7 +41,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
               className="relative min-h-[55vh] md:min-h-[70vh] overflow-hidden"
             >
               <Image
-                src={perfume.image}
+                src={mounted ? getPerfumeImage(perfume, activeTheme) : perfume.image}
                 alt={perfume.name}
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"

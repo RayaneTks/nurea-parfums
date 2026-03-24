@@ -20,11 +20,14 @@ import {
 /* Parfums signature pour la section featured editorial */
 const FEATURED_IDS = [9, 10]; // Baccarat Rouge 540 & Aventus
 
+type SortKey = "default" | "name" | "brand";
+
 export const HomePageClient = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] =
     useState<Category>("Tout voir");
   const [selectedBrand, setSelectedBrand] = useState<string>("Toutes");
+  const [sortKey, setSortKey] = useState<SortKey>("default");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState<number | null>(null);
@@ -52,18 +55,41 @@ export const HomePageClient = () => {
     });
   }, [searchTerm, selectedCategory, selectedBrand]);
 
+  const sortedPerfumes = useMemo(() => {
+    const list = [...filteredPerfumes];
+    if (sortKey === "name") {
+      list.sort((a, b) =>
+        a.name.localeCompare(b.name, "fr", { sensitivity: "base" })
+      );
+    } else if (sortKey === "brand") {
+      list.sort((a, b) => {
+        const byBrand = a.brand.localeCompare(b.brand, "fr", {
+          sensitivity: "base",
+        });
+        return byBrand !== 0
+          ? byBrand
+          : a.name.localeCompare(b.name, "fr", { sensitivity: "base" });
+      });
+    }
+    return list;
+  }, [filteredPerfumes, sortKey]);
+
   const handleResetFilters = () => {
     setSearchTerm("");
     setSelectedCategory("Tout voir");
     setSelectedBrand("Toutes");
+    setSortKey("default");
   };
 
-  const hasActiveFilters =
+  const hasCollectionFilters =
     searchTerm.trim() !== "" ||
     selectedBrand !== "Toutes" ||
     selectedCategory !== "Tout voir";
 
-  const showFeatured = !hasActiveFilters;
+  const hasActiveFilters =
+    hasCollectionFilters || sortKey !== "default";
+
+  const showFeatured = !hasCollectionFilters;
 
   return (
     <div className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
@@ -91,58 +117,72 @@ export const HomePageClient = () => {
       >
         {/* Header */}
         <ScrollReveal className="mb-8 md:mb-12">
-          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-            <div>
-              <span className="block mb-2 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
-                Catalogue
-              </span>
-              <h2 className="font-serif text-[clamp(24px,5vw,36px)] text-[var(--nurea-text)] leading-tight">
-                La Collection
-              </h2>
-              <span className="mt-1.5 block text-[11px] tracking-[0.1em] text-[var(--nurea-text-muted)]">
-                {filteredPerfumes.length} creation
-                {filteredPerfumes.length !== 1 ? "s" : ""}
-              </span>
-            </div>
+          <div>
+            <span className="block mb-2 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
+              Catalogue
+            </span>
+            <h2 className="font-serif text-[clamp(24px,5vw,36px)] text-[var(--nurea-text)] leading-tight">
+              La Collection
+            </h2>
+            <span className="mt-1.5 block text-[11px] tracking-[0.1em] text-[var(--nurea-text-muted)]">
+              {filteredPerfumes.length} creation
+              {filteredPerfumes.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+        </ScrollReveal>
 
-            {/* Filter button — desktop */}
+        {/* Onglets + tri + recherche — sticky pour parcourir de longs catalogues */}
+        <div className="sticky top-[52px] z-30 -mx-4 mb-6 border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)]/95 px-4 pb-3 backdrop-blur-md md:top-[68px] md:mx-0 md:px-0">
+          <ScrollReveal className="mb-0" delay={80}>
+            <div className="no-scrollbar flex gap-0.5 overflow-x-auto border-b border-[var(--nurea-border)]/80">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`shrink-0 px-3.5 py-3 text-[11px] font-medium uppercase tracking-[0.12em] transition-all duration-300 relative md:px-4 md:py-3 md:text-[12px] ${
+                    selectedCategory === category
+                      ? "text-[var(--nurea-accent)]"
+                      : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
+                  }`}
+                >
+                  {category}
+                  <span
+                    className={`absolute bottom-0 left-0 h-[2px] w-full bg-[var(--nurea-accent)] transition-transform duration-300 origin-left ${
+                      selectedCategory === category
+                        ? "scale-x-100"
+                        : "scale-x-0"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+          </ScrollReveal>
+
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+            <label className="flex min-w-[min(100%,220px)] flex-1 items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
+              Trier
+              <select
+                value={sortKey}
+                onChange={(e) => setSortKey(e.target.value as SortKey)}
+                className="min-w-0 flex-1 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-[11px] font-medium normal-case tracking-normal text-[var(--nurea-text)] focus:outline-none focus:border-[var(--nurea-accent)]"
+              >
+                <option value="default">Ordre du catalogue</option>
+                <option value="name">Nom (A-Z)</option>
+                <option value="brand">Marque (A-Z)</option>
+              </select>
+            </label>
             <button
+              type="button"
               onClick={() => setIsFilterOpen(true)}
-              className="btn-nurea hidden md:inline-flex"
+              className="btn-nurea shrink-0 text-[10px] md:text-[11px]"
             >
               Affiner la recherche
-              {hasActiveFilters && (
+              {(hasActiveFilters || sortKey !== "default") && (
                 <span className="h-1.5 w-1.5 rounded-full bg-[var(--nurea-accent)]" />
               )}
             </button>
           </div>
-        </ScrollReveal>
-
-        {/* Category tabs */}
-        <ScrollReveal className="mb-6" delay={80}>
-          <div className="no-scrollbar flex gap-0.5 overflow-x-auto border-b border-[var(--nurea-border)]">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`shrink-0 px-3.5 py-3 text-[11px] font-medium uppercase tracking-[0.12em] transition-all duration-300 relative md:px-4 md:py-3 md:text-[12px] ${
-                  selectedCategory === category
-                    ? "text-[var(--nurea-accent)]"
-                    : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
-                }`}
-              >
-                {category}
-                <span
-                  className={`absolute bottom-0 left-0 h-[2px] w-full bg-[var(--nurea-accent)] transition-transform duration-300 origin-left ${
-                    selectedCategory === category
-                      ? "scale-x-100"
-                      : "scale-x-0"
-                  }`}
-                />
-              </button>
-            ))}
-          </div>
-        </ScrollReveal>
+        </div>
 
         {/* Active filters */}
         {hasActiveFilters && (
@@ -168,6 +208,12 @@ export const HomePageClient = () => {
                 onRemove={() => setSelectedCategory("Tout voir")}
               />
             )}
+            {sortKey !== "default" && (
+              <FilterChip
+                label="Tri personnalis\u00e9"
+                onRemove={() => setSortKey("default")}
+              />
+            )}
             <button
               onClick={handleResetFilters}
               className="ml-1 text-[10px] uppercase tracking-[0.12em] text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors"
@@ -178,7 +224,7 @@ export const HomePageClient = () => {
         )}
 
         {/* Grid or empty state */}
-        {filteredPerfumes.length === 0 ? (
+        {sortedPerfumes.length === 0 ? (
           <div className="py-24 text-center">
             <p className="font-serif text-xl text-[var(--nurea-text)] mb-2 md:text-2xl">
               Aucune creation trouvee
@@ -189,7 +235,7 @@ export const HomePageClient = () => {
           </div>
         ) : (
           <div className="catalogue-grid stagger-grid">
-            {filteredPerfumes.map((perfume) => (
+            {sortedPerfumes.map((perfume) => (
               <PerfumeCard
                 key={perfume.id}
                 perfume={perfume}
