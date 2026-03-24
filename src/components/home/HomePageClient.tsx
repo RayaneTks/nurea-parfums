@@ -65,6 +65,8 @@ export const HomePageClient = () => {
   const isFirstLayoutRef = useRef(true);
   const prevFeaturedRef = useRef(true);
   const collectionAnchorYRef = useRef<number | null>(null);
+  /** Position viewport du haut du catalogue tant que la section « À la une » est affichée (compensation au masquage). */
+  const collectionViewportTopWhenFeaturedRef = useRef<number | null>(null);
   const paramsStringRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -156,9 +158,16 @@ export const HomePageClient = () => {
     }
   });
 
+  /** Tant que la section featured est visible : garde la distance catalogue / haut de fenêtre pour ancrer le scroll au filtrage. */
+  useLayoutEffect(() => {
+    const el = document.getElementById("collection");
+    if (!el || !showFeatured) return;
+    collectionViewportTopWhenFeaturedRef.current = el.getBoundingClientRect().top;
+  });
+
   /**
-   * Filtres actifs : ancrer le catalogue (évite le vide sous le hero).
-   * Filtres effacés : conserver la position du catalogue (pas de retour au hero).
+   * Featured masquée / réaffichée : compense la hauteur retirée ou ajoutée pour ne pas déplacer le catalogue dans le viewport
+   * (évite scrollIntoView qui sautait vers le haut du bloc même quand on était déjà sur le catalogue).
    */
   useLayoutEffect(() => {
     if (isFirstLayoutRef.current) {
@@ -169,7 +178,15 @@ export const HomePageClient = () => {
     const prev = prevFeaturedRef.current;
     prevFeaturedRef.current = showFeatured;
     if (prev && !showFeatured) {
-      document.getElementById("collection")?.scrollIntoView({ block: "start", behavior: "auto" });
+      const el = document.getElementById("collection");
+      const T_old = collectionViewportTopWhenFeaturedRef.current;
+      if (el && T_old != null) {
+        const T_new = el.getBoundingClientRect().top;
+        const d = T_old - T_new;
+        if (Math.abs(d) > 0.5) {
+          window.scrollBy({ top: d, left: 0, behavior: "auto" });
+        }
+      }
     } else if (!prev && showFeatured) {
       const before = collectionAnchorYRef.current;
       const el = document.getElementById("collection");
@@ -213,14 +230,16 @@ export const HomePageClient = () => {
       }
       return merged;
     }
-    return suggestSimilarPerfumes(searchTerm, mockPerfumes, 6);
+    return [];
   }, [searchTerm, externalHint]);
 
   const conciergeWhatsappHref = useMemo(() => {
     const num = CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? "";
-    const msg = `Bonjour, je cherche « ${searchTerm.trim() || "un parfum"} ». Est-ce que vous pouvez me le procurer ou me proposer une alternative ?`;
+    const label =
+      externalHint?.displayName ?? (searchTerm.trim() || "un parfum");
+    const msg = `Bonjour, je cherche « ${label} ». Pouvez-vous me le procurer ou me proposer une alternative ?`;
     return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
-  }, [searchTerm]);
+  }, [searchTerm, externalHint]);
 
   const focusCatalogSearch = useCallback(() => {
     document.getElementById("collection")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -267,7 +286,7 @@ export const HomePageClient = () => {
         </ScrollReveal>
 
         {/* Recherche unique + filtres — sticky */}
-        <div className="sticky z-30 -mx-4 mb-6 border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)]/95 px-4 pb-3 backdrop-blur-md [top:calc(env(safe-area-inset-top,0px)+3.625rem)] md:top-[calc(env(safe-area-inset-top,0px)+4.25rem)] md:mx-0 md:px-0">
+        <div className="sticky z-30 -mx-4 mb-6 border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-4 pb-3 [top:calc(env(safe-area-inset-top,0px)+3.625rem)] md:top-[calc(env(safe-area-inset-top,0px)+4.25rem)] md:mx-0 md:px-0">
           <ScrollReveal className="mb-0" delay={80}>
             <div className="relative mb-3">
               <label htmlFor={CATALOG_SEARCH_ID} className="sr-only">
@@ -388,13 +407,19 @@ export const HomePageClient = () => {
                 <>
                   <p className="font-serif text-xl text-[var(--nurea-text)] mb-3 md:text-2xl">
                     {externalHint
-                      ? `« ${externalHint.displayName} »`
-                      : `Vous recherchez « ${searchTerm.trim()} »`}{" "}
-                    ?
+                      ? `Vous cherchez « ${externalHint.displayName} » ?`
+                      : `Aucun résultat pour « ${searchTerm.trim()} »`}
                   </p>
                   <p className="text-[13px] leading-relaxed text-[var(--nurea-text-muted)] mb-2">
-                    {externalHint?.caption ?? EXTERNAL_SEARCH_FALLBACK_MESSAGE}
+                    {externalHint
+                      ? externalHint.caption
+                      : EXTERNAL_SEARCH_FALLBACK_MESSAGE}
                   </p>
+                  {externalHint && (
+                    <p className="text-[12px] leading-relaxed text-[var(--nurea-text-subtle)] mt-3">
+                      Ce parfum ou cette maison n’est pas encore affiché sur notre catalogue en ligne — la conciergerie peut vérifier une commande ou une alternative proche.
+                    </p>
+                  )}
                 </>
               ) : (
                 <>
@@ -423,24 +448,26 @@ export const HomePageClient = () => {
                 </Link>
               </div>
             </div>
-            <div className="mt-12">
-              <p className="mb-5 text-center text-[10px] uppercase tracking-[0.28em] text-[var(--nurea-text-muted)]">
-                {searchTerm.trim() !== ""
-                  ? "Vous pourriez aimer"
-                  : "Inspirations"}
-              </p>
-              <div className="catalogue-grid stagger-grid">
-                {inspirationWhenEmpty.map((perfume) => (
-                  <PerfumeCard
-                    key={perfume.id}
-                    perfume={perfume}
-                    activeItem={activeItem}
-                    setActiveItem={setActiveItem}
-                    featured={perfume.category === "Gammes Complètes"}
-                  />
-                ))}
+            {inspirationWhenEmpty.length > 0 && (
+              <div className="mt-12">
+                <p className="mb-5 text-center text-[10px] uppercase tracking-[0.28em] text-[var(--nurea-text-muted)]">
+                  {searchTerm.trim() !== ""
+                    ? "Pistes dans notre sélection"
+                    : "Inspirations"}
+                </p>
+                <div className="catalogue-grid stagger-grid">
+                  {inspirationWhenEmpty.map((perfume) => (
+                    <PerfumeCard
+                      key={perfume.id}
+                      perfume={perfume}
+                      activeItem={activeItem}
+                      setActiveItem={setActiveItem}
+                      featured={perfume.category === "Gammes Complètes"}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         ) : (
           <div className="catalogue-grid stagger-grid">

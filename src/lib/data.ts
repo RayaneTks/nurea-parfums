@@ -1,7 +1,7 @@
 import {
   EXTERNAL_PERFUME_HINTS,
-  type ExternalPerfumeHint,
 } from "./externalSearchHints";
+import type { ExternalPerfumeHint } from "./externalSearchTypes";
 
 export const CONTACT = {
   whatsapp:
@@ -387,78 +387,120 @@ function levenshtein(a: string, b: string): number {
   return dp[an][bn];
 }
 
-function maxDistForToken(len: number): number {
-  if (len <= 3) return 2;
-  if (len <= 6) return 3;
+/** Articles / liaisons souvent tapés dans la requête mais non discriminants pour le catalogue. */
+const QUERY_STOP_WORDS = new Set([
+  "de",
+  "la",
+  "le",
+  "les",
+  "du",
+  "des",
+  "un",
+  "une",
+  "et",
+  "ou",
+  "à",
+  "a",
+  "en",
+  "au",
+  "aux",
+  "d",
+  "l",
+  "the",
+  "of",
+  "and",
+  "par",
+  "pour",
+  "sur",
+]);
+
+function extractQueryTokens(query: string): string[] {
+  return normalizeForFuzzy(query)
+    .split(/\s+/)
+    .map((t) => t.replace(/[''\u2019]/g, ""))
+    .filter((t) => t.length > 0 && !QUERY_STOP_WORDS.has(t));
+}
+
+/** Distance max d’édition (typo / phonétique) entre deux mots, selon leur longueur commune. */
+function maxDistForWordPair(token: string, word: string): number {
+  const n = Math.min(token.length, word.length);
+  if (n <= 3) return 1;
+  if (n <= 6) return 2;
+  if (n <= 12) return 3;
   return 4;
 }
 
-/** Un mot de la requête matche le parfum (sous-chaîne, typo, phonétique, préfixe). */
-function tokenMatchesQueryWord(
-  token: string,
-  words: string[],
+function matchesSingleCharQuery(
+  perfume: Perfume,
+  char: string,
   haystack: string
 ): boolean {
-  if (token.length < 2) return true;
-  if (haystack.includes(token)) return true;
-  const maxD = maxDistForToken(token.length);
+  const name = normalizeForFuzzy(perfume.name);
+  const brand = normalizeForFuzzy(perfume.brand);
+  const words = haystack.split(/\s+/);
+  return (
+    name === char ||
+    brand === char ||
+    words.includes(char) ||
+    (char.length === 1 && name === char)
+  );
+}
+
+/** Un mot de la requête doit correspondre au moins à un mot indexable (sous-chaîne ≥3, typo ou phonétique). */
+function tokenMatchesCatalogToken(
+  token: string,
+  haystack: string,
+  hayPh: string
+): boolean {
+  if (token.length < 2) return false;
+  if (token.length >= 3 && haystack.includes(token)) return true;
   const tPh = phoneticFold(token);
+  if (token.length >= 4 && hayPh.includes(tPh)) return true;
+
+  const words = haystack.split(/\s+/).filter((w) => w.length > 0);
   for (const w of words) {
-    if (w.length < 2) continue;
-    if (levenshtein(token, w) <= maxD) return true;
-    if (levenshtein(tPh, phoneticFold(w)) <= maxD) return true;
-    if (token.length >= 3 && w.length >= 3) {
-      if (w.startsWith(token.slice(0, 3)) || token.startsWith(w.slice(0, 3)))
-        return true;
-    }
+    if (w.length < 2 && token.length >= 2) continue;
+    if (w === token) return true;
+    const cap = maxDistForWordPair(token, w);
+    if (levenshtein(token, w) <= cap) return true;
+    if (levenshtein(tPh, phoneticFold(w)) <= cap) return true;
   }
   return false;
 }
 
 /**
- * Recherche tolérante : nom, marque, tags, alias, classiques.
- * — Phrase entière ou partie du catalogue (includes).
- * — Plusieurs mots : une partie des mots suffit (recherche « boostée » type moteur).
- * — Typos / phonétique par mot.
+ * Recherche catalogue : nom, marque, tags, alias, classiques.
+ * — Phrase entière ou partie (includes).
+ * — Plusieurs mots : **tous** les mots significatifs doivent matcher (évite les faux positifs sur chaînes aléatoires).
+ * — Tolérance aux fautes / phonétique par mot.
  */
 export function fuzzySearchMatch(perfume: Perfume, query: string): boolean {
   const q = query.trim();
   if (!q) return true;
   const haystack = combinedSearchHaystack(perfume);
-  const nq = normalizeForFuzzy(q);
+  const nq = normalizeForFuzzy(q).replace(/\s+/g, " ");
   const hayPh = phoneticFold(haystack);
   const nqPh = phoneticFold(q);
 
-  if (haystack.includes(nq)) return true;
+  if (nq.length >= 2 && haystack.includes(nq)) return true;
   if (nqPh.length >= 3 && hayPh.includes(nqPh)) return true;
 
-  const name = normalizeForFuzzy(perfume.name);
-  const brand = normalizeForFuzzy(perfume.brand);
-  const words = haystack.split(/\s+/).filter((w) => w.length > 0);
-  const tokens = nq.split(/\s+/).filter((t) => t.length > 0);
-  const meaningful = tokens.filter((t) => t.length >= 2);
-
-  if (meaningful.length === 0) return true;
-
-  if (meaningful.length === 1) {
-    const t = meaningful[0];
-    return tokenMatchesQueryWord(t, words, haystack);
+  const tokens = extractQueryTokens(q);
+  const compact = q.replace(/\s+/g, " ").trim();
+  if (compact.length === 1 && /^[a-z0-9]$/i.test(compact)) {
+    return matchesSingleCharQuery(
+      perfume,
+      normalizeForFuzzy(compact),
+      haystack
+    );
   }
 
-  let hits = 0;
-  for (const t of meaningful) {
-    if (tokenMatchesQueryWord(t, words, haystack)) hits++;
+  if (tokens.length === 0) return true;
+
+  for (const t of tokens) {
+    if (!tokenMatchesCatalogToken(t, haystack, hayPh)) return false;
   }
-  const need = Math.max(1, Math.ceil(meaningful.length * 0.4));
-  if (hits >= need) return true;
-
-  const phraseMax =
-    nq.length <= 6 ? 3 : nq.length <= 14 ? 5 : Math.min(8, Math.floor(nq.length / 2));
-  if (levenshtein(nq, name) <= phraseMax) return true;
-  if (levenshtein(nq, brand) <= phraseMax) return true;
-  if (levenshtein(nq, `${brand} ${name}`) <= phraseMax + 2) return true;
-
-  return false;
+  return true;
 }
 
 /** Distance minimale requête ↔ parfum (pour suggestions quand aucun résultat exact). */
@@ -498,41 +540,78 @@ function maxQueryLen(hint: ExternalPerfumeHint): number {
   return Math.max(0, ...hint.queries.map((q) => q.length));
 }
 
+/** Correspondance mot ↔ mot pour les entrées hors catalogue (un peu plus souple que le catalogue). */
+function tokenMatchesExternalWord(a: string, b: string): boolean {
+  if (a.length < 2 || b.length < 2) return false;
+  if (a === b) return true;
+  if (a.length >= 3 && b.length >= 3 && (a.includes(b) || b.includes(a))) return true;
+  return levenshtein(a, b) <= maxDistForWordPair(a, b);
+}
+
+/**
+ * Score 0–100 : requête utilisateur ↔ une variante de requête d’une entrée hors catalogue.
+ */
+function scoreExternalQueryPair(nq: string, hq: string): number {
+  if (hq.length < 2) return 0;
+  if (nq === hq) return 100;
+  if (nq.includes(hq) && hq.length >= 3) return 96;
+  if (hq.includes(nq) && nq.length >= 3) return 93;
+  const d = levenshtein(nq, hq);
+  const L = Math.max(nq.length, hq.length);
+  if (L >= 4 && d <= 2 && d / L <= 0.28) return 88;
+  if (L >= 6 && d <= 3 && d / L <= 0.22) return 82;
+
+  const nt = nq.split(/\s+/).filter((t) => t.length >= 2);
+  const ht = hq.split(/\s+/).filter((t) => t.length >= 2);
+  if (ht.length === 0) return 0;
+
+  let hqHits = 0;
+  for (const h of ht) {
+    if (nt.some((t) => tokenMatchesExternalWord(t, h))) hqHits++;
+  }
+  const coverHq = hqHits / ht.length;
+  if (coverHq >= 1) return 86;
+  if (coverHq >= 0.66 && nt.length >= 2) return 74;
+
+  if (nt.length === 1 && ht.length === 1) {
+    const t = nt[0];
+    const h = ht[0];
+    if (tokenMatchesExternalWord(t, h)) return 84;
+  }
+
+  return 0;
+}
+
+const EXTERNAL_HINT_MIN_SCORE = 72;
+
+/**
+ * Meilleure entrée hors catalogue pour la requête, avec seuil de confiance
+ * (évite d’associer une chaîne aléatoire à un parfum connu).
+ */
 export function findExternalPerfumeHint(query: string): ExternalPerfumeHint | null {
   const raw = query.trim();
   if (raw.length < 2) return null;
   const nq = normalizeForFuzzy(raw);
-  const tokens = nq.split(/\s+/).filter((t) => t.length >= 2);
+  if (nq.length < 2) return null;
 
   const hintsSorted = [...EXTERNAL_PERFUME_HINTS].sort(
     (a, b) => maxQueryLen(b) - maxQueryLen(a)
   );
 
+  let best: { hint: ExternalPerfumeHint; score: number } | null = null;
+
   for (const hint of hintsSorted) {
     for (const hqRaw of hint.queries) {
       const hq = normalizeForFuzzy(hqRaw);
-      if (hq.length < 2) continue;
-      if (nq.includes(hq) || hq.includes(nq)) return hint;
-      if (levenshtein(nq, hq) <= Math.min(4, 1 + Math.floor(hq.length / 5)))
-        return hint;
-      const hqTokens = hq.split(/\s+/).filter((t) => t.length >= 2);
-      let overlap = 0;
-      for (const t of tokens) {
-        if (
-          hqTokens.some(
-            (ht) =>
-              ht.includes(t) ||
-              t.includes(ht) ||
-              levenshtein(t, ht) <= 2
-          )
-        )
-          overlap++;
+      const score = scoreExternalQueryPair(nq, hq);
+      if (score > (best?.score ?? 0)) {
+        best = { hint, score };
       }
-      if (tokens.length >= 2 && overlap >= 2) return hint;
-      if (tokens.length === 1 && overlap >= 1) return hint;
     }
   }
-  return null;
+
+  if (!best || best.score < EXTERNAL_HINT_MIN_SCORE) return null;
+  return best.hint;
 }
 
 export function getPerfumesByIds(
@@ -580,7 +659,7 @@ export function compareSearchRelevance(
   return searchRelevanceScore(b, query) - searchRelevanceScore(a, query);
 }
 
-export type { ExternalPerfumeHint } from "./externalSearchHints";
+export type { ExternalPerfumeHint } from "./externalSearchTypes";
 export {
   EXTERNAL_PERFUME_HINTS,
   EXTERNAL_SEARCH_FALLBACK_MESSAGE,

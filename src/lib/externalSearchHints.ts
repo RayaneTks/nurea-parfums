@@ -4,17 +4,14 @@
  * Chaque entrée : requêtes reconnues + alternatives dans notre catalogue (IDs mockPerfumes).
  */
 
-export interface ExternalPerfumeHint {
-  id: string;
-  queries: string[];
-  displayName: string;
-  caption?: string;
-  similarCatalogIds: number[];
-}
+import { EXTERNAL_HINTS_EXTRA } from "./externalHintsExtra";
+import type { ExternalPerfumeHint } from "./externalSearchTypes";
+
+export type { ExternalPerfumeHint };
 
 /** Message quand la requête ne correspond à aucune fiche connue (ni au catalogue). */
 export const EXTERNAL_SEARCH_FALLBACK_MESSAGE =
-  "Nous ne retrouvons pas encore cette référence sous cette forme. Décrivez le nom, la maison ou l’ambiance (floral, boisé, oud, gourmand…) : la conciergerie peut proposer un équivalent ou rechercher la fragrance pour vous.";
+  "Aucune correspondance dans notre base : cette requête ne ressemble pas à un parfum ou une maison que nous reconnaissons. Reformulez (nom exact, marque) ou écrivez-nous avec un peu de contexte — la conciergerie répondra plus vite avec un nom précis.";
 
 export const EXTERNAL_PERFUME_HINTS: ExternalPerfumeHint[] = [
   /* —— Déjà demandés / viral niche —— */
@@ -28,7 +25,7 @@ export const EXTERNAL_PERFUME_HINTS: ExternalPerfumeHint[] = [
     ],
     displayName: "Cherry Bubble Gum",
     caption:
-      "Parfum niche très partagé sur les réseaux — pas chez nous pour l’instant ; nous pouvons le sourcer.",
+      "Ce jus gourmand fait souvent le buzz : il n’est pas encore au catalogue, mais écrivez-nous — nous vérifions la disponibilité ou une alternative tout aussi addictive.",
     similarCatalogIds: [11, 9, 10],
   },
   {
@@ -42,7 +39,7 @@ export const EXTERNAL_PERFUME_HINTS: ExternalPerfumeHint[] = [
     ],
     displayName: "Arabian Oud",
     caption:
-      "Grande maison du Golfe — non distribuée ici ; nous orientons vers des oud ou commandes possibles.",
+      "Grande maison du Golfe très recherchée : elle n’est pas encore sur notre vitrine en ligne, mais dites-nous la référence exacte — nous pouvons souvent la sourcer ou vous proposer un oud dans le même esprit.",
     similarCatalogIds: [13, 9, 16],
   },
   {
@@ -571,4 +568,5 @@ export const EXTERNAL_PERFUME_HINTS: ExternalPerfumeHint[] = [
       "Jeune floral — suggestions ou commande.",
     similarCatalogIds: [11, 21, 12],
   },
+  ...EXTERNAL_HINTS_EXTRA,
 ];
