@@ -113,7 +113,7 @@ export const HomePageClient = () => {
       {/* LA COLLECTION */}
       <main
         id="collection"
-        className="w-full flex-grow max-w-[1200px] mx-auto px-4 md:px-10 py-14 md:py-20"
+        className="w-full flex-grow max-w-[1200px] mx-auto px-4 md:px-10 py-14 pb-[max(3.5rem,env(safe-area-inset-bottom,0px))] md:py-20"
       >
         {/* Header */}
         <ScrollReveal className="mb-8 md:mb-12">
@@ -132,14 +132,15 @@ export const HomePageClient = () => {
         </ScrollReveal>
 
         {/* Onglets + tri + recherche — sticky pour parcourir de longs catalogues */}
-        <div className="sticky top-[52px] z-30 -mx-4 mb-6 border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)]/95 px-4 pb-3 backdrop-blur-md md:top-[68px] md:mx-0 md:px-0">
+        <div className="sticky z-30 -mx-4 mb-6 border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)]/95 px-4 pb-3 backdrop-blur-md [top:calc(env(safe-area-inset-top,0px)+3.625rem)] md:top-[calc(env(safe-area-inset-top,0px)+4.25rem)] md:mx-0 md:px-0">
           <ScrollReveal className="mb-0" delay={80}>
             <div className="no-scrollbar flex gap-0.5 overflow-x-auto border-b border-[var(--nurea-border)]/80">
               {categories.map((category) => (
                 <button
+                  type="button"
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`shrink-0 px-3.5 py-3 text-[11px] font-medium uppercase tracking-[0.12em] transition-all duration-300 relative md:px-4 md:py-3 md:text-[12px] ${
+                  className={`shrink-0 min-h-[44px] px-3.5 py-2.5 text-[11px] font-medium uppercase tracking-[0.12em] transition-all duration-300 relative md:px-4 md:py-3 md:text-[12px] touch-manipulation ${
                     selectedCategory === category
                       ? "text-[var(--nurea-accent)]"
                       : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
@@ -164,7 +165,8 @@ export const HomePageClient = () => {
               <select
                 value={sortKey}
                 onChange={(e) => setSortKey(e.target.value as SortKey)}
-                className="min-w-0 flex-1 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-[11px] font-medium normal-case tracking-normal text-[var(--nurea-text)] focus:outline-none focus:border-[var(--nurea-accent)]"
+                aria-label="Trier le catalogue"
+                className="min-h-[44px] min-w-0 flex-1 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-base font-medium normal-case tracking-normal text-[var(--nurea-text)] focus:outline-none focus:border-[var(--nurea-accent)] touch-manipulation md:text-[11px]"
               >
                 <option value="default">Ordre du catalogue</option>
                 <option value="name">Nom (A-Z)</option>
@@ -177,7 +179,7 @@ export const HomePageClient = () => {
               className="btn-nurea shrink-0 text-[10px] md:text-[11px]"
             >
               Affiner la recherche
-              {(hasActiveFilters || sortKey !== "default") && (
+              {hasActiveFilters && (
                 <span className="h-1.5 w-1.5 rounded-full bg-[var(--nurea-accent)]" />
               )}
             </button>
@@ -278,11 +280,12 @@ const FilterChip = ({
   <span className="inline-flex items-center gap-1.5 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-1.5 text-[10px] text-[var(--nurea-text)]">
     {label}
     <button
+      type="button"
       onClick={onRemove}
-      className="text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors"
+      className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors -mr-1"
       aria-label={`Retirer ${label}`}
     >
-      <X size={11} />
+      <X size={14} strokeWidth={1.5} />
     </button>
   </span>
 );

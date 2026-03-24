@@ -56,6 +56,15 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isOpen]);
+
   const [brandQuery, setBrandQuery] = useState("");
   useEffect(() => {
     if (!isOpen) setBrandQuery("");
@@ -100,7 +109,7 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
       </div>
 
       {/* Content */}
-      <div className="mx-auto flex-1 w-full max-w-2xl overflow-y-auto px-4 py-5 md:px-10 md:py-8">
+      <div className="mx-auto flex-1 w-full max-w-2xl overflow-y-auto overscroll-y-contain px-4 py-5 md:px-10 md:py-8">
         {/* Search input */}
         <div className="relative mb-8">
           <input
@@ -109,7 +118,8 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             autoFocus={isOpen}
-            className="w-full border-b border-[var(--nurea-border-hover)] bg-transparent py-3 font-serif italic text-[clamp(20px,4vw,32px)] text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] focus:outline-none focus:border-[var(--nurea-accent)] transition-colors duration-300"
+            enterKeyHint="search"
+            className="w-full border-b border-[var(--nurea-border-hover)] bg-transparent py-3 font-serif italic text-[clamp(20px,4vw,32px)] text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] focus:outline-none focus:border-[var(--nurea-accent)] transition-colors duration-300 touch-manipulation"
           />
           <Search
             size={16}
@@ -181,7 +191,7 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
                 onChange={(e) => setBrandQuery(e.target.value)}
                 placeholder="Filtrer les maisons..."
                 aria-label="Filtrer les maisons"
-                className="w-full border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-[12px] text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] focus:outline-none focus:border-[var(--nurea-accent)] transition-colors"
+                className="w-full min-h-[44px] border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-base text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] focus:outline-none focus:border-[var(--nurea-accent)] transition-colors touch-manipulation md:text-[12px]"
               />
             </div>
             {filteredBrands.length === 0 ? (
@@ -195,7 +205,7 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
                     <button
                       onClick={() => setSelectedBrand(brand)}
                       type="button"
-                      className={`text-left text-[12px] transition-colors duration-300 md:text-[13px] ${
+                      className={`flex min-h-[44px] w-full items-center text-left text-[13px] transition-colors duration-300 md:text-[13px] ${
                         selectedBrand === brand
                           ? "text-[var(--nurea-accent)] italic"
                           : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
@@ -218,7 +228,7 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
                   <button
                     onClick={() => setSelectedCategory(category)}
                     type="button"
-                    className={`text-[12px] transition-colors duration-300 md:text-[13px] ${
+                    className={`flex min-h-[44px] w-full items-center text-[13px] transition-colors duration-300 md:text-[13px] ${
                       selectedCategory === category
                         ? "text-[var(--nurea-accent)] italic"
                         : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
@@ -234,7 +244,7 @@ export const SearchOverlay: FC<SearchOverlayProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between border-t border-[var(--nurea-border)] px-4 py-3 md:px-10 md:py-4">
+      <div className="flex items-center justify-between border-t border-[var(--nurea-border)] px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:px-10 md:py-4">
         <div className="flex items-center gap-3">
           {hasActiveFilters && (
             <button

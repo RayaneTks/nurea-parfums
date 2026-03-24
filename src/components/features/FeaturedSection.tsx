@@ -84,7 +84,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                   perfume.name
                 )}
               </h2>
-              <p className="mb-8 text-[13px] leading-[1.85] text-[var(--nurea-text-muted)] max-w-[360px] md:text-[14px]">
+              <p className="mb-8 text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] max-w-[360px] md:text-[14px] md:leading-[1.85]">
                 Une fragrance d&apos;exception selectionnee pour sa singularite
                 et son caractere. Disponible sur commande exclusive.
               </p>

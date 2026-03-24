@@ -1,7 +1,7 @@
 "use client";
 
-import type { FC } from "react";
-import { useEffect, useState } from "react";
+import type { FC, KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { ArrowRight } from "lucide-react";
@@ -23,6 +23,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
 }) => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   useEffect(() => setMounted(true), []);
   const isDark = resolvedTheme === "dark";
   const isActive = activeItem === perfume.id;
@@ -30,6 +31,43 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
   const imageSrc = mounted
     ? getPerfumeImage(perfume, isDark ? "dark" : "light")
     : perfume.image;
+
+  /* Mobile / tactile : fermer au tap hors carte ; desktop : hover uniquement pour mouseLeave */
+  useEffect(() => {
+    if (!isActive) return;
+    let removeListener: (() => void) | undefined;
+    const t = window.setTimeout(() => {
+      const onOutside = (e: PointerEvent) => {
+        if (cardRef.current?.contains(e.target as Node)) return;
+        setActiveItem(null);
+      };
+      document.addEventListener("pointerdown", onOutside, true);
+      removeListener = () =>
+        document.removeEventListener("pointerdown", onOutside, true);
+    }, 120);
+    return () => {
+      window.clearTimeout(t);
+      removeListener?.();
+    };
+  }, [isActive, setActiveItem]);
+
+  const handleMouseLeave = () => {
+    if (typeof window === "undefined") return;
+    if (
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches
+    ) {
+      setActiveItem(null);
+    }
+  };
+
+  const toggleActive = () => setActiveItem(isActive ? null : perfume.id);
+
+  const onCardKeyDown = (e: ReactKeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggleActive();
+    }
+  };
 
   const whatsappIcon = isDark
     ? "/branding/icons/nurea_icon_whatsapp_ivory.svg"
@@ -49,11 +87,17 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
 
   return (
     <div
-      className={`group flex flex-col cursor-pointer card-hover ${
+      ref={cardRef}
+      role="button"
+      tabIndex={0}
+      aria-expanded={isActive}
+      aria-label={`${perfume.name}, ${perfume.brand}`}
+      className={`group flex flex-col cursor-pointer card-hover touch-manipulation ${
         featured ? "card-featured" : ""
       }`}
-      onClick={() => setActiveItem(isActive ? null : perfume.id)}
-      onMouseLeave={() => setActiveItem(null)}
+      onClick={toggleActive}
+      onMouseLeave={handleMouseLeave}
+      onKeyDown={onCardKeyDown}
     >
       {/* Image container */}
       <div className="relative aspect-[3/4] overflow-hidden bg-[var(--nurea-surface)]">
@@ -85,7 +129,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
 
         {/* Overlay CTA */}
         <div
-          className={`absolute inset-0 z-10 flex flex-col items-center justify-center p-4 card-overlay ${
+          className={`absolute inset-0 z-10 flex flex-col items-center justify-center p-3 sm:p-4 card-overlay ${
             isActive
               ? "opacity-100 pointer-events-auto backdrop-blur-2xl"
               : "opacity-0 pointer-events-none backdrop-blur-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-hover:backdrop-blur-2xl"
@@ -108,10 +152,10 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         >
           {isGammeComplete && perfume.classics ? (
             <div className="w-full flex h-full flex-col justify-center max-w-[260px]">
-              <p className="mb-3 text-center font-serif text-base text-[var(--nurea-text)] md:text-lg">
+              <p className="mb-3 text-center font-serif text-[15px] leading-snug text-[var(--nurea-text)] md:text-lg">
                 Classiques de la Maison
               </p>
-              <div className="flex flex-col gap-2 overflow-y-auto no-scrollbar max-h-[260px]">
+              <div className="flex flex-col gap-2 overflow-y-auto no-scrollbar max-h-[min(50vh,260px)]">
                 {perfume.classics.map((classic) => {
                   const msg = `Bonjour, je souhaite acquerir « ${classic} » de ${perfume.brand}.`;
                   return (
@@ -137,7 +181,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
             </div>
           ) : (
             <div className="w-full flex flex-col gap-2.5 max-w-[240px]">
-              <p className="mb-2 text-center font-serif text-base text-[var(--nurea-text)] md:text-lg">
+              <p className="mb-2 text-center font-serif text-[15px] leading-snug text-[var(--nurea-text)] md:text-lg">
                 Acquerir cette creation
               </p>
               <a
@@ -192,10 +236,10 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         <span className="mb-0.5 text-[9px] font-medium uppercase tracking-[0.25em] text-[var(--nurea-accent)] md:text-[10px]">
           {perfume.brand}
         </span>
-        <h3 className="font-serif text-[14px] text-[var(--nurea-text)] leading-tight md:text-[17px]">
+        <h3 className="font-serif text-[15px] text-[var(--nurea-text)] leading-snug md:text-[17px]">
           {perfume.name}
         </h3>
-        <span className="mt-1.5 text-[10px] uppercase tracking-[0.12em] text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-accent)] md:text-[11px]">
+        <span className="mt-1.5 text-[11px] uppercase tracking-[0.12em] text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-accent)] md:text-[11px]">
           {isGammeComplete ? "Decouvrir la gamme \u2192" : "Demander \u2192"}
         </span>
       </div>

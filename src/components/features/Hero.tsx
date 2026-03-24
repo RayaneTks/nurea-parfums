@@ -136,7 +136,7 @@ export const Hero: FC = () => {
           </em>
         </h1>
 
-        <p className="mb-10 max-w-sm text-[13px] leading-[1.85] text-[var(--nurea-text-muted)] md:text-[15px] md:max-w-md">
+        <p className="mb-10 max-w-sm text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] md:text-[15px] md:max-w-md">
           Des fragrances d&apos;exception selectionnees avec exigence.
           <br className="hidden md:block" />
           Un catalogue vivant, une invitation au voyage olfactif.
