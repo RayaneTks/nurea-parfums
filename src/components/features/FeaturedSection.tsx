@@ -97,7 +97,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                 rel="noopener noreferrer"
                 className="btn-nurea w-fit group"
               >
-                Acquérir cette création
+                Demander un conseil
                 <ArrowRight
                   size={13}
                   className="text-[var(--nurea-accent)] transition-transform duration-300 group-hover:-rotate-45"

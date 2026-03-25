@@ -18,6 +18,10 @@ interface ContactFormState {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+const MAX_NAME_LEN = 80;
+const MAX_SUBJECT_LEN = 120;
+const MAX_MESSAGE_LEN = 2000;
+const MAX_EMAIL_LEN = 120;
 
 export const ContactSection: FC = () => {
   const { resolvedTheme } = useTheme();
@@ -46,22 +50,35 @@ export const ContactSection: FC = () => {
     event.preventDefault();
     setServerError(null);
     const nextErrors: Partial<Record<keyof ContactFormState, string>> = {};
-    if (!formState.name.trim()) nextErrors.name = "Indiquez votre nom.";
-    if (!formState.email.trim()) nextErrors.email = "Indiquez votre e-mail.";
-    else if (!EMAIL_RE.test(formState.email.trim()))
+    const name = formState.name.trim();
+    const email = formState.email.trim();
+    const subject = formState.subject.trim();
+    const message = formState.message.trim();
+
+    if (!name) nextErrors.name = "Indiquez votre nom.";
+    else if (name.length > MAX_NAME_LEN)
+      nextErrors.name = `Nom trop long (max ${MAX_NAME_LEN} caractères).`;
+    if (!email) nextErrors.email = "Indiquez votre e-mail.";
+    else if (email.length > MAX_EMAIL_LEN)
+      nextErrors.email = `E-mail trop long (max ${MAX_EMAIL_LEN} caractères).`;
+    else if (!EMAIL_RE.test(email))
       nextErrors.email = "Format d’e-mail invalide.";
-    if (!formState.subject.trim()) nextErrors.subject = "Indiquez un sujet.";
-    if (!formState.message.trim()) nextErrors.message = "Écrivez votre message.";
+    if (!subject) nextErrors.subject = "Indiquez un sujet.";
+    else if (subject.length > MAX_SUBJECT_LEN)
+      nextErrors.subject = `Sujet trop long (max ${MAX_SUBJECT_LEN} caractères).`;
+    if (!message) nextErrors.message = "Écrivez votre message.";
+    else if (message.length > MAX_MESSAGE_LEN)
+      nextErrors.message = `Message trop long (max ${MAX_MESSAGE_LEN} caractères).`;
 
     setFieldErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     setIsSubmitting(true);
     const fd = new FormData();
-    fd.set("name", formState.name.trim());
-    fd.set("email", formState.email.trim());
-    fd.set("subject", formState.subject.trim());
-    fd.set("message", formState.message.trim());
+    fd.set("name", name);
+    fd.set("email", email);
+    fd.set("subject", subject);
+    fd.set("message", message);
 
     try {
       const result = await submitContactForm(fd);
@@ -112,6 +129,33 @@ export const ContactSection: FC = () => {
             dédiés. Pour toute acquisition ou conseil olfactif, nous nous tenons
             à votre entière disposition.
           </p>
+
+          <ul className="mx-auto mt-7 max-w-md space-y-2 text-[12px] leading-relaxed text-[var(--nurea-text-muted)] md:text-[13px]">
+            <li>
+              <span className="font-medium text-[var(--nurea-text)]">
+                Canal prioritaire :
+              </span>{" "}
+              WhatsApp
+            </li>
+            <li>
+              <span className="font-medium text-[var(--nurea-text)]">
+                Objectif :
+              </span>{" "}
+              trouver la bonne référence et la disponibilité
+            </li>
+            <li>
+              <span className="font-medium text-[var(--nurea-text)]">
+                Réponse :
+              </span>{" "}
+              rapide, selon votre canal
+            </li>
+            <li>
+              <span className="font-medium text-[var(--nurea-text)]">
+                Confidentialité :
+              </span>{" "}
+              aucune copie n’est stockée sur ce site
+            </li>
+          </ul>
         </ScrollReveal>
 
         <ScrollReveal direction="scale" className="flex justify-center mb-16 md:mb-24">
@@ -147,7 +191,7 @@ export const ContactSection: FC = () => {
               </span>
               <div className="flex-1 min-w-0">
                 <span className="block text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] mb-0.5 md:text-[11px]">
-                  Messages &amp; Commandes
+                  Demandes &amp; Commandes
                 </span>
                 <span className="font-serif text-base text-[var(--nurea-text)] md:text-lg">
                   WhatsApp
@@ -327,10 +371,9 @@ export const ContactSection: FC = () => {
                   </div>
 
                   <p className="text-[11px] leading-relaxed text-[var(--nurea-text-muted)]">
-                    Avec une clé Resend configurée sur le serveur, le message
-                    part directement vers la conciergerie. Sinon, votre
-                    messagerie s&apos;ouvre — aucune copie n&apos;est stockée
-                    sur ce site.
+                    Votre message est envoyé vers la conciergerie. Sinon,
+                    votre messagerie s&apos;ouvre. Dans tous les cas, aucune copie
+                    n&apos;est stockée sur ce site.
                   </p>
 
                   {serverError ? (
