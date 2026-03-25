@@ -154,26 +154,6 @@ export const Hero: FC = () => {
             className="transition-transform duration-500 group-hover:translate-y-1"
           />
         </a>
-
-        <p className="mt-6 max-w-md text-[13px] leading-[1.7] text-[var(--nurea-text-muted)] md:text-[14px]">
-          Catalogue sur commande. Conseils et disponibilités via la conciergerie
-          (WhatsApp, e-mail et Snapchat).
-        </p>
-
-        <ol className="mt-6 w-full max-w-md space-y-2 text-[12px] leading-relaxed text-[var(--nurea-text-muted)] md:text-[13px]">
-          <li>
-            <span className="font-medium text-[var(--nurea-text)]">1.</span>{" "}
-            Explorez le catalogue
-          </li>
-          <li>
-            <span className="font-medium text-[var(--nurea-text)]">2.</span>{" "}
-            Demandez via WhatsApp, e-mail ou Snapchat
-          </li>
-          <li>
-            <span className="font-medium text-[var(--nurea-text)]">3.</span>{" "}
-            Nous confirmons la disponibilité et les options proches
-          </li>
-        </ol>
       </div>
 
       {/* Bottom pulse line */}

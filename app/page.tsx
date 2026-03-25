@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { HomePageClient } from "@/components/home/HomePageClient";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -22,17 +23,16 @@ export const metadata: Metadata = {
   },
 };
 
-type SearchParams = Record<string, string | string[] | undefined>;
+function HomeFallback() {
+  return (
+    <div className="grain min-h-screen bg-[var(--nurea-bg)]" aria-busy="true" />
+  );
+}
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams?: Promise<SearchParams>;
-}) {
-  const sp = searchParams ? await searchParams : undefined;
-  const q = typeof sp?.q === "string" ? sp.q : undefined;
-  const cat = typeof sp?.cat === "string" ? sp.cat : undefined;
-  const sort = typeof sp?.sort === "string" ? sp.sort : undefined;
-
-  return <HomePageClient initialQ={q} initialCat={cat} initialSort={sort} />;
+export default function HomePage() {
+  return (
+    <Suspense fallback={<HomeFallback />}>
+      <HomePageClient />
+    </Suspense>
+  );
 }

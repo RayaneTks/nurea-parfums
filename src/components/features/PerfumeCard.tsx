@@ -144,7 +144,6 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         <div
           id={panelId}
           role="region"
-          aria-hidden={!isActive}
           aria-labelledby={`perfume-toggle-${perfume.id}`}
           className={`absolute inset-0 z-[15] flex min-h-0 flex-col items-stretch justify-center p-0 sm:p-1 card-overlay ${
             isActive
@@ -167,9 +166,6 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
             <div className="flex h-full min-h-0 w-full flex-col items-center px-2 pb-2 pt-3 sm:px-3 sm:pb-3 sm:pt-4">
               <p className="mb-2 w-full shrink-0 text-center font-serif text-[14px] leading-snug text-[var(--nurea-text)] sm:mb-3 sm:text-[15px] md:text-lg">
                 Classiques de la Maison
-              </p>
-              <p className="mb-3 w-full shrink-0 text-center text-[12px] leading-relaxed text-[var(--nurea-text-muted)]">
-                Disponibles sur commande
               </p>
               <div className="min-h-0 w-full max-w-[280px] flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
                 <div className="flex flex-col gap-2 pb-1">
@@ -199,10 +195,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
           ) : (
             <div className="mx-auto flex w-full max-w-[240px] flex-col gap-2.5 self-center px-3 py-2 sm:px-4">
               <p className="mb-2 text-center font-serif text-[15px] leading-snug text-[var(--nurea-text)] md:text-lg">
-                Demander un conseil
-              </p>
-              <p className="mb-1 text-center text-[12px] leading-relaxed text-[var(--nurea-text-muted)]">
-                La conciergerie vous guide vers la bonne référence — disponible sur commande.
+                Acquérir cette création
               </p>
               <a
                 href={getWhatsappLink(defaultMsg)}
@@ -267,9 +260,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
           {perfume.name}
         </span>
         <span className="mt-1.5 text-[11px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-accent)] md:text-[11px]">
-          {isGammeComplete
-            ? "Découvrir la gamme \u2192 Sur commande"
-            : "Demander un conseil \u2192 Sur commande"}
+          {isGammeComplete ? "Découvrir la gamme \u2192" : "Demander \u2192"}
         </span>
       </button>
     </article>

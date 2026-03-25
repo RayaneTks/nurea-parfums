@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/features/Hero";
@@ -52,7 +52,8 @@ type SortKey = "default" | "name" | "brand";
 
 const CATALOG_SEARCH_ID = "catalog-search";
 
-function categoryFromRaw(raw?: string | null): Category {
+function categoryFromSearchParams(p: URLSearchParams): Category {
+  const raw = p.get("cat");
   if (!raw) return "Tout voir";
   try {
     const decoded = decodeURIComponent(raw);
@@ -62,24 +63,22 @@ function categoryFromRaw(raw?: string | null): Category {
   }
 }
 
-function sortFromRaw(raw?: string | null): SortKey {
-  if (raw === "name" || raw === "brand") return raw;
+function sortFromSearchParams(p: URLSearchParams): SortKey {
+  const s = p.get("sort");
+  if (s === "name" || s === "brand") return s;
   return "default";
 }
 
-export interface HomePageClientProps {
-  initialQ?: string;
-  initialCat?: string;
-  initialSort?: string;
-}
-
-export const HomePageClient = ({ initialQ, initialCat, initialSort }: HomePageClientProps) => {
+export const HomePageClient = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const [searchTerm, setSearchTerm] = useState(() => initialQ?.trim() ?? "");
-  const [selectedCategory, setSelectedCategory] = useState<Category>(() => categoryFromRaw(initialCat));
-  const [sortKey, setSortKey] = useState<SortKey>(() => sortFromRaw(initialSort));
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get("q")?.trim() ?? "");
+  const [selectedCategory, setSelectedCategory] = useState<Category>(() =>
+    categoryFromSearchParams(searchParams)
+  );
+  const [sortKey, setSortKey] = useState<SortKey>(() => sortFromSearchParams(searchParams));
   const [scrolled, setScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState<number | null>(null);
 
@@ -96,23 +95,17 @@ export const HomePageClient = ({ initialQ, initialCat, initialSort }: HomePageCl
 
   /** Navigation interne / retour navigateur : réapplique l’URL sans scroll forcé vers le hero. */
   useEffect(() => {
-    const applyFromLocation = () => {
-      const p = new URLSearchParams(window.location.search);
-      const rawQ = p.get("q");
-      const rawCat = p.get("cat");
-      const rawSort = p.get("sort");
-
-      setSearchTerm(rawQ?.trim() ?? "");
-      setSelectedCategory(categoryFromRaw(rawCat));
-      setSortKey(sortFromRaw(rawSort));
-    };
-
-    // Sync once on mount, then on browser navigation (back/forward).
-    // We don't rely on `useSearchParams` to keep SSR markup meaningful.
-    applyFromLocation();
-    window.addEventListener("popstate", applyFromLocation);
-    return () => window.removeEventListener("popstate", applyFromLocation);
-  }, []);
+    const curr = searchParams.toString();
+    if (paramsStringRef.current === null) {
+      paramsStringRef.current = curr;
+      return;
+    }
+    if (paramsStringRef.current === curr) return;
+    paramsStringRef.current = curr;
+    setSearchTerm(searchParams.get("q")?.trim() ?? "");
+    setSelectedCategory(categoryFromSearchParams(searchParams));
+    setSortKey(sortFromSearchParams(searchParams));
+  }, [searchParams]);
 
   /** URL reflète filtres + tri (replace, sans scroll) — partageable et cohérent avec le bouton retour. */
   useEffect(() => {
@@ -123,21 +116,12 @@ export const HomePageClient = ({ initialQ, initialCat, initialSort }: HomePageCl
       if (selectedCategory !== "Tout voir") next.set("cat", selectedCategory);
       if (sortKey !== "default") next.set("sort", sortKey);
       const qs = next.toString();
-
-      const currentQs = window.location.search.replace(/^\?/, "");
       const href = qs ? `${pathname}?${qs}` : pathname;
-
-      if (paramsStringRef.current === null) {
-        paramsStringRef.current = currentQs;
-        return;
-      }
-      if (currentQs === qs) return;
-
-      paramsStringRef.current = qs;
+      if (qs === searchParams.toString()) return;
       router.replace(href, { scroll: false });
     }, 280);
     return () => window.clearTimeout(t);
-  }, [searchTerm, selectedCategory, sortKey, pathname, router]);
+  }, [searchTerm, selectedCategory, sortKey, pathname, router, searchParams]);
 
   const featuredPerfumes = useMemo(
     () => mockPerfumes.filter((p) => FEATURED_IDS.includes(p.id)),
@@ -294,7 +278,7 @@ export const HomePageClient = ({ initialQ, initialCat, initialSort }: HomePageCl
               La Collection
             </h2>
             <span className="mt-1.5 block text-[11px] tracking-[0.1em] text-[var(--nurea-text-muted)]">
-              Résultats : {filteredPerfumes.length} création
+              {filteredPerfumes.length} création
               {filteredPerfumes.length !== 1 ? "s" : ""}
             </span>
           </div>
@@ -451,7 +435,7 @@ export const HomePageClient = ({ initialQ, initialCat, initialSort }: HomePageCl
                   rel="noopener noreferrer"
                   className="btn-nurea text-[10px] md:text-[11px]"
                 >
-                  Demander un conseil via WhatsApp
+                  Demander par WhatsApp
                 </a>
                 <Link
                   href="/contact"
