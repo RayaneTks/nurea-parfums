@@ -1,5 +1,7 @@
 # Développement — Nuréa Parfums
 
+**Contexte projet détaillé (architecture, pièges, recherche)** : voir **[CLAUDE.md](CLAUDE.md)** à la racine du dépôt.
+
 ## Prérequis
 
 - Node.js (LTS recommandé)
