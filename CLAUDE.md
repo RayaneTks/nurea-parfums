@@ -1,6 +1,10 @@
 # CLAUDE.md
 
-Ce fichier centralise le **contexte projet** pour les assistants (Claude Code, Cursor, etc.) et les contributeurs : commandes, architecture, conventions et pièges connus — à relire en début de session pour limiter les incohérences.
+Ce fichier centralise le **contexte projet** pour les assistants et les contributeurs : commandes, architecture, conventions et pièges connus — à relire en début de session pour limiter les incohérences.
+
+## Policy (commit & artefacts)
+- Ne jamais ajouter de mentions d'outil d'assistance ou de génération (ex. suffixes du type “Made-with: …”) dans les messages de commit.
+- Ne pas mentionner de génération automatique (et éviter tout terme lié à un outil d’assistance) dans les messages/artefacts du projet.
 
 Voir aussi **[DEVELOPER.md](DEVELOPER.md)** (commandes et arborescence courte).
 
