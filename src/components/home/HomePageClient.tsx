@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
@@ -22,7 +22,28 @@ import {
   EXTERNAL_SEARCH_FALLBACK_MESSAGE,
   CONTACT,
   type Category,
+  type ExternalPerfumeHint,
 } from "@/lib/data";
+
+function ExternalSearchFootnote({ hint }: { hint: ExternalPerfumeHint }) {
+  const mode = hint.footnote ?? "default";
+  if (mode === "none") return null;
+  if (mode === "legacy-offline") {
+    return (
+      <p className="text-[12px] leading-relaxed text-[var(--nurea-text-subtle)] mt-3">
+        Ce parfum ou cette maison n&apos;est pas présenté en fiche individuelle
+        sur notre vitrine en ligne — la conciergerie peut vérifier une commande
+        ou une alternative proche.
+      </p>
+    );
+  }
+  return (
+    <p className="text-[12px] leading-relaxed text-[var(--nurea-text-subtle)] mt-3">
+      Un conseil ou une commande précise : nos canaux ci-dessous complètent ce
+      que vous voyez dans le catalogue.
+    </p>
+  );
+}
 
 /* Parfums signature pour la section featured editorial */
 const FEATURED_IDS = [9, 10]; // Baccarat Rouge 540 & Aventus
@@ -62,12 +83,9 @@ export const HomePageClient = () => {
   const [activeItem, setActiveItem] = useState<number | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const isFirstLayoutRef = useRef(true);
-  const prevFeaturedRef = useRef(true);
-  const collectionAnchorYRef = useRef<number | null>(null);
-  /** Position viewport du haut du catalogue tant que la section « À la une » est affichée (compensation au masquage). */
-  const collectionViewportTopWhenFeaturedRef = useRef<number | null>(null);
   const paramsStringRef = useRef<string | null>(null);
+  const catalogScrollSkipRef = useRef(true);
+  const searchScrollSkipRef = useRef(true);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -148,57 +166,38 @@ export const HomePageClient = () => {
 
   const showFeatured = !hasCollectionFilters;
 
-  /** Tant que la section « À la une » est masquée, mémorise la position du catalogue pour compenser le saut quand elle réapparaît. */
-  useLayoutEffect(() => {
-    if (!showFeatured) {
-      const el = document.getElementById("collection");
-      if (el) {
-        collectionAnchorYRef.current = el.getBoundingClientRect().top + window.scrollY;
-      }
-    }
-  });
+  const scrollCatalogIntoView = useCallback(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById("collection")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    });
+  }, []);
 
-  /** Tant que la section featured est visible : garde la distance catalogue / haut de fenêtre pour ancrer le scroll au filtrage. */
-  useLayoutEffect(() => {
-    const el = document.getElementById("collection");
-    if (!el || !showFeatured) return;
-    collectionViewportTopWhenFeaturedRef.current = el.getBoundingClientRect().top;
-  });
-
-  /**
-   * Featured masquée / réaffichée : compense la hauteur retirée ou ajoutée pour ne pas déplacer le catalogue dans le viewport
-   * (évite scrollIntoView qui sautait vers le haut du bloc même quand on était déjà sur le catalogue).
-   */
-  useLayoutEffect(() => {
-    if (isFirstLayoutRef.current) {
-      isFirstLayoutRef.current = false;
-      prevFeaturedRef.current = showFeatured;
+  /** Filtre / tri / recherche : ramener la vue en haut du catalogue (première ligne de cartes). */
+  useEffect(() => {
+    if (catalogScrollSkipRef.current) {
+      catalogScrollSkipRef.current = false;
       return;
     }
-    const prev = prevFeaturedRef.current;
-    prevFeaturedRef.current = showFeatured;
-    if (prev && !showFeatured) {
-      const el = document.getElementById("collection");
-      const T_old = collectionViewportTopWhenFeaturedRef.current;
-      if (el && T_old != null) {
-        const T_new = el.getBoundingClientRect().top;
-        const d = T_old - T_new;
-        if (Math.abs(d) > 0.5) {
-          window.scrollBy({ top: d, left: 0, behavior: "auto" });
-        }
-      }
-    } else if (!prev && showFeatured) {
-      const before = collectionAnchorYRef.current;
-      const el = document.getElementById("collection");
-      if (el && before != null) {
-        const after = el.getBoundingClientRect().top + window.scrollY;
-        const delta = after - before;
-        if (Math.abs(delta) > 0.5) {
-          window.scrollTo({ top: window.scrollY + delta, behavior: "auto" });
-        }
-      }
+    setActiveItem(null);
+    scrollCatalogIntoView();
+  }, [selectedCategory, sortKey, scrollCatalogIntoView]);
+
+  useEffect(() => {
+    if (searchScrollSkipRef.current) {
+      searchScrollSkipRef.current = false;
+      return;
     }
-  }, [showFeatured]);
+    const id = window.setTimeout(() => {
+      setActiveItem(null);
+      scrollCatalogIntoView();
+    }, 420);
+    return () => window.clearTimeout(id);
+  }, [searchTerm, scrollCatalogIntoView]);
 
   const handleResetFilters = useCallback(() => {
     setSearchTerm("");
@@ -249,7 +248,7 @@ export const HomePageClient = () => {
   }, []);
 
   return (
-    <div className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
+    <div id="main-content" className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
       <Navbar scrolled={scrolled} onOpenSearch={focusCatalogSearch} />
 
       {/* HERO */}
@@ -267,7 +266,7 @@ export const HomePageClient = () => {
       {/* LA COLLECTION */}
       <main
         id="collection"
-        className="scroll-mt-[calc(env(safe-area-inset-top,0px)+3.75rem)] md:scroll-mt-[calc(env(safe-area-inset-top,0px)+4.5rem)] w-full flex-grow max-w-[1200px] mx-auto px-4 md:px-10 py-14 pb-[max(3.5rem,env(safe-area-inset-bottom,0px))] md:py-20"
+        className="scroll-mt-[calc(env(safe-area-inset-top,0px)+3.75rem)] md:scroll-mt-[calc(env(safe-area-inset-top,0px)+4.5rem)] w-full flex-grow max-w-[1200px] mx-auto px-4 md:px-10 py-16 pb-[max(3.5rem,env(safe-area-inset-bottom,0px))] md:py-24"
       >
         {/* Header */}
         <ScrollReveal className="mb-8 md:mb-12">
@@ -279,7 +278,7 @@ export const HomePageClient = () => {
               La Collection
             </h2>
             <span className="mt-1.5 block text-[11px] tracking-[0.1em] text-[var(--nurea-text-muted)]">
-              {filteredPerfumes.length} creation
+              {filteredPerfumes.length} création
               {filteredPerfumes.length !== 1 ? "s" : ""}
             </span>
           </div>
@@ -329,7 +328,7 @@ export const HomePageClient = () => {
                   type="button"
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`shrink-0 min-h-[44px] px-3.5 py-2.5 text-[11px] font-medium uppercase tracking-[0.12em] transition-all duration-300 relative md:px-4 md:py-3 md:text-[12px] touch-manipulation ${
+                  className={`shrink-0 min-h-[44px] px-3.5 py-2.5 text-[11px] font-medium uppercase tracking-nurea-label transition-all duration-300 relative md:px-4 md:py-3 md:text-[12px] touch-manipulation ${
                     selectedCategory === category
                       ? "text-[var(--nurea-accent)]"
                       : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
@@ -368,7 +367,7 @@ export const HomePageClient = () => {
         {/* Active filters */}
         {hasActiveFilters && (
           <div className="mb-6 flex flex-wrap items-center gap-1.5 animate-fade-in-up">
-            <span className="mr-1 text-[10px] uppercase tracking-[0.2em] text-[var(--nurea-text-muted)]">
+            <span className="mr-1 text-[10px] uppercase tracking-nurea-wide text-[var(--nurea-text-muted)]">
               Filtres :
             </span>
             {searchTerm.trim() !== "" && (
@@ -392,7 +391,7 @@ export const HomePageClient = () => {
             <button
               type="button"
               onClick={handleResetFilters}
-              className="ml-1 min-h-[44px] px-1 text-[10px] uppercase tracking-[0.12em] text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors touch-manipulation"
+              className="ml-1 min-h-[44px] px-1 text-[10px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors touch-manipulation"
             >
               Tout effacer
             </button>
@@ -415,11 +414,9 @@ export const HomePageClient = () => {
                       ? externalHint.caption
                       : EXTERNAL_SEARCH_FALLBACK_MESSAGE}
                   </p>
-                  {externalHint && (
-                    <p className="text-[12px] leading-relaxed text-[var(--nurea-text-subtle)] mt-3">
-                      Ce parfum ou cette maison n’est pas encore affiché sur notre catalogue en ligne — la conciergerie peut vérifier une commande ou une alternative proche.
-                    </p>
-                  )}
+                  {externalHint ? (
+                    <ExternalSearchFootnote hint={externalHint} />
+                  ) : null}
                 </>
               ) : (
                 <>
@@ -456,13 +453,14 @@ export const HomePageClient = () => {
                     : "Inspirations"}
                 </p>
                 <div className="catalogue-grid stagger-grid">
-                  {inspirationWhenEmpty.map((perfume) => (
+                  {inspirationWhenEmpty.map((perfume, index) => (
                     <PerfumeCard
                       key={perfume.id}
                       perfume={perfume}
                       activeItem={activeItem}
                       setActiveItem={setActiveItem}
-                      featured={perfume.category === "Gammes Complètes"}
+                      featured={perfume.category === "Gammes Compl\u00e8tes"}
+                      imagePriority={index < 6}
                     />
                   ))}
                 </div>
@@ -471,15 +469,16 @@ export const HomePageClient = () => {
           </div>
         ) : (
           <div className="catalogue-grid stagger-grid">
-            {sortedPerfumes.map((perfume) => (
-              <PerfumeCard
-                key={perfume.id}
-                perfume={perfume}
-                activeItem={activeItem}
-                setActiveItem={setActiveItem}
-                featured={perfume.category === "Gammes Compl\u00e8tes"}
-              />
-            ))}
+                  {sortedPerfumes.map((perfume, index) => (
+                    <PerfumeCard
+                      key={perfume.id}
+                      perfume={perfume}
+                      activeItem={activeItem}
+                      setActiveItem={setActiveItem}
+                      featured={perfume.category === "Gammes Compl\u00e8tes"}
+                      imagePriority={index < 6}
+                    />
+                  ))}
           </div>
         )}
       </main>
@@ -489,7 +488,7 @@ export const HomePageClient = () => {
   );
 };
 
-/* Filter chip */
+/* Filter chip — toute la puce = cible 44px+ (accessibilité tactile) */
 const FilterChip = ({
   label,
   onRemove,
@@ -497,15 +496,18 @@ const FilterChip = ({
   label: string;
   onRemove: () => void;
 }) => (
-  <span className="inline-flex items-center gap-1.5 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-1.5 text-[10px] text-[var(--nurea-text)]">
-    {label}
-    <button
-      type="button"
-      onClick={onRemove}
-      className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors -mr-1"
-      aria-label={`Retirer ${label}`}
-    >
-      <X size={14} strokeWidth={1.5} />
-    </button>
-  </span>
+  <button
+    type="button"
+    onClick={onRemove}
+    className="inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-sm border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-left text-[10px] text-[var(--nurea-text)] transition-colors hover:border-[var(--nurea-accent)] active:scale-[0.99]"
+    aria-label={`Retirer le filtre ${label}`}
+  >
+    <span className="min-w-0 flex-1 truncate">{label}</span>
+    <X
+      size={14}
+      strokeWidth={1.5}
+      className="shrink-0 text-[var(--nurea-text-muted)]"
+      aria-hidden
+    />
+  </button>
 );

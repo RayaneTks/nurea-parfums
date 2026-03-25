@@ -53,7 +53,7 @@ audit-*.png
 Visuel.png
 screen.png
 
-# Outils agents locaux
+# Outils / dossiers locaux optionnels
 .claude/
 .omc/
 .superpowers/

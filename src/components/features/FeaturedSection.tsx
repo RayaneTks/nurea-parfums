@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { ArrowRight } from "lucide-react";
 import type { Perfume } from "@/lib/data";
 import { CONTACT, getPerfumeImage } from "@/lib/data";
+import { NUREA_IMAGE_BLUR_DATA_URL } from "@/lib/blurPlaceholder";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
 interface FeaturedSectionProps {
@@ -17,7 +18,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const activeTheme = resolvedTheme === "dark" ? "dark" : "light";
+  const activeTheme = resolvedTheme === "light" ? "light" : "dark";
 
   const getWhatsappLink = (msg: string) => {
     const num = CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? "";
@@ -47,6 +48,8 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover"
                 priority={index === 0}
+                placeholder="blur"
+                blurDataURL={NUREA_IMAGE_BLUR_DATA_URL}
               />
               {perfume.tags && (
                 <div className="absolute left-3 top-3 z-10 md:left-4 md:top-4">
@@ -66,7 +69,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
             <ScrollReveal
               direction={isReverse ? "left" : "right"}
               delay={120}
-              className="flex flex-col justify-center bg-[var(--nurea-surface)] px-6 py-12 md:px-14 md:py-20 lg:px-20"
+              className="flex flex-col justify-center bg-[var(--nurea-surface)] px-6 py-16 md:px-14 md:py-24 lg:px-20"
             >
               <span className="mb-3 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
                 {perfume.brand}
@@ -85,8 +88,8 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                 )}
               </h2>
               <p className="mb-8 text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] max-w-[360px] md:text-[14px] md:leading-[1.85]">
-                Une fragrance d&apos;exception selectionnee pour sa singularite
-                et son caractere. Disponible sur commande exclusive.
+                Une fragrance d&apos;exception sélectionnée pour sa singularité
+                et son caractère. Disponible sur commande exclusive.
               </p>
               <a
                 href={getWhatsappLink(msg)}
@@ -94,7 +97,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                 rel="noopener noreferrer"
                 className="btn-nurea w-fit group"
               >
-                Acquerir cette creation
+                Acquérir cette création
                 <ArrowRight
                   size={13}
                   className="text-[var(--nurea-accent)] transition-transform duration-300 group-hover:-rotate-45"

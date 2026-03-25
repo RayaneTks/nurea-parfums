@@ -22,7 +22,10 @@ export const MarquePageClient = () => {
   return (
     <div className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
       <Navbar scrolled={scrolled} />
-      <main className="mx-auto w-full max-w-[720px] flex-1 px-4 py-16 md:px-10 md:py-24">
+      <main
+        id="main-content"
+        className="mx-auto w-full max-w-[720px] flex-1 px-4 py-16 md:px-10 md:py-24"
+      >
         <ScrollReveal>
           <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
             Identité

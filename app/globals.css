@@ -10,6 +10,15 @@
 @layer base {
   /* ─── Dark mode (default) ─────────────────────────────── */
   :root {
+    /* Échelle typo (référence design system — adoption progressive dans les composants) */
+    --nurea-text-caption: 0.625rem;
+    --nurea-text-label: 0.6875rem;
+    --nurea-text-body-sm: 0.8125rem;
+    --nurea-text-body: 0.9375rem;
+    --nurea-tracking-tight: -0.02em;
+    --nurea-tracking-label: 0.12em;
+    --nurea-tracking-wide: 0.2em;
+
     --nurea-bg: #0A0508;
     --nurea-surface: #140E12;
     --nurea-surface-hover: #1C1418;
@@ -100,7 +109,7 @@
   transition:
     opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
+
 }
 .scroll-reveal.revealed {
   opacity: 1;
@@ -113,7 +122,7 @@
   transition:
     opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
+
 }
 .scroll-reveal-left.revealed {
   opacity: 1;
@@ -126,7 +135,7 @@
   transition:
     opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
+
 }
 .scroll-reveal-right.revealed {
   opacity: 1;
@@ -139,7 +148,7 @@
   transition:
     opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
+
 }
 .scroll-reveal-scale.revealed {
   opacity: 1;
@@ -163,11 +172,6 @@
 @keyframes heroPulse {
   0%, 100% { opacity: 0.15; }
   50% { opacity: 0.6; }
-}
-
-@keyframes heroMonogramFloat {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.03; }
-  50% { transform: translate(-50%, -50%) scale(1.015); opacity: 0.045; }
 }
 
 .hero-stagger > *:nth-child(1) { animation: heroFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both; }
@@ -229,7 +233,7 @@
 .catalogue-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  gap: 18px;
 }
 @media (min-width: 768px) {
   .catalogue-grid {
@@ -260,6 +264,12 @@
   background-repeat: repeat;
   background-size: 128px 128px;
   mix-blend-mode: overlay;
+}
+@media (max-width: 767px) {
+  .grain::after {
+    opacity: 0.014;
+    mix-blend-mode: soft-light;
+  }
 }
 
 /* Aligné sur la hauteur réelle du header (Navbar) — pas de bande qui dépasse sous la barre */
@@ -316,6 +326,24 @@
 .stagger-grid > *:nth-child(10) { animation-delay: 0.40s; }
 .stagger-grid > *:nth-child(11) { animation-delay: 0.44s; }
 .stagger-grid > *:nth-child(12) { animation-delay: 0.48s; }
+.stagger-grid > *:nth-child(13) { animation-delay: 0.52s; }
+.stagger-grid > *:nth-child(14) { animation-delay: 0.56s; }
+.stagger-grid > *:nth-child(15) { animation-delay: 0.60s; }
+.stagger-grid > *:nth-child(16) { animation-delay: 0.64s; }
+.stagger-grid > *:nth-child(17) { animation-delay: 0.68s; }
+.stagger-grid > *:nth-child(18) { animation-delay: 0.72s; }
+.stagger-grid > *:nth-child(19) { animation-delay: 0.76s; }
+.stagger-grid > *:nth-child(20) { animation-delay: 0.80s; }
+.stagger-grid > *:nth-child(21) { animation-delay: 0.84s; }
+.stagger-grid > *:nth-child(22) { animation-delay: 0.88s; }
+.stagger-grid > *:nth-child(23) { animation-delay: 0.92s; }
+.stagger-grid > *:nth-child(24) { animation-delay: 0.96s; }
+.stagger-grid > *:nth-child(25) { animation-delay: 1.00s; }
+.stagger-grid > *:nth-child(26) { animation-delay: 1.04s; }
+.stagger-grid > *:nth-child(27) { animation-delay: 1.08s; }
+.stagger-grid > *:nth-child(28) { animation-delay: 1.12s; }
+.stagger-grid > *:nth-child(29) { animation-delay: 1.16s; }
+.stagger-grid > *:nth-child(30) { animation-delay: 1.20s; }
 
 /* ═══════════════════════════════════════════════════════════
    CTA BUTTONS
@@ -326,6 +354,7 @@
   align-items: center;
   gap: 10px;
   border: 1px solid var(--nurea-border-hover);
+  border-radius: 2px;
   padding: 14px 24px;
   font-size: 11px;
   font-weight: 500;
@@ -388,5 +417,14 @@
   .scroll-reveal-scale {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* View Transitions API (activé via next.config experimental.viewTransition) */
+@supports (view-transition-name: root) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.38s;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
 }

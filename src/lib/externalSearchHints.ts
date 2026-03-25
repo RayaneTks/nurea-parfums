@@ -202,6 +202,7 @@ export const EXTERNAL_PERFUME_HINTS: ExternalPerfumeHint[] = [
     caption:
       "Gamme Rabanne complète chez nous — Phantom sur demande.",
     similarCatalogIds: [1, 11],
+    footnote: "none",
   },
   {
     id: "invictus",
@@ -210,6 +211,7 @@ export const EXTERNAL_PERFUME_HINTS: ExternalPerfumeHint[] = [
     caption:
       "Classique Rabanne — inclus dans notre gamme marque.",
     similarCatalogIds: [1, 11],
+    footnote: "none",
   },
   {
     id: "le-male",
@@ -259,6 +261,7 @@ export const EXTERNAL_PERFUME_HINTS: ExternalPerfumeHint[] = [
     caption:
       "Inclus dans la gamme Rabanne — commande possible.",
     similarCatalogIds: [1, 11],
+    footnote: "none",
   },
 
   /* —— Niche / TikTok / luxe —— */

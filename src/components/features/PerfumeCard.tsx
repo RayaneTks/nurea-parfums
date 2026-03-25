@@ -1,18 +1,20 @@
 "use client";
 
 import type { FC, KeyboardEvent as ReactKeyboardEvent } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { ArrowRight } from "lucide-react";
 import type { Perfume } from "@/lib/data";
 import { CONTACT, getPerfumeImage } from "@/lib/data";
+import { NUREA_IMAGE_BLUR_DATA_URL } from "@/lib/blurPlaceholder";
 
 interface PerfumeCardProps {
   perfume: Perfume;
   activeItem: number | null;
   setActiveItem: (id: number | null) => void;
   featured?: boolean;
+  imagePriority?: boolean;
 }
 
 export const PerfumeCard: FC<PerfumeCardProps> = ({
@@ -20,19 +22,22 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
   activeItem,
   setActiveItem,
   featured = false,
+  imagePriority = false,
 }) => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLElement>(null);
+  const toggleId = useId().replace(/:/g, "");
+  const panelId = `perfume-cta-${perfume.id}-${toggleId}`;
+
   useEffect(() => setMounted(true), []);
-  const isDark = resolvedTheme === "dark";
+  const isDark = resolvedTheme !== "light";
   const isActive = activeItem === perfume.id;
   const isGammeComplete = perfume.category === "Gammes Compl\u00e8tes";
   const imageSrc = mounted
     ? getPerfumeImage(perfume, isDark ? "dark" : "light")
     : perfume.image;
 
-  /* Mobile / tactile : fermer au tap hors carte ; desktop : hover uniquement pour mouseLeave */
   useEffect(() => {
     if (!isActive) return;
     let removeListener: (() => void) | undefined;
@@ -51,9 +56,18 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
     };
   }, [isActive, setActiveItem]);
 
+  useEffect(() => {
+    if (!isActive) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActiveItem(null);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isActive, setActiveItem]);
+
   const toggleActive = () => setActiveItem(isActive ? null : perfume.id);
 
-  const onCardKeyDown = (e: ReactKeyboardEvent) => {
+  const onToggleKeyDown = (e: ReactKeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       toggleActive();
@@ -77,21 +91,13 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
   const defaultMsg = `Bonjour, je souhaite des informations sur « ${perfume.name} » de ${perfume.brand}.`;
 
   return (
-    <div
+    <article
       ref={cardRef}
-      role="button"
-      tabIndex={0}
-      aria-expanded={isActive}
-      aria-label={`${perfume.name}, ${perfume.brand}`}
-      className={`group flex flex-col cursor-pointer card-hover touch-manipulation ${
+      className={`group flex flex-col card-hover touch-manipulation ${
         featured ? "card-featured" : ""
       }`}
-      onClick={toggleActive}
-      onKeyDown={onCardKeyDown}
     >
-      {/* Image container */}
       <div className="relative aspect-[3/4] overflow-hidden bg-[var(--nurea-surface)]">
-        {/* Tags — masqués quand l’overlay est ouvert (sinon z-20 au-dessus du panneau, surtout gênant sur mobile) */}
         {perfume.tags && (
           <div
             data-testid="perfume-tag-strip"
@@ -121,20 +127,30 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
               : "(max-width: 768px) 50vw, 33vw"
           }
           className="object-cover card-image-zoom"
+          placeholder="blur"
+          blurDataURL={NUREA_IMAGE_BLUR_DATA_URL}
+          priority={imagePriority}
         />
 
-        {/* Overlay CTA — z-[15] pour rester au-dessus des tags si jamais visibles */}
+        {/* Couche pointeur : ouvre/ferme sans rôle « bouton » englobant les liens */}
         <div
+          className={`absolute inset-0 z-[8] md:cursor-pointer ${
+            isActive ? "pointer-events-none" : ""
+          }`}
+          onClick={toggleActive}
+          aria-hidden="true"
+        />
+
+        <div
+          id={panelId}
+          role="region"
+          aria-labelledby={`perfume-toggle-${perfume.id}`}
           className={`absolute inset-0 z-[15] flex min-h-0 flex-col items-stretch justify-center p-0 sm:p-1 card-overlay ${
             isActive
               ? "opacity-100 pointer-events-auto backdrop-blur-2xl"
               : "pointer-events-none opacity-0 backdrop-blur-none md:group-hover:opacity-100 md:group-hover:backdrop-blur-2xl"
           }`}
-          style={
-            isActive
-              ? { backgroundColor: overlayBg }
-              : undefined
-          }
+          style={isActive ? { backgroundColor: overlayBg } : undefined}
           onMouseEnter={(e) => {
             if (window.innerWidth >= 768) {
               e.currentTarget.style.backgroundColor = overlayBg;
@@ -147,22 +163,21 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
           }}
         >
           {isGammeComplete && perfume.classics ? (
-            <div className="flex h-full min-h-0 w-full max-w-[min(100%,280px)] flex-col px-3 pb-3 pt-4 sm:px-4 sm:pb-4 sm:pt-5">
-              <p className="mb-2 shrink-0 text-center font-serif text-[14px] leading-snug text-[var(--nurea-text)] sm:mb-3 sm:text-[15px] md:text-lg">
+            <div className="flex h-full min-h-0 w-full flex-col items-center px-2 pb-2 pt-3 sm:px-3 sm:pb-3 sm:pt-4">
+              <p className="mb-2 w-full shrink-0 text-center font-serif text-[14px] leading-snug text-[var(--nurea-text)] sm:mb-3 sm:text-[15px] md:text-lg">
                 Classiques de la Maison
               </p>
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
+              <div className="min-h-0 w-full max-w-[280px] flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
                 <div className="flex flex-col gap-2 pb-1">
                   {perfume.classics.map((classic) => {
-                    const msg = `Bonjour, je souhaite acquerir « ${classic} » de ${perfume.brand}.`;
+                    const msg = `Bonjour, je souhaite acquérir « ${classic} » de ${perfume.brand}.`;
                     return (
                       <a
                         key={classic}
                         href={getWhatsappLink(msg)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="group/btn flex w-full min-h-[44px] shrink-0 items-center justify-between border border-[var(--nurea-border-hover)] px-3 py-2.5 text-[11px] uppercase tracking-[0.12em] text-[var(--nurea-text)] transition-all duration-300 hover:bg-[var(--nurea-accent-subtle)] hover:border-[var(--nurea-accent)] sm:px-4 sm:py-3 md:text-[12px] md:px-5"
+                        className="group/btn flex w-full min-h-[44px] shrink-0 items-center justify-between border border-[var(--nurea-border-hover)] px-3 py-2.5 text-[11px] uppercase tracking-nurea-label text-[var(--nurea-text)] transition-all duration-300 hover:bg-[var(--nurea-accent-subtle)] hover:border-[var(--nurea-accent)] sm:px-4 sm:py-3 md:text-[12px] md:px-5"
                       >
                         <span className="min-w-0 flex-1 truncate pr-2 text-left font-medium">
                           {classic}
@@ -180,21 +195,21 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
           ) : (
             <div className="mx-auto flex w-full max-w-[240px] flex-col gap-2.5 self-center px-3 py-2 sm:px-4">
               <p className="mb-2 text-center font-serif text-[15px] leading-snug text-[var(--nurea-text)] md:text-lg">
-                Acquerir cette creation
+                Acquérir cette création
               </p>
               <a
                 href={getWhatsappLink(defaultMsg)}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="group/btn flex w-full items-center justify-between border border-[var(--nurea-border-hover)] px-4 py-3 text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--nurea-text)] transition-all duration-300 hover:bg-[var(--nurea-accent-subtle)] hover:border-[var(--nurea-accent)] md:text-[11px] md:px-5 md:py-3.5 min-h-[44px]"
+                className="group/btn flex w-full items-center justify-between border border-[var(--nurea-border-hover)] px-4 py-3 text-[10px] font-medium uppercase tracking-nurea-wide text-[var(--nurea-text)] transition-all duration-300 hover:bg-[var(--nurea-accent-subtle)] hover:border-[var(--nurea-accent)] md:text-[11px] md:px-5 md:py-3.5 min-h-[44px]"
               >
                 <span className="flex items-center gap-2.5">
                   <Image
                     src={whatsappIcon}
                     alt=""
-                    width={20}
-                    height={20}
+                    width={22}
+                    height={22}
+                    className="h-[22px] w-[22px] shrink-0 object-contain"
                   />
                   WhatsApp
                 </span>
@@ -207,15 +222,15 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
                 href={CONTACT.snapchat}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="group/btn flex w-full items-center justify-between border border-[var(--nurea-border-hover)] px-4 py-3 text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--nurea-text)] transition-all duration-300 hover:bg-[var(--nurea-snapchat)]/10 hover:border-[var(--nurea-snapchat)] md:text-[11px] md:px-5 md:py-3.5 min-h-[44px]"
+                className="group/btn flex w-full items-center justify-between border border-[var(--nurea-border-hover)] px-4 py-3 text-[10px] font-medium uppercase tracking-nurea-wide text-[var(--nurea-text)] transition-all duration-300 hover:bg-[var(--nurea-snapchat)]/10 hover:border-[var(--nurea-snapchat)] md:text-[11px] md:px-5 md:py-3.5 min-h-[44px]"
               >
                 <span className="flex items-center gap-2.5">
                   <Image
                     src={snapchatIcon}
                     alt=""
-                    width={20}
-                    height={20}
+                    width={24}
+                    height={24}
+                    className="h-7 w-7 shrink-0 object-contain"
                   />
                   Snapchat
                 </span>
@@ -229,18 +244,25 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         </div>
       </div>
 
-      {/* Info */}
-      <div className="flex flex-col pt-3 md:pt-3.5">
+      <button
+        type="button"
+        id={`perfume-toggle-${perfume.id}`}
+        aria-expanded={isActive}
+        aria-controls={panelId}
+        className="flex w-full flex-col border-0 bg-transparent p-0 pt-3 text-left text-[var(--nurea-text)] outline-none md:pt-3.5"
+        onClick={toggleActive}
+        onKeyDown={onToggleKeyDown}
+      >
         <span className="mb-0.5 text-[9px] font-medium uppercase tracking-[0.25em] text-[var(--nurea-accent)] md:text-[10px]">
           {perfume.brand}
         </span>
-        <h3 className="font-serif text-[15px] text-[var(--nurea-text)] leading-snug md:text-[17px]">
+        <span className="font-serif text-[15px] leading-snug md:text-[17px]">
           {perfume.name}
-        </h3>
-        <span className="mt-1.5 text-[11px] uppercase tracking-[0.12em] text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-accent)] md:text-[11px]">
-          {isGammeComplete ? "Decouvrir la gamme \u2192" : "Demander \u2192"}
         </span>
-      </div>
-    </div>
+        <span className="mt-1.5 text-[11px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-accent)] md:text-[11px]">
+          {isGammeComplete ? "Découvrir la gamme \u2192" : "Demander \u2192"}
+        </span>
+      </button>
+    </article>
   );
 };

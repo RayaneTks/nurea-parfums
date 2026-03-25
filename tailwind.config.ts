@@ -39,11 +39,16 @@ export default {
       },
       borderRadius: {
         lg: "0px",
-        md: "0px",
-        sm: "0px",
+        md: "2px",
+        sm: "2px",
       },
       transitionTimingFunction: {
         "out-expo": "cubic-bezier(0.16, 1, 0.3, 1)",
+      },
+      letterSpacing: {
+        "nurea-tight": "var(--nurea-tracking-tight)",
+        "nurea-label": "var(--nurea-tracking-label)",
+        "nurea-wide": "var(--nurea-tracking-wide)",
       },
     },
   },

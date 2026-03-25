@@ -10,7 +10,8 @@ export const Hero: FC = () => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const isDark = resolvedTheme === "dark";
+  /** SSR + 1er rendu client : `resolvedTheme` est souvent `undefined` → aligné sur `defaultTheme="dark"` du provider. */
+  const isDark = resolvedTheme !== "light";
   const showThemeContent = mounted;
 
   const handleScroll = (e: MouseEvent<HTMLAnchorElement>) => {
@@ -85,7 +86,6 @@ export const Hero: FC = () => {
           className="w-[280px] h-[280px] md:w-[440px] md:h-[440px] lg:w-[540px] lg:h-[540px] select-none"
           style={{
             opacity: isDark ? 0.04 : 0.045,
-            animation: "heroMonogramFloat 10s ease-in-out infinite",
           }}
         />
       </div>
@@ -124,7 +124,7 @@ export const Hero: FC = () => {
 
       {/* Content */}
       <div className="hero-stagger relative z-10 flex max-w-2xl flex-col items-center text-center px-5">
-        <span className="mb-5 text-[11px] font-medium uppercase tracking-[0.45em] text-[var(--nurea-accent)] md:text-[12px]">
+        <span className="mb-5 text-[11px] font-medium uppercase tracking-nurea-wide text-[var(--nurea-accent)] md:text-[12px]">
           Maison de Parfums
         </span>
 
@@ -132,12 +132,12 @@ export const Hero: FC = () => {
           L&apos;Art de la
           <br />
           <em className="not-italic" style={{ fontStyle: "italic" }}>
-            Seduction
+            Séduction
           </em>
         </h1>
 
         <p className="mb-10 max-w-sm text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] md:text-[15px] md:max-w-md">
-          Des fragrances d&apos;exception selectionnees avec exigence.
+          Des fragrances d&apos;exception sélectionnées avec exigence.
           <br className="hidden md:block" />
           Un catalogue vivant, une invitation au voyage olfactif.
         </p>
@@ -145,10 +145,10 @@ export const Hero: FC = () => {
         <a
           href="#collection"
           onClick={handleScroll}
-          className="btn-nurea group"
-          aria-label="Decouvrir la collection"
+          className="btn-nurea btn-accent group shadow-[0_0_40px_-8px_var(--nurea-glow)]"
+          aria-label="Découvrir la collection"
         >
-          Decouvrir la Collection
+          Découvrir la Collection
           <ChevronDown
             size={14}
             className="transition-transform duration-500 group-hover:translate-y-1"

@@ -12,17 +12,15 @@ export const Footer: FC = () => {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const isDark = resolvedTheme === "dark";
+  const isDark = resolvedTheme !== "light";
 
   return (
     <footer className="relative mt-auto border-t border-[var(--nurea-border)] bg-[var(--nurea-bg)]">
-      {/* Top accent line */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-1/2 top-0 -translate-x-1/2 h-[1px] w-[50%] bg-gradient-to-r from-transparent via-[var(--nurea-accent)] to-transparent opacity-15" />
       </div>
 
       <div className="mx-auto max-w-[1200px] px-4 py-16 md:px-10 md:py-20">
-        {/* Monogram */}
         <ScrollReveal direction="scale" className="flex flex-col items-center gap-6 mb-12">
           {mounted && (
             <Image
@@ -47,66 +45,73 @@ export const Footer: FC = () => {
           />
         </ScrollReveal>
 
-        {/* Social links */}
-        <ScrollReveal className="flex items-center justify-center gap-12 mb-12" delay={80}>
-          <a
-            href={CONTACT.whatsapp}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex flex-col items-center gap-2 transition-all duration-300"
-            aria-label="WhatsApp"
-          >
-            <span className="flex h-16 w-16 items-center justify-center border border-[var(--nurea-border-hover)] transition-all duration-300 group-hover:border-[var(--nurea-accent)] group-hover:bg-[var(--nurea-accent-subtle)]">
-              <Image
-                src={
-                  isDark
-                    ? "/branding/icons/nurea_icon_whatsapp_ivory.svg"
-                    : "/branding/icons/nurea_icon_whatsapp_bordeaux.svg"
-                }
-                alt="WhatsApp"
-                width={26}
-                height={26}
-                className="transition-transform duration-300 group-hover:scale-110"
+        <ScrollReveal className="mb-12" delay={80}>
+          <div className="mx-auto grid max-w-lg grid-cols-2 items-start justify-items-center gap-x-8 sm:gap-x-14">
+            <a
+              href={CONTACT.whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex w-full max-w-[140px] flex-col items-center gap-2.5 text-center transition-all duration-300 active:scale-[0.97]"
+              aria-label="WhatsApp"
+            >
+              <span className="flex h-[72px] w-[72px] shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-all duration-300 group-hover:border-[var(--nurea-accent)] group-hover:bg-[var(--nurea-accent-subtle)]">
+                <Image
+                  src={
+                    isDark
+                      ? "/branding/icons/nurea_icon_whatsapp_ivory.svg"
+                      : "/branding/icons/nurea_icon_whatsapp_bordeaux.svg"
+                  }
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 object-contain"
+                />
+              </span>
+              <span className="text-[10px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-accent)] md:text-[11px]">
+                WhatsApp
+              </span>
+              <span
+                className="min-h-[1.125rem] w-full shrink-0"
+                aria-hidden
               />
-            </span>
-            <span className="text-[10px] uppercase tracking-[0.2em] text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-accent)] md:text-[11px]">
-              WhatsApp
-            </span>
-          </a>
+            </a>
 
-          <a
-            href={CONTACT.snapchat}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex flex-col items-center gap-2 transition-all duration-300"
-            aria-label="Snapchat"
-          >
-            <span className="flex h-16 w-16 items-center justify-center border border-[var(--nurea-border-hover)] transition-all duration-300 group-hover:border-[var(--nurea-snapchat)] group-hover:bg-[var(--nurea-snapchat)]/5">
-              <Image
-                src={
-                  isDark
-                    ? "/branding/icons/nurea_icon_snapchat_ivory.svg"
-                    : "/branding/icons/nurea_icon_snapchat_bordeaux.svg"
-                }
-                alt="Snapchat"
-                width={26}
-                height={26}
-                className="transition-transform duration-300 group-hover:scale-110"
-              />
-            </span>
-            <span className="text-[10px] uppercase tracking-[0.2em] text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-snapchat)] md:text-[11px]">
-              Snapchat
-            </span>
-          </a>
+            <a
+              href={CONTACT.snapchat}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex w-full max-w-[140px] flex-col items-center gap-2.5 text-center transition-all duration-300 active:scale-[0.97]"
+              aria-label="Snapchat"
+            >
+              <span className="flex h-[72px] w-[72px] shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-all duration-300 group-hover:border-[var(--nurea-snapchat)] group-hover:bg-[var(--nurea-snapchat)]/5">
+                <Image
+                  src={
+                    isDark
+                      ? "/branding/icons/nurea_icon_snapchat_ivory.svg"
+                      : "/branding/icons/nurea_icon_snapchat_bordeaux.svg"
+                  }
+                  alt=""
+                  width={44}
+                  height={44}
+                  className="h-11 w-11 object-contain"
+                />
+              </span>
+              <span className="text-[10px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-snapchat)] md:text-[11px]">
+                Snapchat
+              </span>
+              <span className="text-[9px] leading-tight tracking-nurea-tight text-[var(--nurea-text-subtle)] md:text-[10px]">
+                {CONTACT.snapchatHandle}
+              </span>
+            </a>
+          </div>
         </ScrollReveal>
 
-        {/* Navigation & text */}
         <ScrollReveal className="flex flex-col items-center gap-4 text-center" delay={160}>
           <p className="font-serif text-sm italic text-[var(--nurea-text-muted)] md:text-base">
             Maison de Haute Parfumerie
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] md:text-[12px]">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] md:text-[12px]">
             <Link
               href="/"
               className="transition-colors duration-300 hover:text-[var(--nurea-accent)] py-1"
@@ -127,9 +132,9 @@ export const Footer: FC = () => {
             </Link>
           </div>
 
-          <p className="mt-1 text-[10px] tracking-[0.12em] text-[var(--nurea-text-subtle)]">
+          <p className="mt-1 text-[10px] tracking-nurea-label text-[var(--nurea-text-subtle)]">
             &copy; {new Date().getFullYear()} Nurea Parfums. Tous droits
-            reserves.
+            réservés.
           </p>
         </ScrollReveal>
       </div>

@@ -6,7 +6,13 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { createPortal } from "react-dom";
 import { Menu, Moon, Search, Sun, X } from "lucide-react";
-import { useEffect, useState, type FC } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FC,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 
 interface NavbarProps {
   scrolled: boolean;
@@ -18,13 +24,60 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const menuPanelRef = useRef<HTMLDivElement>(null);
+  const prevMenuOpen = useRef(false);
 
   useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    if (prevMenuOpen.current && !menuOpen) {
+      menuButtonRef.current?.focus();
+    }
+    prevMenuOpen.current = menuOpen;
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const id = window.requestAnimationFrame(() => {
+      menuPanelRef.current
+        ?.querySelector<HTMLElement>("button, a")
+        ?.focus();
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [menuOpen]);
+
+  const handleMenuKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      closeMenu();
+      return;
+    }
+    if (e.key !== "Tab" || !menuPanelRef.current) return;
+    const list = [
+      ...menuPanelRef.current.querySelectorAll<HTMLElement>(
+        "a[href], button:not([disabled])"
+      ),
+    ];
+    if (list.length === 0) return;
+    const first = list[0];
+    const last = list[list.length - 1];
+    const active = document.activeElement;
+    if (e.shiftKey) {
+      if (active === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else if (active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
 
   const isHome = pathname === "/";
   const isContact = pathname === "/contact";
   const isMarque = pathname === "/marque";
-  const isDark = resolvedTheme === "dark";
+  const isDark = resolvedTheme !== "light";
 
   const toggleTheme = () => setTheme(isDark ? "light" : "dark");
   const closeMenu = () => setMenuOpen(false);
@@ -53,6 +106,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
       <div className="relative z-10 mx-auto flex min-h-[58px] max-w-[1200px] items-center justify-between px-4 md:min-h-[68px] md:px-10">
         {/* Burger — mobile only */}
         <button
+          ref={menuButtonRef}
           type="button"
           className="md:hidden -ml-1 flex h-11 w-11 shrink-0 items-center justify-center text-[var(--nurea-text-muted)] transition-all hover:text-[var(--nurea-text)] active:scale-95"
           onClick={() => setMenuOpen(true)}
@@ -123,7 +177,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
             type="button"
             onClick={toggleTheme}
             className="relative hidden h-11 w-11 items-center justify-center text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-text)] md:flex"
-            aria-label="Basculer le theme"
+            aria-label="Basculer le thème"
           >
             {mounted ? (
               isDark ? (
@@ -172,12 +226,15 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
 
             {/* Full-screen panel */}
             <div
+              ref={menuPanelRef}
+              onKeyDown={handleMenuKeyDown}
               className={`fixed inset-0 z-[61] flex flex-col bg-[var(--nurea-bg)] pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] transition-all duration-500 ease-out-expo md:hidden ${
                 menuOpen
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 -translate-y-full pointer-events-none"
               }`}
               role="dialog"
+              aria-modal="true"
               aria-label="Menu principal"
               aria-hidden={!menuOpen}
               {...(!menuOpen ? { inert: true as unknown as boolean } : {})}
@@ -192,7 +249,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenSearch }) => {
                     type="button"
                     onClick={toggleTheme}
                     className="flex h-11 w-11 items-center justify-center text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-text)]"
-                    aria-label="Basculer le theme"
+                    aria-label="Basculer le thème"
                   >
                     {mounted &&
                       (isDark ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />)}

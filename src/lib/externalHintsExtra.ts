@@ -466,6 +466,7 @@ export const EXTERNAL_HINTS_EXTRA: ExternalPerfumeHint[] = [
     caption:
       "Gamme Rabanne chez nous — Fame sur demande.",
     similarCatalogIds: [1, 11, 9],
+    footnote: "none",
   },
   {
     id: "jean-paul-le-beau",

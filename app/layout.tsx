@@ -14,7 +14,7 @@ import { GFS_Didot, Inter } from "next/font/google";
 
 const serif = GFS_Didot({
   weight: "400",
-  subsets: ["greek"],
+  subsets: ["greek", "latin"],
   variable: "--font-serif",
   display: "swap",
 });
@@ -25,7 +25,8 @@ const sans = Inter({
   display: "swap",
 });
 
-const ogImage = `${SITE_URL}/branding/monogram/logo1_monogram_circle_bordeaux_1024.svg`;
+/** OG dynamique 1200×630 — voir `app/opengraph-image.tsx` */
+const ogImage = "/opengraph-image";
 
 export const viewport: Viewport = {
   themeColor: "#0A0508",
@@ -73,9 +74,9 @@ export const metadata: Metadata = {
     images: [
       {
         url: ogImage,
-        width: 1024,
-        height: 1024,
-        alt: `${SITE_NAME} — monogramme`,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} — ${SITE_TAGLINE}`,
       },
     ],
   },
@@ -93,10 +94,20 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="fr" className="dark" suppressHydrationWarning>
+    <html
+      lang="fr"
+      className="dark transition-colors duration-300 ease-out"
+      suppressHydrationWarning
+    >
       <body
-        className={`${serif.variable} ${sans.variable} font-sans antialiased`}
+        className={`${serif.variable} ${sans.variable} font-sans antialiased transition-colors duration-300 ease-out`}
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-[var(--nurea-accent)] focus:text-white focus:px-4 focus:py-2 focus:text-sm"
+        >
+          Aller au contenu principal
+        </a>
         <RootJsonLd />
         <div className="nurea-viewport-top-shield" aria-hidden />
         <ThemeProvider>{children}</ThemeProvider>
