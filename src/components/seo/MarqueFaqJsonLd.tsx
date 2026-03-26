@@ -27,7 +27,7 @@ export function MarqueFaqJsonLd() {
         name: `${SITE_NAME} est-il une marque indépendante ?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `${SITE_NAME} est une maison de haute parfumerie indépendante. D'autres marques ou orthographes similaires sur Internet sont des acteurs distincts ; seul le domaine et la conciergerie officiels garantissent nos services.`,
+          text: `${SITE_NAME} est une maison de haute parfumerie indépendante. D'autres marques ou orthographes similaires sur Internet sont des acteurs distincts ; seul le domaine officiel et le contact avec la maison garantissent nos services.`,
         },
       },
       {
@@ -35,7 +35,7 @@ export function MarqueFaqJsonLd() {
         name: "Je ne trouve pas un parfum dans le catalogue, que faire ?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Contactez la conciergerie (page Contact ou WhatsApp) : nous pouvons vous orienter ou rechercher une fragrance sur commande selon les disponibilités.",
+          text: "Écrivez depuis la page Contact : nous pouvons vous orienter ou rechercher une fragrance sur commande selon les disponibilités.",
         },
       },
     ],

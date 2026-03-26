@@ -3,10 +3,11 @@
 import type { FC } from "react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useTheme } from "next-themes";
 import { ArrowRight } from "lucide-react";
 import type { Perfume } from "@/lib/data";
-import { CONTACT, getPerfumeImage } from "@/lib/data";
+import { getPerfumeImage } from "@/lib/data";
 import { NUREA_IMAGE_BLUR_DATA_URL } from "@/lib/blurPlaceholder";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
@@ -21,15 +22,9 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
 
   const activeTheme = resolvedTheme === "light" ? "light" : "dark";
 
-  const getWhatsappLink = (msg: string) => {
-    const num = CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? "";
-    return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
-  };
-
   return (
     <section className="w-full">
       {perfumes.map((perfume, index) => {
-        const msg = `Bonjour, je souhaite poursuivre l'échange autour de « ${perfume.name} » de ${perfume.brand}.`;
         const isReverse = index % 2 !== 0;
 
         return (
@@ -92,23 +87,17 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                 )}
               </h2>
               <p className="mb-8 max-w-[420px] text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] md:text-[14px] md:leading-[1.85]">
-                Deux signatures qui donnent le ton de la maison. Le catalogue
-                agit comme une vitrine: nous confirmons avec vous la
-                disponibilité, les arrivages et les options directement en
-                conciergerie.
+                Deux signatures qui donnent le ton de la maison. Ici, une
+                vitrine : disponibilités, arrivages et options se confirment
+                avec vous.
               </p>
-              <a
-                href={getWhatsappLink(msg)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-nurea group w-fit"
-              >
-                Continuer sur WhatsApp
+              <Link href="/contact" className="btn-nurea group w-fit">
+                Nous contacter
                 <ArrowRight
                   size={13}
                   className="text-[var(--nurea-accent)] transition-transform duration-300 group-hover:-rotate-45"
                 />
-              </a>
+              </Link>
             </ScrollReveal>
           </div>
         );

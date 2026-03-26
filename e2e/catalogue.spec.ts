@@ -92,9 +92,7 @@ test.describe("Catalogue — parcours principaux", () => {
     }
   });
 
-  test("carte individuelle : options WhatsApp / Snapchat visibles", async ({
-    page,
-  }) => {
+  test("carte individuelle : lien vers la page Contact", async ({ page }) => {
     await page
       .getByRole("button", { name: "Sélections Individuelles" })
       .click();
@@ -107,8 +105,9 @@ test.describe("Catalogue — parcours principaux", () => {
     const panel = activeArticle(page).getByRole("region");
     await expect(panel).toBeVisible();
     await expect(panel.getByText("Continuer l'échange")).toBeVisible();
-    await expect(panel.getByRole("link", { name: /WhatsApp/i })).toBeVisible();
-    await expect(panel.getByRole("link", { name: /Snapchat/i })).toBeVisible();
+    const contact = panel.getByRole("link", { name: /Nous contacter/i });
+    await expect(contact).toBeVisible();
+    await expect(contact).toHaveAttribute("href", "/contact");
   });
 
   test("raccourci recherche : défile vers le catalogue et focus le champ", async ({
@@ -168,7 +167,7 @@ test.describe("Catalogue — recherche API (mock, sans beforeEach parent)", () =
       timeout: 8000,
     });
     await expect(
-      page.getByText(/Vous recherchez « Maison Test ZzApiMockParfum » \?/i)
+      page.getByText(/Vous cherchez « ZzApiMockParfum » \?/i)
     ).toBeVisible();
   });
 
@@ -201,7 +200,7 @@ test.describe("Navigation & thème", () => {
   test("page Contact accessible", async ({ page }) => {
     await page.goto("/contact");
     await expect(page).toHaveURL(/\/contact/);
-    await expect(page.getByText(/Conciergerie Privée/i)).toBeVisible();
+    await expect(page.getByText(/Maison Nurea Parfums/i)).toBeVisible();
     await expect(
       page.getByRole("heading", { level: 1, name: /L'Art de/i })
     ).toBeVisible();

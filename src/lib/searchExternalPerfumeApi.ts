@@ -88,7 +88,8 @@ export function scoreExternalPerfumeRelevance(
   return 0;
 }
 
-function parseHits(payload: unknown): RawHit[] {
+/** Extrait une liste de parfums depuis plusieurs formes de JSON (Fraganty, APIs génériques). */
+export function parseExternalPerfumePayload(payload: unknown): RawHit[] {
   if (!payload || typeof payload !== "object") return [];
   const o = payload as Record<string, unknown>;
 
@@ -195,7 +196,7 @@ export async function searchExternalPerfumeApi(
     } catch {
       return { outcome: "error" };
     }
-    const hits = parseHits(json);
+    const hits = parseExternalPerfumePayload(json);
 
     let best: { suggestion: ExternalPerfumeSuggestion; score: number } | null = null;
 

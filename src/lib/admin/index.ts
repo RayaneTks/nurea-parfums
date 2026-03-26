@@ -1,6 +1,7 @@
 /**
- * Module réservé au futur back-office (auth, CRUD catalogue, file d’import).
- * Les tables Prisma correspondantes : AdminUser, AuditLog, ExternalImportSuggestion.
+ * Back-office : tables Prisma AdminUser, AuditLog, ExternalImportSuggestion.
+ * UI : /admin — API : /api/admin/* (session JWT cookie, hors login).
  */
 
-export const ADMIN_MODULE_PLACEHOLDER = true;
+export { ADMIN_COOKIE, signAdminToken, verifyAdminToken } from "./session";
+export { requireAdmin, canEdit, requireEditor } from "./requireAdmin";

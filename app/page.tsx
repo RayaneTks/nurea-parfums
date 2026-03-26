@@ -6,7 +6,7 @@ import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Collection",
-  description: `${SITE_NAME} — catalogue officiel : parfums d'exception, gammes complètes et conciergerie. Recherche « nurea parfums », « nurea parfum » ou ${SITE_URL.replace("https://", "")}.`,
+  description: `${SITE_NAME} — catalogue officiel : parfums d'exception et gammes complètes. Disponibilités avec la maison via la page Contact. Recherche « nurea parfums », « nurea parfum » ou ${SITE_URL.replace("https://", "")}.`,
   keywords: [
     "Nurea Parfums catalogue",
     "nurea parfum",

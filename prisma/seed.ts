@@ -1,20 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { mockPerfumes, normalizeForFuzzy } from "../src/lib/data";
+import { brandSlug, perfumeSlug } from "../src/lib/slugify";
 
 const prisma = new PrismaClient();
-
-function slugifySegment(s: string): string {
-  const x = normalizeForFuzzy(s).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  return x || "x";
-}
-
-function brandSlug(name: string): string {
-  return slugifySegment(name);
-}
-
-function perfumeSlug(id: number, name: string, brandName: string): string {
-  return `p-${id}-${slugifySegment(brandName)}-${slugifySegment(name)}`.slice(0, 180);
-}
 
 async function main() {
   const brandNames = [...new Set(mockPerfumes.map((p) => p.brand))].sort((a, b) =>

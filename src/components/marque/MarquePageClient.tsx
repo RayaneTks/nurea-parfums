@@ -15,11 +15,11 @@ const steps = [
   },
   {
     title: "Confirmer avec la maison",
-    body: "Disponibilités, arrivages, variantes ou recommandations se confirment directement avec la conciergerie.",
+    body: "Disponibilités, arrivages, variantes ou recommandations se confirment en direct avec Nurea Parfums.",
   },
   {
     title: "Poursuivre l’échange",
-    body: "WhatsApp, Snapchat ou e-mail prolongent le parcours de manière plus personnelle, selon votre préférence.",
+    body: "La page Contact regroupe messagerie instantanée et e-mail : vous choisissez le canal qui vous convient.",
   },
 ];
 
@@ -50,8 +50,8 @@ export const MarquePageClient = () => {
           </h1>
           <p className="mt-4 text-[15px] leading-relaxed text-[var(--nurea-text-muted)]">
             {SITE_NAME} est une maison de haute parfumerie indépendante. Le
-            site officiel centralise notre catalogue vivant, la présentation de
-            nos références et l’accès direct à la conciergerie.
+            site officiel présente la sélection et les références du moment, et
+            relie à la maison pour tout ce qui dépasse la vitrine.
           </p>
           <p className="mt-4 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
             Pour nous retrouver en ligne, vérifiez toujours l’orthographe{" "}
@@ -60,8 +60,8 @@ export const MarquePageClient = () => {
             <strong className="font-medium text-[var(--nurea-text)]">
               {domain}
             </strong>
-            . C’est le seul site qui rassemble la collection, l’univers de
-            marque et la conciergerie officielle.
+            . C’est le seul site qui rassemble la collection, l’univers de marque
+            et le contact officiel avec la maison.
           </p>
         </ScrollReveal>
 
@@ -137,7 +137,7 @@ export const MarquePageClient = () => {
               <dd className="mt-2 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
                 Non. Le catalogue reste une vitrine éditoriale. Certaines
                 références, arrivages ou alternatives se confirment uniquement
-                en conversation avec la conciergerie.
+                en conversation avec la maison.
               </dd>
             </div>
             <div>
@@ -145,15 +145,15 @@ export const MarquePageClient = () => {
                 Je ne trouve pas un parfum dans le catalogue, que faire ?
               </dt>
               <dd className="mt-2 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-                Contactez la conciergerie depuis la{" "}
+                Passez par la{" "}
                 <Link
                   href="/contact"
                   className="text-[var(--nurea-accent)] underline-offset-4 hover:underline"
                 >
                   page Contact
                 </Link>{" "}
-                ou via WhatsApp. Nous pourrons vous orienter ou vérifier une
-                référence plus précisément.
+                : nous vous orientons ou vérifions une référence plus
+                précisément.
               </dd>
             </div>
           </dl>
@@ -168,7 +168,7 @@ export const MarquePageClient = () => {
               href="/contact"
               className="border border-[var(--nurea-border-hover)] px-5 py-3 text-[10px] uppercase tracking-[0.15em] text-[var(--nurea-text-muted)] transition-colors hover:border-[var(--nurea-accent)] hover:text-[var(--nurea-accent)]"
             >
-              Écrire à la conciergerie
+              Nous contacter
             </Link>
           </div>
         </ScrollReveal>

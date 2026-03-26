@@ -6,7 +6,7 @@ export const SITE_SHORT_NAME = "Nurea";
 export const SITE_TAGLINE = "Maison de Haute Parfumerie";
 
 export const DEFAULT_DESCRIPTION =
-  "Nurea Parfums — maison de haute parfumerie. Catalogue de fragrances d'exception, sélection privée et conciergerie sur commande (WhatsApp). Site officiel nureaparfums.com.";
+  "Nurea Parfums — maison de haute parfumerie. Catalogue de fragrances d'exception, sélection privée ; disponibilités et commandes se confirment avec la maison. Site officiel nureaparfums.com.";
 
 /**
  * Noms alternatifs pour schema.org et cohérence SEO (recherches avec/sans « s », fautes fréquentes).
@@ -38,7 +38,7 @@ export const SEO_KEYWORDS: string[] = [
   "maison Nurea",
   "parfumerie Nurea",
   "parfums Nurea",
-  "conciergerie parfum",
+  "contact parfumerie Nurea",
   "parfums de luxe",
   "haute parfumerie",
 ];

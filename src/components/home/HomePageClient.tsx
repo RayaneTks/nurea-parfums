@@ -19,20 +19,15 @@ import {
   getPerfumesByIds,
   compareSearchRelevance,
   EXTERNAL_SEARCH_FALLBACK_MESSAGE,
-  CONTACT,
   type Category,
   type ExternalPerfumeHint,
   type Perfume,
 } from "@/lib/data";
+import { formatExternalSuggestionDisplay } from "@/lib/formatExternalSuggestionDisplay";
 import type {
   ExternalPerfumeSuggestion,
   PerfumeSearchResponse,
 } from "@/lib/perfumeSearchTypes";
-
-function formatApiSuggestionLabel(s: ExternalPerfumeSuggestion): string {
-  if (!s.brand || s.brand === "—") return s.name;
-  return `${s.brand} ${s.name}`;
-}
 
 type SearchFallbackState =
   | { kind: "idle" }
@@ -46,16 +41,16 @@ function ExternalSearchFootnote({ hint }: { hint: ExternalPerfumeHint }) {
   if (mode === "legacy-offline") {
     return (
       <p className="mt-3 text-[12px] leading-relaxed text-[var(--nurea-text-subtle)]">
-        Ce parfum ou cette maison n&apos;est pas présenté en fiche individuelle
-        sur notre vitrine en ligne. La conciergerie peut vérifier une commande
-        ou proposer une alternative proche.
+        Ce parfum ou cette maison n&apos;est pas présenté en fiche sur la
+        vitrine. Écrivez-nous : la maison confirme commandes et alternatives
+        possibles.
       </p>
     );
   }
   return (
     <p className="mt-3 text-[12px] leading-relaxed text-[var(--nurea-text-subtle)]">
-      Un conseil ou une commande précise : nos canaux ci-dessous complètent ce
-      que vous voyez dans le catalogue.
+      Pour un conseil ou une commande précise, passez par la page Contact :
+      nous reprenons l&apos;échange avec vous.
     </p>
   );
 }
@@ -280,7 +275,10 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
   const inspirationWhenEmpty = useMemo(() => {
     if (!searchTerm.trim()) return catalogPerfumes.slice(0, 6);
     if (apiSuggestion) {
-      const label = formatApiSuggestionLabel(apiSuggestion);
+      const label = formatExternalSuggestionDisplay(
+        apiSuggestion,
+        searchTerm.trim()
+      );
       return suggestSimilarPerfumes(label, catalogPerfumes, 6);
     }
     if (externalHint) {
@@ -302,15 +300,6 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
     }
     return [];
   }, [searchTerm, externalHint, apiSuggestion, catalogPerfumes]);
-
-  const conciergeWhatsappHref = useMemo(() => {
-    const num = CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? "";
-    const label = apiSuggestion
-      ? formatApiSuggestionLabel(apiSuggestion)
-      : externalHint?.displayName ?? (searchTerm.trim() || "une référence");
-    const msg = `Bonjour, je cherche « ${label} ». Pouvez-vous me confirmer la disponibilité ou me proposer une alternative ?`;
-    return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
-  }, [searchTerm, externalHint, apiSuggestion]);
 
   const focusCatalogSearch = useCallback(() => {
     document
@@ -355,9 +344,9 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
               {filteredPerfumes.length !== 1 ? "s" : ""}
             </span>
             <p className="mt-3 max-w-xl text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
-              Explorez les maisons et les références présentées ici, puis
-              reprenez l&apos;échange avec la conciergerie pour confirmer une
-              disponibilité, un arrivage ou une recommandation.
+              Maisons et références en vitrine : pour une disponibilité, un
+              arrivage ou un avis, écrivez à la maison Nurea Parfums via la page
+              Contact.
             </p>
           </div>
         </ScrollReveal>
@@ -495,13 +484,17 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
                       className="rounded-sm border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-6 text-left md:px-8 md:py-8"
                     >
                       <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
-                        Vous recherchez « {formatApiSuggestionLabel(apiSuggestion)} »
-                        ?
+                        Vous cherchez «{" "}
+                        {formatExternalSuggestionDisplay(
+                          apiSuggestion,
+                          searchTerm.trim()
+                        )}
+                        » ?
                       </p>
                       <p className="mb-4 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
-                        Cette référence n&apos;est pas encore en fiche sur notre
-                        vitrine en ligne. La conciergerie peut confirmer une
-                        disponibilité, un arrivage ou une alternative proche.
+                        Cette référence n&apos;est pas encore en fiche ici.
+                        La maison Nurea Parfums peut confirmer une disponibilité,
+                        un arrivage ou une alternative : contactez-nous.
                       </p>
                       <button
                         type="button"
@@ -547,19 +540,11 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
                 </>
               )}
               <div className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-                <a
-                  href={conciergeWhatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-nurea text-[10px] md:text-[11px]"
-                >
-                  Continuer sur WhatsApp
-                </a>
                 <Link
                   href="/contact"
-                  className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-accent)]"
+                  className="btn-nurea text-[10px] md:text-[11px]"
                 >
-                  Conciergerie
+                  Nous contacter
                 </Link>
               </div>
             </div>

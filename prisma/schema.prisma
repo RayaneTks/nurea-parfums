@@ -149,7 +149,7 @@ model SearchExternalCache {
 
 model AdminUser {
   id           String     @id @default(cuid())
-  email        String     @unique
+  username     String     @unique
   passwordHash String
   role         AdminRole  @default(EDITOR)
   createdAt    DateTime   @default(now())

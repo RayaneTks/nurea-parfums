@@ -3,6 +3,23 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+function supabaseImageRemotes() {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!raw) return [];
+  try {
+    const { hostname } = new URL(raw);
+    return [
+      {
+        protocol: "https",
+        hostname,
+        pathname: "/storage/v1/object/public/**",
+      },
+    ];
+  } catch {
+    return [];
+  }
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -12,7 +29,7 @@ const nextConfig = {
     viewTransition: true,
   },
   images: {
-    remotePatterns: [],
+    remotePatterns: [...supabaseImageRemotes()],
   },
   typescript: {
     ignoreBuildErrors: false,

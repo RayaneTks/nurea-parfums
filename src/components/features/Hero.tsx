@@ -137,9 +137,9 @@ export const Hero: FC = () => {
         </h1>
 
         <p className="mb-8 max-w-md text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] md:max-w-xl">
-          Une vitrine pensée pour parcourir la maison, retrouver des
-          références et poursuivre l&apos;échange via la conciergerie sur
-          WhatsApp ou Snapchat.
+          Une vitrine pour parcourir la maison et ses références. Pour une
+          disponibilité ou un conseil, écrivez-nous : nous reprenons l&apos;échange
+          avec vous.
         </p>
 
         <div className="flex w-full max-w-md flex-col items-center justify-center gap-3 sm:flex-row">
@@ -159,7 +159,7 @@ export const Hero: FC = () => {
             href="/contact"
             className="btn-nurea group w-full justify-center sm:w-auto"
           >
-            Parler à la conciergerie
+            Nous contacter
             <MessageCircleMore
               size={14}
               className="text-[var(--nurea-accent)] transition-transform duration-300 group-hover:-rotate-6"
@@ -168,7 +168,7 @@ export const Hero: FC = () => {
         </div>
 
         <p className="mt-5 max-w-md text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-subtle)] md:text-[11px]">
-          Catalogue vivant • Disponibilités confirmées en conversation
+          Disponibilités confirmées en conversation
         </p>
       </div>
 

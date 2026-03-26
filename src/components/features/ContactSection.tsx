@@ -99,7 +99,7 @@ export const ContactSection: FC = () => {
       setIsSubmitted(true);
     } catch {
       setServerError(
-        "Envoi impossible pour le moment. Réessayez ou utilisez WhatsApp."
+        "Envoi impossible pour le moment. Réessayez ou repassez par la page Contact plus tard."
       );
     } finally {
       setIsSubmitting(false);
@@ -113,16 +113,14 @@ export const ContactSection: FC = () => {
       <div className="mx-auto max-w-[1200px] px-4 pb-16 pt-28 md:px-10 md:pb-24 md:pt-40">
         <ScrollReveal className="mx-auto mb-16 max-w-2xl text-center md:mb-24">
           <span className="mb-4 block text-[11px] font-medium uppercase tracking-nurea-wide text-[var(--nurea-accent)] md:text-[12px]">
-            Conciergerie Privée
+            Maison Nurea Parfums
           </span>
           <h1 className="mb-5 font-serif text-[clamp(30px,6vw,52px)] leading-[1.08] text-[var(--nurea-text)]">
             L&apos;Art de <em className="italic">l&apos;Échange</em>
           </h1>
           <p className="mx-auto max-w-md text-[13px] leading-[1.85] text-[var(--nurea-text-muted)] md:text-[14px]">
-            Le site présente notre sélection comme une vitrine de la maison.
-            Pour confirmer une disponibilité, reprendre un échange ou demander
-            un conseil olfactif, la conciergerie vous répond sur les canaux de
-            la maison.
+            Le site est une vitrine : disponibilités, arrivages et conseils se
+            confirment avec la maison. Choisissez le canal qui vous convient.
           </p>
         </ScrollReveal>
 
@@ -156,7 +154,7 @@ export const ContactSection: FC = () => {
               </span>
               <div className="min-w-0 flex-1">
                 <span className="mb-0.5 block text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] md:text-[11px]">
-                  Canal prioritaire
+                  Message écrit
                 </span>
                 <span className="font-serif text-base text-[var(--nurea-text)] md:text-lg">
                   WhatsApp
@@ -223,7 +221,7 @@ export const ContactSection: FC = () => {
                     className="mb-6 opacity-45"
                   />
                   <span className="mb-2 text-[11px] uppercase tracking-nurea-wide text-[var(--nurea-accent)]">
-                    {submitChannel === "resend" ? "Conciergerie" : "Messagerie"}
+                    {submitChannel === "resend" ? "Maison Nurea Parfums" : "Messagerie"}
                   </span>
                   <h4 className="mb-3 font-serif text-xl text-[var(--nurea-text)]">
                     {submitChannel === "resend"
@@ -233,8 +231,8 @@ export const ContactSection: FC = () => {
                   <p className="max-w-xs text-[12px] leading-[1.8] text-[var(--nurea-text-muted)]">
                     {submitChannel === "resend" ? (
                       <>
-                        La conciergerie reviendra vers vous avec la suite la
-                        plus adaptée à votre demande.
+                        Nous vous répondrons avec la suite la plus adaptée à
+                        votre demande.
                       </>
                     ) : (
                       <>
@@ -331,9 +329,9 @@ export const ContactSection: FC = () => {
                   </div>
 
                   <p className="text-[11px] leading-relaxed text-[var(--nurea-text-muted)]">
-                    WhatsApp reste le canal le plus direct pour une référence
-                    précise. Ce formulaire convient si vous préférez initier ou
-                    reprendre l&apos;échange par écrit.
+                    Les boutons ci-dessus ouvrent la messagerie instantanée.
+                    Ici, vous écrivez à la maison : une référence précise aide,
+                    nous vous répondons par e-mail.
                   </p>
 
                   {serverError ? (

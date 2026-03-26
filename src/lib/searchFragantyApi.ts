@@ -1,10 +1,18 @@
+import { normalizeForFuzzy } from "./data";
 import type { ExternalPerfumeSuggestion } from "./perfumeSearchTypes";
 import { recordFragantyHttpFetch } from "./perfumeSearchInstrumentation";
 import {
   MIN_PERFUME_EXTERNAL_SCORE,
+  parseExternalPerfumePayload,
   scoreExternalPerfumeRelevance,
   type ExternalPerfumeApiResult,
 } from "./searchExternalPerfumeApi";
+
+/**
+ * Seuil assoupli lorsque Fraganty a déjà renvoyé des lignes pour `q=` (tri côté API).
+ * Évite les « miss » quand marque/nom ne passent pas le barème strict (ex. libellés atypiques).
+ */
+const MIN_FRAGANTY_FALLBACK_SCORE = 52;
 
 const MIN_Q = 3;
 
@@ -25,12 +33,6 @@ function externalTimeoutMs(): number {
     30_000
   );
 }
-
-type FragantyListRow = {
-  id?: string;
-  name?: string;
-  brand?: string;
-};
 
 /**
  * Fraganty — doc : https://fraganty.ai/api-docs
@@ -78,21 +80,26 @@ export async function searchFragantyApi(
     if (!res.ok) return { outcome: "error" };
 
     const json: unknown = await res.json();
-    const data = json && typeof json === "object" && Array.isArray((json as { data?: unknown }).data)
-      ? ((json as { data: FragantyListRow[] }).data)
-      : [];
+    const rows = parseExternalPerfumePayload(json);
 
-    let best: { suggestion: ExternalPerfumeSuggestion; score: number } | null = null;
+    let bestStrict: { suggestion: ExternalPerfumeSuggestion; score: number } | null = null;
+    let bestLoose: { suggestion: ExternalPerfumeSuggestion; score: number } | null = null;
 
-    for (const row of data) {
+    for (const row of rows) {
       if (!row || typeof row !== "object") continue;
-      const externalId = String(row.id ?? "").trim();
-      const name = String(row.name ?? "").trim();
-      const brand = String(row.brand ?? "").trim();
+      const externalId = String(
+        (row as { id?: unknown; externalId?: unknown }).externalId ??
+          (row as { id?: unknown }).id ??
+          ""
+      ).trim();
+      const name = String((row as { name?: unknown; title?: unknown }).name ?? (row as { title?: unknown }).title ?? "").trim();
+      const brand = String(
+        (row as { brand?: unknown; house?: unknown; manufacturer?: unknown }).brand ??
+          (row as { house?: unknown }).house ??
+          (row as { manufacturer?: unknown }).manufacturer ??
+          ""
+      ).trim();
       if (!externalId || !name) continue;
-
-      const score = scoreExternalPerfumeRelevance(q, name, brand);
-      if (score < MIN_PERFUME_EXTERNAL_SCORE) continue;
 
       const suggestion: ExternalPerfumeSuggestion = {
         name,
@@ -102,12 +109,56 @@ export async function searchFragantyApi(
         raw: { id: externalId, name, brand: brand || "—" },
       };
 
-      if (!best || score > best.score) {
-        best = { suggestion, score };
+      const score = scoreExternalPerfumeRelevance(q, name, brand);
+      if (score >= MIN_PERFUME_EXTERNAL_SCORE) {
+        if (!bestStrict || score > bestStrict.score) {
+          bestStrict = { suggestion, score };
+        }
+      }
+      if (score >= MIN_FRAGANTY_FALLBACK_SCORE) {
+        if (!bestLoose || score > bestLoose.score) {
+          bestLoose = { suggestion, score };
+        }
       }
     }
 
-    if (best) return { outcome: "hit", suggestion: best.suggestion };
+    if (bestStrict) return { outcome: "hit", suggestion: bestStrict.suggestion };
+    if (bestLoose) return { outcome: "hit", suggestion: bestLoose.suggestion };
+
+    const nq = normalizeForFuzzy(q);
+    if (nq.length >= 3) {
+      for (const row of rows) {
+        if (!row || typeof row !== "object") continue;
+        const externalId = String(
+          (row as { id?: unknown; externalId?: unknown }).externalId ??
+            (row as { id?: unknown }).id ??
+            ""
+        ).trim();
+        const name = String((row as { name?: unknown; title?: unknown }).name ?? (row as { title?: unknown }).title ?? "").trim();
+        const brand = String(
+          (row as { brand?: unknown; house?: unknown; manufacturer?: unknown }).brand ??
+            (row as { house?: unknown }).house ??
+            (row as { manufacturer?: unknown }).manufacturer ??
+            ""
+        ).trim();
+        if (!externalId || !name) continue;
+        const slugHay = normalizeForFuzzy(
+          `${externalId.replace(/-/g, " ")} ${name} ${brand}`
+        );
+        if (!slugHay.includes(nq)) continue;
+        return {
+          outcome: "hit",
+          suggestion: {
+            name,
+            brand: brand || "—",
+            externalId,
+            source: "fraganty",
+            raw: { id: externalId, name, brand: brand || "—" },
+          },
+        };
+      }
+    }
+
     return { outcome: "miss" };
   } catch {
     return { outcome: "error" };
