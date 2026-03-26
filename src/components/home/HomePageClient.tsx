@@ -105,7 +105,6 @@ export const HomePageClient = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const paramsStringRef = useRef<string | null>(null);
   const catalogScrollSkipRef = useRef(true);
-  const searchScrollSkipRef = useRef(true);
 
   const [searchFallback, setSearchFallback] = useState<SearchFallbackState>({
     kind: "idle",
@@ -249,16 +248,8 @@ export const HomePageClient = () => {
   }, [selectedCategory, sortKey, scrollCatalogIntoView]);
 
   useEffect(() => {
-    if (searchScrollSkipRef.current) {
-      searchScrollSkipRef.current = false;
-      return;
-    }
-    const id = window.setTimeout(() => {
-      setActiveItem(null);
-      scrollCatalogIntoView();
-    }, 420);
-    return () => window.clearTimeout(id);
-  }, [searchTerm, scrollCatalogIntoView]);
+    setActiveItem(null);
+  }, [searchTerm]);
 
   const handleResetFilters = useCallback(() => {
     setSearchTerm("");
