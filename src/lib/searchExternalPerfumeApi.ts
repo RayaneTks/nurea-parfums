@@ -1,8 +1,20 @@
 import { normalizeForFuzzy } from "./data";
 import type { ExternalPerfumeSuggestion } from "./perfumeSearchTypes";
+import { recordGenericExternalHttpFetch } from "./perfumeSearchInstrumentation";
 
 const MIN_QUERY_LEN = 3;
-const MIN_SCORE = 72;
+/** Seuil partagé avec Fraganty et autres connecteurs externes. */
+export const MIN_PERFUME_EXTERNAL_SCORE = 72;
+
+const EXTERNAL_SOURCE =
+  process.env.PERFUME_EXTERNAL_SOURCE_LABEL?.trim() || "external_api";
+
+export type ExternalPerfumeApiResult =
+  | { outcome: "disabled" }
+  | { outcome: "too_short" }
+  | { outcome: "hit"; suggestion: ExternalPerfumeSuggestion }
+  | { outcome: "miss" }
+  | { outcome: "error" };
 
 type RawHit = {
   externalId?: string;
@@ -35,10 +47,7 @@ function levenshtein(a: string, b: string): number {
   return dp[an][bn];
 }
 
-/**
- * Score 0–100 : pertinence requête ↔ ligne API (nom + marque).
- */
-function scoreExternalHit(
+export function scoreExternalPerfumeRelevance(
   query: string,
   name: string,
   brand: string
@@ -105,6 +114,7 @@ function rawToSuggestion(hit: RawHit, raw: Record<string, unknown>): ExternalPer
     name,
     brand: brand || "—",
     externalId,
+    source: EXTERNAL_SOURCE,
     raw,
   };
 }
@@ -124,18 +134,17 @@ function buildRequestUrl(baseUrl: string, query: string): string {
 }
 
 /**
- * Appelle l’API externe configurée. Clé et URL uniquement côté serveur.
- * Retourne null si désactivée, erreur réseau, timeout, ou aucun résultat pertinent.
+ * Source externe configurable (URL + clé serveur uniquement).
  */
 export async function searchExternalPerfumeApi(
   query: string,
   signal?: AbortSignal
-): Promise<ExternalPerfumeSuggestion | null> {
+): Promise<ExternalPerfumeApiResult> {
   const q = query.trim();
-  if (q.length < MIN_QUERY_LEN) return null;
+  if (q.length < MIN_QUERY_LEN) return { outcome: "too_short" };
 
   const baseUrl = process.env.PERFUME_EXTERNAL_API_URL?.trim();
-  if (!baseUrl) return null;
+  if (!baseUrl) return { outcome: "disabled" };
 
   const timeoutMs = Math.min(
     Math.max(Number(process.env.PERFUME_EXTERNAL_API_TIMEOUT_MS) || 8000, 2000),
@@ -168,6 +177,7 @@ export async function searchExternalPerfumeApi(
       }
     }
 
+    recordGenericExternalHttpFetch();
     const res = await fetch(url, {
       method: "GET",
       headers,
@@ -175,11 +185,16 @@ export async function searchExternalPerfumeApi(
       cache: "no-store",
     }).catch(() => null);
 
-    if (!res) return null;
+    if (!res) return { outcome: "error" };
 
-    if (!res.ok) return null;
+    if (!res.ok) return { outcome: "error" };
 
-    const json: unknown = await res.json();
+    let json: unknown;
+    try {
+      json = await res.json();
+    } catch {
+      return { outcome: "error" };
+    }
     const hits = parseHits(json);
 
     let best: { suggestion: ExternalPerfumeSuggestion; score: number } | null = null;
@@ -187,8 +202,8 @@ export async function searchExternalPerfumeApi(
     for (const hit of hits) {
       const name = (hit.name ?? hit.title ?? "").trim();
       const brand = (hit.brand ?? hit.house ?? hit.manufacturer ?? "").trim();
-      const score = scoreExternalHit(q, name, brand);
-      if (score < MIN_SCORE) continue;
+      const score = scoreExternalPerfumeRelevance(q, name, brand);
+      if (score < MIN_PERFUME_EXTERNAL_SCORE) continue;
       const sug = rawToSuggestion(hit, hit as Record<string, unknown>);
       if (!sug) continue;
       if (!best || score > best.score) {
@@ -196,9 +211,10 @@ export async function searchExternalPerfumeApi(
       }
     }
 
-    return best?.suggestion ?? null;
+    if (best) return { outcome: "hit", suggestion: best.suggestion };
+    return { outcome: "miss" };
   } catch {
-    return null;
+    return { outcome: "error" };
   } finally {
     clearTimeout(onTimeout);
   }

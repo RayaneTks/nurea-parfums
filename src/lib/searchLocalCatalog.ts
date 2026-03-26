@@ -1,5 +1,4 @@
 import {
-  mockPerfumes,
   fuzzySearchMatch,
   compareSearchRelevance,
   categories,
@@ -18,16 +17,17 @@ export function parseCategoryParam(raw: string | null): Category {
 }
 
 /**
- * Recherche dans le catalogue local (même logique que la grille : fuzzy + filtre catégorie).
+ * Recherche dans une liste catalogue (DB ou mock) : fuzzy + filtre catégorie.
  */
 export function searchLocalCatalog(
+  perfumes: Perfume[],
   query: string,
   options?: { category?: Category }
 ): Perfume[] {
   const q = query.trim();
   const cat = options?.category ?? "Tout voir";
 
-  const list = mockPerfumes.filter((perfume) => {
+  const list = perfumes.filter((perfume) => {
     const matchCategory =
       cat === "Tout voir" || perfume.category === cat;
     const matchSearch = fuzzySearchMatch(perfume, q);

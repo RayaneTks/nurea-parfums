@@ -34,6 +34,8 @@ export interface ExternalPerfumeSuggestion {
   name: string;
   brand: string;
   externalId: string;
+  /** Origine de la suggestion (ex. `external_api`, fournisseur). */
+  source?: string;
   /** Payload brut pour un futur import automatique (mapper côté service d’import). */
   raw?: Record<string, unknown>;
 }

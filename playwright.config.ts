@@ -33,5 +33,10 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: true,
     timeout: 180_000,
+    /* Désactive Prisma pendant les e2e si la DB n’est pas joignable depuis la machine de test. */
+    env: {
+      ...process.env,
+      ...(process.env.E2E_MOCK_CATALOG_ONLY === "1" ? { DATABASE_URL: "" } : {}),
+    },
   },
 });

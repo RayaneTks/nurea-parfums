@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { HomePageClient } from "@/components/home/HomePageClient";
+import { getCatalogPerfumes } from "@/lib/catalog/getCatalogPerfumes";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -29,10 +30,11 @@ function HomeFallback() {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const catalogPerfumes = await getCatalogPerfumes();
   return (
     <Suspense fallback={<HomeFallback />}>
-      <HomePageClient />
+      <HomePageClient catalogPerfumes={catalogPerfumes} />
     </Suspense>
   );
 }

@@ -13,7 +13,6 @@ import { Separator } from "@/components/ui/Separator";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import {
   categories,
-  mockPerfumes,
   fuzzySearchMatch,
   suggestSimilarPerfumes,
   findExternalPerfumeHint,
@@ -23,6 +22,7 @@ import {
   CONTACT,
   type Category,
   type ExternalPerfumeHint,
+  type Perfume,
 } from "@/lib/data";
 import type {
   ExternalPerfumeSuggestion,
@@ -85,7 +85,11 @@ function sortFromSearchParams(p: URLSearchParams): SortKey {
   return "default";
 }
 
-export const HomePageClient = () => {
+type HomePageClientProps = {
+  catalogPerfumes: Perfume[];
+};
+
+export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -145,20 +149,20 @@ export const HomePageClient = () => {
   }, [searchTerm, selectedCategory, sortKey, pathname, router, searchParams]);
 
   const featuredPerfumes = useMemo(
-    () => mockPerfumes.filter((p) => FEATURED_IDS.includes(p.id)),
-    []
+    () => catalogPerfumes.filter((p) => FEATURED_IDS.includes(p.id)),
+    [catalogPerfumes]
   );
 
   const filteredPerfumes = useMemo(
     () =>
-      mockPerfumes.filter((perfume) => {
+      catalogPerfumes.filter((perfume) => {
         const matchSearch = fuzzySearchMatch(perfume, searchTerm);
         const matchCategory =
           selectedCategory === "Tout voir" ||
           perfume.category === selectedCategory;
         return matchSearch && matchCategory;
       }),
-    [searchTerm, selectedCategory]
+    [catalogPerfumes, searchTerm, selectedCategory]
   );
 
   useEffect(() => {
@@ -274,18 +278,18 @@ export const HomePageClient = () => {
     searchFallback.kind === "loading";
 
   const inspirationWhenEmpty = useMemo(() => {
-    if (!searchTerm.trim()) return mockPerfumes.slice(0, 6);
+    if (!searchTerm.trim()) return catalogPerfumes.slice(0, 6);
     if (apiSuggestion) {
       const label = formatApiSuggestionLabel(apiSuggestion);
-      return suggestSimilarPerfumes(label, mockPerfumes, 6);
+      return suggestSimilarPerfumes(label, catalogPerfumes, 6);
     }
     if (externalHint) {
       const fromHint = getPerfumesByIds(
         externalHint.similarCatalogIds,
-        mockPerfumes
+        catalogPerfumes
       );
-      const rest = suggestSimilarPerfumes(searchTerm, mockPerfumes, 6);
-      const merged: typeof mockPerfumes = [];
+      const rest = suggestSimilarPerfumes(searchTerm, catalogPerfumes, 6);
+      const merged: Perfume[] = [];
       const seen = new Set<number>();
       for (const p of [...fromHint, ...rest]) {
         if (merged.length >= 6) break;
@@ -297,7 +301,7 @@ export const HomePageClient = () => {
       return merged;
     }
     return [];
-  }, [searchTerm, externalHint, apiSuggestion]);
+  }, [searchTerm, externalHint, apiSuggestion, catalogPerfumes]);
 
   const conciergeWhatsappHref = useMemo(() => {
     const num = CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? "";
