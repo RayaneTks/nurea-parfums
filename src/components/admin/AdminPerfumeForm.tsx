@@ -3,12 +3,99 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { categories } from "@/lib/data";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { LucideIcon } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Building2,
+  Camera,
+  Check,
+  Eye,
+  ImageIcon,
+  Loader2,
+  Moon,
+  Save,
+  Search,
+  Sparkles,
+  Sun,
+  Tag,
+  Upload,
+} from "lucide-react";
+import { categories, normalizeForFuzzy } from "@/lib/data";
 
 const dbCategories = categories.filter((c) => c !== "Tout voir");
 
 type BrandOpt = { id: string; name: string };
+
+type ExistingPerfume = { id: number; name: string; brandName: string };
+
+function levenshteinSmall(a: string, b: string): number {
+  if (a === b) return 0;
+  const an = a.length, bn = b.length;
+  if (an === 0) return bn;
+  if (bn === 0) return an;
+  let prev = Array.from({ length: bn + 1 }, (_, i) => i);
+  let curr = new Array<number>(bn + 1);
+  for (let i = 1; i <= an; i++) {
+    curr[0] = i;
+    for (let j = 1; j <= bn; j++) {
+      curr[j] = Math.min(
+        prev[j] + 1,
+        curr[j - 1] + 1,
+        prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
+      );
+    }
+    [prev, curr] = [curr, prev];
+  }
+  return prev[bn];
+}
+
+function fuzzyBrandMatch(input: string, brands: BrandOpt[]): BrandOpt | null {
+  const q = normalizeForFuzzy(input);
+  if (q.length < 2) return null;
+  let best: BrandOpt | null = null;
+  let bestDist = Infinity;
+  for (const b of brands) {
+    const n = normalizeForFuzzy(b.name);
+    if (n === q) return b;
+    if (n.includes(q) || q.includes(n)) return b;
+    const d = levenshteinSmall(q, n);
+    const threshold = Math.max(2, Math.floor(Math.max(q.length, n.length) * 0.3));
+    if (d <= threshold && d < bestDist) {
+      bestDist = d;
+      best = b;
+    }
+  }
+  return best;
+}
+
+function fuzzyPerfumeMatch(
+  input: string,
+  brandName: string,
+  existing: ExistingPerfume[],
+): ExistingPerfume | null {
+  const q = normalizeForFuzzy(input);
+  if (q.length < 2) return null;
+  const bq = normalizeForFuzzy(brandName);
+  const sameBrand = bq.length >= 2
+    ? existing.filter((p) => normalizeForFuzzy(p.brandName) === bq)
+    : existing;
+  let best: ExistingPerfume | null = null;
+  let bestDist = Infinity;
+  for (const p of sameBrand) {
+    const n = normalizeForFuzzy(p.name);
+    if (n === q) return p;
+    if (n.includes(q) && q.length >= 3) return p;
+    const d = levenshteinSmall(q, n);
+    const threshold = Math.max(2, Math.floor(Math.max(q.length, n.length) * 0.3));
+    if (d <= threshold && d < bestDist) {
+      bestDist = d;
+      best = p;
+    }
+  }
+  return best;
+}
 
 type PerfumePayload = {
   id: number;
@@ -36,7 +123,34 @@ const textareaClass =
   "mt-2 block w-full rounded-sm border border-[var(--nurea-border)] bg-transparent px-3 py-3 text-base text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] disabled:pointer-events-none disabled:opacity-50";
 
 const labelClass =
-  "block text-[12px] font-medium uppercase tracking-[0.1em] text-[var(--nurea-text-muted)]";
+  "block text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--nurea-text-muted)]";
+
+function FormSection({
+  title,
+  hint,
+  icon: Icon,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  icon: LucideIcon;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-bg)]/35">
+      <div className="flex items-start gap-3 border-b border-[var(--nurea-border)] bg-[var(--nurea-surface)]/80 px-4 py-3">
+        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] text-[var(--nurea-cuivre)]">
+          <Icon className="h-4 w-4" aria-hidden />
+        </span>
+        <div className="min-w-0">
+          <h2 className="text-[14px] font-semibold text-[var(--nurea-text)]">{title}</h2>
+          {hint ? <p className="mt-0.5 text-[12px] leading-relaxed text-[var(--nurea-text-subtle)]">{hint}</p> : null}
+        </div>
+      </div>
+      <div className="space-y-5 p-4 sm:p-5">{children}</div>
+    </section>
+  );
+}
 
 export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
   const router = useRouter();
@@ -44,6 +158,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
   const errorRef = useRef<HTMLParagraphElement | null>(null);
 
   const [brands, setBrands] = useState<BrandOpt[]>([]);
+  const [existingPerfumes, setExistingPerfumes] = useState<ExistingPerfume[]>([]);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -51,6 +166,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
   const [readOnly, setReadOnly] = useState(false);
 
   const [brandId, setBrandId] = useState("");
+  const [brandSearch, setBrandSearch] = useState("");
   const [name, setName] = useState("");
   const [category, setCategory] = useState<string>(
     dbCategories[0] ?? "Sélections Individuelles"
@@ -71,9 +187,19 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     setBrands(j.brands ?? []);
   }, []);
 
+  const loadExistingPerfumes = useCallback(async () => {
+    const r = await fetch("/api/admin/perfumes?includeDeleted=1", { credentials: "include" });
+    if (!r.ok) return;
+    const j = (await r.json()) as { perfumes: { id: number; name: string; brand: { name: string } }[] };
+    setExistingPerfumes(
+      (j.perfumes ?? []).map((p) => ({ id: p.id, name: p.name, brandName: p.brand.name })),
+    );
+  }, []);
+
   useEffect(() => {
     loadBrands();
-  }, [loadBrands]);
+    loadExistingPerfumes();
+  }, [loadBrands, loadExistingPerfumes]);
 
   useEffect(() => {
     let cancelled = false;
@@ -210,14 +336,32 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     }
   }
 
+  const brandSuggestion = useMemo(() => {
+    if (!isNew || !brandSearch.trim() || brandId) return null;
+    return fuzzyBrandMatch(brandSearch, brands);
+  }, [isNew, brandSearch, brandId, brands]);
+
+  const selectedBrandName = useMemo(() => {
+    if (!brandId) return "";
+    return brands.find((b) => b.id === brandId)?.name ?? "";
+  }, [brandId, brands]);
+
+  const perfumeDuplicate = useMemo(() => {
+    if (!isNew || name.trim().length < 2) return null;
+    return fuzzyPerfumeMatch(name, selectedBrandName, existingPerfumes);
+  }, [isNew, name, selectedBrandName, existingPerfumes]);
+
   if (loading) {
     return (
-      <div className="space-y-5 rounded-sm border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-4 md:p-8">
-        <div className="h-9 max-w-xs animate-pulse rounded-sm bg-[var(--nurea-border)]" />
-        <div className="h-12 w-full animate-pulse rounded-sm bg-[var(--nurea-border)]" />
-        <div className="h-12 w-full animate-pulse rounded-sm bg-[var(--nurea-border)]" />
-        <div className="h-40 w-full max-w-sm animate-pulse rounded-sm bg-[var(--nurea-border)]" />
-        <p className="text-[13px] text-[var(--nurea-text-muted)]">Chargement de la fiche…</p>
+      <div className="space-y-5 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-4 md:p-8">
+        <div className="flex items-center gap-3 text-[var(--nurea-text-muted)]">
+          <Loader2 className="h-5 w-5 animate-spin text-[var(--nurea-accent)]" aria-hidden />
+          <p className="text-[14px] font-medium">Chargement de la fiche…</p>
+        </div>
+        <div className="h-9 max-w-xs animate-pulse bg-[var(--nurea-border)]" />
+        <div className="h-12 w-full animate-pulse bg-[var(--nurea-border)]" />
+        <div className="h-12 w-full animate-pulse bg-[var(--nurea-border)]" />
+        <div className="h-40 w-full max-w-sm animate-pulse bg-[var(--nurea-border)]" />
       </div>
     );
   }
@@ -230,57 +374,114 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
       <form
         id="admin-perfume-form"
         onSubmit={onSubmit}
-        className="mx-auto max-w-2xl space-y-6 rounded-sm border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-4 pb-28 md:space-y-7 md:p-8 md:pb-10"
+        className="mx-auto max-w-2xl space-y-6 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-4 pb-28 md:space-y-7 md:p-8 md:pb-10"
       >
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="font-serif text-2xl text-[var(--nurea-text)] md:text-3xl">
-              {isNew ? "Nouveau parfum" : `Modifier #${perfumeId}`}
-            </h1>
-            <p className="mt-1 text-[13px] text-[var(--nurea-text-subtle)]">
-              Champs obligatoires : marque, nom, catégorie, image principale.
-            </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="hidden h-12 w-12 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] bg-[var(--nurea-bg)] text-[var(--nurea-accent)] sm:flex">
+              <Sparkles className="h-6 w-6" aria-hidden />
+            </span>
+            <div className="min-w-0">
+              <h1 className="font-serif text-[clamp(1.35rem,3.5vw,2rem)] leading-tight text-[var(--nurea-text)]">
+                {isNew ? "Nouveau parfum" : `Modifier · #${perfumeId}`}
+              </h1>
+              <p className="mt-2 text-[13px] leading-relaxed text-[var(--nurea-text-subtle)]">
+                Obligatoire : marque, nom, catégorie et visuel principal.
+              </p>
+            </div>
           </div>
           <Link
             href="/admin"
-            className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-sm border border-[var(--nurea-border-hover)] px-4 text-[13px] font-medium text-[var(--nurea-text-muted)] transition-colors hover:border-[var(--nurea-accent)] hover:text-[var(--nurea-text)] md:min-h-0 md:py-2"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 border border-[var(--nurea-border-hover)] px-4 text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--nurea-text-muted)] transition-colors hover:border-[var(--nurea-accent)] hover:text-[var(--nurea-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--nurea-surface)] md:min-h-10"
           >
-            ← Liste
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+            Tableau
           </Link>
         </div>
 
         {readOnly ? (
-          <p className="rounded-sm border border-[var(--nurea-border-hover)] bg-[var(--nurea-bg)] px-3 py-2 text-[13px] text-[var(--nurea-text-muted)]">
-            Lecture seule : vous pouvez consulter la fiche, pas l’enregistrer.
+          <p className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-bg)] px-4 py-3 text-[13px] text-[var(--nurea-text-muted)]">
+            Lecture seule : consultation uniquement, sans enregistrement.
           </p>
         ) : null}
 
         {isNew && brands.length === 0 ? (
-          <p className="rounded-sm border border-[var(--nurea-accent)]/40 bg-[var(--nurea-accent-subtle)] px-3 py-2 text-[13px] text-[var(--nurea-text)]">
-            Créez d’abord au moins une marque depuis la liste admin, puis revenez sur cette page.
+          <p className="border border-[var(--nurea-accent)]/40 bg-[var(--nurea-accent-subtle)] px-4 py-3 text-[13px] text-[var(--nurea-text)]">
+            Créez d’abord au moins une marque (onglet Marques du tableau), puis revenez ici.
           </p>
         ) : null}
 
         {error ? (
           <p
             ref={errorRef}
-            className="rounded-sm border border-[var(--nurea-accent)]/50 bg-[var(--nurea-accent-subtle)] px-3 py-2 text-[14px] text-[var(--nurea-accent)]"
+            className="border border-[var(--nurea-accent)]/50 bg-[var(--nurea-accent-subtle)] px-4 py-3 text-[14px] text-[var(--nurea-accent)]"
             role="alert"
           >
             {error}
           </p>
         ) : null}
 
+        <FormSection
+          title="Identité"
+          hint="Rattachez le parfum à une maison et choisissez sa famille olfactive côté vitrine."
+          icon={Building2}
+        >
         <label className={labelClass}>
-          Marque
+          <span className="mb-2 flex items-center gap-2">
+            <Building2 className="h-3.5 w-3.5 text-[var(--nurea-cuivre)]" aria-hidden />
+            Marque
+          </span>
+          {isNew && (
+            <input
+              type="text"
+              value={brandSearch}
+              onChange={(e) => {
+                setBrandSearch(e.target.value);
+                const match = fuzzyBrandMatch(e.target.value, brands);
+                if (match) setBrandId(match.id);
+                else setBrandId("");
+              }}
+              disabled={readOnly}
+              placeholder="Tapez pour chercher une marque existante…"
+              autoComplete="off"
+              className={`${inputTransparentClass} !mb-2`}
+            />
+          )}
+          {isNew && brandSearch.trim() && brandSuggestion && !brandId && (
+            <button
+              type="button"
+              onClick={() => setBrandId(brandSuggestion.id)}
+              className="mb-2 flex w-full min-h-11 items-center gap-2 border border-emerald-500/30 bg-emerald-500/8 px-3 py-2 text-[13px] text-emerald-300 transition-colors hover:bg-emerald-500/15"
+            >
+              <Check className="h-4 w-4 shrink-0" aria-hidden />
+              Vouliez-vous dire « {brandSuggestion.name} » ? Cliquez pour sélectionner.
+            </button>
+          )}
+          {isNew && brandId && (
+            <p className="mb-2 flex items-center gap-2 text-[13px] text-emerald-400">
+              <Check className="h-4 w-4 shrink-0" aria-hidden />
+              Marque sélectionnée : <strong>{selectedBrandName}</strong>
+              <button
+                type="button"
+                onClick={() => { setBrandId(""); setBrandSearch(""); }}
+                className="ml-auto text-[11px] text-[var(--nurea-text-muted)] underline"
+              >
+                Changer
+              </button>
+            </p>
+          )}
           <select
             required
             value={brandId}
-            onChange={(e) => setBrandId(e.target.value)}
+            onChange={(e) => {
+              setBrandId(e.target.value);
+              const b = brands.find((br) => br.id === e.target.value);
+              if (b) setBrandSearch(b.name);
+            }}
             disabled={readOnly}
             className={inputClass}
           >
-            <option value="">— Choisir une marque —</option>
+            <option value="">— Ou choisir dans la liste —</option>
             {brands.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
@@ -289,20 +490,44 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           </select>
         </label>
 
-        <label className={labelClass}>
-          Nom du parfum
-          <input
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={readOnly}
-            autoComplete="off"
-            className={inputTransparentClass}
-          />
-        </label>
+        <div>
+          <label className={labelClass}>
+            <span className="mb-2 flex items-center gap-2">
+              <Tag className="h-3.5 w-3.5 text-[var(--nurea-cuivre)]" aria-hidden />
+              Nom du parfum
+            </span>
+            <input
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={readOnly}
+              autoComplete="off"
+              className={inputTransparentClass}
+            />
+          </label>
+          {isNew && perfumeDuplicate && (
+            <div className="mt-2 flex items-start gap-2 border border-amber-500/30 bg-amber-500/8 px-3 py-2.5 text-[13px] text-amber-300">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+              <div>
+                <p>
+                  Un parfum similaire existe déjà : <strong>« {perfumeDuplicate.name} »</strong> ({perfumeDuplicate.brandName}, #{perfumeDuplicate.id}).
+                </p>
+                <Link
+                  href={`/admin/perfumes/${perfumeDuplicate.id}/edit`}
+                  className="mt-1 inline-flex items-center gap-1 text-[12px] text-amber-200 underline"
+                >
+                  Voir la fiche existante →
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
 
         <label className={labelClass}>
-          Catégorie
+          <span className="mb-2 flex items-center gap-2">
+            <Sparkles className="h-3.5 w-3.5 text-[var(--nurea-accent)]" aria-hidden />
+            Catégorie
+          </span>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -316,9 +541,20 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             ))}
           </select>
         </label>
+        </FormSection>
 
+        <FormSection
+          title="Visuels"
+          hint="URL locale ou distante ; import possible vers Supabase si configuré."
+          icon={ImageIcon}
+        >
         <div>
-          <span className={labelClass}>Image principale</span>
+          <span className={labelClass}>
+            <span className="mb-2 flex items-center gap-2">
+              <Camera className="h-3.5 w-3.5 text-[var(--nurea-cuivre)]" aria-hidden />
+              Image principale
+            </span>
+          </span>
           <p className="mt-1 text-[13px] text-[var(--nurea-text-subtle)]">
             URL relative (/parfums/…) ou absolue (Supabase, CDN).
           </p>
@@ -331,7 +567,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             className={inputTransparentClass}
           />
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-            <label className="btn-nurea flex min-h-12 w-full cursor-pointer items-center justify-center text-center text-[12px] tracking-[0.1em] sm:w-auto sm:min-w-[200px]">
+            <label className="btn-nurea flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 text-center text-[12px] tracking-[0.1em] sm:w-auto sm:min-w-[200px]">
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/gif,image/*"
@@ -339,7 +575,17 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                 disabled={uploading || readOnly}
                 onChange={(e) => onUpload(e.target.files?.[0] ?? null)}
               />
-              {uploading ? "Envoi en cours…" : "Importer une image (Supabase)"}
+              {uploading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  Envoi…
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4" aria-hidden />
+                  Importer (Supabase)
+                </>
+              )}
             </label>
             <span className="text-[12px] leading-snug text-[var(--nurea-text-subtle)]">
               jpg, png, webp, gif — idéal 1024×1536. Sur téléphone, la galerie ou l’appareil photo s’ouvre automatiquement.
@@ -369,7 +615,10 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         </div>
 
         <label className={labelClass}>
-          Image thème clair (optionnel)
+          <span className="mb-2 flex items-center gap-2">
+            <Sun className="h-3.5 w-3.5 text-[var(--nurea-cuivre)]" aria-hidden />
+            Image thème clair (optionnel)
+          </span>
           <input
             value={imageLight}
             onChange={(e) => setImageLight(e.target.value)}
@@ -379,7 +628,10 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         </label>
 
         <label className={labelClass}>
-          Image thème sombre (optionnel)
+          <span className="mb-2 flex items-center gap-2">
+            <Moon className="h-3.5 w-3.5 text-[var(--nurea-cuivre)]" aria-hidden />
+            Image thème sombre (optionnel)
+          </span>
           <input
             value={imageDark}
             onChange={(e) => setImageDark(e.target.value)}
@@ -387,9 +639,15 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             className={inputTransparentClass}
           />
         </label>
+        </FormSection>
 
+        <FormSection
+          title="Publication"
+          hint="Contrôle la présence sur la vitrine publique."
+          icon={Eye}
+        >
         <label className={labelClass}>
-          Statut publication
+          Statut
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
@@ -416,12 +674,18 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             <span>Restaurer sur la vitrine (annuler la suppression douce)</span>
           </label>
         ) : null}
+        </FormSection>
 
-        <details className="rounded-sm border border-[var(--nurea-border-hover)] bg-[var(--nurea-bg)]/40 open:bg-[var(--nurea-bg)]/60">
-          <summary className="cursor-pointer list-none px-4 py-3 text-[14px] font-medium text-[var(--nurea-text)] [&::-webkit-details-marker]:hidden">
-            <span className="flex items-center justify-between gap-2">
-              Recherche et métadonnées
-              <span className="text-[12px] font-normal text-[var(--nurea-text-subtle)]">Alias, tags, gammes</span>
+        <details className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-bg)]/40 open:bg-[var(--nurea-bg)]/60">
+          <summary className="cursor-pointer list-none px-4 py-3.5 text-[14px] font-medium text-[var(--nurea-text)] [&::-webkit-details-marker]:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--nurea-accent)]">
+            <span className="flex items-center justify-between gap-3">
+              <span className="flex items-center gap-2">
+                <Search className="h-4 w-4 shrink-0 text-[var(--nurea-cuivre)]" aria-hidden />
+                Recherche et métadonnées
+              </span>
+              <span className="text-right text-[12px] font-normal text-[var(--nurea-text-subtle)]">
+                Alias, tags, gammes
+              </span>
             </span>
           </summary>
           <div className="space-y-5 border-t border-[var(--nurea-border)] px-4 pb-4 pt-4">
@@ -462,9 +726,19 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           <button
             type="submit"
             disabled={saving || readOnly || (isNew && brands.length === 0)}
-            className="btn-nurea btn-accent w-full justify-center text-[13px] tracking-[0.12em] disabled:opacity-50"
+            className="btn-nurea btn-accent flex w-full items-center justify-center gap-2 text-[13px] tracking-[0.12em] disabled:opacity-50"
           >
-            {saving ? "Enregistrement…" : isNew ? "Créer le parfum" : "Enregistrer les modifications"}
+            {saving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                Enregistrement…
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" aria-hidden />
+                {isNew ? "Créer le parfum" : "Enregistrer les modifications"}
+              </>
+            )}
           </button>
         </div>
       </form>
@@ -478,16 +752,22 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           <div className="mx-auto flex max-w-2xl gap-2">
             <Link
               href="/admin"
-              className="btn-nurea flex min-h-12 flex-1 items-center justify-center text-[12px] tracking-[0.08em]"
+              className="btn-nurea flex min-h-12 flex-1 items-center justify-center gap-2 text-[12px] tracking-[0.08em]"
             >
+              <ArrowLeft className="h-4 w-4" aria-hidden />
               Annuler
             </Link>
             <button
               type="submit"
               form="admin-perfume-form"
               disabled={saving || (isNew && brands.length === 0)}
-              className="btn-nurea btn-accent flex min-h-12 flex-[1.4] items-center justify-center text-[12px] tracking-[0.08em] disabled:opacity-50"
+              className="btn-nurea btn-accent flex min-h-12 flex-[1.4] items-center justify-center gap-2 text-[12px] tracking-[0.08em] disabled:opacity-50"
             >
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              ) : (
+                <Save className="h-4 w-4" aria-hidden />
+              )}
               {saving ? "…" : isNew ? "Créer" : "Enregistrer"}
             </button>
           </div>
