@@ -67,6 +67,11 @@
 
   html {
     scroll-behavior: smooth;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-x: clip;
+    overscroll-behavior-x: none;
     /* Barre de navigation fixe + ancres (#collection, scrollIntoView) */
     scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 3.75rem);
     @media (min-width: 768px) {
@@ -84,7 +89,11 @@
     color: var(--nurea-text);
     font-family: var(--font-sans), system-ui, sans-serif;
     overflow-x: hidden;
+    overflow-x: clip;
+    width: 100%;
+    max-width: 100%;
     min-height: 100svh;
+    overscroll-behavior-x: none;
     /* Limite le « rubber band » qui révèle le contenu au-dessus du header sur mobile */
     overscroll-behavior-y: none;
   }

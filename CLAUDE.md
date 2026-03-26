@@ -52,6 +52,12 @@ Nurea Parfums est un site catalogue de parfums de luxe : **Next.js 16 (App Route
 - Alias : `@/*` → `./src/*`
 - Images : `next/image` et fichiers sous `/public/` (`/parfums/`, `/branding/`)
 
+### Pièges UI / responsive
+
+- Sur mobile, les reveals latéraux (`ScrollReveal` en `left` / `right`) et certains éléments décoratifs absolus (glows, halos, etc.) peuvent créer un `overflow-x` du document même si le contenu semble visuellement centré.
+- Préférer un confinement local avec `overflow-x: clip` sur les wrappers concernés, en plus de la protection globale dans `app/globals.css`, plutôt que masquer le symptôme à un seul niveau.
+- Pour toute section animée ou décorative proche des bords du viewport, vérifier qu’on reste sans scroll horizontal sur téléphone (`document.documentElement.scrollWidth === document.documentElement.clientWidth`).
+
 ### Thème et hydratation (important)
 
 - `resolvedTheme` peut être **`undefined`** au premier rendu : pour les assets qui dépendent du thème, utiliser **`resolvedTheme !== "light"`** (ou attendre `mounted` selon le cas) pour rester aligné avec `defaultTheme="dark"`.

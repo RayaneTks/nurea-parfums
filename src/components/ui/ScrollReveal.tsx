@@ -17,6 +17,8 @@ export const ScrollReveal = ({
   direction = "up",
 }: ScrollRevealProps) => {
   const ref = useScrollReveal<HTMLDivElement>();
+  const clipsHorizontalOverflow =
+    direction === "left" || direction === "right";
 
   const directionClass = {
     up: "scroll-reveal",
@@ -25,7 +27,7 @@ export const ScrollReveal = ({
     scale: "scroll-reveal-scale",
   }[direction];
 
-  return (
+  const content = (
     <div
       ref={ref}
       className={`${directionClass} ${className}`}
@@ -34,4 +36,10 @@ export const ScrollReveal = ({
       {children}
     </div>
   );
+
+  if (clipsHorizontalOverflow) {
+    return <div className="min-w-0 overflow-x-clip">{content}</div>;
+  }
+
+  return content;
 };

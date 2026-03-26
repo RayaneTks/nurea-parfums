@@ -95,7 +95,7 @@ export const ContactSection: FC = () => {
   };
 
   return (
-    <main id="main-content" className="relative w-full">
+    <main id="main-content" className="relative w-full overflow-x-clip">
       <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[350px] w-[500px] bg-[var(--nurea-accent)] opacity-[0.025] blur-[100px]" />
 
       <div className="mx-auto max-w-[1200px] px-4 md:px-10 pt-28 pb-16 md:pt-40 md:pb-24">
