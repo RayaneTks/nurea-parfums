@@ -138,6 +138,65 @@ test.describe("Catalogue — parcours principaux", () => {
   });
 });
 
+test.describe("Catalogue — recherche API (mock, sans beforeEach parent)", () => {
+  test("suggestion externe quand le catalogue est vide", async ({ page }) => {
+    await page.route("**/api/perfume-search**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          type: "external_suggestion",
+          query: "ZzApiMockParfum",
+          suggestion: {
+            name: "ZzApiMockParfum",
+            brand: "Maison Test",
+            externalId: "test-ext-1",
+          },
+        }),
+      });
+    });
+
+    await page.goto("/");
+    await page.locator("#collection").waitFor({ state: "visible" });
+    await page.getByRole("button", { name: "Rechercher" }).click();
+    const search = page.getByRole("searchbox", {
+      name: /Rechercher un parfum/i,
+    });
+    await search.fill("ZzApiMockParfum");
+
+    await expect(page.getByTestId("external-api-suggestion")).toBeVisible({
+      timeout: 8000,
+    });
+    await expect(
+      page.getByText(/Vous recherchez « Maison Test ZzApiMockParfum » \?/i)
+    ).toBeVisible();
+  });
+
+  test("API en erreur : message de secours sans suggestion API", async ({
+    page,
+  }) => {
+    await page.route("**/api/perfume-search**", async (route) => {
+      await route.fulfill({ status: 503, body: "unavailable" });
+    });
+
+    await page.goto("/");
+    await page.locator("#collection").waitFor({ state: "visible" });
+    await page.getByRole("button", { name: "Rechercher" }).click();
+    const search = page.getByRole("searchbox", {
+      name: /Rechercher un parfum/i,
+    });
+    await search.fill("ZzNoHintUnique999");
+
+    await expect(page.getByTestId("external-api-suggestion")).toHaveCount(0);
+    await expect(
+      page.getByText(/Aucun résultat pour « ZzNoHintUnique999 »/i)
+    ).toBeVisible({ timeout: 8000 });
+    await expect(
+      page.getByText(/recherche élargie est momentanément indisponible/i)
+    ).toBeVisible();
+  });
+});
+
 test.describe("Navigation & thème", () => {
   test("page Contact accessible", async ({ page }) => {
     await page.goto("/contact");

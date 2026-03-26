@@ -24,6 +24,21 @@ import {
   type Category,
   type ExternalPerfumeHint,
 } from "@/lib/data";
+import type {
+  ExternalPerfumeSuggestion,
+  PerfumeSearchResponse,
+} from "@/lib/perfumeSearchTypes";
+
+function formatApiSuggestionLabel(s: ExternalPerfumeSuggestion): string {
+  if (!s.brand || s.brand === "—") return s.name;
+  return `${s.brand} ${s.name}`;
+}
+
+type SearchFallbackState =
+  | { kind: "idle" }
+  | { kind: "loading" }
+  | { kind: "error" }
+  | { kind: "success"; data: PerfumeSearchResponse };
 
 function ExternalSearchFootnote({ hint }: { hint: ExternalPerfumeHint }) {
   const mode = hint.footnote ?? "default";
@@ -92,6 +107,10 @@ export const HomePageClient = () => {
   const catalogScrollSkipRef = useRef(true);
   const searchScrollSkipRef = useRef(true);
 
+  const [searchFallback, setSearchFallback] = useState<SearchFallbackState>({
+    kind: "idle",
+  });
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -142,6 +161,45 @@ export const HomePageClient = () => {
       }),
     [searchTerm, selectedCategory]
   );
+
+  useEffect(() => {
+    const q = searchTerm.trim();
+    const noLocal = filteredPerfumes.length === 0;
+
+    if (q.length < 3 || !noLocal) {
+      setSearchFallback({ kind: "idle" });
+      return;
+    }
+
+    setSearchFallback({ kind: "loading" });
+
+    const ac = new AbortController();
+    const debounceId = window.setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({ q });
+        if (selectedCategory !== "Tout voir") {
+          params.set("cat", selectedCategory);
+        }
+        const res = await fetch(`/api/perfume-search?${params}`, {
+          signal: ac.signal,
+        });
+        if (!res.ok) {
+          if (!ac.signal.aborted) setSearchFallback({ kind: "error" });
+          return;
+        }
+        const data = (await res.json()) as PerfumeSearchResponse;
+        if (ac.signal.aborted) return;
+        setSearchFallback({ kind: "success", data });
+      } catch {
+        if (!ac.signal.aborted) setSearchFallback({ kind: "error" });
+      }
+    }, 400);
+
+    return () => {
+      window.clearTimeout(debounceId);
+      ac.abort();
+    };
+  }, [searchTerm, selectedCategory, filteredPerfumes.length]);
 
   const sortedPerfumes = useMemo(() => {
     const list = [...filteredPerfumes];
@@ -213,8 +271,23 @@ export const HomePageClient = () => {
     [searchTerm]
   );
 
+  const apiSuggestion =
+    searchFallback.kind === "success" &&
+    searchFallback.data.type === "external_suggestion"
+      ? searchFallback.data.suggestion
+      : null;
+
+  const showExtendedSearchLoading =
+    searchTerm.trim().length >= 3 &&
+    sortedPerfumes.length === 0 &&
+    searchFallback.kind === "loading";
+
   const inspirationWhenEmpty = useMemo(() => {
     if (!searchTerm.trim()) return mockPerfumes.slice(0, 6);
+    if (apiSuggestion) {
+      const label = formatApiSuggestionLabel(apiSuggestion);
+      return suggestSimilarPerfumes(label, mockPerfumes, 6);
+    }
     if (externalHint) {
       const fromHint = getPerfumesByIds(
         externalHint.similarCatalogIds,
@@ -233,15 +306,16 @@ export const HomePageClient = () => {
       return merged;
     }
     return [];
-  }, [searchTerm, externalHint]);
+  }, [searchTerm, externalHint, apiSuggestion]);
 
   const conciergeWhatsappHref = useMemo(() => {
     const num = CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? "";
-    const label =
-      externalHint?.displayName ?? (searchTerm.trim() || "une référence");
+    const label = apiSuggestion
+      ? formatApiSuggestionLabel(apiSuggestion)
+      : externalHint?.displayName ?? (searchTerm.trim() || "une référence");
     const msg = `Bonjour, je cherche « ${label} ». Pouvez-vous me confirmer la disponibilité ou me proposer une alternative ?`;
     return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
-  }, [searchTerm, externalHint]);
+  }, [searchTerm, externalHint, apiSuggestion]);
 
   const focusCatalogSearch = useCallback(() => {
     document
@@ -410,19 +484,61 @@ export const HomePageClient = () => {
             <div className="mx-auto max-w-xl text-center">
               {searchTerm.trim() !== "" ? (
                 <>
-                  <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
-                    {externalHint
-                      ? `Vous cherchez « ${externalHint.displayName} » ?`
-                      : `Aucun résultat pour « ${searchTerm.trim()} »`}
-                  </p>
-                  <p className="mb-2 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
-                    {externalHint
-                      ? externalHint.caption
-                      : EXTERNAL_SEARCH_FALLBACK_MESSAGE}
-                  </p>
-                  {externalHint ? (
-                    <ExternalSearchFootnote hint={externalHint} />
-                  ) : null}
+                  {showExtendedSearchLoading ? (
+                    <>
+                      <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
+                        Recherche en cours…
+                      </p>
+                      <p className="mb-2 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
+                        Nous vérifions également des sources au-delà du catalogue
+                        affiché.
+                      </p>
+                    </>
+                  ) : apiSuggestion ? (
+                    <div
+                      data-testid="external-api-suggestion"
+                      className="rounded-sm border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-6 text-left md:px-8 md:py-8"
+                    >
+                      <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
+                        Vous recherchez « {formatApiSuggestionLabel(apiSuggestion)} »
+                        ?
+                      </p>
+                      <p className="mb-4 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
+                        Cette référence n&apos;est pas encore en fiche sur notre
+                        vitrine en ligne. La conciergerie peut confirmer une
+                        disponibilité, un arrivage ou une alternative proche.
+                      </p>
+                      <button
+                        type="button"
+                        disabled
+                        title="Fonction à venir"
+                        className="w-full border border-[var(--nurea-border)] bg-transparent px-4 py-3 text-[10px] font-medium uppercase tracking-nurea-label text-[var(--nurea-text-muted)] opacity-60 md:w-auto md:min-w-[240px]"
+                      >
+                        Ajouter ce parfum au catalogue
+                      </button>
+                      <span className="sr-only">
+                        Identifiant externe : {apiSuggestion.externalId}
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
+                        {externalHint
+                          ? `Vous cherchez « ${externalHint.displayName} » ?`
+                          : `Aucun résultat pour « ${searchTerm.trim()} »`}
+                      </p>
+                      <p className="mb-2 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
+                        {externalHint
+                          ? externalHint.caption
+                          : searchFallback.kind === "error"
+                            ? "Le service de recherche élargie est momentanément indisponible. Vous pouvez reformuler ou nous écrire directement."
+                            : EXTERNAL_SEARCH_FALLBACK_MESSAGE}
+                      </p>
+                      {externalHint ? (
+                        <ExternalSearchFootnote hint={externalHint} />
+                      ) : null}
+                    </>
+                  )}
                 </>
               ) : (
                 <>
