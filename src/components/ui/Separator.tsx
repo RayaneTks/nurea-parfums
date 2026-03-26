@@ -33,8 +33,7 @@ export const Separator = ({
           alt=""
           width={140}
           height={14}
-          className="max-w-[100px] opacity-30 md:max-w-[140px]"
-          style={{ height: "auto" }}
+          className="h-auto w-auto max-w-[100px] opacity-30 md:max-w-[140px]"
         />
       </div>
     </ScrollReveal>

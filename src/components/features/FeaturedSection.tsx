@@ -18,6 +18,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
   const activeTheme = resolvedTheme === "light" ? "light" : "dark";
 
   const getWhatsappLink = (msg: string) => {
@@ -28,7 +29,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
   return (
     <section className="w-full">
       {perfumes.map((perfume, index) => {
-        const msg = `Bonjour, je souhaite des informations sur « ${perfume.name} » de ${perfume.brand}.`;
+        const msg = `Bonjour, je souhaite poursuivre l'échange autour de « ${perfume.name} » de ${perfume.brand}.`;
         const isReverse = index % 2 !== 0;
 
         return (
@@ -36,13 +37,14 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
             key={perfume.id}
             className={`editorial-split ${isReverse ? "reverse" : ""}`}
           >
-            {/* Image */}
             <ScrollReveal
               direction={isReverse ? "right" : "left"}
-              className="relative min-h-[55vh] md:min-h-[70vh] overflow-hidden"
+              className="relative min-h-[42vh] overflow-hidden md:min-h-[70vh]"
             >
               <Image
-                src={mounted ? getPerfumeImage(perfume, activeTheme) : perfume.image}
+                src={
+                  mounted ? getPerfumeImage(perfume, activeTheme) : perfume.image
+                }
                 alt={perfume.name}
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
@@ -56,7 +58,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                   {perfume.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-block bg-[var(--nurea-accent-solid)] px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-white md:text-[11px] md:px-3.5 md:py-1.5"
+                      className="inline-block bg-[var(--nurea-accent-solid)] px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-white md:px-3.5 md:py-1.5 md:text-[11px]"
                     >
                       {tag}
                     </span>
@@ -65,15 +67,17 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
               )}
             </ScrollReveal>
 
-            {/* Content */}
             <ScrollReveal
               direction={isReverse ? "left" : "right"}
               delay={120}
-              className="flex flex-col justify-center bg-[var(--nurea-surface)] px-6 py-16 md:px-14 md:py-24 lg:px-20"
+              className="flex flex-col justify-center bg-[var(--nurea-surface)] px-6 py-12 md:px-14 md:py-24 lg:px-20"
             >
               <span className="mb-3 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
-                {perfume.brand}
+                Référence mise en avant
               </span>
+              <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.22em] text-[var(--nurea-text-muted)]">
+                {perfume.brand}
+              </p>
               <h2 className="mb-5 font-serif text-[clamp(26px,4vw,42px)] leading-[1.08] text-[var(--nurea-text)]">
                 {perfume.name.split(" ").length > 2 ? (
                   <>
@@ -87,17 +91,19 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                   perfume.name
                 )}
               </h2>
-              <p className="mb-8 text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] max-w-[360px] md:text-[14px] md:leading-[1.85]">
-                Une fragrance d&apos;exception sélectionnée pour sa singularité
-                et son caractère. Disponible sur commande exclusive.
+              <p className="mb-8 max-w-[420px] text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] md:text-[14px] md:leading-[1.85]">
+                Deux signatures qui donnent le ton de la maison. Le catalogue
+                agit comme une vitrine: nous confirmons avec vous la
+                disponibilité, les arrivages et les options directement en
+                conciergerie.
               </p>
               <a
                 href={getWhatsappLink(msg)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-nurea w-fit group"
+                className="btn-nurea group w-fit"
               >
-                Acquérir cette création
+                Continuer sur WhatsApp
                 <ArrowRight
                   size={13}
                   className="text-[var(--nurea-accent)] transition-transform duration-300 group-hover:-rotate-45"

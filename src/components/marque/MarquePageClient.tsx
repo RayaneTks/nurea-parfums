@@ -8,6 +8,21 @@ import { Separator } from "@/components/ui/Separator";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
+const steps = [
+  {
+    title: "Explorer la sélection",
+    body: "Le catalogue présente les maisons, signatures et gammes visibles du moment sans se substituer à la conversation.",
+  },
+  {
+    title: "Confirmer avec la maison",
+    body: "Disponibilités, arrivages, variantes ou recommandations se confirment directement avec la conciergerie.",
+  },
+  {
+    title: "Poursuivre l’échange",
+    body: "WhatsApp, Snapchat ou e-mail prolongent le parcours de manière plus personnelle, selon votre préférence.",
+  },
+];
+
 export const MarquePageClient = () => {
   const [scrolled, setScrolled] = useState(false);
 
@@ -24,7 +39,7 @@ export const MarquePageClient = () => {
       <Navbar scrolled={scrolled} />
       <main
         id="main-content"
-        className="mx-auto w-full max-w-[720px] flex-1 px-4 py-16 md:px-10 md:py-24"
+        className="mx-auto flex-1 w-full max-w-[880px] px-4 py-16 md:px-10 md:py-24"
       >
         <ScrollReveal>
           <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
@@ -34,13 +49,19 @@ export const MarquePageClient = () => {
             {SITE_NAME} — site officiel
           </h1>
           <p className="mt-4 text-[15px] leading-relaxed text-[var(--nurea-text-muted)]">
-            {SITE_NAME} est une maison de haute parfumerie indépendante. Pour nous
-            retrouver en ligne, vérifiez toujours l&apos;orthographe{" "}
+            {SITE_NAME} est une maison de haute parfumerie indépendante. Le
+            site officiel centralise notre catalogue vivant, la présentation de
+            nos références et l’accès direct à la conciergerie.
+          </p>
+          <p className="mt-4 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
+            Pour nous retrouver en ligne, vérifiez toujours l’orthographe{" "}
             <strong className="font-medium text-[var(--nurea-text)]">Nurea</strong>{" "}
-            (N-U-R-E-A) et le domaine officiel{" "}
-            <strong className="font-medium text-[var(--nurea-text)]">{domain}</strong>
-            — c&apos;est le seul site qui centralise notre catalogue et la
-            conciergerie.
+            (N-U-R-E-A) ainsi que le domaine officiel{" "}
+            <strong className="font-medium text-[var(--nurea-text)]">
+              {domain}
+            </strong>
+            . C’est le seul site qui rassemble la collection, l’univers de
+            marque et la conciergerie officielle.
           </p>
         </ScrollReveal>
 
@@ -48,31 +69,56 @@ export const MarquePageClient = () => {
 
         <ScrollReveal delay={80}>
           <h2 className="font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
-            Orthographe et recherches
+            Notre manière de faire
           </h2>
-          <p className="mt-4 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-            Les recherches du type « nurea parfum », « nurea parfums » ou « nurea »
-            sans accent doivent mener vers ce site. Le nom complet de la maison
-            s&apos;écrit <strong className="text-[var(--nurea-text)]">{SITE_NAME}</strong>{" "}
-            (avec un &laquo; s &raquo; à Parfums). Des marques distinctes existent
-            avec des graphies proches sur le marché du parfum et du luxe : si le
-            domaine ou le logo ne correspondent pas à {domain}, vous n&apos;êtes
-            pas sur la boutique officielle {SITE_NAME}.
-          </p>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {steps.map((step) => (
+              <div
+                key={step.title}
+                className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-5"
+              >
+                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--nurea-accent)]">
+                  {step.title}
+                </p>
+                <p className="mt-3 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
+                  {step.body}
+                </p>
+              </div>
+            ))}
+          </div>
         </ScrollReveal>
 
         <ScrollReveal delay={120}>
-          <h2 className="mt-10 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
+          <h2 className="mt-12 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
+            Orthographe et recherches
+          </h2>
+          <p className="mt-4 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
+            Les recherches du type « nurea parfum », « nurea parfums » ou «
+            nurea » sans accent doivent mener vers ce site. Le nom complet de
+            la maison s’écrit{" "}
+            <strong className="text-[var(--nurea-text)]">{SITE_NAME}</strong>{" "}
+            avec « Parfums » au pluriel.
+          </p>
+          <p className="mt-4 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
+            Des marques distinctes existent avec des graphies proches sur le
+            marché du parfum et du luxe. Si le domaine ou le logo ne
+            correspondent pas à {domain}, vous n’êtes pas sur la présence
+            officielle {SITE_NAME}.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal delay={160}>
+          <h2 className="mt-12 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
             Questions fréquentes
           </h2>
           <dl className="mt-6 space-y-8">
             <div>
               <dt className="text-[12px] font-medium uppercase tracking-[0.12em] text-[var(--nurea-accent)]">
-                Comment s&apos;écrit correctement le nom {SITE_NAME} ?
+                Comment s’écrit correctement le nom {SITE_NAME} ?
               </dt>
               <dd className="mt-2 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-                L&apos;orthographe officielle est « Nurea » (N-U-R-E-A), suivi de «
-                Parfums » au pluriel : {SITE_NAME}.
+                L’orthographe officielle est « Nurea » (N-U-R-E-A), suivie de
+                « Parfums » au pluriel : {SITE_NAME}.
               </dd>
             </div>
             <div>
@@ -80,20 +126,18 @@ export const MarquePageClient = () => {
                 Quel est le site officiel de {SITE_NAME} ?
               </dt>
               <dd className="mt-2 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-                Le site officiel est {domain} — vérifiez l&apos;adresse dans votre
-                navigateur pour éviter toute confusion avec des noms ou orthographes
-                proches.
+                Le site officiel est {domain}. Vérifiez toujours l’adresse dans
+                votre navigateur avant de poursuivre un échange.
               </dd>
             </div>
             <div>
               <dt className="text-[12px] font-medium uppercase tracking-[0.12em] text-[var(--nurea-accent)]">
-                {SITE_NAME} est-il une marque indépendante ?
+                Le catalogue montre-t-il tout ce que la maison peut proposer ?
               </dt>
               <dd className="mt-2 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-                {SITE_NAME} est une maison de haute parfumerie indépendante.
-                D&apos;autres marques ou orthographes similaires sur Internet sont
-                des acteurs distincts ; seul le domaine et la conciergerie officiels
-                garantissent nos services.
+                Non. Le catalogue reste une vitrine éditoriale. Certaines
+                références, arrivages ou alternatives se confirment uniquement
+                en conversation avec la conciergerie.
               </dd>
             </div>
             <div>
@@ -101,21 +145,21 @@ export const MarquePageClient = () => {
                 Je ne trouve pas un parfum dans le catalogue, que faire ?
               </dt>
               <dd className="mt-2 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-                Contactez la conciergerie (
+                Contactez la conciergerie depuis la{" "}
                 <Link
                   href="/contact"
                   className="text-[var(--nurea-accent)] underline-offset-4 hover:underline"
                 >
                   page Contact
                 </Link>{" "}
-                ou WhatsApp) : nous pouvons vous orienter ou rechercher une fragrance
-                sur commande selon les disponibilités.
+                ou via WhatsApp. Nous pourrons vous orienter ou vérifier une
+                référence plus précisément.
               </dd>
             </div>
           </dl>
         </ScrollReveal>
 
-        <ScrollReveal delay={160}>
+        <ScrollReveal delay={200}>
           <div className="mt-14 flex flex-wrap gap-4">
             <Link href="/" className="btn-nurea text-[10px] md:text-[11px]">
               Voir la collection
@@ -124,7 +168,7 @@ export const MarquePageClient = () => {
               href="/contact"
               className="border border-[var(--nurea-border-hover)] px-5 py-3 text-[10px] uppercase tracking-[0.15em] text-[var(--nurea-text-muted)] transition-colors hover:border-[var(--nurea-accent)] hover:text-[var(--nurea-accent)]"
             >
-              Conciergerie
+              Écrire à la conciergerie
             </Link>
           </div>
         </ScrollReveal>

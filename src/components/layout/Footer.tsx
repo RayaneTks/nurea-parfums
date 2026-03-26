@@ -40,8 +40,7 @@ export const Footer: FC = () => {
             alt=""
             width={120}
             height={12}
-            className="max-w-[140px] opacity-25"
-            style={{ height: "auto" }}
+            className="h-auto w-auto max-w-[140px] opacity-25"
           />
         </ScrollReveal>
 

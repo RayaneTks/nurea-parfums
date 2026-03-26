@@ -1,8 +1,17 @@
 import { test, expect } from "@playwright/test";
 
-/** Carte actuellement ouverte (overlay visible) */
-function activeCard(page: import("@playwright/test").Page) {
-  return page.locator('[role="button"][aria-expanded="true"]');
+function articleFor(
+  page: import("@playwright/test").Page,
+  cardName: RegExp | string
+) {
+  return page
+    .locator("article")
+    .filter({ has: page.getByRole("button", { name: cardName }) })
+    .first();
+}
+
+function activeArticle(page: import("@playwright/test").Page) {
+  return page.locator('article[data-open="true"]').first();
 }
 
 test.describe("Catalogue — parcours principaux", () => {
@@ -16,24 +25,29 @@ test.describe("Catalogue — parcours principaux", () => {
     await expect(
       zone.getByRole("heading", { level: 2, name: "La Collection" })
     ).toBeVisible();
-    await expect(zone.getByText(/\d+ creation/)).toBeVisible();
+    await expect(zone.getByText(/\d+ création/)).toBeVisible();
+  });
+
+  test("ne monte aucun panneau de contact caché au chargement", async ({
+    page,
+  }) => {
+    await expect(page.locator("article [role='region']")).toHaveCount(0);
   });
 
   test("filtre « Gammes Complètes » et ouvre une gamme : classiques visibles", async ({
     page,
   }) => {
     await page.getByRole("button", { name: "Gammes Complètes" }).click();
-    const rabanneCard = page.getByRole("button", {
-      name: /Gamme complète Rabanne/i,
-    });
-    await rabanneCard.click();
-    await expect(
-      activeCard(page).getByText("Classiques de la Maison", { exact: true })
-    ).toBeVisible();
+    const rabanneArticle = articleFor(page, /Gamme complète Rabanne/i);
+    await rabanneArticle.getByRole("button", { name: /Rabanne/i }).click();
+
+    const panel = rabanneArticle.getByRole("region");
+    await expect(panel).toBeVisible();
+    await expect(panel.getByText("Références de la maison")).toBeVisible();
 
     for (const classic of ["1 Million", "Invictus", "Fame", "Phantom"]) {
       await expect(
-        activeCard(page).getByRole("link", { name: new RegExp(classic, "i") })
+        panel.getByRole("link", { name: new RegExp(classic, "i") })
       ).toBeVisible();
     }
   });
@@ -44,17 +58,14 @@ test.describe("Catalogue — parcours principaux", () => {
     test.skip(testInfo.project.name !== "Mobile", "Spécifique mobile");
 
     await page.getByRole("button", { name: "Gammes Complètes" }).click();
-    const card = page.getByRole("button", { name: /Gamme complète Dior/i });
-    const tagStrip = card.getByTestId("perfume-tag-strip");
+    const article = articleFor(page, /Gamme complète Dior/i);
+    const tagStrip = article.getByTestId("perfume-tag-strip");
 
     await expect(tagStrip).toBeVisible();
     await expect(tagStrip).toHaveCSS("opacity", "1");
 
-    await card.click();
-    await expect(
-      activeCard(page).getByText("Classiques de la Maison", { exact: true })
-    ).toBeVisible();
-
+    await article.getByRole("button", { name: /Gamme complète Dior/i }).click();
+    await expect(article.getByRole("region")).toBeVisible();
     await expect(tagStrip).toHaveCSS("opacity", "0");
   });
 
@@ -64,10 +75,11 @@ test.describe("Catalogue — parcours principaux", () => {
     test.skip(testInfo.project.name !== "Mobile", "Spécifique mobile");
 
     await page.getByRole("button", { name: "Gammes Complètes" }).click();
-    await page.getByRole("button", { name: /Gamme complète Guerlain/i }).click();
-    await expect(
-      activeCard(page).getByText("Classiques de la Maison", { exact: true })
-    ).toBeVisible();
+    const article = articleFor(page, /Gamme complète Guerlain/i);
+    await article.getByRole("button", { name: /Gamme complète Guerlain/i }).click();
+
+    const panel = article.getByRole("region");
+    await expect(panel.getByText("Références de la maison")).toBeVisible();
 
     const classics = [
       "Shalimar",
@@ -76,42 +88,53 @@ test.describe("Catalogue — parcours principaux", () => {
       "Aqua Allegoria",
     ] as const;
     for (const label of classics) {
-      await expect(
-        activeCard(page).getByRole("link", { name: label })
-      ).toBeVisible();
+      await expect(panel.getByRole("link", { name: label })).toBeVisible();
     }
   });
 
-  test("carte individuelle : overlay WhatsApp / Snapchat", async ({ page }) => {
-    await page.getByRole("button", { name: "Sélections Individuelles" }).click();
-    const baccarat = page
-      .locator("#collection")
-      .getByRole("button", { name: /Baccarat Rouge 540/i });
-    await baccarat.scrollIntoViewIfNeeded();
-    await baccarat.click();
-    await expect(baccarat).toHaveAttribute("aria-expanded", "true");
-    const panel = activeCard(page);
-    await expect(
-      panel.getByText("Acquerir cette creation", { exact: true })
-    ).toBeVisible();
+  test("carte individuelle : options WhatsApp / Snapchat visibles", async ({
+    page,
+  }) => {
+    await page
+      .getByRole("button", { name: "Sélections Individuelles" })
+      .click();
+    const baccaratArticle = articleFor(page, /Baccarat Rouge 540/i);
+    await baccaratArticle.scrollIntoViewIfNeeded();
+    await baccaratArticle
+      .getByRole("button", { name: /Baccarat Rouge 540/i })
+      .click();
+
+    const panel = activeArticle(page).getByRole("region");
+    await expect(panel).toBeVisible();
+    await expect(panel.getByText("Continuer l'échange")).toBeVisible();
     await expect(panel.getByRole("link", { name: /WhatsApp/i })).toBeVisible();
     await expect(panel.getByRole("link", { name: /Snapchat/i })).toBeVisible();
   });
 
-  test("Affiner la recherche : ouverture / fermeture", async ({ page }) => {
-    await page.getByRole("button", { name: /Affiner la recherche/i }).click();
-    await expect(page.getByRole("dialog", { name: "Recherche" })).toBeVisible();
-    await page.keyboard.press("Escape");
-    await expect(page.getByRole("dialog", { name: "Recherche" })).toBeHidden();
+  test("raccourci recherche : défile vers le catalogue et focus le champ", async ({
+    page,
+  }) => {
+    await page.getByRole("button", { name: "Rechercher" }).click();
+    const search = page.getByRole("searchbox", {
+      name: /Rechercher un parfum/i,
+    });
+    await expect(search).toBeFocused();
   });
 
-  test("recherche dans l’overlay : filtre marque Dior", async ({ page }) => {
-    await page.getByRole("button", { name: /Affiner la recherche/i }).click();
-    await page.getByPlaceholder("Filtrer les maisons...").fill("Dior");
-    await page.getByRole("button", { name: "Dior", exact: true }).click();
-    await page.getByRole("button", { name: "Voir le catalogue" }).click();
+  test("recherche du catalogue : filtre la maison Dior", async ({ page }) => {
+    await page.getByRole("button", { name: "Rechercher" }).click();
+    const search = page.getByRole("searchbox", {
+      name: /Rechercher un parfum/i,
+    });
+    await search.fill("Dior");
+
+    await expect(
+      page.getByRole("button", { name: /Gamme complète Dior/i })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /Gamme complète Rabanne/i })
+    ).toHaveCount(0);
     await expect(page.getByText("Filtres :")).toBeVisible();
-    await expect(page.getByText("Dior", { exact: true }).first()).toBeVisible();
   });
 });
 
@@ -119,9 +142,9 @@ test.describe("Navigation & thème", () => {
   test("page Contact accessible", async ({ page }) => {
     await page.goto("/contact");
     await expect(page).toHaveURL(/\/contact/);
-    await expect(page.getByText("Conciergerie Privee")).toBeVisible();
+    await expect(page.getByText(/Conciergerie Privée/i)).toBeVisible();
     await expect(
-      page.getByRole("heading", { level: 1, name: /Art de/i })
+      page.getByRole("heading", { level: 1, name: /L'Art de/i })
     ).toBeVisible();
   });
 
@@ -144,7 +167,7 @@ test.describe("Navigation & thème", () => {
     const before = await page.evaluate(() =>
       document.documentElement.classList.contains("light") ? "light" : "dark"
     );
-    await page.getByRole("button", { name: "Basculer le theme" }).click();
+    await page.getByRole("button", { name: "Basculer le thème" }).click();
     await expect
       .poll(async () =>
         page.evaluate(() =>

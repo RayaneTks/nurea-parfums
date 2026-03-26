@@ -30,23 +30,22 @@ function ExternalSearchFootnote({ hint }: { hint: ExternalPerfumeHint }) {
   if (mode === "none") return null;
   if (mode === "legacy-offline") {
     return (
-      <p className="text-[12px] leading-relaxed text-[var(--nurea-text-subtle)] mt-3">
+      <p className="mt-3 text-[12px] leading-relaxed text-[var(--nurea-text-subtle)]">
         Ce parfum ou cette maison n&apos;est pas présenté en fiche individuelle
-        sur notre vitrine en ligne — la conciergerie peut vérifier une commande
-        ou une alternative proche.
+        sur notre vitrine en ligne. La conciergerie peut vérifier une commande
+        ou proposer une alternative proche.
       </p>
     );
   }
   return (
-    <p className="text-[12px] leading-relaxed text-[var(--nurea-text-subtle)] mt-3">
+    <p className="mt-3 text-[12px] leading-relaxed text-[var(--nurea-text-subtle)]">
       Un conseil ou une commande précise : nos canaux ci-dessous complètent ce
       que vous voyez dans le catalogue.
     </p>
   );
 }
 
-/* Parfums signature pour la section featured editorial */
-const FEATURED_IDS = [9, 10]; // Baccarat Rouge 540 & Aventus
+const FEATURED_IDS = [9, 10];
 
 type SortKey = "default" | "name" | "brand";
 
@@ -57,7 +56,9 @@ function categoryFromSearchParams(p: URLSearchParams): Category {
   if (!raw) return "Tout voir";
   try {
     const decoded = decodeURIComponent(raw);
-    return categories.includes(decoded as Category) ? (decoded as Category) : "Tout voir";
+    return categories.includes(decoded as Category)
+      ? (decoded as Category)
+      : "Tout voir";
   } catch {
     return "Tout voir";
   }
@@ -74,11 +75,15 @@ export const HomePageClient = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [searchTerm, setSearchTerm] = useState(() => searchParams.get("q")?.trim() ?? "");
+  const [searchTerm, setSearchTerm] = useState(
+    () => searchParams.get("q")?.trim() ?? ""
+  );
   const [selectedCategory, setSelectedCategory] = useState<Category>(() =>
     categoryFromSearchParams(searchParams)
   );
-  const [sortKey, setSortKey] = useState<SortKey>(() => sortFromSearchParams(searchParams));
+  const [sortKey, setSortKey] = useState<SortKey>(() =>
+    sortFromSearchParams(searchParams)
+  );
   const [scrolled, setScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState<number | null>(null);
 
@@ -93,7 +98,6 @@ export const HomePageClient = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /** Navigation interne / retour navigateur : réapplique l’URL sans scroll forcé vers le hero. */
   useEffect(() => {
     const curr = searchParams.toString();
     if (paramsStringRef.current === null) {
@@ -107,7 +111,6 @@ export const HomePageClient = () => {
     setSortKey(sortFromSearchParams(searchParams));
   }, [searchParams]);
 
-  /** URL reflète filtres + tri (replace, sans scroll) — partageable et cohérent avec le bouton retour. */
   useEffect(() => {
     const t = window.setTimeout(() => {
       const next = new URLSearchParams();
@@ -128,14 +131,17 @@ export const HomePageClient = () => {
     []
   );
 
-  const filteredPerfumes = useMemo(() => {
-    return mockPerfumes.filter((perfume) => {
-      const matchSearch = fuzzySearchMatch(perfume, searchTerm);
-      const matchCategory =
-        selectedCategory === "Tout voir" || perfume.category === selectedCategory;
-      return matchSearch && matchCategory;
-    });
-  }, [searchTerm, selectedCategory]);
+  const filteredPerfumes = useMemo(
+    () =>
+      mockPerfumes.filter((perfume) => {
+        const matchSearch = fuzzySearchMatch(perfume, searchTerm);
+        const matchCategory =
+          selectedCategory === "Tout voir" ||
+          perfume.category === selectedCategory;
+        return matchSearch && matchCategory;
+      }),
+    [searchTerm, selectedCategory]
+  );
 
   const sortedPerfumes = useMemo(() => {
     const list = [...filteredPerfumes];
@@ -161,9 +167,7 @@ export const HomePageClient = () => {
 
   const hasCollectionFilters =
     searchTerm.trim() !== "" || selectedCategory !== "Tout voir";
-
   const hasActiveFilters = hasCollectionFilters || sortKey !== "default";
-
   const showFeatured = !hasCollectionFilters;
 
   const scrollCatalogIntoView = useCallback(() => {
@@ -177,7 +181,6 @@ export const HomePageClient = () => {
     });
   }, []);
 
-  /** Filtre / tri / recherche : ramener la vue en haut du catalogue (première ligne de cartes). */
   useEffect(() => {
     if (catalogScrollSkipRef.current) {
       catalogScrollSkipRef.current = false;
@@ -235,57 +238,62 @@ export const HomePageClient = () => {
   const conciergeWhatsappHref = useMemo(() => {
     const num = CONTACT.whatsapp.match(/wa\.me\/(\d+)/)?.[1] ?? "";
     const label =
-      externalHint?.displayName ?? (searchTerm.trim() || "un parfum");
-    const msg = `Bonjour, je cherche « ${label} ». Pouvez-vous me le procurer ou me proposer une alternative ?`;
+      externalHint?.displayName ?? (searchTerm.trim() || "une référence");
+    const msg = `Bonjour, je cherche « ${label} ». Pouvez-vous me confirmer la disponibilité ou me proposer une alternative ?`;
     return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
   }, [searchTerm, externalHint]);
 
   const focusCatalogSearch = useCallback(() => {
-    document.getElementById("collection")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document
+      .getElementById("collection")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
     window.requestAnimationFrame(() => {
       searchInputRef.current?.focus({ preventScroll: true });
     });
   }, []);
 
   return (
-    <div id="main-content" className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
+    <div
+      id="main-content"
+      className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]"
+    >
       <Navbar scrolled={scrolled} onOpenSearch={focusCatalogSearch} />
 
-      {/* HERO */}
       <Hero />
-
-      {/* SEPARATOR */}
       <Separator variant="copper" withMonogram />
 
-      {/* FEATURED EDITORIAL */}
-      {showFeatured && <FeaturedSection perfumes={featuredPerfumes} />}
+      {showFeatured && (
+        <div className="hidden md:block">
+          <FeaturedSection perfumes={featuredPerfumes} />
+          <Separator variant="bordeaux" />
+        </div>
+      )}
 
-      {/* SEPARATOR */}
-      {showFeatured && <Separator variant="bordeaux" />}
-
-      {/* LA COLLECTION */}
       <main
         id="collection"
-        className="scroll-mt-[calc(env(safe-area-inset-top,0px)+3.75rem)] md:scroll-mt-[calc(env(safe-area-inset-top,0px)+4.5rem)] w-full flex-grow max-w-[1200px] mx-auto px-4 md:px-10 py-16 pb-[max(3.5rem,env(safe-area-inset-bottom,0px))] md:py-24"
+        className="mx-auto w-full max-w-[1200px] flex-grow scroll-mt-[calc(env(safe-area-inset-top,0px)+3.75rem)] px-4 py-12 pb-[max(3.5rem,env(safe-area-inset-bottom,0px))] md:scroll-mt-[calc(env(safe-area-inset-top,0px)+4.5rem)] md:px-10 md:py-24"
       >
-        {/* Header */}
         <ScrollReveal className="mb-8 md:mb-12">
           <div>
-            <span className="block mb-2 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
+            <span className="mb-2 block text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
               Catalogue
             </span>
-            <h2 className="font-serif text-[clamp(24px,5vw,36px)] text-[var(--nurea-text)] leading-tight">
+            <h2 className="font-serif text-[clamp(24px,5vw,36px)] leading-tight text-[var(--nurea-text)]">
               La Collection
             </h2>
             <span className="mt-1.5 block text-[11px] tracking-[0.1em] text-[var(--nurea-text-muted)]">
               {filteredPerfumes.length} création
               {filteredPerfumes.length !== 1 ? "s" : ""}
             </span>
+            <p className="mt-3 max-w-xl text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
+              Explorez les maisons et les références présentées ici, puis
+              reprenez l&apos;échange avec la conciergerie pour confirmer une
+              disponibilité, un arrivage ou une recommandation.
+            </p>
           </div>
         </ScrollReveal>
 
-        {/* Recherche unique + filtres — sticky */}
-        <div className="sticky z-30 -mx-4 mb-6 border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-4 pb-3 [top:calc(env(safe-area-inset-top,0px)+3.625rem)] md:top-[calc(env(safe-area-inset-top,0px)+4.25rem)] md:mx-0 md:px-0">
+        <div className="sticky z-30 -mx-4 mb-4 border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-4 pb-3 [top:calc(env(safe-area-inset-top,0px)+3.625rem)] md:mx-0 md:mb-3 md:px-0 md:top-[calc(env(safe-area-inset-top,0px)+4.25rem)]">
           <ScrollReveal className="mb-0" delay={80}>
             <div className="relative mb-3">
               <label htmlFor={CATALOG_SEARCH_ID} className="sr-only">
@@ -305,10 +313,10 @@ export const HomePageClient = () => {
                 autoComplete="off"
                 enterKeyHint="search"
                 inputMode="search"
-                placeholder="Parfum, maison, marque, note…"
+                placeholder="Maison, parfum, gamme, note…"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full min-h-[48px] border-b border-[var(--nurea-border-hover)] bg-transparent py-3 pl-9 pr-11 text-base leading-snug text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] focus:border-[var(--nurea-accent)] focus:outline-none transition-colors duration-300 touch-manipulation md:min-h-[52px] md:text-[15px]"
+                className="w-full min-h-[48px] border-b border-[var(--nurea-border-hover)] bg-transparent py-3 pl-9 pr-11 text-base leading-snug text-[var(--nurea-text)] transition-colors duration-300 placeholder:text-[var(--nurea-text-subtle)] focus:border-[var(--nurea-accent)] focus:outline-none touch-manipulation md:min-h-[52px] md:text-[15px]"
               />
               {searchTerm.trim() !== "" && (
                 <button
@@ -328,7 +336,7 @@ export const HomePageClient = () => {
                   type="button"
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`shrink-0 min-h-[44px] px-3.5 py-2.5 text-[11px] font-medium uppercase tracking-nurea-label transition-all duration-300 relative md:px-4 md:py-3 md:text-[12px] touch-manipulation ${
+                  className={`relative shrink-0 min-h-[44px] px-3.5 py-2.5 text-[11px] font-medium uppercase tracking-nurea-label transition-all duration-300 touch-manipulation md:px-4 md:py-3 md:text-[12px] ${
                     selectedCategory === category
                       ? "text-[var(--nurea-accent)]"
                       : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
@@ -336,7 +344,7 @@ export const HomePageClient = () => {
                 >
                   {category}
                   <span
-                    className={`absolute bottom-0 left-0 h-[2px] w-full bg-[var(--nurea-accent)] transition-transform duration-300 origin-left ${
+                    className={`absolute bottom-0 left-0 h-[2px] w-full origin-left bg-[var(--nurea-accent)] transition-transform duration-300 ${
                       selectedCategory === category
                         ? "scale-x-100"
                         : "scale-x-0"
@@ -346,25 +354,24 @@ export const HomePageClient = () => {
               ))}
             </div>
           </ScrollReveal>
-
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <label className="flex min-w-[min(100%,200px)] flex-1 items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
-              Trier
-              <select
-                value={sortKey}
-                onChange={(e) => setSortKey(e.target.value as SortKey)}
-                aria-label="Trier le catalogue"
-                className="min-h-[44px] min-w-0 flex-1 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-base font-medium normal-case tracking-normal text-[var(--nurea-text)] focus:outline-none focus:border-[var(--nurea-accent)] touch-manipulation md:text-[11px]"
-              >
-                <option value="default">Ordre du catalogue</option>
-                <option value="name">Nom (A-Z)</option>
-                <option value="brand">Marque (A-Z)</option>
-              </select>
-            </label>
-          </div>
         </div>
 
-        {/* Active filters */}
+        <div className="mb-6 flex flex-wrap items-center gap-3 md:mb-8">
+          <label className="flex min-w-[min(100%,220px)] flex-1 items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
+            Trier
+            <select
+              value={sortKey}
+              onChange={(e) => setSortKey(e.target.value as SortKey)}
+              aria-label="Trier le catalogue"
+              className="min-h-[44px] min-w-0 flex-1 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-base font-medium normal-case tracking-normal text-[var(--nurea-text)] focus:border-[var(--nurea-accent)] focus:outline-none touch-manipulation md:text-[11px]"
+            >
+              <option value="default">Ordre du catalogue</option>
+              <option value="name">Nom (A-Z)</option>
+              <option value="brand">Marque (A-Z)</option>
+            </select>
+          </label>
+        </div>
+
         {hasActiveFilters && (
           <div className="mb-6 flex flex-wrap items-center gap-1.5 animate-fade-in-up">
             <span className="mr-1 text-[10px] uppercase tracking-nurea-wide text-[var(--nurea-text-muted)]">
@@ -372,7 +379,7 @@ export const HomePageClient = () => {
             </span>
             {searchTerm.trim() !== "" && (
               <FilterChip
-                label={`\u00AB ${searchTerm.trim()} \u00BB`}
+                label={`« ${searchTerm.trim()} »`}
                 onRemove={() => setSearchTerm("")}
               />
             )}
@@ -384,32 +391,31 @@ export const HomePageClient = () => {
             )}
             {sortKey !== "default" && (
               <FilterChip
-                label="Tri personnalis\u00e9"
+                label="Tri personnalisé"
                 onRemove={() => setSortKey("default")}
               />
             )}
             <button
               type="button"
               onClick={handleResetFilters}
-              className="ml-1 min-h-[44px] px-1 text-[10px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors touch-manipulation"
+              className="ml-1 min-h-[44px] px-1 text-[10px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-accent)] touch-manipulation"
             >
               Tout effacer
             </button>
           </div>
         )}
 
-        {/* Grid or empty state */}
         {sortedPerfumes.length === 0 ? (
           <div className="py-16 md:py-20">
             <div className="mx-auto max-w-xl text-center">
               {searchTerm.trim() !== "" ? (
                 <>
-                  <p className="font-serif text-xl text-[var(--nurea-text)] mb-3 md:text-2xl">
+                  <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
                     {externalHint
                       ? `Vous cherchez « ${externalHint.displayName} » ?`
                       : `Aucun résultat pour « ${searchTerm.trim()} »`}
                   </p>
-                  <p className="text-[13px] leading-relaxed text-[var(--nurea-text-muted)] mb-2">
+                  <p className="mb-2 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
                     {externalHint
                       ? externalHint.caption
                       : EXTERNAL_SEARCH_FALLBACK_MESSAGE}
@@ -420,11 +426,12 @@ export const HomePageClient = () => {
                 </>
               ) : (
                 <>
-                  <p className="font-serif text-xl text-[var(--nurea-text)] mb-3 md:text-2xl">
+                  <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
                     Aucune création ne correspond à ces filtres
                   </p>
-                  <p className="text-[13px] text-[var(--nurea-text-muted)] mb-2">
-                    Élargissez la recherche ou explorez nos suggestions ci-dessous.
+                  <p className="mb-2 text-[13px] text-[var(--nurea-text-muted)]">
+                    Élargissez la recherche ou explorez nos suggestions
+                    ci-dessous.
                   </p>
                 </>
               )}
@@ -435,11 +442,11 @@ export const HomePageClient = () => {
                   rel="noopener noreferrer"
                   className="btn-nurea text-[10px] md:text-[11px]"
                 >
-                  Demander par WhatsApp
+                  Continuer sur WhatsApp
                 </a>
                 <Link
                   href="/contact"
-                  className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] hover:text-[var(--nurea-accent)] transition-colors"
+                  className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-accent)]"
                 >
                   Conciergerie
                 </Link>
@@ -459,7 +466,7 @@ export const HomePageClient = () => {
                       perfume={perfume}
                       activeItem={activeItem}
                       setActiveItem={setActiveItem}
-                      featured={perfume.category === "Gammes Compl\u00e8tes"}
+                      featured={perfume.category === "Gammes Complètes"}
                       imagePriority={index < 6}
                     />
                   ))}
@@ -469,26 +476,32 @@ export const HomePageClient = () => {
           </div>
         ) : (
           <div className="catalogue-grid stagger-grid">
-                  {sortedPerfumes.map((perfume, index) => (
-                    <PerfumeCard
-                      key={perfume.id}
-                      perfume={perfume}
-                      activeItem={activeItem}
-                      setActiveItem={setActiveItem}
-                      featured={perfume.category === "Gammes Compl\u00e8tes"}
-                      imagePriority={index < 6}
-                    />
-                  ))}
+            {sortedPerfumes.map((perfume, index) => (
+              <PerfumeCard
+                key={perfume.id}
+                perfume={perfume}
+                activeItem={activeItem}
+                setActiveItem={setActiveItem}
+                featured={perfume.category === "Gammes Complètes"}
+                imagePriority={index < 6}
+              />
+            ))}
           </div>
         )}
       </main>
+
+      {showFeatured && (
+        <div className="md:hidden">
+          <Separator variant="bordeaux" className="pt-0" />
+          <FeaturedSection perfumes={featuredPerfumes} />
+        </div>
+      )}
 
       <Footer />
     </div>
   );
 };
 
-/* Filter chip — toute la puce = cible 44px+ (accessibilité tactile) */
 const FilterChip = ({
   label,
   onRemove,

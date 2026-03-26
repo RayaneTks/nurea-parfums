@@ -2,15 +2,16 @@
 
 import type { FC, MouseEvent } from "react";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "next-themes";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, MessageCircleMore } from "lucide-react";
 
 export const Hero: FC = () => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  /** SSR + 1er rendu client : `resolvedTheme` est souvent `undefined` → aligné sur `defaultTheme="dark"` du provider. */
+
   const isDark = resolvedTheme !== "light";
   const showThemeContent = mounted;
 
@@ -23,8 +24,7 @@ export const Hero: FC = () => {
   };
 
   return (
-    <header className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[var(--nurea-bg)]">
-      {/* Background image + overlays — dark mode only */}
+    <header className="relative flex min-h-[88svh] items-center justify-center overflow-hidden bg-[var(--nurea-bg)] pb-10 pt-[calc(env(safe-area-inset-top,0px)+4.5rem)] md:min-h-[100svh] md:pb-16 md:pt-24">
       {showThemeContent && isDark && (
         <>
           <Image
@@ -49,7 +49,6 @@ export const Hero: FC = () => {
         </>
       )}
 
-      {/* Light mode — warm layered gradients */}
       {showThemeContent && !isDark && (
         <>
           <div
@@ -76,23 +75,26 @@ export const Hero: FC = () => {
         </>
       )}
 
-      {/* Monogramme NP — large watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <Image
-          src={isDark ? "/branding/monogram/np-free-cuivre.png" : "/branding/monogram/np-free-bordeaux.png"}
+          src={
+            isDark
+              ? "/branding/monogram/np-free-cuivre.png"
+              : "/branding/monogram/np-free-bordeaux.png"
+          }
           alt=""
           width={600}
           height={600}
-          className="w-[280px] h-[280px] md:w-[440px] md:h-[440px] lg:w-[540px] lg:h-[540px] select-none"
+          loading="eager"
+          className="h-[280px] w-[280px] select-none md:h-[440px] md:w-[440px] lg:h-[540px] lg:w-[540px]"
           style={{
             opacity: isDark ? 0.04 : 0.045,
           }}
         />
       </div>
 
-      {/* Radial glow */}
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] md:w-[700px] md:h-[700px] pointer-events-none"
+        className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 pointer-events-none md:h-[700px] md:w-[700px]"
         style={{
           background: isDark
             ? "radial-gradient(circle, rgba(139,58,58,0.08) 0%, transparent 60%)"
@@ -100,10 +102,9 @@ export const Hero: FC = () => {
         }}
       />
 
-      {/* Decorative side lines — desktop only */}
-      <div className="absolute left-6 top-1/2 -translate-y-1/2 hidden lg:block">
+      <div className="absolute left-6 top-1/2 hidden -translate-y-1/2 lg:block">
         <div
-          className="w-[1px] h-28 bg-gradient-to-b from-transparent via-[var(--nurea-accent)] to-transparent opacity-20"
+          className="h-28 w-[1px] bg-gradient-to-b from-transparent via-[var(--nurea-accent)] to-transparent opacity-20"
           style={{
             animation:
               "heroLineGrow 1.4s cubic-bezier(0.16,1,0.3,1) 1s both",
@@ -111,9 +112,9 @@ export const Hero: FC = () => {
           }}
         />
       </div>
-      <div className="absolute right-6 top-1/2 -translate-y-1/2 hidden lg:block">
+      <div className="absolute right-6 top-1/2 hidden -translate-y-1/2 lg:block">
         <div
-          className="w-[1px] h-28 bg-gradient-to-b from-transparent via-[var(--nurea-accent)] to-transparent opacity-20"
+          className="h-28 w-[1px] bg-gradient-to-b from-transparent via-[var(--nurea-accent)] to-transparent opacity-20"
           style={{
             animation:
               "heroLineGrow 1.4s cubic-bezier(0.16,1,0.3,1) 1.2s both",
@@ -122,8 +123,7 @@ export const Hero: FC = () => {
         />
       </div>
 
-      {/* Content */}
-      <div className="hero-stagger relative z-10 flex max-w-2xl flex-col items-center text-center px-5">
+      <div className="hero-stagger relative z-10 flex max-w-2xl flex-col items-center px-5 text-center">
         <span className="mb-5 text-[11px] font-medium uppercase tracking-nurea-wide text-[var(--nurea-accent)] md:text-[12px]">
           Maison de Parfums
         </span>
@@ -136,30 +136,45 @@ export const Hero: FC = () => {
           </em>
         </h1>
 
-        <p className="mb-10 max-w-sm text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] md:text-[15px] md:max-w-md">
-          Des fragrances d&apos;exception sélectionnées avec exigence.
-          <br className="hidden md:block" />
-          Un catalogue vivant, une invitation au voyage olfactif.
+        <p className="mb-8 max-w-md text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] md:max-w-xl">
+          Une vitrine pensée pour parcourir la maison, retrouver des
+          références et poursuivre l&apos;échange via la conciergerie sur
+          WhatsApp ou Snapchat.
         </p>
 
-        <a
-          href="#collection"
-          onClick={handleScroll}
-          className="btn-nurea btn-accent group shadow-[0_0_40px_-8px_var(--nurea-glow)]"
-          aria-label="Découvrir la collection"
-        >
-          Découvrir la Collection
-          <ChevronDown
-            size={14}
-            className="transition-transform duration-500 group-hover:translate-y-1"
-          />
-        </a>
+        <div className="flex w-full max-w-md flex-col items-center justify-center gap-3 sm:flex-row">
+          <a
+            href="#collection"
+            onClick={handleScroll}
+            className="btn-nurea btn-accent group w-full justify-center shadow-[0_0_40px_-8px_var(--nurea-glow)] sm:w-auto"
+            aria-label="Voir la collection"
+          >
+            Voir la Collection
+            <ChevronDown
+              size={14}
+              className="transition-transform duration-500 group-hover:translate-y-1"
+            />
+          </a>
+          <Link
+            href="/contact"
+            className="btn-nurea group w-full justify-center sm:w-auto"
+          >
+            Parler à la conciergerie
+            <MessageCircleMore
+              size={14}
+              className="text-[var(--nurea-accent)] transition-transform duration-300 group-hover:-rotate-6"
+            />
+          </Link>
+        </div>
+
+        <p className="mt-5 max-w-md text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-subtle)] md:text-[11px]">
+          Catalogue vivant • Disponibilités confirmées en conversation
+        </p>
       </div>
 
-      {/* Bottom pulse line */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
+      <div className="absolute bottom-0 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3">
         <div
-          className="w-[1px] h-16 bg-gradient-to-b from-[var(--nurea-accent)] to-transparent"
+          className="h-16 w-[1px] bg-gradient-to-b from-[var(--nurea-accent)] to-transparent"
           style={{ animation: "heroPulse 3s ease-in-out infinite" }}
         />
       </div>

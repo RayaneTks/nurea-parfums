@@ -36,22 +36,30 @@ export const ContactSection: FC = () => {
     subject: "",
     message: "",
   });
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ContactFormState, string>>>({});
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof ContactFormState, string>>
+  >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submitChannel, setSubmitChannel] = useState<"resend" | "mailto" | null>(null);
+  const [submitChannel, setSubmitChannel] = useState<"resend" | "mailto" | null>(
+    null
+  );
   const [serverError, setServerError] = useState<string | null>(null);
 
   const handleContactSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setServerError(null);
+
     const nextErrors: Partial<Record<keyof ContactFormState, string>> = {};
     if (!formState.name.trim()) nextErrors.name = "Indiquez votre nom.";
     if (!formState.email.trim()) nextErrors.email = "Indiquez votre e-mail.";
-    else if (!EMAIL_RE.test(formState.email.trim()))
+    else if (!EMAIL_RE.test(formState.email.trim())) {
       nextErrors.email = "Format d’e-mail invalide.";
+    }
     if (!formState.subject.trim()) nextErrors.subject = "Indiquez un sujet.";
-    if (!formState.message.trim()) nextErrors.message = "Écrivez votre message.";
+    if (!formState.message.trim()) {
+      nextErrors.message = "Écrivez votre message.";
+    }
 
     setFieldErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
@@ -69,6 +77,7 @@ export const ContactSection: FC = () => {
         setServerError(result.error);
         return;
       }
+
       if (result.via === "mailto") {
         const mailto = buildContactMailto({
           name: formState.name.trim(),
@@ -83,12 +92,15 @@ export const ContactSection: FC = () => {
         setIsSubmitted(true);
         return;
       }
+
       setSubmitChannel("resend");
       setFormState({ name: "", email: "", subject: "", message: "" });
       setFieldErrors({});
       setIsSubmitted(true);
     } catch {
-      setServerError("Envoi impossible pour le moment. Réessayez ou utilisez WhatsApp.");
+      setServerError(
+        "Envoi impossible pour le moment. Réessayez ou utilisez WhatsApp."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -96,39 +108,41 @@ export const ContactSection: FC = () => {
 
   return (
     <main id="main-content" className="relative w-full overflow-x-clip">
-      <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[350px] w-[500px] bg-[var(--nurea-accent)] opacity-[0.025] blur-[100px]" />
+      <div className="pointer-events-none absolute left-1/2 top-0 h-[350px] w-[500px] -translate-x-1/2 bg-[var(--nurea-accent)] opacity-[0.025] blur-[100px]" />
 
-      <div className="mx-auto max-w-[1200px] px-4 md:px-10 pt-28 pb-16 md:pt-40 md:pb-24">
+      <div className="mx-auto max-w-[1200px] px-4 pb-16 pt-28 md:px-10 md:pb-24 md:pt-40">
         <ScrollReveal className="mx-auto mb-16 max-w-2xl text-center md:mb-24">
           <span className="mb-4 block text-[11px] font-medium uppercase tracking-nurea-wide text-[var(--nurea-accent)] md:text-[12px]">
             Conciergerie Privée
           </span>
           <h1 className="mb-5 font-serif text-[clamp(30px,6vw,52px)] leading-[1.08] text-[var(--nurea-text)]">
-            L&apos;Art de{" "}
-            <em className="italic">l&apos;Échange</em>
+            L&apos;Art de <em className="italic">l&apos;Échange</em>
           </h1>
           <p className="mx-auto max-w-md text-[13px] leading-[1.85] text-[var(--nurea-text-muted)] md:text-[14px]">
-            Notre Maison opère exclusivement sur commande via nos réseaux
-            dédiés. Pour toute acquisition ou conseil olfactif, nous nous tenons
-            à votre entière disposition.
+            Le site présente notre sélection comme une vitrine de la maison.
+            Pour confirmer une disponibilité, reprendre un échange ou demander
+            un conseil olfactif, la conciergerie vous répond sur les canaux de
+            la maison.
           </p>
         </ScrollReveal>
 
-        <ScrollReveal direction="scale" className="flex justify-center mb-16 md:mb-24">
+        <ScrollReveal
+          direction="scale"
+          className="mb-16 flex justify-center md:mb-24"
+        >
           <Image
             src="/branding/separators/nurea_separator_copper.svg"
             alt=""
             width={100}
             height={10}
-            className="max-w-[90px] opacity-25"
-            style={{ height: "auto" }}
+            className="h-auto w-auto max-w-[90px] opacity-25"
           />
         </ScrollReveal>
 
         <div className="mx-auto grid max-w-4xl gap-12 md:grid-cols-2 md:gap-16">
           <ScrollReveal direction="left" className="flex flex-col gap-4">
             <h2 className="mb-1 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-text-muted)]">
-              Commander
+              Continuer la discussion
             </h2>
 
             <a
@@ -138,16 +152,11 @@ export const ContactSection: FC = () => {
               className="group relative flex items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-5 transition-all duration-500 hover:border-[var(--nurea-accent)] hover:bg-[var(--nurea-surface-hover)] active:scale-[0.99]"
             >
               <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors duration-300 group-hover:border-[var(--nurea-accent)]">
-                <Image
-                  src={whatsappIcon}
-                  alt=""
-                  width={22}
-                  height={22}
-                />
+                <Image src={whatsappIcon} alt="" width={22} height={22} />
               </span>
-              <div className="flex-1 min-w-0">
-                <span className="block text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] mb-0.5 md:text-[11px]">
-                  Messages &amp; Commandes
+              <div className="min-w-0 flex-1">
+                <span className="mb-0.5 block text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] md:text-[11px]">
+                  Canal prioritaire
                 </span>
                 <span className="font-serif text-base text-[var(--nurea-text)] md:text-lg">
                   WhatsApp
@@ -166,16 +175,11 @@ export const ContactSection: FC = () => {
               className="group relative flex items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-5 transition-all duration-500 hover:border-[var(--nurea-snapchat)] hover:bg-[var(--nurea-surface-hover)] active:scale-[0.99]"
             >
               <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors duration-300 group-hover:border-[var(--nurea-snapchat)]">
-                <Image
-                  src={snapchatIcon}
-                  alt=""
-                  width={22}
-                  height={22}
-                />
+                <Image src={snapchatIcon} alt="" width={22} height={22} />
               </span>
-              <div className="flex-1 min-w-0">
-                <span className="block text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] mb-0.5 md:text-[11px]">
-                  Contacter sur Snapchat
+              <div className="min-w-0 flex-1">
+                <span className="mb-0.5 block text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] md:text-[11px]">
+                  Reprendre l&apos;échange
                 </span>
                 <span className="font-serif text-base text-[var(--nurea-text)] md:text-lg">
                   Snapchat
@@ -188,7 +192,7 @@ export const ContactSection: FC = () => {
             </a>
 
             <div className="mt-3 border-t border-[var(--nurea-border)] pt-5">
-              <span className="block text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] mb-1.5 md:text-[11px]">
+              <span className="mb-1.5 block text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] md:text-[11px]">
                 Correspondance
               </span>
               <a
@@ -210,7 +214,7 @@ export const ContactSection: FC = () => {
               </p>
 
               {isSubmitted ? (
-                <div className="flex flex-col items-center justify-center py-14 text-center animate-fade-in-up">
+                <div className="animate-fade-in-up flex flex-col items-center justify-center py-14 text-center">
                   <Image
                     src="/branding/monogram/np-circle-cuivre.png"
                     alt=""
@@ -223,19 +227,19 @@ export const ContactSection: FC = () => {
                   </span>
                   <h4 className="mb-3 font-serif text-xl text-[var(--nurea-text)]">
                     {submitChannel === "resend"
-                      ? "Merci — votre message a bien été transmis."
-                      : "Votre message est prêt à l&apos;envoi."}
+                      ? "Votre message a bien été transmis."
+                      : "Votre message est prêt dans votre messagerie."}
                   </h4>
                   <p className="max-w-xs text-[12px] leading-[1.8] text-[var(--nurea-text-muted)]">
                     {submitChannel === "resend" ? (
                       <>
-                        Notre équipe reviendra vers vous dans les plus brefs
-                        délais.
+                        La conciergerie reviendra vers vous avec la suite la
+                        plus adaptée à votre demande.
                       </>
                     ) : (
                       <>
-                        Si votre application e-mail ne s&apos;ouvre pas,
-                        écrivez directement à{" "}
+                        Si votre application e-mail ne s&apos;ouvre pas, écrivez
+                        directement à{" "}
                         <a
                           className="text-[var(--nurea-accent)] underline-offset-2 hover:underline"
                           href={`mailto:${CONTACT.email}`}
@@ -307,9 +311,9 @@ export const ContactSection: FC = () => {
                     />
                     <label
                       htmlFor="message"
-                      className={`absolute left-0 top-5 text-[12px] text-[var(--nurea-text-muted)] transition-all duration-300 peer-focus:-top-1 peer-focus:text-[8px] peer-focus:tracking-[0.2em] peer-focus:uppercase peer-focus:text-[var(--nurea-accent)] md:text-[13px] ${
+                      className={`absolute left-0 top-5 text-[12px] text-[var(--nurea-text-muted)] transition-all duration-300 peer-focus:-top-1 peer-focus:text-[8px] peer-focus:uppercase peer-focus:tracking-[0.2em] peer-focus:text-[var(--nurea-accent)] md:text-[13px] ${
                         formState.message
-                          ? "-top-1 text-[8px] tracking-[0.2em] uppercase text-[var(--nurea-accent)]"
+                          ? "-top-1 text-[8px] uppercase tracking-[0.2em] text-[var(--nurea-accent)]"
                           : ""
                       }`}
                     >
@@ -327,10 +331,9 @@ export const ContactSection: FC = () => {
                   </div>
 
                   <p className="text-[11px] leading-relaxed text-[var(--nurea-text-muted)]">
-                    Avec une clé Resend configurée sur le serveur, le message
-                    part directement vers la conciergerie. Sinon, votre
-                    messagerie s&apos;ouvre — aucune copie n&apos;est stockée
-                    sur ce site.
+                    WhatsApp reste le canal le plus direct pour une référence
+                    précise. Ce formulaire convient si vous préférez initier ou
+                    reprendre l&apos;échange par écrit.
                   </p>
 
                   {serverError ? (
@@ -349,10 +352,7 @@ export const ContactSection: FC = () => {
                     ) : (
                       <>
                         Envoyer la demande
-                        <Send
-                          size={12}
-                          className="text-[var(--nurea-accent)]"
-                        />
+                        <Send size={12} className="text-[var(--nurea-accent)]" />
                       </>
                     )}
                   </button>
@@ -384,6 +384,7 @@ const FloatingInput = ({
   onChange: (v: string) => void;
 }) => {
   const errId = `${id}-error`;
+
   return (
     <div className="relative">
       <input
@@ -399,9 +400,9 @@ const FloatingInput = ({
       />
       <label
         htmlFor={id}
-        className={`absolute left-0 top-3 text-[12px] text-[var(--nurea-text-muted)] transition-all duration-300 peer-focus:-top-4 peer-focus:text-[8px] peer-focus:tracking-[0.2em] peer-focus:uppercase peer-focus:text-[var(--nurea-accent)] md:text-[13px] ${
+        className={`absolute left-0 top-3 text-[12px] text-[var(--nurea-text-muted)] transition-all duration-300 peer-focus:-top-4 peer-focus:text-[8px] peer-focus:uppercase peer-focus:tracking-[0.2em] peer-focus:text-[var(--nurea-accent)] md:text-[13px] ${
           value
-            ? "-top-4 text-[8px] tracking-[0.2em] uppercase text-[var(--nurea-accent)]"
+            ? "-top-4 text-[8px] uppercase tracking-[0.2em] text-[var(--nurea-accent)]"
             : ""
         }`}
       >
