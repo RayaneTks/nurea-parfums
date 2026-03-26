@@ -28,6 +28,15 @@ test.describe("Catalogue — parcours principaux", () => {
     await expect(zone.getByText(/\d+ création/)).toBeVisible();
   });
 
+  test("ouvre le panneau Explorer depuis la barre de navigation", async ({
+    page,
+  }) => {
+    await page.getByRole("button", { name: "Explorer le catalogue" }).click();
+    await expect(
+      page.getByRole("dialog", { name: "Explorer le catalogue" })
+    ).toBeVisible();
+  });
+
   test("ne monte aucun panneau de contact caché au chargement", async ({
     page,
   }) => {

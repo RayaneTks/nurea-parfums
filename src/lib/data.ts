@@ -22,6 +22,8 @@ export interface Perfume {
   id: number;
   name: string;
   brand: string;
+  /** Renseigné par le catalogue serveur (DB / dérivé du nom). */
+  brandSlug?: string;
   category: Category;
   image: string;
   imageLight?: string;

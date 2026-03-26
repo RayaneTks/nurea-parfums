@@ -1,6 +1,7 @@
 import type { Category, Perfume } from "@/lib/data";
 import { categories, mockPerfumes } from "@/lib/data";
 import { prisma } from "@/lib/db/prisma";
+import { brandSlug as slugForBrand } from "@/lib/slugify";
 import {
   prismaCatalogInCooldown,
   registerPrismaCatalogFailure,
@@ -18,7 +19,7 @@ function rowToPerfume(row: {
   image: string;
   imageLight: string | null;
   imageDark: string | null;
-  brand: { name: string };
+  brand: { name: string; slug: string };
   aliases: { alias: string }[];
   tags: { tag: string }[];
   classics: { line: string }[];
@@ -31,6 +32,7 @@ function rowToPerfume(row: {
     id: row.id,
     name: row.name,
     brand: row.brand.name,
+    brandSlug: row.brand.slug,
     category: cat,
     image: row.image,
     imageLight: row.imageLight ?? undefined,
@@ -45,12 +47,15 @@ function rowToPerfume(row: {
  * Catalogue publié : PostgreSQL si `DATABASE_URL`, sinon `mockPerfumes` (comportement actuel).
  */
 export async function getCatalogPerfumes(): Promise<Perfume[]> {
+  const fromMock = (): Perfume[] =>
+    mockPerfumes.map((p) => ({ ...p, brandSlug: slugForBrand(p.brand) }));
+
   if (!process.env.DATABASE_URL?.trim()) {
-    return mockPerfumes;
+    return fromMock();
   }
 
   if (prismaCatalogInCooldown()) {
-    return mockPerfumes;
+    return fromMock();
   }
 
   try {
@@ -72,6 +77,6 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
   } catch (e) {
     registerPrismaCatalogFailure();
     console.error("[getCatalogPerfumes] fallback mock:", e);
-    return mockPerfumes;
+    return fromMock();
   }
 }

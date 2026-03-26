@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { HomePageClient } from "@/components/home/HomePageClient";
+import { getCatalogBrowse } from "@/lib/catalog/getCatalogBrowse";
 import { getCatalogPerfumes } from "@/lib/catalog/getCatalogPerfumes";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -31,10 +32,13 @@ function HomeFallback() {
 }
 
 export default async function HomePage() {
-  const catalogPerfumes = await getCatalogPerfumes();
+  const [catalogPerfumes, browseBrands] = await Promise.all([
+    getCatalogPerfumes(),
+    getCatalogBrowse(),
+  ]);
   return (
     <Suspense fallback={<HomeFallback />}>
-      <HomePageClient catalogPerfumes={catalogPerfumes} />
+      <HomePageClient catalogPerfumes={catalogPerfumes} browseBrands={browseBrands} />
     </Suspense>
   );
 }

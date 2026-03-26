@@ -32,13 +32,30 @@ enum ImportSuggestionStatus {
   IMPORTED
 }
 
+/// Ligne proposée chez Nurea : complète vs sélection partielle (éditable admin).
+enum BrandAssortment {
+  UNSET
+  COMPLETE
+  CURATED
+}
+
+/// Univers marché pour le panneau « explorer » et filtres vitrine.
+enum BrandPositioning {
+  UNSET
+  NICHE
+  DESIGNER
+  ARTISAN
+}
+
 model Brand {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  slug      String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  perfumes  Perfume[]
+  id           String           @id @default(cuid())
+  name         String           @unique
+  slug         String           @unique
+  assortment   BrandAssortment  @default(UNSET)
+  positioning  BrandPositioning @default(UNSET)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  perfumes     Perfume[]
 }
 
 model Perfume {

@@ -1,4 +1,8 @@
 import { PrismaClient } from "@prisma/client";
+import {
+  deriveAssortmentFromPerfumeCategories,
+  derivePositioningForSeed,
+} from "../src/lib/catalog/brandTaxonomy";
 import { mockPerfumes, normalizeForFuzzy } from "../src/lib/data";
 import { brandSlug, perfumeSlug } from "../src/lib/slugify";
 
@@ -13,10 +17,15 @@ async function main() {
 
   for (const name of brandNames) {
     const slug = brandSlug(name);
+    const cats = [
+      ...new Set(mockPerfumes.filter((p) => p.brand === name).map((p) => p.category)),
+    ];
+    const assortment = deriveAssortmentFromPerfumeCategories(cats);
+    const positioning = derivePositioningForSeed(name);
     const b = await prisma.brand.upsert({
       where: { name },
-      create: { name, slug },
-      update: { slug },
+      create: { name, slug, assortment, positioning },
+      update: { slug, assortment, positioning },
     });
     brandIdByName.set(name, b.id);
   }

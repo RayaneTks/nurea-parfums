@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
+import { CatalogBrowseDrawer } from "@/components/home/CatalogBrowseDrawer";
 import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/features/Hero";
 import { FeaturedSection } from "@/components/features/FeaturedSection";
@@ -24,6 +25,13 @@ import {
   type Perfume,
 } from "@/lib/data";
 import { formatExternalSuggestionDisplay } from "@/lib/formatExternalSuggestionDisplay";
+import {
+  BRAND_POSITIONING_LABELS,
+  queryToPositioning,
+  positioningToQuery,
+} from "@/lib/catalog/brandTaxonomy";
+import type { CatalogBrowseBrand, CatalogPositioning } from "@/lib/catalog/catalogBrowseTypes";
+import { brandSlug } from "@/lib/slugify";
 import type {
   ExternalPerfumeSuggestion,
   PerfumeSearchResponse,
@@ -82,9 +90,14 @@ function sortFromSearchParams(p: URLSearchParams): SortKey {
 
 type HomePageClientProps = {
   catalogPerfumes: Perfume[];
+  browseBrands: CatalogBrowseBrand[];
 };
 
-export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
+function resolveBrandSlug(p: Perfume): string {
+  return p.brandSlug ?? brandSlug(p.brand);
+}
+
+export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClientProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -98,8 +111,16 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
   const [sortKey, setSortKey] = useState<SortKey>(() =>
     sortFromSearchParams(searchParams)
   );
+  const [maisonSlug, setMaisonSlug] = useState(
+    () => searchParams.get("maison")?.trim() ?? ""
+  );
+  const [universFilter, setUniversFilter] = useState(
+    () => searchParams.get("univers")?.trim() ?? ""
+  );
   const [scrolled, setScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState<number | null>(null);
+  const [browseOpen, setBrowseOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const paramsStringRef = useRef<string | null>(null);
@@ -108,6 +129,8 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
   const [searchFallback, setSearchFallback] = useState<SearchFallbackState>({
     kind: "idle",
   });
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -126,6 +149,8 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
     setSearchTerm(searchParams.get("q")?.trim() ?? "");
     setSelectedCategory(categoryFromSearchParams(searchParams));
     setSortKey(sortFromSearchParams(searchParams));
+    setMaisonSlug(searchParams.get("maison")?.trim() ?? "");
+    setUniversFilter(searchParams.get("univers")?.trim() ?? "");
   }, [searchParams]);
 
   useEffect(() => {
@@ -135,18 +160,49 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
       if (q) next.set("q", q);
       if (selectedCategory !== "Tout voir") next.set("cat", selectedCategory);
       if (sortKey !== "default") next.set("sort", sortKey);
+      const m = maisonSlug.trim();
+      if (m) next.set("maison", m);
+      const u = universFilter.trim().toLowerCase();
+      if (u === "niche" || u === "designer" || u === "artisan") next.set("univers", u);
       const qs = next.toString();
       const href = qs ? `${pathname}?${qs}` : pathname;
       if (qs === searchParams.toString()) return;
       router.replace(href, { scroll: false });
     }, 280);
     return () => window.clearTimeout(t);
-  }, [searchTerm, selectedCategory, sortKey, pathname, router, searchParams]);
+  }, [
+    searchTerm,
+    selectedCategory,
+    sortKey,
+    maisonSlug,
+    universFilter,
+    pathname,
+    router,
+    searchParams,
+  ]);
 
   const featuredPerfumes = useMemo(
     () => catalogPerfumes.filter((p) => FEATURED_IDS.includes(p.id)),
     [catalogPerfumes]
   );
+
+  const positioningBySlug = useMemo(() => {
+    const m = new Map<string, CatalogPositioning>();
+    for (const b of browseBrands) m.set(b.slug, b.positioning);
+    return m;
+  }, [browseBrands]);
+
+  const maisonDisplayName = useMemo(() => {
+    const s = maisonSlug.trim();
+    if (!s) return "";
+    return browseBrands.find((b) => b.slug === s)?.name ?? s;
+  }, [browseBrands, maisonSlug]);
+
+  const universChipLabel = useMemo(() => {
+    const pos = queryToPositioning(universFilter.trim().toLowerCase());
+    if (!pos) return universFilter;
+    return BRAND_POSITIONING_LABELS[pos].title;
+  }, [universFilter]);
 
   const filteredPerfumes = useMemo(
     () =>
@@ -155,9 +211,21 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
         const matchCategory =
           selectedCategory === "Tout voir" ||
           perfume.category === selectedCategory;
-        return matchSearch && matchCategory;
+        const slug = resolveBrandSlug(perfume);
+        const matchMaison = !maisonSlug.trim() || slug === maisonSlug.trim();
+        const wanted = queryToPositioning(universFilter.trim().toLowerCase());
+        const matchUnivers =
+          !wanted || (positioningBySlug.get(slug) ?? "UNSET") === wanted;
+        return matchSearch && matchCategory && matchMaison && matchUnivers;
       }),
-    [catalogPerfumes, searchTerm, selectedCategory]
+    [
+      catalogPerfumes,
+      searchTerm,
+      selectedCategory,
+      maisonSlug,
+      universFilter,
+      positioningBySlug,
+    ]
   );
 
   useEffect(() => {
@@ -222,7 +290,10 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
   }, [filteredPerfumes, sortKey, searchTerm]);
 
   const hasCollectionFilters =
-    searchTerm.trim() !== "" || selectedCategory !== "Tout voir";
+    searchTerm.trim() !== "" ||
+    selectedCategory !== "Tout voir" ||
+    maisonSlug.trim() !== "" ||
+    universFilter.trim() !== "";
   const hasActiveFilters = hasCollectionFilters || sortKey !== "default";
   const showFeatured = !hasCollectionFilters;
 
@@ -254,6 +325,8 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
     setSearchTerm("");
     setSelectedCategory("Tout voir");
     setSortKey("default");
+    setMaisonSlug("");
+    setUniversFilter("");
   }, []);
 
   const externalHint = useMemo(
@@ -301,13 +374,14 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
     return [];
   }, [searchTerm, externalHint, apiSuggestion, catalogPerfumes]);
 
-  const focusCatalogSearch = useCallback(() => {
-    document
-      .getElementById("collection")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    window.requestAnimationFrame(() => {
-      searchInputRef.current?.focus({ preventScroll: true });
-    });
+  const openBrowse = useCallback(() => {
+    setBrowseOpen(true);
+    scrollCatalogIntoView();
+  }, [scrollCatalogIntoView]);
+
+  const handleResetPanelFilters = useCallback(() => {
+    setMaisonSlug("");
+    setUniversFilter("");
   }, []);
 
   return (
@@ -315,7 +389,28 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
       id="main-content"
       className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]"
     >
-      <Navbar scrolled={scrolled} onOpenSearch={focusCatalogSearch} />
+      <Navbar scrolled={scrolled} onOpenBrowse={openBrowse} />
+
+      <CatalogBrowseDrawer
+        open={browseOpen}
+        onClose={() => setBrowseOpen(false)}
+        brands={browseBrands}
+        mounted={mounted}
+        activeMaisonSlug={maisonSlug.trim()}
+        activeUnivers={universFilter.trim().toLowerCase()}
+        activeCategory={selectedCategory}
+        onSelectMaison={(slug) => {
+          setMaisonSlug(slug);
+          setUniversFilter("");
+        }}
+        onSelectUnivers={(p) => {
+          const q = positioningToQuery(p);
+          setUniversFilter(q ?? "");
+          setMaisonSlug("");
+        }}
+        onSelectCategory={(cat) => setSelectedCategory(cat)}
+        onResetPanelFilters={handleResetPanelFilters}
+      />
 
       <Hero />
       <Separator variant="copper" withMonogram />
@@ -357,6 +452,10 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
               <label htmlFor={CATALOG_SEARCH_ID} className="sr-only">
                 Rechercher un parfum, une maison, une marque ou un mot-clé
               </label>
+              <p className="mb-2 text-[11px] text-[var(--nurea-text-subtle)] md:hidden">
+                Astuce : l’icône « Explorer » en haut à droite ouvre marques et
+                filtres ; ce champ reste votre recherche libre.
+              </p>
               <Search
                 size={18}
                 className="pointer-events-none absolute left-0 top-1/2 z-[1] -translate-y-1/2 text-[var(--nurea-text-muted)]"
@@ -445,6 +544,18 @@ export const HomePageClient = ({ catalogPerfumes }: HomePageClientProps) => {
               <FilterChip
                 label={selectedCategory}
                 onRemove={() => setSelectedCategory("Tout voir")}
+              />
+            )}
+            {maisonSlug.trim() !== "" && (
+              <FilterChip
+                label={`Maison : ${maisonDisplayName}`}
+                onRemove={() => setMaisonSlug("")}
+              />
+            )}
+            {universFilter.trim() !== "" && (
+              <FilterChip
+                label={`Univers : ${universChipLabel}`}
+                onRemove={() => setUniversFilter("")}
               />
             )}
             {sortKey !== "default" && (
