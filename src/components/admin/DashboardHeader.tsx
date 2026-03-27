@@ -10,6 +10,7 @@ interface DashboardHeaderProps {
   activeTab: "perfumes" | "brands";
   onTabChange: (tab: "perfumes" | "brands") => void;
   canEdit: boolean;
+  isLoading?: boolean;
 }
 
 export function DashboardHeader({
@@ -18,6 +19,7 @@ export function DashboardHeader({
   activeTab,
   onTabChange,
   canEdit,
+  isLoading = false,
 }: DashboardHeaderProps) {
   return (
     <div className="space-y-6">
@@ -26,9 +28,15 @@ export function DashboardHeader({
           <h1 className="text-[28px] font-bold tracking-tight text-zinc-100">
             Catalogue
           </h1>
-          <p className="mt-1 text-[13px] font-medium text-zinc-500">
-            {perfumeCount} parfums · {brandCount} marques
-          </p>
+          <div className="mt-1 flex items-center gap-2">
+            {isLoading ? (
+              <div className="h-4 w-32 bg-zinc-800 animate-pulse rounded-md" />
+            ) : (
+              <p className="text-[13px] font-medium text-zinc-500">
+                {perfumeCount} parfums · {brandCount} marques
+              </p>
+            )}
+          </div>
         </div>
         
         {canEdit && (
@@ -51,9 +59,13 @@ export function DashboardHeader({
           `}
         >
           Parfums
-          <span className={`text-[11px] px-1.5 py-0.5 rounded-md ${activeTab === "perfumes" ? "bg-blue-500/20 text-blue-400" : "bg-zinc-800 text-zinc-600"}`}>
-            {perfumeCount}
-          </span>
+          {isLoading ? (
+            <div className="h-4 w-6 bg-zinc-800 animate-pulse rounded-md" />
+          ) : (
+            <span className={`text-[11px] px-1.5 py-0.5 rounded-md ${activeTab === "perfumes" ? "bg-blue-500/20 text-blue-400" : "bg-zinc-800 text-zinc-600"}`}>
+              {perfumeCount}
+            </span>
+          )}
         </button>
         <button
           onClick={() => onTabChange("brands")}
@@ -63,9 +75,13 @@ export function DashboardHeader({
           `}
         >
           Marques
-          <span className={`text-[11px] px-1.5 py-0.5 rounded-md ${activeTab === "brands" ? "bg-blue-500/20 text-blue-400" : "bg-zinc-800 text-zinc-600"}`}>
-            {brandCount}
-          </span>
+          {isLoading ? (
+            <div className="h-4 w-6 bg-zinc-800 animate-pulse rounded-md" />
+          ) : (
+            <span className={`text-[11px] px-1.5 py-0.5 rounded-md ${activeTab === "brands" ? "bg-blue-500/20 text-blue-400" : "bg-zinc-800 text-zinc-600"}`}>
+              {brandCount}
+            </span>
+          )}
         </button>
       </div>
     </div>

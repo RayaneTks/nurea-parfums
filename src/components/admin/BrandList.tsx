@@ -27,6 +27,7 @@ interface BrandListProps {
   onToggleVisibility: (id: string, currentStatus: BrandRow["status"]) => void;
   onDelete: (id: string, name: string, count: number) => void;
   onFilterPerfumes: (brandName: string) => void;
+  onPreview: (brand: BrandRow) => void;
   pendingBrandIds: Set<string>;
   hasMutationInFlight: boolean;
 }
@@ -37,6 +38,7 @@ export function BrandList({
   onToggleVisibility,
   onDelete,
   onFilterPerfumes,
+  onPreview,
   pendingBrandIds,
   hasMutationInFlight,
 }: BrandListProps) {

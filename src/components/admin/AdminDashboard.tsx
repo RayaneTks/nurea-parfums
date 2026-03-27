@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, Plus, SunMoon, Eye, EyeOff } from "lucide-react";
+import { AlertCircle, Plus, SunMoon } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { AdminNav } from "./AdminNav";
@@ -171,6 +171,7 @@ export function AdminDashboard() {
   const [brands, setBrands] = useState<BrandRow[]>([]);
   const [perfumes, setPerfumes] = useState<PerfumeRow[]>([]);
   const [loadErr, setLoadErr] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("perfumes");
   const [actionMsg, setActionMsg] = useState<{ type: ToastType; text: string } | null>(null);
 
@@ -187,6 +188,7 @@ export function AdminDashboard() {
   const hasMutationInFlight = pendingDeleteIds.size > 0 || pendingStatusIds.size > 0 || pendingBrandIds.size > 0;
 
   const refresh = useCallback(async () => {
+    setIsLoading(true);
     setLoadErr(null);
     try {
       const s = await fetch("/api/admin/session", { credentials: "include", cache: "no-store" });
@@ -209,6 +211,8 @@ export function AdminDashboard() {
       }
     } catch (e) {
       setLoadErr(e instanceof Error ? e.message : "Erreur de chargement");
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -327,6 +331,7 @@ export function AdminDashboard() {
           activeTab={tab}
           onTabChange={setTab}
           canEdit={canEdit}
+          isLoading={isLoading}
         />
 
         {loadErr && (
@@ -343,7 +348,13 @@ export function AdminDashboard() {
         )}
 
         <div className="mt-8">
-          {tab === "perfumes" ? (
+          {isLoading ? (
+            <div className="space-y-4 animate-pulse">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-24 bg-zinc-900/50 rounded-2xl border border-zinc-800/50" />
+              ))}
+            </div>
+          ) : tab === "perfumes" ? (
             <PerfumeList
               perfumes={perfumes}
               canEdit={canEdit}
