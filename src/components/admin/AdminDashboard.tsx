@@ -151,7 +151,7 @@ function VisualizerDrawer({
             onClick={onClose}
             className="flex h-14 items-center justify-center rounded-2xl bg-zinc-800/50 text-zinc-400 font-semibold active:scale-95 transition-all"
           >
-            Fermer l'aperçu
+            Fermer l&apos;aperçu
           </button>
         </div>
       </div>

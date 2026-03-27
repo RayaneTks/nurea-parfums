@@ -31,6 +31,7 @@ export interface Perfume {
   tags?: string[];
   aliases?: string[];
   classics?: string[];
+  isFeatured?: boolean;
 }
 
 export const categories: Category[] = [

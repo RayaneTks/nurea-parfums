@@ -154,13 +154,14 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
     return NextResponse.json({ error: "ID invalide." }, { status: 400 });
   }
 
-  let body: { status?: string };
+  let body: { status?: string; isFeatured?: boolean };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "JSON invalide." }, { status: 400 });
   }
 
+    const updates: Prisma.PerfumeUpdateInput = {};
     if (body.status && isPublicationStatus(body.status)) {
       const perfumeWithBrand = await prisma.perfume.findUnique({
         where: { id },
@@ -181,13 +182,28 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
           { status: 400 },
         );
       }
+      updates.status = body.status;
+    }
+
+    if (body.isFeatured !== undefined) {
+       // if we are setting to true, we must ensure max 2 are featured.
+       if (body.isFeatured === true) {
+          const featuredCount = await prisma.perfume.count({ where: { isFeatured: true } });
+          if (featuredCount >= 2) {
+             return NextResponse.json({ error: "Maximum de 2 parfums mis en avant atteint." }, { status: 400 });
+          }
+       }
+       updates.isFeatured = body.isFeatured;
+    }
+
+    if (Object.keys(updates).length > 0) {
       const perfume = await prisma.perfume.update({
         where: { id },
-        data: { status: body.status },
+        data: updates,
       });
       revalidatePath("/");
       revalidatePath("/marque");
-      await writeAudit(ctx.sub, "perfume.toggle_visibility", "Perfume", String(id), { status: body.status });
+      await writeAudit(ctx.sub, "perfume.patch", "Perfume", String(id), updates);
       return NextResponse.json({ perfume });
     }
 
@@ -198,7 +214,7 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
     }
     console.error("[api/admin/perfumes/:id][PATCH]", error);
     return NextResponse.json(
-      { error: "Impossible de changer la visibilité pour le moment." },
+      { error: "Impossible de changer le statut pour le moment." },
       { status: 500 },
     );
   }

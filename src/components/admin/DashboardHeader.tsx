@@ -7,8 +7,8 @@ import Link from "next/link";
 interface DashboardHeaderProps {
   perfumeCount: number;
   brandCount: number;
-  activeTab: "perfumes" | "brands";
-  onTabChange: (tab: "perfumes" | "brands") => void;
+  activeTab: "perfumes" | "brands" | "featured";
+  onTabChange: (tab: "perfumes" | "brands" | "featured") => void;
   canEdit: boolean;
   isLoading?: boolean;
 }
@@ -39,7 +39,7 @@ export function DashboardHeader({
           </div>
         </div>
         
-        {canEdit && (
+        {canEdit && activeTab !== "featured" && (
           <div className="hidden md:block">
             <Link href={activeTab === "perfumes" ? "/admin/perfumes/new" : "/admin/brands/new"}>
               <AdminButton leftIcon={Plus}>
@@ -82,6 +82,15 @@ export function DashboardHeader({
               {brandCount}
             </span>
           )}
+        </button>
+        <button
+          onClick={() => onTabChange("featured")}
+          className={`
+            relative flex-1 flex items-center justify-center gap-2 min-h-[44px] rounded-xl text-sm font-semibold transition-all duration-300
+            ${activeTab === "featured" ? "bg-zinc-800 text-white shadow-lg" : "text-zinc-500 hover:text-zinc-300"}
+          `}
+        >
+          Mise en avant
         </button>
       </div>
     </div>

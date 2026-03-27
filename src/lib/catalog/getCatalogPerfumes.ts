@@ -17,6 +17,7 @@ function rowToPerfume(row: {
   name: string;
   image: string;
   imageLight: string | null;
+  isFeatured?: boolean;
   brand: { name: string; slug: string; catalogMode: "CURATED" | "COMPLETE" };
 }): Perfume {
   const cat: Category =
@@ -35,6 +36,7 @@ function rowToPerfume(row: {
     image: row.image,
     imageLight: row.imageLight ?? undefined,
     tags: row.brand.catalogMode === "COMPLETE" ? ["Gamme complète"] : undefined,
+    isFeatured: row.isFeatured,
   };
 }
 

@@ -59,7 +59,6 @@ model Perfume {
   @@index([status])
   @@index([brandId])
 }
-}
 
 model AdminUser {
   id           String     @id @default(cuid())

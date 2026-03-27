@@ -1,258 +1,182 @@
 "use client";
 
-import { createPortal } from "react-dom";
-import { Check, Search, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
+import { useMemo } from "react";
+import { X, Check } from "lucide-react";
+import { AdminButton } from "../admin/ui/AdminButton";
+import { Perfume } from "@/lib/data";
 
-type Props = {
-  open: boolean;
-  onClose: () => void;
-  brands: CatalogBrowseBrand[];
-  mounted: boolean;
-  selectedBrandSlugs: Set<string>;
-  getResultCount: (brandSlugs: Set<string>) => number;
-  onApply: (brandSlugs: Set<string>) => void;
-  onReset: () => void;
+type CatalogBrowseBrand = {
+  id: string;
+  name: string;
+  image: string | null;
+  catalogMode: "CURATED" | "COMPLETE";
+  publishedCount: number;
 };
 
-function groupByLetter(brands: CatalogBrowseBrand[]) {
-  const map = new Map<string, CatalogBrowseBrand[]>();
-  for (const b of brands) {
-    const letter = b.name[0]?.toUpperCase() ?? "#";
-    const group = map.get(letter);
-    if (group) group.push(b);
-    else map.set(letter, [b]);
-  }
-  return [...map.entries()].sort(([a], [b]) => a.localeCompare(b));
-}
-
-function toggleSet<T>(set: Set<T>, value: T): Set<T> {
-  const next = new Set(set);
-  if (next.has(value)) next.delete(value);
-  else next.add(value);
-  return next;
+interface CatalogFilterDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  brands: CatalogBrowseBrand[];
+  categories: string[];
+  selectedBrands: string[];
+  selectedCategories: string[];
+  onToggleBrand: (brandName: string) => void;
+  onToggleCategory: (category: string) => void;
+  onClearFilters: () => void;
+  totalResults: number;
 }
 
 export function CatalogFilterDrawer({
-  open,
+  isOpen,
   onClose,
   brands,
-  mounted,
-  selectedBrandSlugs,
-  getResultCount,
-  onApply,
-  onReset,
-}: Props) {
-  const searchRef = useRef<HTMLInputElement>(null);
-  const [filter, setFilter] = useState("");
-  const [draftBrands, setDraftBrands] = useState<Set<string>>(new Set());
-  const draftResultCount = useMemo(
-    () => getResultCount(draftBrands),
-    [draftBrands, getResultCount],
-  );
+  categories,
+  selectedBrands,
+  selectedCategories,
+  onToggleBrand,
+  onToggleCategory,
+  onClearFilters,
+  totalResults,
+}: CatalogFilterDrawerProps) {
+  const hasFilters = selectedBrands.length > 0 || selectedCategories.length > 0;
 
-  useEffect(() => {
-    if (open) {
-      setDraftBrands(new Set(selectedBrandSlugs));
-      setFilter("");
-      const t = requestAnimationFrame(() => searchRef.current?.focus());
-      return () => cancelAnimationFrame(t);
-    }
-  }, [open, selectedBrandSlugs]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    document.documentElement.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.documentElement.style.overflow = "";
-    };
-  }, [open]);
-
-  const sorted = useMemo(
-    () => [...brands].sort((a, b) => a.name.localeCompare(b.name)),
-    [brands],
-  );
-
-  const filtered = useMemo(() => {
-    const q = filter.trim().toLowerCase();
-    if (!q) return sorted;
-    return sorted.filter((b) => b.name.toLowerCase().includes(q));
-  }, [sorted, filter]);
-
-  const groups = useMemo(() => groupByLetter(filtered), [filtered]);
-
-  function handleApply() {
-    onApply(draftBrands);
-    onClose();
-  }
-
-  function handleReset() {
-    setDraftBrands(new Set());
-    onReset();
-    onClose();
-  }
-
-  if (!mounted || typeof document === "undefined") return null;
-
-  return createPortal(
-    <>
+  return (
+    <div
+      className={`fixed inset-0 z-[100] transition-all duration-500 ease-out ${
+        isOpen ? "visible" : "invisible pointer-events-none"
+      }`}
+    >
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-[70] transition-opacity duration-300 ${
-          open
-            ? "pointer-events-auto bg-black/50 backdrop-blur-sm"
-            : "pointer-events-none bg-black/0"
+        className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${
+          isOpen ? "opacity-100" : "opacity-0"
         }`}
         onClick={onClose}
-        aria-hidden
       />
 
-      {/* Panel */}
-      <aside
-        className={`fixed inset-y-0 right-0 z-[71] flex w-full flex-col bg-[var(--nurea-bg)] shadow-[-8px_0_40px_rgba(0,0,0,0.25)] transition-transform duration-300 ease-out-expo sm:w-[420px] pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] ${
-          open ? "translate-x-0" : "translate-x-full"
+      {/* Drawer */}
+      <div
+        className={`absolute right-0 top-0 h-full w-full max-w-[380px] bg-zinc-950 border-l border-white/5 shadow-2xl transition-transform duration-500 ease-out ${
+          isOpen ? "translate-x-0" : "translate-x-full"
         }`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Filtrer le catalogue"
-        aria-hidden={!open}
-        {...(!open ? { inert: true as unknown as boolean } : {})}
       >
-        {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-[var(--nurea-border)] px-5 py-4">
-          <h2 className="font-serif text-xl text-[var(--nurea-text)]">
-            Filtrer
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-11 w-11 items-center justify-center text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
-            aria-label="Fermer"
-          >
-            <X size={20} strokeWidth={1.5} />
-          </button>
-        </div>
+        <div className="flex h-full flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-white/5 px-6 py-5">
+            <div>
+              <h2 className="text-xl font-serif text-white tracking-tight">Filtres</h2>
+              <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest mt-0.5">
+                {totalResults} résultat{totalResults > 1 ? 's' : ''} trouvé{totalResults > 1 ? 's' : ''}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-zinc-400 hover:text-white transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
 
-        {/* Scrollable body */}
-        <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          {/* Section: Par marque */}
-          <div className="px-5 pt-4 pb-2">
-            <h3 className="mb-3 font-serif text-[15px] tracking-wide text-[var(--nurea-text)]">
-              Par marque
-            </h3>
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto px-6 py-8 no-scrollbar">
+            <div className="space-y-10">
+              {/* Catégories */}
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
+                    Catégories
+                  </h3>
+                  {selectedCategories.length > 0 && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--nurea-accent)] shadow-[0_0_8px_var(--nurea-accent)]" />
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2.5">
+                  {categories.map((cat) => {
+                    const active = selectedCategories.includes(cat);
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => onToggleCategory(cat)}
+                        className={`px-4 py-2.5 rounded-full text-[13px] font-medium transition-all duration-300 border ${
+                          active
+                            ? "bg-white border-white text-black shadow-xl shadow-white/10 scale-95"
+                            : "bg-white/5 border-white/5 text-zinc-400 hover:border-white/20 active:scale-95"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-            {/* Search */}
-            <div className="relative mb-3">
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--nurea-text-subtle)]"
-                aria-hidden
-              />
-              <input
-                ref={searchRef}
-                type="search"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder="Rechercher une maison…"
-                autoComplete="off"
-                className="block min-h-[44px] w-full border border-[var(--nurea-border)] bg-[var(--nurea-bg)] py-2.5 pl-10 pr-3 text-[15px] text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] transition-colors focus-visible:border-[var(--nurea-accent)] focus-visible:outline-none"
-              />
+              {/* Marques */}
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
+                    Marques
+                  </h3>
+                  {selectedBrands.length > 0 && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--nurea-accent)] shadow-[0_0_8px_var(--nurea-accent)]" />
+                  )}
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                  {brands.map((b) => {
+                    const active = selectedBrands.includes(b.name);
+                    return (
+                      <button
+                        key={b.id}
+                        onClick={() => onToggleBrand(b.name)}
+                        className={`group relative flex items-center justify-between w-full p-3 rounded-2xl transition-all duration-300 border ${
+                          active
+                            ? "bg-white/10 border-white/20 text-white"
+                            : "bg-white/5 border-transparent text-zinc-400 hover:bg-white/10 active:scale-[0.98]"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`flex h-5 w-5 items-center justify-center rounded-md border transition-colors ${
+                            active ? "bg-[var(--nurea-accent)] border-[var(--nurea-accent)]" : "bg-black/20 border-white/10 group-hover:border-white/20"
+                          }`}>
+                            {active && <Check className="h-3 w-3 text-white stroke-[3]" />}
+                          </div>
+                          <span className="text-[14px] font-medium">{b.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/40 ${
+                            active ? "text-white" : "text-zinc-600"
+                          }`}>
+                            {b.catalogMode === "COMPLETE" ? "TOUT" : b.publishedCount.toString().padStart(2, '0')}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Brand list */}
-          <div>
-            {groups.length === 0 ? (
-              <div className="px-5 py-12 text-center">
-                <p className="text-[14px] text-[var(--nurea-text-muted)]">
-                  Aucune maison trouvée.
-                </p>
-              </div>
-            ) : (
-              groups.map(([letter, items]) => (
-                <div key={letter}>
-                  <div className="sticky top-0 z-10 border-b border-[var(--nurea-border)]/50 bg-[var(--nurea-surface)]/95 px-5 py-2.5 backdrop-blur-md">
-                    <span className="text-[11px] font-medium uppercase tracking-[0.25em] text-[var(--nurea-accent)]">
-                      {letter}
-                    </span>
-                  </div>
-                  <ul className="divide-y divide-[var(--nurea-border)]/30">
-                    {items.map((b) => {
-                      const checked = draftBrands.has(b.slug);
-                      return (
-                        <li key={b.id}>
-                          <label className="group flex min-h-[52px] w-full cursor-pointer items-center gap-4 px-5 py-3 text-left transition-all hover:bg-[var(--nurea-surface-hover)] active:scale-[0.98]">
-                            <div
-                              className={`flex h-5 w-5 shrink-0 items-center justify-center border transition-all duration-300 ${
-                                checked
-                                  ? "border-[var(--nurea-accent)] bg-[var(--nurea-accent)]"
-                                  : "border-[var(--nurea-border)] bg-transparent group-hover:border-[var(--nurea-accent)]"
-                              }`}
-                            >
-                              {checked && (
-                                <Check
-                                  size={13}
-                                  strokeWidth={3}
-                                  className="text-white animate-scale-in"
-                                />
-                              )}
-                            </div>
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() =>
-                                setDraftBrands(toggleSet(draftBrands, b.slug))
-                              }
-                              className="sr-only"
-                            />
-                            <span className={`flex-1 text-[15px] transition-colors duration-300 ${checked ? "text-[var(--nurea-text)] font-medium" : "text-[var(--nurea-text-muted)] group-hover:text-[var(--nurea-text)]"}`}>
-                              {b.name}
-                            </span>
-                            <span className="shrink-0 font-mono text-[10px] tracking-wider text-[var(--nurea-text-subtle)] opacity-60">
-                              {b.publishedCount.toString().padStart(2, '0')}
-                            </span>
-                          </label>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))
-            )}
+          {/* Footer */}
+          <div className="border-t border-white/5 p-6 bg-zinc-950/80 backdrop-blur-xl">
+            <div className="flex flex-col gap-3">
+              <AdminButton
+                onClick={onClose}
+                className="w-full h-14 rounded-2xl text-[15px] font-bold shadow-2xl shadow-white/5"
+              >
+                Appliquer les filtres
+              </AdminButton>
+              {hasFilters && (
+                <button
+                  onClick={onClearFilters}
+                  className="w-full py-2 text-xs font-bold text-zinc-500 hover:text-zinc-300 transition-colors uppercase tracking-widest"
+                >
+                  Réinitialiser
+                </button>
+              )}
+            </div>
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-[var(--nurea-border)] px-5 py-4">
-          <button
-            type="button"
-            onClick={handleReset}
-            className="min-h-[44px] px-3 text-[14px] text-[var(--nurea-text-muted)] underline underline-offset-2 transition-colors hover:text-[var(--nurea-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
-          >
-            Réinitialiser
-          </button>
-          <button
-            type="button"
-            onClick={handleApply}
-            className="min-h-[44px] bg-[var(--nurea-accent)] px-6 py-2.5 text-[14px] font-medium tracking-wide text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--nurea-bg)]"
-          >
-            Appliquer
-            {draftResultCount >= 0 && (
-              <span className="ml-1.5">({draftResultCount})</span>
-            )}
-          </button>
-        </div>
-      </aside>
-    </>,
-    document.body,
+      </div>
+    </div>
   );
 }

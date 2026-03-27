@@ -61,11 +61,10 @@ function ExternalSearchFootnote({ hint }: { hint: ExternalPerfumeHint }) {
   );
 }
 
-const FEATURED_IDS = [9, 10];
-
 type SortKey = "default" | "name" | "brand";
 
 const CATALOG_SEARCH_ID = "catalog-search";
+const FALLBACK_FEATURED_IDS = [9, 10];
 
 function categoryFromSearchParams(p: URLSearchParams): Category {
   const raw = p.get("cat");
@@ -186,12 +185,12 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
     searchParams,
   ]);
 
-  const featuredPerfumes = useMemo(() => {
+  const featuredPerfumes = (() => {
     const featured = catalogPerfumes.filter((p) => p.isFeatured);
     if (featured.length > 0) return featured.slice(0, 2);
     // Fallback to mock ids if no featured flag is set in DB yet
-    return catalogPerfumes.filter((p) => [9, 10].includes(p.id)).slice(0, 2);
-  }, [catalogPerfumes]);
+    return catalogPerfumes.filter((p) => FALLBACK_FEATURED_IDS.includes(p.id)).slice(0, 2);
+  })();
 
   const maisonDisplayName = useMemo(() => {
     const s = maisonSlug.trim();
@@ -509,7 +508,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
               
               <Search
                 size={18}
-                className="pointer-events-none absolute left-3 text-[var(--nurea-text-muted)] z-10"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--nurea-text-muted)] z-10"
                 strokeWidth={1.5}
                 aria-hidden
               />
@@ -530,7 +529,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
                 <button
                   type="button"
                   onClick={() => setSearchTerm("")}
-                  className="absolute right-0 flex h-full w-12 items-center justify-center text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-accent)] active:scale-95 z-10"
+                  className="absolute right-0 top-0 bottom-0 flex w-12 items-center justify-center text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-accent)] active:scale-95 z-10"
                   aria-label="Effacer la recherche"
                 >
                   <X size={18} strokeWidth={1.5} />
@@ -628,7 +627,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
           </div>
         )}
 
-        {(!mounted || sortedPerfumes.length === 0) ? (
+        {(!mounted || displayedPerfumes.length === 0) ? (
           <div className="py-16 md:py-20">
             {!mounted ? (
               <div className="mt-8">
@@ -760,17 +759,33 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
             )}
           </div>
         ) : (
-          <div className="catalogue-grid stagger-grid">
-            {sortedPerfumes.map((perfume, index) => (
-              <PerfumeCard
-                key={perfume.id}
-                perfume={perfume}
-                activeItem={activeItem}
-                setActiveItem={setActiveItem}
-                featured={perfume.category === "Gammes Complètes"}
-                imagePriority={index < 6}
-              />
-            ))}
+          <div className="flex flex-col items-center">
+            <div className="catalogue-grid stagger-grid w-full">
+              {displayedPerfumes.map((perfume, index) => (
+                <PerfumeCard
+                  key={perfume.id}
+                  perfume={perfume}
+                  activeItem={activeItem}
+                  setActiveItem={setActiveItem}
+                  featured={perfume.category === "Gammes Complètes"}
+                  imagePriority={index < 6}
+                />
+              ))}
+            </div>
+            
+            {shouldTruncateCatalog && (
+              <div className="mt-16 w-full flex justify-center animate-fade-in-up" style={{ animationDelay: "0.6s" }}>
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-[var(--nurea-accent)] to-[var(--nurea-cuivre)] rounded opacity-20 group-hover:opacity-40 blur transition duration-500"></div>
+                  <button
+                    onClick={() => setShowFullCatalog(true)}
+                    className="relative btn-nurea bg-[var(--nurea-surface)] border-[var(--nurea-border)] text-[var(--nurea-text)] px-8 py-4 tracking-[0.2em] text-[11px] md:text-[12px] group-hover:bg-[var(--nurea-accent-subtle)] group-hover:border-[var(--nurea-accent)]"
+                  >
+                    Découvrir toute la collection ({sortedPerfumes.length})
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
