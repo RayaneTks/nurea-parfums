@@ -157,27 +157,31 @@ function BrandCombobox({
   onBrandCreated: (b: BrandOpt) => void;
   onError: (msg: string) => void;
 }) {
+  const selectedBrand = useMemo(() => brands.find((b) => b.id === brandId), [brands, brandId]);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const selectedBrand = useMemo(() => brands.find((b) => b.id === brandId), [brands, brandId]);
+  const displayValue = open ? query : (selectedBrand?.name ?? "");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return brands;
+    if (!q) return brands.slice(0, 8);
     return brands.filter((b) => b.name.toLowerCase().includes(q));
   }, [brands, query]);
 
   const exactMatch = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return q.length >= 2 && brands.some((b) => b.name.toLowerCase() === q);
+    return brands.some((b) => b.name.toLowerCase() === q);
   }, [brands, query]);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setQuery("");
+      }
     }
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
@@ -209,60 +213,69 @@ function BrandCombobox({
     }
   }
 
-  if (brandId && selectedBrand) {
-    return (
-      <div className="flex items-center gap-3 rounded-2xl bg-zinc-900 border border-zinc-800 p-4 shadow-inner">
-        <div className="flex-1">
-          <p className="text-[15px] font-bold text-zinc-100">{selectedBrand.name}</p>
-          <div className="mt-1">
-            <AdminBadge 
+  return (
+    <div ref={ref} className="relative">
+      <div className="relative group">
+        <AdminInput
+          value={displayValue}
+          onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+          onFocus={() => { setOpen(true); setQuery(""); }}
+          disabled={readOnly}
+          placeholder="Rechercher ou créer une marque..."
+          className={`pr-12 transition-all duration-300 ${brandId ? "border-blue-500/40 bg-blue-600/5 focus-visible:bg-zinc-900" : ""}`}
+        />
+        {brandId && selectedBrand && !open && (
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+             <AdminBadge 
               label={selectedBrand.catalogMode === "COMPLETE" ? "Gamme complète" : "Sélection"} 
               variant={selectedBrand.catalogMode === "COMPLETE" ? "warning" : "info"}
             />
           </div>
-        </div>
-        {!readOnly && (
-          <AdminButton size="icon" variant="ghost" onClick={onClear} className="h-10 w-10 min-h-0 min-w-0">
+        )}
+        {(query.trim().length > 0 || brandId) && !readOnly && (
+          <button
+            type="button"
+            onClick={() => { setQuery(""); onClear(); setOpen(false); }}
+            className={`absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors ${brandId && !open ? "opacity-0" : "opacity-100"}`}
+          >
             <X className="h-4 w-4" />
-          </AdminButton>
+          </button>
         )}
       </div>
-    );
-  }
 
-  return (
-    <div ref={ref} className="relative">
-      <AdminInput
-        value={query}
-        onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-        onFocus={() => setOpen(true)}
-        disabled={readOnly}
-        placeholder="Rechercher ou créer une marque..."
-        onClear={query.trim().length > 0 ? () => { setQuery(""); setOpen(false); } : undefined}
-      />
-      {open && query.trim().length > 0 && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-60 overflow-y-auto rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl animate-in fade-in slide-in-from-top-2">
-          {filtered.map((b) => (
-            <button
-              key={b.id}
-              type="button"
-              onClick={() => { onSelect(b); setQuery(""); setOpen(false); }}
-              className="flex w-full items-center px-4 py-3 text-left text-[14px] font-medium text-zinc-200 transition-colors hover:bg-zinc-800"
-            >
-              {b.name}
-            </button>
-          ))}
-          {!exactMatch && query.trim().length >= 2 && (
-            <button
-              type="button"
-              onClick={createBrand}
-              disabled={creating}
-              className="flex w-full items-center gap-2 border-t border-zinc-800 px-4 py-4 text-left text-[14px] font-bold text-blue-400 hover:bg-zinc-800 transition-colors"
-            >
-              {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-              Créer la marque « {query.trim()} »
-            </button>
-          )}
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-72 overflow-y-auto rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl animate-in fade-in slide-in-from-top-2 ring-1 ring-white/5">
+          <div className="p-1.5">
+            {filtered.length > 0 ? (
+              filtered.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => { onSelect(b); setQuery(""); setOpen(false); }}
+                  className={`flex w-full items-center gap-3 px-3 py-3 text-left text-[14px] font-medium rounded-xl transition-all active:scale-[0.98] ${b.id === brandId ? "bg-blue-600 text-white" : "text-zinc-200 hover:bg-zinc-800"}`}
+                >
+                  <span className="flex-1 truncate">{b.name}</span>
+                  {b.id === brandId && <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />}
+                </button>
+              ))
+            ) : query.trim().length < 2 ? (
+              <div className="px-4 py-8 text-center">
+                <p className="text-zinc-500 text-sm font-medium">Commencez à taper pour filtrer...</p>
+              </div>
+            ) : null}
+
+            {query.trim().length >= 2 && !exactMatch && (
+              <button
+                type="button"
+                onClick={createBrand}
+                disabled={creating}
+                className="mt-1 flex w-full items-center gap-3 px-3 py-4 text-left text-[14px] font-bold text-blue-400 bg-blue-500/5 rounded-xl border border-blue-500/20 hover:bg-blue-500/10 transition-colors active:scale-[0.98]"
+              >
+                {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4 shrink-0" />}
+                <span className="flex-1">Ajouter la marque « {query.trim()} »</span>
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -523,10 +536,10 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                     disabled={readOnly || locked}
                     onClick={() => setStatus(opt.value)}
                     className={`
-                      relative flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all duration-300
+                      relative flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all duration-300 active:scale-[0.97] select-none touch-manipulation
                       ${active 
                         ? "bg-zinc-100 border-zinc-100 shadow-xl shadow-zinc-100/10" 
-                        : "bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:border-zinc-700"}
+                        : "bg-zinc-900/50 border-zinc-800 text-zinc-500 [@media(hover:hover)]:hover:border-zinc-700"}
                       ${locked ? "opacity-30 grayscale cursor-not-allowed" : ""}
                     `}
                   >

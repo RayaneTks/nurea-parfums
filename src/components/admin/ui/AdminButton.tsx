@@ -26,14 +26,14 @@ export function AdminButton({
   disabled,
   ...props
 }: AdminButtonProps) {
-  const baseStyles = "inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950";
+  const baseStyles = "inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 active:scale-[0.96] disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 select-none touch-manipulation";
   
   const variants = {
-    primary: "bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-600/20",
-    secondary: "bg-zinc-800 text-zinc-100 hover:bg-zinc-700",
-    ghost: "bg-transparent text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100",
-    danger: "bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white",
-    outline: "bg-transparent border border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-zinc-100",
+    primary: "bg-blue-600 text-white [@media(hover:hover)]:hover:bg-blue-500 shadow-lg shadow-blue-600/20 active:bg-blue-700",
+    secondary: "bg-zinc-800 text-zinc-100 [@media(hover:hover)]:hover:bg-zinc-700 active:bg-zinc-900",
+    ghost: "bg-transparent text-zinc-400 [@media(hover:hover)]:hover:bg-zinc-800 [@media(hover:hover)]:hover:text-zinc-100 active:bg-zinc-800/50",
+    danger: "bg-red-500/10 text-red-400 [@media(hover:hover)]:hover:bg-red-500 [@media(hover:hover)]:hover:text-white active:bg-red-600",
+    outline: "bg-transparent border border-zinc-700 text-zinc-300 [@media(hover:hover)]:hover:border-zinc-500 [@media(hover:hover)]:hover:text-zinc-100 active:bg-zinc-800",
   };
 
   const sizes = {

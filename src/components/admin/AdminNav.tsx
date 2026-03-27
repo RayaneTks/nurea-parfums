@@ -32,7 +32,7 @@ export function AdminNav() {
           <Link
             href="/"
             target="_blank"
-            className="flex h-11 w-11 items-center justify-center rounded-xl text-zinc-500 transition-all duration-200 hover:bg-zinc-900 hover:text-zinc-100"
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-zinc-500 transition-all duration-200 [@media(hover:hover)]:hover:bg-zinc-900 [@media(hover:hover)]:hover:text-zinc-100 active:scale-90"
             aria-label="Voir le site"
           >
             <ExternalLink className="h-[18px] w-[18px]" />
@@ -40,7 +40,7 @@ export function AdminNav() {
           <button
             type="button"
             onClick={logout}
-            className="flex h-11 w-11 items-center justify-center rounded-xl text-zinc-500 transition-all duration-200 hover:bg-red-500/10 hover:text-red-400"
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-zinc-500 transition-all duration-200 [@media(hover:hover)]:hover:bg-red-500/10 [@media(hover:hover)]:hover:text-red-400 active:scale-90"
             aria-label="Se déconnecter"
           >
             <LogOut className="h-[18px] w-[18px]" />

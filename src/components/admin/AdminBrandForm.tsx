@@ -305,10 +305,10 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
                     disabled={readOnly}
                     onClick={() => setCatalogMode(opt.value)}
                     className={`
-                      relative flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all duration-300
+                      relative flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all duration-300 active:scale-[0.97] select-none touch-manipulation
                       ${active 
                         ? "bg-zinc-100 border-zinc-100 shadow-xl shadow-zinc-100/10" 
-                        : "bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:border-zinc-700"}
+                        : "bg-zinc-900/50 border-zinc-800 text-zinc-500 [@media(hover:hover)]:hover:border-zinc-700"}
                     `}
                   >
                     <AdminBadge label={opt.label} variant={active ? opt.variant : "neutral"} dot={active} />
@@ -350,10 +350,10 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
                       disabled={readOnly}
                       onClick={() => setStatus(opt.value as any)}
                       className={`
-                        relative flex-1 flex items-center justify-center gap-2 min-h-[48px] rounded-2xl border transition-all duration-300
+                        relative flex-1 flex items-center justify-center gap-2 min-h-[48px] rounded-2xl border transition-all duration-300 active:scale-[0.97] select-none touch-manipulation
                         ${active 
                           ? "bg-zinc-100 border-zinc-100 text-zinc-900 font-bold shadow-lg shadow-zinc-100/10" 
-                          : "bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:border-zinc-700"}
+                          : "bg-zinc-900/50 border-zinc-800 text-zinc-500 [@media(hover:hover)]:hover:border-zinc-700"}
                       `}
                     >
                       <AdminBadge label={opt.label} variant={active ? opt.variant : "neutral"} dot={active} />

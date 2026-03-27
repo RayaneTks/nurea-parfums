@@ -51,7 +51,7 @@ export function AdminInput({
           <button
             type="button"
             onClick={onClear}
-            className="absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 active:scale-90 transition-all duration-200"
           >
             <X className="h-4 w-4" />
           </button>
