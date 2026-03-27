@@ -51,7 +51,7 @@ export function AdminLoginForm() {
   }
 
   return (
-    <div className="w-full max-w-md border border-[var(--nurea-border)] bg-[var(--nurea-surface)] p-6 shadow-[0_20px_60px_var(--nurea-glow)] md:p-8">
+    <div className="w-full max-w-md bg-[var(--nurea-surface)]/90 p-6 shadow-[0_20px_60px_var(--nurea-glow)] md:p-8">
       <Link
         href="/"
         className="mb-5 inline-flex min-h-[44px] items-center gap-1.5 pr-3 text-[13px] font-medium text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
@@ -60,7 +60,7 @@ export function AdminLoginForm() {
         Retour au site
       </Link>
 
-      <div className="mb-7 border-b border-[var(--nurea-border)] pb-5">
+      <div className="mb-7 border-b border-white/10 pb-5">
         <h1 className="font-serif text-[28px] leading-none tracking-[var(--nurea-tracking-tight)] text-[var(--nurea-text)]">
           Connexion
         </h1>
@@ -70,7 +70,7 @@ export function AdminLoginForm() {
       <form onSubmit={onSubmit} className="space-y-4">
         {(configErr || error) && (
           <div
-            className="border border-red-400/40 bg-red-500/10 px-4 py-3 text-[14px] text-red-200"
+            className="bg-red-500/10 px-4 py-3 text-[14px] text-red-200"
             role="alert"
           >
             {configErr || error}
@@ -92,13 +92,13 @@ export function AdminLoginForm() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="block min-h-[44px] w-full border border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-3 py-2.5 pr-11 text-[15px] text-[var(--nurea-text)] transition-colors focus-visible:border-[var(--nurea-border-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
+              className="block min-h-[44px] w-full bg-white/5 px-3 py-2.5 pr-11 text-[15px] text-[var(--nurea-text)] transition-all duration-200 ease-out-expo focus-visible:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
             />
             {username.trim().length > 0 && (
               <button
                 type="button"
                 onClick={() => setUsername("")}
-                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-[var(--nurea-surface-hover)] hover:text-[var(--nurea-text)]"
+                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-white/10 hover:text-[var(--nurea-text)]"
                 aria-label="Effacer l'identifiant"
               >
                 <X className="h-4 w-4" aria-hidden />
@@ -119,13 +119,13 @@ export function AdminLoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="block min-h-[44px] w-full border border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-3 py-2.5 pr-11 text-[15px] text-[var(--nurea-text)] transition-colors focus-visible:border-[var(--nurea-border-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
+              className="block min-h-[44px] w-full bg-white/5 px-3 py-2.5 pr-11 text-[15px] text-[var(--nurea-text)] transition-all duration-200 ease-out-expo focus-visible:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
             />
             {password.length > 0 && (
               <button
                 type="button"
                 onClick={() => setPassword("")}
-                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-[var(--nurea-surface-hover)] hover:text-[var(--nurea-text)]"
+                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-white/10 hover:text-[var(--nurea-text)]"
                 aria-label="Effacer le mot de passe"
               >
                 <X className="h-4 w-4" aria-hidden />
@@ -137,7 +137,7 @@ export function AdminLoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="flex min-h-[48px] w-full items-center justify-center gap-2 bg-[var(--nurea-accent-solid)] text-[14px] font-semibold text-[var(--nurea-text)] transition-colors hover:bg-[var(--nurea-accent)] disabled:opacity-50"
+          className="flex min-h-[48px] w-full items-center justify-center gap-2 bg-[var(--nurea-accent-solid)] text-[14px] font-semibold text-[var(--nurea-text)] transition-all duration-200 ease-out-expo hover:bg-[var(--nurea-accent)] active:scale-[0.99] disabled:opacity-50"
         >
           {loading ? (
             <>

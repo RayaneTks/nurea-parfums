@@ -29,7 +29,7 @@ const STATUS_OPTIONS = [
 ] as const;
 
 const inputCls =
-  "block w-full border border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-3 py-2.5 text-[15px] text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] disabled:opacity-40 focus-visible:border-[var(--nurea-border-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]";
+  "block w-full bg-white/5 px-3 py-2.5 text-[15px] text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] transition-all duration-200 ease-out-expo disabled:opacity-40 focus-visible:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]";
 
 const labelCls = "block text-[13px] font-medium text-[var(--nurea-text-muted)]";
 
@@ -177,7 +177,7 @@ function ImageUploadField({
         </label>
       </div>
       {preview ? (
-        <div className="relative mt-3 aspect-[2/3] w-full max-w-[180px] overflow-hidden border border-[var(--nurea-border)] bg-[var(--nurea-bg)]">
+      <div className="relative mt-3 aspect-[2/3] w-full max-w-[180px] overflow-hidden bg-[var(--nurea-bg)]">
           {isRemote ? (
             <Image src={preview} alt="Apercu" fill className="object-contain" sizes="180px" />
           ) : (
@@ -277,7 +277,7 @@ function BrandCombobox({
 
   if (brandId && selectedBrand) {
     return (
-      <div className="flex items-center gap-2 border border-[var(--nurea-border)] bg-[var(--nurea-surface)] px-3 py-2">
+      <div className="flex items-center gap-2 bg-white/5 px-3 py-2">
         <span className="flex-1 text-[15px] font-medium text-[var(--nurea-text)]">
           {selectedBrand.name}
         </span>
@@ -285,7 +285,7 @@ function BrandCombobox({
           <button
             type="button"
             onClick={onClear}
-            className="flex h-11 w-11 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-[var(--nurea-surface-hover)] hover:text-[var(--nurea-text)]"
+            className="flex h-11 w-11 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-white/10 hover:text-[var(--nurea-text)]"
             aria-label="Désélectionner la marque"
           >
             <X className="h-4 w-4" />
@@ -317,14 +317,14 @@ function BrandCombobox({
             setQuery("");
             setOpen(false);
           }}
-          className="absolute right-1 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-[var(--nurea-surface-hover)] hover:text-[var(--nurea-text)]"
+          className="absolute right-1 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-white/10 hover:text-[var(--nurea-text)]"
           aria-label="Effacer la recherche de marque"
         >
           <X className="h-4 w-4" aria-hidden />
         </button>
       )}
       {open && query.trim().length > 0 && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-y-auto border border-[var(--nurea-border)] bg-[var(--nurea-surface)] shadow-[0_16px_42px_var(--nurea-glow)]">
+        <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-y-auto bg-[var(--nurea-surface)] shadow-[0_16px_42px_var(--nurea-glow)]">
           {filtered.map((b) => (
             <button
               key={b.id}
@@ -344,7 +344,7 @@ function BrandCombobox({
               type="button"
               onClick={createBrand}
               disabled={creating}
-              className="flex w-full min-h-[44px] items-center gap-2 border-t border-[var(--nurea-border)] px-3 py-2 text-left text-[14px] font-medium text-[var(--nurea-accent)] transition-colors hover:bg-[var(--nurea-surface-hover)]"
+              className="flex w-full min-h-[44px] items-center gap-2 border-t border-white/10 px-3 py-2 text-left text-[14px] font-medium text-[var(--nurea-accent)] transition-colors hover:bg-[var(--nurea-surface-hover)]"
             >
               {creating ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -560,7 +560,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
   return (
     <>
-      <form id="admin-perfume-form" onSubmit={onSubmit} className="space-y-8 border border-[var(--nurea-border)] bg-[var(--nurea-surface)] p-5 md:p-8">
+      <form id="admin-perfume-form" onSubmit={onSubmit} className="space-y-8 bg-[var(--nurea-surface)]/85 p-5 md:p-8">
         {/* Header */}
         <div className="space-y-3">
           <Link
@@ -581,7 +581,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         </div>
 
         {readOnly && (
-          <div className="border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-[13px] text-amber-200">
+          <div className="bg-amber-500/10 px-4 py-3 text-[13px] text-amber-200">
             Lecture seule — vous ne pouvez pas modifier cette fiche.
           </div>
         )}
@@ -589,7 +589,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         {error && (
           <div
             ref={errorRef}
-            className="border border-red-400/40 bg-red-500/10 px-4 py-3 text-[14px] text-red-200"
+            className="bg-red-500/10 px-4 py-3 text-[14px] text-red-200"
             role="alert"
           >
             {error}
@@ -634,7 +634,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                   <button
                     type="button"
                     onClick={() => setBrandNameDraft("")}
-                    className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-[var(--nurea-surface-hover)] hover:text-[var(--nurea-text)]"
+                    className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-white/10 hover:text-[var(--nurea-text)]"
                     aria-label="Effacer la nouvelle marque"
                   >
                     <X className="h-4 w-4" aria-hidden />
@@ -669,7 +669,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                 <button
                   type="button"
                   onClick={() => setName("")}
-                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-[var(--nurea-surface-hover)] hover:text-[var(--nurea-text)]"
+                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-white/10 hover:text-[var(--nurea-text)]"
                   aria-label="Effacer le nom du parfum"
                 >
                   <X className="h-4 w-4" aria-hidden />
@@ -721,10 +721,10 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                   type="button"
                   onClick={() => !readOnly && setStatus(opt.value)}
                   disabled={readOnly || ((isLockedByBrandMode || isLockedByBrandVisibility) && opt.value === "PUBLISHED")}
-                  className={`flex min-h-[44px] flex-1 items-center justify-center gap-2 border px-3 py-2 text-[13px] font-medium transition-colors ${
+                  className={`flex min-h-[44px] flex-1 items-center justify-center gap-2 px-3 py-2 text-[13px] font-medium transition-all duration-200 ease-out-expo ${
                     active
-                      ? "border-[var(--nurea-accent)] bg-[var(--nurea-accent-subtle)] text-[var(--nurea-text)]"
-                      : "border-[var(--nurea-border)] text-[var(--nurea-text-muted)] hover:border-[var(--nurea-border-hover)]"
+                      ? "bg-white/15 text-[var(--nurea-text)]"
+                      : "bg-white/5 text-[var(--nurea-text-muted)] hover:bg-white/10"
                   }`}
                 >
                   <span className={`h-2 w-2 ${opt.color}`} />
@@ -742,12 +742,12 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
         {/* --- Danger zone: delete --- */}
         {!isNew && !readOnly && (
-          <div className="border border-red-500/30 bg-red-500/10 p-4">
+          <div className="bg-red-500/10 p-4">
             {!deleteConfirm ? (
               <button
                 type="button"
                 onClick={() => setDeleteConfirm(true)}
-                className="flex min-h-[44px] items-center gap-2 border border-red-500/50 bg-transparent px-4 py-2 text-[13px] font-medium text-red-200 transition-colors hover:bg-red-500/10"
+                className="flex min-h-[44px] items-center gap-2 bg-red-500/20 px-4 py-2 text-[13px] font-medium text-red-200 transition-colors hover:bg-red-500/30"
               >
                 <Trash2 className="h-4 w-4" aria-hidden />
                 Supprimer ce parfum
@@ -762,7 +762,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                     type="button"
                     onClick={() => setDeleteConfirm(false)}
                     disabled={deleting}
-                    className="flex min-h-[44px] items-center justify-center border border-[var(--nurea-border)] px-4 py-2 text-[13px] font-medium text-[var(--nurea-text-muted)] transition-colors hover:bg-[var(--nurea-surface-hover)]"
+                    className="flex min-h-[44px] items-center justify-center bg-white/5 px-4 py-2 text-[13px] font-medium text-[var(--nurea-text-muted)] transition-colors hover:bg-white/10"
                   >
                     Annuler
                   </button>
@@ -786,7 +786,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           <button
             type="submit"
             disabled={saving || readOnly}
-            className="flex min-h-[48px] w-full items-center justify-center gap-2 bg-[var(--nurea-accent-solid)] text-[14px] font-semibold text-[var(--nurea-text)] transition-colors hover:bg-[var(--nurea-accent)] disabled:opacity-50"
+            className="flex min-h-[48px] w-full items-center justify-center gap-2 bg-[var(--nurea-accent-solid)] text-[14px] font-semibold text-[var(--nurea-text)] transition-all duration-200 ease-out-expo hover:bg-[var(--nurea-accent)] active:scale-[0.99] disabled:opacity-50"
           >
             {saving ? (
               <>
@@ -802,11 +802,11 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
       {/* Mobile sticky bar */}
       {!readOnly && (
-        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--nurea-border)] bg-[var(--nurea-overlay)]/95 pb-[max(0.75rem,env(safe-area-inset-bottom))] pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-3 backdrop-blur-xl md:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[var(--nurea-overlay)]/95 pb-[max(0.75rem,env(safe-area-inset-bottom))] pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-3 backdrop-blur-xl md:hidden">
           <div className="mx-auto flex max-w-2xl gap-3">
             <Link
               href="/admin"
-              className="flex min-h-[48px] flex-1 items-center justify-center gap-2 border border-[var(--nurea-border)] text-[13px] font-medium text-[var(--nurea-text-muted)] transition-colors active:scale-[0.97]"
+              className="flex min-h-[48px] flex-1 items-center justify-center gap-2 bg-white/5 text-[13px] font-medium text-[var(--nurea-text-muted)] transition-colors active:scale-[0.97]"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden />
               Retour
@@ -815,7 +815,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               type="submit"
               form="admin-perfume-form"
               disabled={saving}
-              className="flex min-h-[48px] flex-[1.8] items-center justify-center gap-2 bg-[var(--nurea-accent-solid)] text-[14px] font-semibold text-[var(--nurea-text)] transition-colors active:scale-[0.97] disabled:opacity-50"
+              className="flex min-h-[48px] flex-[1.8] items-center justify-center gap-2 bg-[var(--nurea-accent-solid)] text-[14px] font-semibold text-[var(--nurea-text)] transition-all duration-200 ease-out-expo active:scale-[0.97] disabled:opacity-50"
             >
               {saving ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
