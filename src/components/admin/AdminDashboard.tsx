@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -10,6 +11,7 @@ import {
   Plus,
   Search,
   Trash2,
+  X,
 } from "lucide-react";
 import { AdminNav } from "./AdminNav";
 
@@ -28,18 +30,116 @@ const CATALOG_MODE_KEYS = ["CURATED", "COMPLETE"] as const;
 
 type PerfumeRow = {
   id: number;
+  image: string;
+  imageLight: string | null;
   name: string;
   status: string;
-  brand: { name: string };
+  brand: { name: string; image: string | null; catalogMode: "CURATED" | "COMPLETE" };
 };
 
 type PerfumeFilter = "all" | "PUBLISHED" | "DRAFT";
 type Tab = "perfumes" | "brands";
+type BrandModeFilter = "all" | "CURATED" | "COMPLETE";
+type BrandSort = "name-asc" | "name-desc" | "count-desc" | "count-asc";
+
+const VISUAL_SIZE = 52;
 
 function StatusDot({ status }: { status: string }) {
   const color =
     status === "PUBLISHED" ? "bg-emerald-500" : "bg-amber-400";
   return <span className={`inline-block h-2 w-2 rounded-full ${color}`} />;
+}
+
+function BrandVisual({
+  name,
+  image,
+}: {
+  name: string;
+  image: string | null;
+}) {
+  if (image?.trim()) {
+    return (
+      <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-md border border-black/10 bg-[var(--nurea-surface)] dark:border-white/10">
+        <Image
+          src={image}
+          alt={`Visuel ${name}`}
+          width={VISUAL_SIZE}
+          height={VISUAL_SIZE}
+          className="h-full w-full object-cover"
+        />
+      </div>
+    );
+  }
+  return (
+    <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-md border border-dashed border-black/20 bg-black/[0.02] text-[11px] font-semibold uppercase tracking-wide text-[#777] dark:border-white/20 dark:bg-white/[0.04] dark:text-[#aaa]">
+      {name.slice(0, 2)}
+    </div>
+  );
+}
+
+function BrandInlineBadge({
+  name,
+  image,
+}: {
+  name: string;
+  image: string | null;
+}) {
+  if (image?.trim()) {
+    return (
+      <div className="relative h-5 w-5 shrink-0 overflow-hidden rounded-[4px] border border-black/10 dark:border-white/10">
+        <Image src={image} alt={`Icône ${name}`} fill className="object-cover" sizes="20px" />
+      </div>
+    );
+  }
+  return (
+    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] border border-dashed border-black/20 text-[9px] font-semibold uppercase text-[#777] dark:border-white/20 dark:text-[#aaa]">
+      {name.slice(0, 1)}
+    </div>
+  );
+}
+
+function PerfumeVisual({
+  name,
+  image,
+  imageLight,
+}: {
+  name: string;
+  image: string;
+  imageLight: string | null;
+}) {
+  return (
+    <div className="flex shrink-0 items-center gap-1.5">
+      <div className="relative h-[52px] w-[40px] overflow-hidden rounded-md border border-black/10 bg-[var(--nurea-surface)] dark:border-white/10">
+        <Image src={image} alt={`Visuel principal ${name}`} fill className="object-cover" sizes="40px" />
+      </div>
+      {imageLight?.trim() ? (
+        <div className="relative h-[52px] w-[40px] overflow-hidden rounded-md border border-black/10 bg-[var(--nurea-surface)] dark:border-white/10">
+          <Image
+            src={imageLight}
+            alt={`Visuel clair ${name}`}
+            fill
+            className="object-cover"
+            sizes="40px"
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function BrandModeBadge({ mode }: { mode: "CURATED" | "COMPLETE" }) {
+  if (mode === "COMPLETE") {
+    return (
+      <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800 dark:border-amber-400/40 dark:bg-amber-500/20 dark:text-amber-300">
+        Gamme complète
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center rounded-full border border-sky-300 bg-sky-100 px-2 py-0.5 text-[11px] font-semibold text-sky-800 dark:border-sky-400/40 dark:bg-sky-500/20 dark:text-sky-300">
+      Sélection
+    </span>
+  );
 }
 
 function statusLabel(status: string): string {
@@ -94,6 +194,55 @@ function ConfirmDeleteModal({
   );
 }
 
+function ConfirmBrandDeleteModal({
+  target,
+  onCancel,
+  onConfirm,
+}: {
+  target: { id: string; name: string; count: number };
+  onCancel: () => void;
+  onConfirm: (id: string) => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      onClick={onCancel}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Confirmer la suppression de la marque ${target.name}`}
+    >
+      <div
+        className="mx-4 w-full max-w-sm rounded-md border border-black/10 bg-white p-6 shadow-xl dark:border-white/10 dark:bg-[#1a1a1a]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p className="text-[15px] leading-relaxed text-[#1a1a1a] dark:text-[#e5e5e5]">
+          Supprimer définitivement &laquo;&nbsp;{target.name}&nbsp;&raquo;&nbsp;?
+          <br />
+          {target.count > 0
+            ? `Cette action supprime aussi ${target.count} parfum${target.count > 1 ? "s" : ""} lié${target.count > 1 ? "s" : ""}.`
+            : "Aucun parfum lié ne sera supprimé."}
+        </p>
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="min-h-[44px] rounded-md px-4 text-[13px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] dark:text-[#999] dark:hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            onClick={() => onConfirm(target.id)}
+            className="min-h-[44px] rounded-md bg-red-600 px-4 text-[13px] font-medium text-white transition-colors hover:bg-red-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          >
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const selectCls =
   "block w-full appearance-none rounded-md border border-black/10 bg-white px-2 py-1.5 pr-8 text-[13px] text-[#1a1a1a] focus-visible:border-blue-500 focus-visible:outline-none dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]";
 
@@ -122,6 +271,15 @@ export function AdminDashboard() {
   const [newBrand, setNewBrand] = useState("");
   const [brandMsg, setBrandMsg] = useState<string | null>(null);
   const [brandImageDrafts, setBrandImageDrafts] = useState<Record<string, string>>({});
+  const [brandNameDrafts, setBrandNameDrafts] = useState<Record<string, string>>({});
+  const [brandSearch, setBrandSearch] = useState("");
+  const [brandModeFilter, setBrandModeFilter] = useState<BrandModeFilter>("all");
+  const [brandSort, setBrandSort] = useState<BrandSort>("name-asc");
+  const [editingBrandId, setEditingBrandId] = useState<string | null>(null);
+  const [pendingBrandIds, setPendingBrandIds] = useState<Set<string>>(new Set());
+  const [brandDeleteTarget, setBrandDeleteTarget] = useState<{ id: string; name: string; count: number } | null>(null);
+  const [actionMsg, setActionMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [isAddingBrand, setIsAddingBrand] = useState(false);
   const hasMutationInFlight = pendingDeleteIds.size > 0 || pendingStatusIds.size > 0;
 
   const refresh = useCallback(async () => {
@@ -139,6 +297,9 @@ export function AdminDashboard() {
         setBrandImageDrafts(
           Object.fromEntries((bj.brands ?? []).map((row) => [row.id, row.image ?? ""])),
         );
+        setBrandNameDrafts(
+          Object.fromEntries((bj.brands ?? []).map((row) => [row.id, row.name])),
+        );
       }
       const p = await fetch("/api/admin/perfumes", { credentials: "include", cache: "no-store" });
       if (p.ok) {
@@ -149,6 +310,12 @@ export function AdminDashboard() {
       setLoadErr(e instanceof Error ? e.message : "Erreur de chargement");
     }
   }, []);
+
+  useEffect(() => {
+    if (!actionMsg) return;
+    const t = setTimeout(() => setActionMsg(null), 2500);
+    return () => clearTimeout(t);
+  }, [actionMsg]);
 
   useEffect(() => {
     refresh();
@@ -170,6 +337,42 @@ export function AdminDashboard() {
     );
   }, [perfumesOnly, search, perfumeFilter]);
 
+  const filteredBrands = useMemo(() => {
+    const q = brandSearch.trim().toLowerCase();
+    let rows = brands;
+    if (brandModeFilter !== "all") {
+      rows = rows.filter((b) => b.catalogMode === brandModeFilter);
+    }
+    if (q) {
+      rows = rows.filter(
+        (b) =>
+          b.name.toLowerCase().includes(q) ||
+          b.slug.toLowerCase().includes(q),
+      );
+    }
+    const sorted = [...rows];
+    switch (brandSort) {
+      case "name-desc":
+        sorted.sort((a, b) => b.name.localeCompare(a.name, "fr"));
+        break;
+      case "count-desc":
+        sorted.sort((a, b) => b._count.perfumes - a._count.perfumes || a.name.localeCompare(b.name, "fr"));
+        break;
+      case "count-asc":
+        sorted.sort((a, b) => a._count.perfumes - b._count.perfumes || a.name.localeCompare(b.name, "fr"));
+        break;
+      default:
+        sorted.sort((a, b) => a.name.localeCompare(b.name, "fr"));
+    }
+    return sorted;
+  }, [brands, brandSearch, brandModeFilter, brandSort]);
+
+  const brandModePills: { id: BrandModeFilter; label: string; count: number }[] = [
+    { id: "all", label: "Toutes", count: brands.length },
+    { id: "COMPLETE", label: "Gammes complètes", count: brands.filter((b) => b.catalogMode === "COMPLETE").length },
+    { id: "CURATED", label: "Sélections", count: brands.filter((b) => b.catalogMode === "CURATED").length },
+  ];
+
   const canEdit = user?.role !== "VIEWER";
 
   async function toggleVisibility(id: number, currentStatus: string) {
@@ -187,7 +390,7 @@ export function AdminDashboard() {
     });
     if (!r.ok) {
       const j = await readJsonSafe<{ error?: string }>(r);
-      alert(j?.error ?? "Erreur");
+      setActionMsg({ type: "error", text: j?.error ?? "Changement de visibilité impossible." });
       setPerfumes((prev) =>
         prev.map((p) => (p.id === id ? { ...p, status: currentStatus } : p)),
       );
@@ -203,6 +406,7 @@ export function AdminDashboard() {
       copy.delete(id);
       return copy;
     });
+    setActionMsg({ type: "success", text: next === "PUBLISHED" ? "Parfum rendu visible." : "Parfum masqué." });
   }
 
   async function hardDelete(id: number) {
@@ -215,7 +419,7 @@ export function AdminDashboard() {
     });
     if (!r.ok) {
       const j = await readJsonSafe<{ error?: string }>(r);
-      alert(j?.error ?? "Erreur");
+      setActionMsg({ type: "error", text: j?.error ?? "Suppression impossible." });
       setPendingDeleteIds((prev) => {
         const copy = new Set(prev);
         copy.delete(id);
@@ -239,6 +443,7 @@ export function AdminDashboard() {
       copy.delete(id);
       return copy;
     });
+    setActionMsg({ type: "success", text: "Parfum supprimé." });
   }
 
   async function addBrand(e: React.FormEvent) {
@@ -246,6 +451,7 @@ export function AdminDashboard() {
     setBrandMsg(null);
     const name = newBrand.trim();
     if (name.length < 2) return;
+    setIsAddingBrand(true);
     try {
       const r = await fetch("/api/admin/brands", {
         method: "POST",
@@ -266,17 +472,21 @@ export function AdminDashboard() {
           [...prev, created].sort((a, z) => a.name.localeCompare(z.name, "fr")),
         );
         setBrandImageDrafts((prev) => ({ ...prev, [created.id]: created.image ?? "" }));
+        setBrandNameDrafts((prev) => ({ ...prev, [created.id]: created.name }));
+        setActionMsg({ type: "success", text: "Marque créée." });
       } else {
         refresh();
       }
     } catch {
       setBrandMsg("Erreur réseau. Réessayez.");
+    } finally {
+      setIsAddingBrand(false);
     }
   }
 
   async function patchBrand(
     id: string,
-    patch: { catalogMode?: "CURATED" | "COMPLETE"; image?: string | null },
+    patch: { name?: string; catalogMode?: "CURATED" | "COMPLETE"; image?: string | null },
   ) {
     const r = await fetch(`/api/admin/brands/${id}`, {
       method: "PATCH",
@@ -286,7 +496,7 @@ export function AdminDashboard() {
     });
     if (!r.ok) {
       const j = await readJsonSafe<{ error?: string }>(r);
-      alert(j?.error ?? "Mise à jour impossible");
+        setActionMsg({ type: "error", text: j?.error ?? "Mise à jour impossible" });
       return;
     }
     const j = await readJsonSafe<{ brand?: BrandRow }>(r);
@@ -294,8 +504,37 @@ export function AdminDashboard() {
       const updated = j.brand;
       setBrands((prev) => prev.map((b) => (b.id === id ? updated : b)));
       setBrandImageDrafts((prev) => ({ ...prev, [id]: updated.image ?? "" }));
+      setBrandNameDrafts((prev) => ({ ...prev, [id]: updated.name }));
+      setActionMsg({ type: "success", text: "Marque mise à jour." });
+      setEditingBrandId(null);
     } else {
       await refresh();
+      setActionMsg({ type: "success", text: "Marque mise à jour." });
+    }
+  }
+
+  async function deleteBrand(id: string) {
+    setPendingBrandIds((prev) => new Set(prev).add(id));
+    try {
+      const r = await fetch(`/api/admin/brands/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!r.ok) {
+        const j = await readJsonSafe<{ error?: string }>(r);
+        setActionMsg({ type: "error", text: j?.error ?? "Suppression impossible" });
+        return;
+      }
+      setBrands((prev) => prev.filter((b) => b.id !== id));
+      setBrandDeleteTarget(null);
+      if (editingBrandId === id) setEditingBrandId(null);
+      setActionMsg({ type: "success", text: "Marque supprimée." });
+    } finally {
+      setPendingBrandIds((prev) => {
+        const copy = new Set(prev);
+        copy.delete(id);
+        return copy;
+      });
     }
   }
 
@@ -313,6 +552,18 @@ export function AdminDashboard() {
         {loadErr && (
           <div className="mb-4 rounded-md bg-red-50 px-4 py-3 text-[14px] text-red-700 dark:bg-red-500/10 dark:text-red-400" role="alert">
             {loadErr}
+          </div>
+        )}
+        {actionMsg && (
+          <div
+            className={`mb-4 rounded-md px-4 py-3 text-[14px] ${
+              actionMsg.type === "success"
+                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+                : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+            }`}
+            role="status"
+          >
+            {actionMsg.text}
           </div>
         )}
 
@@ -404,12 +655,14 @@ export function AdminDashboard() {
                 <ul className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
                   {filteredPerfumes.map((row, idx) => (
                     <li key={row.id} className={`group flex items-center gap-3 py-3 ${idx % 2 === 0 ? "bg-black/[0.015] dark:bg-white/[0.02]" : ""}`}>
+                      <PerfumeVisual name={row.name} image={row.image} imageLight={row.imageLight} />
                       <div className="min-w-0 flex-1">
                         <p className="text-[15px] font-medium leading-snug text-[#1a1a1a] dark:text-[#e5e5e5]">
                           {row.name}
                         </p>
                         <p className="mt-0.5 flex items-center gap-2 text-[13px] text-[#999]">
-                          <span>{row.brand.name}</span>
+                          <BrandInlineBadge name={row.brand.name} image={row.brand.image} />
+                          <span className="truncate">{row.brand.name}</span>
                           <span className="text-[#ddd] dark:text-[#444]">·</span>
                           <span className="flex items-center gap-1">
                             <StatusDot status={row.status} />
@@ -484,28 +737,141 @@ export function AdminDashboard() {
             {brandMsg && (
               <p className="text-[13px] text-[#999]">{brandMsg}</p>
             )}
+            <p className="text-[12px] text-[#8d8d8d] dark:text-[#7f7f7f]">
+              {filteredBrands.length} résultat{filteredBrands.length > 1 ? "s" : ""} affiché{filteredBrands.length > 1 ? "s" : ""}
+            </p>
 
-            {brands.length === 0 ? (
+            <div className="grid gap-2 sm:grid-cols-2">
+              <input
+                type="search"
+                value={brandSearch}
+                onChange={(e) => setBrandSearch(e.target.value)}
+                placeholder="Rechercher une marque…"
+                className="min-h-[44px] rounded-md border border-black/10 bg-white px-3 text-[14px] text-[#1a1a1a] placeholder:text-[#bbb] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
+              />
+              <select
+                value={brandSort}
+                onChange={(e) => setBrandSort(e.target.value as BrandSort)}
+                className={selectCls}
+              >
+                <option value="name-asc">Tri: Nom A-Z</option>
+                <option value="name-desc">Tri: Nom Z-A</option>
+                <option value="count-desc">Tri: Plus de parfums</option>
+                <option value="count-asc">Tri: Moins de parfums</option>
+              </select>
+            </div>
+            <div className="flex gap-1.5 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
+              {brandModePills.map(({ id, label, count }) => {
+                const active = brandModeFilter === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setBrandModeFilter(id)}
+                    className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium transition-all ${
+                      active
+                        ? "bg-blue-500 text-white"
+                        : "bg-black/[0.04] text-[#888] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:text-[#777] dark:hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    {label}
+                    <span className="ml-1 opacity-70">{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {filteredBrands.length === 0 ? (
               <p className="py-12 text-center text-[14px] text-[#999]">Aucune marque.</p>
             ) : (
               <ul className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
-                {brands.map((b, idx) => (
+                {filteredBrands.map((b, idx) => (
                   <li key={b.id} className={`py-4 ${idx % 2 === 0 ? "bg-black/[0.015] dark:bg-white/[0.02]" : ""}`}>
-                    <div className="flex items-baseline justify-between gap-2">
-                      <p className="text-[15px] font-medium text-[#1a1a1a] dark:text-[#e5e5e5]">
-                        {b.name}
-                      </p>
-                      <span className="text-[12px] text-[#bbb] dark:text-[#666]">
-                        {b._count.perfumes} parfum{b._count.perfumes !== 1 ? "s" : ""}
-                      </span>
+                    <div className="flex items-center gap-3">
+                      <BrandVisual name={b.name} image={b.image} />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[15px] font-medium text-[#1a1a1a] dark:text-[#e5e5e5]">
+                          {b.name}
+                        </p>
+                        <p className="mt-0.5 flex items-center gap-2 text-[13px] text-[#999]">
+                          <BrandModeBadge mode={b.catalogMode} />
+                          <span>{b._count.perfumes} parfum{b._count.perfumes !== 1 ? "s" : ""}</span>
+                        </p>
+                      </div>
+                      {canEdit && (
+                        <div className="flex shrink-0 gap-1">
+                          <button
+                            type="button"
+                            disabled={pendingBrandIds.has(b.id)}
+                            onClick={() => setEditingBrandId((prev) => (prev === b.id ? null : b.id))}
+                            className="flex h-9 w-9 items-center justify-center rounded-md text-[#7b7b7b] transition-colors hover:bg-black/[0.04] hover:text-[#2c2c2c] disabled:opacity-50 dark:text-[#a0a0a0] dark:hover:bg-white/[0.06] dark:hover:text-white"
+                            aria-label={`Modifier ${b.name}`}
+                          >
+                            <Pencil className="h-4 w-4" aria-hidden />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={pendingBrandIds.has(b.id)}
+                            onClick={() =>
+                              setBrandDeleteTarget({
+                                id: b.id,
+                                name: b.name,
+                                count: b._count.perfumes,
+                              })
+                            }
+                            className="flex h-9 w-9 items-center justify-center rounded-md text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                            aria-label={`Supprimer ${b.name}`}
+                          >
+                            <Trash2 className="h-4 w-4" aria-hidden />
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <div className="mt-2 grid grid-cols-2 gap-2">
+                    {editingBrandId === b.id && canEdit && (
+                      <div className="mt-3 rounded-md border border-black/[0.08] bg-white/[0.65] p-3 dark:border-white/[0.08] dark:bg-white/[0.03]">
+                        <div className="mb-2 flex items-center justify-between">
+                          <p className="text-[12px] font-semibold uppercase tracking-wide text-[#888]">
+                            Modifier la marque
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setEditingBrandId(null)}
+                            className="flex h-7 w-7 items-center justify-center rounded-md text-[#888] hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+                            aria-label="Fermer la modification"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       <div>
+                        <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">Nom marque</label>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <input
+                            value={brandNameDrafts[b.id] ?? ""}
+                            onChange={(e) =>
+                              setBrandNameDrafts((prev) => ({
+                                ...prev,
+                                [b.id]: e.target.value,
+                              }))
+                            }
+                            className="min-h-[36px] flex-1 rounded-md border border-black/10 bg-white px-2 py-1.5 text-[12px] text-[#1a1a1a] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]"
+                          />
+                          <button
+                            type="button"
+                            disabled={!canEdit || pendingBrandIds.has(b.id)}
+                            onClick={() => patchBrand(b.id, { name: (brandNameDrafts[b.id] ?? "").trim() })}
+                            className="min-h-[36px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                          >
+                            Renommer
+                          </button>
+                        </div>
+                      </div>
+                      <div className="relative">
                         <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">Mode de catalogue</label>
                         <div className="relative mt-0.5">
                           <select
                             value={b.catalogMode}
-                            disabled={!canEdit}
+                            disabled={!canEdit || pendingBrandIds.has(b.id)}
                             onChange={(e) =>
                               patchBrand(b.id, {
                                 catalogMode: e.target.value as "CURATED" | "COMPLETE",
@@ -522,7 +888,7 @@ export function AdminDashboard() {
                           <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#bbb]" aria-hidden />
                         </div>
                       </div>
-                      <div>
+                      <div className="sm:col-span-2">
                         <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">
                           Image marque
                         </label>
@@ -544,12 +910,13 @@ export function AdminDashboard() {
                           />
                           <button
                             type="button"
+                            disabled={!canEdit || pendingBrandIds.has(b.id)}
                             onClick={() =>
                               patchBrand(b.id, {
                                 image: (brandImageDrafts[b.id] ?? "").trim() || null,
                               })
                             }
-                            className="min-h-[36px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                            className="min-h-[36px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
                           >
                             Enregistrer
                           </button>
@@ -561,6 +928,8 @@ export function AdminDashboard() {
                         )}
                       </div>
                     </div>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -579,6 +948,35 @@ export function AdminDashboard() {
           <Plus className="h-6 w-6" aria-hidden />
         </Link>
       )}
+      {canEdit && tab === "brands" && (
+        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-black/[0.06] bg-white/95 pb-[max(0.75rem,env(safe-area-inset-bottom))] pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-3 backdrop-blur-xl dark:border-white/[0.06] dark:bg-[#111]/95 md:hidden">
+          <div className="mx-auto flex max-w-3xl gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setBrandSearch("");
+                setBrandModeFilter("all");
+                setBrandSort("name-asc");
+              }}
+              className="flex min-h-[48px] flex-1 items-center justify-center rounded-md border border-black/10 text-[12px] font-medium text-[#666] transition-all active:scale-[0.97] dark:border-white/10 dark:text-[#aaa]"
+            >
+              Réinitialiser
+            </button>
+            <button
+              type="button"
+              disabled={isAddingBrand || newBrand.trim().length < 2}
+              onClick={async () => {
+                const fakeEvent = { preventDefault() {} } as React.FormEvent;
+                await addBrand(fakeEvent);
+              }}
+              className="flex min-h-[48px] flex-[1.4] items-center justify-center gap-2 rounded-md bg-blue-500 text-[13px] font-semibold text-white transition-all active:scale-[0.97] disabled:opacity-50"
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              {isAddingBrand ? "Ajout…" : "Ajouter la marque"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Delete confirmation modal */}
       {deleteTarget && (
@@ -586,6 +984,13 @@ export function AdminDashboard() {
           target={deleteTarget}
           onCancel={() => setDeleteTarget(null)}
           onConfirm={hardDelete}
+        />
+      )}
+      {brandDeleteTarget && (
+        <ConfirmBrandDeleteModal
+          target={brandDeleteTarget}
+          onCancel={() => setBrandDeleteTarget(null)}
+          onConfirm={deleteBrand}
         />
       )}
     </div>

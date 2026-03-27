@@ -38,9 +38,10 @@ export function AdminNav() {
             type="button"
             onClick={logout}
             aria-label="Se deconnecter"
-            className="flex h-9 w-9 items-center justify-center rounded-md text-[#666] transition-colors hover:bg-black/[0.04] hover:text-[#1a1a1a] dark:text-[#999] dark:hover:bg-white/[0.06] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="flex h-9 items-center gap-1.5 rounded-md border border-red-200 px-2.5 text-[12px] font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
             <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline">Déconnexion</span>
           </button>
         </div>
       </div>

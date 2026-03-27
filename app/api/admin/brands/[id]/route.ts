@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { BrandCatalogMode } from "@prisma/client";
+import { BrandCatalogMode, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
+import { brandSlug } from "@/lib/slugify";
 
 export const dynamic = "force-dynamic";
 
@@ -29,13 +30,14 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
     return NextResponse.json({ error: "JSON invalide." }, { status: 400 });
   }
 
-  const data: { name?: string; catalogMode?: BrandCatalogMode; image?: string | null } = {};
+  const data: { name?: string; slug?: string; catalogMode?: BrandCatalogMode; image?: string | null } = {};
   if (body.name !== undefined) {
     const name = body.name.trim();
     if (name.length < 2 || name.length > 120) {
       return NextResponse.json({ error: "Nom de marque invalide." }, { status: 400 });
     }
     data.name = name;
+    data.slug = brandSlug(name);
   }
   if (body.catalogMode !== undefined) {
     const mode = body.catalogMode.trim();
@@ -80,7 +82,46 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
     revalidatePath("/marque");
     await writeAudit(ctx.sub, "brand.update", "Brand", brand.id, data);
     return NextResponse.json({ brand });
-  } catch {
-    return NextResponse.json({ error: "Marque introuvable." }, { status: 404 });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        return NextResponse.json({ error: "Marque introuvable." }, { status: 404 });
+      }
+      if (error.code === "P2002") {
+        return NextResponse.json({ error: "Nom de marque déjà utilisé." }, { status: 409 });
+      }
+    }
+    console.error("[api/admin/brands/:id][PATCH]", error);
+    return NextResponse.json({ error: "Mise à jour impossible pour le moment." }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request, { params }: RouteCtx) {
+  try {
+    const ctx = await requireAdmin(request);
+    if (ctx instanceof NextResponse) return ctx;
+    const denied = requireEditor(ctx);
+    if (denied) return denied;
+
+    const id = (await params).id?.trim();
+    if (!id) {
+      return NextResponse.json({ error: "Identifiant manquant." }, { status: 400 });
+    }
+
+    const deleted = await prisma.brand.delete({
+      where: { id },
+      select: { id: true, name: true },
+    });
+
+    revalidatePath("/");
+    revalidatePath("/marque");
+    await writeAudit(ctx.sub, "brand.hard_delete", "Brand", deleted.id, { name: deleted.name });
+    return NextResponse.json({ ok: true, brand: deleted });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+      return NextResponse.json({ error: "Marque introuvable." }, { status: 404 });
+    }
+    console.error("[api/admin/brands/:id][DELETE]", error);
+    return NextResponse.json({ error: "Suppression impossible pour le moment." }, { status: 500 });
   }
 }

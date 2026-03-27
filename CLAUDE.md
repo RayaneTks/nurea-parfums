@@ -124,3 +124,18 @@ Recherche « hors catalogue » : voir `findExternalPerfumeHint` et les fichiers 
 ## Search (fichiers)
 
 - **Ne pas** mélanger les intentions : catalogue affiché = DB ; recherche élargie = hints externes + message de secours `EXTERNAL_SEARCH_FALLBACK_MESSAGE`.
+
+## Admin UX (référence stable)
+
+- Onglets admin `Parfums` et `Marques` suivent la même logique de liste actionnable: lecture rapide, actions explicites, feedback immédiat.
+- L'onglet `Marques` expose: recherche, filtres en bulles, tri, compteur live des résultats, et édition inline (`Modifier`).
+- Chaque ligne admin doit rester mobile-first, aérée et utile: mini visuels, badge statut/mode, actions à portée du pouce.
+- Les actions destructives exigent une confirmation claire avant exécution.
+- Toute mutation admin doit afficher un message de retour (succès/erreur) sans recharger inutilement toute la page.
+
+## Résilience DB (production)
+
+- Stack cible: Vercel + Prisma + Supabase pooler transaction.
+- `DATABASE_URL` recommandé: pooler transaction `:6543` avec `pgbouncer=true`, `connection_limit=1`, `sslmode=require`.
+- Éviter les rafales de requêtes parallèles côté admin; privilégier des refresh ciblés et des mises à jour locales optimistes.
+- En cas d'indisponibilité DB temporaire, conserver un fallback catalogue pour éviter les écrans vides côté public.

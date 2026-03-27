@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     const perfumes = await prisma.perfume.findMany({
       where,
       include: {
-        brand: { select: { id: true, name: true } },
+        brand: { select: { id: true, name: true, image: true, catalogMode: true } },
       },
       orderBy: { id: "asc" },
     });
