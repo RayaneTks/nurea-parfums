@@ -29,7 +29,7 @@ const STATUS_OPTIONS = [
 ] as const;
 
 const inputCls =
-  "block w-full rounded-md border border-black/10 bg-white px-3 py-2.5 text-[15px] text-[#1a1a1a] placeholder:text-[#999] disabled:opacity-40 focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]";
+  "block w-full rounded-md border border-black/[0.08] bg-white px-3 py-2.5 text-[15px] text-[#1a1a1a] placeholder:text-[#999] disabled:opacity-40 focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]";
 
 const labelCls = "block text-[13px] font-medium text-[#555] dark:text-[#aaa]";
 
@@ -148,7 +148,7 @@ function ImageUploadField({
             <button
               type="button"
               onClick={() => onChange("")}
-              className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+              className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
               aria-label={`Effacer ${label.toLowerCase()}`}
             >
               <X className="h-4 w-4" aria-hidden />
@@ -277,7 +277,7 @@ function BrandCombobox({
 
   if (brandId && selectedBrand) {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-black/10 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/[0.04]">
+      <div className="flex items-center gap-2 rounded-md border border-black/[0.08] bg-white px-3 py-2 dark:border-white/[0.08] dark:bg-white/[0.04]">
         <span className="flex-1 text-[15px] font-medium text-[#1a1a1a] dark:text-[#e5e5e5]">
           {selectedBrand.name}
         </span>
@@ -317,14 +317,14 @@ function BrandCombobox({
             setQuery("");
             setOpen(false);
           }}
-          className="absolute right-1 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+          className="absolute right-1 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
           aria-label="Effacer la recherche de marque"
         >
           <X className="h-4 w-4" aria-hidden />
         </button>
       )}
       {open && query.trim().length > 0 && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-md border border-black/10 bg-white shadow-lg dark:border-white/10 dark:bg-[#1a1a1a]">
+        <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-md border border-black/[0.08] bg-white shadow-lg dark:border-white/[0.08] dark:bg-[#1a1a1a]">
           {filtered.map((b) => (
             <button
               key={b.id}
@@ -634,7 +634,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                   <button
                     type="button"
                     onClick={() => setBrandNameDraft("")}
-                    className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+                    className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
                     aria-label="Effacer la nouvelle marque"
                   >
                     <X className="h-4 w-4" aria-hidden />
@@ -669,7 +669,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                 <button
                   type="button"
                   onClick={() => setName("")}
-                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
                   aria-label="Effacer le nom du parfum"
                 >
                   <X className="h-4 w-4" aria-hidden />
@@ -762,7 +762,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                     type="button"
                     onClick={() => setDeleteConfirm(false)}
                     disabled={deleting}
-                    className="flex min-h-[44px] items-center justify-center rounded-md border border-black/10 px-4 py-2 text-[13px] font-medium text-[#666] transition-all hover:bg-black/[0.04] dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                    className="flex min-h-[44px] items-center justify-center rounded-md border border-black/[0.08] px-4 py-2 text-[13px] font-medium text-[#666] transition-all hover:bg-black/[0.04] dark:border-white/[0.08] dark:text-[#aaa] dark:hover:bg-white/[0.06]"
                   >
                     Annuler
                   </button>
@@ -803,10 +803,10 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
       {/* Mobile sticky bar */}
       {!readOnly && (
         <div className="fixed inset-x-0 bottom-0 z-50 border-t border-black/[0.06] bg-white/95 pb-[max(0.75rem,env(safe-area-inset-bottom))] pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-3 backdrop-blur-xl dark:border-white/[0.06] dark:bg-[#111]/95 md:hidden">
-          <div className="mx-auto flex max-w-3xl gap-3">
+          <div className="mx-auto flex max-w-2xl gap-3">
             <Link
               href="/admin"
-              className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-md border border-black/10 text-[13px] font-medium text-[#666] transition-all active:scale-[0.97] dark:border-white/10 dark:text-[#aaa]"
+              className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-md border border-black/[0.08] text-[13px] font-medium text-[#666] transition-all active:scale-[0.97] dark:border-white/[0.08] dark:text-[#aaa]"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden />
               Retour

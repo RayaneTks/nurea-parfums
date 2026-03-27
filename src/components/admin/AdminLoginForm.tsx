@@ -54,11 +54,12 @@ export function AdminLoginForm() {
     <div className="w-full max-w-sm">
       <Link
         href="/"
-        className="mb-4 inline-flex min-h-[44px] items-center gap-1.5 rounded-md pl-0 pr-3 text-[13px] font-medium text-blue-500 transition-colors hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+        className="mb-4 inline-flex min-h-[44px] items-center gap-1.5 pl-0 pr-3 text-[13px] font-medium text-blue-500 transition-colors hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Retour au site
       </Link>
+
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight text-[#1a1a1a] dark:text-white">
           Connexion
@@ -69,7 +70,7 @@ export function AdminLoginForm() {
       <form onSubmit={onSubmit} className="space-y-4">
         {(configErr || error) && (
           <div
-            className="rounded-md bg-red-50 px-4 py-3 text-[14px] text-red-700 dark:bg-red-500/10 dark:text-red-400"
+            className="bg-red-50 px-4 py-3 text-[14px] text-red-700 dark:bg-red-500/10 dark:text-red-400"
             role="alert"
           >
             {configErr || error}
@@ -91,13 +92,13 @@ export function AdminLoginForm() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="block min-h-[44px] w-full rounded-md border border-black/10 bg-white px-3 py-2.5 pr-11 text-[15px] text-[#1a1a1a] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]"
+              className="block min-h-[44px] w-full border border-black/[0.08] bg-white px-3 py-2.5 pr-11 text-[15px] text-[#1a1a1a] transition-colors focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-[#e5e5e5]"
             />
             {username.trim().length > 0 && (
               <button
                 type="button"
                 onClick={() => setUsername("")}
-                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[#999] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.06] dark:hover:text-[#ddd]"
                 aria-label="Effacer l'identifiant"
               >
                 <X className="h-4 w-4" aria-hidden />
@@ -118,13 +119,13 @@ export function AdminLoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="block min-h-[44px] w-full rounded-md border border-black/10 bg-white px-3 py-2.5 pr-11 text-[15px] text-[#1a1a1a] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]"
+              className="block min-h-[44px] w-full border border-black/[0.08] bg-white px-3 py-2.5 pr-11 text-[15px] text-[#1a1a1a] transition-colors focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-[#e5e5e5]"
             />
             {password.length > 0 && (
               <button
                 type="button"
                 onClick={() => setPassword("")}
-                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[#999] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.06] dark:hover:text-[#ddd]"
                 aria-label="Effacer le mot de passe"
               >
                 <X className="h-4 w-4" aria-hidden />
@@ -136,7 +137,7 @@ export function AdminLoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-md bg-blue-500 text-[14px] font-semibold text-white transition-all hover:bg-blue-600 active:scale-[0.99] disabled:opacity-50"
+          className="flex min-h-[44px] w-full items-center justify-center gap-2 bg-blue-500 text-[14px] font-semibold text-white transition-colors hover:bg-blue-600 active:scale-[0.99] disabled:opacity-50"
         >
           {loading ? (
             <>
@@ -147,7 +148,6 @@ export function AdminLoginForm() {
             "Se connecter"
           )}
         </button>
-
       </form>
     </div>
   );
