@@ -135,14 +135,26 @@ function ImageUploadField({
         <p className="mt-0.5 text-[12px] text-[#999] dark:text-[#666]">{subtitle}</p>
       )}
       <div className="mt-1.5 space-y-2">
-        <input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={readOnly}
-          required={required}
-          placeholder="/parfums/… ou https://…"
-          className={inputCls}
-        />
+        <div className="relative">
+          <input
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            disabled={readOnly}
+            required={required}
+            placeholder="/parfums/… ou https://…"
+            className={`${inputCls} pr-11`}
+          />
+          {!readOnly && value.trim().length > 0 && (
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+              aria-label={`Effacer ${label.toLowerCase()}`}
+            >
+              <X className="h-4 w-4" aria-hidden />
+            </button>
+          )}
+        </div>
         <label className="flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-md bg-blue-500 text-[13px] font-medium text-white transition-all hover:bg-blue-600 active:scale-[0.98] disabled:opacity-50">
           <input
             type="file"
@@ -296,8 +308,21 @@ function BrandCombobox({
         disabled={readOnly}
         placeholder="Rechercher ou creer une marque…"
         autoComplete="off"
-        className={inputCls}
+        className={`${inputCls} pr-11`}
       />
+      {!readOnly && query.trim().length > 0 && (
+        <button
+          type="button"
+          onClick={() => {
+            setQuery("");
+            setOpen(false);
+          }}
+          className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+          aria-label="Effacer la recherche de marque"
+        >
+          <X className="h-4 w-4" aria-hidden />
+        </button>
+      )}
       {open && query.trim().length > 0 && (
         <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-md border border-black/10 bg-white shadow-lg dark:border-white/10 dark:bg-[#1a1a1a]">
           {filtered.map((b) => (
@@ -537,7 +562,14 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     <>
       <form id="admin-perfume-form" onSubmit={onSubmit} className="space-y-8">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4">
+        <div className="space-y-3">
+          <Link
+            href="/admin"
+            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md pl-0 pr-3 text-[13px] font-medium text-[#666] transition-colors hover:text-[#333] dark:text-[#aaa] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+            Retour
+          </Link>
           <div>
             <h1 className="text-xl font-semibold tracking-tight text-[#1a1a1a] dark:text-white sm:text-2xl">
               {isNew ? "Nouveau parfum" : `Modifier #${perfumeId}`}
@@ -546,13 +578,6 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               {isNew ? "Publié par défaut dans le catalogue." : "Modifiez les champs, puis enregistrez."}
             </p>
           </div>
-          <Link
-            href="/admin"
-            className="flex h-9 items-center gap-1.5 rounded-md px-3 text-[13px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] dark:text-[#aaa] dark:hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-            Retour
-          </Link>
         </div>
 
         {readOnly && (
@@ -597,13 +622,25 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               />
             </div>
             {!brandId && (
-              <input
-                value={brandNameDraft}
-                onChange={(e) => setBrandNameDraft(e.target.value)}
-                disabled={readOnly}
-                placeholder="Nouvelle marque (créée automatiquement)"
-                className={`mt-2 ${inputCls}`}
-              />
+              <div className="relative mt-2">
+                <input
+                  value={brandNameDraft}
+                  onChange={(e) => setBrandNameDraft(e.target.value)}
+                  disabled={readOnly}
+                  placeholder="Nouvelle marque (créée automatiquement)"
+                  className={`${inputCls} pr-11`}
+                />
+                {!readOnly && brandNameDraft.trim().length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setBrandNameDraft("")}
+                    className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+                    aria-label="Effacer la nouvelle marque"
+                  >
+                    <X className="h-4 w-4" aria-hidden />
+                  </button>
+                )}
+              </div>
             )}
           </div>
           {selectedBrand?.catalogMode === "COMPLETE" && (
@@ -619,14 +656,26 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
           <div>
             <label className={labelCls}>Nom du parfum</label>
-            <input
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={readOnly}
-              autoComplete="off"
-              className={`mt-1.5 ${inputCls}`}
-            />
+            <div className="relative mt-1.5">
+              <input
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={readOnly}
+                autoComplete="off"
+                className={`${inputCls} pr-11`}
+              />
+              {!readOnly && name.trim().length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setName("")}
+                  className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+                  aria-label="Effacer le nom du parfum"
+                >
+                  <X className="h-4 w-4" aria-hidden />
+                </button>
+              )}
+            </div>
           </div>
         </fieldset>
 

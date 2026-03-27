@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, X } from "lucide-react";
 
 export function AdminLoginForm() {
   const router = useRouter();
@@ -52,6 +52,13 @@ export function AdminLoginForm() {
 
   return (
     <div className="w-full max-w-sm">
+      <Link
+        href="/"
+        className="mb-4 inline-flex min-h-[44px] items-center gap-1.5 rounded-md pl-0 pr-3 text-[13px] font-medium text-blue-500 transition-colors hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+      >
+        <ArrowLeft className="h-4 w-4" aria-hidden />
+        Retour au site
+      </Link>
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight text-[#1a1a1a] dark:text-white">
           Connexion
@@ -73,33 +80,57 @@ export function AdminLoginForm() {
           <label className="block text-[13px] font-medium text-[#555] dark:text-[#aaa]">
             Identifiant
           </label>
-          <input
-            type="text"
-            name="username"
-            autoComplete="username"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            className="mt-1.5 block min-h-[44px] w-full rounded-md border border-black/10 bg-white px-3 py-2.5 text-[15px] text-[#1a1a1a] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]"
-          />
+          <div className="relative mt-1.5">
+            <input
+              type="text"
+              name="username"
+              autoComplete="username"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="block min-h-[44px] w-full rounded-md border border-black/10 bg-white px-3 py-2.5 pr-11 text-[15px] text-[#1a1a1a] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]"
+            />
+            {username.trim().length > 0 && (
+              <button
+                type="button"
+                onClick={() => setUsername("")}
+                className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+                aria-label="Effacer l'identifiant"
+              >
+                <X className="h-4 w-4" aria-hidden />
+              </button>
+            )}
+          </div>
         </div>
 
         <div>
           <label className="block text-[13px] font-medium text-[#555] dark:text-[#aaa]">
             Mot de passe
           </label>
-          <input
-            type="password"
-            name="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="mt-1.5 block min-h-[44px] w-full rounded-md border border-black/10 bg-white px-3 py-2.5 text-[15px] text-[#1a1a1a] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]"
-          />
+          <div className="relative mt-1.5">
+            <input
+              type="password"
+              name="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="block min-h-[44px] w-full rounded-md border border-black/10 bg-white px-3 py-2.5 pr-11 text-[15px] text-[#1a1a1a] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]"
+            />
+            {password.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setPassword("")}
+                className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+                aria-label="Effacer le mot de passe"
+              >
+                <X className="h-4 w-4" aria-hidden />
+              </button>
+            )}
+          </div>
         </div>
 
         <button
@@ -117,13 +148,6 @@ export function AdminLoginForm() {
           )}
         </button>
 
-        <Link
-          href="/"
-          className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-md text-[13px] font-medium text-blue-500 transition-colors hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:justify-start sm:min-h-0 sm:py-1"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden />
-          Retour au site
-        </Link>
       </form>
     </div>
   );

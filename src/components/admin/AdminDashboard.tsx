@@ -656,8 +656,18 @@ export function AdminDashboard() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Rechercher…"
                 autoComplete="off"
-                className="block min-h-[44px] w-full rounded-md border border-black/10 bg-white py-2.5 pl-10 pr-3 text-[15px] text-[#1a1a1a] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
+                className="block min-h-[44px] w-full rounded-md border border-black/10 bg-white py-2.5 pl-10 pr-11 text-[15px] text-[#1a1a1a] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
               />
+              {search.trim().length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+                  aria-label="Effacer la recherche"
+                >
+                  <X className="h-4 w-4" aria-hidden />
+                </button>
+              )}
             </div>
 
             {/* Filter pills */}
@@ -691,29 +701,36 @@ export function AdminDashboard() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-5">
                   {groupedPerfumes.map((group) => (
-                    <section key={group.brandName} className="rounded-md border border-black/[0.06] bg-black/[0.015] p-3 dark:border-white/[0.08] dark:bg-white/[0.02]">
-                      <div className="mb-2 flex items-center justify-between">
-                        <p className="text-[12px] font-semibold uppercase tracking-wide text-[#777] dark:text-[#999]">
+                    <section key={group.brandName} className="rounded-md border border-black/[0.1] bg-black/[0.02] p-4 dark:border-white/[0.14] dark:bg-white/[0.03]">
+                      <div className="mb-3 flex items-center justify-between">
+                        <p className="text-[12px] font-semibold uppercase tracking-wide text-[#666] dark:text-[#9e9e9e]">
                           {group.brandName}
                         </p>
-                        <span className="text-[11px] text-[#999] dark:text-[#777]">
+                        <span className="text-[11px] text-[#8a8a8a] dark:text-[#7f7f7f]">
                           {group.rows.length} parfum{group.rows.length > 1 ? "s" : ""}
                         </span>
                       </div>
-                      <ul className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
-                        {group.rows.map((row) => (
-                          <li key={row.id} className="group flex items-center gap-3 py-3">
+                      <ul className="space-y-2.5">
+                        {group.rows.map((row, idx) => (
+                          <li
+                            key={row.id}
+                            className={`group flex items-center gap-4 rounded-md border px-3 py-3.5 ${
+                              idx % 2 === 0
+                                ? "border-black/[0.09] bg-white/70 dark:border-white/[0.12] dark:bg-white/[0.045]"
+                                : "border-black/[0.07] bg-black/[0.02] dark:border-white/[0.1] dark:bg-white/[0.03]"
+                            }`}
+                          >
                       <PerfumeVisual name={row.name} image={row.image} imageLight={row.imageLight} />
                       <div className="min-w-0 flex-1">
-                        <p className="text-[15px] font-medium leading-snug text-[#1a1a1a] dark:text-[#e5e5e5]">
+                        <p className="text-[15px] font-medium leading-snug text-[#1a1a1a] dark:text-[#ededed]">
                           {row.name}
                         </p>
-                        <p className="mt-0.5 flex items-center gap-2 text-[13px] text-[#999]">
+                        <p className="mt-1 flex items-center gap-2 text-[13px] text-[#8a8a8a] dark:text-[#9f9f9f]">
                           <BrandInlineBadge name={row.brand.name} image={row.brand.image} />
                           <span className="truncate">{row.brand.name}</span>
-                          <span className="text-[#ddd] dark:text-[#444]">·</span>
+                          <span className="text-[#cfcfcf] dark:text-[#4f4f4f]">·</span>
                           <span className="flex items-center gap-1">
                             <StatusDot status={row.status} />
                             {statusLabel(row.status)}
@@ -721,10 +738,10 @@ export function AdminDashboard() {
                         </p>
                       </div>
 
-                      <div className="flex shrink-0 gap-1">
+                      <div className="flex shrink-0 gap-1.5">
                         <Link
                           href={`/admin/perfumes/${row.id}/edit`}
-                          className="flex h-9 w-9 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:hover:bg-white/[0.06] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                          className="flex h-11 w-11 items-center justify-center rounded-md text-[#8f8f8f] transition-colors hover:bg-black/[0.06] hover:text-[#3f3f3f] dark:hover:bg-white/[0.08] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                           aria-label={canEdit ? `Modifier ${row.name}` : `Voir ${row.name}`}
                         >
                           <Pencil className="h-4 w-4" aria-hidden />
@@ -735,7 +752,7 @@ export function AdminDashboard() {
                               type="button"
                               onClick={() => toggleVisibility(row.id, row.status)}
                               disabled={hasMutationInFlight || pendingStatusIds.has(row.id)}
-                              className="flex h-9 w-9 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:hover:bg-white/[0.06] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                              className="flex h-11 w-11 items-center justify-center rounded-md text-[#8f8f8f] transition-colors hover:bg-black/[0.06] hover:text-[#3f3f3f] dark:hover:bg-white/[0.08] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                               aria-label={row.status === "PUBLISHED" ? `Masquer ${row.name}` : `Rendre visible ${row.name}`}
                             >
                               {row.status === "PUBLISHED" ? (
@@ -748,7 +765,7 @@ export function AdminDashboard() {
                               type="button"
                               onClick={() => setDeleteTarget({ id: row.id, name: row.name })}
                               disabled={hasMutationInFlight || pendingDeleteIds.has(row.id)}
-                              className="flex h-9 w-9 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                              className="flex h-11 w-11 items-center justify-center rounded-md text-[#8f8f8f] transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/12 dark:hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                               aria-label={`Supprimer ${row.name}`}
                             >
                               <Trash2 className="h-4 w-4" aria-hidden />
@@ -866,8 +883,18 @@ export function AdminDashboard() {
                 value={brandSearch}
                 onChange={(e) => setBrandSearch(e.target.value)}
                 placeholder="Rechercher une marque…"
-                className="block min-h-[44px] w-full rounded-md border border-black/10 bg-white py-2.5 pl-10 pr-3 text-[15px] text-[#1a1a1a] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
+                className="block min-h-[44px] w-full rounded-md border border-black/10 bg-white py-2.5 pl-10 pr-11 text-[15px] text-[#1a1a1a] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
               />
+              {brandSearch.trim().length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setBrandSearch("")}
+                  className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+                  aria-label="Effacer la recherche marque"
+                >
+                  <X className="h-4 w-4" aria-hidden />
+                </button>
+              )}
             </div>
             <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
               {brandFilterPills.map(({ id, label, count }) => {
@@ -898,10 +925,17 @@ export function AdminDashboard() {
                 Aucune marque. Ajoutez-en une pour alimenter le catalogue.
               </p>
             ) : (
-              <ul className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
+              <ul className="space-y-2.5">
                 {filteredBrands.map((b, idx) => (
-                  <li key={b.id} className={`py-4 ${idx % 2 === 0 ? "bg-black/[0.015] dark:bg-white/[0.02]" : ""}`}>
-                    <div className="flex items-center gap-3">
+                  <li
+                    key={b.id}
+                    className={`rounded-md border px-3 py-4 ${
+                      idx % 2 === 0
+                        ? "border-black/[0.1] bg-black/[0.02] dark:border-white/[0.14] dark:bg-white/[0.04]"
+                        : "border-black/[0.07] bg-white/70 dark:border-white/[0.1] dark:bg-white/[0.025]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
                       <BrandVisual
                         name={b.name}
                         image={b.image}
@@ -910,7 +944,7 @@ export function AdminDashboard() {
                         <p className="truncate text-[15px] font-medium text-[#1a1a1a] dark:text-[#e5e5e5]">
                           {b.name}
                         </p>
-                        <p className="mt-0.5 flex items-center gap-2 text-[13px] text-[#999]">
+                        <p className="mt-1 flex items-center gap-2 text-[13px] text-[#8a8a8a] dark:text-[#9f9f9f]">
                           <BrandModeBadge mode={b.catalogMode} />
                           <span className="flex items-center gap-1">
                             <StatusDot status={b.status} />
@@ -932,7 +966,7 @@ export function AdminDashboard() {
                         </p>
                       </div>
                       {canEdit && (
-                        <div className="flex shrink-0 gap-1">
+                        <div className="flex shrink-0 gap-1.5">
                           <button
                             type="button"
                             disabled={pendingBrandIds.has(b.id)}
@@ -941,7 +975,7 @@ export function AdminDashboard() {
                                 status: b.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED",
                               })
                             }
-                            className="flex h-9 w-9 items-center justify-center rounded-md text-[#7b7b7b] transition-colors hover:bg-black/[0.04] hover:text-[#2c2c2c] disabled:opacity-50 dark:text-[#a0a0a0] dark:hover:bg-white/[0.06] dark:hover:text-white"
+                            className="flex h-11 w-11 items-center justify-center rounded-md text-[#7b7b7b] transition-colors hover:bg-black/[0.06] hover:text-[#2c2c2c] disabled:opacity-50 dark:text-[#a0a0a0] dark:hover:bg-white/[0.08] dark:hover:text-white"
                             aria-label={b.status === "PUBLISHED" ? `Masquer ${b.name}` : `Rendre visible ${b.name}`}
                           >
                             {b.status === "PUBLISHED" ? <Eye className="h-4 w-4" aria-hidden /> : <EyeOff className="h-4 w-4" aria-hidden />}
@@ -950,7 +984,7 @@ export function AdminDashboard() {
                             type="button"
                             disabled={pendingBrandIds.has(b.id)}
                             onClick={() => setEditingBrandId((prev) => (prev === b.id ? null : b.id))}
-                            className="flex h-9 w-9 items-center justify-center rounded-md text-[#7b7b7b] transition-colors hover:bg-black/[0.04] hover:text-[#2c2c2c] disabled:opacity-50 dark:text-[#a0a0a0] dark:hover:bg-white/[0.06] dark:hover:text-white"
+                            className="flex h-11 w-11 items-center justify-center rounded-md text-[#7b7b7b] transition-colors hover:bg-black/[0.06] hover:text-[#2c2c2c] disabled:opacity-50 dark:text-[#a0a0a0] dark:hover:bg-white/[0.08] dark:hover:text-white"
                             aria-label={`Modifier ${b.name}`}
                           >
                             <Pencil className="h-4 w-4" aria-hidden />
@@ -965,7 +999,7 @@ export function AdminDashboard() {
                                 count: b._count.perfumes,
                               })
                             }
-                            className="flex h-9 w-9 items-center justify-center rounded-md text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                            className="flex h-11 w-11 items-center justify-center rounded-md text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-500/12"
                             aria-label={`Supprimer ${b.name}`}
                           >
                             <Trash2 className="h-4 w-4" aria-hidden />
