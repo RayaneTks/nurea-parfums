@@ -716,7 +716,7 @@ export function AdminDashboard() {
                         {group.rows.map((row, idx) => (
                           <li
                             key={row.id}
-                            className={`group flex items-center gap-4 rounded-md border px-3 py-3.5 ${
+                            className={`group flex flex-col items-start gap-3 rounded-md border px-3 py-3.5 sm:flex-row sm:items-center sm:gap-4 ${
                               idx % 2 === 0
                                 ? "border-black/[0.09] bg-white/70 dark:border-white/[0.12] dark:bg-white/[0.045]"
                                 : "border-black/[0.07] bg-black/[0.02] dark:border-white/[0.1] dark:bg-white/[0.03]"
@@ -727,7 +727,7 @@ export function AdminDashboard() {
                         <p className="text-[15px] font-medium leading-snug text-[#1a1a1a] dark:text-[#ededed]">
                           {row.name}
                         </p>
-                        <p className="mt-1 flex items-center gap-2 text-[13px] text-[#8a8a8a] dark:text-[#9f9f9f]">
+                        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-[#8a8a8a] dark:text-[#9f9f9f]">
                           <BrandInlineBadge name={row.brand.name} image={row.brand.image} />
                           <span className="truncate">{row.brand.name}</span>
                           <span className="text-[#cfcfcf] dark:text-[#4f4f4f]">·</span>
@@ -738,7 +738,7 @@ export function AdminDashboard() {
                         </p>
                       </div>
 
-                      <div className="flex shrink-0 gap-1.5">
+                      <div className="flex w-full shrink-0 justify-end gap-1.5 sm:w-auto">
                         <Link
                           href={`/admin/perfumes/${row.id}/edit`}
                           className="flex h-11 w-11 items-center justify-center rounded-md text-[#8f8f8f] transition-colors hover:bg-black/[0.06] hover:text-[#3f3f3f] dark:hover:bg-white/[0.08] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
@@ -935,7 +935,7 @@ export function AdminDashboard() {
                         : "border-black/[0.07] bg-white/70 dark:border-white/[0.1] dark:bg-white/[0.025]"
                     }`}
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
                       <BrandVisual
                         name={b.name}
                         image={b.image}
@@ -944,7 +944,7 @@ export function AdminDashboard() {
                         <p className="truncate text-[15px] font-medium text-[#1a1a1a] dark:text-[#e5e5e5]">
                           {b.name}
                         </p>
-                        <p className="mt-1 flex items-center gap-2 text-[13px] text-[#8a8a8a] dark:text-[#9f9f9f]">
+                        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-[#8a8a8a] dark:text-[#9f9f9f]">
                           <BrandModeBadge mode={b.catalogMode} />
                           <span className="flex items-center gap-1">
                             <StatusDot status={b.status} />
@@ -966,7 +966,7 @@ export function AdminDashboard() {
                         </p>
                       </div>
                       {canEdit && (
-                        <div className="flex shrink-0 gap-1.5">
+                        <div className="flex w-full shrink-0 justify-end gap-1.5 sm:w-auto">
                           <button
                             type="button"
                             disabled={pendingBrandIds.has(b.id)}
