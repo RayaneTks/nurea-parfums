@@ -296,21 +296,8 @@ function BrandCombobox({
         disabled={readOnly}
         placeholder="Rechercher ou creer une marque…"
         autoComplete="off"
-        className={`${inputCls} pr-10`}
+        className={inputCls}
       />
-      {query.trim().length > 0 && !readOnly && (
-        <button
-          type="button"
-          onClick={() => {
-            setQuery("");
-            setOpen(false);
-          }}
-          className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#666] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
-          aria-label="Effacer la recherche de marque"
-        >
-          <X className="h-4 w-4" aria-hidden />
-        </button>
-      )}
       {open && query.trim().length > 0 && (
         <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-md border border-black/10 bg-white shadow-lg dark:border-white/10 dark:bg-[#1a1a1a]">
           {filtered.map((b) => (
@@ -548,12 +535,12 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
   return (
     <>
-      <form id="admin-perfume-form" onSubmit={onSubmit} className="space-y-8">
+      <form id="admin-perfume-form" onSubmit={onSubmit} className="space-y-8 pb-28 md:pb-0">
         {/* Header */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <Link
             href="/admin"
-            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md px-2 text-[13px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] dark:text-[#aaa] dark:hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="inline-flex min-h-[44px] items-center gap-1.5 self-start rounded-md px-3 text-[13px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] dark:text-[#aaa] dark:hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden />
             Retour
@@ -676,7 +663,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             Publication
           </legend>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             {STATUS_OPTIONS.map((opt) => {
               const active = status === opt.value;
               return (
@@ -721,7 +708,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                 <p className="text-[13px] font-medium text-red-700 dark:text-red-400">
                   Supprimer définitivement ce parfum ? Cette action est irréversible.
                 </p>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <button
                     type="button"
                     onClick={() => setDeleteConfirm(false)}

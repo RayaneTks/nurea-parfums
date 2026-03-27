@@ -246,46 +246,6 @@ function ConfirmBrandDeleteModal({
 const selectCls =
   "block w-full appearance-none rounded-md border border-black/10 bg-white px-2 py-1.5 pr-8 text-[13px] text-[#1a1a1a] focus-visible:border-blue-500 focus-visible:outline-none dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]";
 
-function SearchField({
-  value,
-  onChange,
-  placeholder,
-  clearLabel,
-}: {
-  value: string;
-  onChange: (next: string) => void;
-  placeholder: string;
-  clearLabel: string;
-}) {
-  const hasValue = value.trim().length > 0;
-  return (
-    <div className="relative">
-      <Search
-        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#aaa]"
-        aria-hidden
-      />
-      <input
-        type="search"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        autoComplete="off"
-        className="block min-h-[44px] w-full rounded-md border border-black/10 bg-white py-2.5 pl-10 pr-11 text-[15px] text-[#1a1a1a] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
-      />
-      {hasValue && (
-        <button
-          type="button"
-          onClick={() => onChange("")}
-          className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:hover:bg-white/[0.06] dark:hover:text-[#ddd]"
-          aria-label={clearLabel}
-        >
-          <X className="h-4 w-4" aria-hidden />
-        </button>
-      )}
-    </div>
-  );
-}
-
 async function readJsonSafe<T>(res: Response): Promise<T | null> {
   const contentType = res.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) return null;
@@ -662,7 +622,7 @@ export function AdminDashboard() {
                   : "text-[#888] hover:text-[#555] dark:text-[#666] dark:hover:text-[#aaa]"
               }`}
             >
-              {label}
+              {label}{" "}
               <span className="ml-1.5 text-[11px] opacity-60">
                 {id === "perfumes" ? perfumesOnly.length : brands.length}
               </span>
@@ -684,12 +644,21 @@ export function AdminDashboard() {
                 </Link>
               </div>
             )}
-            <SearchField
-              value={search}
-              onChange={setSearch}
-              placeholder="Rechercher…"
-              clearLabel="Effacer la recherche de parfum"
-            />
+            {/* Search */}
+            <div className="relative">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#aaa]"
+                aria-hidden
+              />
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Rechercher…"
+                autoComplete="off"
+                className="block min-h-[44px] w-full rounded-md border border-black/10 bg-white py-2.5 pl-10 pr-3 text-[15px] text-[#1a1a1a] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
+              />
+            </div>
 
             {/* Filter pills */}
             <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
@@ -706,7 +675,7 @@ export function AdminDashboard() {
                         : "bg-black/[0.04] text-[#888] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:text-[#777] dark:hover:bg-white/[0.06]"
                     }`}
                   >
-                    {label}
+                    {label}{" "}
                     <span className="ml-1 opacity-70">{count}</span>
                   </button>
                 );
@@ -724,8 +693,8 @@ export function AdminDashboard() {
               ) : (
                 <div className="space-y-4">
                   {groupedPerfumes.map((group) => (
-                    <section key={group.brandName} className="rounded-md border border-black/[0.06] bg-black/[0.015] p-3 dark:border-white/[0.08] dark:bg-white/[0.02]">
-                      <div className="mb-2 flex items-center justify-between">
+                    <section key={group.brandName} className="rounded-md border border-black/[0.06] bg-black/[0.015] p-3 sm:p-4 dark:border-white/[0.08] dark:bg-white/[0.02]">
+                      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                         <p className="text-[12px] font-semibold uppercase tracking-wide text-[#777] dark:text-[#999]">
                           {group.brandName}
                         </p>
@@ -735,64 +704,58 @@ export function AdminDashboard() {
                       </div>
                       <ul className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
                         {group.rows.map((row) => (
-                          <li key={row.id} className="group py-3">
-                            <div className="flex items-start gap-3">
-                              <PerfumeVisual name={row.name} image={row.image} imageLight={row.imageLight} />
-                              <div className="min-w-0 flex-1">
-                                <p className="text-[15px] font-medium leading-snug text-[#1a1a1a] dark:text-[#e5e5e5]">
-                                  {row.name}
-                                </p>
-                                <p className="mt-0.5 flex items-center gap-2 text-[13px] text-[#999]">
-                                  <BrandInlineBadge name={row.brand.name} image={row.brand.image} />
-                                  <span className="truncate">{row.brand.name}</span>
-                                  <span className="text-[#ddd] dark:text-[#444]">·</span>
-                                  <span className="flex items-center gap-1">
-                                    <StatusDot status={row.status} />
-                                    {statusLabel(row.status)}
-                                  </span>
-                                </p>
-                              </div>
-                            </div>
-                            <div className="mt-2 flex flex-wrap gap-1.5 sm:mt-0 sm:justify-end">
-                              <Link
-                                href={`/admin/perfumes/${row.id}/edit`}
-                                className="inline-flex min-h-[36px] items-center gap-1 rounded-md border border-black/10 px-2.5 text-[12px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06] sm:h-9 sm:min-h-[36px] sm:w-9 sm:justify-center sm:px-0"
-                                aria-label={canEdit ? `Modifier ${row.name}` : `Voir ${row.name}`}
-                              >
-                                <Pencil className="h-4 w-4" aria-hidden />
-                                <span className="sm:hidden">{canEdit ? "Modifier" : "Voir"}</span>
-                              </Link>
-                              {canEdit && (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleVisibility(row.id, row.status)}
-                                    disabled={hasMutationInFlight || pendingStatusIds.has(row.id)}
-                                    className="inline-flex min-h-[36px] items-center gap-1 rounded-md border border-black/10 px-2.5 text-[12px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06] sm:h-9 sm:min-h-[36px] sm:w-9 sm:justify-center sm:px-0"
-                                    aria-label={row.status === "PUBLISHED" ? `Masquer ${row.name}` : `Rendre visible ${row.name}`}
-                                  >
-                                    {row.status === "PUBLISHED" ? (
-                                      <Eye className="h-4 w-4" aria-hidden />
-                                    ) : (
-                                      <EyeOff className="h-4 w-4" aria-hidden />
-                                    )}
-                                    <span className="sm:hidden">
-                                      {row.status === "PUBLISHED" ? "Masquer" : "Rendre visible"}
-                                    </span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setDeleteTarget({ id: row.id, name: row.name })}
-                                    disabled={hasMutationInFlight || pendingDeleteIds.has(row.id)}
-                                    className="inline-flex min-h-[36px] items-center gap-1 rounded-md border border-red-200 px-2.5 text-[12px] font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/10 sm:h-9 sm:min-h-[36px] sm:w-9 sm:justify-center sm:px-0"
-                                    aria-label={`Supprimer ${row.name}`}
-                                  >
-                                    <Trash2 className="h-4 w-4" aria-hidden />
-                                    <span className="sm:hidden">Supprimer</span>
-                                  </button>
-                                </>
+                        <li key={row.id} className="group flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:gap-4">
+                      <PerfumeVisual name={row.name} image={row.image} imageLight={row.imageLight} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[15px] font-medium leading-snug text-[#1a1a1a] dark:text-[#e5e5e5]">
+                          {row.name}
+                        </p>
+                        <p className="mt-1 flex flex-wrap items-center gap-2 text-[13px] text-[#999]">
+                          <BrandInlineBadge name={row.brand.name} image={row.brand.image} />
+                          <span className="max-w-full truncate">{row.brand.name}</span>
+                          <span className="text-[#ddd] dark:text-[#444]">·</span>
+                          <span className="flex items-center gap-1">
+                            <StatusDot status={row.status} />
+                            {statusLabel(row.status)}
+                          </span>
+                        </p>
+                      </div>
+
+                      <div className="ml-[calc(40px+0.375rem)] flex shrink-0 flex-wrap self-start gap-1 sm:ml-0 sm:self-center">
+                        <Link
+                          href={`/admin/perfumes/${row.id}/edit`}
+                          className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:hover:bg-white/[0.06] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:h-9 sm:min-h-0 sm:min-w-0 sm:w-9"
+                          aria-label={canEdit ? `Modifier ${row.name}` : `Voir ${row.name}`}
+                        >
+                          <Pencil className="h-4 w-4" aria-hidden />
+                        </Link>
+                        {canEdit && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => toggleVisibility(row.id, row.status)}
+                              disabled={hasMutationInFlight || pendingStatusIds.has(row.id)}
+                              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:hover:bg-white/[0.06] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:h-9 sm:min-h-0 sm:min-w-0 sm:w-9"
+                              aria-label={row.status === "PUBLISHED" ? `Masquer ${row.name}` : `Rendre visible ${row.name}`}
+                            >
+                              {row.status === "PUBLISHED" ? (
+                                <Eye className="h-4 w-4" aria-hidden />
+                              ) : (
+                                <EyeOff className="h-4 w-4" aria-hidden />
                               )}
-                            </div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteTarget({ id: row.id, name: row.name })}
+                              disabled={hasMutationInFlight || pendingDeleteIds.has(row.id)}
+                              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:h-9 sm:min-h-0 sm:min-w-0 sm:w-9"
+                              aria-label={`Supprimer ${row.name}`}
+                            >
+                              <Trash2 className="h-4 w-4" aria-hidden />
+                            </button>
+                          </>
+                        )}
+                      </div>
                           </li>
                         ))}
                       </ul>
@@ -893,12 +856,19 @@ export function AdminDashboard() {
               </form>
             )}
 
-            <SearchField
-              value={brandSearch}
-              onChange={setBrandSearch}
-              placeholder="Rechercher une marque…"
-              clearLabel="Effacer la recherche de marque"
-            />
+            <div className="relative">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#aaa]"
+                aria-hidden
+              />
+              <input
+                type="search"
+                value={brandSearch}
+                onChange={(e) => setBrandSearch(e.target.value)}
+                placeholder="Rechercher une marque…"
+                className="block min-h-[44px] w-full rounded-md border border-black/10 bg-white py-2.5 pl-10 pr-3 text-[15px] text-[#1a1a1a] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
+              />
+            </div>
             <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
               {brandFilterPills.map(({ id, label, count }) => {
                 const active = brandFilter === id;
@@ -913,7 +883,7 @@ export function AdminDashboard() {
                         : "bg-black/[0.04] text-[#888] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:text-[#777] dark:hover:bg-white/[0.06]"
                     }`}
                   >
-                    {label}
+                    {label}{" "}
                     <span className="ml-1 opacity-70">{count}</span>
                   </button>
                 );
@@ -931,7 +901,7 @@ export function AdminDashboard() {
               <ul className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
                 {filteredBrands.map((b, idx) => (
                   <li key={b.id} className={`py-4 ${idx % 2 === 0 ? "bg-black/[0.015] dark:bg-white/[0.02]" : ""}`}>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                       <BrandVisual
                         name={b.name}
                         image={b.image}
@@ -940,7 +910,7 @@ export function AdminDashboard() {
                         <p className="truncate text-[15px] font-medium text-[#1a1a1a] dark:text-[#e5e5e5]">
                           {b.name}
                         </p>
-                        <p className="mt-0.5 flex items-center gap-2 text-[13px] text-[#999]">
+                        <p className="mt-1 flex flex-wrap items-center gap-2 text-[13px] text-[#999]">
                           <BrandModeBadge mode={b.catalogMode} />
                           <span className="flex items-center gap-1">
                             <StatusDot status={b.status} />
@@ -962,7 +932,7 @@ export function AdminDashboard() {
                         </p>
                       </div>
                       {canEdit && (
-                        <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
+                        <div className="ml-[52px] flex shrink-0 flex-wrap self-start gap-1 sm:ml-0 sm:self-center">
                           <button
                             type="button"
                             disabled={pendingBrandIds.has(b.id)}
@@ -971,21 +941,19 @@ export function AdminDashboard() {
                                 status: b.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED",
                               })
                             }
-                            className="inline-flex min-h-[36px] items-center gap-1 rounded-md border border-black/10 px-2.5 text-[12px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06] sm:h-9 sm:min-h-[36px] sm:w-9 sm:justify-center sm:px-0"
+                            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-[#7b7b7b] transition-colors hover:bg-black/[0.04] hover:text-[#2c2c2c] disabled:opacity-50 dark:text-[#a0a0a0] dark:hover:bg-white/[0.06] dark:hover:text-white sm:h-9 sm:min-h-0 sm:min-w-0 sm:w-9"
                             aria-label={b.status === "PUBLISHED" ? `Masquer ${b.name}` : `Rendre visible ${b.name}`}
                           >
                             {b.status === "PUBLISHED" ? <Eye className="h-4 w-4" aria-hidden /> : <EyeOff className="h-4 w-4" aria-hidden />}
-                            <span className="sm:hidden">{b.status === "PUBLISHED" ? "Masquer" : "Rendre visible"}</span>
                           </button>
                           <button
                             type="button"
                             disabled={pendingBrandIds.has(b.id)}
                             onClick={() => setEditingBrandId((prev) => (prev === b.id ? null : b.id))}
-                            className="inline-flex min-h-[36px] items-center gap-1 rounded-md border border-black/10 px-2.5 text-[12px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06] sm:h-9 sm:min-h-[36px] sm:w-9 sm:justify-center sm:px-0"
+                            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-[#7b7b7b] transition-colors hover:bg-black/[0.04] hover:text-[#2c2c2c] disabled:opacity-50 dark:text-[#a0a0a0] dark:hover:bg-white/[0.06] dark:hover:text-white sm:h-9 sm:min-h-0 sm:min-w-0 sm:w-9"
                             aria-label={`Modifier ${b.name}`}
                           >
                             <Pencil className="h-4 w-4" aria-hidden />
-                            <span className="sm:hidden">Modifier</span>
                           </button>
                           <button
                             type="button"
@@ -997,11 +965,10 @@ export function AdminDashboard() {
                                 count: b._count.perfumes,
                               })
                             }
-                            className="inline-flex min-h-[36px] items-center gap-1 rounded-md border border-red-200 px-2.5 text-[12px] font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/10 sm:h-9 sm:min-h-[36px] sm:w-9 sm:justify-center sm:px-0"
+                            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-500/10 sm:h-9 sm:min-h-0 sm:min-w-0 sm:w-9"
                             aria-label={`Supprimer ${b.name}`}
                           >
                             <Trash2 className="h-4 w-4" aria-hidden />
-                            <span className="sm:hidden">Supprimer</span>
                           </button>
                         </div>
                       )}
@@ -1024,7 +991,7 @@ export function AdminDashboard() {
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       <div>
                         <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">Nom marque</label>
-                        <div className="mt-1.5 flex items-center gap-2">
+                        <div className="mt-1.5 flex flex-col gap-2 sm:flex-row sm:items-center">
                           <input
                             value={brandNameDrafts[b.id] ?? ""}
                             onChange={(e) =>
@@ -1039,7 +1006,7 @@ export function AdminDashboard() {
                             type="button"
                             disabled={!canEdit || pendingBrandIds.has(b.id)}
                             onClick={() => patchBrand(b.id, { name: (brandNameDrafts[b.id] ?? "").trim() })}
-                            className="min-h-[36px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                            className="min-h-[40px] rounded-md border border-black/10 px-2.5 text-[12px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06] sm:min-h-[36px] sm:text-[11px]"
                           >
                             Renommer
                           </button>
@@ -1071,7 +1038,7 @@ export function AdminDashboard() {
                         <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">
                           Image marque
                         </label>
-                        <div className="mt-1.5 flex items-center gap-2">
+                        <div className="mt-1.5 flex flex-col gap-2 sm:flex-row sm:items-center">
                           <input
                             value={brandImageDrafts[b.id] ?? ""}
                             onChange={(e) =>
@@ -1095,7 +1062,7 @@ export function AdminDashboard() {
                                 image: (brandImageDrafts[b.id] ?? "").trim() || null,
                               })
                             }
-                            className="min-h-[36px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                            className="min-h-[40px] rounded-md border border-black/10 px-2.5 text-[12px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06] sm:min-h-[36px] sm:text-[11px]"
                           >
                             Enregistrer
                           </button>
@@ -1107,7 +1074,7 @@ export function AdminDashboard() {
                                 image: null,
                               })
                             }
-                            className="min-h-[36px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                            className="min-h-[40px] rounded-md border border-black/10 px-2.5 text-[12px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06] sm:min-h-[36px] sm:text-[11px]"
                           >
                             Supprimer le visuel
                           </button>
