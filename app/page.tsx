@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { HomePageClient } from "@/components/home/HomePageClient";
+import { CatalogSkeleton } from "@/components/features/PerfumeCardSkeleton";
 import { getCatalogBrowse } from "@/lib/catalog/getCatalogBrowse";
 import { getCatalogPerfumes } from "@/lib/catalog/getCatalogPerfumes";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
@@ -27,7 +28,9 @@ export const metadata: Metadata = {
 
 function HomeFallback() {
   return (
-    <div className="grain min-h-screen bg-[var(--nurea-bg)]" aria-busy="true" />
+    <div className="grain min-h-screen bg-[var(--nurea-bg)] p-10 pt-32" aria-busy="true">
+      <CatalogSkeleton />
+    </div>
   );
 }
 

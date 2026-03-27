@@ -68,19 +68,20 @@ export const MarquePageClient = () => {
         <Separator variant="copper" className="my-12 opacity-60" />
 
         <ScrollReveal delay={80}>
-          <h2 className="font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
+          <h2 className="font-serif text-[22px] tracking-wide text-[var(--nurea-text)] md:text-[26px]">
             Notre manière de faire
           </h2>
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
             {steps.map((step) => (
               <div
                 key={step.title}
-                className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-5"
+                className="group flex flex-col border border-[var(--nurea-border)] bg-[var(--nurea-surface)] p-6 transition-all duration-500 hover:border-[var(--nurea-accent)] hover:shadow-2xl hover:shadow-[var(--nurea-accent-subtle)]"
               >
-                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--nurea-accent)]">
+                <div className="mb-4 h-[2px] w-8 bg-[var(--nurea-accent)] transition-all duration-500 group-hover:w-full" />
+                <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-[var(--nurea-accent)]">
                   {step.title}
                 </p>
-                <p className="mt-3 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
+                <p className="mt-4 text-[14px] leading-relaxed text-[var(--nurea-text-muted)] group-hover:text-[var(--nurea-text)] transition-colors duration-500">
                   {step.body}
                 </p>
               </div>

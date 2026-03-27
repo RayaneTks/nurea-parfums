@@ -120,6 +120,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
   const [activeItem, setActiveItem] = useState<number | null>(null);
   const [browseOpen, setBrowseOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showFullCatalog, setShowFullCatalog] = useState(false);
   const scrollDirection = useScrollDirection();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -185,10 +186,12 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
     searchParams,
   ]);
 
-  const featuredPerfumes = useMemo(
-    () => catalogPerfumes.filter((p) => FEATURED_IDS.includes(p.id)),
-    [catalogPerfumes]
-  );
+  const featuredPerfumes = useMemo(() => {
+    const featured = catalogPerfumes.filter((p) => p.isFeatured);
+    if (featured.length > 0) return featured.slice(0, 2);
+    // Fallback to mock ids if no featured flag is set in DB yet
+    return catalogPerfumes.filter((p) => [9, 10].includes(p.id)).slice(0, 2);
+  }, [catalogPerfumes]);
 
   const maisonDisplayName = useMemo(() => {
     const s = maisonSlug.trim();
@@ -287,6 +290,10 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
   const hasActiveFilters = hasCollectionFilters || sortKey !== "default";
   const showFeatured = !hasCollectionFilters;
 
+  // We determine if we should truncate the catalog based on state & filters
+  const shouldTruncateCatalog = !hasCollectionFilters && !showFullCatalog && sortedPerfumes.length > 12;
+  const displayedPerfumes = shouldTruncateCatalog ? sortedPerfumes.slice(0, 12) : sortedPerfumes;
+
   const scrollCatalogIntoView = useCallback(() => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -298,10 +305,13 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
         const elementPosition = elementRect - bodyRect;
         const offsetPosition = elementPosition - offset;
 
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: "smooth"
-        });
+        // Only scroll if the catalog is significantly above the viewport
+        if (window.scrollY > offsetPosition + 300) {
+           window.scrollTo({
+             top: offsetPosition,
+             behavior: "smooth"
+           });
+        }
       });
     });
   }, []);
@@ -312,8 +322,9 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
       return;
     }
     setActiveItem(null);
-    scrollCatalogIntoView();
-  }, [selectedCategory, sortKey, scrollCatalogIntoView]);
+    // Removed unconditional scroll on filter change to avoid jumpiness.
+    // scrollCatalogIntoView(); 
+  }, [selectedCategory, sortKey]);
 
   useEffect(() => {
     setActiveItem(null);
@@ -325,6 +336,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
     setSortKey("default");
     setMaisonSlug("");
     setSelectedBrandSlugs(new Set());
+    setShowFullCatalog(false);
   }, []);
 
   const externalHint = useMemo(
@@ -406,16 +418,17 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
     scrollCatalogIntoView();
   }, [scrollCatalogIntoView]);
 
-  const handleResetPanelFilters = useCallback(() => {
-    setMaisonSlug("");
-    setSelectedBrandSlugs(new Set());
-  }, []);
-
   const handleFilterApply = useCallback((brands: Set<string>) => {
     setSelectedBrandSlugs(brands);
     setMaisonSlug("");
     setSelectedCategory("Tout voir");
     setBrowseOpen(false);
+    scrollCatalogIntoView();
+  }, [scrollCatalogIntoView]);
+
+  const handleResetPanelFilters = useCallback(() => {
+    setMaisonSlug("");
+    setSelectedBrandSlugs(new Set());
   }, []);
 
   const getDrawerResultCount = useCallback(
@@ -450,7 +463,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
       <Hero />
       <Separator variant="copper" withMonogram />
 
-      {showFeatured && (
+      {showFeatured && featuredPerfumes.length > 0 && (
         <div>
           <FeaturedSection perfumes={featuredPerfumes} />
           <Separator variant="bordeaux" />
@@ -485,17 +498,18 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
           isHeaderVisible ? "translate-y-0" : "-translate-y-[calc(100%+env(safe-area-inset-top,0px)+4.25rem)]"
         }`}>
           <ScrollReveal className="mb-0" delay={80}>
-            <div className="relative mb-3">
+            <p className="mb-2 text-[11px] text-[var(--nurea-text-subtle)] md:hidden">
+              L’icône « Filtrer » en haut à droite ouvre les filtres marque
+              et type ; ce champ reste votre recherche libre.
+            </p>
+            <div className="relative mb-3 flex items-center">
               <label htmlFor={CATALOG_SEARCH_ID} className="sr-only">
                 Rechercher un parfum, une maison, une marque ou un mot-clé
               </label>
-              <p className="mb-2 text-[11px] text-[var(--nurea-text-subtle)] md:hidden">
-                L’icône « Filtrer » en haut à droite ouvre les filtres marque
-                et type ; ce champ reste votre recherche libre.
-              </p>
+              
               <Search
                 size={18}
-                className="pointer-events-none absolute left-0 top-1/2 z-[1] -translate-y-1/2 text-[var(--nurea-text-muted)]"
+                className="pointer-events-none absolute left-3 text-[var(--nurea-text-muted)] z-10"
                 strokeWidth={1.5}
                 aria-hidden
               />
@@ -510,13 +524,13 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
                 placeholder="Maison, parfum, gamme, note…"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full min-h-[48px] border-b border-[var(--nurea-border-hover)] bg-transparent py-3 pl-9 pr-11 text-base leading-snug text-[var(--nurea-text)] transition-colors duration-300 placeholder:text-[var(--nurea-text-subtle)] focus:border-[var(--nurea-accent)] focus:outline-none touch-manipulation md:min-h-[52px] md:text-[15px]"
+                className="w-full min-h-[48px] border-b border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)]/50 py-3 pl-10 pr-11 text-base leading-snug text-[var(--nurea-text)] transition-colors duration-300 placeholder:text-[var(--nurea-text-subtle)] focus:border-[var(--nurea-accent)] focus:bg-[var(--nurea-surface)] focus:outline-none touch-manipulation md:min-h-[52px] md:text-[15px] rounded-t-sm"
               />
               {searchTerm.trim() !== "" && (
                 <button
                   type="button"
                   onClick={() => setSearchTerm("")}
-                  className="absolute right-0 top-1/2 z-[1] flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-accent)] active:scale-95"
+                  className="absolute right-0 flex h-full w-12 items-center justify-center text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-accent)] active:scale-95 z-10"
                   aria-label="Effacer la recherche"
                 >
                   <X size={18} strokeWidth={1.5} />

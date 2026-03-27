@@ -84,15 +84,20 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
     <article
       ref={cardRef}
       data-open={isActive ? "true" : "false"}
-      className={`group flex flex-col card-hover touch-manipulation ${
+      className={`group relative flex flex-col card-hover touch-manipulation ${
         featured ? "card-featured" : ""
       }`}
     >
-      <div className="card-image-wrapper relative aspect-[3/4] overflow-hidden bg-[var(--nurea-surface)]">
+      {/* Luxury glow effect on hover (only for devices with pointer: fine) */}
+      <div className="pointer-events-none absolute -inset-2 z-0 opacity-0 transition-opacity duration-700 md:group-hover:opacity-100 md:pointer-fine:block hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--nurea-accent-subtle)] to-transparent blur-2xl" />
+      </div>
+
+      <div className="card-image-wrapper relative z-10 aspect-[3/4] overflow-hidden bg-[var(--nurea-surface)]">
         {perfume.tags && (
           <div
             data-testid="perfume-tag-strip"
-            className={`absolute left-0 top-2.5 z-20 flex flex-col gap-1 transition-opacity duration-200 md:top-3 ${
+            className={`absolute left-0 top-2.5 z-20 flex flex-col gap-1 transition-opacity duration-300 md:top-3 ${
               isActive ? "pointer-events-none opacity-0" : "opacity-100"
             }`}
             aria-hidden={isActive}
@@ -100,7 +105,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
             {perfume.tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-block bg-[var(--nurea-accent-solid)] px-3 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-white md:px-3 md:py-1 md:text-[10px]"
+                className="inline-block bg-[var(--nurea-accent-solid)] px-3 py-1 text-[9px] font-medium uppercase tracking-[0.2em] text-white md:px-3 md:py-1 md:text-[10px]"
               >
                 {tag}
               </span>
@@ -120,7 +125,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         />
 
         <div
-          className={`absolute inset-0 z-[8] ${isActive ? "pointer-events-none" : ""}`}
+          className={`absolute inset-0 z-[8] transition-colors duration-500 ${isActive ? "pointer-events-none bg-black/20" : "bg-transparent hover:bg-black/5"}`}
           onClick={toggleActive}
           aria-hidden="true"
         />
@@ -128,9 +133,9 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         {!isActive && (
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-[10] flex translate-y-3 justify-start p-3 opacity-0 transition-all duration-300 md:group-hover:translate-y-0 md:group-hover:opacity-100"
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-[10] flex translate-y-3 justify-start p-3 opacity-0 transition-all duration-500 md:group-hover:translate-y-0 md:group-hover:opacity-100"
           >
-            <div className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-overlay-light)] px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text)] backdrop-blur-xl">
+            <div className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-overlay-light)] px-3 py-2 text-[9px] font-medium uppercase tracking-[0.2em] text-[var(--nurea-text)] backdrop-blur-xl">
               {hintLabel}
             </div>
           </div>
@@ -141,55 +146,66 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
             id={panelId}
             role="region"
             aria-labelledby={`perfume-toggle-${perfume.id}`}
-            className="absolute inset-0 z-[15] flex min-h-0 flex-col items-stretch justify-center bg-[var(--nurea-overlay)] p-0 backdrop-blur-2xl sm:p-1"
+            className="absolute inset-0 z-[15] flex min-h-0 flex-col items-stretch justify-center bg-[var(--nurea-overlay)] p-0 backdrop-blur-3xl animate-fade-in-up sm:p-1"
           >
             {isGammeComplete && perfume.classics ? (
               <div className="flex h-full min-h-0 w-full flex-col items-center px-2 pb-2 pt-3 sm:px-3 sm:pb-3 sm:pt-4">
-                <p className="w-full text-center font-serif text-[14px] leading-snug text-[var(--nurea-text)] sm:text-[15px] md:text-lg">
-                  Références de la maison
+                <p className="w-full text-center font-serif text-[13px] leading-snug tracking-wide text-[var(--nurea-text)] sm:text-[15px] md:text-lg">
+                  La Maison {perfume.brand}
                 </p>
-                <p className="mb-3 mt-1.5 w-full text-center text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-subtle)]">
-                  Choisissez une référence, puis écrivez-nous depuis la page
-                  Contact
+                <p className="mb-3 mt-2 w-full text-center text-[9px] uppercase tracking-[0.25em] text-[var(--nurea-accent)]">
+                  Sélection officielle
                 </p>
-                <div className="min-h-0 w-full max-w-[280px] flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
-                  <div className="flex flex-col gap-2 pb-1">
+                <div className="min-h-0 w-full max-w-[280px] flex-1 overflow-y-auto overscroll-y-contain custom-scrollbar [-webkit-overflow-scrolling:touch]">
+                  <div className="flex flex-col gap-1.5 pb-2">
                     {perfume.classics.map((classic) => (
                       <Link
                         key={classic}
                         href="/contact"
-                        className="group/btn flex min-h-[44px] w-full shrink-0 items-center justify-between border border-[var(--nurea-border-hover)] px-3 py-2.5 text-[11px] uppercase tracking-nurea-label text-[var(--nurea-text)] transition-all duration-300 hover:border-[var(--nurea-accent)] hover:bg-[var(--nurea-accent-subtle)] sm:px-4 sm:py-3 md:px-5 md:text-[12px]"
+                        className="group/btn flex min-h-[44px] w-full shrink-0 items-center justify-between border border-[var(--nurea-border)] bg-[var(--nurea-surface)]/40 px-3 py-2.5 text-[10px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] transition-all duration-500 hover:border-[var(--nurea-accent)] hover:bg-[var(--nurea-accent-subtle)] hover:text-[var(--nurea-text)] sm:px-4 sm:py-3 md:px-5 md:text-[11px]"
                       >
                         <span className="min-w-0 flex-1 truncate pr-2 text-left font-medium">
                           {classic}
                         </span>
                         <ArrowRight
-                          size={13}
-                          className="shrink-0 text-[var(--nurea-accent)] transition-transform duration-300 group-hover/btn:-rotate-45"
+                          size={12}
+                          className="shrink-0 text-[var(--nurea-accent)] transition-transform duration-500 group-hover/btn:-rotate-45"
                         />
                       </Link>
                     ))}
                   </div>
                 </div>
+                <button
+                  onClick={() => setActiveItem(null)}
+                  className="mt-2 text-[9px] uppercase tracking-[0.3em] text-[var(--nurea-text-subtle)] hover:text-[var(--nurea-text)] transition-colors p-2"
+                >
+                  Fermer
+                </button>
               </div>
             ) : (
-              <div className="mx-auto flex w-full max-w-[260px] flex-col gap-2.5 self-center px-3 py-2 sm:px-4">
+              <div className="mx-auto flex w-full max-w-[260px] flex-col gap-3 self-center px-4 py-2">
                 <p className="text-center font-serif text-[15px] leading-snug text-[var(--nurea-text)] md:text-lg">
                   Continuer l&apos;échange
                 </p>
-                <p className="mb-2 text-center text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-subtle)]">
-                  Disponibilités, arrivages, recommandations
+                <p className="mb-2 text-center text-[9px] uppercase tracking-[0.25em] text-[var(--nurea-text-muted)]">
+                  Disponibilité & Conseils
                 </p>
                 <Link
                   href="/contact"
-                  className="group/btn flex min-h-[44px] w-full items-center justify-center gap-2 border border-[var(--nurea-border-hover)] px-4 py-3 text-[10px] font-medium uppercase tracking-nurea-wide text-[var(--nurea-text)] transition-all duration-300 hover:border-[var(--nurea-accent)] hover:bg-[var(--nurea-accent-subtle)] md:px-5 md:py-3.5 md:text-[11px]"
+                  className="group/btn flex min-h-[48px] w-full items-center justify-center gap-2 border border-[var(--nurea-accent)] bg-[var(--nurea-accent-subtle)] px-4 py-3 text-[10px] font-medium uppercase tracking-nurea-wide text-[var(--nurea-text)] transition-all duration-500 hover:bg-[var(--nurea-accent-solid)] hover:text-white md:px-5 md:py-3.5 md:text-[11px]"
                 >
                   Nous contacter
                   <ArrowRight
                     size={12}
-                    className="text-[var(--nurea-accent)] transition-transform duration-300 group-hover/btn:-rotate-45"
+                    className="transition-transform duration-500 group-hover/btn:-rotate-45"
                   />
                 </Link>
+                <button
+                  onClick={() => setActiveItem(null)}
+                  className="text-[9px] uppercase tracking-[0.3em] text-[var(--nurea-text-subtle)] hover:text-[var(--nurea-text)] transition-colors p-1"
+                >
+                  Fermer
+                </button>
               </div>
             )}
           </div>
@@ -201,18 +217,19 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         id={`perfume-toggle-${perfume.id}`}
         aria-expanded={isActive}
         aria-controls={isActive ? panelId : undefined}
-        className="flex w-full flex-col border-0 bg-transparent p-0 pt-3 text-left text-[var(--nurea-text)] outline-none md:pt-3.5"
+        className="relative z-10 flex w-full flex-col border-0 bg-transparent p-0 pt-3 text-left text-[var(--nurea-text)] outline-none md:pt-3.5"
         onClick={toggleActive}
         onKeyDown={onToggleKeyDown}
       >
-        <span className="mb-0.5 text-[9px] font-medium uppercase tracking-[0.25em] text-[var(--nurea-accent)] md:text-[10px]">
+        <span className="mb-1 text-[9px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[10px]">
           {perfume.brand}
         </span>
-        <span className="font-serif text-[15px] leading-snug md:text-[17px]">
+        <span className="font-serif text-[16px] leading-snug tracking-wide md:text-[18px]">
           {perfume.name}
         </span>
-        <span className="mt-1.5 text-[11px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-accent)] md:text-[11px]">
-          {isGammeComplete ? "Voir la sélection →" : "Continuer avec nous →"}
+        <span className="mt-2 flex items-center gap-2 text-[10px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] transition-colors duration-500 group-hover:text-[var(--nurea-text)] md:text-[11px]">
+          {isGammeComplete ? "Voir la sélection" : "Continuer avec nous"}
+          <ArrowRight size={10} className="text-[var(--nurea-accent)] opacity-0 -translate-x-2 transition-all duration-500 group-hover:opacity-100 group-hover:translate-x-0" />
         </span>
       </button>
     </article>

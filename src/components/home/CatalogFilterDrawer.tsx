@@ -180,32 +180,32 @@ export function CatalogFilterDrawer({
             ) : (
               groups.map(([letter, items]) => (
                 <div key={letter}>
-                  <div className="sticky top-0 z-10 border-b border-[var(--nurea-border)]/50 bg-[var(--nurea-surface)] px-5 py-2">
-                    <span className="text-[13px] font-bold text-[var(--nurea-accent)]">
+                  <div className="sticky top-0 z-10 border-b border-[var(--nurea-border)]/50 bg-[var(--nurea-surface)]/95 px-5 py-2.5 backdrop-blur-md">
+                    <span className="text-[11px] font-medium uppercase tracking-[0.25em] text-[var(--nurea-accent)]">
                       {letter}
                     </span>
                   </div>
-                  <ul>
+                  <ul className="divide-y divide-[var(--nurea-border)]/30">
                     {items.map((b) => {
                       const checked = draftBrands.has(b.slug);
                       return (
                         <li key={b.id}>
-                          <label className="group flex min-h-[48px] w-full cursor-pointer items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-[var(--nurea-surface-hover)]">
-                            <span
-                              className={`flex h-5 w-5 shrink-0 items-center justify-center border transition-colors ${
+                          <label className="group flex min-h-[52px] w-full cursor-pointer items-center gap-4 px-5 py-3 text-left transition-all hover:bg-[var(--nurea-surface-hover)] active:scale-[0.98]">
+                            <div
+                              className={`flex h-5 w-5 shrink-0 items-center justify-center border transition-all duration-300 ${
                                 checked
                                   ? "border-[var(--nurea-accent)] bg-[var(--nurea-accent)]"
-                                  : "border-[var(--nurea-border)] bg-transparent group-hover:border-[var(--nurea-border-hover)]"
+                                  : "border-[var(--nurea-border)] bg-transparent group-hover:border-[var(--nurea-accent)]"
                               }`}
                             >
                               {checked && (
                                 <Check
-                                  size={14}
-                                  strokeWidth={2.5}
-                                  className="text-white"
+                                  size={13}
+                                  strokeWidth={3}
+                                  className="text-white animate-scale-in"
                                 />
                               )}
-                            </span>
+                            </div>
                             <input
                               type="checkbox"
                               checked={checked}
@@ -214,11 +214,11 @@ export function CatalogFilterDrawer({
                               }
                               className="sr-only"
                             />
-                            <span className="flex-1 text-[15px] text-[var(--nurea-text)]">
+                            <span className={`flex-1 text-[15px] transition-colors duration-300 ${checked ? "text-[var(--nurea-text)] font-medium" : "text-[var(--nurea-text-muted)] group-hover:text-[var(--nurea-text)]"}`}>
                               {b.name}
                             </span>
-                            <span className="shrink-0 text-[12px] tabular-nums text-[var(--nurea-text-subtle)]">
-                              {b.publishedCount}
+                            <span className="shrink-0 font-mono text-[10px] tracking-wider text-[var(--nurea-text-subtle)] opacity-60">
+                              {b.publishedCount.toString().padStart(2, '0')}
                             </span>
                           </label>
                         </li>
