@@ -14,13 +14,13 @@ export function AdminNav() {
   }
 
   return (
-    <header className="sticky top-0 z-[60] border-b border-black/[0.06] bg-white/80 backdrop-blur-xl dark:border-white/[0.06] dark:bg-[#111]/80">
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
+    <header className="sticky top-0 z-[60] border-b border-black/[0.08] bg-white/95 backdrop-blur-xl dark:border-white/[0.08] dark:bg-[#101010]/95">
+      <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3">
         <Link
           href="/admin"
-          className="text-[15px] font-semibold tracking-tight text-[#1a1a1a] dark:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          className="inline-flex min-h-[44px] items-center text-[15px] font-semibold tracking-tight text-[#1a1a1a] dark:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
         >
-          Admin
+          Administration
         </Link>
 
         <div className="flex items-center gap-1">
@@ -41,7 +41,7 @@ export function AdminNav() {
             className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md border border-red-200 px-3 text-[12px] font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
             <LogOut className="h-4 w-4" />
-            <span>Quitter</span>
+            <span>Déconnexion</span>
           </button>
         </div>
       </div>

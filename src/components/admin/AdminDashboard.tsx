@@ -587,7 +587,15 @@ export function AdminDashboard() {
     <div className="min-h-screen">
       <AdminNav />
 
-      <main className="mx-auto max-w-3xl px-4 pb-24 pt-6 md:pt-8">
+      <main className="mx-auto max-w-4xl px-4 pb-24 pt-6 md:pt-8">
+        <header className="mb-5">
+          <h1 className="text-[20px] font-semibold text-[#1a1a1a] dark:text-[#f0f0f0] md:text-[22px]">
+            Panel admin
+          </h1>
+          <p className="mt-1 text-[13px] text-[#7b7b7b] dark:text-[#9a9a9a]">
+            Gérez rapidement les parfums et les marques depuis mobile ou desktop.
+          </p>
+        </header>
         {loadErr && (
           <div className="mb-4 rounded-md bg-red-50 px-4 py-3 text-[14px] text-red-700 dark:bg-red-500/10 dark:text-red-400" role="alert">
             {loadErr}
@@ -595,7 +603,7 @@ export function AdminDashboard() {
         )}
         {actionMsg && (
           <div
-            className={`fixed right-4 top-4 z-[120] max-w-sm rounded-md border px-4 py-3 text-[14px] shadow-lg ${
+            className={`fixed bottom-4 left-1/2 z-[120] w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 rounded-md border px-4 py-3 text-[14px] shadow-lg ${
               actionMsg.type === "success"
                 ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300"
                 : "border-red-300 bg-red-50 text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-400"
@@ -607,7 +615,7 @@ export function AdminDashboard() {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-1 rounded-lg bg-black/[0.03] p-1 dark:bg-white/[0.04]">
+        <div className="flex gap-2 border-b border-black/[0.08] pb-2 dark:border-white/[0.1]">
           {([
             { id: "perfumes" as Tab, label: "Parfums" },
             { id: "brands" as Tab, label: "Marques" },
@@ -616,10 +624,10 @@ export function AdminDashboard() {
               key={id}
               type="button"
               onClick={() => setTab(id)}
-              className={`flex-1 rounded-md py-2 text-[13px] font-medium transition-all ${
+              className={`flex-1 rounded-md border px-3 py-2.5 text-[13px] font-medium transition-all ${
                 tab === id
-                  ? "bg-white text-[#1a1a1a] shadow-sm dark:bg-white/[0.08] dark:text-white"
-                  : "text-[#888] hover:text-[#555] dark:text-[#666] dark:hover:text-[#aaa]"
+                  ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-500/12 dark:text-blue-300"
+                  : "border-black/[0.08] bg-transparent text-[#777] hover:bg-black/[0.03] dark:border-white/[0.1] dark:text-[#999] dark:hover:bg-white/[0.05]"
               }`}
             >
               {label}
@@ -701,25 +709,25 @@ export function AdminDashboard() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-5">
+                <div className="space-y-4">
                   {groupedPerfumes.map((group) => (
-                    <section key={group.brandName} className="rounded-md border border-black/[0.1] bg-black/[0.02] p-4 dark:border-white/[0.14] dark:bg-white/[0.03]">
+                    <section key={group.brandName} className="rounded-md border border-black/[0.08] bg-white p-4 dark:border-white/[0.12] dark:bg-[#161616]">
                       <div className="mb-3 flex items-center justify-between">
-                        <p className="text-[12px] font-semibold uppercase tracking-wide text-[#666] dark:text-[#9e9e9e]">
+                        <p className="text-[12px] font-semibold uppercase tracking-wide text-[#5f5f5f] dark:text-[#aaaaaa]">
                           {group.brandName}
                         </p>
                         <span className="text-[11px] text-[#8a8a8a] dark:text-[#7f7f7f]">
                           {group.rows.length} parfum{group.rows.length > 1 ? "s" : ""}
                         </span>
                       </div>
-                      <ul className="space-y-2.5">
+                      <ul className="space-y-2">
                         {group.rows.map((row, idx) => (
                           <li
                             key={row.id}
                             className={`group flex flex-col items-start gap-3 rounded-md border px-3 py-3.5 sm:flex-row sm:items-center sm:gap-4 ${
                               idx % 2 === 0
-                                ? "border-black/[0.09] bg-white/70 dark:border-white/[0.12] dark:bg-white/[0.045]"
-                                : "border-black/[0.07] bg-black/[0.02] dark:border-white/[0.1] dark:bg-white/[0.03]"
+                                ? "border-black/[0.08] bg-[#fafafa] dark:border-white/[0.11] dark:bg-[#1f1f1f]"
+                                : "border-black/[0.08] bg-white dark:border-white/[0.11] dark:bg-[#191919]"
                             }`}
                           >
                       <PerfumeVisual name={row.name} image={row.image} imageLight={row.imageLight} />
@@ -919,7 +927,7 @@ export function AdminDashboard() {
                 );
               })}
             </div>
-            <p className="text-[12px] text-[#8d8d8d] dark:text-[#7f7f7f]">
+            <p className="text-[12px] text-[#777] dark:text-[#909090]">
               {filteredBrands.length} résultat{filteredBrands.length > 1 ? "s" : ""} affiché{filteredBrands.length > 1 ? "s" : ""}
             </p>
 
@@ -928,14 +936,14 @@ export function AdminDashboard() {
                 Aucune marque. Ajoutez-en une pour alimenter le catalogue.
               </p>
             ) : (
-              <ul className="space-y-2.5">
+              <ul className="space-y-2">
                 {filteredBrands.map((b, idx) => (
                   <li
                     key={b.id}
                     className={`rounded-md border px-3 py-4 ${
                       idx % 2 === 0
-                        ? "border-black/[0.1] bg-black/[0.02] dark:border-white/[0.14] dark:bg-white/[0.04]"
-                        : "border-black/[0.07] bg-white/70 dark:border-white/[0.1] dark:bg-white/[0.025]"
+                        ? "border-black/[0.08] bg-[#fafafa] dark:border-white/[0.12] dark:bg-[#1f1f1f]"
+                        : "border-black/[0.08] bg-white dark:border-white/[0.12] dark:bg-[#191919]"
                     }`}
                   >
                     <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
