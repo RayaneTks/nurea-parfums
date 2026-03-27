@@ -22,8 +22,6 @@ Ce fichier est la racine de la hiérarchie `AGENTS.md` utilisée par les skills 
 - Respecter les sections stables (Purpose / Key Files / Subdirectories / For Agents / Testing Requirements).
 - Ne pas supprimer les blocs `<!-- MANUAL: ... -->` s'ils existent.
 - Suivre une boucle stricte: comprendre -> implémenter -> vérifier -> documenter -> corriger.
-- En mode "audit/revue complete", livrer d'abord les frictions critiques (mobile/navigation/actions), puis appliquer les correctifs dans le meme cycle.
-- Prioriser les conventions UX connues des utilisateurs: retour en haut a gauche, clear actions visibles dans les champs, boutons explicites plutot qu'icones seules sur mobile.
 - Pour toute évolution métier/admin, mettre à jour la mémoire projet (`CLAUDE.md`, `DEVELOPER.md`, `.cursor/rules/project-memory.mdc`) dans le même lot.
 - Privilégier les garde-fous serveur (API/DB) avant les garde-fous UI.
 - En cas d'ambiguïté métier, proposer une contre-proposition argumentée puis implémenter la version la plus robuste après validation.
