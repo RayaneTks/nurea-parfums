@@ -9,9 +9,11 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/features/Hero";
 import { FeaturedSection } from "@/components/features/FeaturedSection";
 import { PerfumeCard } from "@/components/features/PerfumeCard";
+import { CatalogSkeleton } from "@/components/features/PerfumeCardSkeleton";
 import { Footer } from "@/components/layout/Footer";
 import { Separator } from "@/components/ui/Separator";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
 import {
   categories,
   fuzzySearchMatch,
@@ -118,6 +120,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
   const [activeItem, setActiveItem] = useState<number | null>(null);
   const [browseOpen, setBrowseOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const scrollDirection = useScrollDirection();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const paramsStringRef = useRef<string | null>(null);
@@ -130,7 +133,11 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => {
+      // Small threshold to avoid issues with bouncy headers
+      const offset = window.scrollY;
+      setScrolled(offset > 50);
+    };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -283,9 +290,17 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
   const scrollCatalogIntoView = useCallback(() => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        document.getElementById("collection")?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
+        const el = document.getElementById("collection");
+        if (!el) return;
+        const offset = 80; // Buffer for header
+        const bodyRect = document.body.getBoundingClientRect().top;
+        const elementRect = el.getBoundingClientRect().top;
+        const elementPosition = elementRect - bodyRect;
+        const offsetPosition = elementPosition - offset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
         });
       });
     });
@@ -412,6 +427,8 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
     [catalogPerfumes],
   );
 
+  const isHeaderVisible = scrollDirection === "up" || !scrolled;
+
   return (
     <div
       id="main-content"
@@ -464,7 +481,9 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
           </div>
         </ScrollReveal>
 
-        <div className="sticky z-30 -mx-4 mb-4 border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-4 pb-3 [top:calc(env(safe-area-inset-top,0px)+3.625rem)] md:mx-0 md:mb-3 md:px-0 md:top-[calc(env(safe-area-inset-top,0px)+4.25rem)]">
+        <div className={`sticky z-30 -mx-4 mb-4 border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-4 pb-3 transition-transform duration-500 ease-out-expo [top:calc(env(safe-area-inset-top,0px)+3.625rem)] md:mx-0 md:mb-3 md:px-0 md:top-[calc(env(safe-area-inset-top,0px)+4.25rem)] ${
+          isHeaderVisible ? "translate-y-0" : "-translate-y-[calc(100%+env(safe-area-inset-top,0px)+4.25rem)]"
+        }`}>
           <ScrollReveal className="mb-0" delay={80}>
             <div className="relative mb-3">
               <label htmlFor={CATALOG_SEARCH_ID} className="sr-only">
@@ -595,107 +614,116 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
           </div>
         )}
 
-        {sortedPerfumes.length === 0 ? (
+        {(!mounted || sortedPerfumes.length === 0) ? (
           <div className="py-16 md:py-20">
-            <div className="mx-auto max-w-xl text-center">
-              {searchTerm.trim() !== "" ? (
-                <>
-                  {showExtendedSearchLoading ? (
-                    <>
-                      <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
-                        Recherche en cours…
-                      </p>
-                      <p className="mb-2 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
-                        Nous vérifions également des sources au-delà du catalogue
-                        affiché.
-                      </p>
-                    </>
-                  ) : apiSuggestion ? (
-                    <div
-                      data-testid="external-api-suggestion"
-                      className="rounded-sm border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-6 text-left md:px-8 md:py-8"
-                    >
-                      <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
-                        Vous cherchez «{" "}
-                        {formatExternalSuggestionDisplay(
-                          apiSuggestion,
-                          searchTerm.trim()
-                        )}
-                        »{apiSuggestion.brand && apiSuggestion.brand !== "—"
-                          ? ` de ${apiSuggestion.brand}`
-                          : ""}{" "}
-                        ?
-                      </p>
-                      <p className="mb-4 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
-                        {apiSuggestionBrandRangeMatch ? (
-                          <>
-                            Bonne nouvelle : la gamme complète{" "}
-                            {apiSuggestionBrandRangeMatch.brand} est déjà au
-                            catalogue. Ce parfum peut être demandé directement
-                            via la page Contact.
-                          </>
-                        ) : (
-                          <>
-                            Cette référence n&apos;est pas encore en fiche ici.
-                            La maison Nurea Parfums peut confirmer une
-                            disponibilité, un arrivage ou une alternative :
-                            contactez-nous.
-                          </>
-                        )}
-                      </p>
-                      <button
-                        type="button"
-                        disabled
-                        title="Fonction à venir"
-                        className="w-full border border-[var(--nurea-border)] bg-transparent px-4 py-3 text-[10px] font-medium uppercase tracking-nurea-label text-[var(--nurea-text-muted)] opacity-60 md:w-auto md:min-w-[240px]"
-                      >
-                        Ajouter ce parfum au catalogue
-                      </button>
-                      <span className="sr-only">
-                        Identifiant externe : {apiSuggestion.externalId}
-                      </span>
-                    </div>
-                  ) : (
-                    <>
-                      <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
-                        {externalHint
-                          ? `Vous cherchez « ${externalHint.displayName} » ?`
-                          : `Aucun résultat pour « ${searchTerm.trim()} »`}
-                      </p>
-                      <p className="mb-2 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
-                        {externalHint
-                          ? externalHint.caption
-                          : searchFallback.kind === "error"
-                            ? "Le service de recherche élargie est momentanément indisponible. Vous pouvez reformuler ou nous écrire directement."
-                            : EXTERNAL_SEARCH_FALLBACK_MESSAGE}
-                      </p>
-                      {externalHint ? (
-                        <ExternalSearchFootnote hint={externalHint} />
-                      ) : null}
-                    </>
-                  )}
-                </>
-              ) : (
-                <>
-                  <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
-                    Aucune création ne correspond à ces filtres
-                  </p>
-                  <p className="mb-2 text-[13px] text-[var(--nurea-text-muted)]">
-                    Élargissez la recherche ou explorez nos suggestions
-                    ci-dessous.
-                  </p>
-                </>
-              )}
-              <div className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-                <Link
-                  href="/contact"
-                  className="btn-nurea text-[10px] md:text-[11px]"
-                >
-                  Nous contacter
-                </Link>
+            {!mounted ? (
+              <div className="mt-8">
+                <p className="mb-5 text-center text-[10px] uppercase tracking-[0.28em] text-[var(--nurea-text-muted)] animate-pulse">
+                  Chargement de la collection...
+                </p>
+                <CatalogSkeleton />
               </div>
-            </div>
-            {inspirationWhenEmpty.length > 0 && (
+            ) : (
+              <div className="mx-auto max-w-xl text-center">
+                {searchTerm.trim() !== "" ? (
+                  <>
+                    {showExtendedSearchLoading ? (
+                      <>
+                        <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
+                          Recherche en cours…
+                        </p>
+                        <p className="mb-2 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
+                          Nous vérifions également des sources au-delà du catalogue
+                          affiché.
+                        </p>
+                      </>
+                    ) : apiSuggestion ? (
+                      <div
+                        data-testid="external-api-suggestion"
+                        className="rounded-sm border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-6 text-left md:px-8 md:py-8"
+                      >
+                        <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
+                          Vous cherchez «{" "}
+                          {formatExternalSuggestionDisplay(
+                            apiSuggestion,
+                            searchTerm.trim()
+                          )}
+                          »{apiSuggestion.brand && apiSuggestion.brand !== "—"
+                            ? ` de ${apiSuggestion.brand}`
+                            : ""}{" "}
+                          ?
+                        </p>
+                        <p className="mb-4 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
+                          {apiSuggestionBrandRangeMatch ? (
+                            <>
+                              Bonne nouvelle : la gamme complète{" "}
+                              {apiSuggestionBrandRangeMatch.brand} est déjà au
+                              catalogue. Ce parfum peut être demandé directement
+                              via la page Contact.
+                            </>
+                          ) : (
+                            <>
+                              Cette référence n&apos;est pas encore en fiche ici.
+                              La maison Nurea Parfums peut confirmer une
+                              disponibilité, un arrivage ou une alternative :
+                              contactez-nous.
+                            </>
+                          )}
+                        </p>
+                        <button
+                          type="button"
+                          disabled
+                          title="Fonction à venir"
+                          className="w-full border border-[var(--nurea-border)] bg-transparent px-4 py-3 text-[10px] font-medium uppercase tracking-nurea-label text-[var(--nurea-text-muted)] opacity-60 md:w-auto md:min-w-[240px]"
+                        >
+                          Ajouter ce parfum au catalogue
+                        </button>
+                        <span className="sr-only">
+                          Identifiant externe : {apiSuggestion.externalId}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
+                          {externalHint
+                            ? `Vous cherchez « ${externalHint.displayName} » ?`
+                            : `Aucun résultat pour « ${searchTerm.trim()} »`}
+                        </p>
+                        <p className="mb-2 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
+                          {externalHint
+                            ? externalHint.caption
+                            : searchFallback.kind === "error"
+                              ? "Le service de recherche élargie est momentanément indisponible. Vous pouvez reformuler ou nous écrire directement."
+                              : EXTERNAL_SEARCH_FALLBACK_MESSAGE}
+                        </p>
+                        {externalHint ? (
+                          <ExternalSearchFootnote hint={externalHint} />
+                        ) : null}
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
+                      Aucune création ne correspond à ces filtres
+                    </p>
+                    <p className="mb-2 text-[13px] text-[var(--nurea-text-muted)]">
+                      Élargissez la recherche ou explorez nos suggestions
+                      ci-dessous.
+                    </p>
+                  </>
+                )}
+                <div className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+                  <Link
+                    href="/contact"
+                    className="btn-nurea text-[10px] md:text-[11px]"
+                  >
+                    Nous contacter
+                  </Link>
+                </div>
+              </div>
+            )}
+            {mounted && inspirationWhenEmpty.length > 0 && (
               <div className="mt-12">
                 <p className="mb-5 text-center text-[10px] uppercase tracking-[0.28em] text-[var(--nurea-text-muted)]">
                   {searchTerm.trim() !== ""
