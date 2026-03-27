@@ -9,6 +9,7 @@ import { AdminNav } from "./AdminNav";
 import { DashboardHeader } from "./DashboardHeader";
 import { PerfumeList } from "./PerfumeList";
 import { BrandList } from "./BrandList";
+import { FeaturedList } from "./FeaturedList";
 import { AdminToast, ToastType } from "./ui/AdminToast";
 import { AdminButton } from "./ui/AdminButton";
 
@@ -30,13 +31,14 @@ type PerfumeRow = {
   imageLight: string | null;
   name: string;
   status: string;
+  isFeatured?: boolean;
   brand: { id: string; name: string; image: string | null; catalogMode: "CURATED" | "COMPLETE"; status: "PUBLISHED" | "DRAFT" };
 };
 
-type Tab = "perfumes" | "brands";
+type Tab = "perfumes" | "brands" | "featured";
 
 function ConfirmDeleteModal({
-  target,
+// ... (rest of the file handles modal)
   onCancel,
   onConfirm,
 }: {
@@ -183,13 +185,14 @@ export function AdminDashboard() {
   const [pendingStatusIds, setPendingStatusIds] = useState<Set<number>>(new Set());
   const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<number>>(new Set());
   const [pendingBrandIds, setPendingBrandIds] = useState<Set<string>>(new Set());
+  const [pendingFeaturedIds, setPendingFeaturedIds] = useState<Set<number>>(new Set());
   
   // Modals
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
   const [brandDeleteTarget, setBrandDeleteTarget] = useState<{ id: string; name: string; count: number } | null>(null);
   const [previewItem, setPreviewItem] = useState<PerfumeRow | BrandRow | null>(null);
 
-  const hasMutationInFlight = pendingDeleteIds.size > 0 || pendingStatusIds.size > 0 || pendingBrandIds.size > 0;
+  const hasMutationInFlight = pendingDeleteIds.size > 0 || pendingStatusIds.size > 0 || pendingBrandIds.size > 0 || pendingFeaturedIds.size > 0;
 
   const refresh = useCallback(async () => {
     setIsLoading(true);
@@ -222,7 +225,33 @@ export function AdminDashboard() {
 
   const canEdit = user?.role !== "VIEWER";
 
+  // Actions Featured
+  async function toggleFeatured(id: number, currentFeatured: boolean) {
+    if (hasMutationInFlight) return;
+    const next = !currentFeatured;
+
+    setPendingFeaturedIds((prev) => new Set(prev).add(id));
+    setPerfumes((prev) => prev.map((p) => (p.id === id ? { ...p, isFeatured: next } : p)));
+
+    const r = await fetch(`/api/admin/perfumes/${id}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isFeatured: next }),
+    });
+
+    if (!r.ok) {
+      const j = await readJsonSafe<{ error?: string }>(r);
+      setActionMsg({ type: "error", text: j?.error ?? "Changement impossible." });
+      setPerfumes((prev) => prev.map((p) => (p.id === id ? { ...p, isFeatured: currentFeatured } : p)));
+    } else {
+      setActionMsg({ type: "success", text: next ? "Parfum mis en avant." : "Mise en avant retirée." });
+    }
+    setPendingFeaturedIds((prev) => { const c = new Set(prev); c.delete(id); return c; });
+  }
+
   // Actions Parfums
+
   async function toggleVisibility(id: number, currentStatus: string) {
     if (hasMutationInFlight) return;
     const row = perfumes.find((p) => p.id === id);
@@ -354,6 +383,13 @@ export function AdminDashboard() {
                 <div key={i} className="h-24 bg-zinc-900/50 rounded-2xl border border-zinc-800/50" />
               ))}
             </div>
+          ) : tab === "featured" ? (
+            <FeaturedList
+              perfumes={perfumes}
+              canEdit={canEdit}
+              onToggleFeatured={toggleFeatured}
+              pendingFeaturedIds={pendingFeaturedIds}
+            />
           ) : tab === "perfumes" ? (
             <PerfumeList
               perfumes={perfumes}

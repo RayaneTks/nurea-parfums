@@ -50,6 +50,7 @@ model Perfume {
   slug       String            @unique
   image      String
   imageLight String?
+  isFeatured Boolean           @default(false)
   status     PublicationStatus @default(PUBLISHED)
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
@@ -57,6 +58,7 @@ model Perfume {
   @@unique([brandId, name])
   @@index([status])
   @@index([brandId])
+}
 }
 
 model AdminUser {
