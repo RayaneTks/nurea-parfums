@@ -196,18 +196,14 @@ export function AdminDashboard() {
       const sj = (await s.json()) as { user?: SessionUser };
       setUser(sj.user ?? null);
 
-      const [bRes, pRes] = await Promise.all([
-        fetch("/api/admin/brands", { credentials: "include", cache: "no-store" }),
-        fetch("/api/admin/perfumes", { credentials: "include", cache: "no-store" })
-      ]);
-
-      if (bRes.ok) {
-        const bj = await readJsonSafe<{ brands: BrandRow[] }>(bRes);
-        setBrands(bj?.brands ?? []);
-      }
-      if (pRes.ok) {
-        const pj = await readJsonSafe<{ perfumes: PerfumeRow[] }>(pRes);
-        setPerfumes(pj?.perfumes ?? []);
+      const res = await fetch("/api/admin/catalogue", { credentials: "include", cache: "no-store" });
+      if (!res.ok) throw new Error("Impossible de charger le catalogue.");
+      
+      const data = await readJsonSafe<{ brands: BrandRow[]; perfumes: PerfumeRow[] }>(res);
+      
+      if (data) {
+        setBrands(data.brands);
+        setPerfumes(data.perfumes);
       }
     } catch (e) {
       setLoadErr(e instanceof Error ? e.message : "Erreur de chargement");
