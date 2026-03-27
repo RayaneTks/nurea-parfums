@@ -306,7 +306,7 @@ function BrandCombobox({
         }}
         onFocus={() => setOpen(true)}
         disabled={readOnly}
-        placeholder="Rechercher ou creer une marque…"
+        placeholder="Tapez le nom d'une marque pour voir les suggestions ou en créer une…"
         autoComplete="off"
         className={`${inputCls} pr-11`}
       />
@@ -351,7 +351,7 @@ function BrandCombobox({
               ) : (
                 <Plus className="h-4 w-4" aria-hidden />
               )}
-              Créer « {query.trim()} »
+              + Ajouter la marque &quot;{query.trim()}&quot;
             </button>
           )}
           {filtered.length === 0 && (exactMatch || query.trim().length < 2) && (
@@ -604,6 +604,9 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
           <div>
             <label className={labelCls}>Marque</label>
+            <p className="mt-0.5 text-[12px] text-zinc-500">
+              Tapez pour afficher la liste des marques disponibles.
+            </p>
             <div className="mt-1.5">
               <BrandCombobox
                 brands={brands}
