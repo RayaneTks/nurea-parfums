@@ -45,7 +45,10 @@ Tout travail sur ce dépôt doit suivre la **Boucle de Qualité** définie dans 
 ## Pièges & Règles critiques (Important)
 
 - **Next.js Suspense** : Tout composant utilisant `useSearchParams()` (ex: `AdminDashboard`, `HomePageClient`) **DOIT** être wrappé dans `<Suspense>` pour éviter l'erreur de build "CSR Bailout" sur Vercel.
-- **Prisma & DB** : Les relations doivent être indexées (`@@index`). En mode `COMPLETE`, les parfums individuels sont forcés en `DRAFT`.
+- **Prisma & DB** : 
+  - Les relations doivent être indexées (`@@index`). 
+  - Toute nouvelle propriété UI (ex: `isFeatured`) doit impérativement être ajoutée au schéma Prisma avant le déploiement.
+  - Vérifier l'intégrité des accolades du schéma après modification.
 - **Mobile-First** : Ne jamais développer une vue sans tester le rendu à 390px.
 - **No Hallucination** : Si une information manque, utiliser `grep_search` ou `list_directory`. Ne jamais inventer un chemin de fichier ou une variable d'environnement.
 

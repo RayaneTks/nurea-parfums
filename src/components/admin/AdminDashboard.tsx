@@ -38,7 +38,7 @@ type PerfumeRow = {
 type Tab = "perfumes" | "brands" | "featured";
 
 function ConfirmDeleteModal({
-// ... (rest of the file handles modal)
+  target,
   onCancel,
   onConfirm,
 }: {

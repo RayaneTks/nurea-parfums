@@ -1,182 +1,176 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { X, Check } from "lucide-react";
 import { AdminButton } from "../admin/ui/AdminButton";
 import { Perfume } from "@/lib/data";
 
-type CatalogBrowseBrand = {
-  id: string;
-  name: string;
-  image: string | null;
-  catalogMode: "CURATED" | "COMPLETE";
-  publishedCount: number;
-};
+import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
 
 interface CatalogFilterDrawerProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
   brands: CatalogBrowseBrand[];
-  categories: string[];
-  selectedBrands: string[];
-  selectedCategories: string[];
-  onToggleBrand: (brandName: string) => void;
-  onToggleCategory: (category: string) => void;
-  onClearFilters: () => void;
-  totalResults: number;
+  mounted: boolean;
+  selectedBrandSlugs: Set<string>;
+  getResultCount: (brands: Set<string>) => number;
+  onApply: (brands: Set<string>) => void;
+  onReset: () => void;
 }
 
 export function CatalogFilterDrawer({
-  isOpen,
+  open,
   onClose,
   brands,
-  categories,
-  selectedBrands,
-  selectedCategories,
-  onToggleBrand,
-  onToggleCategory,
-  onClearFilters,
-  totalResults,
+  selectedBrandSlugs,
+  onApply,
+  onReset,
+  getResultCount,
 }: CatalogFilterDrawerProps) {
-  const hasFilters = selectedBrands.length > 0 || selectedCategories.length > 0;
+  const [draftBrands, setDraftBrands] = useState<Set<string>>(
+    new Set(selectedBrandSlugs)
+  );
+
+  useEffect(() => {
+    if (open) setDraftBrands(new Set(selectedBrandSlugs));
+  }, [open, selectedBrandSlugs]);
+
+  const toggleSet = (s: Set<string>, val: string) => {
+    const next = new Set(s);
+    if (next.has(val)) next.delete(val);
+    else next.add(val);
+    return next;
+  };
+
+  const draftResultCount = getResultCount(draftBrands);
+
+  const grouped = useMemo(() => {
+    const map: Record<string, CatalogBrowseBrand[]> = {};
+    const sorted = [...brands].sort((a, b) => a.name.localeCompare(b.name));
+    for (const b of sorted) {
+      const char = b.name.charAt(0).toUpperCase();
+      const letter = /^[A-Z]$/.test(char) ? char : "#";
+      if (!map[letter]) map[letter] = [];
+      map[letter].push(b);
+    }
+    return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
+  }, [brands]);
+
+  if (!open) return null;
 
   return (
-    <div
-      className={`fixed inset-0 z-[100] transition-all duration-500 ease-out ${
-        isOpen ? "visible" : "invisible pointer-events-none"
-      }`}
-    >
+    <>
       {/* Backdrop */}
       <div
-        className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${
-          isOpen ? "opacity-100" : "opacity-0"
-        }`}
+        className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm animate-in fade-in duration-500"
         onClick={onClose}
       />
 
       {/* Drawer */}
-      <div
-        className={`absolute right-0 top-0 h-full w-full max-w-[380px] bg-zinc-950 border-l border-white/5 shadow-2xl transition-transform duration-500 ease-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+      <aside
+        className="fixed right-0 top-0 z-[110] flex h-full w-full max-w-[400px] flex-col bg-[var(--nurea-surface)] shadow-2xl animate-in slide-in-from-right duration-500 ease-out-expo"
       >
-        <div className="flex h-full flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-white/5 px-6 py-5">
-            <div>
-              <h2 className="text-xl font-serif text-white tracking-tight">Filtres</h2>
-              <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest mt-0.5">
-                {totalResults} résultat{totalResults > 1 ? 's' : ''} trouvé{totalResults > 1 ? 's' : ''}
+        <div className="flex items-center justify-between border-b border-[var(--nurea-border)]/50 px-6 py-5">
+          <h2 className="font-serif text-xl tracking-tight text-[var(--nurea-text)]">
+            Explorer les Maisons
+          </h2>
+          <button
+            onClick={onClose}
+            className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-[var(--nurea-surface-hover)] text-[var(--nurea-text-muted)]"
+          >
+            <X size={20} strokeWidth={1.5} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto custom-scrollbar overscroll-contain pb-32">
+          {grouped.length === 0 ? (
+            <div className="px-6 py-12 text-center">
+              <p className="text-sm text-[var(--nurea-text-muted)]">
+                Aucune marque disponible.
               </p>
             </div>
-            <button
-              onClick={onClose}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-zinc-400 hover:text-white transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto px-6 py-8 no-scrollbar">
-            <div className="space-y-10">
-              {/* Catégories */}
-              <div className="space-y-5">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
-                    Catégories
-                  </h3>
-                  {selectedCategories.length > 0 && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--nurea-accent)] shadow-[0_0_8px_var(--nurea-accent)]" />
-                  )}
+          ) : (
+            grouped.map(([letter, items]) => (
+              <div key={letter}>
+                <div className="sticky top-0 z-10 border-b border-[var(--nurea-border)]/50 bg-[var(--nurea-surface)]/95 px-5 py-2.5 backdrop-blur-md">
+                  <span className="text-[11px] font-medium uppercase tracking-[0.25em] text-[var(--nurea-accent)]">
+                    {letter}
+                  </span>
                 </div>
-                <div className="flex flex-wrap gap-2.5">
-                  {categories.map((cat) => {
-                    const active = selectedCategories.includes(cat);
+                <ul className="divide-y divide-[var(--nurea-border)]/30">
+                  {items.map((b) => {
+                    const checked = draftBrands.has(b.slug);
                     return (
-                      <button
-                        key={cat}
-                        onClick={() => onToggleCategory(cat)}
-                        className={`px-4 py-2.5 rounded-full text-[13px] font-medium transition-all duration-300 border ${
-                          active
-                            ? "bg-white border-white text-black shadow-xl shadow-white/10 scale-95"
-                            : "bg-white/5 border-white/5 text-zinc-400 hover:border-white/20 active:scale-95"
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Marques */}
-              <div className="space-y-5">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
-                    Marques
-                  </h3>
-                  {selectedBrands.length > 0 && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--nurea-accent)] shadow-[0_0_8px_var(--nurea-accent)]" />
-                  )}
-                </div>
-                <div className="grid grid-cols-1 gap-2">
-                  {brands.map((b) => {
-                    const active = selectedBrands.includes(b.name);
-                    return (
-                      <button
-                        key={b.id}
-                        onClick={() => onToggleBrand(b.name)}
-                        className={`group relative flex items-center justify-between w-full p-3 rounded-2xl transition-all duration-300 border ${
-                          active
-                            ? "bg-white/10 border-white/20 text-white"
-                            : "bg-white/5 border-transparent text-zinc-400 hover:bg-white/10 active:scale-[0.98]"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`flex h-5 w-5 items-center justify-center rounded-md border transition-colors ${
-                            active ? "bg-[var(--nurea-accent)] border-[var(--nurea-accent)]" : "bg-black/20 border-white/10 group-hover:border-white/20"
-                          }`}>
-                            {active && <Check className="h-3 w-3 text-white stroke-[3]" />}
+                      <li key={b.id}>
+                        <label className="group flex min-h-[52px] w-full cursor-pointer items-center gap-4 px-5 py-3 text-left transition-all hover:bg-[var(--nurea-surface-hover)] active:scale-[0.98]">
+                          <div
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center border transition-all duration-300 ${
+                              checked
+                                ? "border-[var(--nurea-accent)] bg-[var(--nurea-accent)]"
+                                : "border-[var(--nurea-border)] bg-transparent group-hover:border-[var(--nurea-accent)]"
+                            }`}
+                          >
+                            {checked && (
+                              <Check
+                                size={13}
+                                strokeWidth={3}
+                                className="text-white animate-scale-in"
+                              />
+                            )}
                           </div>
-                          <span className="text-[14px] font-medium">{b.name}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/40 ${
-                            active ? "text-white" : "text-zinc-600"
-                          }`}>
-                            {b.catalogMode === "COMPLETE" ? "TOUT" : b.publishedCount.toString().padStart(2, '0')}
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() =>
+                              setDraftBrands(toggleSet(draftBrands, b.slug))
+                            }
+                            className="sr-only"
+                          />
+                          <span className={`flex-1 text-[15px] transition-colors duration-300 ${checked ? "text-[var(--nurea-text)] font-medium" : "text-[var(--nurea-text-muted)] group-hover:text-[var(--nurea-text)]"}`}>
+                            {b.name}
                           </span>
-                        </div>
-                      </button>
+                          <span className="shrink-0 font-mono text-[10px] tracking-wider text-[var(--nurea-text-subtle)] opacity-60">
+                            {b.assortment === "COMPLETE" ? "TOUT" : b.publishedCount.toString().padStart(2, '0')}
+                          </span>
+                        </label>
+                      </li>
                     );
                   })}
-                </div>
+                </ul>
               </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="border-t border-white/5 p-6 bg-zinc-950/80 backdrop-blur-xl">
-            <div className="flex flex-col gap-3">
-              <AdminButton
-                onClick={onClose}
-                className="w-full h-14 rounded-2xl text-[15px] font-bold shadow-2xl shadow-white/5"
-              >
-                Appliquer les filtres
-              </AdminButton>
-              {hasFilters && (
-                <button
-                  onClick={onClearFilters}
-                  className="w-full py-2 text-xs font-bold text-zinc-500 hover:text-zinc-300 transition-colors uppercase tracking-widest"
-                >
-                  Réinitialiser
-                </button>
-              )}
-            </div>
-          </div>
+            ))
+          )}
         </div>
-      </div>
-    </div>
+
+        <div className="absolute bottom-0 left-0 w-full border-t border-[var(--nurea-border)]/50 bg-[var(--nurea-surface)]/90 p-6 backdrop-blur-xl">
+          <div className="mb-4 flex items-center justify-between px-1">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-[var(--nurea-text-subtle)]">
+              {draftBrands.size} sélection{draftBrands.size > 1 ? "s" : ""}
+            </span>
+            {draftBrands.size > 0 && (
+              <button
+                onClick={() => {
+                  setDraftBrands(new Set());
+                  onReset();
+                }}
+                className="text-[10px] font-bold uppercase tracking-widest text-[var(--nurea-accent)] hover:opacity-80 transition-opacity"
+              >
+                Réinitialiser
+              </button>
+            )}
+          </div>
+          <button
+            onClick={() => onApply(draftBrands)}
+            className="btn-nurea w-full justify-center bg-[var(--nurea-accent)] text-white hover:bg-[var(--nurea-accent-hover)] border-none h-14 rounded-xl text-sm font-bold shadow-xl shadow-[var(--nurea-accent-subtle)]/20"
+          >
+            Appliquer les filtres
+            {draftResultCount >= 0 && (
+              <span className="ml-1.5 opacity-80">({draftResultCount})</span>
+            )}
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }
+
