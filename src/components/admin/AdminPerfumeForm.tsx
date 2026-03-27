@@ -298,7 +298,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     e.preventDefault();
     if (readOnly) return;
     if (isNew && brands.length === 0) {
-      setError("Ajoutez au moins une marque depuis la liste admin avant de créer un parfum.");
+      setError("Ajoutez une marque depuis le tableau (section « Gérer les marques ») avant de créer un parfum.");
       return;
     }
     setSaving(true);
@@ -407,7 +407,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
         {isNew && brands.length === 0 ? (
           <p className="border border-[var(--nurea-accent)]/40 bg-[var(--nurea-accent-subtle)] px-4 py-3 text-[13px] text-[var(--nurea-text)]">
-            Créez d’abord au moins une marque (onglet Marques du tableau), puis revenez ici.
+            Créez d’abord au moins une marque (section « Gérer les marques » du tableau), puis revenez ici.
           </p>
         ) : null}
 
@@ -567,7 +567,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             className={inputTransparentClass}
           />
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-            <label className="btn-nurea flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 text-center text-[12px] tracking-[0.1em] sm:w-auto sm:min-w-[200px]">
+            <label className="flex min-h-[52px] w-full cursor-pointer items-center justify-center gap-2 bg-[var(--nurea-accent)] text-[13px] font-semibold text-white transition-all active:scale-[0.98] sm:w-auto sm:min-w-[220px]">
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/gif,image/*"
@@ -583,7 +583,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               ) : (
                 <>
                   <Upload className="h-4 w-4" aria-hidden />
-                  Importer (Supabase)
+                  Importer une photo
                 </>
               )}
             </label>
@@ -745,30 +745,30 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
       {!readOnly ? (
         <div
-          className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--nurea-border)] bg-[var(--nurea-surface)]/95 pb-[max(0.75rem,env(safe-area-inset-bottom))] pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-3 shadow-[0_-8px_32px_rgba(0,0,0,0.18)] backdrop-blur-md md:hidden"
+          className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--nurea-border)] bg-[var(--nurea-bg)]/98 pb-[max(1rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-3 shadow-[0_-12px_48px_rgba(0,0,0,0.3)] backdrop-blur-lg md:hidden"
           role="toolbar"
           aria-label="Enregistrer la fiche"
         >
-          <div className="mx-auto flex max-w-2xl gap-2">
+          <div className="mx-auto flex max-w-2xl gap-3">
             <Link
               href="/admin"
-              className="btn-nurea flex min-h-12 flex-1 items-center justify-center gap-2 text-[12px] tracking-[0.08em]"
+              className="flex min-h-[52px] flex-1 items-center justify-center gap-2 border border-[var(--nurea-border-hover)] text-[13px] font-medium text-[var(--nurea-text-muted)] transition-all active:scale-[0.97] active:bg-[var(--nurea-surface-hover)]"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden />
-              Annuler
+              Retour
             </Link>
             <button
               type="submit"
               form="admin-perfume-form"
               disabled={saving || (isNew && brands.length === 0)}
-              className="btn-nurea btn-accent flex min-h-12 flex-[1.4] items-center justify-center gap-2 text-[12px] tracking-[0.08em] disabled:opacity-50"
+              className="flex min-h-[52px] flex-[1.6] items-center justify-center gap-2 bg-[var(--nurea-accent)] text-[13px] font-semibold text-white transition-all active:scale-[0.97] disabled:opacity-50"
             >
               {saving ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               ) : (
                 <Save className="h-4 w-4" aria-hidden />
               )}
-              {saving ? "…" : isNew ? "Créer" : "Enregistrer"}
+              {saving ? "Envoi…" : isNew ? "Créer" : "Enregistrer"}
             </button>
           </div>
         </div>
