@@ -247,13 +247,9 @@ function BrandCombobox({
         const newBrand: BrandOpt = {
           id: j.brand.id,
           name: j.brand.name,
-          catalogMode:
-            (j.brand as Record<string, "CURATED" | "COMPLETE">).catalogMode ??
-            "CURATED",
-          status:
-            (j.brand as Record<string, "PUBLISHED" | "DRAFT">).status ??
-            "PUBLISHED",
-          image: (j.brand as Record<string, string | null>).image ?? null,
+          catalogMode: j.brand.catalogMode ?? "CURATED",
+          status: j.brand.status ?? "PUBLISHED",
+          image: j.brand.image ?? null,
         };
         onBrandCreated(newBrand);
         onSelect(newBrand);
