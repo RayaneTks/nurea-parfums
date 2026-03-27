@@ -30,6 +30,17 @@ Ce document fixe les conventions UX/UI appliquees apres rework, pour eviter les 
   - `Supprimer` (hard delete avec confirmation)
 - Plus de wording ambigu (`restaurer`, `suppression douce`, etc.).
 - Vocabulaire metier simplifie pour profils non formes.
+- **Pattern "Dual-Image" (Pattern Pro)** :
+  - Si un parfum possède une image Claire & Sombre, n'afficher qu'une seule vignette.
+  - Utiliser un badge `SunMoon` interactif pour basculer.
+  - Gain de place sur mobile : libere l'espace pour le titre et les actions tout en signalant la richesse du catalogue.
+
+## Méthodologie & Réflexion (Auto-amélioration)
+
+1. **Progressive Disclosure** : Prioriser l'action principale sur mobile. Les détails secondaires (ex: voir la variante d'image) doivent être accessibles via une micro-interaction (Tap/Toggle) plutôt que d'encombrer le layout initial.
+2. **Affordance Tactile** : Chaque zone interactive doit fournir un feedback visuel (`active:scale-95`) immédiat pour compenser l'absence de survol (hover) sur mobile.
+3. **Safe Zones & Notches** : Toujours anticiper l'affichage "standalone" (PWA) sur iOS en utilisant `env(safe-area-inset-top)` et `bottom`.
+4. **Z-Index Strategy** : Les modales d'action doivent systématiquement être des "Bottom Drawers" (ancrées en bas) pour être à portée de pouce (Thumb-zone optimization).
 
 ## Garde-fous qualite
 

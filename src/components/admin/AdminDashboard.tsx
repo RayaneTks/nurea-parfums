@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, Plus } from "lucide-react";
+import { AlertCircle, Plus, SunMoon, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { AdminNav } from "./AdminNav";
 import { DashboardHeader } from "./DashboardHeader";
 import { PerfumeList } from "./PerfumeList";
@@ -43,8 +44,9 @@ function ConfirmDeleteModal({
   onConfirm: (id: any) => void;
 }) {
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="w-full max-w-sm rounded-3xl bg-zinc-900 border border-zinc-800 p-6 shadow-2xl animate-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="w-full sm:max-w-sm rounded-t-[32px] sm:rounded-3xl bg-zinc-900 border-t sm:border border-zinc-800 p-6 sm:p-6 pb-[max(2rem,env(safe-area-inset-bottom))] shadow-2xl animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-300">
+        <div className="mx-auto w-12 h-1.5 rounded-full bg-zinc-800 mb-6 sm:hidden" />
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/10 mb-4">
           <AlertCircle className="h-6 w-6 text-red-500" />
         </div>
@@ -65,6 +67,63 @@ function ConfirmDeleteModal({
           <AdminButton variant="ghost" onClick={onCancel}>
             Annuler
           </AdminButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VisualizerDrawer({
+  perfume,
+  onClose,
+}: {
+  perfume: PerfumeRow;
+  onClose: () => void;
+}) {
+  const [mode, setMode] = useState<"dark" | "light">("dark");
+  const hasLight = !!perfume.imageLight;
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+      <div className="w-full sm:max-w-md rounded-t-[40px] sm:rounded-[32px] bg-zinc-900 border-t sm:border border-zinc-800 p-8 pb-[max(2.5rem,env(safe-area-inset-bottom))] shadow-2xl animate-in slide-in-from-bottom-full duration-500 ease-out">
+        <div className="mx-auto w-12 h-1.5 rounded-full bg-zinc-800 mb-8 sm:hidden" />
+        
+        <div className="relative aspect-[3/4] w-full max-w-[260px] mx-auto rounded-[32px] overflow-hidden bg-zinc-950 shadow-2xl border border-zinc-800">
+          <Image
+            src={mode === "dark" ? perfume.image : (perfume.imageLight || perfume.image)}
+            alt={perfume.name}
+            fill
+            className="object-cover transition-all duration-700 ease-in-out"
+            sizes="300px"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          <div className="absolute bottom-6 left-0 right-0 text-center">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">Mode actuel</p>
+            <p className="text-sm font-bold text-white uppercase tracking-widest">{mode === "dark" ? "Sombre" : "Clair"}</p>
+          </div>
+        </div>
+
+        <div className="mt-10 text-center">
+          <h3 className="text-2xl font-bold text-zinc-100 tracking-tight">{perfume.name}</h3>
+          <p className="text-sm text-zinc-500 mt-1">{perfume.brand.name}</p>
+        </div>
+
+        <div className="mt-8 flex flex-col gap-3">
+          {hasLight && (
+            <button
+              onClick={() => setMode(mode === "dark" ? "light" : "dark")}
+              className="flex h-16 items-center justify-center gap-3 rounded-2xl bg-zinc-100 text-zinc-900 font-bold active:scale-95 transition-all shadow-xl"
+            >
+              <SunMoon className="h-5 w-5" />
+              Basculer le mode (Clair / Sombre)
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="flex h-14 items-center justify-center rounded-2xl bg-zinc-800/50 text-zinc-400 font-semibold active:scale-95 transition-all"
+          >
+            Fermer l'aperçu
+          </button>
         </div>
       </div>
     </div>
@@ -97,6 +156,7 @@ export function AdminDashboard() {
   // Modals
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
   const [brandDeleteTarget, setBrandDeleteTarget] = useState<{ id: string; name: string; count: number } | null>(null);
+  const [previewPerfume, setPreviewPerfume] = useState<PerfumeRow | null>(null);
 
   const hasMutationInFlight = pendingDeleteIds.size > 0 || pendingStatusIds.size > 0 || pendingBrandIds.size > 0;
 
@@ -264,6 +324,7 @@ export function AdminDashboard() {
               onToggleVisibility={toggleVisibility}
               onDelete={(id, name) => setDeleteTarget({ id, name })}
               onGoToBrand={(name) => { setTab("brands"); /* Search will be handled by list internal state or lifted up if needed */ }}
+              onPreview={setPreviewPerfume}
               pendingStatusIds={pendingStatusIds}
               pendingDeleteIds={pendingDeleteIds}
               hasMutationInFlight={hasMutationInFlight}
@@ -281,6 +342,14 @@ export function AdminDashboard() {
           )}
         </div>
       </main>
+
+      {/* Visualizer */}
+      {previewPerfume && (
+        <VisualizerDrawer
+          perfume={previewPerfume}
+          onClose={() => setPreviewPerfume(null)}
+        />
+      )}
 
       {/* Mobile FAB */}
       {canEdit && (

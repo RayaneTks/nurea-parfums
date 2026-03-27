@@ -86,6 +86,11 @@ export const metadata: Metadata = {
     description: DEFAULT_DESCRIPTION,
     images: [ogImage],
   },
+  appleWebApp: {
+    capable: true,
+    title: SITE_NAME,
+    statusBarStyle: "black-translucent",
+  },
 };
 
 interface RootLayoutProps {

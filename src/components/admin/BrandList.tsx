@@ -111,7 +111,7 @@ export function BrandList({
             <div
               key={brand.id}
               className={`
-                group relative flex items-center gap-4 p-4 bg-zinc-900/40 border border-zinc-800/50 rounded-2xl hover:bg-zinc-900/80 hover:border-zinc-700 transition-all duration-300
+                group relative flex items-center gap-4 p-4 bg-zinc-900/40 border border-zinc-800/50 rounded-2xl active:scale-[0.98] active:bg-zinc-900/80 transition-all duration-200
                 ${pendingBrandIds.has(brand.id) ? "opacity-50 pointer-events-none" : ""}
               `}
             >
@@ -121,33 +121,23 @@ export function BrandList({
                 <h4 className="text-[16px] font-bold text-zinc-100 truncate group-hover:text-blue-400 transition-colors">
                   {brand.name}
                 </h4>
-                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">
                   <AdminBadge 
                     label={brand.catalogMode === "COMPLETE" ? "Gamme complète" : "Sélection"}
                     variant={brand.catalogMode === "COMPLETE" ? "warning" : "info"}
                   />
                   <div className="flex items-center gap-1.5 ml-0.5">
                     <StatusDot status={brand.status} />
-                    <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wide">
+                    <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide">
                       {brand.status === "PUBLISHED" ? "Visible" : "Masquée"}
                     </span>
                   </div>
                 </div>
-                {brand.catalogMode === "CURATED" && (
-                  <button
-                    onClick={() => onFilterPerfumes(brand.name)}
-                    className="mt-2 flex items-center text-[12px] font-medium text-zinc-500 hover:text-blue-400 transition-colors"
-                  >
-                    <span className="underline underline-offset-4 decoration-zinc-800 group-hover:decoration-blue-400/30">
-                      {brand._count.perfumes} parfum{brand._count.perfumes > 1 ? "s" : ""} lié{brand._count.perfumes > 1 ? "s" : ""}
-                    </span>
-                  </button>
-                )}
               </div>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <Link href={`/admin/brands/${brand.id}/edit`}>
-                  <AdminButton size="icon" variant="secondary" className="h-10 w-10 rounded-xl">
+                  <AdminButton size="icon" variant="secondary" className="h-11 w-11 rounded-xl shadow-sm">
                     <Pencil className="h-4 w-4" />
                   </AdminButton>
                 </Link>
@@ -157,20 +147,11 @@ export function BrandList({
                     <AdminButton
                       size="icon"
                       variant="secondary"
-                      className="h-10 w-10 rounded-xl"
+                      className="h-11 w-11 rounded-xl shadow-sm"
                       disabled={hasMutationInFlight || pendingBrandIds.has(brand.id)}
                       onClick={() => onToggleVisibility(brand.id, brand.status)}
                     >
                       {brand.status === "PUBLISHED" ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                    </AdminButton>
-                    <AdminButton
-                      size="icon"
-                      variant="danger"
-                      className="h-10 w-10 rounded-xl"
-                      disabled={hasMutationInFlight || pendingBrandIds.has(brand.id)}
-                      onClick={() => onDelete(brand.id, brand.name, brand._count.perfumes)}
-                    >
-                      <Trash2 className="h-4 w-4" />
                     </AdminButton>
                   </>
                 )}

@@ -25,6 +25,7 @@ interface PerfumeListProps {
   canEdit: boolean;
   onToggleVisibility: (id: number, currentStatus: string) => void;
   onDelete: (id: number, name: string) => void;
+  onPreview: (perfume: PerfumeRow) => void;
   pendingStatusIds: Set<number>;
   pendingDeleteIds: Set<number>;
   hasMutationInFlight: boolean;
@@ -36,6 +37,7 @@ export function PerfumeList({
   canEdit,
   onToggleVisibility,
   onDelete,
+  onPreview,
   pendingStatusIds,
   pendingDeleteIds,
   hasMutationInFlight,
@@ -135,35 +137,40 @@ export function PerfumeList({
                 {group.rows.map((row) => (
                   <div
                     key={row.id}
-                    className="group relative flex items-center gap-4 p-3 bg-zinc-900/40 border border-zinc-800/50 rounded-2xl hover:bg-zinc-900/80 hover:border-zinc-700 transition-all duration-300"
+                    className="group relative flex items-center gap-4 p-3.5 bg-zinc-900/40 border border-zinc-800/50 rounded-2xl active:bg-zinc-900/80 transition-all duration-200"
                   >
-                    <PerfumeVisual name={row.name} image={row.image} imageLight={row.imageLight} />
+                    <PerfumeVisual 
+                      name={row.name} 
+                      image={row.image} 
+                      imageLight={row.imageLight} 
+                      onClick={() => onPreview(row)}
+                    />
                     
                     <div className="min-w-0 flex-1">
-                      <h4 className="text-[15px] font-semibold text-zinc-100 truncate group-hover:text-blue-400 transition-colors">
+                      <h4 className="text-[15px] font-bold text-zinc-100 truncate group-hover:text-blue-400 transition-colors">
                         {row.name}
                       </h4>
                       <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
                         <button
                           onClick={() => onGoToBrand(row.brand.name)}
-                          className="text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors underline decoration-zinc-800 underline-offset-4"
+                          className="text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors underline decoration-zinc-800 underline-offset-4 active:opacity-70"
                         >
                           {row.brand.name}
                         </button>
                         <span className="text-zinc-700">·</span>
                         <div className="flex items-center gap-1.5">
                           <StatusDot status={row.status} />
-                          <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wide">
+                          <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide">
                             {row.status === "PUBLISHED" ? "Visible" : "Masqué"}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       <Link href={`/admin/perfumes/${row.id}/edit`}>
-                        <AdminButton size="icon" variant="secondary" className="h-9 w-9 min-h-0 min-w-0 rounded-lg">
-                          <Pencil className="h-3.5 w-3.5" />
+                        <AdminButton size="icon" variant="secondary" className="h-11 w-11 rounded-xl shadow-sm">
+                          <Pencil className="h-4 w-4" />
                         </AdminButton>
                       </Link>
                       
@@ -172,20 +179,11 @@ export function PerfumeList({
                           <AdminButton
                             size="icon"
                             variant="secondary"
-                            className="h-9 w-9 min-h-0 min-w-0 rounded-lg"
+                            className="h-11 w-11 rounded-xl shadow-sm"
                             disabled={hasMutationInFlight || pendingStatusIds.has(row.id)}
                             onClick={() => onToggleVisibility(row.id, row.status)}
                           >
-                            {row.status === "PUBLISHED" ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                          </AdminButton>
-                          <AdminButton
-                            size="icon"
-                            variant="danger"
-                            className="h-9 w-9 min-h-0 min-w-0 rounded-lg"
-                            disabled={hasMutationInFlight || pendingDeleteIds.has(row.id)}
-                            onClick={() => onDelete(row.id, row.name)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            {row.status === "PUBLISHED" ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                           </AdminButton>
                         </>
                       )}
