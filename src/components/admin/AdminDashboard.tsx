@@ -231,6 +231,20 @@ async function readJsonSafe<T>(res: Response): Promise<T | null> {
   }
 }
 
+function normalizeBrandRow(row: Partial<BrandRow>, fallback?: BrandRow): BrandRow {
+  return {
+    id: row.id ?? fallback?.id ?? "",
+    name: row.name ?? fallback?.name ?? "",
+    slug: row.slug ?? fallback?.slug ?? "",
+    catalogMode: (row.catalogMode ?? fallback?.catalogMode ?? "CURATED") as BrandRow["catalogMode"],
+    status: (row.status ?? fallback?.status ?? "DRAFT") as BrandRow["status"],
+    image: row.image ?? fallback?.image ?? null,
+    _count: {
+      perfumes: row._count?.perfumes ?? fallback?._count?.perfumes ?? 0,
+    },
+  };
+}
+
 export function AdminDashboard() {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [brands, setBrands] = useState<BrandRow[]>([]);
@@ -269,7 +283,7 @@ export function AdminDashboard() {
       const b = await fetch("/api/admin/brands", { credentials: "include", cache: "no-store" });
       if (b.ok) {
         const bj = (await readJsonSafe<{ brands: BrandRow[] }>(b)) ?? { brands: [] };
-        setBrands(bj.brands ?? []);
+      setBrands((bj.brands ?? []).map((row) => normalizeBrandRow(row)));
         setBrandImageDrafts(
           Object.fromEntries((bj.brands ?? []).map((row) => [row.id, row.image ?? ""])),
         );
@@ -422,7 +436,7 @@ export function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, catalogMode: newBrandMode, image: image || null }),
       });
-      const j = await readJsonSafe<{ error?: string; brand?: BrandRow }>(r);
+      const j = await readJsonSafe<{ error?: string; brand?: Partial<BrandRow> }>(r);
       if (!r.ok) {
         setActionMsg({ type: "error", text: j?.error ?? "Création refusée." });
         return;
@@ -432,7 +446,7 @@ export function AdminDashboard() {
       setNewBrandImage("");
       setShowBrandCreateForm(false);
       if (j?.brand) {
-        const created = j.brand;
+        const created = normalizeBrandRow(j.brand);
         setBrands((prev) => [...prev, created].sort((a, z) => a.name.localeCompare(z.name, "fr")));
         setBrandImageDrafts((prev) => ({ ...prev, [created.id]: created.image ?? "" }));
         setBrandNameDrafts((prev) => ({ ...prev, [created.id]: created.name }));
@@ -462,10 +476,16 @@ export function AdminDashboard() {
       setActionMsg({ type: "error", text: j?.error ?? "Mise à jour impossible." });
       return;
     }
-    const j = await readJsonSafe<{ brand?: BrandRow }>(r);
-    if (j?.brand) {
-      const updated = j.brand;
-      setBrands((prev) => prev.map((b) => (b.id === id ? updated : b)));
+    const j = await readJsonSafe<{ brand?: Partial<BrandRow> }>(r);
+    const brandPayload = j?.brand;
+    if (brandPayload) {
+      setBrands((prev) =>
+        prev.map((b) => {
+          if (b.id !== id) return b;
+          return normalizeBrandRow(brandPayload, b);
+        }),
+      );
+      const updated = normalizeBrandRow(brandPayload, brands.find((b) => b.id === id));
       setPerfumes((prev) =>
         prev.map((p) => {
           if (p.brand.id !== id) return p;
@@ -858,7 +878,7 @@ export function AdminDashboard() {
                               onClick={() => { setTab("perfumes"); setSearch(b.name); setPerfumeFilter("all"); }}
                               className="inline-flex min-h-[28px] items-center text-xs text-[#777] underline decoration-dotted underline-offset-2 hover:text-[#444] dark:text-[#999] dark:hover:text-[#eee]"
                             >
-                              {b._count.perfumes} parfum{b._count.perfumes !== 1 ? "s" : ""}
+                              {b._count?.perfumes ?? 0} parfum{(b._count?.perfumes ?? 0) !== 1 ? "s" : ""}
                             </button>
                           )}
                         </div>
@@ -888,7 +908,13 @@ export function AdminDashboard() {
                           <button
                             type="button"
                             disabled={pendingBrandIds.has(b.id)}
-                            onClick={() => setBrandDeleteTarget({ id: b.id, name: b.name, count: b._count.perfumes })}
+                            onClick={() =>
+                              setBrandDeleteTarget({
+                                id: b.id,
+                                name: b.name,
+                                count: b._count?.perfumes ?? 0,
+                              })
+                            }
                             className="inline-flex min-h-[44px] items-center justify-center gap-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-500/10 sm:h-11 sm:w-11"
                             aria-label={`Supprimer ${b.name}`}
                           >

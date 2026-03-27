@@ -51,7 +51,7 @@ export function AdminLoginForm() {
   }
 
   return (
-    <div className="w-full max-w-sm">
+    <div className="w-full max-w-sm border border-black/[0.08] bg-white/90 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.06)] backdrop-blur dark:border-white/[0.08] dark:bg-[#141414]/90 dark:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
       <Link
         href="/"
         className="mb-4 inline-flex min-h-[44px] items-center gap-1.5 pl-0 pr-3 text-[13px] font-medium text-blue-500 transition-colors hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
@@ -60,11 +60,11 @@ export function AdminLoginForm() {
         Retour au site
       </Link>
 
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-[#1a1a1a] dark:text-white">
+      <div className="mb-6 border-b border-black/[0.06] pb-4 dark:border-white/[0.06]">
+        <h1 className="text-[22px] font-semibold tracking-tight text-[#1a1a1a] dark:text-white">
           Connexion
         </h1>
-        <p className="mt-1 text-[13px] text-[#999]">Espace administration</p>
+        <p className="mt-1 text-[13px] text-[#888]">Espace administration</p>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4">

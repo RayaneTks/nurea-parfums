@@ -90,6 +90,15 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
     const brand = await prisma.brand.update({
       where: { id },
       data,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        catalogMode: true,
+        status: true,
+        image: true,
+        _count: { select: { perfumes: true } },
+      },
     });
     if (data.catalogMode === "COMPLETE" || data.status === "DRAFT") {
       await prisma.perfume.updateMany({
