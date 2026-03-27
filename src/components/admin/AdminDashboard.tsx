@@ -97,6 +97,16 @@ function ConfirmDeleteModal({
 const selectCls =
   "block w-full appearance-none rounded-md border border-black/10 bg-white px-2 py-1.5 pr-8 text-[13px] text-[#1a1a1a] focus-visible:border-blue-500 focus-visible:outline-none dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]";
 
+async function readJsonSafe<T>(res: Response): Promise<T | null> {
+  const contentType = res.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) return null;
+  try {
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
 export function AdminDashboard() {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [brands, setBrands] = useState<BrandRow[]>([]);
@@ -112,28 +122,27 @@ export function AdminDashboard() {
   const [newBrand, setNewBrand] = useState("");
   const [brandMsg, setBrandMsg] = useState<string | null>(null);
   const [brandImageDrafts, setBrandImageDrafts] = useState<Record<string, string>>({});
+  const hasMutationInFlight = pendingDeleteIds.size > 0 || pendingStatusIds.size > 0;
 
   const refresh = useCallback(async () => {
     setLoadErr(null);
     try {
-      const [s, b, p] = await Promise.all([
-        fetch("/api/admin/session", { credentials: "include", cache: "no-store" }),
-        fetch("/api/admin/brands", { credentials: "include", cache: "no-store" }),
-        fetch("/api/admin/perfumes", { credentials: "include", cache: "no-store" }),
-      ]);
+      const s = await fetch("/api/admin/session", { credentials: "include", cache: "no-store" });
       if (!s.ok) throw new Error("Session invalide.");
       const sj = (await s.json()) as { user?: SessionUser };
       setUser(sj.user ?? null);
 
+      const b = await fetch("/api/admin/brands", { credentials: "include", cache: "no-store" });
       if (b.ok) {
-        const bj = (await b.json()) as { brands: BrandRow[] };
+        const bj = (await readJsonSafe<{ brands: BrandRow[] }>(b)) ?? { brands: [] };
         setBrands(bj.brands ?? []);
         setBrandImageDrafts(
           Object.fromEntries((bj.brands ?? []).map((row) => [row.id, row.image ?? ""])),
         );
       }
+      const p = await fetch("/api/admin/perfumes", { credentials: "include", cache: "no-store" });
       if (p.ok) {
-        const pj = (await p.json()) as { perfumes: PerfumeRow[] };
+        const pj = (await readJsonSafe<{ perfumes: PerfumeRow[] }>(p)) ?? { perfumes: [] };
         setPerfumes(pj.perfumes ?? []);
       }
     } catch (e) {
@@ -164,6 +173,7 @@ export function AdminDashboard() {
   const canEdit = user?.role !== "VIEWER";
 
   async function toggleVisibility(id: number, currentStatus: string) {
+    if (hasMutationInFlight) return;
     const next = currentStatus === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
     setPendingStatusIds((prev) => new Set(prev).add(id));
     setPerfumes((prev) =>
@@ -176,8 +186,8 @@ export function AdminDashboard() {
       body: JSON.stringify({ status: next }),
     });
     if (!r.ok) {
-      const j = (await r.json()) as { error?: string };
-      alert(j.error ?? "Erreur");
+      const j = await readJsonSafe<{ error?: string }>(r);
+      alert(j?.error ?? "Erreur");
       setPerfumes((prev) =>
         prev.map((p) => (p.id === id ? { ...p, status: currentStatus } : p)),
       );
@@ -188,7 +198,6 @@ export function AdminDashboard() {
       });
       return;
     }
-    await refresh();
     setPendingStatusIds((prev) => {
       const copy = new Set(prev);
       copy.delete(id);
@@ -197,14 +206,16 @@ export function AdminDashboard() {
   }
 
   async function hardDelete(id: number) {
+    if (hasMutationInFlight) return;
     setPendingDeleteIds((prev) => new Set(prev).add(id));
+    const deletedPerfume = perfumes.find((p) => p.id === id);
     const r = await fetch(`/api/admin/perfumes/${id}`, {
       method: "DELETE",
       credentials: "include",
     });
     if (!r.ok) {
-      const j = (await r.json()) as { error?: string };
-      alert(j.error ?? "Erreur");
+      const j = await readJsonSafe<{ error?: string }>(r);
+      alert(j?.error ?? "Erreur");
       setPendingDeleteIds((prev) => {
         const copy = new Set(prev);
         copy.delete(id);
@@ -213,8 +224,16 @@ export function AdminDashboard() {
       return;
     }
     setPerfumes((prev) => prev.filter((p) => p.id !== id));
+    if (deletedPerfume) {
+      setBrands((prev) =>
+        prev.map((b) =>
+          b.name === deletedPerfume.brand.name
+            ? { ...b, _count: { perfumes: Math.max(0, b._count.perfumes - 1) } }
+            : b,
+        ),
+      );
+    }
     setDeleteTarget(null);
-    await refresh();
     setPendingDeleteIds((prev) => {
       const copy = new Set(prev);
       copy.delete(id);
@@ -234,14 +253,22 @@ export function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, catalogMode: "CURATED" }),
       });
-      const j = (await r.json()) as { error?: string };
+      const j = await readJsonSafe<{ error?: string; brand?: BrandRow }>(r);
       if (!r.ok) {
-        setBrandMsg(j.error ?? "Création refusée.");
+        setBrandMsg(j?.error ?? "Création refusée.");
         return;
       }
       setNewBrand("");
       setBrandMsg("Marque créée.");
-      refresh();
+      if (j?.brand) {
+        const created = j.brand;
+        setBrands((prev) =>
+          [...prev, created].sort((a, z) => a.name.localeCompare(z.name, "fr")),
+        );
+        setBrandImageDrafts((prev) => ({ ...prev, [created.id]: created.image ?? "" }));
+      } else {
+        refresh();
+      }
     } catch {
       setBrandMsg("Erreur réseau. Réessayez.");
     }
@@ -258,11 +285,18 @@ export function AdminDashboard() {
       body: JSON.stringify(patch),
     });
     if (!r.ok) {
-      const j = (await r.json()) as { error?: string };
-      alert(j.error ?? "Mise à jour impossible");
+      const j = await readJsonSafe<{ error?: string }>(r);
+      alert(j?.error ?? "Mise à jour impossible");
       return;
     }
-    await refresh();
+    const j = await readJsonSafe<{ brand?: BrandRow }>(r);
+    if (j?.brand) {
+      const updated = j.brand;
+      setBrands((prev) => prev.map((b) => (b.id === id ? updated : b)));
+      setBrandImageDrafts((prev) => ({ ...prev, [id]: updated.image ?? "" }));
+    } else {
+      await refresh();
+    }
   }
 
   const filterPills: { id: PerfumeFilter; label: string; count: number }[] = [
@@ -397,7 +431,7 @@ export function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => toggleVisibility(row.id, row.status)}
-                              disabled={pendingStatusIds.has(row.id)}
+                              disabled={hasMutationInFlight || pendingStatusIds.has(row.id)}
                               className="flex h-9 w-9 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:hover:bg-white/[0.06] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                               aria-label={row.status === "PUBLISHED" ? `Masquer ${row.name}` : `Rendre visible ${row.name}`}
                             >
@@ -410,7 +444,7 @@ export function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => setDeleteTarget({ id: row.id, name: row.name })}
-                              disabled={pendingDeleteIds.has(row.id)}
+                              disabled={hasMutationInFlight || pendingDeleteIds.has(row.id)}
                               className="flex h-9 w-9 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                               aria-label={`Supprimer ${row.name}`}
                             >

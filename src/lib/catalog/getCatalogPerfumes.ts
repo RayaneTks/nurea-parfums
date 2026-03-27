@@ -1,6 +1,6 @@
 import type { Category, Perfume } from "@/lib/data";
 import { unstable_noStore as noStore } from "next/cache";
-import { categories } from "@/lib/data";
+import { categories, mockPerfumes } from "@/lib/data";
 import { prisma } from "@/lib/db/prisma";
 import {
   prismaCatalogInCooldown,
@@ -43,12 +43,18 @@ function rowToPerfume(row: {
  */
 export async function getCatalogPerfumes(): Promise<Perfume[]> {
   noStore();
+  const fromMock = (): Perfume[] =>
+    mockPerfumes.map((p) => ({
+      ...p,
+      brandSlug: p.brandSlug ?? p.brand.toLowerCase().trim().replace(/\s+/g, "-"),
+    }));
+
   if (!process.env.DATABASE_URL?.trim()) {
-    return [];
+    return fromMock();
   }
 
   if (prismaCatalogInCooldown()) {
-    return [];
+    return fromMock();
   }
 
   try {
@@ -83,6 +89,6 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
   } catch (e) {
     registerPrismaCatalogFailure();
     console.error("[getCatalogPerfumes] database unavailable:", e);
-    return [];
+    return fromMock();
   }
 }

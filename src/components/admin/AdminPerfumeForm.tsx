@@ -32,6 +32,16 @@ const inputCls =
 
 const labelCls = "block text-[13px] font-medium text-[#555] dark:text-[#aaa]";
 
+async function readJsonSafe<T>(res: Response): Promise<T | null> {
+  const contentType = res.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) return null;
+  try {
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
 async function uploadFile(file: File): Promise<string> {
   const prepared = await convertToWebp(file);
   const sign = await fetch("/api/admin/storage/sign", {
@@ -40,12 +50,12 @@ async function uploadFile(file: File): Promise<string> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ filename: prepared.name }),
   });
-  const j = (await sign.json()) as {
+  const j = (await readJsonSafe<{
     error?: string;
     signedUrl?: string;
     token?: string;
     publicUrl?: string;
-  };
+  }>(sign)) ?? {};
   if (!sign.ok) throw new Error(j.error ?? "Signature refusée (Supabase configuré ?)");
 
   const headers: Record<string, string> = {
@@ -226,9 +236,9 @@ function BrandCombobox({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
       });
-      const j = (await r.json()) as { error?: string; brand?: BrandOpt };
-      if (!r.ok) throw new Error(j.error ?? "Création échouée");
-      if (j.brand) {
+      const j = await readJsonSafe<{ error?: string; brand?: BrandOpt }>(r);
+      if (!r.ok) throw new Error(j?.error ?? "Création échouée");
+      if (j?.brand) {
         const newBrand: BrandOpt = {
           id: j.brand.id,
           name: j.brand.name,
@@ -362,7 +372,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
       cache: "no-store",
     });
     if (!r.ok) return;
-    const j = (await r.json()) as { brands: BrandOpt[] };
+      const j = (await readJsonSafe<{ brands: BrandOpt[] }>(r)) ?? { brands: [] };
     setBrands(j.brands ?? []);
   }, []);
 
@@ -392,9 +402,9 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           credentials: "include",
           cache: "no-store",
         });
-        const j = (await r.json()) as { error?: string; perfume?: PerfumePayload };
-        if (!r.ok) throw new Error(j.error ?? "Chargement impossible");
-        if (cancelled || !j.perfume) return;
+        const j = await readJsonSafe<{ error?: string; perfume?: PerfumePayload }>(r);
+        if (!r.ok) throw new Error(j?.error ?? "Chargement impossible");
+        if (cancelled || !j?.perfume) return;
         const p = j.perfume;
         setBrandId(p.brandId);
         setName(p.name);
@@ -431,8 +441,8 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         credentials: "include",
       });
       if (!r.ok) {
-        const j = (await r.json()) as { error?: string };
-        throw new Error(j.error ?? "Suppression refusée");
+        const j = await readJsonSafe<{ error?: string }>(r);
+        throw new Error(j?.error ?? "Suppression refusée");
       }
       router.push("/admin");
       router.refresh();
@@ -475,8 +485,8 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const j = (await r.json()) as { error?: string; perfume?: { id: number } };
-      if (!r.ok) throw new Error(j.error ?? "Enregistrement refusé");
+      const j = await readJsonSafe<{ error?: string; perfume?: { id: number } }>(r);
+      if (!r.ok) throw new Error(j?.error ?? "Enregistrement refusé");
       router.push("/admin");
       router.refresh();
     } catch (err) {

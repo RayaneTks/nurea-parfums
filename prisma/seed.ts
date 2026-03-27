@@ -5,6 +5,12 @@ import { brandSlug, perfumeSlug } from "../src/lib/slugify";
 const prisma = new PrismaClient();
 
 async function main() {
+  const completeEntryByBrand = new Map(
+    mockPerfumes
+      .filter((p) => p.category === "Gammes Complètes")
+      .map((p) => [p.brand, p] as const),
+  );
+
   const brandNames = [...new Set(mockPerfumes.map((p) => p.brand))].sort((a, b) =>
     a.localeCompare(b, "fr")
   );
@@ -13,23 +19,39 @@ async function main() {
 
   for (const name of brandNames) {
     const slug = brandSlug(name);
-    const hasCompleteEntry = mockPerfumes.some(
-      (p) => p.brand === name && p.category === "Gammes Complètes",
-    );
+    const completeEntry = completeEntryByBrand.get(name);
+    const hasCompleteEntry = Boolean(completeEntry);
     const catalogMode = hasCompleteEntry ? "COMPLETE" : "CURATED";
     const b = await prisma.brand.upsert({
       where: { name },
-      create: { name, slug, catalogMode },
-      update: { slug, catalogMode },
+      create: {
+        name,
+        slug,
+        catalogMode,
+        image: completeEntry?.image ?? null,
+      },
+      update: {
+        slug,
+        catalogMode,
+        image: completeEntry?.image ?? null,
+      },
     });
     brandIdByName.set(name, b.id);
   }
 
+  // Une marque "Gamme complète" ne doit pas exposer de parfums individuels.
+  await prisma.perfume.deleteMany({
+    where: {
+      brand: { catalogMode: "COMPLETE" },
+    },
+  });
+
+  let seededPerfumes = 0;
   for (const p of mockPerfumes) {
+    if (p.category === "Gammes Complètes") continue;
     const brandId = brandIdByName.get(p.brand);
     if (!brandId) throw new Error(`Marque manquante: ${p.brand}`);
-    const isRange = p.category === "Gammes Complètes";
-    const displayName = isRange ? p.brand : p.name;
+    const displayName = p.name;
 
     await prisma.perfume.upsert({
       where: { id: p.id },
@@ -40,7 +62,7 @@ async function main() {
         slug: perfumeSlug(p.id, displayName, p.brand),
         image: p.image,
         imageLight: p.imageLight ?? null,
-        status: isRange ? "DRAFT" : "PUBLISHED",
+        status: "PUBLISHED",
       },
       update: {
         brandId,
@@ -48,12 +70,16 @@ async function main() {
         slug: perfumeSlug(p.id, displayName, p.brand),
         image: p.image,
         imageLight: p.imageLight ?? null,
-        status: isRange ? "DRAFT" : "PUBLISHED",
+        status: "PUBLISHED",
       },
     });
+    seededPerfumes += 1;
   }
 
-  console.log(`Seed OK — ${mockPerfumes.length} parfums, ${brandNames.length} marques.`);
+  const completeCount = [...completeEntryByBrand.keys()].length;
+  console.log(
+    `Seed OK — ${seededPerfumes} parfums, ${brandNames.length} marques (${completeCount} en gamme complète).`,
+  );
 }
 
 main()
