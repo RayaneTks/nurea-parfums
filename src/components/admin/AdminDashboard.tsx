@@ -944,12 +944,14 @@ export function AdminDashboard() {
                         <p className="truncate text-[15px] font-medium text-[#1a1a1a] dark:text-[#e5e5e5]">
                           {b.name}
                         </p>
-                        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-[#8a8a8a] dark:text-[#9f9f9f]">
-                          <BrandModeBadge mode={b.catalogMode} />
-                          <span className="flex items-center gap-1">
-                            <StatusDot status={b.status} />
-                            {b.status === "PUBLISHED" ? "Visible" : "Masquée"}
-                          </span>
+                        <div className="mt-1 space-y-1">
+                          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-[#8a8a8a] dark:text-[#9f9f9f]">
+                            <BrandModeBadge mode={b.catalogMode} />
+                            <span className="flex items-center gap-1">
+                              <StatusDot status={b.status} />
+                              {b.status === "PUBLISHED" ? "Visible" : "Masquée"}
+                            </span>
+                          </p>
                           {b.catalogMode === "CURATED" ? (
                             <button
                               type="button"
@@ -958,15 +960,15 @@ export function AdminDashboard() {
                                 setSearch(b.name);
                                 setPerfumeFilter("all");
                               }}
-                              className="underline decoration-dotted underline-offset-2 hover:text-[#666] dark:hover:text-[#ddd]"
+                              className="inline-flex min-h-[28px] items-center text-[13px] text-[#6f6f6f] underline decoration-dotted underline-offset-2 hover:text-[#444] dark:text-[#a5a5a5] dark:hover:text-[#e0e0e0]"
                             >
                               {b._count.perfumes} parfum{b._count.perfumes !== 1 ? "s" : ""}
                             </button>
                           ) : null}
-                        </p>
+                        </div>
                       </div>
                       {canEdit && (
-                        <div className="flex w-full shrink-0 justify-end gap-1.5 sm:w-auto">
+                        <div className="flex w-full shrink-0 justify-start gap-1.5 pt-1 sm:w-auto sm:justify-end sm:pt-0">
                           <button
                             type="button"
                             disabled={pendingBrandIds.has(b.id)}
