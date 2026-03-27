@@ -559,19 +559,21 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           </div>
         </section>
 
-        <div className="pt-8 border-t border-zinc-900 space-y-4">
-          <AdminButton
-            type="submit"
-            className="w-full"
-            size="lg"
-            isLoading={saving}
-            disabled={readOnly || !brandId || !name || !image}
-          >
-            {isNew ? "Créer le parfum" : "Enregistrer les modifications"}
-          </AdminButton>
+        <div className="sticky bottom-6 z-50 pt-4 mt-8">
+          <div className="p-2 bg-zinc-950/80 backdrop-blur-xl border border-zinc-800 rounded-3xl shadow-2xl">
+            <AdminButton
+              type="submit"
+              className="w-full"
+              size="lg"
+              isLoading={saving}
+              disabled={readOnly || !brandId || !name || !image}
+            >
+              {isNew ? "Créer le parfum" : "Enregistrer les modifications"}
+            </AdminButton>
+          </div>
           
           {!isNew && !readOnly && (
-            <div className="pt-4 flex flex-col items-center">
+            <div className="pt-6 flex flex-col items-center">
               {!deleteConfirm ? (
                 <button
                   type="button"

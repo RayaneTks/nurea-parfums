@@ -74,24 +74,50 @@ function ConfirmDeleteModal({
 }
 
 function VisualizerDrawer({
-  perfume,
+  item,
   onClose,
 }: {
-  perfume: PerfumeRow;
+  item: PerfumeRow | BrandRow;
   onClose: () => void;
 }) {
   const [mode, setMode] = useState<"dark" | "light">("dark");
-  const hasLight = !!perfume.imageLight;
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchOffset, setTouchOffset] = useState(0);
+
+  const isPerfume = "brand" in item;
+  const imageLight = isPerfume ? (item as PerfumeRow).imageLight : null;
+  const hasLight = !!imageLight;
+  const mainImage = item.image || "/placeholder.svg";
+
+  const onTouchStart = (e: React.TouchEvent) => setTouchStart(e.targetTouches[0].clientY);
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    const current = e.targetTouches[0].clientY;
+    const diff = current - touchStart;
+    if (diff > 0) setTouchOffset(diff);
+  };
+  const onTouchEnd = () => {
+    if (touchOffset > 100) onClose();
+    setTouchStart(null);
+    setTouchOffset(0);
+  };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="w-full sm:max-w-md rounded-t-[40px] sm:rounded-[32px] bg-zinc-900 border-t sm:border border-zinc-800 p-8 pb-[max(2.5rem,env(safe-area-inset-bottom))] shadow-2xl animate-in slide-in-from-bottom-full duration-500 ease-out">
+    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose}>
+      <div 
+        className="w-full sm:max-w-md rounded-t-[40px] sm:rounded-[32px] bg-zinc-900 border-t sm:border border-zinc-800 p-8 pb-[max(2.5rem,env(safe-area-inset-bottom))] shadow-2xl transition-transform duration-200 ease-out"
+        style={{ transform: `translateY(${touchOffset}px)` }}
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         <div className="mx-auto w-12 h-1.5 rounded-full bg-zinc-800 mb-8 sm:hidden" />
         
         <div className="relative aspect-[3/4] w-full max-w-[260px] mx-auto rounded-[32px] overflow-hidden bg-zinc-950 shadow-2xl border border-zinc-800">
           <Image
-            src={mode === "dark" ? perfume.image : (perfume.imageLight || perfume.image)}
-            alt={perfume.name}
+            src={mode === "dark" ? mainImage : (imageLight || mainImage)}
+            alt={item.name}
             fill
             className="object-cover transition-all duration-700 ease-in-out"
             sizes="300px"
@@ -99,13 +125,13 @@ function VisualizerDrawer({
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           <div className="absolute bottom-6 left-0 right-0 text-center">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">Mode actuel</p>
-            <p className="text-sm font-bold text-white uppercase tracking-widest">{mode === "dark" ? "Sombre" : "Clair"}</p>
+            <p className="text-sm font-bold text-white uppercase tracking-widest">{mode === "dark" ? "Sombre (Dark)" : "Clair (Light)"}</p>
           </div>
         </div>
 
         <div className="mt-10 text-center">
-          <h3 className="text-2xl font-bold text-zinc-100 tracking-tight">{perfume.name}</h3>
-          <p className="text-sm text-zinc-500 mt-1">{perfume.brand.name}</p>
+          <h3 className="text-2xl font-bold text-zinc-100 tracking-tight">{item.name}</h3>
+          <p className="text-sm text-zinc-500 mt-1">{isPerfume ? (item as PerfumeRow).brand.name : "Marque"}</p>
         </div>
 
         <div className="mt-8 flex flex-col gap-3">
@@ -156,7 +182,7 @@ export function AdminDashboard() {
   // Modals
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
   const [brandDeleteTarget, setBrandDeleteTarget] = useState<{ id: string; name: string; count: number } | null>(null);
-  const [previewPerfume, setPreviewPerfume] = useState<PerfumeRow | null>(null);
+  const [previewItem, setPreviewItem] = useState<PerfumeRow | BrandRow | null>(null);
 
   const hasMutationInFlight = pendingDeleteIds.size > 0 || pendingStatusIds.size > 0 || pendingBrandIds.size > 0;
 
@@ -324,7 +350,7 @@ export function AdminDashboard() {
               onToggleVisibility={toggleVisibility}
               onDelete={(id, name) => setDeleteTarget({ id, name })}
               onGoToBrand={(name) => { setTab("brands"); /* Search will be handled by list internal state or lifted up if needed */ }}
-              onPreview={setPreviewPerfume}
+              onPreview={setPreviewItem}
               pendingStatusIds={pendingStatusIds}
               pendingDeleteIds={pendingDeleteIds}
               hasMutationInFlight={hasMutationInFlight}
@@ -336,6 +362,7 @@ export function AdminDashboard() {
               onToggleVisibility={toggleBrandVisibility}
               onDelete={(id, name, count) => setBrandDeleteTarget({ id, name, count })}
               onFilterPerfumes={(name) => { setTab("perfumes"); /* Lift up search if cross-tab search is needed */ }}
+              onPreview={setPreviewItem}
               pendingBrandIds={pendingBrandIds}
               hasMutationInFlight={hasMutationInFlight}
             />
@@ -344,10 +371,10 @@ export function AdminDashboard() {
       </main>
 
       {/* Visualizer */}
-      {previewPerfume && (
+      {previewItem && (
         <VisualizerDrawer
-          perfume={previewPerfume}
-          onClose={() => setPreviewPerfume(null)}
+          item={previewItem}
+          onClose={() => setPreviewItem(null)}
         />
       )}
 

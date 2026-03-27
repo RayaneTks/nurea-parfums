@@ -111,11 +111,16 @@ export function BrandList({
             <div
               key={brand.id}
               className={`
-                group relative flex items-center gap-4 p-4 bg-zinc-900/40 border border-zinc-800/50 rounded-2xl active:scale-[0.98] active:bg-zinc-900/80 transition-all duration-200
+                group relative flex items-center gap-4 p-4 bg-zinc-900/40 border border-zinc-800/50 rounded-2xl active:bg-zinc-900/80 transition-all duration-200
                 ${pendingBrandIds.has(brand.id) ? "opacity-50 pointer-events-none" : ""}
               `}
             >
-              <BrandVisual name={brand.name} image={brand.image} size={56} />
+              <div 
+                className="relative shrink-0 h-[80px] w-[60px] rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-xl cursor-pointer active:scale-95 transition-transform"
+                onClick={() => onPreview(brand)}
+              >
+                <BrandVisual name={brand.name} image={brand.image} size={80} />
+              </div>
               
               <div className="min-w-0 flex-1">
                 <h4 className="text-[16px] font-bold text-zinc-100 truncate group-hover:text-blue-400 transition-colors">
