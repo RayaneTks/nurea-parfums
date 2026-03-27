@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Loader2, Trash2, Upload, X, AlertCircle } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowLeft, Loader2, Plus, Trash2, Upload, X, AlertCircle } from "lucide-react";
 import { AdminButton } from "./ui/AdminButton";
 import { AdminInput } from "./ui/AdminInput";
 import { AdminBadge } from "./ui/AdminBadge";
@@ -13,20 +13,20 @@ import { uploadFile } from "@/lib/admin/image-utils";
 type BrandPayload = {
   id: string;
   name: string;
-  slug: string;
   catalogMode: "CURATED" | "COMPLETE";
   status: "PUBLISHED" | "DRAFT";
   image: string | null;
+  imageLight: string | null;
 };
 
 const MODE_OPTIONS = [
-  { value: "CURATED", label: "Sélection", variant: "info" as const },
-  { value: "COMPLETE", label: "Gamme complète", variant: "warning" as const },
+  { value: "CURATED", label: "Sélection", subtitle: "Quelques parfums choisis." },
+  { value: "COMPLETE", label: "Gamme complète", subtitle: "Tous les parfums de la marque." },
 ] as const;
 
 const STATUS_OPTIONS = [
   { value: "PUBLISHED", label: "Visible", variant: "success" as const },
-  { value: "DRAFT", label: "Masquée", variant: "neutral" as const },
+  { value: "DRAFT", label: "Masquée", variant: "warning" as const },
 ] as const;
 
 async function readJsonSafe<T>(res: Response): Promise<T | null> {
@@ -40,19 +40,27 @@ async function readJsonSafe<T>(res: Response): Promise<T | null> {
 }
 
 function ImageUploadField({
+  label,
+  subtitle,
   value,
-  readOnly,
   onChange,
+  required,
+  readOnly,
   onError,
+  allowClear = true,
 }: {
+  label: string;
+  subtitle?: string;
   value: string;
+  onChange: (url: string) => void;
+  required?: boolean;
   readOnly: boolean;
-  onChange: (value: string) => void;
-  onError: (message: string) => void;
+  onError: (msg: string) => void;
+  allowClear?: boolean;
 }) {
   const [uploading, setUploading] = useState(false);
-  const preview = value.trim();
-  const isRemote = /^https?:\/\//i.test(preview);
+  const preview = value?.trim();
+  const isRemote = preview && /^https?:\/\//i.test(preview);
 
   async function handleUpload(file: File | null) {
     if (!file || readOnly) return;
@@ -60,29 +68,30 @@ function ImageUploadField({
     try {
       const url = await uploadFile(file);
       onChange(url);
-    } catch (error) {
-      onError(error instanceof Error ? error.message : "Upload échoué");
+    } catch (e) {
+      onError(e instanceof Error ? e.message : "Upload échoué");
     } finally {
       setUploading(false);
     }
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div>
-        <span className="block text-[14px] font-bold text-zinc-200">Image de marque</span>
-        <p className="mt-1 text-[12px] text-zinc-500">
-          Obligatoire pour une gamme complète. Format WebP recommandé.
-        </p>
+        <span className="block text-[14px] font-bold text-zinc-200">{label}</span>
+        {subtitle && (
+          <p className="mt-1 text-[12px] text-zinc-500">{subtitle}</p>
+        )}
       </div>
 
       <div className="grid gap-4">
         <AdminInput
-          value={value}
+          value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           disabled={readOnly}
-          placeholder="/branding/logos/... ou https://..."
-          onClear={!readOnly && value.trim().length > 0 ? () => onChange("") : undefined}
+          required={required}
+          placeholder="/branding/... ou https://..."
+          onClear={!readOnly && value?.trim() ? () => onChange("") : undefined}
         />
         
         <label className="group relative">
@@ -100,19 +109,15 @@ function ImageUploadField({
             isLoading={uploading}
             leftIcon={Upload}
           >
-            {uploading ? "Envoi..." : "Importer un logo / visuel"}
+            {uploading ? "Envoi..." : "Importer un fichier"}
           </AdminButton>
         </label>
       </div>
 
       {preview && (
         <div className="relative aspect-square w-32 overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl group">
-          {isRemote ? (
-            <Image src={preview} alt="Aperçu" fill className="object-contain p-2" sizes="128px" />
-          ) : (
-            <Image src={preview} alt="Aperçu" width={128} height={128} className="h-full w-full object-contain p-2" />
-          )}
-          {!readOnly && (
+          <Image src={preview} alt="Aperçu" fill className="object-contain p-2" sizes="128px" />
+          {allowClear && !readOnly && (
             <button
               type="button"
               onClick={() => onChange("")}
@@ -134,15 +139,17 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const [readOnly, setReadOnly] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [readOnly, setReadOnly] = useState(false);
 
   const [name, setName] = useState("");
   const [catalogMode, setCatalogMode] = useState<"CURATED" | "COMPLETE">("CURATED");
   const [status, setStatus] = useState<"PUBLISHED" | "DRAFT">("PUBLISHED");
   const [image, setImage] = useState("");
+  const [imageLight, setImageLight] = useState("");
+
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetch("/api/admin/session", { credentials: "include", cache: "no-store" })
@@ -155,31 +162,29 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
     (async () => {
       setLoading(true);
       try {
-        const r = await fetch("/api/admin/brands", { credentials: "include", cache: "no-store" });
-        const j = await readJsonSafe<{ error?: string; brands?: BrandPayload[] }>(r);
+        const r = await fetch(`/api/admin/brands/${brandId}`, { credentials: "include", cache: "no-store" });
+        const j = await readJsonSafe<{ error?: string; brand?: BrandPayload }>(r);
         if (!r.ok) throw new Error(j?.error ?? "Chargement impossible");
-        const found = (j?.brands ?? []).find(b => b.id === brandId);
-        if (found) {
-          setName(found.name);
-          setCatalogMode(found.catalogMode);
-          setStatus(found.status);
-          setImage(found.image ?? "");
+        if (j?.brand) {
+          setName(j.brand.name);
+          setCatalogMode(j.brand.catalogMode);
+          setStatus(j.brand.status);
+          setImage(j.brand.image ?? "");
+          setImageLight(j.brand.imageLight ?? "");
         }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Erreur");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Erreur");
       } finally {
         setLoading(false);
       }
     })();
-  }, [brandId, isNew]);
+  }, [isNew, brandId]);
 
   useEffect(() => {
     if (error && errorRef.current) errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [error]);
 
-  const completeNeedsImage = catalogMode === "COMPLETE" && !image.trim();
-
-  async function onDelete() {
+  async function handleDelete() {
     if (!brandId || readOnly) return;
     setDeleting(true);
     setError(null);
@@ -188,8 +193,10 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
         method: "DELETE",
         credentials: "include",
       });
-      const j = await readJsonSafe<{ error?: string }>(r);
-      if (!r.ok) throw new Error(j?.error ?? "Suppression refusée");
+      if (!r.ok) {
+        const j = await readJsonSafe<{ error?: string }>(r);
+        throw new Error(j?.error ?? "Suppression refusée");
+      }
       router.push("/admin/catalogue?tab=brands");
       router.refresh();
     } catch (err) {
@@ -199,18 +206,25 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
     }
   }
 
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    if (readOnly) return;
-    if (completeNeedsImage) {
-      setError("Une gamme complète doit obligatoirement avoir un visuel.");
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (readOnly || !name) return;
+    if (catalogMode === "COMPLETE" && !image) {
+      setError("Une image est obligatoire pour le mode gamme complète.");
       return;
     }
-
+    
     setSaving(true);
     setError(null);
     try {
-      const payload = { name, catalogMode, status, image: image.trim() || null };
+      const payload = {
+        name,
+        catalogMode,
+        status,
+        image: image.trim() || null,
+        imageLight: imageLight.trim() || null,
+      };
+
       const endpoint = isNew ? "/api/admin/brands" : `/api/admin/brands/${brandId}`;
       const method = isNew ? "POST" : "PATCH";
 
@@ -241,7 +255,7 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
   return (
     <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       <div className="flex flex-col gap-4">
-        <Link href="/admin" className="group w-fit">
+        <Link href="/admin/catalogue" className="group w-fit">
           <AdminButton variant="ghost" size="sm" leftIcon={ArrowLeft} className="text-zinc-500 group-hover:text-zinc-300">
             Retour au catalogue
           </AdminButton>
@@ -255,13 +269,11 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
               Gérez l&apos;identité et le mode d&apos;affichage de la marque.
             </p>
           </div>
-          {!isNew && (
-            <AdminBadge label={`#${brandId.slice(0, 8)}`} />
-          )}
+          {!isNew && <AdminBadge label={`ID: ${brandId.slice(0,8)}`} />}
         </div>
       </div>
 
-      <form id="brand-form" onSubmit={onSubmit} className="space-y-10">
+      <form onSubmit={onSubmit} className="space-y-10">
         {error && (
           <div ref={errorRef} className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl animate-in shake duration-500">
             <AlertCircle className="h-5 w-5 text-red-500 shrink-0" />
@@ -272,18 +284,72 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
         <section className="space-y-6">
           <div className="flex items-center gap-3">
             <div className="h-6 w-1 bg-blue-600 rounded-full" />
-            <h2 className="text-lg font-bold text-zinc-100">Identité de marque</h2>
+            <h2 className="text-lg font-bold text-zinc-100">Configuration</h2>
           </div>
           
-          <div className="space-y-6 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl shadow-sm">
+          <div className="space-y-6 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
             <AdminInput
               label="Nom de la marque"
               value={name}
               onChange={e => setName(e.target.value)}
               disabled={readOnly}
               required
-              placeholder="Ex: Christian Dior"
+              placeholder="Ex: Yves Saint Laurent"
               onClear={!readOnly && name.length > 0 ? () => setName("") : undefined}
+            />
+
+            <div className="space-y-3">
+              <label className="text-[14px] font-bold text-zinc-200">Mode catalogue</label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {MODE_OPTIONS.map((opt) => {
+                  const active = catalogMode === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      disabled={readOnly}
+                      onClick={() => setCatalogMode(opt.value)}
+                      className={`
+                        flex flex-col text-left p-4 rounded-2xl border transition-all duration-300 active:scale-[0.97]
+                        ${active 
+                          ? "bg-zinc-100 border-zinc-100 shadow-xl" 
+                          : "bg-zinc-900/50 border-zinc-800 hover:border-zinc-700"}
+                      `}
+                    >
+                      <span className={`text-sm font-bold ${active ? "text-zinc-900" : "text-zinc-100"}`}>{opt.label}</span>
+                      <span className={`text-[11px] mt-1 ${active ? "text-zinc-500" : "text-zinc-500"}`}>{opt.subtitle}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="h-6 w-1 bg-blue-600 rounded-full" />
+            <h2 className="text-lg font-bold text-zinc-100">Visuels de marque</h2>
+          </div>
+
+          <div className="grid gap-8 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
+            <ImageUploadField
+              label="Logo principal (Dark)"
+              subtitle="Obligatoire pour une gamme complète. Format WebP/SVG."
+              value={image}
+              onChange={setImage}
+              readOnly={readOnly}
+              onError={setError}
+              allowClear={true}
+            />
+            <div className="h-px bg-zinc-800/50" />
+            <ImageUploadField
+              label="Variante mode clair (Light)"
+              subtitle="Optionnelle. Utilisée pour le thème clair."
+              value={imageLight}
+              onChange={setImageLight}
+              readOnly={readOnly}
+              onError={setError}
             />
           </div>
         </section>
@@ -291,76 +357,33 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
         <section className="space-y-6">
           <div className="flex items-center gap-3">
             <div className="h-6 w-1 bg-blue-600 rounded-full" />
-            <h2 className="text-lg font-bold text-zinc-100">Mode catalogue</h2>
+            <h2 className="text-lg font-bold text-zinc-100">Visibilité</h2>
           </div>
 
-          <div className="bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl shadow-sm">
-            <div className="grid grid-cols-2 gap-3">
-              {MODE_OPTIONS.map((opt) => {
-                const active = catalogMode === opt.value;
+          <div className="bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
+            <div className="flex gap-3">
+              {STATUS_OPTIONS.map((opt) => {
+                const active = status === opt.value;
                 return (
                   <button
                     key={opt.value}
                     type="button"
                     disabled={readOnly}
-                    onClick={() => setCatalogMode(opt.value)}
+                    onClick={() => setStatus(opt.value)}
                     className={`
-                      relative flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all duration-300 active:scale-[0.97] select-none touch-manipulation
+                      relative flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all duration-300 active:scale-[0.97]
                       ${active 
-                        ? "bg-zinc-100 border-zinc-100 shadow-xl shadow-zinc-100/10" 
-                        : "bg-zinc-900/50 border-zinc-800 text-zinc-500 [@media(hover:hover)]:hover:border-zinc-700"}
+                        ? "bg-zinc-100 border-zinc-100 shadow-xl" 
+                        : "bg-zinc-900/50 border-zinc-800 text-zinc-500"}
                     `}
                   >
                     <AdminBadge label={opt.label} variant={active ? opt.variant : "neutral"} dot={active} />
                     <span className={`text-[11px] font-bold uppercase tracking-widest ${active ? "text-zinc-900" : "text-zinc-600"}`}>
-                      {opt.value === "COMPLETE" ? "Full range" : "Selection"}
+                      {opt.value === "PUBLISHED" ? "Public" : "Interne"}
                     </span>
                   </button>
                 );
               })}
-            </div>
-            <p className="mt-4 text-[12px] text-zinc-500 leading-relaxed text-center px-4">
-              {catalogMode === "COMPLETE" 
-                ? "Le mode « Gamme complète » affiche une carte unique pour toute la marque. Les parfums individuels sont masqués."
-                : "Le mode « Sélection » permet d'afficher les parfums de la marque individuellement dans le catalogue."}
-            </p>
-          </div>
-        </section>
-
-        <section className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="h-6 w-1 bg-blue-600 rounded-full" />
-            <h2 className="text-lg font-bold text-zinc-100">Visuel & Visibilité</h2>
-          </div>
-
-          <div className="space-y-8 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl shadow-sm">
-            <ImageUploadField value={image} readOnly={readOnly} onChange={setImage} onError={setError} />
-            
-            <div className="h-px bg-zinc-800/50" />
-
-            <div className="space-y-3">
-              <label className="text-[14px] font-bold text-zinc-200">Statut de publication</label>
-              <div className="flex gap-3">
-                {STATUS_OPTIONS.map((opt) => {
-                  const active = status === opt.value;
-                  return (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      disabled={readOnly}
-                      onClick={() => setStatus(opt.value as any)}
-                      className={`
-                        relative flex-1 flex items-center justify-center gap-2 min-h-[48px] rounded-2xl border transition-all duration-300 active:scale-[0.97] select-none touch-manipulation
-                        ${active 
-                          ? "bg-zinc-100 border-zinc-100 text-zinc-900 font-bold shadow-lg shadow-zinc-100/10" 
-                          : "bg-zinc-900/50 border-zinc-800 text-zinc-500 [@media(hover:hover)]:hover:border-zinc-700"}
-                      `}
-                    >
-                      <AdminBadge label={opt.label} variant={active ? opt.variant : "neutral"} dot={active} />
-                    </button>
-                  );
-                })}
-              </div>
             </div>
           </div>
         </section>
@@ -390,14 +413,12 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
                 </button>
               ) : (
                 <div className="flex flex-col items-center gap-3 p-4 bg-red-500/5 border border-red-500/10 rounded-2xl w-full animate-in zoom-in-95">
-                  <p className="text-xs text-red-400 font-bold uppercase tracking-wider text-center">
-                    Supprimer la marque et tous ses parfums ?
-                  </p>
+                  <p className="text-xs text-red-400 font-bold uppercase tracking-wider">Supprimer la marque et ses parfums ?</p>
                   <div className="flex gap-2 w-full">
                     <AdminButton variant="ghost" className="flex-1" onClick={() => setDeleteConfirm(false)} disabled={deleting}>
                       Annuler
                     </AdminButton>
-                    <AdminButton variant="danger" className="flex-1" onClick={onDelete} isLoading={deleting}>
+                    <AdminButton variant="danger" className="flex-1" onClick={handleDelete} isLoading={deleting}>
                       Confirmer
                     </AdminButton>
                   </div>

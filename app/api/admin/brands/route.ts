@@ -24,6 +24,7 @@ export async function GET(request: Request) {
         catalogMode: true,
         status: true,
         image: true,
+        imageLight: true,
         _count: { select: { perfumes: true } },
       },
     });
@@ -44,12 +45,13 @@ export async function POST(request: Request) {
     const denied = requireEditor(ctx);
     if (denied) return denied;
 
-    let body: { name?: string; catalogMode?: string; image?: string | null; status?: string };
+    let body: { name?: string; catalogMode?: string; image?: string | null; imageLight?: string | null; status?: string };
     try {
       body = (await request.json()) as {
         name?: string;
         catalogMode?: string;
         image?: string | null;
+        imageLight?: string | null;
         status?: string;
       };
     } catch {
@@ -65,6 +67,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Mode catalogue invalide." }, { status: 400 });
     }
     const image = body.image?.trim() || null;
+    const imageLight = body.imageLight?.trim() || null;
     const statusRaw = (body.status ?? "PUBLISHED").trim();
     if (!visibilityStatuses.has(statusRaw)) {
       return NextResponse.json({ error: "Statut de visibilité invalide." }, { status: 400 });
@@ -79,6 +82,7 @@ export async function POST(request: Request) {
       catalogMode: BrandCatalogMode;
       status: BrandVisibilityStatus;
       image?: string | null;
+      imageLight?: string | null;
     } = {
       name,
       slug: brandSlug(name),
@@ -87,6 +91,7 @@ export async function POST(request: Request) {
     };
 
     if (image) data.image = image;
+    if (imageLight) data.imageLight = imageLight;
 
     const brand = await prisma.brand.create({ data });
     if (brand.catalogMode === "COMPLETE" || brand.status === "DRAFT") {

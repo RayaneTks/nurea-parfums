@@ -13,6 +13,35 @@ const visibilityStatuses = new Set<string>(Object.values(BrandVisibilityStatus))
 
 type RouteCtx = { params: Promise<{ id: string }> };
 
+export async function GET(request: Request, { params }: RouteCtx) {
+  try {
+    const ctx = await requireAdmin(request);
+    if (ctx instanceof NextResponse) return ctx;
+
+    const id = (await params).id?.trim();
+    if (!id) return NextResponse.json({ error: "ID manquant" }, { status: 400 });
+
+    const brand = await prisma.brand.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        catalogMode: true,
+        status: true,
+        image: true,
+        imageLight: true,
+      }
+    });
+
+    if (!brand) return NextResponse.json({ error: "Marque introuvable" }, { status: 404 });
+    return NextResponse.json({ brand });
+  } catch (error) {
+    console.error("[api/admin/brands/:id][GET]", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}
+
 export async function PATCH(request: Request, { params }: RouteCtx) {
   const ctx = await requireAdmin(request);
   if (ctx instanceof NextResponse) return ctx;
@@ -24,12 +53,13 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
     return NextResponse.json({ error: "Identifiant manquant." }, { status: 400 });
   }
 
-  let body: { name?: string; catalogMode?: string; image?: string | null; status?: string };
+  let body: { name?: string; catalogMode?: string; image?: string | null; imageLight?: string | null; status?: string };
   try {
     body = (await request.json()) as {
       name?: string;
       catalogMode?: string;
       image?: string | null;
+      imageLight?: string | null;
       status?: string;
     };
   } catch {
@@ -42,6 +72,7 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
     catalogMode?: BrandCatalogMode;
     status?: BrandVisibilityStatus;
     image?: string | null;
+    imageLight?: string | null;
   } = {};
   if (body.name !== undefined) {
     const name = body.name.trim();
@@ -68,6 +99,10 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
   if (body.image !== undefined) {
     data.image = body.image?.trim() || null;
   }
+  if (body.imageLight !== undefined) {
+    data.imageLight = body.imageLight?.trim() || null;
+  }
+
   if (data.catalogMode === "COMPLETE" && !data.image) {
     const existing = await prisma.brand.findUnique({
       where: { id },
@@ -97,6 +132,7 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
         catalogMode: true,
         status: true,
         image: true,
+        imageLight: true,
         _count: { select: { perfumes: true } },
       },
     });
