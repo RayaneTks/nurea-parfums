@@ -39,7 +39,11 @@ Le site est en **français** (`lang="fr"` dans `app/layout.tsx`).
 
 - `Gamme complète` = entrée de marque/gamme, pas une fiche parfum individuelle.
 - En mode `Gamme complète`, la marque doit rester cohérente (nom de marque, catégorie `Gammes Complètes`).
+- Dans l’admin, les entrées `Gammes Complètes` se pilotent dans l’onglet `Marques` (pas dans `Parfums`).
 - La suppression admin est une suppression réelle avec confirmation.
 - Logique image:
   - `image` = image principale
   - `imageLight` = variante claire optionnelle
+- Tiroir filtres catalogue:
+  - Le bouton `Appliquer` affiche le nombre de résultats correspondant aux filtres cochés.
+  - Les filtres marque/type restent non superposés avec les onglets de catégorie (`Tout voir`, `Gamme complète`, etc.).

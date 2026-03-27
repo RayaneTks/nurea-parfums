@@ -426,6 +426,19 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
     setBrowseOpen(false);
   }, []);
 
+  const getDrawerResultCount = useCallback(
+    (brands: Set<string>, types: Set<string>) =>
+      catalogPerfumes.filter((perfume) => {
+        const slug = resolveBrandSlug(perfume);
+        const matchBrands = brands.size === 0 || brands.has(slug);
+        const pos = positioningBySlug.get(slug) ?? "UNSET";
+        const q = positioningToQuery(pos);
+        const matchTypes = types.size === 0 || (q ? types.has(q) : false);
+        return matchBrands && matchTypes;
+      }).length,
+    [catalogPerfumes, positioningBySlug],
+  );
+
   return (
     <div
       id="main-content"
@@ -440,6 +453,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
         mounted={mounted}
         selectedBrandSlugs={selectedBrandSlugs}
         selectedTypes={selectedTypes}
+        getResultCount={getDrawerResultCount}
         onApply={handleFilterApply}
         onReset={handleResetPanelFilters}
       />
@@ -448,7 +462,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
       <Separator variant="copper" withMonogram />
 
       {showFeatured && (
-        <div className="hidden md:block">
+        <div>
           <FeaturedSection perfumes={featuredPerfumes} />
           <Separator variant="bordeaux" />
         </div>
@@ -747,13 +761,6 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
           </div>
         )}
       </main>
-
-      {showFeatured && (
-        <div className="md:hidden">
-          <Separator variant="bordeaux" className="pt-0" />
-          <FeaturedSection perfumes={featuredPerfumes} />
-        </div>
-      )}
 
       <Footer />
     </div>

@@ -145,8 +145,13 @@ export function AdminDashboard() {
     refresh();
   }, [refresh]);
 
+  const perfumesOnly = useMemo(
+    () => perfumes.filter((p) => p.category !== "Gammes Complètes"),
+    [perfumes],
+  );
+
   const filteredPerfumes = useMemo(() => {
-    let rows = perfumes;
+    let rows = perfumesOnly;
     if (perfumeFilter !== "all") {
       rows = rows.filter((r) => r.status === perfumeFilter);
     }
@@ -158,7 +163,7 @@ export function AdminDashboard() {
         row.brand.name.toLowerCase().includes(q) ||
         row.category.toLowerCase().includes(q),
     );
-  }, [perfumes, search, perfumeFilter]);
+  }, [perfumesOnly, search, perfumeFilter]);
 
   const canEdit = user?.role !== "VIEWER";
 
@@ -197,20 +202,24 @@ export function AdminDashboard() {
     setBrandMsg(null);
     const name = newBrand.trim();
     if (name.length < 2) return;
-    const r = await fetch("/api/admin/brands", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
-    });
-    const j = (await r.json()) as { error?: string };
-    if (!r.ok) {
-      setBrandMsg(j.error ?? "Refusé");
-      return;
+    try {
+      const r = await fetch("/api/admin/brands", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, assortment: "CURATED" }),
+      });
+      const j = (await r.json()) as { error?: string };
+      if (!r.ok) {
+        setBrandMsg(j.error ?? "Création refusée.");
+        return;
+      }
+      setNewBrand("");
+      setBrandMsg("Marque créée.");
+      refresh();
+    } catch {
+      setBrandMsg("Erreur réseau. Réessayez.");
     }
-    setNewBrand("");
-    setBrandMsg("Marque creee.");
-    refresh();
   }
 
   async function patchBrand(
@@ -232,9 +241,9 @@ export function AdminDashboard() {
   }
 
   const filterPills: { id: PerfumeFilter; label: string; count: number }[] = [
-    { id: "all", label: "Tous", count: perfumes.length },
-    { id: "PUBLISHED", label: "Visibles", count: perfumes.filter((p) => p.status === "PUBLISHED").length },
-    { id: "DRAFT", label: "Masques", count: perfumes.filter((p) => p.status === "DRAFT").length },
+    { id: "all", label: "Tous", count: perfumesOnly.length },
+    { id: "PUBLISHED", label: "Visibles", count: perfumesOnly.filter((p) => p.status === "PUBLISHED").length },
+    { id: "DRAFT", label: "Masqués", count: perfumesOnly.filter((p) => p.status === "DRAFT").length },
   ];
 
   return (
@@ -266,7 +275,7 @@ export function AdminDashboard() {
             >
               {label}
               <span className="ml-1.5 text-[11px] opacity-60">
-                {id === "perfumes" ? perfumes.length : brands.length}
+                {id === "perfumes" ? perfumesOnly.length : brands.length}
               </span>
             </button>
           ))}
@@ -318,7 +327,7 @@ export function AdminDashboard() {
               {filteredPerfumes.length === 0 ? (
                 <div className="py-16 text-center">
                   <p className="text-[14px] text-[#999]">
-                    {perfumes.length === 0 ? "Aucun parfum. Créez-en un." : "Aucun résultat."}
+                    {perfumesOnly.length === 0 ? "Aucun parfum. Créez-en un." : "Aucun résultat."}
                   </p>
                 </div>
               ) : (

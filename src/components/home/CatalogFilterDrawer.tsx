@@ -13,6 +13,7 @@ type Props = {
   mounted: boolean;
   selectedBrandSlugs: Set<string>;
   selectedTypes: Set<string>;
+  getResultCount: (brandSlugs: Set<string>, types: Set<string>) => number;
   onApply: (brandSlugs: Set<string>, types: Set<string>) => void;
   onReset: () => void;
 };
@@ -50,6 +51,7 @@ export function CatalogFilterDrawer({
   mounted,
   selectedBrandSlugs,
   selectedTypes,
+  getResultCount,
   onApply,
   onReset,
 }: Props) {
@@ -57,6 +59,10 @@ export function CatalogFilterDrawer({
   const [filter, setFilter] = useState("");
   const [draftBrands, setDraftBrands] = useState<Set<string>>(new Set());
   const [draftTypes, setDraftTypes] = useState<Set<string>>(new Set());
+  const draftResultCount = useMemo(
+    () => getResultCount(draftBrands, draftTypes),
+    [draftBrands, draftTypes, getResultCount],
+  );
 
   useEffect(() => {
     if (open) {
@@ -106,8 +112,6 @@ export function CatalogFilterDrawer({
   }, [sorted, filter]);
 
   const groups = useMemo(() => groupByLetter(filtered), [filtered]);
-
-  const totalDraftSelections = draftBrands.size + draftTypes.size;
 
   function handleApply() {
     onApply(draftBrands, draftTypes);
@@ -315,8 +319,8 @@ export function CatalogFilterDrawer({
             className="min-h-[44px] bg-[var(--nurea-accent)] px-6 py-2.5 text-[14px] font-medium tracking-wide text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--nurea-bg)]"
           >
             Appliquer
-            {totalDraftSelections > 0 && (
-              <span className="ml-1.5">({totalDraftSelections})</span>
+            {draftResultCount >= 0 && (
+              <span className="ml-1.5">({draftResultCount})</span>
             )}
           </button>
         </div>
