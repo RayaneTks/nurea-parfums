@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { BrandCatalogMode, Prisma } from "@prisma/client";
+import { BrandCatalogMode, BrandVisibilityStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
@@ -8,6 +8,7 @@ import { brandSlug } from "@/lib/slugify";
 export const dynamic = "force-dynamic";
 
 const catalogModes = new Set<string>(Object.values(BrandCatalogMode));
+const visibilityStatuses = new Set<string>(Object.values(BrandVisibilityStatus));
 
 export async function GET(request: Request) {
   try {
@@ -21,6 +22,7 @@ export async function GET(request: Request) {
         name: true,
         slug: true,
         catalogMode: true,
+        status: true,
         image: true,
         _count: { select: { perfumes: true } },
       },
@@ -42,9 +44,14 @@ export async function POST(request: Request) {
     const denied = requireEditor(ctx);
     if (denied) return denied;
 
-    let body: { name?: string; catalogMode?: string; image?: string | null };
+    let body: { name?: string; catalogMode?: string; image?: string | null; status?: string };
     try {
-      body = (await request.json()) as { name?: string; catalogMode?: string; image?: string | null };
+      body = (await request.json()) as {
+        name?: string;
+        catalogMode?: string;
+        image?: string | null;
+        status?: string;
+      };
     } catch {
       return NextResponse.json({ error: "JSON invalide." }, { status: 400 });
     }
@@ -58,6 +65,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Mode catalogue invalide." }, { status: 400 });
     }
     const image = body.image?.trim() || null;
+    const statusRaw = (body.status ?? "PUBLISHED").trim();
+    if (!visibilityStatuses.has(statusRaw)) {
+      return NextResponse.json({ error: "Statut de visibilité invalide." }, { status: 400 });
+    }
     if (modeRaw === "COMPLETE" && !image) {
       return NextResponse.json({ error: "Image obligatoire en gamme complète." }, { status: 400 });
     }
@@ -66,17 +77,19 @@ export async function POST(request: Request) {
       name: string;
       slug: string;
       catalogMode: BrandCatalogMode;
+      status: BrandVisibilityStatus;
       image?: string | null;
     } = {
       name,
       slug: brandSlug(name),
       catalogMode: modeRaw as BrandCatalogMode,
+      status: statusRaw as BrandVisibilityStatus,
     };
 
     if (image) data.image = image;
 
     const brand = await prisma.brand.create({ data });
-    if (brand.catalogMode === "COMPLETE") {
+    if (brand.catalogMode === "COMPLETE" || brand.status === "DRAFT") {
       await prisma.perfume.updateMany({
         where: { brandId: brand.id },
         data: { status: "DRAFT" },

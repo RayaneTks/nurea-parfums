@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum PublicationStatus {
@@ -15,6 +16,11 @@ enum PublicationStatus {
 enum BrandCatalogMode {
   CURATED
   COMPLETE
+}
+
+enum BrandVisibilityStatus {
+  PUBLISHED
+  DRAFT
 }
 
 enum AdminRole {
@@ -28,6 +34,7 @@ model Brand {
   name        String           @unique
   slug        String           @unique
   catalogMode BrandCatalogMode @default(CURATED)
+  status      BrandVisibilityStatus @default(PUBLISHED)
   image       String?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt

@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     const perfumes = await prisma.perfume.findMany({
       where,
       include: {
-        brand: { select: { id: true, name: true, image: true, catalogMode: true } },
+        brand: { select: { id: true, name: true, image: true, catalogMode: true, status: true } },
       },
       orderBy: { id: "asc" },
     });
@@ -53,6 +53,7 @@ export async function POST(request: Request) {
       image?: string;
       imageLight?: string | null;
       status?: PublicationStatus;
+      allowCompleteOverride?: boolean;
     };
     try {
       body = await request.json();
@@ -88,21 +89,25 @@ export async function POST(request: Request) {
     if (!brand) {
       return NextResponse.json({ error: "Marque introuvable." }, { status: 404 });
     }
-    if (brand.catalogMode === "COMPLETE") {
+    if (brand.catalogMode === "COMPLETE" && !body.allowCompleteOverride) {
       return NextResponse.json(
         {
           error:
-            "Cette marque est en gamme complète. Passez-la en mode sélection pour créer un parfum.",
+            "Cette marque est en gamme complète. Confirmez la création pour ajouter ce parfum en mode masqué.",
+          requiresConfirmation: true,
         },
-        { status: 400 },
+        { status: 409 },
       );
     }
 
     const maxRow = await prisma.perfume.aggregate({ _max: { id: true } });
     const nextId = (maxRow._max.id ?? 0) + 1;
     const slug = perfumeSlug(nextId, name, brand.name);
-    const status =
+    let status =
       body.status && Object.values(PublicationStatus).includes(body.status) ? body.status : "DRAFT";
+    if (brand.catalogMode === "COMPLETE" || brand.status === "DRAFT") {
+      status = "DRAFT";
+    }
 
     const perfume = await prisma.perfume.create({
       data: {
@@ -122,7 +127,15 @@ export async function POST(request: Request) {
     revalidatePath("/");
     revalidatePath("/marque");
     await writeAudit(ctx.sub, "perfume.create", "Perfume", String(perfume.id), { name });
-    return NextResponse.json({ perfume });
+    return NextResponse.json({
+      perfume,
+      warning:
+        brand.catalogMode === "COMPLETE"
+          ? "Parfum créé en mode masqué car la marque est en gamme complète."
+          : brand.status === "DRAFT"
+            ? "Parfum créé en mode masqué car la marque est masquée."
+            : null,
+    });
   } catch (error) {
     console.error("[api/admin/perfumes][POST]", error);
     return NextResponse.json(

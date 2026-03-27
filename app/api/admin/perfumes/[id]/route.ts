@@ -88,20 +88,28 @@ export async function PUT(request: Request, { params }: RouteCtx) {
   if (!brand) {
     return NextResponse.json({ error: "Marque introuvable." }, { status: 404 });
   }
-  if (brand.catalogMode === "COMPLETE") {
-    return NextResponse.json(
-      {
-        error:
-          "Cette marque est en gamme complète. Passez-la en mode sélection pour modifier un parfum individuel.",
-      },
-      { status: 400 },
-    );
-  }
-
   const status =
     body.status !== undefined && isPublicationStatus(body.status)
       ? body.status
       : existing.status;
+  if (status === "PUBLISHED" && brand.catalogMode === "COMPLETE") {
+    return NextResponse.json(
+      {
+        error:
+          "Impossible de rendre visible ce parfum: sa marque est en gamme complète.",
+      },
+      { status: 400 },
+    );
+  }
+  if (status === "PUBLISHED" && brand.status === "DRAFT") {
+    return NextResponse.json(
+      {
+        error:
+          "Impossible de rendre visible ce parfum: sa marque est masquée.",
+      },
+      { status: 400 },
+    );
+  }
 
   const slug = perfumeSlug(id, name, brand.name);
 
@@ -154,6 +162,25 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
   }
 
     if (body.status && isPublicationStatus(body.status)) {
+      const perfumeWithBrand = await prisma.perfume.findUnique({
+        where: { id },
+        include: { brand: { select: { catalogMode: true, status: true } } },
+      });
+      if (!perfumeWithBrand) {
+        return NextResponse.json({ error: "Parfum introuvable." }, { status: 404 });
+      }
+      if (body.status === "PUBLISHED" && perfumeWithBrand.brand.catalogMode === "COMPLETE") {
+        return NextResponse.json(
+          { error: "Impossible de rendre visible ce parfum: sa marque est en gamme complète." },
+          { status: 400 },
+        );
+      }
+      if (body.status === "PUBLISHED" && perfumeWithBrand.brand.status === "DRAFT") {
+        return NextResponse.json(
+          { error: "Impossible de rendre visible ce parfum: sa marque est masquée." },
+          { status: 400 },
+        );
+      }
       const perfume = await prisma.perfume.update({
         where: { id },
         data: { status: body.status },

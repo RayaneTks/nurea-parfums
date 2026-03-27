@@ -12,6 +12,7 @@
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "dotenv -e .env.local -- prisma db push",
+    "db:sync": "dotenv -e .env.local -- prisma db push --skip-generate",
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
     "db:seed": "dotenv -e .env.local -- prisma db seed",
     "admin:create-user": "dotenv -e .env.local -- tsx scripts/create-admin.ts",

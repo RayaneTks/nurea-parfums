@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { BrandCatalogMode, Prisma } from "@prisma/client";
+import { BrandCatalogMode, BrandVisibilityStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
@@ -9,6 +9,7 @@ import { brandSlug } from "@/lib/slugify";
 export const dynamic = "force-dynamic";
 
 const catalogModes = new Set<string>(Object.values(BrandCatalogMode));
+const visibilityStatuses = new Set<string>(Object.values(BrandVisibilityStatus));
 
 type RouteCtx = { params: Promise<{ id: string }> };
 
@@ -23,14 +24,25 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
     return NextResponse.json({ error: "Identifiant manquant." }, { status: 400 });
   }
 
-  let body: { name?: string; catalogMode?: string; image?: string | null };
+  let body: { name?: string; catalogMode?: string; image?: string | null; status?: string };
   try {
-    body = (await request.json()) as { name?: string; catalogMode?: string; image?: string | null };
+    body = (await request.json()) as {
+      name?: string;
+      catalogMode?: string;
+      image?: string | null;
+      status?: string;
+    };
   } catch {
     return NextResponse.json({ error: "JSON invalide." }, { status: 400 });
   }
 
-  const data: { name?: string; slug?: string; catalogMode?: BrandCatalogMode; image?: string | null } = {};
+  const data: {
+    name?: string;
+    slug?: string;
+    catalogMode?: BrandCatalogMode;
+    status?: BrandVisibilityStatus;
+    image?: string | null;
+  } = {};
   if (body.name !== undefined) {
     const name = body.name.trim();
     if (name.length < 2 || name.length > 120) {
@@ -45,6 +57,13 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
       return NextResponse.json({ error: "Mode catalogue invalide." }, { status: 400 });
     }
     data.catalogMode = mode as BrandCatalogMode;
+  }
+  if (body.status !== undefined) {
+    const status = body.status.trim();
+    if (!visibilityStatuses.has(status)) {
+      return NextResponse.json({ error: "Statut de visibilité invalide." }, { status: 400 });
+    }
+    data.status = status as BrandVisibilityStatus;
   }
   if (body.image !== undefined) {
     data.image = body.image?.trim() || null;
@@ -72,7 +91,7 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
       where: { id },
       data,
     });
-    if (data.catalogMode === "COMPLETE") {
+    if (data.catalogMode === "COMPLETE" || data.status === "DRAFT") {
       await prisma.perfume.updateMany({
         where: { brandId: id },
         data: { status: "DRAFT" },

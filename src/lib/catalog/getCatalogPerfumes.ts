@@ -59,14 +59,14 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
 
   try {
     const perfumes = await prisma.perfume.findMany({
-      where: { status: "PUBLISHED", brand: { catalogMode: "CURATED" } },
+      where: { status: "PUBLISHED", brand: { catalogMode: "CURATED", status: "PUBLISHED" } },
       include: {
         brand: { select: { name: true, slug: true, catalogMode: true } },
       },
       orderBy: { id: "asc" },
     });
     const rangeBrands = await prisma.brand.findMany({
-      where: { catalogMode: "COMPLETE" },
+      where: { catalogMode: "COMPLETE", status: "PUBLISHED" },
       select: { id: true, name: true, slug: true, image: true },
       orderBy: { name: "asc" },
     });

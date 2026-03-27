@@ -109,12 +109,15 @@ Recherche « hors catalogue » : voir `findExternalPerfumeHint` et les fichiers 
 ## Décisions récentes (Mars 2026)
 
 - **Schéma DB simplifié (reset propre)** :
-  - `Brand`: `name`, `slug`, `catalogMode (CURATED|COMPLETE)`, `image?`
+  - `Brand`: `name`, `slug`, `catalogMode (CURATED|COMPLETE)`, `status (PUBLISHED|DRAFT)`, `image?`
   - `Perfume`: `id` numérique, `brandId`, `name`, `slug`, `image`, `imageLight?`, `status (PUBLISHED|DRAFT)`
   - `AdminUser` (username/passwordHash/role), `AuditLog`
 - **Règle métier principale** :
   - si une marque passe en `COMPLETE`, ses parfums individuels passent en `DRAFT`
+  - si une marque passe en `DRAFT`, ses parfums individuels passent en `DRAFT`
   - le catalogue affiche la marque COMPLETE comme une carte “Gamme complète”
+  - un parfum rattaché à une marque `COMPLETE` ne peut jamais être publié
+  - création parfum sur marque `COMPLETE`: possible uniquement après confirmation explicite, puis forçage en `DRAFT`
 - **Suppression admin** : hard delete (suppression réelle)
 - **Images** :
   - `image` obligatoire (fallback dark+light)
@@ -128,7 +131,9 @@ Recherche « hors catalogue » : voir `findExternalPerfumeHint` et les fichiers 
 ## Admin UX (référence stable)
 
 - Onglets admin `Parfums` et `Marques` suivent la même logique de liste actionnable: lecture rapide, actions explicites, feedback immédiat.
-- L'onglet `Marques` expose: recherche, filtres en bulles, tri, compteur live des résultats, et édition inline (`Modifier`).
+- L'onglet `Marques` expose: recherche, filtres en bulles (`Tous`, `Gammes complètes`, `Sélections`, `Masquées`), compteur live et édition inline (`Modifier`).
+- Les retours mutation admin doivent être affichés en bulles de feedback en surimpression (toast), pas uniquement en bloc inline.
+- Depuis `Marques`, le libellé `X parfums` (uniquement pour `Sélections`) peut pré-filtrer l'onglet `Parfums` sur la marque ciblée.
 - Chaque ligne admin doit rester mobile-first, aérée et utile: mini visuels, badge statut/mode, actions à portée du pouce.
 - Les actions destructives exigent une confirmation claire avant exécution.
 - Toute mutation admin doit afficher un message de retour (succès/erreur) sans recharger inutilement toute la page.

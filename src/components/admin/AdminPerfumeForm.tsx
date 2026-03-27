@@ -10,6 +10,7 @@ type BrandOpt = {
   id: string;
   name: string;
   catalogMode: "CURATED" | "COMPLETE";
+  status: "PUBLISHED" | "DRAFT";
   image: string | null;
 };
 type PerfumePayload = {
@@ -99,6 +100,7 @@ function ImageUploadField({
   required,
   readOnly,
   onError,
+  allowClear = true,
 }: {
   label: string;
   subtitle?: string;
@@ -107,6 +109,7 @@ function ImageUploadField({
   required?: boolean;
   readOnly: boolean;
   onError: (msg: string) => void;
+  allowClear?: boolean;
 }) {
   const [uploading, setUploading] = useState(false);
   const preview = value.trim();
@@ -168,14 +171,16 @@ function ImageUploadField({
           ) : (
             <Image src={preview} alt="Apercu" width={360} height={540} className="h-full w-full object-contain" />
           )}
-          <button
-            type="button"
-            onClick={() => onChange("")}
-            className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
-            aria-label="Retirer l'image"
-          >
-            <X className="h-3 w-3" />
-          </button>
+          {allowClear && (
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
+              aria-label="Retirer l'image"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
         </div>
       ) : null}
     </div>
@@ -245,6 +250,9 @@ function BrandCombobox({
           catalogMode:
             (j.brand as Record<string, "CURATED" | "COMPLETE">).catalogMode ??
             "CURATED",
+          status:
+            (j.brand as Record<string, "PUBLISHED" | "DRAFT">).status ??
+            "PUBLISHED",
           image: (j.brand as Record<string, string | null>).image ?? null,
         };
         onBrandCreated(newBrand);
@@ -430,6 +438,8 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     () => brands.find((b) => b.id === brandId),
     [brands, brandId],
   );
+  const isLockedByBrandMode = selectedBrand?.catalogMode === "COMPLETE";
+  const isLockedByBrandVisibility = selectedBrand?.status === "DRAFT";
 
   async function handleDelete() {
     if (!perfumeId || readOnly) return;
@@ -462,20 +472,28 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         return;
       }
     }
-    if (selectedBrand?.catalogMode === "COMPLETE") {
-      setError("Cette marque est en gamme complète. Impossible d'y ajouter un parfum individuel.");
-      return;
-    }
     setSaving(true);
     setError(null);
     try {
+      let allowCompleteOverride = false;
+      if (selectedBrand?.catalogMode === "COMPLETE") {
+        const confirmed = window.confirm(
+          "Cette marque est en gamme complète. Voulez-vous créer ce parfum quand même ? Il sera automatiquement masqué tant que la marque reste en gamme complète.",
+        );
+        if (!confirmed) {
+          setSaving(false);
+          return;
+        }
+        allowCompleteOverride = true;
+      }
       const body = {
         brandId,
         brandName: brandNameDraft.trim() || undefined,
         name,
         image,
         imageLight: imageLight.trim() || null,
-        status,
+        status: isLockedByBrandMode || isLockedByBrandVisibility ? "DRAFT" : status,
+        allowCompleteOverride,
       };
 
       const url = isNew ? "/api/admin/perfumes" : `/api/admin/perfumes/${perfumeId}`;
@@ -485,8 +503,16 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const j = await readJsonSafe<{ error?: string; perfume?: { id: number } }>(r);
+      const j = await readJsonSafe<{
+        error?: string;
+        warning?: string | null;
+        requiresConfirmation?: boolean;
+        perfume?: { id: number };
+      }>(r);
       if (!r.ok) throw new Error(j?.error ?? "Enregistrement refusé");
+      if (j?.warning) {
+        setError(j.warning);
+      }
       router.push("/admin");
       router.refresh();
     } catch (err) {
@@ -564,6 +590,9 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                 onSelect={(b) => {
                   setBrandId(b.id);
                   setBrandNameDraft("");
+                  if (b.catalogMode === "COMPLETE" || b.status === "DRAFT") {
+                    setStatus("DRAFT");
+                  }
                 }}
                 onClear={() => setBrandId("")}
                 readOnly={readOnly}
@@ -581,6 +610,16 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               />
             )}
           </div>
+          {selectedBrand?.catalogMode === "COMPLETE" && (
+            <p className="text-[12px] text-amber-700 dark:text-amber-300">
+              Cette marque est en gamme complète: tout parfum créé restera masqué tant que ce mode est actif.
+            </p>
+          )}
+          {selectedBrand?.status === "DRAFT" && (
+            <p className="text-[12px] text-amber-700 dark:text-amber-300">
+              Cette marque est masquée: ce parfum restera masqué tant que la marque n&apos;est pas visible.
+            </p>
+          )}
 
           <div>
             <label className={labelCls}>Nom du parfum</label>
@@ -609,6 +648,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             required
             readOnly={readOnly}
             onError={setError}
+            allowClear={false}
           />
 
           <ImageUploadField
@@ -635,7 +675,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                   key={opt.value}
                   type="button"
                   onClick={() => !readOnly && setStatus(opt.value)}
-                  disabled={readOnly}
+                  disabled={readOnly || ((isLockedByBrandMode || isLockedByBrandVisibility) && opt.value === "PUBLISHED")}
                   className={`flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-md border px-3 py-2 text-[13px] font-medium transition-all ${
                     active
                       ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
@@ -648,6 +688,11 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               );
             })}
           </div>
+          {(isLockedByBrandMode || isLockedByBrandVisibility) && (
+            <p className="text-[12px] text-amber-700 dark:text-amber-300">
+              Le statut visible est bloqué par la marque (gamme complète ou marque masquée).
+            </p>
+          )}
         </fieldset>
 
         {/* --- Danger zone: delete --- */}

@@ -58,7 +58,10 @@ export async function getCatalogBrowse(): Promise<CatalogBrowseBrand[]> {
 
   try {
     const rows = await prisma.brand.findMany({
-      where: { OR: [{ catalogMode: "COMPLETE" }, { perfumes: { some: { status: "PUBLISHED" } } }] },
+      where: {
+        status: "PUBLISHED",
+        OR: [{ catalogMode: "COMPLETE" }, { perfumes: { some: { status: "PUBLISHED" } } }],
+      },
       select: {
         id: true,
         name: true,

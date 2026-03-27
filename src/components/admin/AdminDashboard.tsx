@@ -22,6 +22,7 @@ type BrandRow = {
   name: string;
   slug: string;
   catalogMode: "CURATED" | "COMPLETE";
+  status: "PUBLISHED" | "DRAFT";
   image: string | null;
   _count: { perfumes: number };
 };
@@ -34,10 +35,11 @@ type PerfumeRow = {
   imageLight: string | null;
   name: string;
   status: string;
-  brand: { name: string; image: string | null; catalogMode: "CURATED" | "COMPLETE" };
+  brand: { id: string; name: string; image: string | null; catalogMode: "CURATED" | "COMPLETE"; status: "PUBLISHED" | "DRAFT" };
 };
 
 type PerfumeFilter = "all" | "PUBLISHED" | "DRAFT";
+type BrandFilter = "all" | "COMPLETE" | "CURATED" | "DRAFT";
 type Tab = "perfumes" | "brands";
 
 const VISUAL_SIZE = 52;
@@ -273,6 +275,7 @@ export function AdminDashboard() {
   const [brandImageDrafts, setBrandImageDrafts] = useState<Record<string, string>>({});
   const [brandNameDrafts, setBrandNameDrafts] = useState<Record<string, string>>({});
   const [brandSearch, setBrandSearch] = useState("");
+  const [brandFilter, setBrandFilter] = useState<BrandFilter>("all");
   const [editingBrandId, setEditingBrandId] = useState<string | null>(null);
   const [pendingBrandIds, setPendingBrandIds] = useState<Set<string>>(new Set());
   const [brandDeleteTarget, setBrandDeleteTarget] = useState<{ id: string; name: string; count: number } | null>(null);
@@ -337,7 +340,10 @@ export function AdminDashboard() {
 
   const filteredBrands = useMemo(() => {
     const q = brandSearch.trim().toLowerCase();
-    const rows = brands;
+    let rows = brands;
+    if (brandFilter === "COMPLETE") rows = rows.filter((b) => b.catalogMode === "COMPLETE");
+    if (brandFilter === "CURATED") rows = rows.filter((b) => b.catalogMode === "CURATED");
+    if (brandFilter === "DRAFT") rows = rows.filter((b) => b.status === "DRAFT");
     if (q) {
       return rows.filter(
         (b) =>
@@ -346,23 +352,29 @@ export function AdminDashboard() {
       );
     }
     return rows;
-  }, [brands, brandSearch]);
-
-  const brandFallbackImageByName = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const perfume of perfumes) {
-      const key = perfume.brand.name.trim().toLowerCase();
-      if (!key || map.has(key)) continue;
-      map.set(key, perfume.image);
-    }
-    return map;
-  }, [perfumes]);
+  }, [brands, brandSearch, brandFilter]);
 
   const canEdit = user?.role !== "VIEWER";
 
   async function toggleVisibility(id: number, currentStatus: string) {
     if (hasMutationInFlight) return;
+    const row = perfumes.find((p) => p.id === id);
+    if (!row) return;
     const next = currentStatus === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
+    if (next === "PUBLISHED" && row.brand.catalogMode === "COMPLETE") {
+      setActionMsg({
+        type: "error",
+        text: "Impossible de rendre visible ce parfum: sa marque est en gamme complète.",
+      });
+      return;
+    }
+    if (next === "PUBLISHED" && row.brand.status === "DRAFT") {
+      setActionMsg({
+        type: "error",
+        text: "Impossible de rendre visible ce parfum: sa marque est masquée.",
+      });
+      return;
+    }
     setPendingStatusIds((prev) => new Set(prev).add(id));
     setPerfumes((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status: next } : p)),
@@ -416,7 +428,7 @@ export function AdminDashboard() {
     if (deletedPerfume) {
       setBrands((prev) =>
         prev.map((b) =>
-          b.name === deletedPerfume.brand.name
+          b.id === deletedPerfume.brand.id
             ? { ...b, _count: { perfumes: Math.max(0, b._count.perfumes - 1) } }
             : b,
         ),
@@ -481,7 +493,7 @@ export function AdminDashboard() {
 
   async function patchBrand(
     id: string,
-    patch: { name?: string; catalogMode?: "CURATED" | "COMPLETE"; image?: string | null },
+    patch: { name?: string; catalogMode?: "CURATED" | "COMPLETE"; status?: "PUBLISHED" | "DRAFT"; image?: string | null },
   ) {
     const r = await fetch(`/api/admin/brands/${id}`, {
       method: "PATCH",
@@ -498,6 +510,17 @@ export function AdminDashboard() {
     if (j?.brand) {
       const updated = j.brand;
       setBrands((prev) => prev.map((b) => (b.id === id ? updated : b)));
+      setPerfumes((prev) =>
+        prev.map((p) => {
+          if (p.brand.id !== id) return p;
+          const shouldForceDraft = updated.catalogMode === "COMPLETE" || updated.status === "DRAFT";
+          return {
+            ...p,
+            status: shouldForceDraft ? "DRAFT" : p.status,
+            brand: { ...p.brand, catalogMode: updated.catalogMode, status: updated.status },
+          };
+        }),
+      );
       setBrandImageDrafts((prev) => ({ ...prev, [id]: updated.image ?? "" }));
       setBrandNameDrafts((prev) => ({ ...prev, [id]: updated.name }));
       setActionMsg({ type: "success", text: "Marque mise à jour." });
@@ -538,6 +561,27 @@ export function AdminDashboard() {
     { id: "PUBLISHED", label: "Visibles", count: perfumesOnly.filter((p) => p.status === "PUBLISHED").length },
     { id: "DRAFT", label: "Masqués", count: perfumesOnly.filter((p) => p.status === "DRAFT").length },
   ];
+  const brandFilterPills: { id: BrandFilter; label: string; count: number }[] = [
+    { id: "all", label: "Tous", count: brands.length },
+    { id: "COMPLETE", label: "Gammes complètes", count: brands.filter((b) => b.catalogMode === "COMPLETE").length },
+    { id: "CURATED", label: "Sélections", count: brands.filter((b) => b.catalogMode === "CURATED").length },
+    { id: "DRAFT", label: "Masquées", count: brands.filter((b) => b.status === "DRAFT").length },
+  ];
+  const groupedPerfumes = useMemo(() => {
+    const byBrand = new Map<string, PerfumeRow[]>();
+    for (const row of filteredPerfumes) {
+      const key = row.brand.name;
+      const list = byBrand.get(key) ?? [];
+      list.push(row);
+      byBrand.set(key, list);
+    }
+    return [...byBrand.entries()]
+      .sort(([a], [b]) => a.localeCompare(b, "fr"))
+      .map(([brandName, rows]) => ({
+        brandName,
+        rows: [...rows].sort((a, b) => a.name.localeCompare(b.name, "fr")),
+      }));
+  }, [filteredPerfumes]);
 
   return (
     <div className="min-h-screen">
@@ -551,10 +595,10 @@ export function AdminDashboard() {
         )}
         {actionMsg && (
           <div
-            className={`mb-4 rounded-md px-4 py-3 text-[14px] ${
+            className={`fixed right-4 top-4 z-[120] max-w-sm rounded-md border px-4 py-3 text-[14px] shadow-lg ${
               actionMsg.type === "success"
-                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
-                : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300"
+                : "border-red-300 bg-red-50 text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-400"
             }`}
             role="status"
           >
@@ -647,9 +691,20 @@ export function AdminDashboard() {
                   </p>
                 </div>
               ) : (
-                <ul className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
-                  {filteredPerfumes.map((row, idx) => (
-                    <li key={row.id} className={`group flex items-center gap-3 py-3 ${idx % 2 === 0 ? "bg-black/[0.015] dark:bg-white/[0.02]" : ""}`}>
+                <div className="space-y-4">
+                  {groupedPerfumes.map((group) => (
+                    <section key={group.brandName} className="rounded-md border border-black/[0.06] bg-black/[0.015] p-3 dark:border-white/[0.08] dark:bg-white/[0.02]">
+                      <div className="mb-2 flex items-center justify-between">
+                        <p className="text-[12px] font-semibold uppercase tracking-wide text-[#777] dark:text-[#999]">
+                          {group.brandName}
+                        </p>
+                        <span className="text-[11px] text-[#999] dark:text-[#777]">
+                          {group.rows.length} parfum{group.rows.length > 1 ? "s" : ""}
+                        </span>
+                      </div>
+                      <ul className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
+                        {group.rows.map((row) => (
+                          <li key={row.id} className="group flex items-center gap-3 py-3">
                       <PerfumeVisual name={row.name} image={row.image} imageLight={row.imageLight} />
                       <div className="min-w-0 flex-1">
                         <p className="text-[15px] font-medium leading-snug text-[#1a1a1a] dark:text-[#e5e5e5]">
@@ -701,9 +756,12 @@ export function AdminDashboard() {
                           </>
                         )}
                       </div>
-                    </li>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
                   ))}
-                </ul>
+                </div>
               )}
             </div>
           </div>
@@ -811,6 +869,26 @@ export function AdminDashboard() {
                 className="block min-h-[44px] w-full rounded-md border border-black/10 bg-white py-2.5 pl-10 pr-3 text-[15px] text-[#1a1a1a] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
               />
             </div>
+            <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
+              {brandFilterPills.map(({ id, label, count }) => {
+                const active = brandFilter === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setBrandFilter(id)}
+                    className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium transition-all ${
+                      active
+                        ? "bg-blue-500 text-white"
+                        : "bg-black/[0.04] text-[#888] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:text-[#777] dark:hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    {label}
+                    <span className="ml-1 opacity-70">{count}</span>
+                  </button>
+                );
+              })}
+            </div>
             <p className="text-[12px] text-[#8d8d8d] dark:text-[#7f7f7f]">
               {filteredBrands.length} résultat{filteredBrands.length > 1 ? "s" : ""} affiché{filteredBrands.length > 1 ? "s" : ""}
             </p>
@@ -826,7 +904,7 @@ export function AdminDashboard() {
                     <div className="flex items-center gap-3">
                       <BrandVisual
                         name={b.name}
-                        image={b.image ?? brandFallbackImageByName.get(b.name.trim().toLowerCase()) ?? null}
+                        image={b.image}
                       />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[15px] font-medium text-[#1a1a1a] dark:text-[#e5e5e5]">
@@ -834,11 +912,40 @@ export function AdminDashboard() {
                         </p>
                         <p className="mt-0.5 flex items-center gap-2 text-[13px] text-[#999]">
                           <BrandModeBadge mode={b.catalogMode} />
-                          <span>{b._count.perfumes} parfum{b._count.perfumes !== 1 ? "s" : ""}</span>
+                          <span className="flex items-center gap-1">
+                            <StatusDot status={b.status} />
+                            {b.status === "PUBLISHED" ? "Visible" : "Masquée"}
+                          </span>
+                          {b.catalogMode === "CURATED" ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setTab("perfumes");
+                                setSearch(b.name);
+                                setPerfumeFilter("all");
+                              }}
+                              className="underline decoration-dotted underline-offset-2 hover:text-[#666] dark:hover:text-[#ddd]"
+                            >
+                              {b._count.perfumes} parfum{b._count.perfumes !== 1 ? "s" : ""}
+                            </button>
+                          ) : null}
                         </p>
                       </div>
                       {canEdit && (
                         <div className="flex shrink-0 gap-1">
+                          <button
+                            type="button"
+                            disabled={pendingBrandIds.has(b.id)}
+                            onClick={() =>
+                              patchBrand(b.id, {
+                                status: b.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED",
+                              })
+                            }
+                            className="flex h-9 w-9 items-center justify-center rounded-md text-[#7b7b7b] transition-colors hover:bg-black/[0.04] hover:text-[#2c2c2c] disabled:opacity-50 dark:text-[#a0a0a0] dark:hover:bg-white/[0.06] dark:hover:text-white"
+                            aria-label={b.status === "PUBLISHED" ? `Masquer ${b.name}` : `Rendre visible ${b.name}`}
+                          >
+                            {b.status === "PUBLISHED" ? <Eye className="h-4 w-4" aria-hidden /> : <EyeOff className="h-4 w-4" aria-hidden />}
+                          </button>
                           <button
                             type="button"
                             disabled={pendingBrandIds.has(b.id)}
@@ -958,6 +1065,18 @@ export function AdminDashboard() {
                             className="min-h-[36px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
                           >
                             Enregistrer
+                          </button>
+                          <button
+                            type="button"
+                            disabled={!canEdit || pendingBrandIds.has(b.id) || !(brandImageDrafts[b.id] ?? "").trim()}
+                            onClick={() =>
+                              patchBrand(b.id, {
+                                image: null,
+                              })
+                            }
+                            className="min-h-[36px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                          >
+                            Supprimer le visuel
                           </button>
                         </div>
                         {b.catalogMode === "COMPLETE" && !(brandImageDrafts[b.id] ?? "").trim() && (
