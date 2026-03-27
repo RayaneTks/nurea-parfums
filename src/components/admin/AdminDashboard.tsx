@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, Plus, SunMoon } from "lucide-react";
 import Link from "next/link";
@@ -167,12 +168,15 @@ async function readJsonSafe<T>(res: Response): Promise<T | null> {
 }
 
 export function AdminDashboard() {
+  const searchParams = useSearchParams();
+  const initialTab = (searchParams.get("tab") as Tab) || "perfumes";
+
   const [user, setUser] = useState<SessionUser | null>(null);
   const [brands, setBrands] = useState<BrandRow[]>([]);
   const [perfumes, setPerfumes] = useState<PerfumeRow[]>([]);
   const [loadErr, setLoadErr] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [tab, setTab] = useState<Tab>("perfumes");
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [actionMsg, setActionMsg] = useState<{ type: ToastType; text: string } | null>(null);
 
   // States for mutations

@@ -190,7 +190,7 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
       });
       const j = await readJsonSafe<{ error?: string }>(r);
       if (!r.ok) throw new Error(j?.error ?? "Suppression refusée");
-      router.push("/admin");
+      router.push("/admin/catalogue?tab=brands");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -222,7 +222,7 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
       });
       const j = await readJsonSafe<{ error?: string }>(r);
       if (!r.ok) throw new Error(j?.error ?? "Enregistrement refusé");
-      router.push("/admin");
+      router.push("/admin/catalogue?tab=brands");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");

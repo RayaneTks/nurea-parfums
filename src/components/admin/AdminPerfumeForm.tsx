@@ -363,7 +363,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         const j = await readJsonSafe<{ error?: string }>(r);
         throw new Error(j?.error ?? "Suppression refusée");
       }
-      router.push("/admin");
+      router.push("/admin/catalogue?tab=perfumes");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -405,7 +405,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
       });
       const j = await readJsonSafe<{ error?: string; warning?: string }>(r);
       if (!r.ok) throw new Error(j?.error ?? "Erreur d'enregistrement");
-      router.push("/admin");
+      router.push("/admin/catalogue?tab=perfumes");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
