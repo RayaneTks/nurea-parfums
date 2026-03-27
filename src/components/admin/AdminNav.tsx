@@ -14,23 +14,23 @@ export function AdminNav() {
   }
 
   return (
-    <header className="sticky top-0 z-[60] border-b border-black/[0.08] bg-white/90 backdrop-blur-2xl dark:border-white/[0.08] dark:bg-[#0f0f10]/90">
-      <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-2">
+    <header className="sticky top-0 z-[60] border-b border-[var(--nurea-border)] bg-[var(--nurea-overlay)]/95 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 md:px-6">
         <div className="min-w-0">
           <Link
             href="/admin"
-            className="inline-flex min-h-[44px] items-center text-[15px] font-semibold tracking-tight text-[#111] dark:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            className="inline-flex min-h-[44px] items-center text-[15px] font-semibold tracking-tight text-[var(--nurea-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
           >
             Administration
           </Link>
-          <p className="-mt-1 text-[11px] text-[#888] dark:text-[#777]">Catalogue Nurea</p>
+          <p className="-mt-0.5 text-[11px] text-[var(--nurea-text-subtle)]">Catalogue Nurea</p>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <Link
             href="/"
             target="_blank"
-            className="inline-flex min-h-[44px] items-center gap-1.5 border border-transparent px-2.5 text-xs text-[#777] transition-colors hover:border-black/[0.08] hover:bg-black/[0.02] hover:text-[#111] dark:text-[#999] dark:hover:border-white/[0.08] dark:hover:bg-white/[0.04] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            className="inline-flex min-h-[44px] items-center gap-1.5 border border-[var(--nurea-border)] px-3 text-xs text-[var(--nurea-text-muted)] transition-colors hover:border-[var(--nurea-border-hover)] hover:bg-[var(--nurea-surface-hover)] hover:text-[var(--nurea-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
             aria-label="Voir le site"
           >
             <ExternalLink className="h-3.5 w-3.5" aria-hidden />
@@ -41,7 +41,7 @@ export function AdminNav() {
             type="button"
             onClick={logout}
             aria-label="Se déconnecter"
-            className="inline-flex min-h-[44px] items-center gap-1.5 border border-transparent px-2.5 text-xs text-[#777] transition-colors hover:border-black/[0.08] hover:bg-black/[0.02] hover:text-[#111] dark:text-[#999] dark:hover:border-white/[0.08] dark:hover:bg-white/[0.04] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            className="inline-flex min-h-[44px] items-center gap-1.5 border border-[var(--nurea-border)] px-3 text-xs text-[var(--nurea-text-muted)] transition-colors hover:border-[var(--nurea-border-hover)] hover:bg-[var(--nurea-surface-hover)] hover:text-[var(--nurea-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
           >
             <LogOut className="h-3.5 w-3.5" aria-hidden />
             <span>Déconnexion</span>

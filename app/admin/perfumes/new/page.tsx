@@ -11,7 +11,7 @@ export default function NewPerfumePage() {
   return (
     <>
       <AdminNav />
-      <div className="mx-auto max-w-3xl px-4 py-6 pb-32 md:py-10">
+      <div className="mx-auto max-w-5xl px-4 py-8 pb-32 md:px-6 md:py-10">
         <AdminPerfumeForm />
       </div>
     </>

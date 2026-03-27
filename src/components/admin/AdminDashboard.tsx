@@ -45,15 +45,15 @@ type Tab = "perfumes" | "brands";
 const VISUAL_SIZE = 52;
 
 const selectCls =
-  "block w-full min-h-[44px] appearance-none border border-black/[0.08] bg-white px-3 pr-8 text-sm text-[#111] focus-visible:border-blue-500 focus-visible:outline-none dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-[#eee]";
+  "block w-full min-h-[44px] appearance-none border border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-3 pr-8 text-sm text-[var(--nurea-text)] focus-visible:border-[var(--nurea-border-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]";
 
 const inputCls =
-  "block min-h-[44px] w-full border border-black/[0.08] bg-white px-3 text-sm text-[#111] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-[#eee] dark:placeholder:text-[#555]";
+  "block min-h-[44px] w-full border border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-3 text-sm text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] focus-visible:border-[var(--nurea-border-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]";
 
 function StatusDot({ status }: { status: string }) {
   return (
     <span
-      className={`inline-block h-2 w-2 rounded-full ${
+      className={`inline-block h-2 w-2 ${
         status === "PUBLISHED" ? "bg-emerald-500" : "bg-amber-400"
       }`}
     />
@@ -63,13 +63,13 @@ function StatusDot({ status }: { status: string }) {
 function BrandVisual({ name, image }: { name: string; image: string | null }) {
   if (image?.trim()) {
     return (
-      <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden bg-black/[0.02] dark:bg-white/[0.04]">
+      <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden bg-[var(--nurea-bg)]">
         <Image src={image} alt={name} width={VISUAL_SIZE} height={VISUAL_SIZE} className="h-full w-full object-cover" />
       </div>
     );
   }
   return (
-    <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center border border-dashed border-black/[0.15] bg-black/[0.02] text-[11px] font-semibold uppercase tracking-wider text-[#999] dark:border-white/[0.15] dark:bg-white/[0.04] dark:text-[#666]">
+    <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center border border-dashed border-[var(--nurea-border-hover)] bg-[var(--nurea-bg)] text-[11px] font-semibold uppercase tracking-[var(--nurea-tracking-label)] text-[var(--nurea-text-subtle)]">
       {name.slice(0, 2)}
     </div>
   );
@@ -78,13 +78,13 @@ function BrandVisual({ name, image }: { name: string; image: string | null }) {
 function BrandInlineBadge({ name, image }: { name: string; image: string | null }) {
   if (image?.trim()) {
     return (
-      <div className="relative h-5 w-5 shrink-0 overflow-hidden border border-black/[0.08] dark:border-white/[0.08]">
+      <div className="relative h-5 w-5 shrink-0 overflow-hidden border border-[var(--nurea-border)]">
         <Image src={image} alt={name} fill className="object-cover" sizes="20px" />
       </div>
     );
   }
   return (
-    <div className="flex h-5 w-5 shrink-0 items-center justify-center border border-dashed border-black/[0.15] text-[9px] font-semibold uppercase text-[#999] dark:border-white/[0.15] dark:text-[#666]">
+    <div className="flex h-5 w-5 shrink-0 items-center justify-center border border-dashed border-[var(--nurea-border-hover)] text-[9px] font-semibold uppercase text-[var(--nurea-text-subtle)]">
       {name.slice(0, 1)}
     </div>
   );
@@ -93,11 +93,11 @@ function BrandInlineBadge({ name, image }: { name: string; image: string | null 
 function PerfumeVisual({ name, image, imageLight }: { name: string; image: string; imageLight: string | null }) {
   return (
     <div className="flex shrink-0 items-center gap-1">
-      <div className="relative h-[52px] w-[40px] overflow-hidden bg-black/[0.02] dark:bg-white/[0.04]">
+      <div className="relative h-[52px] w-[40px] overflow-hidden bg-[var(--nurea-bg)]">
         <Image src={image} alt={name} fill className="object-cover" sizes="40px" />
       </div>
       {imageLight?.trim() ? (
-        <div className="relative h-[52px] w-[40px] overflow-hidden bg-black/[0.02] dark:bg-white/[0.04]">
+        <div className="relative h-[52px] w-[40px] overflow-hidden bg-[var(--nurea-bg)]">
           <Image src={imageLight} alt={`${name} (clair)`} fill className="object-cover" sizes="40px" />
         </div>
       ) : null}
@@ -108,13 +108,13 @@ function PerfumeVisual({ name, image, imageLight }: { name: string; image: strin
 function BrandModeBadge({ mode }: { mode: "CURATED" | "COMPLETE" }) {
   if (mode === "COMPLETE") {
     return (
-      <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
+      <span className="inline-flex items-center border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-200">
         Gamme complète
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-medium text-sky-800 dark:bg-sky-500/20 dark:text-sky-300">
+    <span className="inline-flex items-center border border-sky-500/40 bg-sky-500/10 px-2 py-0.5 text-[11px] font-medium text-sky-200">
       Sélection
     </span>
   );
@@ -137,17 +137,17 @@ function ConfirmDeleteModal({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-[var(--nurea-overlay-light)]"
       onClick={onCancel}
       role="dialog"
       aria-modal="true"
       aria-label={`Confirmer la suppression de ${target.name}`}
     >
       <div
-        className="mx-4 w-full max-w-sm border border-black/[0.08] bg-white p-6 shadow-xl dark:border-white/[0.08] dark:bg-[#1a1a1a]"
+        className="mx-4 w-full max-w-sm border border-[var(--nurea-border)] bg-[var(--nurea-surface)] p-6 shadow-[0_20px_60px_var(--nurea-glow)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-sm leading-relaxed text-[#111] dark:text-[#eee]">
+        <p className="text-sm leading-relaxed text-[var(--nurea-text)]">
           Supprimer définitivement &laquo;&nbsp;{target.name}&nbsp;&raquo;&nbsp;?
           Cette action est irréversible.
         </p>
@@ -155,14 +155,14 @@ function ConfirmDeleteModal({
           <button
             type="button"
             onClick={onCancel}
-            className="min-h-[44px] px-4 text-sm font-medium text-[#555] transition-colors hover:bg-black/[0.04] dark:text-[#aaa] dark:hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="min-h-[44px] px-4 text-sm font-medium text-[var(--nurea-text-muted)] transition-colors hover:bg-[var(--nurea-surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
           >
             Annuler
           </button>
           <button
             type="button"
             onClick={() => onConfirm(target.id)}
-            className="min-h-[44px] bg-red-600 px-4 text-sm font-medium text-white transition-colors hover:bg-red-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            className="min-h-[44px] bg-red-700 px-4 text-sm font-medium text-[var(--nurea-text)] transition-colors hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
             Supprimer
           </button>
@@ -183,17 +183,17 @@ function ConfirmBrandDeleteModal({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-[var(--nurea-overlay-light)]"
       onClick={onCancel}
       role="dialog"
       aria-modal="true"
       aria-label={`Confirmer la suppression de la marque ${target.name}`}
     >
       <div
-        className="mx-4 w-full max-w-sm border border-black/[0.08] bg-white p-6 shadow-xl dark:border-white/[0.08] dark:bg-[#1a1a1a]"
+        className="mx-4 w-full max-w-sm border border-[var(--nurea-border)] bg-[var(--nurea-surface)] p-6 shadow-[0_20px_60px_var(--nurea-glow)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-sm leading-relaxed text-[#111] dark:text-[#eee]">
+        <p className="text-sm leading-relaxed text-[var(--nurea-text)]">
           Supprimer définitivement &laquo;&nbsp;{target.name}&nbsp;&raquo;&nbsp;?
           <br />
           {target.count > 0
@@ -204,14 +204,14 @@ function ConfirmBrandDeleteModal({
           <button
             type="button"
             onClick={onCancel}
-            className="min-h-[44px] px-4 text-sm font-medium text-[#555] transition-colors hover:bg-black/[0.04] dark:text-[#aaa] dark:hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="min-h-[44px] px-4 text-sm font-medium text-[var(--nurea-text-muted)] transition-colors hover:bg-[var(--nurea-surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
           >
             Annuler
           </button>
           <button
             type="button"
             onClick={() => onConfirm(target.id)}
-            className="min-h-[44px] bg-red-600 px-4 text-sm font-medium text-white transition-colors hover:bg-red-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            className="min-h-[44px] bg-red-700 px-4 text-sm font-medium text-[var(--nurea-text)] transition-colors hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
             Supprimer
           </button>
@@ -558,26 +558,26 @@ export function AdminDashboard() {
   }, [filteredPerfumes]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[var(--nurea-bg)]">
       <AdminNav />
 
-      <main className="mx-auto max-w-3xl px-4 pb-24 pt-6">
-        <header className="mb-6">
-          <h1 className="text-lg font-semibold text-[#111] dark:text-white">
+      <main className="mx-auto max-w-5xl px-4 pb-24 pt-8 md:px-6">
+        <header className="mb-7 border-b border-[var(--nurea-border)] pb-5">
+          <h1 className="font-serif text-[clamp(1.6rem,3vw,2.2rem)] tracking-[var(--nurea-tracking-tight)] text-[var(--nurea-text)]">
             Panel admin
           </h1>
-          <p className="mt-0.5 text-sm text-[#888]">
+          <p className="mt-1.5 text-sm text-[var(--nurea-text-muted)]">
             Parfums et marques du catalogue.
           </p>
         </header>
 
         {loadErr && (
-          <div className="mb-4 bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400" role="alert">
+          <div className="mb-4 border border-red-400/40 bg-red-500/10 px-4 py-3 text-sm text-red-200" role="alert">
             {loadErr}
           </div>
         )}
 
-        <nav className="flex border-b border-black/[0.08] dark:border-white/[0.08]">
+        <nav className="grid grid-cols-2 border border-[var(--nurea-border)] bg-[var(--nurea-surface)]">
           {([
             { id: "perfumes" as Tab, label: "Parfums", count: perfumesOnly.length },
             { id: "brands" as Tab, label: "Marques", count: brands.length },
@@ -586,10 +586,10 @@ export function AdminDashboard() {
               key={id}
               type="button"
               onClick={() => setTab(id)}
-              className={`flex-1 pb-3 pt-1 text-center text-sm font-medium transition-colors ${
+              className={`min-h-[48px] text-center text-sm font-medium transition-colors ${
                 tab === id
-                  ? "border-b-2 border-[#111] text-[#111] dark:border-white dark:text-white"
-                  : "text-[#999] hover:text-[#555] dark:text-[#666] dark:hover:text-[#bbb]"
+                  ? "bg-[var(--nurea-accent-subtle)] text-[var(--nurea-text)]"
+                  : "text-[var(--nurea-text-muted)] hover:bg-[var(--nurea-surface-hover)] hover:text-[var(--nurea-text)]"
               }`}
             >
               {label}
@@ -600,12 +600,12 @@ export function AdminDashboard() {
 
         {/* ─── Parfums ─── */}
         {tab === "perfumes" && (
-          <section className="mt-5">
+          <section className="mt-6">
             {canEdit && (
               <div className="mb-4 hidden md:block">
                 <Link
                   href="/admin/perfumes/new"
-                  className="inline-flex min-h-[44px] items-center gap-2 bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-700 active:scale-[0.98]"
+                  className="inline-flex min-h-[44px] items-center gap-2 bg-[var(--nurea-accent-solid)] px-4 text-sm font-medium text-[var(--nurea-text)] transition-colors hover:bg-[var(--nurea-accent)]"
                 >
                   <Plus className="h-4 w-4" aria-hidden />
                   Ajouter un parfum
@@ -614,7 +614,7 @@ export function AdminDashboard() {
             )}
 
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#aaa]" aria-hidden />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--nurea-text-subtle)]" aria-hidden />
               <input
                 type="search"
                 value={search}
@@ -627,7 +627,7 @@ export function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[#999] transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-[var(--nurea-surface-hover)]"
                   aria-label="Effacer la recherche"
                 >
                   <X className="h-4 w-4" aria-hidden />
@@ -635,16 +635,16 @@ export function AdminDashboard() {
               )}
             </div>
 
-            <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1">
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
               {filterPills.map(({ id, label, count }) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => setPerfumeFilter(id)}
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                  className={`shrink-0 border px-3 py-1.5 text-xs font-medium transition-colors ${
                     perfumeFilter === id
-                      ? "bg-[#111] text-white dark:bg-white dark:text-[#111]"
-                      : "bg-black/[0.04] text-[#777] hover:bg-black/[0.06] dark:bg-white/[0.06] dark:text-[#888] dark:hover:bg-white/[0.1]"
+                      ? "border-[var(--nurea-accent)] bg-[var(--nurea-accent-subtle)] text-[var(--nurea-text)]"
+                      : "border-[var(--nurea-border)] bg-[var(--nurea-surface)] text-[var(--nurea-text-muted)] hover:border-[var(--nurea-border-hover)] hover:bg-[var(--nurea-surface-hover)]"
                   }`}
                 >
                   {label}
@@ -656,30 +656,30 @@ export function AdminDashboard() {
             <div className="mt-4">
               {filteredPerfumes.length === 0 ? (
                 <div className="py-16 text-center">
-                  <p className="text-sm text-[#999]">
+                  <p className="text-sm text-[var(--nurea-text-muted)]">
                     {perfumesOnly.length === 0 ? "Aucun parfum. Créez-en un." : "Aucun résultat."}
                   </p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {groupedPerfumes.map((group) => (
-                    <section key={group.brandName} className="border border-black/[0.08] bg-white dark:border-white/[0.08] dark:bg-[#1a1a1a]">
-                      <div className="flex items-center justify-between border-b border-black/[0.06] px-4 py-2.5 dark:border-white/[0.06]">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-[#888] dark:text-[#999]">
+                    <section key={group.brandName} className="border border-[var(--nurea-border)] bg-[var(--nurea-surface)]">
+                      <div className="flex items-center justify-between border-b border-[var(--nurea-border)] px-4 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-[var(--nurea-tracking-label)] text-[var(--nurea-text-muted)]">
                           {group.brandName}
                         </p>
-                        <span className="text-xs text-[#bbb] dark:text-[#666]">{group.rows.length}</span>
+                        <span className="text-xs text-[var(--nurea-text-subtle)]">{group.rows.length}</span>
                       </div>
-                      <ul className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
+                      <ul className="divide-y divide-[var(--nurea-border)]">
                         {group.rows.map((row) => (
                           <li key={row.id} className="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:gap-4">
                             <PerfumeVisual name={row.name} image={row.image} imageLight={row.imageLight} />
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-[#111] dark:text-[#eee]">{row.name}</p>
-                              <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-[#888] dark:text-[#999]">
+                              <p className="text-sm font-medium text-[var(--nurea-text)]">{row.name}</p>
+                              <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-[var(--nurea-text-muted)]">
                                 <BrandInlineBadge name={row.brand.name} image={row.brand.image} />
                                 <span className="truncate">{row.brand.name}</span>
-                                <span className="text-[#ddd] dark:text-[#444]">·</span>
+                                <span className="text-[var(--nurea-text-subtle)]">·</span>
                                 <span className="flex items-center gap-1">
                                   <StatusDot status={row.status} />
                                   {statusLabel(row.status)}
@@ -689,7 +689,7 @@ export function AdminDashboard() {
                             <div className="grid w-full grid-cols-3 gap-1.5 sm:flex sm:w-auto sm:gap-1">
                               <Link
                                 href={`/admin/perfumes/${row.id}/edit`}
-                                className="inline-flex min-h-[44px] items-center justify-center gap-1.5 border border-black/[0.08] text-xs font-medium text-[#555] transition-colors hover:bg-black/[0.04] dark:border-white/[0.08] dark:text-[#aaa] dark:hover:bg-white/[0.06] sm:h-11 sm:w-11 sm:border-0"
+                                className="inline-flex min-h-[44px] items-center justify-center gap-1.5 border border-[var(--nurea-border)] text-xs font-medium text-[var(--nurea-text-muted)] transition-colors hover:border-[var(--nurea-border-hover)] hover:bg-[var(--nurea-surface-hover)] sm:h-11 sm:w-11"
                                 aria-label={canEdit ? `Modifier ${row.name}` : `Voir ${row.name}`}
                               >
                                 <Pencil className="h-3.5 w-3.5" aria-hidden />
@@ -701,7 +701,7 @@ export function AdminDashboard() {
                                     type="button"
                                     onClick={() => toggleVisibility(row.id, row.status)}
                                     disabled={hasMutationInFlight || pendingStatusIds.has(row.id)}
-                                    className="inline-flex min-h-[44px] items-center justify-center gap-1.5 border border-black/[0.08] text-xs font-medium text-[#555] transition-colors hover:bg-black/[0.04] disabled:opacity-40 dark:border-white/[0.08] dark:text-[#aaa] dark:hover:bg-white/[0.06] sm:h-11 sm:w-11 sm:border-0"
+                                    className="inline-flex min-h-[44px] items-center justify-center gap-1.5 border border-[var(--nurea-border)] text-xs font-medium text-[var(--nurea-text-muted)] transition-colors hover:border-[var(--nurea-border-hover)] hover:bg-[var(--nurea-surface-hover)] disabled:opacity-40 sm:h-11 sm:w-11"
                                     aria-label={row.status === "PUBLISHED" ? `Masquer ${row.name}` : `Rendre visible ${row.name}`}
                                   >
                                     {row.status === "PUBLISHED" ? <Eye className="h-3.5 w-3.5" aria-hidden /> : <EyeOff className="h-3.5 w-3.5" aria-hidden />}
@@ -711,7 +711,7 @@ export function AdminDashboard() {
                                     type="button"
                                     onClick={() => setDeleteTarget({ id: row.id, name: row.name })}
                                     disabled={hasMutationInFlight || pendingDeleteIds.has(row.id)}
-                                    className="inline-flex min-h-[44px] items-center justify-center gap-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-500/10 sm:h-11 sm:w-11"
+                                    className="inline-flex min-h-[44px] items-center justify-center gap-1.5 text-xs font-medium text-red-300 transition-colors hover:bg-red-500/10 disabled:opacity-40 sm:h-11 sm:w-11"
                                     aria-label={`Supprimer ${row.name}`}
                                   >
                                     <Trash2 className="h-3.5 w-3.5" aria-hidden />
@@ -733,13 +733,13 @@ export function AdminDashboard() {
 
         {/* ─── Marques ─── */}
         {tab === "brands" && (
-          <section className="mt-5 space-y-4">
+          <section className="mt-6 space-y-4">
             {canEdit && (
               <div className="hidden md:block">
                 <button
                   type="button"
                   onClick={() => setShowBrandCreateForm((prev) => !prev)}
-                  className="inline-flex min-h-[44px] items-center gap-2 bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-700 active:scale-[0.98]"
+                  className="inline-flex min-h-[44px] items-center gap-2 bg-[var(--nurea-accent-solid)] px-4 text-sm font-medium text-[var(--nurea-text)] transition-colors hover:bg-[var(--nurea-accent)]"
                 >
                   <Plus className="h-4 w-4" aria-hidden />
                   Ajouter une marque
@@ -748,10 +748,10 @@ export function AdminDashboard() {
             )}
 
             {canEdit && showBrandCreateForm && (
-              <form onSubmit={addBrand} className="border border-black/[0.08] bg-white p-4 dark:border-white/[0.08] dark:bg-[#1a1a1a]">
+              <form onSubmit={addBrand} className="border border-[var(--nurea-border)] bg-[var(--nurea-surface)] p-4">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
-                    <label className="text-xs font-medium text-[#888]">Nom de la marque</label>
+                    <label className="text-xs font-medium text-[var(--nurea-text-muted)]">Nom de la marque</label>
                     <input
                       value={newBrand}
                       onChange={(e) => setNewBrand(e.target.value)}
@@ -760,7 +760,7 @@ export function AdminDashboard() {
                     />
                   </div>
                   <div className="relative">
-                    <label className="text-xs font-medium text-[#888]">Mode de catalogue</label>
+                    <label className="text-xs font-medium text-[var(--nurea-text-muted)]">Mode de catalogue</label>
                     <div className="relative mt-1.5">
                       <select
                         value={newBrandMode}
@@ -773,11 +773,11 @@ export function AdminDashboard() {
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#bbb]" aria-hidden />
+                      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--nurea-text-subtle)]" aria-hidden />
                     </div>
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="text-xs font-medium text-[#888]">Image (URL ou chemin public)</label>
+                    <label className="text-xs font-medium text-[var(--nurea-text-muted)]">Image (URL ou chemin public)</label>
                     <input
                       value={newBrandImage}
                       onChange={(e) => setNewBrandImage(e.target.value)}
@@ -785,7 +785,7 @@ export function AdminDashboard() {
                       className={`${inputCls} mt-1.5`}
                     />
                     {newBrandMode === "COMPLETE" && !newBrandImage.trim() && (
-                      <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">Image requise en gamme complète.</p>
+                      <p className="mt-1 text-xs text-amber-300">Image requise en gamme complète.</p>
                     )}
                   </div>
                 </div>
@@ -793,14 +793,14 @@ export function AdminDashboard() {
                   <button
                     type="button"
                     onClick={() => { setShowBrandCreateForm(false); setNewBrand(""); setNewBrandMode("CURATED"); setNewBrandImage(""); }}
-                    className="min-h-[44px] px-3 text-xs font-medium text-[#555] transition-colors hover:bg-black/[0.04] dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                    className="min-h-[44px] px-3 text-xs font-medium text-[var(--nurea-text-muted)] transition-colors hover:bg-[var(--nurea-surface-hover)]"
                   >
                     Annuler
                   </button>
                   <button
                     type="submit"
                     disabled={isAddingBrand || newBrand.trim().length < 2}
-                    className="inline-flex min-h-[44px] items-center gap-2 bg-blue-600 px-4 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-40"
+                    className="inline-flex min-h-[44px] items-center gap-2 bg-[var(--nurea-accent-solid)] px-4 text-xs font-semibold text-[var(--nurea-text)] transition-colors hover:bg-[var(--nurea-accent)] disabled:opacity-40"
                   >
                     <Plus className="h-4 w-4" aria-hidden />
                     {isAddingBrand ? "Ajout…" : "Créer"}
@@ -810,7 +810,7 @@ export function AdminDashboard() {
             )}
 
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#aaa]" aria-hidden />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--nurea-text-subtle)]" aria-hidden />
               <input
                 type="search"
                 value={brandSearch}
@@ -822,7 +822,7 @@ export function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setBrandSearch("")}
-                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[#999] transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-[var(--nurea-surface-hover)]"
                   aria-label="Effacer la recherche"
                 >
                   <X className="h-4 w-4" aria-hidden />
@@ -830,16 +830,16 @@ export function AdminDashboard() {
               )}
             </div>
 
-            <div className="flex gap-1.5 overflow-x-auto pb-1">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {brandFilterPills.map(({ id, label, count }) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => setBrandFilter(id)}
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                  className={`shrink-0 border px-3 py-1.5 text-xs font-medium transition-colors ${
                     brandFilter === id
-                      ? "bg-[#111] text-white dark:bg-white dark:text-[#111]"
-                      : "bg-black/[0.04] text-[#777] hover:bg-black/[0.06] dark:bg-white/[0.06] dark:text-[#888] dark:hover:bg-white/[0.1]"
+                      ? "border-[var(--nurea-accent)] bg-[var(--nurea-accent-subtle)] text-[var(--nurea-text)]"
+                      : "border-[var(--nurea-border)] bg-[var(--nurea-surface)] text-[var(--nurea-text-muted)] hover:border-[var(--nurea-border-hover)] hover:bg-[var(--nurea-surface-hover)]"
                   }`}
                 >
                   {label}
@@ -848,24 +848,24 @@ export function AdminDashboard() {
               ))}
             </div>
 
-            <p className="text-xs text-[#888]">
+            <p className="text-xs text-[var(--nurea-text-muted)]">
               {filteredBrands.length} résultat{filteredBrands.length > 1 ? "s" : ""}
             </p>
 
             {filteredBrands.length === 0 ? (
-              <p className="py-12 text-center text-sm text-[#999]">
+              <p className="py-12 text-center text-sm text-[var(--nurea-text-muted)]">
                 Aucune marque. Ajoutez-en une.
               </p>
             ) : (
-              <ul className="divide-y divide-black/[0.06] border border-black/[0.08] bg-white dark:divide-white/[0.06] dark:border-white/[0.08] dark:bg-[#1a1a1a]">
+              <ul className="divide-y divide-[var(--nurea-border)] border border-[var(--nurea-border)] bg-[var(--nurea-surface)]">
                 {filteredBrands.map((b) => (
                   <li key={b.id} className="px-4 py-4">
                     <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
                       <BrandVisual name={b.name} image={b.image} />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-[#111] dark:text-[#eee]">{b.name}</p>
+                        <p className="truncate text-sm font-medium text-[var(--nurea-text)]">{b.name}</p>
                         <div className="mt-1 space-y-0.5">
-                          <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-[#888] dark:text-[#999]">
+                          <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-[var(--nurea-text-muted)]">
                             <BrandModeBadge mode={b.catalogMode} />
                             <span className="flex items-center gap-1">
                               <StatusDot status={b.status} />
@@ -876,7 +876,7 @@ export function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => { setTab("perfumes"); setSearch(b.name); setPerfumeFilter("all"); }}
-                              className="inline-flex min-h-[28px] items-center text-xs text-[#777] underline decoration-dotted underline-offset-2 hover:text-[#444] dark:text-[#999] dark:hover:text-[#eee]"
+                              className="inline-flex min-h-[28px] items-center text-xs text-[var(--nurea-text-muted)] underline decoration-dotted underline-offset-2 hover:text-[var(--nurea-text)]"
                             >
                               {b._count?.perfumes ?? 0} parfum{(b._count?.perfumes ?? 0) !== 1 ? "s" : ""}
                             </button>
@@ -889,7 +889,7 @@ export function AdminDashboard() {
                             type="button"
                             disabled={pendingBrandIds.has(b.id)}
                             onClick={() => patchBrand(b.id, { status: b.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED" })}
-                            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 border border-black/[0.08] text-xs font-medium text-[#555] transition-colors hover:bg-black/[0.04] disabled:opacity-40 dark:border-white/[0.08] dark:text-[#aaa] dark:hover:bg-white/[0.06] sm:h-11 sm:w-11 sm:border-0"
+                            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 border border-[var(--nurea-border)] text-xs font-medium text-[var(--nurea-text-muted)] transition-colors hover:border-[var(--nurea-border-hover)] hover:bg-[var(--nurea-surface-hover)] disabled:opacity-40 sm:h-11 sm:w-11"
                             aria-label={b.status === "PUBLISHED" ? `Masquer ${b.name}` : `Rendre visible ${b.name}`}
                           >
                             {b.status === "PUBLISHED" ? <Eye className="h-3.5 w-3.5" aria-hidden /> : <EyeOff className="h-3.5 w-3.5" aria-hidden />}
@@ -899,7 +899,7 @@ export function AdminDashboard() {
                             type="button"
                             disabled={pendingBrandIds.has(b.id)}
                             onClick={() => setEditingBrandId((prev) => (prev === b.id ? null : b.id))}
-                            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 border border-black/[0.08] text-xs font-medium text-[#555] transition-colors hover:bg-black/[0.04] disabled:opacity-40 dark:border-white/[0.08] dark:text-[#aaa] dark:hover:bg-white/[0.06] sm:h-11 sm:w-11 sm:border-0"
+                            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 border border-[var(--nurea-border)] text-xs font-medium text-[var(--nurea-text-muted)] transition-colors hover:border-[var(--nurea-border-hover)] hover:bg-[var(--nurea-surface-hover)] disabled:opacity-40 sm:h-11 sm:w-11"
                             aria-label={`Modifier ${b.name}`}
                           >
                             <Pencil className="h-3.5 w-3.5" aria-hidden />
@@ -915,7 +915,7 @@ export function AdminDashboard() {
                                 count: b._count?.perfumes ?? 0,
                               })
                             }
-                            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-500/10 sm:h-11 sm:w-11"
+                            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 text-xs font-medium text-red-300 transition-colors hover:bg-red-500/10 disabled:opacity-40 sm:h-11 sm:w-11"
                             aria-label={`Supprimer ${b.name}`}
                           >
                             <Trash2 className="h-3.5 w-3.5" aria-hidden />
@@ -926,13 +926,13 @@ export function AdminDashboard() {
                     </div>
 
                     {editingBrandId === b.id && canEdit && (
-                      <div className="mt-3 border border-black/[0.06] bg-black/[0.02] p-3 dark:border-white/[0.06] dark:bg-white/[0.02]">
+                      <div className="mt-3 border border-[var(--nurea-border)] bg-[var(--nurea-bg)] p-3">
                         <div className="mb-2 flex items-center justify-between">
-                          <p className="text-xs font-semibold uppercase tracking-wider text-[#888]">Modifier</p>
+                          <p className="text-xs font-semibold uppercase tracking-[var(--nurea-tracking-label)] text-[var(--nurea-text-muted)]">Modifier</p>
                           <button
                             type="button"
                             onClick={() => setEditingBrandId(null)}
-                            className="flex h-11 w-11 items-center justify-center text-[#888] transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+                            className="flex h-11 w-11 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-[var(--nurea-surface-hover)]"
                             aria-label="Fermer"
                           >
                             <X className="h-4 w-4" />
@@ -940,25 +940,25 @@ export function AdminDashboard() {
                         </div>
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <div>
-                            <label className="text-xs font-medium text-[#888]">Nom</label>
+                            <label className="text-xs font-medium text-[var(--nurea-text-muted)]">Nom</label>
                             <div className="mt-1 flex items-center gap-2">
                               <input
                                 value={brandNameDrafts[b.id] ?? ""}
                                 onChange={(e) => setBrandNameDrafts((prev) => ({ ...prev, [b.id]: e.target.value }))}
-                                className="min-h-[44px] flex-1 border border-black/[0.08] bg-white px-3 text-sm text-[#111] dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-[#eee]"
+                                className="min-h-[44px] flex-1 border border-[var(--nurea-border)] bg-[var(--nurea-surface)] px-3 text-sm text-[var(--nurea-text)]"
                               />
                               <button
                                 type="button"
                                 disabled={!canEdit || pendingBrandIds.has(b.id)}
                                 onClick={() => patchBrand(b.id, { name: (brandNameDrafts[b.id] ?? "").trim() })}
-                                className="min-h-[44px] border border-black/[0.08] px-3 text-xs font-medium text-[#555] transition-colors hover:bg-black/[0.04] disabled:opacity-40 dark:border-white/[0.08] dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                                className="min-h-[44px] border border-[var(--nurea-border)] px-3 text-xs font-medium text-[var(--nurea-text-muted)] transition-colors hover:bg-[var(--nurea-surface-hover)] disabled:opacity-40"
                               >
                                 Renommer
                               </button>
                             </div>
                           </div>
                           <div className="relative">
-                            <label className="text-xs font-medium text-[#888]">Mode</label>
+                            <label className="text-xs font-medium text-[var(--nurea-text-muted)]">Mode</label>
                             <div className="relative mt-1">
                               <select
                                 value={b.catalogMode}
@@ -970,23 +970,23 @@ export function AdminDashboard() {
                                   <option key={k} value={k}>{k === "COMPLETE" ? "Gamme complète" : "Parfums sélectionnés"}</option>
                                 ))}
                               </select>
-                              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#bbb]" aria-hidden />
+                              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--nurea-text-subtle)]" aria-hidden />
                             </div>
                           </div>
                           <div className="sm:col-span-2">
-                            <label className="text-xs font-medium text-[#888]">Image</label>
+                            <label className="text-xs font-medium text-[var(--nurea-text-muted)]">Image</label>
                             <div className="mt-1 flex flex-wrap items-center gap-2">
                               <input
                                 value={brandImageDrafts[b.id] ?? ""}
                                 onChange={(e) => setBrandImageDrafts((prev) => ({ ...prev, [b.id]: e.target.value }))}
                                 placeholder={b.catalogMode === "COMPLETE" ? "Obligatoire (URL ou /public)" : "Facultative"}
-                                className="min-h-[44px] min-w-0 flex-1 border border-black/[0.08] bg-white px-3 text-sm text-[#111] placeholder:text-[#bbb] dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-[#eee] dark:placeholder:text-[#555]"
+                                className="min-h-[44px] min-w-0 flex-1 border border-[var(--nurea-border)] bg-[var(--nurea-surface)] px-3 text-sm text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)]"
                               />
                               <button
                                 type="button"
                                 disabled={!canEdit || pendingBrandIds.has(b.id)}
                                 onClick={() => patchBrand(b.id, { image: (brandImageDrafts[b.id] ?? "").trim() || null })}
-                                className="min-h-[44px] border border-black/[0.08] px-3 text-xs font-medium text-[#555] transition-colors hover:bg-black/[0.04] disabled:opacity-40 dark:border-white/[0.08] dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                                className="min-h-[44px] border border-[var(--nurea-border)] px-3 text-xs font-medium text-[var(--nurea-text-muted)] transition-colors hover:bg-[var(--nurea-surface-hover)] disabled:opacity-40"
                               >
                                 Enregistrer
                               </button>
@@ -994,13 +994,13 @@ export function AdminDashboard() {
                                 type="button"
                                 disabled={!canEdit || pendingBrandIds.has(b.id) || !(brandImageDrafts[b.id] ?? "").trim()}
                                 onClick={() => patchBrand(b.id, { image: null })}
-                                className="min-h-[44px] px-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-500/10"
+                                className="min-h-[44px] px-2 text-xs font-medium text-red-300 transition-colors hover:bg-red-500/10 disabled:opacity-40"
                               >
                                 Retirer
                               </button>
                             </div>
                             {b.catalogMode === "COMPLETE" && !(brandImageDrafts[b.id] ?? "").trim() && (
-                              <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">Image requise en gamme complète.</p>
+                              <p className="mt-1 text-xs text-amber-300">Image requise en gamme complète.</p>
                             )}
                           </div>
                         </div>
@@ -1018,8 +1018,8 @@ export function AdminDashboard() {
         <div
           className={`fixed bottom-4 left-1/2 z-[120] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 border px-4 py-3 text-sm shadow-lg ${
             actionMsg.type === "success"
-              ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
-              : "border-red-300 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400"
+              ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-200"
+              : "border-red-400/40 bg-red-500/10 text-red-200"
           }`}
           role="status"
         >
@@ -1030,7 +1030,7 @@ export function AdminDashboard() {
       {canEdit && tab === "perfumes" && (
         <Link
           href="/admin/perfumes/new"
-          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/25 transition-all hover:bg-blue-700 active:scale-95 md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center border border-[var(--nurea-border-hover)] bg-[var(--nurea-accent-solid)] text-[var(--nurea-text)] shadow-lg shadow-[var(--nurea-glow)] transition-colors hover:bg-[var(--nurea-accent)] md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
           aria-label="Nouveau parfum"
         >
           <Plus className="h-6 w-6" aria-hidden />
@@ -1040,7 +1040,7 @@ export function AdminDashboard() {
         <button
           type="button"
           onClick={() => setShowBrandCreateForm(true)}
-          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/25 transition-all hover:bg-blue-700 active:scale-95 md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center border border-[var(--nurea-border-hover)] bg-[var(--nurea-accent-solid)] text-[var(--nurea-text)] shadow-lg shadow-[var(--nurea-glow)] transition-colors hover:bg-[var(--nurea-accent)] md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
           aria-label="Nouvelle marque"
         >
           <Plus className="h-6 w-6" aria-hidden />

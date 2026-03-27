@@ -51,26 +51,26 @@ export function AdminLoginForm() {
   }
 
   return (
-    <div className="w-full max-w-sm border border-black/[0.08] bg-white/90 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.06)] backdrop-blur dark:border-white/[0.08] dark:bg-[#141414]/90 dark:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+    <div className="w-full max-w-md border border-[var(--nurea-border)] bg-[var(--nurea-surface)] p-6 shadow-[0_20px_60px_var(--nurea-glow)] md:p-8">
       <Link
         href="/"
-        className="mb-4 inline-flex min-h-[44px] items-center gap-1.5 pl-0 pr-3 text-[13px] font-medium text-blue-500 transition-colors hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+        className="mb-5 inline-flex min-h-[44px] items-center gap-1.5 pr-3 text-[13px] font-medium text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Retour au site
       </Link>
 
-      <div className="mb-6 border-b border-black/[0.06] pb-4 dark:border-white/[0.06]">
-        <h1 className="text-[22px] font-semibold tracking-tight text-[#1a1a1a] dark:text-white">
+      <div className="mb-7 border-b border-[var(--nurea-border)] pb-5">
+        <h1 className="font-serif text-[28px] leading-none tracking-[var(--nurea-tracking-tight)] text-[var(--nurea-text)]">
           Connexion
         </h1>
-        <p className="mt-1 text-[13px] text-[#888]">Espace administration</p>
+        <p className="mt-2 text-[13px] text-[var(--nurea-text-muted)]">Espace administration</p>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4">
         {(configErr || error) && (
           <div
-            className="bg-red-50 px-4 py-3 text-[14px] text-red-700 dark:bg-red-500/10 dark:text-red-400"
+            className="border border-red-400/40 bg-red-500/10 px-4 py-3 text-[14px] text-red-200"
             role="alert"
           >
             {configErr || error}
@@ -78,7 +78,7 @@ export function AdminLoginForm() {
         )}
 
         <div>
-          <label className="block text-[13px] font-medium text-[#555] dark:text-[#aaa]">
+          <label className="block text-[13px] font-medium text-[var(--nurea-text-muted)]">
             Identifiant
           </label>
           <div className="relative mt-1.5">
@@ -92,13 +92,13 @@ export function AdminLoginForm() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="block min-h-[44px] w-full border border-black/[0.08] bg-white px-3 py-2.5 pr-11 text-[15px] text-[#1a1a1a] transition-colors focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-[#e5e5e5]"
+              className="block min-h-[44px] w-full border border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-3 py-2.5 pr-11 text-[15px] text-[var(--nurea-text)] transition-colors focus-visible:border-[var(--nurea-border-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
             />
             {username.trim().length > 0 && (
               <button
                 type="button"
                 onClick={() => setUsername("")}
-                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[#999] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.06] dark:hover:text-[#ddd]"
+                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-[var(--nurea-surface-hover)] hover:text-[var(--nurea-text)]"
                 aria-label="Effacer l'identifiant"
               >
                 <X className="h-4 w-4" aria-hidden />
@@ -108,7 +108,7 @@ export function AdminLoginForm() {
         </div>
 
         <div>
-          <label className="block text-[13px] font-medium text-[#555] dark:text-[#aaa]">
+          <label className="block text-[13px] font-medium text-[var(--nurea-text-muted)]">
             Mot de passe
           </label>
           <div className="relative mt-1.5">
@@ -119,13 +119,13 @@ export function AdminLoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="block min-h-[44px] w-full border border-black/[0.08] bg-white px-3 py-2.5 pr-11 text-[15px] text-[#1a1a1a] transition-colors focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-[#e5e5e5]"
+              className="block min-h-[44px] w-full border border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-3 py-2.5 pr-11 text-[15px] text-[var(--nurea-text)] transition-colors focus-visible:border-[var(--nurea-border-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
             />
             {password.length > 0 && (
               <button
                 type="button"
                 onClick={() => setPassword("")}
-                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[#999] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.06] dark:hover:text-[#ddd]"
+                className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-[var(--nurea-text-subtle)] transition-colors hover:bg-[var(--nurea-surface-hover)] hover:text-[var(--nurea-text)]"
                 aria-label="Effacer le mot de passe"
               >
                 <X className="h-4 w-4" aria-hidden />
@@ -137,7 +137,7 @@ export function AdminLoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="flex min-h-[44px] w-full items-center justify-center gap-2 bg-blue-500 text-[14px] font-semibold text-white transition-colors hover:bg-blue-600 active:scale-[0.99] disabled:opacity-50"
+          className="flex min-h-[48px] w-full items-center justify-center gap-2 bg-[var(--nurea-accent-solid)] text-[14px] font-semibold text-[var(--nurea-text)] transition-colors hover:bg-[var(--nurea-accent)] disabled:opacity-50"
         >
           {loading ? (
             <>
