@@ -14,32 +14,36 @@ export function AdminNav() {
   }
 
   return (
-    <header className="sticky top-0 z-[60] bg-zinc-950/80 backdrop-blur-2xl backdrop-saturate-150">
-      <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-3">
+    <header className="sticky top-0 z-[60] bg-zinc-950/80 backdrop-blur-2xl border-b border-zinc-900/50">
+      <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-4">
         <Link
           href="/admin"
-          className="flex min-h-[44px] items-center gap-2.5 text-[15px] font-semibold tracking-tight text-zinc-100 transition-opacity duration-200 hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+          className="flex items-center gap-3 text-[16px] font-bold tracking-tight text-zinc-100 transition-all duration-300 hover:opacity-80 active:scale-95 focus-visible:outline-none"
         >
-          <span className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-gradient-to-b from-zinc-700 to-zinc-800 text-[11px] font-bold text-zinc-300">N</span>
-          Admin
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-zinc-700 to-zinc-900 shadow-inner">
+            <span className="text-[13px] font-black text-white">N</span>
+          </div>
+          <span className="bg-gradient-to-r from-zinc-100 to-zinc-400 bg-clip-text text-transparent">
+            Admin
+          </span>
         </Link>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <Link
             href="/"
             target="_blank"
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-500 transition-all duration-200 hover:bg-zinc-800 hover:text-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-zinc-500 transition-all duration-200 hover:bg-zinc-900 hover:text-zinc-100"
             aria-label="Voir le site"
           >
-            <ExternalLink className="h-[15px] w-[15px]" aria-hidden />
+            <ExternalLink className="h-[18px] w-[18px]" />
           </Link>
           <button
             type="button"
             onClick={logout}
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-zinc-500 transition-all duration-200 hover:bg-red-500/10 hover:text-red-400"
             aria-label="Se déconnecter"
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-500 transition-all duration-200 hover:bg-zinc-800 hover:text-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            <LogOut className="h-[15px] w-[15px]" aria-hidden />
+            <LogOut className="h-[18px] w-[18px]" />
           </button>
         </div>
       </div>

@@ -4,7 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Loader2, Plus, Trash2, Upload, X } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Trash2, Upload, X, AlertCircle } from "lucide-react";
+import { AdminButton } from "./ui/AdminButton";
+import { AdminInput } from "./ui/AdminInput";
+import { AdminBadge } from "./ui/AdminBadge";
+import { uploadFile } from "@/lib/admin/image-utils";
 
 type BrandOpt = {
   id: string;
@@ -13,6 +17,7 @@ type BrandOpt = {
   status: "PUBLISHED" | "DRAFT";
   image: string | null;
 };
+
 type PerfumePayload = {
   id: number;
   brandId: string;
@@ -24,14 +29,9 @@ type PerfumePayload = {
 };
 
 const STATUS_OPTIONS = [
-  { value: "PUBLISHED", label: "Visible", color: "bg-emerald-500" },
-  { value: "DRAFT", label: "Masqué", color: "bg-amber-400" },
+  { value: "PUBLISHED", label: "Visible", variant: "success" as const },
+  { value: "DRAFT", label: "Masqué", variant: "warning" as const },
 ] as const;
-
-const inputCls =
-  "block w-full min-h-[48px] rounded-xl bg-zinc-800/70 px-4 text-[15px] text-zinc-100 placeholder:text-zinc-600 transition-all duration-200 disabled:opacity-40 focus-visible:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500";
-
-const labelCls = "mb-1.5 block text-[13px] font-medium text-zinc-400";
 
 async function readJsonSafe<T>(res: Response): Promise<T | null> {
   const contentType = res.headers.get("content-type") ?? "";
@@ -41,55 +41,6 @@ async function readJsonSafe<T>(res: Response): Promise<T | null> {
   } catch {
     return null;
   }
-}
-
-async function uploadFile(file: File): Promise<string> {
-  const prepared = await convertToWebp(file);
-  const sign = await fetch("/api/admin/storage/sign", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ filename: prepared.name }),
-  });
-  const j = (await readJsonSafe<{
-    error?: string;
-    signedUrl?: string;
-    token?: string;
-    publicUrl?: string;
-  }>(sign)) ?? {};
-  if (!sign.ok) throw new Error(j.error ?? "Signature refusée (Supabase configuré ?)");
-
-  const headers: Record<string, string> = {
-    "Content-Type": prepared.type || "application/octet-stream",
-  };
-  if (j.token) headers.Authorization = `Bearer ${j.token}`;
-
-  const put = await fetch(j.signedUrl!, { method: "PUT", body: prepared, headers });
-  if (!put.ok) throw new Error(`Upload refusé (${put.status}).`);
-  return j.publicUrl ?? "";
-}
-
-async function convertToWebp(file: File): Promise<File> {
-  if (!file.type.startsWith("image/")) return file;
-  if (file.type === "image/webp") return file;
-  const bitmap = await createImageBitmap(file);
-  const maxWidth = 1200;
-  const ratio = Math.min(1, maxWidth / bitmap.width);
-  const width = Math.max(1, Math.round(bitmap.width * ratio));
-  const height = Math.max(1, Math.round(bitmap.height * ratio));
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return file;
-  ctx.drawImage(bitmap, 0, 0, width, height);
-  const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, "image/webp", 0.86),
-  );
-  bitmap.close();
-  if (!blob) return file;
-  const safe = file.name.replace(/\.[a-zA-Z0-9]+$/, "");
-  return new File([blob], `${safe}.webp`, { type: "image/webp" });
 }
 
 function ImageUploadField({
@@ -122,40 +73,32 @@ function ImageUploadField({
       const url = await uploadFile(file);
       onChange(url);
     } catch (e) {
-      onError(e instanceof Error ? e.message : "Upload echoue");
+      onError(e instanceof Error ? e.message : "Upload échoué");
     } finally {
       setUploading(false);
     }
   }
 
   return (
-    <div>
-      <span className={labelCls}>{label}</span>
-      {subtitle && (
-        <p className="mt-0.5 text-[12px] text-zinc-500">{subtitle}</p>
-      )}
-      <div className="mt-1.5 space-y-2">
-        <div className="relative">
-          <input
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            disabled={readOnly}
-            required={required}
-            placeholder="/parfums/… ou https://…"
-            className={`${inputCls} pr-11`}
-          />
-          {!readOnly && value.trim().length > 0 && (
-            <button
-              type="button"
-              onClick={() => onChange("")}
-              className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-zinc-500 transition-all duration-200 hover:bg-zinc-700 hover:text-zinc-300"
-              aria-label={`Effacer ${label.toLowerCase()}`}
-            >
-              <X className="h-4 w-4" aria-hidden />
-            </button>
-          )}
-        </div>
-        <label className="flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-500 text-[13px] font-medium text-white transition-all duration-200 hover:bg-blue-400 disabled:opacity-50">
+    <div className="space-y-3">
+      <div>
+        <span className="block text-[14px] font-bold text-zinc-200">{label}</span>
+        {subtitle && (
+          <p className="mt-1 text-[12px] text-zinc-500">{subtitle}</p>
+        )}
+      </div>
+
+      <div className="grid gap-4">
+        <AdminInput
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={readOnly}
+          required={required}
+          placeholder="/parfums/... ou https://..."
+          onClear={!readOnly && value.trim().length > 0 ? () => onChange("") : undefined}
+        />
+        
+        <label className="group relative">
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif,image/*"
@@ -163,38 +106,36 @@ function ImageUploadField({
             disabled={uploading || readOnly}
             onChange={(e) => handleUpload(e.target.files?.[0] ?? null)}
           />
-          {uploading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-              Envoi…
-            </>
-          ) : (
-            <>
-              <Upload className="h-4 w-4" aria-hidden />
-              Importer
-            </>
-          )}
+          <AdminButton
+            type="button"
+            variant="outline"
+            className="w-full pointer-events-none"
+            isLoading={uploading}
+            leftIcon={Upload}
+          >
+            {uploading ? "Envoi..." : "Importer un fichier"}
+          </AdminButton>
         </label>
       </div>
-      {preview ? (
-        <div className="relative mt-3 aspect-[2/3] w-full max-w-[180px] overflow-hidden rounded-xl bg-zinc-800">
+
+      {preview && (
+        <div className="relative aspect-[2/3] w-32 overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl group">
           {isRemote ? (
-            <Image src={preview} alt="Apercu" fill className="object-contain" sizes="180px" />
+            <Image src={preview} alt="Aperçu" fill className="object-contain p-2" sizes="128px" />
           ) : (
-            <Image src={preview} alt="Apercu" width={360} height={540} className="h-full w-full object-contain" />
+            <Image src={preview} alt="Aperçu" width={128} height={192} className="h-full w-full object-contain p-2" />
           )}
-          {allowClear && (
+          {allowClear && !readOnly && (
             <button
               type="button"
               onClick={() => onChange("")}
-              className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-xl bg-black/60 text-white backdrop-blur-sm transition-all duration-200 hover:bg-black/80"
-              aria-label="Retirer l'image"
+              className="absolute top-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-lg bg-red-500 text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <X className="h-3 w-3" />
+              <X className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
@@ -256,15 +197,8 @@ function BrandCombobox({
       const j = await readJsonSafe<{ error?: string; brand?: BrandOpt }>(r);
       if (!r.ok) throw new Error(j?.error ?? "Création échouée");
       if (j?.brand) {
-        const newBrand: BrandOpt = {
-          id: j.brand.id,
-          name: j.brand.name,
-          catalogMode: j.brand.catalogMode ?? "CURATED",
-          status: j.brand.status ?? "PUBLISHED",
-          image: j.brand.image ?? null,
-        };
-        onBrandCreated(newBrand);
-        onSelect(newBrand);
+        onBrandCreated(j.brand);
+        onSelect(j.brand);
         setQuery("");
         setOpen(false);
       }
@@ -277,19 +211,20 @@ function BrandCombobox({
 
   if (brandId && selectedBrand) {
     return (
-      <div className="flex items-center gap-2 rounded-xl bg-zinc-800 px-4 py-3">
-        <span className="flex-1 text-[15px] font-medium text-zinc-100">
-          {selectedBrand.name}
-        </span>
+      <div className="flex items-center gap-3 rounded-2xl bg-zinc-900 border border-zinc-800 p-4 shadow-inner">
+        <div className="flex-1">
+          <p className="text-[15px] font-bold text-zinc-100">{selectedBrand.name}</p>
+          <div className="mt-1">
+            <AdminBadge 
+              label={selectedBrand.catalogMode === "COMPLETE" ? "Gamme complète" : "Sélection"} 
+              variant={selectedBrand.catalogMode === "COMPLETE" ? "warning" : "info"}
+            />
+          </div>
+        </div>
         {!readOnly && (
-          <button
-            type="button"
-            onClick={onClear}
-            className="flex h-11 w-11 items-center justify-center rounded-xl text-zinc-500 transition-all duration-200 hover:bg-zinc-700 hover:text-zinc-300"
-            aria-label="Désélectionner la marque"
-          >
+          <AdminButton size="icon" variant="ghost" onClick={onClear} className="h-10 w-10 min-h-0 min-w-0">
             <X className="h-4 w-4" />
-          </button>
+          </AdminButton>
         )}
       </div>
     );
@@ -297,44 +232,22 @@ function BrandCombobox({
 
   return (
     <div ref={ref} className="relative">
-      <input
-        type="text"
+      <AdminInput
         value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setOpen(true);
-        }}
+        onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
         disabled={readOnly}
-        placeholder="Tapez le nom d'une marque pour voir les suggestions ou en créer une…"
-        autoComplete="off"
-        className={`${inputCls} pr-11`}
+        placeholder="Rechercher ou créer une marque..."
+        onClear={query.trim().length > 0 ? () => { setQuery(""); setOpen(false); } : undefined}
       />
-      {!readOnly && query.trim().length > 0 && (
-        <button
-          type="button"
-          onClick={() => {
-            setQuery("");
-            setOpen(false);
-          }}
-          className="absolute right-1 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-zinc-500 transition-all duration-200 hover:bg-zinc-700 hover:text-zinc-300"
-          aria-label="Effacer la recherche de marque"
-        >
-          <X className="h-4 w-4" aria-hidden />
-        </button>
-      )}
       {open && query.trim().length > 0 && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-60 overflow-hidden overflow-y-auto rounded-xl bg-zinc-800 shadow-2xl shadow-black/50">
+        <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-60 overflow-y-auto rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl animate-in fade-in slide-in-from-top-2">
           {filtered.map((b) => (
             <button
               key={b.id}
               type="button"
-              onClick={() => {
-                onSelect(b);
-                setQuery("");
-                setOpen(false);
-              }}
-              className="flex w-full min-h-[44px] items-center px-4 py-3 text-left text-[14px] text-zinc-200 transition-all duration-200 hover:bg-zinc-700"
+              onClick={() => { onSelect(b); setQuery(""); setOpen(false); }}
+              className="flex w-full items-center px-4 py-3 text-left text-[14px] font-medium text-zinc-200 transition-colors hover:bg-zinc-800"
             >
               {b.name}
             </button>
@@ -344,32 +257,14 @@ function BrandCombobox({
               type="button"
               onClick={createBrand}
               disabled={creating}
-              className="flex w-full min-h-[44px] items-center gap-2 border-t border-zinc-700/50 px-4 py-3 text-left text-[14px] font-medium text-blue-400 transition-all duration-200 hover:bg-zinc-700"
+              className="flex w-full items-center gap-2 border-t border-zinc-800 px-4 py-4 text-left text-[14px] font-bold text-blue-400 hover:bg-zinc-800 transition-colors"
             >
-              {creating ? (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-              ) : (
-                <Plus className="h-4 w-4" aria-hidden />
-              )}
-              + Ajouter la marque &quot;{query.trim()}&quot;
+              {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+              Créer la marque « {query.trim()} »
             </button>
-          )}
-          {filtered.length === 0 && (exactMatch || query.trim().length < 2) && (
-            <p className="px-4 py-3 text-[13px] text-zinc-500">Aucun résultat</p>
           )}
         </div>
       )}
-
-      <select
-        required
-        value={brandId}
-        onChange={() => {}}
-        tabIndex={-1}
-        className="sr-only"
-        aria-hidden
-      >
-        <option value="" />
-      </select>
     </div>
   );
 }
@@ -377,7 +272,7 @@ function BrandCombobox({
 export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
   const router = useRouter();
   const isNew = !perfumeId;
-  const errorRef = useRef<HTMLParagraphElement | null>(null);
+  const errorRef = useRef<HTMLDivElement | null>(null);
 
   const [brands, setBrands] = useState<BrandOpt[]>([]);
   const [loading, setLoading] = useState(!isNew);
@@ -386,7 +281,6 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
   const [readOnly, setReadOnly] = useState(false);
 
   const [brandId, setBrandId] = useState("");
-  const [brandNameDraft, setBrandNameDraft] = useState("");
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
   const [imageLight, setImageLight] = useState("");
@@ -396,69 +290,50 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
   const [deleting, setDeleting] = useState(false);
 
   const loadBrands = useCallback(async () => {
-    const r = await fetch("/api/admin/brands", {
-      credentials: "include",
-      cache: "no-store",
-    });
-    if (!r.ok) return;
-      const j = (await readJsonSafe<{ brands: BrandOpt[] }>(r)) ?? { brands: [] };
-    setBrands(j.brands ?? []);
+    const r = await fetch("/api/admin/brands", { credentials: "include", cache: "no-store" });
+    if (r.ok) {
+      const j = await readJsonSafe<{ brands: BrandOpt[] }>(r);
+      setBrands(j?.brands ?? []);
+    }
   }, []);
 
-  useEffect(() => {
-    loadBrands();
-  }, [loadBrands]);
+  useEffect(() => { loadBrands(); }, [loadBrands]);
 
   useEffect(() => {
-    let cancelled = false;
     fetch("/api/admin/session", { credentials: "include", cache: "no-store" })
-      .then((r) => r.json())
-      .then((j: { user?: { role: string } }) => {
-        if (!cancelled && j.user?.role === "VIEWER") setReadOnly(true);
-      })
-      .catch(() => {});
-    return () => { cancelled = true; };
+      .then(r => r.json())
+      .then(j => { if (j.user?.role === "VIEWER") setReadOnly(true); });
   }, []);
 
   useEffect(() => {
     if (isNew || !perfumeId) return;
-    let cancelled = false;
     (async () => {
       setLoading(true);
-      setError(null);
       try {
-        const r = await fetch(`/api/admin/perfumes/${perfumeId}`, {
-          credentials: "include",
-          cache: "no-store",
-        });
+        const r = await fetch(`/api/admin/perfumes/${perfumeId}`, { credentials: "include", cache: "no-store" });
         const j = await readJsonSafe<{ error?: string; perfume?: PerfumePayload }>(r);
         if (!r.ok) throw new Error(j?.error ?? "Chargement impossible");
-        if (cancelled || !j?.perfume) return;
-        const p = j.perfume;
-        setBrandId(p.brandId);
-        setName(p.name);
-        setImage(p.image);
-        setImageLight(p.imageLight ?? "");
-        setStatus(p.status);
+        if (j?.perfume) {
+          const p = j.perfume;
+          setBrandId(p.brandId);
+          setName(p.name);
+          setImage(p.image);
+          setImageLight(p.imageLight ?? "");
+          setStatus(p.status);
+        }
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Erreur");
+        setError(e instanceof Error ? e.message : "Erreur");
       } finally {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
   }, [isNew, perfumeId]);
 
   useEffect(() => {
-    if (error && errorRef.current) {
-      errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
+    if (error && errorRef.current) errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [error]);
 
-  const selectedBrand = useMemo(
-    () => brands.find((b) => b.id === brandId),
-    [brands, brandId],
-  );
+  const selectedBrand = useMemo(() => brands.find((b) => b.id === brandId), [brands, brandId]);
   const isLockedByBrandMode = selectedBrand?.catalogMode === "COMPLETE";
   const isLockedByBrandVisibility = selectedBrand?.status === "DRAFT";
 
@@ -486,30 +361,21 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (readOnly) return;
-    if (!brandId) {
-      if (!brandNameDraft.trim()) {
-        setError("Sélectionnez une marque ou saisissez-en une nouvelle.");
-        return;
-      }
-    }
+    if (readOnly || !brandId || !name || !image) return;
+    
     setSaving(true);
     setError(null);
     try {
       let allowCompleteOverride = false;
       if (selectedBrand?.catalogMode === "COMPLETE") {
-        const confirmed = window.confirm(
-          "Cette marque est en gamme complète. Voulez-vous créer ce parfum quand même ? Il sera automatiquement masqué tant que la marque reste en gamme complète.",
-        );
-        if (!confirmed) {
-          setSaving(false);
-          return;
+        if (!window.confirm("Cette marque est en gamme complète. Le parfum sera masqué automatiquement. Continuer ?")) {
+          setSaving(false); return;
         }
         allowCompleteOverride = true;
       }
+
       const body = {
         brandId,
-        brandName: brandNameDraft.trim() || undefined,
         name,
         image,
         imageLight: imageLight.trim() || null,
@@ -524,16 +390,8 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const j = await readJsonSafe<{
-        error?: string;
-        warning?: string | null;
-        requiresConfirmation?: boolean;
-        perfume?: { id: number };
-      }>(r);
-      if (!r.ok) throw new Error(j?.error ?? "Enregistrement refusé");
-      if (j?.warning) {
-        setError(j.warning);
-      }
+      const j = await readJsonSafe<{ error?: string; warning?: string }>(r);
+      if (!r.ok) throw new Error(j?.error ?? "Erreur d'enregistrement");
       router.push("/admin");
       router.refresh();
     } catch (err) {
@@ -543,291 +401,189 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-4 py-8">
-        <div className="flex items-center gap-2 text-zinc-500">
-          <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-          <span className="text-[14px]">Chargement…</span>
-        </div>
-        <div className="h-10 w-48 rounded-xl bg-zinc-900 animate-pulse" />
-        <div className="h-10 w-full rounded-xl bg-zinc-900 animate-pulse" />
-        <div className="h-10 w-full rounded-xl bg-zinc-900 animate-pulse" />
-        <div className="h-40 w-full max-w-[200px] rounded-xl bg-zinc-900 animate-pulse" />
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center py-20 gap-4">
+      <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      <p className="text-zinc-500 text-sm font-medium">Chargement du parfum...</p>
+    </div>
+  );
 
   return (
-    <>
-      <form id="admin-perfume-form" onSubmit={onSubmit} className="rounded-2xl bg-zinc-900 p-6 md:p-8 space-y-8">
-        {/* Header */}
-        <div className="space-y-3">
-          <Link
-            href="/admin"
-            className="inline-flex min-h-[44px] items-center gap-1.5 pr-3 text-[13px] text-zinc-500 transition-all duration-200 hover:text-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-            Retour
-          </Link>
+    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+      <div className="flex flex-col gap-4">
+        <Link href="/admin" className="group w-fit">
+          <AdminButton variant="ghost" size="sm" leftIcon={ArrowLeft} className="text-zinc-500 group-hover:text-zinc-300">
+            Retour au catalogue
+          </AdminButton>
+        </Link>
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-[22px] font-semibold tracking-tight text-zinc-100">
-              {isNew ? "Nouveau parfum" : `Modifier #${perfumeId}`}
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
+              {isNew ? "Nouveau parfum" : "Modifier le parfum"}
             </h1>
-            <p className="mt-1 text-[13px] text-zinc-500">
-              {isNew ? "Publié par défaut dans le catalogue." : "Modifiez les champs, puis enregistrez."}
+            <p className="text-sm text-zinc-500 mt-1">
+              Remplissez les informations essentielles du parfum.
             </p>
           </div>
+          {!isNew && (
+            <AdminBadge label={`#${perfumeId}`} />
+          )}
         </div>
+      </div>
 
-        {readOnly && (
-          <div className="rounded-xl bg-amber-500/10 px-4 py-3 text-[13px] text-amber-400">
-            Lecture seule — vous ne pouvez pas modifier cette fiche.
-          </div>
-        )}
-
+      <form id="perfume-form" onSubmit={onSubmit} className="space-y-10">
         {error && (
-          <div
-            ref={errorRef}
-            className="rounded-xl bg-red-500/10 px-4 py-3 text-[14px] text-red-400"
-            role="alert"
-          >
-            {error}
+          <div ref={errorRef} className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl animate-in shake duration-500">
+            <AlertCircle className="h-5 w-5 text-red-500 shrink-0" />
+            <p className="text-sm font-medium text-red-400">{error}</p>
           </div>
         )}
 
-        {/* --- Identité --- */}
-        <fieldset className="space-y-4">
-          <legend className="text-[15px] font-semibold text-zinc-200">
-            Identité
-          </legend>
-
-          <div>
-            <label className={labelCls}>Marque</label>
-            <p className="mt-0.5 text-[12px] text-zinc-500">
-              Tapez pour afficher la liste des marques disponibles.
-            </p>
-            <div className="mt-1.5">
+        <section className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="h-6 w-1 bg-blue-600 rounded-full" />
+            <h2 className="text-lg font-bold text-zinc-100">Informations générales</h2>
+          </div>
+          
+          <div className="space-y-6 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
+            <div className="space-y-2">
+              <label className="text-[14px] font-bold text-zinc-200">Marque</label>
               <BrandCombobox
                 brands={brands}
                 brandId={brandId}
-                onSelect={(b) => {
-                  setBrandId(b.id);
-                  setBrandNameDraft("");
-                  if (b.catalogMode === "COMPLETE" || b.status === "DRAFT") {
-                    setStatus("DRAFT");
-                  }
-                }}
+                onSelect={(b) => { setBrandId(b.id); if (b.catalogMode === "COMPLETE" || b.status === "DRAFT") setStatus("DRAFT"); }}
                 onClear={() => setBrandId("")}
                 readOnly={readOnly}
-                onBrandCreated={(b) => setBrands((prev) => [...prev, b].sort((a, z) => a.name.localeCompare(z.name)))}
+                onBrandCreated={(b) => setBrands(prev => [...prev, b].sort((a,z) => a.name.localeCompare(z.name)))}
                 onError={setError}
               />
-            </div>
-            {!brandId && (
-              <div className="relative mt-2">
-                <input
-                  value={brandNameDraft}
-                  onChange={(e) => setBrandNameDraft(e.target.value)}
-                  disabled={readOnly}
-                  placeholder="Nouvelle marque (créée automatiquement)"
-                  className={`${inputCls} pr-11`}
-                />
-                {!readOnly && brandNameDraft.trim().length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setBrandNameDraft("")}
-                    className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-zinc-500 transition-all duration-200 hover:bg-zinc-700 hover:text-zinc-300"
-                    aria-label="Effacer la nouvelle marque"
-                  >
-                    <X className="h-4 w-4" aria-hidden />
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-          {selectedBrand?.catalogMode === "COMPLETE" && (
-            <p className="text-[12px] text-amber-400">
-              Cette marque est en gamme complète: tout parfum créé restera masqué tant que ce mode est actif.
-            </p>
-          )}
-          {selectedBrand?.status === "DRAFT" && (
-            <p className="text-[12px] text-amber-400">
-              Cette marque est masquée: ce parfum restera masqué tant que la marque n&apos;est pas visible.
-            </p>
-          )}
-
-          <div>
-            <label className={labelCls}>Nom du parfum</label>
-            <div className="relative mt-1.5">
-              <input
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={readOnly}
-                autoComplete="off"
-                className={`${inputCls} pr-11`}
-              />
-              {!readOnly && name.trim().length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setName("")}
-                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-zinc-500 transition-all duration-200 hover:bg-zinc-700 hover:text-zinc-300"
-                  aria-label="Effacer le nom du parfum"
-                >
-                  <X className="h-4 w-4" aria-hidden />
-                </button>
+              {(isLockedByBrandMode || isLockedByBrandVisibility) && (
+                <p className="text-[12px] text-amber-500 font-medium">
+                  Marque {isLockedByBrandMode ? "en gamme complète" : "masquée"}. Le parfum sera masqué.
+                </p>
               )}
             </div>
+
+            <AdminInput
+              label="Nom du parfum"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              disabled={readOnly}
+              required
+              placeholder="Ex: Baccarat Rouge 540"
+              onClear={!readOnly && name.length > 0 ? () => setName("") : undefined}
+            />
           </div>
-        </fieldset>
+        </section>
 
-        {/* --- Visuels --- */}
-        <fieldset className="space-y-4">
-          <legend className="text-[15px] font-semibold text-zinc-200">
-            Visuels
-          </legend>
-
-          <ImageUploadField
-            label="Image du parfum"
-            subtitle="Obligatoire. Utilisée par défaut en dark et light."
-            value={image}
-            onChange={setImage}
-            required
-            readOnly={readOnly}
-            onError={setError}
-            allowClear={false}
-          />
-
-          <ImageUploadField
-            label="Variante mode clair"
-            subtitle="Facultative. Si ajoutée, elle remplace l'image principale en light mode."
-            value={imageLight}
-            onChange={setImageLight}
-            readOnly={readOnly}
-            onError={setError}
-          />
-        </fieldset>
-
-        {/* --- Statut --- */}
-        <fieldset className="space-y-3">
-          <legend className="text-[15px] font-semibold text-zinc-200">
-            Publication
-          </legend>
-
-          <div className="flex gap-2">
-            {STATUS_OPTIONS.map((opt) => {
-              const active = status === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => !readOnly && setStatus(opt.value)}
-                  disabled={readOnly || ((isLockedByBrandMode || isLockedByBrandVisibility) && opt.value === "PUBLISHED")}
-                  className={`flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 text-[13px] font-medium transition-all duration-200 ${
-                    active
-                      ? "bg-zinc-100 text-zinc-900 font-semibold"
-                      : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
-                  }`}
-                >
-                  <span className={`h-2 w-2 rounded-full ${opt.color}`} />
-                  {opt.label}
-                </button>
-              );
-            })}
+        <section className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="h-6 w-1 bg-blue-600 rounded-full" />
+            <h2 className="text-lg font-bold text-zinc-100">Visuels du produit</h2>
           </div>
-          {(isLockedByBrandMode || isLockedByBrandVisibility) && (
-            <p className="text-[12px] text-amber-400">
-              Le statut visible est bloqué par la marque (gamme complète ou marque masquée).
-            </p>
-          )}
-        </fieldset>
 
-        {/* --- Danger zone: delete --- */}
-        {!isNew && !readOnly && (
-          <div className="rounded-xl bg-red-500/10 p-5">
-            {!deleteConfirm ? (
-              <button
-                type="button"
-                onClick={() => setDeleteConfirm(true)}
-                className="flex min-h-[44px] items-center gap-2 rounded-xl bg-red-500/20 px-4 py-2 text-[13px] font-medium text-red-400 transition-all duration-200 hover:bg-red-500/30"
-              >
-                <Trash2 className="h-4 w-4" aria-hidden />
-                Supprimer ce parfum
-              </button>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-[13px] font-medium text-red-400">
-                  Supprimer définitivement ce parfum ? Cette action est irréversible.
-                </p>
-                <div className="flex gap-2">
+          <div className="grid gap-8 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
+            <ImageUploadField
+              label="Image principale"
+              subtitle="Utilisée pour tous les thèmes. Format WebP recommandé."
+              value={image}
+              onChange={setImage}
+              required
+              readOnly={readOnly}
+              onError={setError}
+              allowClear={false}
+            />
+            <div className="h-px bg-zinc-800/50" />
+            <ImageUploadField
+              label="Variante mode clair (optionnelle)"
+              subtitle="S'affiche uniquement en thème clair si spécifiée."
+              value={imageLight}
+              onChange={setImageLight}
+              readOnly={readOnly}
+              onError={setError}
+            />
+          </div>
+        </section>
+
+        <section className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="h-6 w-1 bg-blue-600 rounded-full" />
+            <h2 className="text-lg font-bold text-zinc-100">Statut de publication</h2>
+          </div>
+
+          <div className="bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
+            <div className="flex gap-3">
+              {STATUS_OPTIONS.map((opt) => {
+                const active = status === opt.value;
+                const locked = (isLockedByBrandMode || isLockedByBrandVisibility) && opt.value === "PUBLISHED";
+                return (
                   <button
+                    key={opt.value}
                     type="button"
-                    onClick={() => setDeleteConfirm(false)}
-                    disabled={deleting}
-                    className="flex min-h-[44px] items-center justify-center rounded-xl bg-zinc-800 px-4 py-2 text-[13px] font-medium text-zinc-300 transition-all duration-200 hover:bg-zinc-700"
+                    disabled={readOnly || locked}
+                    onClick={() => setStatus(opt.value)}
+                    className={`
+                      relative flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all duration-300
+                      ${active 
+                        ? "bg-zinc-100 border-zinc-100 shadow-xl shadow-zinc-100/10" 
+                        : "bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:border-zinc-700"}
+                      ${locked ? "opacity-30 grayscale cursor-not-allowed" : ""}
+                    `}
                   >
-                    Annuler
+                    <AdminBadge label={opt.label} variant={active ? opt.variant : "neutral"} dot={active} />
+                    <span className={`text-[11px] font-bold uppercase tracking-widest ${active ? "text-zinc-900" : "text-zinc-600"}`}>
+                      {opt.value === "PUBLISHED" ? "Public" : "Interne"}
+                    </span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleDelete}
-                    disabled={deleting}
-                    className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-[13px] font-semibold text-white transition-all duration-200 hover:bg-red-400 disabled:opacity-50"
-                  >
-                    {deleting && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
-                    Confirmer la suppression
-                  </button>
-                </div>
-              </div>
+                );
+              })}
+            </div>
+            {readOnly && (
+              <p className="mt-4 text-center text-xs text-amber-500 font-medium">
+                Accès limité : modification du statut impossible.
+              </p>
             )}
           </div>
-        )}
+        </section>
 
-        {/* Desktop save */}
-        <div className="hidden md:block">
-          <button
+        <div className="pt-8 border-t border-zinc-900 space-y-4">
+          <AdminButton
             type="submit"
-            disabled={saving || readOnly}
-            className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-blue-500 text-[14px] font-semibold text-white transition-all duration-200 hover:bg-blue-400 active:scale-[0.98] disabled:opacity-50"
+            className="w-full"
+            size="lg"
+            isLoading={saving}
+            disabled={readOnly || !brandId || !name || !image}
           >
-            {saving ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                Enregistrement…
-              </>
-            ) : (
-              isNew ? "Créer le parfum" : "Enregistrer"
-            )}
-          </button>
+            {isNew ? "Créer le parfum" : "Enregistrer les modifications"}
+          </AdminButton>
+          
+          {!isNew && !readOnly && (
+            <div className="pt-4 flex flex-col items-center">
+              {!deleteConfirm ? (
+                <button
+                  type="button"
+                  onClick={() => setDeleteConfirm(true)}
+                  className="text-[13px] font-bold text-red-500/70 hover:text-red-500 transition-colors uppercase tracking-widest"
+                >
+                  Supprimer ce parfum
+                </button>
+              ) : (
+                <div className="flex flex-col items-center gap-3 p-4 bg-red-500/5 border border-red-500/10 rounded-2xl w-full animate-in zoom-in-95">
+                  <p className="text-xs text-red-400 font-bold uppercase tracking-wider">Suppression irréversible ?</p>
+                  <div className="flex gap-2 w-full">
+                    <AdminButton variant="ghost" className="flex-1" onClick={() => setDeleteConfirm(false)} disabled={deleting}>
+                      Annuler
+                    </AdminButton>
+                    <AdminButton variant="danger" className="flex-1" onClick={handleDelete} isLoading={deleting}>
+                      Confirmer
+                    </AdminButton>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </form>
-
-      {/* Mobile sticky bar */}
-      {!readOnly && (
-        <div className="fixed inset-x-0 bottom-0 z-50 bg-zinc-950/90 backdrop-blur-2xl backdrop-saturate-150 border-t border-zinc-800/50 pb-[max(0.75rem,env(safe-area-inset-bottom))] pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-3 md:hidden">
-          <div className="mx-auto flex max-w-2xl gap-3">
-            <Link
-              href="/admin"
-              className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-xl bg-zinc-800 text-[13px] font-medium text-zinc-400 transition-all duration-200 hover:bg-zinc-700 active:scale-[0.97]"
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden />
-              Retour
-            </Link>
-            <button
-              type="submit"
-              form="admin-perfume-form"
-              disabled={saving}
-              className="flex min-h-[48px] flex-[1.8] items-center justify-center gap-2 rounded-xl bg-blue-500 text-[14px] font-semibold text-white transition-all duration-200 hover:bg-blue-400 active:scale-[0.97] disabled:opacity-50"
-            >
-              {saving ? (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-              ) : null}
-              {saving ? "Envoi…" : isNew ? "Créer" : "Enregistrer"}
-            </button>
-          </div>
-        </div>
-      )}
-    </>
+    </div>
   );
 }
