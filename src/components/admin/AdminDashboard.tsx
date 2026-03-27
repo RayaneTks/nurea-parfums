@@ -39,8 +39,6 @@ type PerfumeRow = {
 
 type PerfumeFilter = "all" | "PUBLISHED" | "DRAFT";
 type Tab = "perfumes" | "brands";
-type BrandModeFilter = "all" | "CURATED" | "COMPLETE";
-type BrandSort = "name-asc" | "name-desc" | "count-desc" | "count-asc";
 
 const VISUAL_SIZE = 52;
 
@@ -269,12 +267,12 @@ export function AdminDashboard() {
   const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<number>>(new Set());
 
   const [newBrand, setNewBrand] = useState("");
-  const [brandMsg, setBrandMsg] = useState<string | null>(null);
+  const [newBrandMode, setNewBrandMode] = useState<"CURATED" | "COMPLETE">("CURATED");
+  const [newBrandImage, setNewBrandImage] = useState("");
+  const [showBrandCreateForm, setShowBrandCreateForm] = useState(false);
   const [brandImageDrafts, setBrandImageDrafts] = useState<Record<string, string>>({});
   const [brandNameDrafts, setBrandNameDrafts] = useState<Record<string, string>>({});
   const [brandSearch, setBrandSearch] = useState("");
-  const [brandModeFilter, setBrandModeFilter] = useState<BrandModeFilter>("all");
-  const [brandSort, setBrandSort] = useState<BrandSort>("name-asc");
   const [editingBrandId, setEditingBrandId] = useState<string | null>(null);
   const [pendingBrandIds, setPendingBrandIds] = useState<Set<string>>(new Set());
   const [brandDeleteTarget, setBrandDeleteTarget] = useState<{ id: string; name: string; count: number } | null>(null);
@@ -339,39 +337,26 @@ export function AdminDashboard() {
 
   const filteredBrands = useMemo(() => {
     const q = brandSearch.trim().toLowerCase();
-    let rows = brands;
-    if (brandModeFilter !== "all") {
-      rows = rows.filter((b) => b.catalogMode === brandModeFilter);
-    }
+    const rows = brands;
     if (q) {
-      rows = rows.filter(
+      return rows.filter(
         (b) =>
           b.name.toLowerCase().includes(q) ||
           b.slug.toLowerCase().includes(q),
       );
     }
-    const sorted = [...rows];
-    switch (brandSort) {
-      case "name-desc":
-        sorted.sort((a, b) => b.name.localeCompare(a.name, "fr"));
-        break;
-      case "count-desc":
-        sorted.sort((a, b) => b._count.perfumes - a._count.perfumes || a.name.localeCompare(b.name, "fr"));
-        break;
-      case "count-asc":
-        sorted.sort((a, b) => a._count.perfumes - b._count.perfumes || a.name.localeCompare(b.name, "fr"));
-        break;
-      default:
-        sorted.sort((a, b) => a.name.localeCompare(b.name, "fr"));
-    }
-    return sorted;
-  }, [brands, brandSearch, brandModeFilter, brandSort]);
+    return rows;
+  }, [brands, brandSearch]);
 
-  const brandModePills: { id: BrandModeFilter; label: string; count: number }[] = [
-    { id: "all", label: "Toutes", count: brands.length },
-    { id: "COMPLETE", label: "Gammes complètes", count: brands.filter((b) => b.catalogMode === "COMPLETE").length },
-    { id: "CURATED", label: "Sélections", count: brands.filter((b) => b.catalogMode === "CURATED").length },
-  ];
+  const brandFallbackImageByName = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const perfume of perfumes) {
+      const key = perfume.brand.name.trim().toLowerCase();
+      if (!key || map.has(key)) continue;
+      map.set(key, perfume.image);
+    }
+    return map;
+  }, [perfumes]);
 
   const canEdit = user?.role !== "VIEWER";
 
@@ -448,24 +433,34 @@ export function AdminDashboard() {
 
   async function addBrand(e: React.FormEvent) {
     e.preventDefault();
-    setBrandMsg(null);
     const name = newBrand.trim();
+    const image = newBrandImage.trim();
     if (name.length < 2) return;
+    if (newBrandMode === "COMPLETE" && !image) {
+      setActionMsg({ type: "error", text: "Ajoutez une image pour une gamme complète." });
+      return;
+    }
     setIsAddingBrand(true);
     try {
       const r = await fetch("/api/admin/brands", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, catalogMode: "CURATED" }),
+        body: JSON.stringify({
+          name,
+          catalogMode: newBrandMode,
+          image: image || null,
+        }),
       });
       const j = await readJsonSafe<{ error?: string; brand?: BrandRow }>(r);
       if (!r.ok) {
-        setBrandMsg(j?.error ?? "Création refusée.");
+        setActionMsg({ type: "error", text: j?.error ?? "Création refusée." });
         return;
       }
       setNewBrand("");
-      setBrandMsg("Marque créée.");
+      setNewBrandMode("CURATED");
+      setNewBrandImage("");
+      setShowBrandCreateForm(false);
       if (j?.brand) {
         const created = j.brand;
         setBrands((prev) =>
@@ -478,7 +473,7 @@ export function AdminDashboard() {
         refresh();
       }
     } catch {
-      setBrandMsg("Erreur réseau. Réessayez.");
+      setActionMsg({ type: "error", text: "Erreur réseau. Réessayez." });
     } finally {
       setIsAddingBrand(false);
     }
@@ -718,77 +713,121 @@ export function AdminDashboard() {
         {tab === "brands" && (
           <div className="mt-5 space-y-4">
             {canEdit && (
-              <form onSubmit={addBrand} className="flex gap-2">
-                <input
-                  value={newBrand}
-                  onChange={(e) => setNewBrand(e.target.value)}
-                  placeholder="Nouvelle marque…"
-                  className="min-h-[44px] flex-1 rounded-md border border-black/10 bg-white px-3 text-[15px] text-[#1a1a1a] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
-                />
+              <div className="hidden md:flex">
                 <button
-                  type="submit"
-                  className="flex min-h-[44px] items-center gap-1.5 rounded-md bg-blue-500 px-4 text-[13px] font-medium text-white transition-all hover:bg-blue-600 active:scale-[0.98]"
+                  type="button"
+                  onClick={() => setShowBrandCreateForm((prev) => !prev)}
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-md bg-blue-500 px-4 text-[13px] font-medium text-white transition-all hover:bg-blue-600 active:scale-[0.98]"
                 >
                   <Plus className="h-4 w-4" aria-hidden />
-                  Ajouter
+                  Ajouter une marque
                 </button>
+              </div>
+            )}
+            {canEdit && showBrandCreateForm && (
+              <form
+                onSubmit={addBrand}
+                className="rounded-md border border-black/[0.08] bg-white/[0.65] p-3 dark:border-white/[0.08] dark:bg-white/[0.03]"
+              >
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <div>
+                    <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">Nom de la marque</label>
+                    <input
+                      value={newBrand}
+                      onChange={(e) => setNewBrand(e.target.value)}
+                      placeholder="Ex: Dior"
+                      className="mt-1.5 min-h-[44px] w-full rounded-md border border-black/10 bg-white px-3 text-[14px] text-[#1a1a1a] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
+                    />
+                  </div>
+                  <div className="relative">
+                    <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">Mode de catalogue</label>
+                    <div className="relative mt-1.5">
+                      <select
+                        value={newBrandMode}
+                        onChange={(e) => setNewBrandMode(e.target.value as "CURATED" | "COMPLETE")}
+                        className={selectCls}
+                      >
+                        {CATALOG_MODE_KEYS.map((k) => (
+                          <option key={k} value={k}>
+                            {k === "COMPLETE" ? "Gamme complète" : "Parfums sélectionnés"}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#bbb]" aria-hidden />
+                    </div>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">
+                      Image marque (URL ou chemin `public`)
+                    </label>
+                    <input
+                      value={newBrandImage}
+                      onChange={(e) => setNewBrandImage(e.target.value)}
+                      placeholder={newBrandMode === "COMPLETE" ? "Image obligatoire en gamme complète" : "Image facultative"}
+                      className="mt-1.5 min-h-[44px] w-full rounded-md border border-black/10 bg-white px-3 text-[14px] text-[#1a1a1a] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
+                    />
+                    {newBrandMode === "COMPLETE" && !newBrandImage.trim() && (
+                      <p className="mt-1 text-[11px] text-amber-600 dark:text-amber-400">
+                        Une image est requise pour une gamme complète.
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBrandCreateForm(false);
+                      setNewBrand("");
+                      setNewBrandMode("CURATED");
+                      setNewBrandImage("");
+                    }}
+                    className="min-h-[44px] rounded-md border border-black/10 px-3 text-[12px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isAddingBrand || newBrand.trim().length < 2}
+                    className="inline-flex min-h-[44px] items-center gap-2 rounded-md bg-blue-500 px-3 text-[12px] font-semibold text-white transition-all hover:bg-blue-600 disabled:opacity-50"
+                  >
+                    <Plus className="h-4 w-4" aria-hidden />
+                    {isAddingBrand ? "Ajout…" : "Créer la marque"}
+                  </button>
+                </div>
               </form>
             )}
-            {brandMsg && (
-              <p className="text-[13px] text-[#999]">{brandMsg}</p>
-            )}
-            <p className="text-[12px] text-[#8d8d8d] dark:text-[#7f7f7f]">
-              {filteredBrands.length} résultat{filteredBrands.length > 1 ? "s" : ""} affiché{filteredBrands.length > 1 ? "s" : ""}
-            </p>
 
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="relative">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#aaa]"
+                aria-hidden
+              />
               <input
                 type="search"
                 value={brandSearch}
                 onChange={(e) => setBrandSearch(e.target.value)}
                 placeholder="Rechercher une marque…"
-                className="min-h-[44px] rounded-md border border-black/10 bg-white px-3 text-[14px] text-[#1a1a1a] placeholder:text-[#bbb] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
+                className="block min-h-[44px] w-full rounded-md border border-black/10 bg-white py-2.5 pl-10 pr-3 text-[15px] text-[#1a1a1a] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
               />
-              <select
-                value={brandSort}
-                onChange={(e) => setBrandSort(e.target.value as BrandSort)}
-                className={selectCls}
-              >
-                <option value="name-asc">Tri: Nom A-Z</option>
-                <option value="name-desc">Tri: Nom Z-A</option>
-                <option value="count-desc">Tri: Plus de parfums</option>
-                <option value="count-asc">Tri: Moins de parfums</option>
-              </select>
             </div>
-            <div className="flex gap-1.5 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
-              {brandModePills.map(({ id, label, count }) => {
-                const active = brandModeFilter === id;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setBrandModeFilter(id)}
-                    className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium transition-all ${
-                      active
-                        ? "bg-blue-500 text-white"
-                        : "bg-black/[0.04] text-[#888] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:text-[#777] dark:hover:bg-white/[0.06]"
-                    }`}
-                  >
-                    {label}
-                    <span className="ml-1 opacity-70">{count}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <p className="text-[12px] text-[#8d8d8d] dark:text-[#7f7f7f]">
+              {filteredBrands.length} résultat{filteredBrands.length > 1 ? "s" : ""} affiché{filteredBrands.length > 1 ? "s" : ""}
+            </p>
 
             {filteredBrands.length === 0 ? (
-              <p className="py-12 text-center text-[14px] text-[#999]">Aucune marque.</p>
+              <p className="py-12 text-center text-[14px] text-[#999]">
+                Aucune marque. Ajoutez-en une pour alimenter le catalogue.
+              </p>
             ) : (
               <ul className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
                 {filteredBrands.map((b, idx) => (
                   <li key={b.id} className={`py-4 ${idx % 2 === 0 ? "bg-black/[0.015] dark:bg-white/[0.02]" : ""}`}>
                     <div className="flex items-center gap-3">
-                      <BrandVisual name={b.name} image={b.image} />
+                      <BrandVisual
+                        name={b.name}
+                        image={b.image ?? brandFallbackImageByName.get(b.name.trim().toLowerCase()) ?? null}
+                      />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[15px] font-medium text-[#1a1a1a] dark:text-[#e5e5e5]">
                           {b.name}
@@ -948,34 +987,15 @@ export function AdminDashboard() {
           <Plus className="h-6 w-6" aria-hidden />
         </Link>
       )}
-      {canEdit && tab === "brands" && (
-        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-black/[0.06] bg-white/95 pb-[max(0.75rem,env(safe-area-inset-bottom))] pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-3 backdrop-blur-xl dark:border-white/[0.06] dark:bg-[#111]/95 md:hidden">
-          <div className="mx-auto flex max-w-3xl gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setBrandSearch("");
-                setBrandModeFilter("all");
-                setBrandSort("name-asc");
-              }}
-              className="flex min-h-[48px] flex-1 items-center justify-center rounded-md border border-black/10 text-[12px] font-medium text-[#666] transition-all active:scale-[0.97] dark:border-white/10 dark:text-[#aaa]"
-            >
-              Réinitialiser
-            </button>
-            <button
-              type="button"
-              disabled={isAddingBrand || newBrand.trim().length < 2}
-              onClick={async () => {
-                const fakeEvent = { preventDefault() {} } as React.FormEvent;
-                await addBrand(fakeEvent);
-              }}
-              className="flex min-h-[48px] flex-[1.4] items-center justify-center gap-2 rounded-md bg-blue-500 text-[13px] font-semibold text-white transition-all active:scale-[0.97] disabled:opacity-50"
-            >
-              <Plus className="h-4 w-4" aria-hidden />
-              {isAddingBrand ? "Ajout…" : "Ajouter la marque"}
-            </button>
-          </div>
-        </div>
+      {canEdit && tab === "brands" && !showBrandCreateForm && (
+        <button
+          type="button"
+          onClick={() => setShowBrandCreateForm(true)}
+          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-600 hover:shadow-xl active:scale-95 md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          aria-label="Nouvelle marque"
+        >
+          <Plus className="h-6 w-6" aria-hidden />
+        </button>
       )}
 
       {/* Delete confirmation modal */}
