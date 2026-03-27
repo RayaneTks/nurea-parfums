@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { createPortal } from "react-dom";
-import { Menu, Moon, Search, Sun, X } from "lucide-react";
+import { Menu, Moon, Search, SlidersHorizontal, Sun, X } from "lucide-react";
 import {
   useEffect,
   useRef,
@@ -197,12 +197,12 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenBrowse }) => {
               type="button"
               onClick={onOpenBrowse}
               className="relative flex h-11 w-11 shrink-0 items-center justify-center text-[var(--nurea-text-muted)] transition-all hover:text-[var(--nurea-text)] active:scale-95 md:h-auto md:w-auto md:rounded-none md:py-2.5 md:pl-2 md:pr-3"
-              aria-label="Explorer le catalogue"
+              aria-label="Filtrer le catalogue"
             >
-              <Search size={20} strokeWidth={1.5} className="md:hidden" />
+              <SlidersHorizontal size={20} strokeWidth={1.5} className="md:hidden" />
               <span className="hidden items-center gap-2 text-[12px] uppercase tracking-[0.15em] md:flex">
-                <Search size={15} strokeWidth={1.5} />
-                Explorer
+                <SlidersHorizontal size={15} strokeWidth={1.5} />
+                Filtrer
               </span>
             </button>
           )}
@@ -309,8 +309,8 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenBrowse }) => {
                     }}
                     className="flex items-center gap-2.5 text-[13px] uppercase tracking-[0.2em] text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-text)] active:scale-95"
                   >
-                    <Search size={16} strokeWidth={1.5} />
-                    Explorer le catalogue
+                    <SlidersHorizontal size={16} strokeWidth={1.5} />
+                    Filtrer le catalogue
                   </button>
                 )}
               </nav>

@@ -108,234 +108,156 @@ export const ContactSection: FC = () => {
 
   return (
     <main id="main-content" className="relative w-full overflow-x-clip">
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[350px] w-[500px] -translate-x-1/2 bg-[var(--nurea-accent)] opacity-[0.025] blur-[100px]" />
+      <div className="pointer-events-none absolute left-1/2 top-0 h-[320px] w-[520px] -translate-x-1/2 bg-[var(--nurea-accent)] opacity-[0.03] blur-[110px]" />
 
-      <div className="mx-auto max-w-[1200px] px-4 pb-16 pt-28 md:px-10 md:pb-24 md:pt-40">
-        <ScrollReveal className="mx-auto mb-16 max-w-2xl text-center md:mb-24">
-          <span className="mb-4 block text-[11px] font-medium uppercase tracking-nurea-wide text-[var(--nurea-accent)] md:text-[12px]">
-            Maison Nurea Parfums
+      <div className="mx-auto max-w-[1200px] px-4 pb-16 pt-24 md:px-10 md:pb-24 md:pt-36">
+        <ScrollReveal className="mx-auto mb-10 max-w-2xl text-center md:mb-14">
+          <span className="mb-3 block text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--nurea-accent)]">
+            Contact
           </span>
-          <h1 className="mb-5 font-serif text-[clamp(30px,6vw,52px)] leading-[1.08] text-[var(--nurea-text)]">
-            L&apos;Art de <em className="italic">l&apos;Échange</em>
+          <h1 className="mb-4 font-serif text-[clamp(28px,7vw,48px)] leading-[1.1] text-[var(--nurea-text)]">
+            On vous répond vite
           </h1>
-          <p className="mx-auto max-w-md text-[13px] leading-[1.85] text-[var(--nurea-text-muted)] md:text-[14px]">
-            Le site est une vitrine : disponibilités, arrivages et conseils se
-            confirment avec la maison. Choisissez le canal qui vous convient.
+          <p className="mx-auto max-w-lg text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
+            Choisissez votre canal : WhatsApp, Snapchat ou formulaire. Plus votre demande est précise, plus la réponse est rapide.
           </p>
         </ScrollReveal>
 
-        <ScrollReveal
-          direction="scale"
-          className="mb-16 flex justify-center md:mb-24"
-        >
-          <Image
-            src="/branding/separators/nurea_separator_copper.svg"
-            alt=""
-            width={100}
-            height={10}
-            className="h-auto w-auto max-w-[90px] opacity-25"
-          />
-        </ScrollReveal>
-
-        <div className="mx-auto grid max-w-4xl gap-12 md:grid-cols-2 md:gap-16">
-          <ScrollReveal direction="left" className="flex flex-col gap-4">
-            <h2 className="mb-1 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-text-muted)]">
-              Continuer la discussion
+        <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-[1fr_1.2fr] md:gap-10">
+          <ScrollReveal direction="left" className="space-y-4">
+            <h2 className="text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--nurea-text-muted)]">
+              Message direct
             </h2>
 
             <a
               href={CONTACT.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative flex items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-5 transition-all duration-500 hover:border-[var(--nurea-accent)] hover:bg-[var(--nurea-surface-hover)] active:scale-[0.99]"
+              className="group flex min-h-[72px] items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-4 py-4 transition-colors hover:border-[var(--nurea-accent)] hover:bg-[var(--nurea-surface-hover)]"
             >
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors duration-300 group-hover:border-[var(--nurea-accent)]">
-                <Image src={whatsappIcon} alt="" width={22} height={22} />
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)]">
+                <Image src={whatsappIcon} alt="" width={24} height={24} className="h-6 w-6" />
               </span>
               <div className="min-w-0 flex-1">
-                <span className="mb-0.5 block text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] md:text-[11px]">
-                  Message écrit
-                </span>
-                <span className="font-serif text-base text-[var(--nurea-text)] md:text-lg">
-                  WhatsApp
-                </span>
+                <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
+                  Le plus rapide
+                </p>
+                <p className="font-serif text-[18px] text-[var(--nurea-text)]">WhatsApp</p>
               </div>
-              <ArrowRight
-                size={15}
-                className="shrink-0 text-[var(--nurea-accent)] transition-transform duration-300 group-hover:-rotate-45"
-              />
+              <ArrowRight size={16} className="text-[var(--nurea-accent)] transition-transform group-hover:-rotate-45" />
             </a>
 
             <a
               href={CONTACT.snapchat}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative flex items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-5 transition-all duration-500 hover:border-[var(--nurea-snapchat)] hover:bg-[var(--nurea-surface-hover)] active:scale-[0.99]"
+              className="group flex min-h-[72px] items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-4 py-4 transition-colors hover:border-[var(--nurea-snapchat)] hover:bg-[var(--nurea-surface-hover)]"
             >
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors duration-300 group-hover:border-[var(--nurea-snapchat)]">
-                <Image src={snapchatIcon} alt="" width={22} height={22} />
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)]">
+                <Image src={snapchatIcon} alt="" width={24} height={24} className="h-6 w-6" />
               </span>
               <div className="min-w-0 flex-1">
-                <span className="mb-0.5 block text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] md:text-[11px]">
-                  Reprendre l&apos;échange
-                </span>
-                <span className="font-serif text-base text-[var(--nurea-text)] md:text-lg">
-                  Snapchat
-                </span>
+                <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
+                  Discussion
+                </p>
+                <p className="font-serif text-[18px] text-[var(--nurea-text)]">Snapchat</p>
               </div>
-              <ArrowRight
-                size={15}
-                className="shrink-0 text-[var(--nurea-text-muted)] transition-transform duration-300 group-hover:-rotate-45"
-              />
+              <ArrowRight size={16} className="text-[var(--nurea-text-muted)] transition-transform group-hover:-rotate-45" />
             </a>
 
-            <div className="mt-3 border-t border-[var(--nurea-border)] pt-5">
-              <span className="mb-1.5 block text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)] md:text-[11px]">
-                Correspondance
-              </span>
-              <a
-                href={`mailto:${CONTACT.email}`}
-                className="font-serif text-sm text-[var(--nurea-text)] transition-colors duration-300 hover:text-[var(--nurea-accent)]"
-              >
+            <div className="border border-[var(--nurea-border)] bg-[var(--nurea-surface)] px-4 py-4">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
+                Email
+              </p>
+              <a href={`mailto:${CONTACT.email}`} className="mt-1 block text-[15px] text-[var(--nurea-text)] hover:text-[var(--nurea-accent)]">
                 {CONTACT.email}
               </a>
             </div>
           </ScrollReveal>
 
-          <ScrollReveal direction="right" delay={120}>
-            <div className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-6 md:p-8">
-              <h3 className="mb-1.5 text-[11px] font-medium uppercase tracking-nurea-wide text-[var(--nurea-text-muted)]">
-                Nous écrire
+          <ScrollReveal direction="right" delay={100}>
+            <div className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-5 md:p-7">
+              <h3 className="text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--nurea-text-muted)]">
+                Formulaire
               </h3>
-              <p className="mb-7 font-serif text-lg text-[var(--nurea-text)] md:text-xl">
-                Un message, une demande
+              <p className="mb-6 mt-1 font-serif text-[22px] text-[var(--nurea-text)]">
+                Envoyer un message
               </p>
 
               {isSubmitted ? (
-                <div className="animate-fade-in-up flex flex-col items-center justify-center py-14 text-center">
-                  <Image
-                    src="/branding/monogram/np-circle-cuivre.png"
-                    alt=""
-                    width={48}
-                    height={48}
-                    className="mb-6 opacity-45"
-                  />
-                  <span className="mb-2 text-[11px] uppercase tracking-nurea-wide text-[var(--nurea-accent)]">
-                    {submitChannel === "resend" ? "Maison Nurea Parfums" : "Messagerie"}
-                  </span>
-                  <h4 className="mb-3 font-serif text-xl text-[var(--nurea-text)]">
+                <div className="animate-fade-in-up py-10 text-center">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--nurea-accent)]">
+                    {submitChannel === "resend" ? "Message envoyé" : "Messagerie ouverte"}
+                  </p>
+                  <p className="mt-2 font-serif text-[22px] text-[var(--nurea-text)]">
+                    Merci pour votre message
+                  </p>
+                  <p className="mx-auto mt-3 max-w-sm text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
                     {submitChannel === "resend"
-                      ? "Votre message a bien été transmis."
-                      : "Votre message est prêt dans votre messagerie."}
-                  </h4>
-                  <p className="max-w-xs text-[12px] leading-[1.8] text-[var(--nurea-text-muted)]">
-                    {submitChannel === "resend" ? (
-                      <>
-                        Nous vous répondrons avec la suite la plus adaptée à
-                        votre demande.
-                      </>
-                    ) : (
-                      <>
-                        Si votre application e-mail ne s&apos;ouvre pas, écrivez
-                        directement à{" "}
-                        <a
-                          className="text-[var(--nurea-accent)] underline-offset-2 hover:underline"
-                          href={`mailto:${CONTACT.email}`}
-                        >
-                          {CONTACT.email}
-                        </a>
-                        .
-                      </>
-                    )}
+                      ? "Nous revenons vers vous rapidement."
+                      : "Si rien ne s'ouvre, envoyez-nous un e-mail directement."}
                   </p>
                 </div>
               ) : (
-                <form onSubmit={handleContactSubmit} className="space-y-6" noValidate>
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <FloatingInput
+                <form onSubmit={handleContactSubmit} className="space-y-4" noValidate>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormField
                       id="name"
                       name="name"
-                      label="Nom & Prénom"
+                      label="Nom et prénom"
                       type="text"
                       value={formState.name}
                       error={fieldErrors.name}
-                      onChange={(v) =>
-                        setFormState({ ...formState, name: v })
-                      }
+                      onChange={(v) => setFormState({ ...formState, name: v })}
                     />
-                    <FloatingInput
+                    <FormField
                       id="email"
                       name="email"
                       label="E-mail"
                       type="email"
                       value={formState.email}
                       error={fieldErrors.email}
-                      onChange={(v) =>
-                        setFormState({ ...formState, email: v })
-                      }
+                      onChange={(v) => setFormState({ ...formState, email: v })}
                     />
                   </div>
 
-                  <FloatingInput
+                  <FormField
                     id="subject"
                     name="subject"
-                    label="Sujet de votre demande"
+                    label="Sujet"
                     type="text"
                     value={formState.subject}
                     error={fieldErrors.subject}
-                    onChange={(v) =>
-                      setFormState({ ...formState, subject: v })
-                    }
+                    onChange={(v) => setFormState({ ...formState, subject: v })}
                   />
 
-                  <div className="relative pt-2">
+                  <div>
+                    <label htmlFor="message" className="mb-1.5 block text-[12px] font-medium text-[var(--nurea-text-muted)]">
+                      Message
+                    </label>
                     <textarea
                       id="message"
                       name="message"
-                      rows={4}
+                      rows={5}
                       value={formState.message}
-                      onChange={(e) =>
-                        setFormState({
-                          ...formState,
-                          message: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormState({ ...formState, message: e.target.value })}
                       aria-invalid={Boolean(fieldErrors.message)}
-                      aria-describedby={
-                        fieldErrors.message ? "message-error" : undefined
-                      }
-                      className="peer block w-full resize-none rounded-sm border-b border-[var(--nurea-border)] bg-transparent py-3 text-[12px] text-[var(--nurea-text)] outline-none transition-colors duration-300 focus:border-[var(--nurea-accent)] md:text-[13px]"
-                      placeholder=" "
+                      aria-describedby={fieldErrors.message ? "message-error" : undefined}
+                      className="block min-h-[128px] w-full resize-y border border-[var(--nurea-border)] bg-transparent px-3 py-3 text-[14px] text-[var(--nurea-text)] outline-none transition-colors focus:border-[var(--nurea-accent)]"
                     />
-                    <label
-                      htmlFor="message"
-                      className={`absolute left-0 top-5 text-[12px] text-[var(--nurea-text-muted)] transition-all duration-300 peer-focus:-top-1 peer-focus:text-[8px] peer-focus:uppercase peer-focus:tracking-[0.2em] peer-focus:text-[var(--nurea-accent)] md:text-[13px] ${
-                        formState.message
-                          ? "-top-1 text-[8px] uppercase tracking-[0.2em] text-[var(--nurea-accent)]"
-                          : ""
-                      }`}
-                    >
-                      Votre message
-                    </label>
                     {fieldErrors.message ? (
-                      <p
-                        id="message-error"
-                        className="mt-2 text-[11px] text-[var(--nurea-accent)]"
-                        role="alert"
-                      >
+                      <p id="message-error" className="mt-1 text-[12px] text-[var(--nurea-accent)]" role="alert">
                         {fieldErrors.message}
                       </p>
                     ) : null}
                   </div>
 
-                  <p className="text-[11px] leading-relaxed text-[var(--nurea-text-muted)]">
-                    Les boutons ci-dessus ouvrent la messagerie instantanée.
-                    Ici, vous écrivez à la maison : une référence précise aide,
-                    nous vous répondons par e-mail.
+                  <p className="text-[12px] leading-relaxed text-[var(--nurea-text-muted)]">
+                    Besoin d&apos;une disponibilité ou d&apos;une alternative ? Donnez la marque et le nom du parfum.
                   </p>
 
                   {serverError ? (
-                    <p className="text-[11px] text-[var(--nurea-accent)]" role="alert">
+                    <p className="text-[12px] text-[var(--nurea-accent)]" role="alert">
                       {serverError}
                     </p>
                   ) : null}
@@ -343,14 +265,12 @@ export const ContactSection: FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="btn-nurea mt-3 w-full justify-center rounded-sm disabled:opacity-50"
+                    className="btn-nurea btn-accent mt-2 w-full justify-center disabled:opacity-50"
                   >
-                    {isSubmitting ? (
-                      "Envoi…"
-                    ) : (
+                    {isSubmitting ? "Envoi…" : (
                       <>
-                        Envoyer la demande
-                        <Send size={12} className="text-[var(--nurea-accent)]" />
+                        Envoyer
+                        <Send size={13} className="text-white" />
                       </>
                     )}
                   </button>
@@ -364,7 +284,7 @@ export const ContactSection: FC = () => {
   );
 };
 
-const FloatingInput = ({
+const FormField = ({
   id,
   name,
   label,
@@ -384,7 +304,10 @@ const FloatingInput = ({
   const errId = `${id}-error`;
 
   return (
-    <div className="relative">
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-[12px] font-medium text-[var(--nurea-text-muted)]">
+        {label}
+      </label>
       <input
         type={type}
         id={id}
@@ -393,21 +316,10 @@ const FloatingInput = ({
         onChange={(e) => onChange(e.target.value)}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? errId : undefined}
-        className="peer block w-full rounded-sm border-b border-[var(--nurea-border)] bg-transparent py-3 text-[12px] text-[var(--nurea-text)] outline-none transition-colors duration-300 focus:border-[var(--nurea-accent)] md:text-[13px]"
-        placeholder=" "
+        className="block min-h-[48px] w-full border border-[var(--nurea-border)] bg-transparent px-3 py-2 text-[14px] text-[var(--nurea-text)] outline-none transition-colors focus:border-[var(--nurea-accent)]"
       />
-      <label
-        htmlFor={id}
-        className={`absolute left-0 top-3 text-[12px] text-[var(--nurea-text-muted)] transition-all duration-300 peer-focus:-top-4 peer-focus:text-[8px] peer-focus:uppercase peer-focus:tracking-[0.2em] peer-focus:text-[var(--nurea-accent)] md:text-[13px] ${
-          value
-            ? "-top-4 text-[8px] uppercase tracking-[0.2em] text-[var(--nurea-accent)]"
-            : ""
-        }`}
-      >
-        {label}
-      </label>
       {error ? (
-        <p id={errId} className="mt-2 text-[11px] text-[var(--nurea-accent)]" role="alert">
+        <p id={errId} className="mt-1 text-[12px] text-[var(--nurea-accent)]" role="alert">
           {error}
         </p>
       ) : null}

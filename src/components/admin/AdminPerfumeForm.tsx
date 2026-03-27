@@ -10,6 +10,7 @@ import {
   ChevronDown,
   Loader2,
   Plus,
+  Trash2,
   Upload,
   X,
 } from "lucide-react";
@@ -92,9 +93,8 @@ const ASSORTMENT_KEYS = ["UNSET", "COMPLETE", "CURATED"] as const;
 const POSITIONING_KEYS = ["UNSET", "NICHE", "DESIGNER", "ARTISAN"] as const;
 
 const STATUS_OPTIONS = [
-  { value: "PUBLISHED", label: "Publie", color: "bg-emerald-500" },
-  { value: "DRAFT", label: "Brouillon", color: "bg-amber-400" },
-  { value: "ARCHIVED", label: "Archive", color: "bg-gray-400" },
+  { value: "PUBLISHED", label: "Visible", color: "bg-emerald-500" },
+  { value: "DRAFT", label: "Masque", color: "bg-amber-400" },
 ] as const;
 
 const inputCls =
@@ -146,6 +146,7 @@ async function uploadFile(file: File): Promise<string> {
 
 function ImageUploadField({
   label,
+  subtitle,
   value,
   onChange,
   required,
@@ -153,6 +154,7 @@ function ImageUploadField({
   onError,
 }: {
   label: string;
+  subtitle?: string;
   value: string;
   onChange: (url: string) => void;
   required?: boolean;
@@ -179,6 +181,9 @@ function ImageUploadField({
   return (
     <div>
       <span className={labelCls}>{label}</span>
+      {subtitle && (
+        <p className="mt-0.5 text-[12px] text-[#999] dark:text-[#666]">{subtitle}</p>
+      )}
       <div className="mt-1.5 space-y-2">
         <input
           value={value}
@@ -377,7 +382,6 @@ function BrandCombobox({
         </div>
       )}
 
-      {/* Hidden select to satisfy native form validation if required */}
       <select
         required
         value={brandId}
@@ -414,7 +418,9 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
   const [aliases, setAliases] = useState("");
   const [tags, setTags] = useState("");
   const [classics, setClassics] = useState("");
-  const [restore, setRestore] = useState(false);
+
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const loadBrands = useCallback(async () => {
     const r = await fetch("/api/admin/brands", { credentials: "include" });
@@ -470,7 +476,6 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         setAliases(p.aliases.map((a) => a.alias).join("\n"));
         setTags(p.tags.map((t) => t.tag).join("\n"));
         setClassics(p.classics.map((c) => c.line).join("\n"));
-        setRestore(false);
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : "Erreur");
       } finally {
@@ -514,6 +519,28 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     }
   }
 
+  async function handleDelete() {
+    if (!perfumeId || readOnly) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      const r = await fetch(`/api/admin/perfumes/${perfumeId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!r.ok) {
+        const j = (await r.json()) as { error?: string };
+        throw new Error(j.error ?? "Suppression refusee");
+      }
+      router.push("/admin");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur");
+      setDeleting(false);
+      setDeleteConfirm(false);
+    }
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (readOnly) return;
@@ -535,7 +562,6 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         aliases,
         tags,
         classics,
-        ...(restore ? { restore: true } : {}),
       };
 
       const url = isNew ? "/api/admin/perfumes" : `/api/admin/perfumes/${perfumeId}`;
@@ -609,7 +635,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           </div>
         )}
 
-        {/* --- Marque --- */}
+        {/* --- Identite --- */}
         <fieldset className="space-y-4">
           <legend className="text-[15px] font-semibold text-[#1a1a1a] dark:text-white">
             Identite
@@ -630,7 +656,6 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             </div>
           </div>
 
-          {/* Brand taxonomy (assortment / positioning) */}
           {brandId && selectedBrand && !readOnly && (
             <div className="grid grid-cols-2 gap-3 rounded-md border border-black/[0.06] bg-black/[0.01] p-3 dark:border-white/[0.06] dark:bg-white/[0.02]">
               <div>
@@ -645,7 +670,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                 </SelectWrapper>
               </div>
               <div>
-                <label className="text-[12px] font-medium text-[#888]">Univers</label>
+                <label className="text-[12px] font-medium text-[#888]">Type</label>
                 <SelectWrapper
                   value={selectedBrand.positioning}
                   onChange={(e) => patchBrandField("positioning", (e.target as HTMLSelectElement).value)}
@@ -709,7 +734,8 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           </legend>
 
           <ImageUploadField
-            label="Image principale"
+            label="Image du parfum"
+            subtitle="Utilisee par defaut. Si une variante mode clair est ajoutee, celle-ci ne sera affichee qu'en mode sombre."
             value={image}
             onChange={setImage}
             required
@@ -717,22 +743,14 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             onError={setError}
           />
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <ImageUploadField
-              label="Image theme clair"
-              value={imageLight}
-              onChange={setImageLight}
-              readOnly={readOnly}
-              onError={setError}
-            />
-            <ImageUploadField
-              label="Image theme sombre"
-              value={imageDark}
-              onChange={setImageDark}
-              readOnly={readOnly}
-              onError={setError}
-            />
-          </div>
+          <ImageUploadField
+            label="Variante mode clair"
+            subtitle="Remplace l'image principale en mode clair."
+            value={imageLight}
+            onChange={setImageLight}
+            readOnly={readOnly}
+            onError={setError}
+          />
         </fieldset>
 
         {/* --- Statut --- */}
@@ -762,29 +780,16 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               );
             })}
           </div>
-
-          {!isNew && (
-            <label className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-md border border-black/[0.06] px-3 py-2 text-[14px] text-[#555] dark:border-white/[0.06] dark:text-[#aaa]">
-              <input
-                type="checkbox"
-                checked={restore}
-                disabled={readOnly}
-                onChange={(e) => setRestore(e.target.checked)}
-                className="h-4 w-4 rounded accent-blue-500"
-              />
-              Restaurer (annuler la suppression douce)
-            </label>
-          )}
         </fieldset>
 
-        {/* --- Metadata --- */}
+        {/* --- Recherche --- */}
         <fieldset className="space-y-4">
           <legend className="text-[15px] font-semibold text-[#1a1a1a] dark:text-white">
-            Recherche et metadonnees
+            Recherche
           </legend>
 
           <div>
-            <label className={labelCls}>Alias (un par ligne)</label>
+            <label className={labelCls}>Noms alternatifs</label>
             <textarea
               value={aliases}
               onChange={(e) => setAliases(e.target.value)}
@@ -792,9 +797,12 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               rows={3}
               className={`mt-1.5 ${textareaCls}`}
             />
+            <p className="mt-1 text-[12px] text-[#999] dark:text-[#666]">
+              Autres appellations pour la recherche (ex: Sauvage EDT). Un par ligne.
+            </p>
           </div>
           <div>
-            <label className={labelCls}>Tags (un par ligne)</label>
+            <label className={labelCls}>Mots-cles</label>
             <textarea
               value={tags}
               onChange={(e) => setTags(e.target.value)}
@@ -802,9 +810,12 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               rows={2}
               className={`mt-1.5 ${textareaCls}`}
             />
+            <p className="mt-1 text-[12px] text-[#999] dark:text-[#666]">
+              Termes supplementaires pour la recherche. Un par ligne.
+            </p>
           </div>
           <div>
-            <label className={labelCls}>Gammes completes (une par ligne)</label>
+            <label className={labelCls}>Gammes / Declinaisons</label>
             <textarea
               value={classics}
               onChange={(e) => setClassics(e.target.value)}
@@ -812,8 +823,52 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               rows={2}
               className={`mt-1.5 ${textareaCls}`}
             />
+            <p className="mt-1 text-[12px] text-[#999] dark:text-[#666]">
+              Autres parfums de la meme gamme (ex: Sauvage Elixir). Un par ligne.
+            </p>
           </div>
         </fieldset>
+
+        {/* --- Danger zone: delete --- */}
+        {!isNew && !readOnly && (
+          <div className="rounded-md border border-red-200 bg-red-50/50 p-4 dark:border-red-500/20 dark:bg-red-500/[0.04]">
+            {!deleteConfirm ? (
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm(true)}
+                className="flex min-h-[44px] items-center gap-2 rounded-md border border-red-300 bg-white px-4 py-2 text-[13px] font-medium text-red-600 transition-all hover:bg-red-50 active:scale-[0.98] dark:border-red-500/30 dark:bg-transparent dark:text-red-400 dark:hover:bg-red-500/10"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden />
+                Supprimer ce parfum
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-[13px] font-medium text-red-700 dark:text-red-400">
+                  Supprimer definitivement ce parfum ? Cette action est irreversible.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteConfirm(false)}
+                    disabled={deleting}
+                    className="flex min-h-[44px] items-center justify-center rounded-md border border-black/10 px-4 py-2 text-[13px] font-medium text-[#666] transition-all hover:bg-black/[0.04] dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="flex min-h-[44px] items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-[13px] font-semibold text-white transition-all hover:bg-red-700 active:scale-[0.98] disabled:opacity-50"
+                  >
+                    {deleting && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+                    Confirmer la suppression
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Desktop save */}
         <div className="hidden md:block">

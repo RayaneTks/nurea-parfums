@@ -82,7 +82,6 @@ export async function PUT(request: Request, { params }: RouteCtx) {
     aliases?: string;
     tags?: string;
     classics?: string;
-    restore?: boolean;
   };
   try {
     body = await request.json();
@@ -99,7 +98,7 @@ export async function PUT(request: Request, { params }: RouteCtx) {
     return NextResponse.json({ error: "Champs requis manquants." }, { status: 400 });
   }
   if (!isDbCategory(category)) {
-    return NextResponse.json({ error: `Catégorie invalide : ${category}` }, { status: 400 });
+    return NextResponse.json({ error: `Categorie invalide : ${category}` }, { status: 400 });
   }
 
   const brand = await prisma.brand.findUnique({ where: { id: brandId } });
@@ -113,11 +112,6 @@ export async function PUT(request: Request, { params }: RouteCtx) {
       : existing.status;
 
   const slug = perfumeSlug(id, name, brand.name);
-
-  let deletedAt: Date | null = existing.deletedAt;
-  if (body.restore === true) {
-    deletedAt = null;
-  }
 
   const aliases = parseLines(body.aliases);
   const tags = parseLines(body.tags);
@@ -139,7 +133,7 @@ export async function PUT(request: Request, { params }: RouteCtx) {
         imageLight: body.imageLight === undefined ? existing.imageLight : body.imageLight?.trim() || null,
         imageDark: body.imageDark === undefined ? existing.imageDark : body.imageDark?.trim() || null,
         status,
-        deletedAt,
+        deletedAt: null,
         ...(aliases.length
           ? {
               aliases: {
@@ -168,6 +162,41 @@ export async function PUT(request: Request, { params }: RouteCtx) {
   return NextResponse.json({ perfume });
 }
 
+export async function PATCH(request: Request, { params }: RouteCtx) {
+  const ctx = await requireAdmin(request);
+  if (ctx instanceof NextResponse) return ctx;
+  const denied = requireEditor(ctx);
+  if (denied) return denied;
+
+  const id = Number.parseInt((await params).id, 10);
+  if (!Number.isFinite(id)) {
+    return NextResponse.json({ error: "ID invalide." }, { status: 400 });
+  }
+
+  const existing = await prisma.perfume.findUnique({ where: { id } });
+  if (!existing) {
+    return NextResponse.json({ error: "Parfum introuvable." }, { status: 404 });
+  }
+
+  let body: { status?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "JSON invalide." }, { status: 400 });
+  }
+
+  if (body.status && isPublicationStatus(body.status)) {
+    const perfume = await prisma.perfume.update({
+      where: { id },
+      data: { status: body.status, deletedAt: null },
+    });
+    await writeAudit(ctx.sub, "perfume.toggle_visibility", "Perfume", String(id), { status: body.status });
+    return NextResponse.json({ perfume });
+  }
+
+  return NextResponse.json({ error: "Aucun champ valide." }, { status: 400 });
+}
+
 export async function DELETE(request: Request, { params }: RouteCtx) {
   const ctx = await requireAdmin(request);
   if (ctx instanceof NextResponse) return ctx;
@@ -184,11 +213,16 @@ export async function DELETE(request: Request, { params }: RouteCtx) {
     return NextResponse.json({ error: "Parfum introuvable." }, { status: 404 });
   }
 
-  await prisma.perfume.update({
-    where: { id },
-    data: { deletedAt: new Date(), status: "ARCHIVED" },
+  await prisma.$transaction(async (tx) => {
+    await tx.perfumeAlias.deleteMany({ where: { perfumeId: id } });
+    await tx.perfumeTag.deleteMany({ where: { perfumeId: id } });
+    await tx.perfumeClassic.deleteMany({ where: { perfumeId: id } });
+    await tx.perfumeSize.deleteMany({ where: { perfumeId: id } });
+    await tx.perfumeImage.deleteMany({ where: { perfumeId: id } });
+    await tx.perfumeNote.deleteMany({ where: { perfumeId: id } });
+    await tx.perfume.delete({ where: { id } });
   });
 
-  await writeAudit(ctx.sub, "perfume.soft_delete", "Perfume", String(id));
+  await writeAudit(ctx.sub, "perfume.hard_delete", "Perfume", String(id), { name: existing.name });
   return NextResponse.json({ ok: true });
 }

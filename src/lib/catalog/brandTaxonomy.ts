@@ -1,7 +1,6 @@
 import type { Category } from "@/lib/data";
 import type { CatalogAssortment, CatalogPositioning } from "@/lib/catalog/catalogBrowseTypes";
 
-/** Maisons typiquement rangées « niche / signatures » dans le seed (modifiable en admin). */
 export const SEED_POSITIONING_NICHE = new Set<string>([
   "Aesop",
   "Creed",
@@ -12,7 +11,6 @@ export const SEED_POSITIONING_NICHE = new Set<string>([
   "Tiziana Terenzi",
 ]);
 
-/** Grandes maisons designer / luxe diffusion (seed par défaut). */
 export const SEED_POSITIONING_DESIGNER = new Set<string>([
   "Antonio Banderas",
   "Azzaro",
@@ -57,16 +55,16 @@ export const BRAND_ASSORTMENT_LABELS: Record<
   { title: string; hint: string }
 > = {
   UNSET: {
-    title: "Non renseigné",
-    hint: "À classer depuis l’admin.",
+    title: "Non renseigne",
+    hint: "",
   },
   COMPLETE: {
-    title: "Ligne complète",
-    hint: "Toute la gamme présentée chez Nurea pour cette maison.",
+    title: "Gamme complete",
+    hint: "Toute la gamme est disponible.",
   },
   CURATED: {
-    title: "Sélection maison",
-    hint: "Une partie de la ligne seulement — demandez le reste en conciergerie.",
+    title: "Selection",
+    hint: "Une partie de la gamme — demandez le reste en conciergerie.",
   },
 };
 
@@ -74,34 +72,33 @@ export const BRAND_POSITIONING_LABELS: Record<
   CatalogPositioning,
   { title: string; hint: string }
 > = {
-  UNSET: { title: "Non renseigné", hint: "" },
+  UNSET: { title: "Non renseigne", hint: "" },
   NICHE: {
-    title: "Niche & signatures",
-    hint: "Maisons de parfumerie de création ou ultra-sélectives.",
+    title: "Niche",
+    hint: "Parfumerie de niche et creations exclusives.",
   },
   DESIGNER: {
-    title: "Designer & grandes maisons",
-    hint: "Luxe classique et lignes iconiques.",
+    title: "Marque",
+    hint: "Grandes marques et lignes iconiques.",
   },
   ARTISAN: {
-    title: "Artisan & indépendant",
-    hint: "Ateliers, indépendants, petites productions.",
+    title: "Artisan",
+    hint: "Ateliers et productions independantes.",
   },
 };
 
 export const BROWSE_COPY = {
-  drawerTitle: "Explorer le catalogue",
-  drawerSubtitle:
-    "Marques, univers et catégories. La barre de recherche textuelle ci-dessous reste inchangée.",
-  sectionComplete: "Ligne complète chez Nurea",
-  sectionCompleteSub: "Maisons dont nous présentons toute la gamme cataloguée ici.",
-  sectionCurated: "Sélection par maison",
+  drawerTitle: "Filtrer",
+  drawerSubtitle: "Par marque et par type.",
+  sectionComplete: "Gamme complete",
+  sectionCompleteSub: "Toute la gamme est disponible.",
+  sectionCurated: "Selection",
   sectionCuratedSub:
-    "Références choisies : d’autres jus de la même maison peuvent être demandés via la conciergerie.",
-  sectionUnivers: "Par univers",
-  sectionCategories: "Par catégorie vitrine",
-  sectionCategoriesSub: "Filtrer les créations selon l’emplacement dans la collection.",
-  resetPanel: "Effacer filtres du panneau",
+    "Une partie de la gamme — demandez le reste en conciergerie.",
+  sectionUnivers: "Par type",
+  sectionCategories: "Par categorie",
+  sectionCategoriesSub: "Filtrer par emplacement dans la collection.",
+  resetPanel: "Reinitialiser",
   close: "Fermer",
 } as const;
 

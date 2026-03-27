@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Archive,
   ChevronDown,
+  Eye,
+  EyeOff,
   Pencil,
   Plus,
   Search,
   Trash2,
-  Eye,
 } from "lucide-react";
 import {
   BRAND_ASSORTMENT_LABELS,
@@ -36,28 +36,68 @@ type PerfumeRow = {
   name: string;
   category: string;
   status: string;
-  deletedAt: string | null;
   brand: { name: string };
 };
 
-type PerfumeFilter = "all" | "PUBLISHED" | "DRAFT" | "ARCHIVED";
+type PerfumeFilter = "all" | "PUBLISHED" | "DRAFT";
 type Tab = "perfumes" | "brands";
 
 function StatusDot({ status }: { status: string }) {
   const color =
-    status === "PUBLISHED"
-      ? "bg-emerald-500"
-      : status === "DRAFT"
-        ? "bg-amber-400"
-        : "bg-gray-400";
+    status === "PUBLISHED" ? "bg-emerald-500" : "bg-amber-400";
   return <span className={`inline-block h-2 w-2 rounded-full ${color}`} />;
 }
 
 function statusLabel(status: string): string {
-  if (status === "PUBLISHED") return "Publie";
-  if (status === "DRAFT") return "Brouillon";
-  if (status === "ARCHIVED") return "Archive";
+  if (status === "PUBLISHED") return "Visible";
+  if (status === "DRAFT") return "Masque";
   return status;
+}
+
+function ConfirmDeleteModal({
+  target,
+  onCancel,
+  onConfirm,
+}: {
+  target: { id: number; name: string };
+  onCancel: () => void;
+  onConfirm: (id: number) => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      onClick={onCancel}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Confirmer la suppression de ${target.name}`}
+    >
+      <div
+        className="mx-4 w-full max-w-sm rounded-md border border-black/10 bg-white p-6 shadow-xl dark:border-white/10 dark:bg-[#1a1a1a]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p className="text-[15px] leading-relaxed text-[#1a1a1a] dark:text-[#e5e5e5]">
+          Supprimer definitivement &laquo;&nbsp;{target.name}&nbsp;&raquo;&nbsp;?
+          Cette action est irreversible.
+        </p>
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="min-h-[44px] rounded-md px-4 text-[13px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] dark:text-[#999] dark:hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            onClick={() => onConfirm(target.id)}
+            className="min-h-[44px] rounded-md bg-red-600 px-4 text-[13px] font-medium text-white transition-colors hover:bg-red-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          >
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const selectCls =
@@ -71,6 +111,7 @@ export function AdminDashboard() {
   const [search, setSearch] = useState("");
   const [perfumeFilter, setPerfumeFilter] = useState<PerfumeFilter>("all");
   const [tab, setTab] = useState<Tab>("perfumes");
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
 
   const [newBrand, setNewBrand] = useState("");
   const [brandMsg, setBrandMsg] = useState<string | null>(null);
@@ -81,7 +122,7 @@ export function AdminDashboard() {
       const [s, b, p] = await Promise.all([
         fetch("/api/admin/session", { credentials: "include" }),
         fetch("/api/admin/brands", { credentials: "include" }),
-        fetch("/api/admin/perfumes?includeDeleted=1", { credentials: "include" }),
+        fetch("/api/admin/perfumes", { credentials: "include" }),
       ]);
       if (!s.ok) throw new Error("Session invalide.");
       const sj = (await s.json()) as { user?: SessionUser };
@@ -107,7 +148,7 @@ export function AdminDashboard() {
   const filteredPerfumes = useMemo(() => {
     let rows = perfumes;
     if (perfumeFilter !== "all") {
-      rows = rows.filter((r) => r.status === perfumeFilter && !r.deletedAt);
+      rows = rows.filter((r) => r.status === perfumeFilter);
     }
     const q = search.trim().toLowerCase();
     if (!q) return rows;
@@ -121,8 +162,23 @@ export function AdminDashboard() {
 
   const canEdit = user?.role !== "VIEWER";
 
-  async function removePerfume(id: number, name: string) {
-    if (!confirm(`Archiver « ${name} » ?`)) return;
+  async function toggleVisibility(id: number, currentStatus: string) {
+    const next = currentStatus === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
+    const r = await fetch(`/api/admin/perfumes/${id}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: next }),
+    });
+    if (!r.ok) {
+      const j = (await r.json()) as { error?: string };
+      alert(j.error ?? "Erreur");
+      return;
+    }
+    refresh();
+  }
+
+  async function hardDelete(id: number) {
     const r = await fetch(`/api/admin/perfumes/${id}`, {
       method: "DELETE",
       credentials: "include",
@@ -132,6 +188,7 @@ export function AdminDashboard() {
       alert(j.error ?? "Erreur");
       return;
     }
+    setDeleteTarget(null);
     refresh();
   }
 
@@ -176,9 +233,8 @@ export function AdminDashboard() {
 
   const filterPills: { id: PerfumeFilter; label: string; count: number }[] = [
     { id: "all", label: "Tous", count: perfumes.length },
-    { id: "PUBLISHED", label: "Publies", count: perfumes.filter((p) => p.status === "PUBLISHED" && !p.deletedAt).length },
-    { id: "DRAFT", label: "Brouillons", count: perfumes.filter((p) => p.status === "DRAFT" && !p.deletedAt).length },
-    { id: "ARCHIVED", label: "Archives", count: perfumes.filter((p) => p.status === "ARCHIVED").length },
+    { id: "PUBLISHED", label: "Visibles", count: perfumes.filter((p) => p.status === "PUBLISHED").length },
+    { id: "DRAFT", label: "Masques", count: perfumes.filter((p) => p.status === "DRAFT").length },
   ];
 
   return (
@@ -272,12 +328,6 @@ export function AdminDashboard() {
                       <div className="min-w-0 flex-1">
                         <p className="text-[15px] font-medium leading-snug text-[#1a1a1a] dark:text-[#e5e5e5]">
                           {row.name}
-                          {row.deletedAt && (
-                            <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-red-500">
-                              <Archive className="h-3 w-3" aria-hidden />
-                              masque
-                            </span>
-                          )}
                         </p>
                         <p className="mt-0.5 flex items-center gap-2 text-[13px] text-[#999]">
                           <span>{row.brand.name}</span>
@@ -295,21 +345,31 @@ export function AdminDashboard() {
                           className="flex h-9 w-9 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:hover:bg-white/[0.06] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                           aria-label={canEdit ? `Modifier ${row.name}` : `Voir ${row.name}`}
                         >
-                          {canEdit ? (
-                            <Pencil className="h-4 w-4" aria-hidden />
-                          ) : (
-                            <Eye className="h-4 w-4" aria-hidden />
-                          )}
+                          <Pencil className="h-4 w-4" aria-hidden />
                         </Link>
                         {canEdit && (
-                          <button
-                            type="button"
-                            onClick={() => removePerfume(row.id, row.name)}
-                            className="flex h-9 w-9 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                            aria-label={`Archiver ${row.name}`}
-                          >
-                            <Trash2 className="h-4 w-4" aria-hidden />
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => toggleVisibility(row.id, row.status)}
+                              className="flex h-9 w-9 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:hover:bg-white/[0.06] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                              aria-label={row.status === "PUBLISHED" ? `Masquer ${row.name}` : `Rendre visible ${row.name}`}
+                            >
+                              {row.status === "PUBLISHED" ? (
+                                <Eye className="h-4 w-4" aria-hidden />
+                              ) : (
+                                <EyeOff className="h-4 w-4" aria-hidden />
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteTarget({ id: row.id, name: row.name })}
+                              className="flex h-9 w-9 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                              aria-label={`Supprimer ${row.name}`}
+                            >
+                              <Trash2 className="h-4 w-4" aria-hidden />
+                            </button>
+                          </>
                         )}
                       </div>
                     </li>
@@ -376,7 +436,7 @@ export function AdminDashboard() {
                         </div>
                       </div>
                       <div>
-                        <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">Univers</label>
+                        <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">Type</label>
                         <div className="relative mt-0.5">
                           <select
                             value={b.positioning}
@@ -409,6 +469,15 @@ export function AdminDashboard() {
         >
           <Plus className="h-6 w-6" aria-hidden />
         </Link>
+      )}
+
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <ConfirmDeleteModal
+          target={deleteTarget}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={hardDelete}
+        />
       )}
     </div>
   );
