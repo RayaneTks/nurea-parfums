@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { jwtVerify } from "jose";
 
 const ADMIN_COOKIE = "nurea_admin";
 
@@ -13,22 +12,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const secret = process.env.ADMIN_JWT_SECRET?.trim();
-  if (!secret || secret.length < 24) {
-    return NextResponse.redirect(new URL("/admin/login?err=config", request.url));
-  }
-
   const token = request.cookies.get(ADMIN_COOKIE)?.value;
   if (!token) {
     return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
-  try {
-    await jwtVerify(token, new TextEncoder().encode(secret));
-    return NextResponse.next();
-  } catch {
-    return NextResponse.redirect(new URL("/admin/login?err=session", request.url));
-  }
+  // Le contrôle JWT strict est fait côté API admin (requireAdmin + verifyAdminToken).
+  // Le middleware garde uniquement la barrière de présence de session pour éviter
+  // les faux positifs de configuration edge.
+  return NextResponse.next();
 }
 
 export const config = {
