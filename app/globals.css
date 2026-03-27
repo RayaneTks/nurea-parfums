@@ -28,7 +28,7 @@
     --nurea-accent-subtle: rgba(139, 58, 58, 0.14);
     --nurea-text: #F0E6E0;
     --nurea-text-muted: #B89AA8;
-    --nurea-text-subtle: #6B5060;
+    --nurea-text-subtle: #7A5E6E;
     --nurea-cuivre: #C4956A;
     --nurea-snapchat: #FFD100;
     --nurea-border: rgba(139, 58, 58, 0.12);
@@ -107,6 +107,22 @@
 /* ─── Scrollbar masquee ─────────────────────────────────── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── Scrollbar custom ──────────────────────────────────── */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--nurea-border) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--nurea-border);
+  border-radius: 4px;
+}
 
 /* ═══════════════════════════════════════════════════════════
    SCROLL REVEAL SYSTEM
@@ -201,6 +217,8 @@
 @media (hover: hover) and (pointer: fine) {
   .card-hover:hover {
     transform: translateY(-3px);
+  }
+  .card-hover:hover .card-image-wrapper {
     box-shadow: 0 16px 48px var(--nurea-glow);
   }
   .group:hover .card-image-zoom {

@@ -1,7 +1,7 @@
 import type { Category, Perfume } from "@/lib/data";
-import { categories, mockPerfumes } from "@/lib/data";
+import { unstable_noStore as noStore } from "next/cache";
+import { categories } from "@/lib/data";
 import { prisma } from "@/lib/db/prisma";
-import { brandSlug as slugForBrand } from "@/lib/slugify";
 import {
   prismaCatalogInCooldown,
   registerPrismaCatalogFailure,
@@ -15,16 +15,14 @@ function isCategory(s: string): s is Category {
 function rowToPerfume(row: {
   id: number;
   name: string;
-  category: string;
   image: string;
   imageLight: string | null;
-  imageDark: string | null;
-  brand: { name: string; slug: string };
-  aliases: { alias: string }[];
-  tags: { tag: string }[];
-  classics: { line: string }[];
+  brand: { name: string; slug: string; catalogMode: "CURATED" | "COMPLETE" };
 }): Perfume {
-  const cat = row.category;
+  const cat: Category =
+    row.brand.catalogMode === "COMPLETE"
+      ? "Gammes Complètes"
+      : "Sélections Individuelles";
   if (!isCategory(cat)) {
     throw new Error(`Catégorie catalogue invalide en base : ${cat}`);
   }
@@ -36,10 +34,7 @@ function rowToPerfume(row: {
     category: cat,
     image: row.image,
     imageLight: row.imageLight ?? undefined,
-    imageDark: row.imageDark ?? undefined,
-    tags: row.tags.length ? row.tags.map((t) => t.tag) : undefined,
-    aliases: row.aliases.length ? row.aliases.map((a) => a.alias) : undefined,
-    classics: row.classics.length ? row.classics.map((c) => c.line) : undefined,
+    tags: row.brand.catalogMode === "COMPLETE" ? ["Gamme complète"] : undefined,
   };
 }
 
@@ -47,36 +42,47 @@ function rowToPerfume(row: {
  * Catalogue publié : PostgreSQL si `DATABASE_URL`, sinon `mockPerfumes` (comportement actuel).
  */
 export async function getCatalogPerfumes(): Promise<Perfume[]> {
-  const fromMock = (): Perfume[] =>
-    mockPerfumes.map((p) => ({ ...p, brandSlug: slugForBrand(p.brand) }));
-
+  noStore();
   if (!process.env.DATABASE_URL?.trim()) {
-    return fromMock();
+    return [];
   }
 
   if (prismaCatalogInCooldown()) {
-    return fromMock();
+    return [];
   }
 
   try {
-    const rows = await prisma.perfume.findMany({
-      where: {
-        status: "PUBLISHED",
-        deletedAt: null,
-      },
+    const perfumes = await prisma.perfume.findMany({
+      where: { status: "PUBLISHED", brand: { catalogMode: "CURATED" } },
       include: {
-        brand: true,
-        aliases: true,
-        tags: true,
-        classics: true,
+        brand: { select: { name: true, slug: true, catalogMode: true } },
       },
       orderBy: { id: "asc" },
     });
+    const rangeBrands = await prisma.brand.findMany({
+      where: { catalogMode: "COMPLETE" },
+      select: { id: true, name: true, slug: true, image: true },
+      orderBy: { name: "asc" },
+    });
+
+    const maxId = perfumes.reduce((acc, p) => Math.max(acc, p.id), 0);
+    const asPerfumesFromBrands: Perfume[] = rangeBrands
+      .filter((b) => Boolean(b.image))
+      .map((b, idx) => ({
+        id: maxId + idx + 1,
+        name: b.name,
+        brand: b.name,
+        brandSlug: b.slug,
+        category: "Gammes Complètes",
+        image: b.image!,
+        tags: ["Gamme complète"],
+      }));
+
     registerPrismaCatalogSuccess();
-    return rows.map(rowToPerfume);
+    return [...perfumes.map(rowToPerfume), ...asPerfumesFromBrands];
   } catch (e) {
     registerPrismaCatalogFailure();
-    console.error("[getCatalogPerfumes] fallback mock:", e);
-    return fromMock();
+    console.error("[getCatalogPerfumes] database unavailable:", e);
+    return [];
   }
 }

@@ -65,18 +65,17 @@ async function main(): Promise<void> {
         { tablename: string }[]
       >`SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename`;
       const namesLc = new Set(tables.map((t) => t.tablename.toLowerCase()));
-      const expected = ["brand", "perfume", "perfumealias", "searchexternalcache"];
+      const expected = ["brand", "perfume", "adminuser", "auditlog"];
       const missing = expected.filter((e) => !namesLc.has(e));
-      const [brandCount, perfumeCount, cacheCount] = await Promise.all([
+      const [brandCount, perfumeCount] = await Promise.all([
         prisma.brand.count(),
         prisma.perfume.count(),
-        prisma.searchExternalCache.count(),
       ]);
       await prisma.$disconnect();
       record(
         "DB: connexion + tables",
         missing.length === 0,
-        `${tables.length} tables public ; Brand=${brandCount} Perfume=${perfumeCount} Cache=${cacheCount}` +
+        `${tables.length} tables public ; Brand=${brandCount} Perfume=${perfumeCount}` +
           (missing.length ? ` ; manquantes: ${missing.join(",")}` : "")
       );
     } catch (e) {

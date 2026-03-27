@@ -40,40 +40,6 @@ export const categories: Category[] = [
   "Nouveautés",
 ];
 
-export const allBrands: string[] = [
-  "Toutes",
-  "Aesop",
-  "Antonio Banderas",
-  "Azzaro",
-  "Boucheron",
-  "Carolina Herrera",
-  "Cartier",
-  "Creed",
-  "Dior",
-  "Dolce & Gabbana",
-  "Franck Olivier",
-  "Giorgio Armani",
-  "Gucci",
-  "Guerlain",
-  "Hermès",
-  "Hugo Boss",
-  "Jean Paul Gaultier",
-  "Lacoste",
-  "Louis Vuitton",
-  "Maison Francis Kurkdjian",
-  "Nishane",
-  "Orto Parisi",
-  "Rabanne",
-  "Ralph Lauren",
-  "Sospiro",
-  "Tiziana Terenzi",
-  "Tom Ford",
-  "Versace",
-  "Viktor & Rolf",
-  "Yves Saint Laurent",
-  "Zara",
-];
-
 export const mockPerfumes: Perfume[] = [
   // Gammes complètes (visuels de marque)
   {

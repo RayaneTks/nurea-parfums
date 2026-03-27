@@ -1,9 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import {
-  deriveAssortmentFromPerfumeCategories,
-  derivePositioningForSeed,
-} from "../src/lib/catalog/brandTaxonomy";
-import { mockPerfumes, normalizeForFuzzy } from "../src/lib/data";
+import { mockPerfumes } from "../src/lib/data";
 import { brandSlug, perfumeSlug } from "../src/lib/slugify";
 
 const prisma = new PrismaClient();
@@ -17,15 +13,14 @@ async function main() {
 
   for (const name of brandNames) {
     const slug = brandSlug(name);
-    const cats = [
-      ...new Set(mockPerfumes.filter((p) => p.brand === name).map((p) => p.category)),
-    ];
-    const assortment = deriveAssortmentFromPerfumeCategories(cats);
-    const positioning = derivePositioningForSeed(name);
+    const hasCompleteEntry = mockPerfumes.some(
+      (p) => p.brand === name && p.category === "Gammes Complètes",
+    );
+    const catalogMode = hasCompleteEntry ? "COMPLETE" : "CURATED";
     const b = await prisma.brand.upsert({
       where: { name },
-      create: { name, slug, assortment, positioning },
-      update: { slug, assortment, positioning },
+      create: { name, slug, catalogMode },
+      update: { slug, catalogMode },
     });
     brandIdByName.set(name, b.id);
   }
@@ -43,46 +38,19 @@ async function main() {
         brandId,
         name: displayName,
         slug: perfumeSlug(p.id, displayName, p.brand),
-        category: p.category,
         image: p.image,
         imageLight: p.imageLight ?? null,
-        imageDark: null,
-        status: "PUBLISHED",
+        status: isRange ? "DRAFT" : "PUBLISHED",
       },
       update: {
         brandId,
         name: displayName,
         slug: perfumeSlug(p.id, displayName, p.brand),
-        category: p.category,
         image: p.image,
         imageLight: p.imageLight ?? null,
-        imageDark: null,
+        status: isRange ? "DRAFT" : "PUBLISHED",
       },
     });
-
-    await prisma.perfumeAlias.deleteMany({ where: { perfumeId: p.id } });
-    await prisma.perfumeTag.deleteMany({ where: { perfumeId: p.id } });
-    await prisma.perfumeClassic.deleteMany({ where: { perfumeId: p.id } });
-
-    if (p.aliases?.length) {
-      await prisma.perfumeAlias.createMany({
-        data: p.aliases.map((alias) => ({
-          perfumeId: p.id,
-          alias,
-          normalized: normalizeForFuzzy(alias),
-        })),
-      });
-    }
-    if (p.tags?.length) {
-      await prisma.perfumeTag.createMany({
-        data: p.tags.map((tag) => ({ perfumeId: p.id, tag })),
-      });
-    }
-    if (p.classics?.length) {
-      await prisma.perfumeClassic.createMany({
-        data: p.classics.map((line) => ({ perfumeId: p.id, line })),
-      });
-    }
   }
 
   console.log(`Seed OK — ${mockPerfumes.length} parfums, ${brandNames.length} marques.`);

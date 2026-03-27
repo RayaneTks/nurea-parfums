@@ -65,7 +65,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
             <ScrollReveal
               direction={isReverse ? "left" : "right"}
               delay={120}
-              className="flex flex-col justify-center bg-[var(--nurea-surface)] px-6 py-12 md:px-14 md:py-24 lg:px-20"
+              className="flex min-h-[42vh] flex-col justify-center bg-[var(--nurea-surface)] px-6 py-12 md:min-h-[70vh] md:px-14 md:py-24 lg:px-20"
             >
               <span className="mb-3 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
                 Référence mise en avant

@@ -40,7 +40,7 @@ Nurea Parfums est un site catalogue de parfums de luxe : **Next.js 16 (App Route
 - `src/components/ui/` — ScrollReveal, Separator
 - `src/components/providers/` — ThemeProvider (`next-themes`, `defaultTheme="dark"`, `enableSystem={false}`)
 - `src/hooks/` — useScrollReveal
-- `src/lib/data.ts` — **Catalogue `mockPerfumes` (59 entrées)** + recherche floue + `getPerfumeImage` (variantes light/dark quand définies)
+- `src/lib/data.ts` — Types front + moteur de recherche locale/fuzzy (plus source canonique de catalogue en prod)
 - `src/lib/externalSearchHints.ts` + `src/lib/externalHintsExtra.ts` — Parfums « hors catalogue » pour la recherche (suggestions + `similarCatalogIds`)
 - `src/lib/externalSearchTypes.ts` — Types `ExternalPerfumeHint` (dont `footnote` pour le texte de la zone vide de recherche)
 - `src/actions/contact.ts` — Formulaire contact (Resend si clés présentes, sinon `mailto:`)
@@ -103,18 +103,19 @@ Recherche « hors catalogue » : voir `findExternalPerfumeHint` et les fichiers 
 
 ## Décisions récentes (Mars 2026)
 
-- **Catalogue mobile-first** : filtres drawer avec pattern draft → appliquer (`CatalogFilterDrawer`).
-- **Filtres non superposés** : un changement de catégorie reset les filtres marque/type ; appliquer des filtres marque/type remet la catégorie à `Tout voir`.
-- **Admin lisible** : états `Visible` / `Masqué`, suppression avec confirmation, listes zébrées pour guider l’oeil.
-- **Mode de catalogue marque** :
-  - `Gamme complète` : l’entrée affiche la marque (pas un parfum individuel).
-  - Si une marque passe en `Gamme complète`, ses entrées existantes passent en `DRAFT` (masquées) pour cohérence.
+- **Schéma DB simplifié (reset propre)** :
+  - `Brand`: `name`, `slug`, `catalogMode (CURATED|COMPLETE)`, `image?`
+  - `Perfume`: `id` numérique, `brandId`, `name`, `slug`, `image`, `imageLight?`, `status (PUBLISHED|DRAFT)`
+  - `AdminUser` (username/passwordHash/role), `AuditLog`
+- **Règle métier principale** :
+  - si une marque passe en `COMPLETE`, ses parfums individuels passent en `DRAFT`
+  - le catalogue affiche la marque COMPLETE comme une carte “Gamme complète”
+- **Suppression admin** : hard delete (suppression réelle)
 - **Images** :
-  - `image` = image principale (fallback dark + light),
-  - `imageLight` optionnelle remplace seulement en mode clair.
-  - L’upload admin convertit en WebP côté client avant envoi.
-- **Schéma DB** : `PerfumeKind` ajouté (`PERFUME`, `RANGE`) + index associé.
+  - `image` obligatoire (fallback dark+light)
+  - `imageLight` facultative, utilisée en light mode si présente
+- **Catalogue DB-first** : affichage public alimenté par DB (plus de dépendance runtime au catalogue mock pour la grille principale)
 
 ## Search (fichiers)
 
-- **Ne pas** mélanger les intentions : catalogue = `mockPerfumes` ; recherche élargie = hints externes + message de secours `EXTERNAL_SEARCH_FALLBACK_MESSAGE` dans `HomePageClient` lorsque la grille est vide.
+- **Ne pas** mélanger les intentions : catalogue affiché = DB ; recherche élargie = hints externes + message de secours `EXTERNAL_SEARCH_FALLBACK_MESSAGE`.

@@ -88,7 +88,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         featured ? "card-featured" : ""
       }`}
     >
-      <div className="relative aspect-[3/4] overflow-hidden bg-[var(--nurea-surface)]">
+      <div className="card-image-wrapper relative aspect-[3/4] overflow-hidden bg-[var(--nurea-surface)]">
         {perfume.tags && (
           <div
             data-testid="perfume-tag-strip"
@@ -100,7 +100,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
             {perfume.tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-block bg-[var(--nurea-accent-solid)] px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.18em] text-white md:px-3 md:py-1 md:text-[10px]"
+                className="inline-block bg-[var(--nurea-accent-solid)] px-3 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-white md:px-3 md:py-1 md:text-[10px]"
               >
                 {tag}
               </span>
@@ -112,11 +112,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
           src={imageSrc}
           alt={perfume.name}
           fill
-          sizes={
-            featured
-              ? "(max-width: 768px) 100vw, 66vw"
-              : "(max-width: 768px) 50vw, 33vw"
-          }
+          sizes="(max-width: 768px) 50vw, 33vw"
           className="object-cover card-image-zoom"
           placeholder="blur"
           blurDataURL={NUREA_IMAGE_BLUR_DATA_URL}

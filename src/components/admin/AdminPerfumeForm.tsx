@@ -4,120 +4,33 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  AlertTriangle,
-  ArrowLeft,
-  ChevronDown,
-  Loader2,
-  Plus,
-  Trash2,
-  Upload,
-  X,
-} from "lucide-react";
-import { categories, normalizeForFuzzy } from "@/lib/data";
-import {
-  BRAND_ASSORTMENT_LABELS,
-  BRAND_POSITIONING_LABELS,
-} from "@/lib/catalog/brandTaxonomy";
+import { ArrowLeft, Loader2, Plus, Trash2, Upload, X } from "lucide-react";
 
-const dbCatégories = categories.filter((c) => c !== "Tout voir");
-
-type BrandOpt = { id: string; name: string; assortment: string; positioning: string };
-type ExistingPerfume = { id: number; name: string; brandName: string };
-
-function levenshteinSmall(a: string, b: string): number {
-  if (a === b) return 0;
-  const an = a.length, bn = b.length;
-  if (an === 0) return bn;
-  if (bn === 0) return an;
-  let prev = Array.from({ length: bn + 1 }, (_, i) => i);
-  let curr = new Array<number>(bn + 1);
-  for (let i = 1; i <= an; i++) {
-    curr[0] = i;
-    for (let j = 1; j <= bn; j++) {
-      curr[j] = Math.min(
-        prev[j] + 1,
-        curr[j - 1] + 1,
-        prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
-      );
-    }
-    [prev, curr] = [curr, prev];
-  }
-  return prev[bn];
-}
-
-function fuzzyPerfumeMatch(
-  input: string,
-  brandName: string,
-  existing: ExistingPerfume[],
-): ExistingPerfume | null {
-  const q = normalizeForFuzzy(input);
-  if (q.length < 2) return null;
-  const bq = normalizeForFuzzy(brandName);
-  const sameBrand = bq.length >= 2
-    ? existing.filter((p) => normalizeForFuzzy(p.brandName) === bq)
-    : existing;
-  let best: ExistingPerfume | null = null;
-  let bestDist = Infinity;
-  for (const p of sameBrand) {
-    const n = normalizeForFuzzy(p.name);
-    if (n === q) return p;
-    if (n.includes(q) && q.length >= 3) return p;
-    const d = levenshteinSmall(q, n);
-    const threshold = Math.max(2, Math.floor(Math.max(q.length, n.length) * 0.3));
-    if (d <= threshold && d < bestDist) {
-      bestDist = d;
-      best = p;
-    }
-  }
-  return best;
-}
-
+type BrandOpt = {
+  id: string;
+  name: string;
+  catalogMode: "CURATED" | "COMPLETE";
+  image: string | null;
+};
 type PerfumePayload = {
   id: number;
   brandId: string;
   name: string;
-  category: string;
   image: string;
   imageLight: string | null;
-  imageDark: string | null;
   status: string;
-  deletedAt: string | null;
   brand: { name: string };
-  aliases: { alias: string }[];
-  tags: { tag: string }[];
-  classics: { line: string }[];
 };
-
-const ASSORTMENT_KEYS = ["UNSET", "COMPLETE", "CURATED"] as const;
-const POSITIONING_KEYS = ["UNSET", "NICHE", "DESIGNER", "ARTISAN"] as const;
 
 const STATUS_OPTIONS = [
   { value: "PUBLISHED", label: "Visible", color: "bg-emerald-500" },
-  { value: "DRAFT", label: "Masque", color: "bg-amber-400" },
+  { value: "DRAFT", label: "Masqué", color: "bg-amber-400" },
 ] as const;
 
 const inputCls =
   "block w-full rounded-md border border-black/10 bg-white px-3 py-2.5 text-[15px] text-[#1a1a1a] placeholder:text-[#999] disabled:opacity-40 focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]";
 
-const selectCls =
-  "block w-full appearance-none rounded-md border border-black/10 bg-white px-3 py-2.5 pr-9 text-[15px] text-[#1a1a1a] disabled:opacity-40 focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]";
-
-const textareaCls =
-  "block w-full rounded-md border border-black/10 bg-white px-3 py-2.5 text-[15px] text-[#1a1a1a] placeholder:text-[#999] disabled:opacity-40 focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]";
-
 const labelCls = "block text-[13px] font-medium text-[#555] dark:text-[#aaa]";
-
-function SelectWrapper({ children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { children: React.ReactNode }) {
-  return (
-    <div className="relative">
-      <select {...props} className={selectCls}>
-        {children}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#999]" aria-hidden />
-    </div>
-  );
-}
 
 async function uploadFile(file: File): Promise<string> {
   const prepared = await convertToWebp(file);
@@ -319,8 +232,10 @@ function BrandCombobox({
         const newBrand: BrandOpt = {
           id: j.brand.id,
           name: j.brand.name,
-          assortment: (j.brand as Record<string, string>).assortment ?? "UNSET",
-          positioning: (j.brand as Record<string, string>).positioning ?? "UNSET",
+          catalogMode:
+            (j.brand as Record<string, "CURATED" | "COMPLETE">).catalogMode ??
+            "CURATED",
+          image: (j.brand as Record<string, string | null>).image ?? null,
         };
         onBrandCreated(newBrand);
         onSelect(newBrand);
@@ -426,50 +341,38 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
   const errorRef = useRef<HTMLParagraphElement | null>(null);
 
   const [brands, setBrands] = useState<BrandOpt[]>([]);
-  const [existingPerfumes, setExistingPerfumes] = useState<ExistingPerfume[]>([]);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [readOnly, setReadOnly] = useState(false);
 
   const [brandId, setBrandId] = useState("");
+  const [brandNameDraft, setBrandNameDraft] = useState("");
   const [name, setName] = useState("");
-  const [category, setCategory] = useState<string>(dbCatégories[0] ?? "Sélections Individuelles");
   const [image, setImage] = useState("");
   const [imageLight, setImageLight] = useState("");
-  const [imageDark, setImageDark] = useState("");
   const [status, setStatus] = useState("PUBLISHED");
-  const [aliases, setAliases] = useState("");
-  const [tags, setTags] = useState("");
-  const [classics, setClassics] = useState("");
 
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const loadBrands = useCallback(async () => {
-    const r = await fetch("/api/admin/brands", { credentials: "include" });
+    const r = await fetch("/api/admin/brands", {
+      credentials: "include",
+      cache: "no-store",
+    });
     if (!r.ok) return;
     const j = (await r.json()) as { brands: BrandOpt[] };
     setBrands(j.brands ?? []);
   }, []);
 
-  const loadExistingPerfumes = useCallback(async () => {
-    const r = await fetch("/api/admin/perfumes?includeDeleted=1", { credentials: "include" });
-    if (!r.ok) return;
-    const j = (await r.json()) as { perfumes: { id: number; name: string; brand: { name: string } }[] };
-    setExistingPerfumes(
-      (j.perfumes ?? []).map((p) => ({ id: p.id, name: p.name, brandName: p.brand.name })),
-    );
-  }, []);
-
   useEffect(() => {
     loadBrands();
-    loadExistingPerfumes();
-  }, [loadBrands, loadExistingPerfumes]);
+  }, [loadBrands]);
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/admin/session", { credentials: "include" })
+    fetch("/api/admin/session", { credentials: "include", cache: "no-store" })
       .then((r) => r.json())
       .then((j: { user?: { role: string } }) => {
         if (!cancelled && j.user?.role === "VIEWER") setReadOnly(true);
@@ -485,21 +388,19 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
       setLoading(true);
       setError(null);
       try {
-        const r = await fetch(`/api/admin/perfumes/${perfumeId}`, { credentials: "include" });
+        const r = await fetch(`/api/admin/perfumes/${perfumeId}`, {
+          credentials: "include",
+          cache: "no-store",
+        });
         const j = (await r.json()) as { error?: string; perfume?: PerfumePayload };
         if (!r.ok) throw new Error(j.error ?? "Chargement impossible");
         if (cancelled || !j.perfume) return;
         const p = j.perfume;
         setBrandId(p.brandId);
         setName(p.name);
-        setCategory(p.category);
         setImage(p.image);
         setImageLight(p.imageLight ?? "");
-        setImageDark(p.imageDark ?? "");
         setStatus(p.status);
-        setAliases(p.aliases.map((a) => a.alias).join("\n"));
-        setTags(p.tags.map((t) => t.tag).join("\n"));
-        setClassics(p.classics.map((c) => c.line).join("\n"));
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : "Erreur");
       } finally {
@@ -515,40 +416,10 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     }
   }, [error]);
 
-  const selectedBrand = useMemo(() => brands.find((b) => b.id === brandId), [brands, brandId]);
-  const selectedBrandName = selectedBrand?.name ?? "";
-  const isRangeBrand = selectedBrand?.assortment === "COMPLETE";
-
-  useEffect(() => {
-    if (!isRangeBrand || !selectedBrand) return;
-    setName(selectedBrand.name);
-    setCategory("Gammes Complètes");
-  }, [isRangeBrand, selectedBrand]);
-
-  const perfumeDuplicate = useMemo(() => {
-    if (!isNew || name.trim().length < 2) return null;
-    return fuzzyPerfumeMatch(name, selectedBrandName, existingPerfumes);
-  }, [isNew, name, selectedBrandName, existingPerfumes]);
-
-  async function patchBrandField(field: "assortment" | "positioning", value: string) {
-    if (!brandId) return;
-    try {
-      const r = await fetch(`/api/admin/brands/${brandId}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [field]: value }),
-      });
-      if (!r.ok) {
-        const j = (await r.json()) as { error?: string };
-        setError(j.error ?? "Mise à jour impossible");
-        return;
-      }
-      setBrands((prev) => prev.map((b) => b.id === brandId ? { ...b, [field]: value } : b));
-    } catch {
-      setError("Erreur réseau");
-    }
-  }
+  const selectedBrand = useMemo(
+    () => brands.find((b) => b.id === brandId),
+    [brands, brandId],
+  );
 
   async function handleDelete() {
     if (!perfumeId || readOnly) return;
@@ -576,7 +447,13 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     e.preventDefault();
     if (readOnly) return;
     if (!brandId) {
-      setError("Sélectionnez ou créez une marque.");
+      if (!brandNameDraft.trim()) {
+        setError("Sélectionnez une marque ou saisissez-en une nouvelle.");
+        return;
+      }
+    }
+    if (selectedBrand?.catalogMode === "COMPLETE") {
+      setError("Cette marque est en gamme complète. Impossible d'y ajouter un parfum individuel.");
       return;
     }
     setSaving(true);
@@ -584,15 +461,11 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     try {
       const body = {
         brandId,
+        brandName: brandNameDraft.trim() || undefined,
         name,
-        category,
         image,
         imageLight: imageLight.trim() || null,
-        imageDark: imageDark.trim() || null,
         status,
-        aliases,
-        tags,
-        classics,
       };
 
       const url = isNew ? "/api/admin/perfumes" : `/api/admin/perfumes/${perfumeId}`;
@@ -678,41 +551,26 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               <BrandCombobox
                 brands={brands}
                 brandId={brandId}
-                onSelect={(b) => setBrandId(b.id)}
+                onSelect={(b) => {
+                  setBrandId(b.id);
+                  setBrandNameDraft("");
+                }}
                 onClear={() => setBrandId("")}
                 readOnly={readOnly}
                 onBrandCreated={(b) => setBrands((prev) => [...prev, b].sort((a, z) => a.name.localeCompare(z.name)))}
                 onError={setError}
               />
             </div>
+            {!brandId && (
+              <input
+                value={brandNameDraft}
+                onChange={(e) => setBrandNameDraft(e.target.value)}
+                disabled={readOnly}
+                placeholder="Nouvelle marque (créée automatiquement)"
+                className={`mt-2 ${inputCls}`}
+              />
+            )}
           </div>
-
-          {brandId && selectedBrand && !readOnly && (
-            <div className="grid grid-cols-2 gap-3 rounded-md border border-black/[0.06] bg-black/[0.01] p-3 dark:border-white/[0.06] dark:bg-white/[0.02]">
-              <div>
-                <label className="text-[12px] font-medium text-[#888]">Mode de catalogue</label>
-                <SelectWrapper
-                  value={selectedBrand.assortment}
-                  onChange={(e) => patchBrandField("assortment", (e.target as HTMLSelectElement).value)}
-                >
-                  {ASSORTMENT_KEYS.map((k) => (
-                    <option key={k} value={k}>{BRAND_ASSORTMENT_LABELS[k].title}</option>
-                  ))}
-                </SelectWrapper>
-              </div>
-              <div>
-                <label className="text-[12px] font-medium text-[#888]">Type</label>
-                <SelectWrapper
-                  value={selectedBrand.positioning}
-                  onChange={(e) => patchBrandField("positioning", (e.target as HTMLSelectElement).value)}
-                >
-                  {POSITIONING_KEYS.map((k) => (
-                    <option key={k} value={k}>{BRAND_POSITIONING_LABELS[k].title}</option>
-                  ))}
-                </SelectWrapper>
-              </div>
-            </div>
-          )}
 
           <div>
             <label className={labelCls}>Nom du parfum</label>
@@ -720,46 +578,10 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              disabled={readOnly || isRangeBrand}
+              disabled={readOnly}
               autoComplete="off"
               className={`mt-1.5 ${inputCls}`}
             />
-            {isRangeBrand ? (
-              <p className="mt-1 text-[12px] text-[#999] dark:text-[#666]">
-                En mode « Gamme complète », le nom reprend automatiquement la marque.
-              </p>
-            ) : null}
-            {isNew && perfumeDuplicate && (
-              <div className="mt-2 flex items-start gap-2 rounded-md bg-amber-50 px-3 py-2.5 text-[13px] text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-                <div>
-                  <p>
-                    Similaire à « {perfumeDuplicate.name} » ({perfumeDuplicate.brandName}, #{perfumeDuplicate.id}).
-                  </p>
-                  <Link
-                    href={`/admin/perfumes/${perfumeDuplicate.id}/edit`}
-                    className="mt-1 inline-flex items-center gap-1 text-[12px] text-amber-700 underline dark:text-amber-200"
-                  >
-                    Voir la fiche existante
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className={labelCls}>Catégorie</label>
-            <div className="mt-1.5">
-              <SelectWrapper
-                value={category}
-                onChange={(e) => setCategory((e.target as HTMLSelectElement).value)}
-                disabled={readOnly || isRangeBrand}
-              >
-                {dbCatégories.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </SelectWrapper>
-            </div>
           </div>
         </fieldset>
 
@@ -771,7 +593,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
           <ImageUploadField
             label="Image du parfum"
-            subtitle="Utilisée par défaut. Si une variante mode clair est ajoutée, celle-ci ne sera affichée qu'en mode sombre."
+            subtitle="Obligatoire. Utilisée par défaut en dark et light."
             value={image}
             onChange={setImage}
             required
@@ -781,7 +603,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
           <ImageUploadField
             label="Variante mode clair"
-            subtitle="Remplace l'image principale en mode clair."
+            subtitle="Facultative. Si ajoutée, elle remplace l'image principale en light mode."
             value={imageLight}
             onChange={setImageLight}
             readOnly={readOnly}
@@ -815,53 +637,6 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                 </button>
               );
             })}
-          </div>
-        </fieldset>
-
-        {/* --- Recherche --- */}
-        <fieldset className="space-y-4">
-          <legend className="text-[15px] font-semibold text-[#1a1a1a] dark:text-white">
-            Recherche
-          </legend>
-
-          <div>
-            <label className={labelCls}>Noms alternatifs</label>
-            <textarea
-              value={aliases}
-              onChange={(e) => setAliases(e.target.value)}
-              disabled={readOnly}
-              rows={3}
-              className={`mt-1.5 ${textareaCls}`}
-            />
-            <p className="mt-1 text-[12px] text-[#999] dark:text-[#666]">
-              Autres appellations pour la recherche (ex: Sauvage EDT). Un par ligne.
-            </p>
-          </div>
-          <div>
-            <label className={labelCls}>Mots-clés</label>
-            <textarea
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              disabled={readOnly}
-              rows={2}
-              className={`mt-1.5 ${textareaCls}`}
-            />
-            <p className="mt-1 text-[12px] text-[#999] dark:text-[#666]">
-              Termes supplémentaires pour la recherche. Un par ligne.
-            </p>
-          </div>
-          <div>
-            <label className={labelCls}>Gammes / Déclinaisons</label>
-            <textarea
-              value={classics}
-              onChange={(e) => setClassics(e.target.value)}
-              disabled={readOnly}
-              rows={2}
-              className={`mt-1.5 ${textareaCls}`}
-            />
-            <p className="mt-1 text-[12px] text-[#999] dark:text-[#666]">
-              Autres parfums de la même gamme (ex: Sauvage Elixir). Un par ligne.
-            </p>
           </div>
         </fieldset>
 

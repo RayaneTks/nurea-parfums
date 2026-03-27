@@ -10,18 +10,11 @@ datasource db {
 enum PublicationStatus {
   DRAFT
   PUBLISHED
-  ARCHIVED
 }
 
-enum PerfumeKind {
-  PERFUME
-  RANGE
-}
-
-enum SearchCacheStatus {
-  FOUND
-  NOT_FOUND
-  ERROR
+enum BrandCatalogMode {
+  CURATED
+  COMPLETE
 }
 
 enum AdminRole {
@@ -30,145 +23,32 @@ enum AdminRole {
   VIEWER
 }
 
-enum ImportSuggestionStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  IMPORTED
-}
-
-/// Ligne proposée chez Nurea : complète vs sélection partielle (éditable admin).
-enum BrandAssortment {
-  UNSET
-  COMPLETE
-  CURATED
-}
-
-/// Univers marché pour le panneau « explorer » et filtres vitrine.
-enum BrandPositioning {
-  UNSET
-  NICHE
-  DESIGNER
-  ARTISAN
-}
-
 model Brand {
-  id           String           @id @default(cuid())
-  name         String           @unique
-  slug         String           @unique
-  assortment   BrandAssortment  @default(UNSET)
-  positioning  BrandPositioning @default(UNSET)
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-  perfumes     Perfume[]
+  id          String           @id @default(cuid())
+  name        String           @unique
+  slug        String           @unique
+  catalogMode BrandCatalogMode @default(CURATED)
+  image       String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  perfumes    Perfume[]
 }
 
 model Perfume {
-  id         Int               @id
+  id         Int               @id @default(autoincrement())
   brandId    String
-  brand      Brand             @relation(fields: [brandId], references: [id], onDelete: Restrict)
-  kind       PerfumeKind       @default(PERFUME)
+  brand      Brand             @relation(fields: [brandId], references: [id], onDelete: Cascade)
   name       String
   slug       String            @unique
-  category   String
   image      String
   imageLight String?
-  imageDark  String?
   status     PublicationStatus @default(PUBLISHED)
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
-  deletedAt  DateTime?
 
-  aliases   PerfumeAlias[]
-  tags      PerfumeTag[]
-  classics  PerfumeClassic[]
-  sizes     PerfumeSize[]
-  images    PerfumeImage[]
-  notes     PerfumeNote[]
-
-  @@index([category])
+  @@unique([brandId, name])
   @@index([status])
   @@index([brandId])
-  @@index([kind])
-}
-
-model PerfumeAlias {
-  id         String  @id @default(cuid())
-  perfumeId  Int
-  perfume    Perfume @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
-  alias      String
-  normalized String
-
-  @@index([perfumeId])
-  @@index([normalized])
-}
-
-model PerfumeTag {
-  id        String  @id @default(cuid())
-  perfumeId Int
-  perfume   Perfume @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
-  tag       String
-
-  @@index([perfumeId])
-}
-
-model PerfumeClassic {
-  id        String  @id @default(cuid())
-  perfumeId Int
-  perfume   Perfume @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
-  line      String
-
-  @@index([perfumeId])
-}
-
-model PerfumeSize {
-  id        String  @id @default(cuid())
-  perfumeId Int
-  perfume   Perfume @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
-  label     String
-  sku       String?
-  sortOrder Int     @default(0)
-
-  @@index([perfumeId])
-}
-
-model PerfumeImage {
-  id        String  @id @default(cuid())
-  perfumeId Int
-  perfume   Perfume @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
-  url       String
-  sortOrder Int     @default(0)
-  alt       String?
-
-  @@index([perfumeId])
-}
-
-model PerfumeNote {
-  id        String  @id @default(cuid())
-  perfumeId Int
-  perfume   Perfume @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
-  layer     String
-  label     String
-
-  @@index([perfumeId])
-}
-
-model SearchExternalCache {
-  id                   String            @id @default(cuid())
-  rawQuery             String
-  normalizedQuery      String
-  categoryKey          String
-  status               SearchCacheStatus
-  source               String?
-  suggestionName       String?
-  suggestionBrand      String?
-  suggestionExternalId String?
-  payload              Json?
-  checkedAt            DateTime          @default(now())
-  expiresAt            DateTime
-
-  @@unique([normalizedQuery, categoryKey])
-  @@index([expiresAt])
 }
 
 model AdminUser {
@@ -195,16 +75,13 @@ model AuditLog {
 }
 
 model ExternalImportSuggestion {
-  id           String                 @id @default(cuid())
+  id           String    @id @default(cuid())
   externalId   String
   name         String
   brand        String
   source       String?
   payload      Json?
-  status       ImportSuggestionStatus @default(PENDING)
-  createdAt    DateTime               @default(now())
+  createdAt    DateTime  @default(now())
   reviewedAt   DateTime?
   reviewedById String?
-
-  @@index([status])
 }

@@ -4,7 +4,6 @@ import { createPortal } from "react-dom";
 import { Check, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
-import { BRAND_POSITIONING_LABELS } from "@/lib/catalog/brandTaxonomy";
 
 type Props = {
   open: boolean;
@@ -12,18 +11,9 @@ type Props = {
   brands: CatalogBrowseBrand[];
   mounted: boolean;
   selectedBrandSlugs: Set<string>;
-  selectedTypes: Set<string>;
-  getResultCount: (brandSlugs: Set<string>, types: Set<string>) => number;
-  onApply: (brandSlugs: Set<string>, types: Set<string>) => void;
+  getResultCount: (brandSlugs: Set<string>) => number;
+  onApply: (brandSlugs: Set<string>) => void;
   onReset: () => void;
-};
-
-const TYPE_KEYS = ["niche", "designer", "artisan"] as const;
-
-const TYPE_TO_POSITIONING: Record<string, keyof typeof BRAND_POSITIONING_LABELS> = {
-  niche: "NICHE",
-  designer: "DESIGNER",
-  artisan: "ARTISAN",
 };
 
 function groupByLetter(brands: CatalogBrowseBrand[]) {
@@ -50,7 +40,6 @@ export function CatalogFilterDrawer({
   brands,
   mounted,
   selectedBrandSlugs,
-  selectedTypes,
   getResultCount,
   onApply,
   onReset,
@@ -58,21 +47,19 @@ export function CatalogFilterDrawer({
   const searchRef = useRef<HTMLInputElement>(null);
   const [filter, setFilter] = useState("");
   const [draftBrands, setDraftBrands] = useState<Set<string>>(new Set());
-  const [draftTypes, setDraftTypes] = useState<Set<string>>(new Set());
   const draftResultCount = useMemo(
-    () => getResultCount(draftBrands, draftTypes),
-    [draftBrands, draftTypes, getResultCount],
+    () => getResultCount(draftBrands),
+    [draftBrands, getResultCount],
   );
 
   useEffect(() => {
     if (open) {
       setDraftBrands(new Set(selectedBrandSlugs));
-      setDraftTypes(new Set(selectedTypes));
       setFilter("");
       const t = requestAnimationFrame(() => searchRef.current?.focus());
       return () => cancelAnimationFrame(t);
     }
-  }, [open, selectedBrandSlugs, selectedTypes]);
+  }, [open, selectedBrandSlugs]);
 
   useEffect(() => {
     if (!open) return;
@@ -96,15 +83,6 @@ export function CatalogFilterDrawer({
     [brands],
   );
 
-  const typeCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const key of TYPE_KEYS) {
-      const pos = TYPE_TO_POSITIONING[key];
-      counts[key] = brands.filter((b) => b.positioning === pos).length;
-    }
-    return counts;
-  }, [brands]);
-
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase();
     if (!q) return sorted;
@@ -114,13 +92,12 @@ export function CatalogFilterDrawer({
   const groups = useMemo(() => groupByLetter(filtered), [filtered]);
 
   function handleApply() {
-    onApply(draftBrands, draftTypes);
+    onApply(draftBrands);
     onClose();
   }
 
   function handleReset() {
     setDraftBrands(new Set());
-    setDraftTypes(new Set());
     onReset();
     onClose();
   }
@@ -167,57 +144,7 @@ export function CatalogFilterDrawer({
         </div>
 
         {/* Scrollable body */}
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          {/* Section: Par type */}
-          <div className="border-b border-[var(--nurea-border)] px-5 py-4">
-            <h3 className="mb-3 font-serif text-[15px] tracking-wide text-[var(--nurea-text)]">
-              Par type
-            </h3>
-            <div className="flex flex-col gap-1">
-              {TYPE_KEYS.map((key) => {
-                const pos = TYPE_TO_POSITIONING[key];
-                const label = BRAND_POSITIONING_LABELS[pos].title;
-                const count = typeCounts[key] ?? 0;
-                const checked = draftTypes.has(key);
-
-                return (
-                  <label
-                    key={key}
-                    className="group flex min-h-[44px] cursor-pointer items-center gap-3 px-1 py-2 transition-colors hover:bg-[var(--nurea-surface-hover)]"
-                  >
-                    <span
-                      className={`flex h-5 w-5 shrink-0 items-center justify-center border transition-colors ${
-                        checked
-                          ? "border-[var(--nurea-accent)] bg-[var(--nurea-accent)]"
-                          : "border-[var(--nurea-border)] bg-transparent group-hover:border-[var(--nurea-border-hover)]"
-                      }`}
-                    >
-                      {checked && (
-                        <Check
-                          size={14}
-                          strokeWidth={2.5}
-                          className="text-white"
-                        />
-                      )}
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => setDraftTypes(toggleSet(draftTypes, key))}
-                      className="sr-only"
-                    />
-                    <span className="flex-1 text-[15px] text-[var(--nurea-text)]">
-                      {label}
-                    </span>
-                    <span className="shrink-0 text-[12px] tabular-nums text-[var(--nurea-text-subtle)]">
-                      {count}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-
+        <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {/* Section: Par marque */}
           <div className="px-5 pt-4 pb-2">
             <h3 className="mb-3 font-serif text-[15px] tracking-wide text-[var(--nurea-text)]">

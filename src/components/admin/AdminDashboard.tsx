@@ -11,10 +11,6 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import {
-  BRAND_ASSORTMENT_LABELS,
-  BRAND_POSITIONING_LABELS,
-} from "@/lib/catalog/brandTaxonomy";
 import { AdminNav } from "./AdminNav";
 
 type SessionUser = { username: string; role: string };
@@ -23,18 +19,16 @@ type BrandRow = {
   id: string;
   name: string;
   slug: string;
-  assortment: string;
-  positioning: string;
+  catalogMode: "CURATED" | "COMPLETE";
+  image: string | null;
   _count: { perfumes: number };
 };
 
-const ASSORTMENT_KEYS = ["UNSET", "COMPLETE", "CURATED"] as const;
-const POSITIONING_KEYS = ["UNSET", "NICHE", "DESIGNER", "ARTISAN"] as const;
+const CATALOG_MODE_KEYS = ["CURATED", "COMPLETE"] as const;
 
 type PerfumeRow = {
   id: number;
   name: string;
-  category: string;
   status: string;
   brand: { name: string };
 };
@@ -112,17 +106,20 @@ export function AdminDashboard() {
   const [perfumeFilter, setPerfumeFilter] = useState<PerfumeFilter>("all");
   const [tab, setTab] = useState<Tab>("perfumes");
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
+  const [pendingStatusIds, setPendingStatusIds] = useState<Set<number>>(new Set());
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<number>>(new Set());
 
   const [newBrand, setNewBrand] = useState("");
   const [brandMsg, setBrandMsg] = useState<string | null>(null);
+  const [brandImageDrafts, setBrandImageDrafts] = useState<Record<string, string>>({});
 
   const refresh = useCallback(async () => {
     setLoadErr(null);
     try {
       const [s, b, p] = await Promise.all([
-        fetch("/api/admin/session", { credentials: "include" }),
-        fetch("/api/admin/brands", { credentials: "include" }),
-        fetch("/api/admin/perfumes", { credentials: "include" }),
+        fetch("/api/admin/session", { credentials: "include", cache: "no-store" }),
+        fetch("/api/admin/brands", { credentials: "include", cache: "no-store" }),
+        fetch("/api/admin/perfumes", { credentials: "include", cache: "no-store" }),
       ]);
       if (!s.ok) throw new Error("Session invalide.");
       const sj = (await s.json()) as { user?: SessionUser };
@@ -131,6 +128,9 @@ export function AdminDashboard() {
       if (b.ok) {
         const bj = (await b.json()) as { brands: BrandRow[] };
         setBrands(bj.brands ?? []);
+        setBrandImageDrafts(
+          Object.fromEntries((bj.brands ?? []).map((row) => [row.id, row.image ?? ""])),
+        );
       }
       if (p.ok) {
         const pj = (await p.json()) as { perfumes: PerfumeRow[] };
@@ -145,10 +145,7 @@ export function AdminDashboard() {
     refresh();
   }, [refresh]);
 
-  const perfumesOnly = useMemo(
-    () => perfumes.filter((p) => p.category !== "Gammes Complètes"),
-    [perfumes],
-  );
+  const perfumesOnly = perfumes;
 
   const filteredPerfumes = useMemo(() => {
     let rows = perfumesOnly;
@@ -160,8 +157,7 @@ export function AdminDashboard() {
     return rows.filter(
       (row) =>
         row.name.toLowerCase().includes(q) ||
-        row.brand.name.toLowerCase().includes(q) ||
-        row.category.toLowerCase().includes(q),
+        row.brand.name.toLowerCase().includes(q),
     );
   }, [perfumesOnly, search, perfumeFilter]);
 
@@ -169,6 +165,10 @@ export function AdminDashboard() {
 
   async function toggleVisibility(id: number, currentStatus: string) {
     const next = currentStatus === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
+    setPendingStatusIds((prev) => new Set(prev).add(id));
+    setPerfumes((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, status: next } : p)),
+    );
     const r = await fetch(`/api/admin/perfumes/${id}`, {
       method: "PATCH",
       credentials: "include",
@@ -178,12 +178,26 @@ export function AdminDashboard() {
     if (!r.ok) {
       const j = (await r.json()) as { error?: string };
       alert(j.error ?? "Erreur");
+      setPerfumes((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status: currentStatus } : p)),
+      );
+      setPendingStatusIds((prev) => {
+        const copy = new Set(prev);
+        copy.delete(id);
+        return copy;
+      });
       return;
     }
-    refresh();
+    await refresh();
+    setPendingStatusIds((prev) => {
+      const copy = new Set(prev);
+      copy.delete(id);
+      return copy;
+    });
   }
 
   async function hardDelete(id: number) {
+    setPendingDeleteIds((prev) => new Set(prev).add(id));
     const r = await fetch(`/api/admin/perfumes/${id}`, {
       method: "DELETE",
       credentials: "include",
@@ -191,10 +205,21 @@ export function AdminDashboard() {
     if (!r.ok) {
       const j = (await r.json()) as { error?: string };
       alert(j.error ?? "Erreur");
+      setPendingDeleteIds((prev) => {
+        const copy = new Set(prev);
+        copy.delete(id);
+        return copy;
+      });
       return;
     }
+    setPerfumes((prev) => prev.filter((p) => p.id !== id));
     setDeleteTarget(null);
-    refresh();
+    await refresh();
+    setPendingDeleteIds((prev) => {
+      const copy = new Set(prev);
+      copy.delete(id);
+      return copy;
+    });
   }
 
   async function addBrand(e: React.FormEvent) {
@@ -207,7 +232,7 @@ export function AdminDashboard() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, assortment: "CURATED" }),
+        body: JSON.stringify({ name, catalogMode: "CURATED" }),
       });
       const j = (await r.json()) as { error?: string };
       if (!r.ok) {
@@ -224,7 +249,7 @@ export function AdminDashboard() {
 
   async function patchBrand(
     id: string,
-    patch: { assortment?: string; positioning?: string },
+    patch: { catalogMode?: "CURATED" | "COMPLETE"; image?: string | null },
   ) {
     const r = await fetch(`/api/admin/brands/${id}`, {
       method: "PATCH",
@@ -284,6 +309,17 @@ export function AdminDashboard() {
         {/* ============ Perfumes tab ============ */}
         {tab === "perfumes" && (
           <div className="mt-5">
+            {canEdit && (
+              <div className="mb-3 hidden md:flex">
+                <Link
+                  href="/admin/perfumes/new"
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-md bg-blue-500 px-4 text-[13px] font-medium text-white transition-all hover:bg-blue-600 active:scale-[0.98]"
+                >
+                  <Plus className="h-4 w-4" aria-hidden />
+                  Ajouter un parfum
+                </Link>
+              </div>
+            )}
             {/* Search */}
             <div className="relative">
               <Search
@@ -361,6 +397,7 @@ export function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => toggleVisibility(row.id, row.status)}
+                              disabled={pendingStatusIds.has(row.id)}
                               className="flex h-9 w-9 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:hover:bg-white/[0.06] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                               aria-label={row.status === "PUBLISHED" ? `Masquer ${row.name}` : `Rendre visible ${row.name}`}
                             >
@@ -373,6 +410,7 @@ export function AdminDashboard() {
                             <button
                               type="button"
                               onClick={() => setDeleteTarget({ id: row.id, name: row.name })}
+                              disabled={pendingDeleteIds.has(row.id)}
                               className="flex h-9 w-9 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                               aria-label={`Supprimer ${row.name}`}
                             >
@@ -432,33 +470,61 @@ export function AdminDashboard() {
                         <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">Mode de catalogue</label>
                         <div className="relative mt-0.5">
                           <select
-                            value={b.assortment}
+                            value={b.catalogMode}
                             disabled={!canEdit}
-                            onChange={(e) => patchBrand(b.id, { assortment: e.target.value })}
+                            onChange={(e) =>
+                              patchBrand(b.id, {
+                                catalogMode: e.target.value as "CURATED" | "COMPLETE",
+                              })
+                            }
                             className={selectCls}
                           >
-                            {ASSORTMENT_KEYS.map((k) => (
-                              <option key={k} value={k}>{BRAND_ASSORTMENT_LABELS[k].title}</option>
+                            {CATALOG_MODE_KEYS.map((k) => (
+                              <option key={k} value={k}>
+                                {k === "COMPLETE" ? "Gamme complète" : "Parfums sélectionnés"}
+                              </option>
                             ))}
                           </select>
                           <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#bbb]" aria-hidden />
                         </div>
                       </div>
                       <div>
-                        <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">Type</label>
-                        <div className="relative mt-0.5">
-                          <select
-                            value={b.positioning}
-                            disabled={!canEdit}
-                            onChange={(e) => patchBrand(b.id, { positioning: e.target.value })}
-                            className={selectCls}
+                        <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">
+                          Image marque
+                        </label>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <input
+                            value={brandImageDrafts[b.id] ?? ""}
+                            onChange={(e) =>
+                              setBrandImageDrafts((prev) => ({
+                                ...prev,
+                                [b.id]: e.target.value,
+                              }))
+                            }
+                            placeholder={
+                              b.catalogMode === "COMPLETE"
+                                ? "Image obligatoire (URL ou /public)"
+                                : "Image facultative"
+                            }
+                            className="min-h-[36px] flex-1 rounded-md border border-black/10 bg-white px-2 py-1.5 text-[12px] text-[#1a1a1a] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              patchBrand(b.id, {
+                                image: (brandImageDrafts[b.id] ?? "").trim() || null,
+                              })
+                            }
+                            className="min-h-[36px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
                           >
-                            {POSITIONING_KEYS.map((k) => (
-                              <option key={k} value={k}>{BRAND_POSITIONING_LABELS[k].title}</option>
-                            ))}
-                          </select>
-                          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#bbb]" aria-hidden />
+                            Enregistrer
+                          </button>
                         </div>
+                        {b.catalogMode === "COMPLETE" && !(brandImageDrafts[b.id] ?? "").trim() && (
+                          <p className="mt-1 text-[11px] text-amber-600 dark:text-amber-400">
+                            Image requise en gamme complète.
+                          </p>
+                        )}
                       </div>
                     </div>
                   </li>
