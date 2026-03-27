@@ -19,6 +19,7 @@ import {
   findExternalPerfumeHint,
   getPerfumesByIds,
   compareSearchRelevance,
+  normalizeForFuzzy,
   EXTERNAL_SEARCH_FALLBACK_MESSAGE,
   type Category,
   type ExternalPerfumeHint,
@@ -322,6 +323,19 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
       ? searchFallback.data.suggestion
       : null;
 
+  const apiSuggestionBrandRangeMatch = useMemo(() => {
+    if (!apiSuggestion) return null;
+    const brand = normalizeForFuzzy((apiSuggestion.brand ?? "").trim());
+    if (!brand || brand === "—") return null;
+    return (
+      catalogPerfumes.find(
+        (p) =>
+          p.category === "Gammes Complètes" &&
+          normalizeForFuzzy(p.brand) === brand
+      ) ?? null
+    );
+  }, [apiSuggestion, catalogPerfumes]);
+
   const showExtendedSearchLoading =
     searchTerm.trim().length >= 3 &&
     sortedPerfumes.length === 0 &&
@@ -330,11 +344,21 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
   const inspirationWhenEmpty = useMemo(() => {
     if (!searchTerm.trim()) return catalogPerfumes.slice(0, 6);
     if (apiSuggestion) {
-      const label = formatExternalSuggestionDisplay(
-        apiSuggestion,
-        searchTerm.trim()
-      );
-      return suggestSimilarPerfumes(label, catalogPerfumes, 6);
+      const base = apiSuggestionBrandRangeMatch
+        ? [apiSuggestionBrandRangeMatch]
+        : [];
+      const label = formatExternalSuggestionDisplay(apiSuggestion, searchTerm.trim());
+      const suggestions = suggestSimilarPerfumes(label, catalogPerfumes, 6);
+      const merged: Perfume[] = [];
+      const seen = new Set<number>();
+      for (const p of [...base, ...suggestions]) {
+        if (merged.length >= 6) break;
+        if (!seen.has(p.id)) {
+          seen.add(p.id);
+          merged.push(p);
+        }
+      }
+      return merged;
     }
     if (externalHint) {
       const fromHint = getPerfumesByIds(
@@ -354,7 +378,13 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
       return merged;
     }
     return [];
-  }, [searchTerm, externalHint, apiSuggestion, catalogPerfumes]);
+  }, [
+    searchTerm,
+    externalHint,
+    apiSuggestion,
+    apiSuggestionBrandRangeMatch,
+    catalogPerfumes,
+  ]);
 
   const openBrowse = useCallback(() => {
     setBrowseOpen(true);
@@ -591,12 +621,27 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
                           apiSuggestion,
                           searchTerm.trim()
                         )}
-                        » ?
+                        »{apiSuggestion.brand && apiSuggestion.brand !== "—"
+                          ? ` de ${apiSuggestion.brand}`
+                          : ""}{" "}
+                        ?
                       </p>
                       <p className="mb-4 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
-                        Cette référence n&apos;est pas encore en fiche ici.
-                        La maison Nurea Parfums peut confirmer une disponibilité,
-                        un arrivage ou une alternative : contactez-nous.
+                        {apiSuggestionBrandRangeMatch ? (
+                          <>
+                            Bonne nouvelle : la gamme complète{" "}
+                            {apiSuggestionBrandRangeMatch.brand} est déjà au
+                            catalogue. Ce parfum peut être demandé directement
+                            via la page Contact.
+                          </>
+                        ) : (
+                          <>
+                            Cette référence n&apos;est pas encore en fiche ici.
+                            La maison Nurea Parfums peut confirmer une
+                            disponibilité, un arrivage ou une alternative :
+                            contactez-nous.
+                          </>
+                        )}
                       </p>
                       <button
                         type="button"
