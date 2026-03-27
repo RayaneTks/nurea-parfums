@@ -33,7 +33,10 @@ export function AdminLoginForm() {
         credentials: "include",
         body: JSON.stringify({ username, password }),
       });
-      const data = (await res.json()) as { error?: string };
+      const contentType = res.headers.get("content-type") ?? "";
+      const data = contentType.includes("application/json")
+        ? ((await res.json()) as { error?: string })
+        : { error: "Réponse serveur invalide." };
       if (!res.ok) {
         setError(data.error ?? "Echec de la connexion.");
         return;
@@ -41,7 +44,7 @@ export function AdminLoginForm() {
       router.replace("/admin");
       router.refresh();
     } catch {
-      setError("Reseau indisponible.");
+      setError("Connexion serveur impossible.");
     } finally {
       setLoading(false);
     }

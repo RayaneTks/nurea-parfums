@@ -44,27 +44,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Base de données non configurée." }, { status: 503 });
   }
 
-  const user = await prisma.adminUser.findUnique({ where: { username } });
-  if (!user) {
-    await bcrypt.hash(password, 10);
-    return NextResponse.json({ error: "Identifiants incorrects." }, { status: 401 });
+  try {
+    const user = await prisma.adminUser.findUnique({ where: { username } });
+    if (!user) {
+      await bcrypt.hash(password, 10);
+      return NextResponse.json({ error: "Identifiants incorrects." }, { status: 401 });
+    }
+
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) {
+      return NextResponse.json({ error: "Identifiants incorrects." }, { status: 401 });
+    }
+
+    const token = await signAdminToken({
+      sub: user.id,
+      username: user.username,
+      role: user.role,
+    });
+
+    const res = NextResponse.json({
+      ok: true,
+      user: { username: user.username, role: user.role },
+    });
+    res.cookies.set(ADMIN_COOKIE, token, adminCookieOptions(60 * 60 * 24 * 7));
+    return res;
+  } catch (error) {
+    console.error("[admin/login] error:", error);
+    return NextResponse.json(
+      { error: "Connexion impossible pour le moment. Réessayez." },
+      { status: 503 },
+    );
   }
-
-  const ok = await bcrypt.compare(password, user.passwordHash);
-  if (!ok) {
-    return NextResponse.json({ error: "Identifiants incorrects." }, { status: 401 });
-  }
-
-  const token = await signAdminToken({
-    sub: user.id,
-    username: user.username,
-    role: user.role,
-  });
-
-  const res = NextResponse.json({
-    ok: true,
-    user: { username: user.username, role: user.role },
-  });
-  res.cookies.set(ADMIN_COOKIE, token, adminCookieOptions(60 * 60 * 24 * 7));
-  return res;
 }
