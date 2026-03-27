@@ -27,21 +27,21 @@ export function AdminNav() {
           <Link
             href="/"
             target="_blank"
-            className="flex h-9 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-[#888] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.06] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md border border-black/[0.08] px-3 text-[12px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] hover:text-[#444] dark:border-white/[0.1] dark:text-[#b0b0b0] dark:hover:bg-white/[0.06] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             aria-label="Voir le site"
           >
             <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-            <span className="hidden sm:inline">Voir le site</span>
+            <span>Site</span>
           </Link>
 
           <button
             type="button"
             onClick={logout}
             aria-label="Se deconnecter"
-            className="flex h-9 items-center gap-1.5 rounded-md border border-red-200 px-2.5 text-[12px] font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md border border-red-200 px-3 text-[12px] font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
             <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Déconnexion</span>
+            <span>Quitter</span>
           </button>
         </div>
       </div>

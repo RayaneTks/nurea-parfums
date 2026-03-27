@@ -148,7 +148,7 @@ function ImageUploadField({
             <button
               type="button"
               onClick={() => onChange("")}
-              className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+              className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
               aria-label={`Effacer ${label.toLowerCase()}`}
             >
               <X className="h-4 w-4" aria-hidden />
@@ -187,7 +187,7 @@ function ImageUploadField({
             <button
               type="button"
               onClick={() => onChange("")}
-              className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
+              className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
               aria-label="Retirer l'image"
             >
               <X className="h-3 w-3" />
@@ -285,7 +285,7 @@ function BrandCombobox({
           <button
             type="button"
             onClick={onClear}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.04] hover:text-[#333] dark:hover:bg-white/[0.06] dark:hover:text-white"
+            className="flex h-11 w-11 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.04] hover:text-[#333] dark:hover:bg-white/[0.06] dark:hover:text-white"
             aria-label="Désélectionner la marque"
           >
             <X className="h-4 w-4" />
@@ -317,7 +317,7 @@ function BrandCombobox({
             setQuery("");
             setOpen(false);
           }}
-          className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+          className="absolute right-1 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
           aria-label="Effacer la recherche de marque"
         >
           <X className="h-4 w-4" aria-hidden />
@@ -634,7 +634,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                   <button
                     type="button"
                     onClick={() => setBrandNameDraft("")}
-                    className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+                    className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
                     aria-label="Effacer la nouvelle marque"
                   >
                     <X className="h-4 w-4" aria-hidden />
@@ -669,7 +669,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                 <button
                   type="button"
                   onClick={() => setName("")}
-                  className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
                   aria-label="Effacer le nom du parfum"
                 >
                   <X className="h-4 w-4" aria-hidden />

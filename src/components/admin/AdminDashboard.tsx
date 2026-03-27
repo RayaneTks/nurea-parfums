@@ -662,7 +662,7 @@ export function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
                   aria-label="Effacer la recherche"
                 >
                   <X className="h-4 w-4" aria-hidden />
@@ -738,13 +738,14 @@ export function AdminDashboard() {
                         </p>
                       </div>
 
-                      <div className="flex w-full shrink-0 justify-end gap-1.5 sm:w-auto">
+                      <div className="grid w-full shrink-0 grid-cols-3 gap-2 pt-1 sm:flex sm:w-auto sm:justify-end sm:gap-1.5 sm:pt-0">
                         <Link
                           href={`/admin/perfumes/${row.id}/edit`}
-                          className="flex h-11 w-11 items-center justify-center rounded-md text-[#8f8f8f] transition-colors hover:bg-black/[0.06] hover:text-[#3f3f3f] dark:hover:bg-white/[0.08] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                          className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-md border border-black/[0.08] bg-white/70 px-2 text-[12px] font-medium text-[#565656] transition-colors hover:bg-black/[0.05] hover:text-[#2f2f2f] dark:border-white/[0.12] dark:bg-white/[0.03] dark:text-[#b0b0b0] dark:hover:bg-white/[0.08] dark:hover:text-white sm:h-11 sm:w-11 sm:border-transparent sm:bg-transparent sm:px-0 sm:text-[#8f8f8f]"
                           aria-label={canEdit ? `Modifier ${row.name}` : `Voir ${row.name}`}
                         >
                           <Pencil className="h-4 w-4" aria-hidden />
+                          <span className="sm:hidden">{canEdit ? "Modifier" : "Voir"}</span>
                         </Link>
                         {canEdit && (
                           <>
@@ -752,7 +753,7 @@ export function AdminDashboard() {
                               type="button"
                               onClick={() => toggleVisibility(row.id, row.status)}
                               disabled={hasMutationInFlight || pendingStatusIds.has(row.id)}
-                              className="flex h-11 w-11 items-center justify-center rounded-md text-[#8f8f8f] transition-colors hover:bg-black/[0.06] hover:text-[#3f3f3f] dark:hover:bg-white/[0.08] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                              className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-md border border-black/[0.08] bg-white/70 px-2 text-[12px] font-medium text-[#565656] transition-colors hover:bg-black/[0.05] hover:text-[#2f2f2f] disabled:opacity-50 dark:border-white/[0.12] dark:bg-white/[0.03] dark:text-[#b0b0b0] dark:hover:bg-white/[0.08] dark:hover:text-white sm:h-11 sm:w-11 sm:border-transparent sm:bg-transparent sm:px-0 sm:text-[#8f8f8f]"
                               aria-label={row.status === "PUBLISHED" ? `Masquer ${row.name}` : `Rendre visible ${row.name}`}
                             >
                               {row.status === "PUBLISHED" ? (
@@ -760,15 +761,17 @@ export function AdminDashboard() {
                               ) : (
                                 <EyeOff className="h-4 w-4" aria-hidden />
                               )}
+                              <span className="sm:hidden">{row.status === "PUBLISHED" ? "Masquer" : "Publier"}</span>
                             </button>
                             <button
                               type="button"
                               onClick={() => setDeleteTarget({ id: row.id, name: row.name })}
                               disabled={hasMutationInFlight || pendingDeleteIds.has(row.id)}
-                              className="flex h-11 w-11 items-center justify-center rounded-md text-[#8f8f8f] transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/12 dark:hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                              className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-md border border-red-200 bg-red-50/70 px-2 text-[12px] font-medium text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50 dark:border-red-500/25 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/18 sm:h-11 sm:w-11 sm:border-transparent sm:bg-transparent sm:px-0 sm:text-[#8f8f8f]"
                               aria-label={`Supprimer ${row.name}`}
                             >
                               <Trash2 className="h-4 w-4" aria-hidden />
+                              <span className="sm:hidden">Supprimer</span>
                             </button>
                           </>
                         )}
@@ -889,7 +892,7 @@ export function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setBrandSearch("")}
-                  className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
+                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.05] hover:text-[#555] dark:text-[#777] dark:hover:bg-white/[0.08] dark:hover:text-[#ddd]"
                   aria-label="Effacer la recherche marque"
                 >
                   <X className="h-4 w-4" aria-hidden />
@@ -968,7 +971,7 @@ export function AdminDashboard() {
                         </div>
                       </div>
                       {canEdit && (
-                        <div className="flex w-full shrink-0 justify-start gap-1.5 pt-1 sm:w-auto sm:justify-end sm:pt-0">
+                        <div className="grid w-full shrink-0 grid-cols-3 gap-2 pt-1 sm:flex sm:w-auto sm:justify-end sm:gap-1.5 sm:pt-0">
                           <button
                             type="button"
                             disabled={pendingBrandIds.has(b.id)}
@@ -977,19 +980,21 @@ export function AdminDashboard() {
                                 status: b.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED",
                               })
                             }
-                            className="flex h-11 w-11 items-center justify-center rounded-md text-[#7b7b7b] transition-colors hover:bg-black/[0.06] hover:text-[#2c2c2c] disabled:opacity-50 dark:text-[#a0a0a0] dark:hover:bg-white/[0.08] dark:hover:text-white"
+                            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-md border border-black/[0.08] bg-white/70 px-2 text-[12px] font-medium text-[#565656] transition-colors hover:bg-black/[0.05] hover:text-[#2f2f2f] disabled:opacity-50 dark:border-white/[0.12] dark:bg-white/[0.03] dark:text-[#b0b0b0] dark:hover:bg-white/[0.08] dark:hover:text-white sm:h-11 sm:w-11 sm:border-transparent sm:bg-transparent sm:px-0 sm:text-[#7b7b7b]"
                             aria-label={b.status === "PUBLISHED" ? `Masquer ${b.name}` : `Rendre visible ${b.name}`}
                           >
                             {b.status === "PUBLISHED" ? <Eye className="h-4 w-4" aria-hidden /> : <EyeOff className="h-4 w-4" aria-hidden />}
+                            <span className="sm:hidden">{b.status === "PUBLISHED" ? "Masquer" : "Publier"}</span>
                           </button>
                           <button
                             type="button"
                             disabled={pendingBrandIds.has(b.id)}
                             onClick={() => setEditingBrandId((prev) => (prev === b.id ? null : b.id))}
-                            className="flex h-11 w-11 items-center justify-center rounded-md text-[#7b7b7b] transition-colors hover:bg-black/[0.06] hover:text-[#2c2c2c] disabled:opacity-50 dark:text-[#a0a0a0] dark:hover:bg-white/[0.08] dark:hover:text-white"
+                            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-md border border-black/[0.08] bg-white/70 px-2 text-[12px] font-medium text-[#565656] transition-colors hover:bg-black/[0.05] hover:text-[#2f2f2f] disabled:opacity-50 dark:border-white/[0.12] dark:bg-white/[0.03] dark:text-[#b0b0b0] dark:hover:bg-white/[0.08] dark:hover:text-white sm:h-11 sm:w-11 sm:border-transparent sm:bg-transparent sm:px-0 sm:text-[#7b7b7b]"
                             aria-label={`Modifier ${b.name}`}
                           >
                             <Pencil className="h-4 w-4" aria-hidden />
+                            <span className="sm:hidden">Modifier</span>
                           </button>
                           <button
                             type="button"
@@ -1001,10 +1006,11 @@ export function AdminDashboard() {
                                 count: b._count.perfumes,
                               })
                             }
-                            className="flex h-11 w-11 items-center justify-center rounded-md text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-500/12"
+                            className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-md border border-red-200 bg-red-50/70 px-2 text-[12px] font-medium text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50 dark:border-red-500/25 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/18 sm:h-11 sm:w-11 sm:border-transparent sm:bg-transparent sm:px-0 sm:text-red-500"
                             aria-label={`Supprimer ${b.name}`}
                           >
                             <Trash2 className="h-4 w-4" aria-hidden />
+                            <span className="sm:hidden">Supprimer</span>
                           </button>
                         </div>
                       )}
@@ -1018,7 +1024,7 @@ export function AdminDashboard() {
                           <button
                             type="button"
                             onClick={() => setEditingBrandId(null)}
-                            className="flex h-7 w-7 items-center justify-center rounded-md text-[#888] hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+                            className="flex h-11 w-11 items-center justify-center rounded-md text-[#888] hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
                             aria-label="Fermer la modification"
                           >
                             <X className="h-4 w-4" />
@@ -1036,13 +1042,13 @@ export function AdminDashboard() {
                                 [b.id]: e.target.value,
                               }))
                             }
-                            className="min-h-[36px] flex-1 rounded-md border border-black/10 bg-white px-2 py-1.5 text-[12px] text-[#1a1a1a] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]"
+                            className="min-h-[44px] flex-1 rounded-md border border-black/10 bg-white px-2 py-1.5 text-[12px] text-[#1a1a1a] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]"
                           />
                           <button
                             type="button"
                             disabled={!canEdit || pendingBrandIds.has(b.id)}
                             onClick={() => patchBrand(b.id, { name: (brandNameDrafts[b.id] ?? "").trim() })}
-                            className="min-h-[36px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                            className="min-h-[44px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
                           >
                             Renommer
                           </button>
@@ -1088,7 +1094,7 @@ export function AdminDashboard() {
                                 ? "Image obligatoire (URL ou /public)"
                                 : "Image facultative"
                             }
-                            className="min-h-[36px] flex-1 rounded-md border border-black/10 bg-white px-2 py-1.5 text-[12px] text-[#1a1a1a] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]"
+                            className="min-h-[44px] flex-1 rounded-md border border-black/10 bg-white px-2 py-1.5 text-[12px] text-[#1a1a1a] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]"
                           />
                           <button
                             type="button"
@@ -1098,7 +1104,7 @@ export function AdminDashboard() {
                                 image: (brandImageDrafts[b.id] ?? "").trim() || null,
                               })
                             }
-                            className="min-h-[36px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                            className="min-h-[44px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
                           >
                             Enregistrer
                           </button>
@@ -1110,7 +1116,7 @@ export function AdminDashboard() {
                                 image: null,
                               })
                             }
-                            className="min-h-[36px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
+                            className="min-h-[44px] rounded-md border border-black/10 px-2.5 text-[11px] font-medium text-[#666] transition-colors hover:bg-black/[0.04] disabled:opacity-50 dark:border-white/10 dark:text-[#aaa] dark:hover:bg-white/[0.06]"
                           >
                             Supprimer le visuel
                           </button>
