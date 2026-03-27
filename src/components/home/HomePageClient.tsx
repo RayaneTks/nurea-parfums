@@ -422,6 +422,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
     setSelectedTypes(types);
     setMaisonSlug("");
     setUniversFilter("");
+    setSelectedCategory("Tout voir");
     setBrowseOpen(false);
   }, []);
 
@@ -523,7 +524,11 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
                 <button
                   type="button"
                   key={category}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => {
+                    setSelectedCategory(category);
+                    setSelectedBrandSlugs(new Set());
+                    setSelectedTypes(new Set());
+                  }}
                   className={`relative shrink-0 min-h-[44px] px-3.5 py-2.5 text-[11px] font-medium uppercase tracking-nurea-label transition-all duration-300 touch-manipulation md:px-4 md:py-3 md:text-[12px] ${
                     selectedCategory === category
                       ? "text-[var(--nurea-accent)]"

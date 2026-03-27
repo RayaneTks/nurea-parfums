@@ -20,7 +20,7 @@ import {
   BRAND_POSITIONING_LABELS,
 } from "@/lib/catalog/brandTaxonomy";
 
-const dbCategories = categories.filter((c) => c !== "Tout voir");
+const dbCatégories = categories.filter((c) => c !== "Tout voir");
 
 type BrandOpt = { id: string; name: string; assortment: string; positioning: string };
 type ExistingPerfume = { id: number; name: string; brandName: string };
@@ -120,11 +120,12 @@ function SelectWrapper({ children, ...props }: React.SelectHTMLAttributes<HTMLSe
 }
 
 async function uploadFile(file: File): Promise<string> {
+  const prepared = await convertToWebp(file);
   const sign = await fetch("/api/admin/storage/sign", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ filename: file.name }),
+    body: JSON.stringify({ filename: prepared.name }),
   });
   const j = (await sign.json()) as {
     error?: string;
@@ -132,16 +133,39 @@ async function uploadFile(file: File): Promise<string> {
     token?: string;
     publicUrl?: string;
   };
-  if (!sign.ok) throw new Error(j.error ?? "Signature refusee (Supabase configure ?)");
+  if (!sign.ok) throw new Error(j.error ?? "Signature refusée (Supabase configuré ?)");
 
   const headers: Record<string, string> = {
-    "Content-Type": file.type || "application/octet-stream",
+    "Content-Type": prepared.type || "application/octet-stream",
   };
   if (j.token) headers.Authorization = `Bearer ${j.token}`;
 
-  const put = await fetch(j.signedUrl!, { method: "PUT", body: file, headers });
-  if (!put.ok) throw new Error(`Upload refuse (${put.status}).`);
+  const put = await fetch(j.signedUrl!, { method: "PUT", body: prepared, headers });
+  if (!put.ok) throw new Error(`Upload refusé (${put.status}).`);
   return j.publicUrl ?? "";
+}
+
+async function convertToWebp(file: File): Promise<File> {
+  if (!file.type.startsWith("image/")) return file;
+  if (file.type === "image/webp") return file;
+  const bitmap = await createImageBitmap(file);
+  const maxWidth = 1200;
+  const ratio = Math.min(1, maxWidth / bitmap.width);
+  const width = Math.max(1, Math.round(bitmap.width * ratio));
+  const height = Math.max(1, Math.round(bitmap.height * ratio));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return file;
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, "image/webp", 0.86),
+  );
+  bitmap.close();
+  if (!blob) return file;
+  const safe = file.name.replace(/\.[a-zA-Z0-9]+$/, "");
+  return new File([blob], `${safe}.webp`, { type: "image/webp" });
 }
 
 function ImageUploadField({
@@ -290,7 +314,7 @@ function BrandCombobox({
         body: JSON.stringify({ name }),
       });
       const j = (await r.json()) as { error?: string; brand?: BrandOpt };
-      if (!r.ok) throw new Error(j.error ?? "Creation echouee");
+      if (!r.ok) throw new Error(j.error ?? "Création échouée");
       if (j.brand) {
         const newBrand: BrandOpt = {
           id: j.brand.id,
@@ -321,7 +345,7 @@ function BrandCombobox({
             type="button"
             onClick={onClear}
             className="flex h-7 w-7 items-center justify-center rounded-md text-[#999] transition-colors hover:bg-black/[0.04] hover:text-[#333] dark:hover:bg-white/[0.06] dark:hover:text-white"
-            aria-label="Deselectioner la marque"
+            aria-label="Désélectionner la marque"
           >
             <X className="h-4 w-4" />
           </button>
@@ -373,11 +397,11 @@ function BrandCombobox({
               ) : (
                 <Plus className="h-4 w-4" aria-hidden />
               )}
-              Creer « {query.trim()} »
+              Créer « {query.trim()} »
             </button>
           )}
           {filtered.length === 0 && (exactMatch || query.trim().length < 2) && (
-            <p className="px-3 py-3 text-[13px] text-[#999]">Aucun resultat</p>
+            <p className="px-3 py-3 text-[13px] text-[#999]">Aucun résultat</p>
           )}
         </div>
       )}
@@ -410,7 +434,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
   const [brandId, setBrandId] = useState("");
   const [name, setName] = useState("");
-  const [category, setCategory] = useState<string>(dbCategories[0] ?? "Selections Individuelles");
+  const [category, setCategory] = useState<string>(dbCatégories[0] ?? "Sélections Individuelles");
   const [image, setImage] = useState("");
   const [imageLight, setImageLight] = useState("");
   const [imageDark, setImageDark] = useState("");
@@ -493,6 +517,13 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
   const selectedBrand = useMemo(() => brands.find((b) => b.id === brandId), [brands, brandId]);
   const selectedBrandName = selectedBrand?.name ?? "";
+  const isRangeBrand = selectedBrand?.assortment === "COMPLETE";
+
+  useEffect(() => {
+    if (!isRangeBrand || !selectedBrand) return;
+    setName(selectedBrand.name);
+    setCategory("Gammes Complètes");
+  }, [isRangeBrand, selectedBrand]);
 
   const perfumeDuplicate = useMemo(() => {
     if (!isNew || name.trim().length < 2) return null;
@@ -510,12 +541,12 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
       });
       if (!r.ok) {
         const j = (await r.json()) as { error?: string };
-        setError(j.error ?? "Mise a jour impossible");
+        setError(j.error ?? "Mise à jour impossible");
         return;
       }
       setBrands((prev) => prev.map((b) => b.id === brandId ? { ...b, [field]: value } : b));
     } catch {
-      setError("Erreur reseau");
+      setError("Erreur réseau");
     }
   }
 
@@ -530,7 +561,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
       });
       if (!r.ok) {
         const j = (await r.json()) as { error?: string };
-        throw new Error(j.error ?? "Suppression refusee");
+        throw new Error(j.error ?? "Suppression refusée");
       }
       router.push("/admin");
       router.refresh();
@@ -545,7 +576,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     e.preventDefault();
     if (readOnly) return;
     if (!brandId) {
-      setError("Selectionnez ou creez une marque.");
+      setError("Sélectionnez ou créez une marque.");
       return;
     }
     setSaving(true);
@@ -572,7 +603,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         body: JSON.stringify(body),
       });
       const j = (await r.json()) as { error?: string; perfume?: { id: number } };
-      if (!r.ok) throw new Error(j.error ?? "Enregistrement refuse");
+      if (!r.ok) throw new Error(j.error ?? "Enregistrement refusé");
       router.push("/admin");
       router.refresh();
     } catch (err) {
@@ -607,7 +638,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               {isNew ? "Nouveau parfum" : `Modifier #${perfumeId}`}
             </h1>
             <p className="mt-1 text-[13px] text-[#999]">
-              {isNew ? "Publie par defaut dans le catalogue." : "Modifiez les champs, puis enregistrez."}
+              {isNew ? "Publié par défaut dans le catalogue." : "Modifiez les champs, puis enregistrez."}
             </p>
           </div>
           <Link
@@ -635,10 +666,10 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           </div>
         )}
 
-        {/* --- Identite --- */}
+        {/* --- Identité --- */}
         <fieldset className="space-y-4">
           <legend className="text-[15px] font-semibold text-[#1a1a1a] dark:text-white">
-            Identite
+            Identité
           </legend>
 
           <div>
@@ -659,7 +690,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           {brandId && selectedBrand && !readOnly && (
             <div className="grid grid-cols-2 gap-3 rounded-md border border-black/[0.06] bg-black/[0.01] p-3 dark:border-white/[0.06] dark:bg-white/[0.02]">
               <div>
-                <label className="text-[12px] font-medium text-[#888]">Assortiment</label>
+                <label className="text-[12px] font-medium text-[#888]">Mode de catalogue</label>
                 <SelectWrapper
                   value={selectedBrand.assortment}
                   onChange={(e) => patchBrandField("assortment", (e.target as HTMLSelectElement).value)}
@@ -689,16 +720,21 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              disabled={readOnly}
+              disabled={readOnly || isRangeBrand}
               autoComplete="off"
               className={`mt-1.5 ${inputCls}`}
             />
+            {isRangeBrand ? (
+              <p className="mt-1 text-[12px] text-[#999] dark:text-[#666]">
+                En mode « Gamme complète », le nom reprend automatiquement la marque.
+              </p>
+            ) : null}
             {isNew && perfumeDuplicate && (
               <div className="mt-2 flex items-start gap-2 rounded-md bg-amber-50 px-3 py-2.5 text-[13px] text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 <div>
                   <p>
-                    Similaire a « {perfumeDuplicate.name} » ({perfumeDuplicate.brandName}, #{perfumeDuplicate.id}).
+                    Similaire à « {perfumeDuplicate.name} » ({perfumeDuplicate.brandName}, #{perfumeDuplicate.id}).
                   </p>
                   <Link
                     href={`/admin/perfumes/${perfumeDuplicate.id}/edit`}
@@ -712,14 +748,14 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           </div>
 
           <div>
-            <label className={labelCls}>Categorie</label>
+            <label className={labelCls}>Catégorie</label>
             <div className="mt-1.5">
               <SelectWrapper
                 value={category}
                 onChange={(e) => setCategory((e.target as HTMLSelectElement).value)}
-                disabled={readOnly}
+                disabled={readOnly || isRangeBrand}
               >
-                {dbCategories.map((c) => (
+                {dbCatégories.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </SelectWrapper>
@@ -735,7 +771,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
           <ImageUploadField
             label="Image du parfum"
-            subtitle="Utilisee par defaut. Si une variante mode clair est ajoutee, celle-ci ne sera affichee qu'en mode sombre."
+            subtitle="Utilisée par défaut. Si une variante mode clair est ajoutée, celle-ci ne sera affichée qu'en mode sombre."
             value={image}
             onChange={setImage}
             required
@@ -802,7 +838,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             </p>
           </div>
           <div>
-            <label className={labelCls}>Mots-cles</label>
+            <label className={labelCls}>Mots-clés</label>
             <textarea
               value={tags}
               onChange={(e) => setTags(e.target.value)}
@@ -811,11 +847,11 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               className={`mt-1.5 ${textareaCls}`}
             />
             <p className="mt-1 text-[12px] text-[#999] dark:text-[#666]">
-              Termes supplementaires pour la recherche. Un par ligne.
+              Termes supplémentaires pour la recherche. Un par ligne.
             </p>
           </div>
           <div>
-            <label className={labelCls}>Gammes / Declinaisons</label>
+            <label className={labelCls}>Gammes / Déclinaisons</label>
             <textarea
               value={classics}
               onChange={(e) => setClassics(e.target.value)}
@@ -824,7 +860,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               className={`mt-1.5 ${textareaCls}`}
             />
             <p className="mt-1 text-[12px] text-[#999] dark:text-[#666]">
-              Autres parfums de la meme gamme (ex: Sauvage Elixir). Un par ligne.
+              Autres parfums de la même gamme (ex: Sauvage Elixir). Un par ligne.
             </p>
           </div>
         </fieldset>
@@ -844,7 +880,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             ) : (
               <div className="space-y-3">
                 <p className="text-[13px] font-medium text-red-700 dark:text-red-400">
-                  Supprimer definitivement ce parfum ? Cette action est irreversible.
+                  Supprimer définitivement ce parfum ? Cette action est irréversible.
                 </p>
                 <div className="flex gap-2">
                   <button
@@ -883,7 +919,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                 Enregistrement…
               </>
             ) : (
-              isNew ? "Creer le parfum" : "Enregistrer"
+              isNew ? "Créer le parfum" : "Enregistrer"
             )}
           </button>
         </div>
@@ -909,7 +945,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               {saving ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               ) : null}
-              {saving ? "Envoi…" : isNew ? "Creer" : "Enregistrer"}
+              {saving ? "Envoi…" : isNew ? "Créer" : "Enregistrer"}
             </button>
           </div>
         </div>

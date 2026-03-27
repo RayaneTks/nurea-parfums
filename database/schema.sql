@@ -13,6 +13,11 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 DO $$ BEGIN
+  CREATE TYPE "PerfumeKind" AS ENUM ('PERFUME', 'RANGE');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
   CREATE TYPE "SearchCacheStatus" AS ENUM ('FOUND', 'NOT_FOUND', 'ERROR');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
@@ -44,6 +49,7 @@ CREATE TABLE IF NOT EXISTS "Brand" (
 CREATE TABLE IF NOT EXISTS "Perfume" (
   "id"         INTEGER NOT NULL PRIMARY KEY,
   "brandId"    TEXT NOT NULL REFERENCES "Brand"("id") ON DELETE RESTRICT,
+  "kind"       "PerfumeKind" NOT NULL DEFAULT 'PERFUME',
   "name"       TEXT NOT NULL,
   "slug"       TEXT NOT NULL UNIQUE,
   "category"   TEXT NOT NULL,
@@ -59,6 +65,7 @@ CREATE TABLE IF NOT EXISTS "Perfume" (
 CREATE INDEX IF NOT EXISTS "Perfume_category_idx" ON "Perfume" ("category");
 CREATE INDEX IF NOT EXISTS "Perfume_status_idx" ON "Perfume" ("status");
 CREATE INDEX IF NOT EXISTS "Perfume_brandId_idx" ON "Perfume" ("brandId");
+CREATE INDEX IF NOT EXISTS "Perfume_kind_idx" ON "Perfume" ("kind");
 CREATE INDEX IF NOT EXISTS "Perfume_name_lower_idx" ON "Perfume" (lower("name"));
 
 -- ---------------------------------------------------------------------------

@@ -99,6 +99,21 @@ Recherche « hors catalogue » : voir `findExternalPerfumeHint` et les fichiers 
 
 - Variables : voir `.env.example` (Resend, emails)
 - Liens sociaux et coordonnées : `src/lib/data.ts` → `CONTACT`
+- **Prisma / DB** : `DATABASE_URL` obligatoire pour `prisma migrate dev`, `prisma db push`, `prisma db seed`
+
+## Décisions récentes (Mars 2026)
+
+- **Catalogue mobile-first** : filtres drawer avec pattern draft → appliquer (`CatalogFilterDrawer`).
+- **Filtres non superposés** : un changement de catégorie reset les filtres marque/type ; appliquer des filtres marque/type remet la catégorie à `Tout voir`.
+- **Admin lisible** : états `Visible` / `Masqué`, suppression avec confirmation, listes zébrées pour guider l’oeil.
+- **Mode de catalogue marque** :
+  - `Gamme complète` : l’entrée affiche la marque (pas un parfum individuel).
+  - Si une marque passe en `Gamme complète`, ses entrées existantes passent en `DRAFT` (masquées) pour cohérence.
+- **Images** :
+  - `image` = image principale (fallback dark + light),
+  - `imageLight` optionnelle remplace seulement en mode clair.
+  - L’upload admin convertit en WebP côté client avant envoi.
+- **Schéma DB** : `PerfumeKind` ajouté (`PERFUME`, `RANGE`) + index associé.
 
 ## Search (fichiers)
 

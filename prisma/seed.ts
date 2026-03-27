@@ -33,28 +33,30 @@ async function main() {
   for (const p of mockPerfumes) {
     const brandId = brandIdByName.get(p.brand);
     if (!brandId) throw new Error(`Marque manquante: ${p.brand}`);
+    const isRange = p.category === "Gammes Complètes";
+    const displayName = isRange ? p.brand : p.name;
 
     await prisma.perfume.upsert({
       where: { id: p.id },
       create: {
         id: p.id,
         brandId,
-        name: p.name,
-        slug: perfumeSlug(p.id, p.name, p.brand),
+        name: displayName,
+        slug: perfumeSlug(p.id, displayName, p.brand),
         category: p.category,
         image: p.image,
         imageLight: p.imageLight ?? null,
-        imageDark: p.imageDark ?? null,
+        imageDark: null,
         status: "PUBLISHED",
       },
       update: {
         brandId,
-        name: p.name,
-        slug: perfumeSlug(p.id, p.name, p.brand),
+        name: displayName,
+        slug: perfumeSlug(p.id, displayName, p.brand),
         category: p.category,
         image: p.image,
         imageLight: p.imageLight ?? null,
-        imageDark: p.imageDark ?? null,
+        imageDark: null,
       },
     });
 

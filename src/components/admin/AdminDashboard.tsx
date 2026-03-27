@@ -205,7 +205,7 @@ export function AdminDashboard() {
     });
     const j = (await r.json()) as { error?: string };
     if (!r.ok) {
-      setBrandMsg(j.error ?? "Refuse");
+      setBrandMsg(j.error ?? "Refusé");
       return;
     }
     setNewBrand("");
@@ -225,7 +225,7 @@ export function AdminDashboard() {
     });
     if (!r.ok) {
       const j = (await r.json()) as { error?: string };
-      alert(j.error ?? "Mise a jour impossible");
+      alert(j.error ?? "Mise à jour impossible");
       return;
     }
     await refresh();
@@ -318,13 +318,13 @@ export function AdminDashboard() {
               {filteredPerfumes.length === 0 ? (
                 <div className="py-16 text-center">
                   <p className="text-[14px] text-[#999]">
-                    {perfumes.length === 0 ? "Aucun parfum. Creez-en un." : "Aucun resultat."}
+                    {perfumes.length === 0 ? "Aucun parfum. Créez-en un." : "Aucun résultat."}
                   </p>
                 </div>
               ) : (
                 <ul className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
-                  {filteredPerfumes.map((row) => (
-                    <li key={row.id} className="group flex items-center gap-3 py-3">
+                  {filteredPerfumes.map((row, idx) => (
+                    <li key={row.id} className={`group flex items-center gap-3 py-3 ${idx % 2 === 0 ? "bg-black/[0.015] dark:bg-white/[0.02]" : ""}`}>
                       <div className="min-w-0 flex-1">
                         <p className="text-[15px] font-medium leading-snug text-[#1a1a1a] dark:text-[#e5e5e5]">
                           {row.name}
@@ -408,8 +408,8 @@ export function AdminDashboard() {
               <p className="py-12 text-center text-[14px] text-[#999]">Aucune marque.</p>
             ) : (
               <ul className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
-                {brands.map((b) => (
-                  <li key={b.id} className="py-4">
+                {brands.map((b, idx) => (
+                  <li key={b.id} className={`py-4 ${idx % 2 === 0 ? "bg-black/[0.015] dark:bg-white/[0.02]" : ""}`}>
                     <div className="flex items-baseline justify-between gap-2">
                       <p className="text-[15px] font-medium text-[#1a1a1a] dark:text-[#e5e5e5]">
                         {b.name}
@@ -420,7 +420,7 @@ export function AdminDashboard() {
                     </div>
                     <div className="mt-2 grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">Assortiment</label>
+                        <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">Mode de catalogue</label>
                         <div className="relative mt-0.5">
                           <select
                             value={b.assortment}

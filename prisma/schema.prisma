@@ -13,6 +13,11 @@ enum PublicationStatus {
   ARCHIVED
 }
 
+enum PerfumeKind {
+  PERFUME
+  RANGE
+}
+
 enum SearchCacheStatus {
   FOUND
   NOT_FOUND
@@ -62,6 +67,7 @@ model Perfume {
   id         Int               @id
   brandId    String
   brand      Brand             @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  kind       PerfumeKind       @default(PERFUME)
   name       String
   slug       String            @unique
   category   String
@@ -83,6 +89,7 @@ model Perfume {
   @@index([category])
   @@index([status])
   @@index([brandId])
+  @@index([kind])
 }
 
 model PerfumeAlias {

@@ -55,16 +55,16 @@ export const BRAND_ASSORTMENT_LABELS: Record<
   { title: string; hint: string }
 > = {
   UNSET: {
-    title: "Non renseigne",
+    title: "Non renseigné",
     hint: "",
   },
   COMPLETE: {
-    title: "Gamme complete",
+    title: "Gamme complète",
     hint: "Toute la gamme est disponible.",
   },
   CURATED: {
-    title: "Selection",
-    hint: "Une partie de la gamme — demandez le reste en conciergerie.",
+    title: "Parfums sélectionnés",
+    hint: "Une partie de la gamme est affichée.",
   },
 };
 
@@ -72,10 +72,10 @@ export const BRAND_POSITIONING_LABELS: Record<
   CatalogPositioning,
   { title: string; hint: string }
 > = {
-  UNSET: { title: "Non renseigne", hint: "" },
+  UNSET: { title: "Non renseigné", hint: "" },
   NICHE: {
     title: "Niche",
-    hint: "Parfumerie de niche et creations exclusives.",
+    hint: "Parfumerie de niche et créations exclusives.",
   },
   DESIGNER: {
     title: "Marque",
@@ -83,22 +83,22 @@ export const BRAND_POSITIONING_LABELS: Record<
   },
   ARTISAN: {
     title: "Artisan",
-    hint: "Ateliers et productions independantes.",
+    hint: "Ateliers et productions indépendantes.",
   },
 };
 
 export const BROWSE_COPY = {
   drawerTitle: "Filtrer",
   drawerSubtitle: "Par marque et par type.",
-  sectionComplete: "Gamme complete",
+  sectionComplete: "Gamme complète",
   sectionCompleteSub: "Toute la gamme est disponible.",
-  sectionCurated: "Selection",
+  sectionCurated: "Parfums sélectionnés",
   sectionCuratedSub:
     "Une partie de la gamme — demandez le reste en conciergerie.",
   sectionUnivers: "Par type",
-  sectionCategories: "Par categorie",
+  sectionCategories: "Par catégorie",
   sectionCategoriesSub: "Filtrer par emplacement dans la collection.",
-  resetPanel: "Reinitialiser",
+  resetPanel: "Réinitialiser",
   close: "Fermer",
 } as const;
 

@@ -52,6 +52,12 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
       where: { id },
       data,
     });
+    if (data.assortment === "COMPLETE") {
+      await prisma.perfume.updateMany({
+        where: { brandId: id },
+        data: { status: "DRAFT", deletedAt: null },
+      });
+    }
     await writeAudit(ctx.sub, "brand.update", "Brand", brand.id, data);
     return NextResponse.json({ brand });
   } catch {

@@ -106,12 +106,16 @@ export async function PUT(request: Request, { params }: RouteCtx) {
     return NextResponse.json({ error: "Marque introuvable." }, { status: 404 });
   }
 
+  const isRangeBrand = brand.assortment === "COMPLETE";
+  const finalName = isRangeBrand ? brand.name : name;
+  const finalCategory = isRangeBrand ? "Gammes Complètes" : category;
+
   const status =
     body.status !== undefined && isPublicationStatus(body.status)
       ? body.status
       : existing.status;
 
-  const slug = perfumeSlug(id, name, brand.name);
+  const slug = perfumeSlug(id, finalName, brand.name);
 
   const aliases = parseLines(body.aliases);
   const tags = parseLines(body.tags);
@@ -126,12 +130,12 @@ export async function PUT(request: Request, { params }: RouteCtx) {
       where: { id },
       data: {
         brandId,
-        name,
+        name: finalName,
         slug,
-        category,
+        category: finalCategory,
         image,
         imageLight: body.imageLight === undefined ? existing.imageLight : body.imageLight?.trim() || null,
-        imageDark: body.imageDark === undefined ? existing.imageDark : body.imageDark?.trim() || null,
+        imageDark: null,
         status,
         deletedAt: null,
         ...(aliases.length
@@ -157,6 +161,13 @@ export async function PUT(request: Request, { params }: RouteCtx) {
       },
     });
   });
+
+  if (isRangeBrand) {
+    await prisma.perfume.updateMany({
+      where: { brandId, id: { not: id } },
+      data: { status: "DRAFT", deletedAt: null },
+    });
+  }
 
   await writeAudit(ctx.sub, "perfume.update", "Perfume", String(id), { name });
   return NextResponse.json({ perfume });

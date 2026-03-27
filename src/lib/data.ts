@@ -78,7 +78,7 @@ export const mockPerfumes: Perfume[] = [
   // Gammes complètes (visuels de marque)
   {
     id: 1,
-    name: "Gamme complète Rabanne",
+    name: "Rabanne",
     brand: "Rabanne",
     category: "Gammes Complètes",
     image: "/parfums/complete/RABANNE-light.png",
@@ -89,7 +89,7 @@ export const mockPerfumes: Perfume[] = [
   },
   {
     id: 2,
-    name: "Gamme complète Dior",
+    name: "Dior",
     brand: "Dior",
     category: "Gammes Complètes",
     image: "/parfums/complete/DIOR-light.png",
@@ -100,7 +100,7 @@ export const mockPerfumes: Perfume[] = [
   },
   {
     id: 3,
-    name: "Gamme complète Jean Paul Gaultier",
+    name: "Jean Paul Gaultier",
     brand: "Jean Paul Gaultier",
     category: "Gammes Complètes",
     image: "/parfums/complete/JPG-light.png",
@@ -111,7 +111,7 @@ export const mockPerfumes: Perfume[] = [
   },
   {
     id: 4,
-    name: "Gamme complète Hermès",
+    name: "Hermès",
     brand: "Hermès",
     category: "Gammes Complètes",
     image: "/parfums/complete/HERMES-light.png",
@@ -122,7 +122,7 @@ export const mockPerfumes: Perfume[] = [
   },
   {
     id: 5,
-    name: "Gamme complète Lacoste",
+    name: "Lacoste",
     brand: "Lacoste",
     category: "Gammes Complètes",
     image: "/parfums/complete/LACOSTE-light.png",
@@ -132,7 +132,7 @@ export const mockPerfumes: Perfume[] = [
   },
   {
     id: 6,
-    name: "Gamme complète Azzaro",
+    name: "Azzaro",
     brand: "Azzaro",
     category: "Gammes Complètes",
     image: "/parfums/complete/AZZARO-light.png",
@@ -142,7 +142,7 @@ export const mockPerfumes: Perfume[] = [
   },
   {
     id: 7,
-    name: "Gamme complète Guerlain",
+    name: "Guerlain",
     brand: "Guerlain",
     category: "Gammes Complètes",
     image: "/parfums/complete/GUERLAIN-light.png",
@@ -153,7 +153,7 @@ export const mockPerfumes: Perfume[] = [
   },
   {
     id: 8,
-    name: "Gamme complète Hugo Boss",
+    name: "Hugo Boss",
     brand: "Hugo Boss",
     category: "Gammes Complètes",
     image: "/parfums/complete/BOSS-light.png",
@@ -163,7 +163,7 @@ export const mockPerfumes: Perfume[] = [
   },
   {
     id: 24,
-    name: "Gamme complète Dolce & Gabbana",
+    name: "Dolce & Gabbana",
     brand: "Dolce & Gabbana",
     category: "Gammes Complètes",
     image: "/parfums/complete/D&G-light.png",
@@ -597,7 +597,6 @@ export const getPerfumeImage = (
   perfume: Perfume,
   theme?: "light" | "dark"
 ): string => {
-  if (theme === "dark" && perfume.imageDark) return perfume.imageDark;
   if (theme === "light" && perfume.imageLight) return perfume.imageLight;
   return perfume.image;
 };
