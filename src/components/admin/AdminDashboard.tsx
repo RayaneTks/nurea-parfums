@@ -4,16 +4,13 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Archive,
-  Building2,
   ChevronDown,
-  ChevronUp,
   Pencil,
   Plus,
   Search,
   Trash2,
   Eye,
 } from "lucide-react";
-import { clsx } from "clsx";
 import {
   BRAND_ASSORTMENT_LABELS,
   BRAND_POSITIONING_LABELS,
@@ -44,25 +41,27 @@ type PerfumeRow = {
 };
 
 type PerfumeFilter = "all" | "PUBLISHED" | "DRAFT" | "ARCHIVED";
+type Tab = "perfumes" | "brands";
 
-function statusPillClass(status: string): string {
-  const base =
-    "inline-flex items-center px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide";
-  if (status === "PUBLISHED")
-    return `${base} bg-emerald-500/15 text-emerald-400`;
-  if (status === "DRAFT")
-    return `${base} bg-amber-500/15 text-amber-400`;
-  if (status === "ARCHIVED")
-    return `${base} bg-[var(--nurea-text-subtle)]/10 text-[var(--nurea-text-subtle)]`;
-  return `${base} text-[var(--nurea-text-muted)]`;
+function StatusDot({ status }: { status: string }) {
+  const color =
+    status === "PUBLISHED"
+      ? "bg-emerald-500"
+      : status === "DRAFT"
+        ? "bg-amber-400"
+        : "bg-gray-400";
+  return <span className={`inline-block h-2 w-2 rounded-full ${color}`} />;
 }
 
 function statusLabel(status: string): string {
-  if (status === "PUBLISHED") return "Publié";
+  if (status === "PUBLISHED") return "Publie";
   if (status === "DRAFT") return "Brouillon";
-  if (status === "ARCHIVED") return "Archivé";
+  if (status === "ARCHIVED") return "Archive";
   return status;
 }
+
+const selectCls =
+  "block w-full appearance-none rounded-md border border-black/10 bg-white px-2 py-1.5 pr-8 text-[13px] text-[#1a1a1a] focus-visible:border-blue-500 focus-visible:outline-none dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]";
 
 export function AdminDashboard() {
   const [user, setUser] = useState<SessionUser | null>(null);
@@ -71,9 +70,8 @@ export function AdminDashboard() {
   const [loadErr, setLoadErr] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [perfumeFilter, setPerfumeFilter] = useState<PerfumeFilter>("all");
+  const [tab, setTab] = useState<Tab>("perfumes");
 
-  // Brand management (collapsible section)
-  const [brandsOpen, setBrandsOpen] = useState(false);
   const [newBrand, setNewBrand] = useState("");
   const [brandMsg, setBrandMsg] = useState<string | null>(null);
 
@@ -150,11 +148,11 @@ export function AdminDashboard() {
     });
     const j = (await r.json()) as { error?: string };
     if (!r.ok) {
-      setBrandMsg(j.error ?? "Refusé");
+      setBrandMsg(j.error ?? "Refuse");
       return;
     }
     setNewBrand("");
-    setBrandMsg("Marque créée.");
+    setBrandMsg("Marque creee.");
     refresh();
   }
 
@@ -170,356 +168,248 @@ export function AdminDashboard() {
     });
     if (!r.ok) {
       const j = (await r.json()) as { error?: string };
-      alert(j.error ?? "Mise à jour impossible");
+      alert(j.error ?? "Mise a jour impossible");
       return;
     }
     await refresh();
   }
 
-  const filterPills: { id: PerfumeFilter; label: string }[] = [
-    { id: "all", label: `Tous (${perfumes.length})` },
-    {
-      id: "PUBLISHED",
-      label: `Publiés (${perfumes.filter((p) => p.status === "PUBLISHED" && !p.deletedAt).length})`,
-    },
-    {
-      id: "DRAFT",
-      label: `Brouillons (${perfumes.filter((p) => p.status === "DRAFT" && !p.deletedAt).length})`,
-    },
-    {
-      id: "ARCHIVED",
-      label: `Archivés (${perfumes.filter((p) => p.status === "ARCHIVED").length})`,
-    },
+  const filterPills: { id: PerfumeFilter; label: string; count: number }[] = [
+    { id: "all", label: "Tous", count: perfumes.length },
+    { id: "PUBLISHED", label: "Publies", count: perfumes.filter((p) => p.status === "PUBLISHED" && !p.deletedAt).length },
+    { id: "DRAFT", label: "Brouillons", count: perfumes.filter((p) => p.status === "DRAFT" && !p.deletedAt).length },
+    { id: "ARCHIVED", label: "Archives", count: perfumes.filter((p) => p.status === "ARCHIVED").length },
   ];
 
-  const selectClass =
-    "block min-h-11 w-full border border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-2 py-2 text-[14px] text-[var(--nurea-text)] focus-visible:border-[var(--nurea-accent)] focus-visible:outline-none disabled:opacity-50";
-
   return (
-    <div className="min-h-screen bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
+    <div className="min-h-screen">
       <AdminNav />
 
-      <main className="mx-auto max-w-[1200px] px-4 pb-6 pt-5 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] md:px-10 md:pt-8">
-        {loadErr ? (
-          <p
-            className="mb-4 border border-[var(--nurea-accent)]/40 bg-[var(--nurea-accent-subtle)] px-4 py-3 text-[14px] text-[var(--nurea-accent)]"
-            role="alert"
-          >
+      <main className="mx-auto max-w-3xl px-4 pb-24 pt-6 md:pt-8">
+        {loadErr && (
+          <div className="mb-4 rounded-md bg-red-50 px-4 py-3 text-[14px] text-red-700 dark:bg-red-500/10 dark:text-red-400" role="alert">
             {loadErr}
-          </p>
-        ) : null}
+          </div>
+        )}
 
-        {/* Top bar: title + new button */}
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="font-serif text-2xl text-[var(--nurea-text)] md:text-3xl">
-            Parfums
-          </h1>
-          {canEdit ? (
-            <Link
-              href="/admin/perfumes/new"
-              className="inline-flex min-h-12 items-center gap-2 bg-[var(--nurea-accent)] px-5 text-[13px] font-semibold uppercase tracking-wider text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--nurea-bg)]"
+        {/* Tabs */}
+        <div className="flex gap-1 rounded-lg bg-black/[0.03] p-1 dark:bg-white/[0.04]">
+          {([
+            { id: "perfumes" as Tab, label: "Parfums" },
+            { id: "brands" as Tab, label: "Marques" },
+          ]).map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTab(id)}
+              className={`flex-1 rounded-md py-2 text-[13px] font-medium transition-all ${
+                tab === id
+                  ? "bg-white text-[#1a1a1a] shadow-sm dark:bg-white/[0.08] dark:text-white"
+                  : "text-[#888] hover:text-[#555] dark:text-[#666] dark:hover:text-[#aaa]"
+              }`}
             >
-              <Plus className="h-5 w-5" aria-hidden />
-              <span className="hidden sm:inline">Nouveau</span>
-            </Link>
-          ) : null}
+              {label}
+              <span className="ml-1.5 text-[11px] opacity-60">
+                {id === "perfumes" ? perfumes.length : brands.length}
+              </span>
+            </button>
+          ))}
         </div>
 
-        {/* Search */}
-        <div className="relative mt-4">
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--nurea-text-subtle)]"
-            aria-hidden
-          />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un parfum, une marque…"
-            autoComplete="off"
-            className="block min-h-12 w-full border border-[var(--nurea-border)] bg-[var(--nurea-bg)] py-3 pl-10 pr-3 text-[15px] text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] focus-visible:border-[var(--nurea-accent)] focus-visible:outline-none"
-          />
-        </div>
-
-        {/* Filter pills */}
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
-          {filterPills.map(({ id, label }) => {
-            const active = perfumeFilter === id;
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setPerfumeFilter(id)}
-                className={clsx(
-                  "shrink-0 min-h-9 border px-3 py-1.5 text-[12px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]",
-                  active
-                    ? "border-[var(--nurea-accent)] bg-[var(--nurea-accent-subtle)] text-[var(--nurea-text)]"
-                    : "border-[var(--nurea-border)] text-[var(--nurea-text-muted)] hover:border-[var(--nurea-border-hover)] hover:text-[var(--nurea-text)]",
-                )}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Perfume list */}
-        <div className="mt-4">
-          {filteredPerfumes.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="text-[14px] text-[var(--nurea-text-muted)]">
-                {perfumes.length === 0
-                  ? "Aucun parfum. Commencez par en créer un."
-                  : "Aucun résultat."}
-              </p>
+        {/* ============ Perfumes tab ============ */}
+        {tab === "perfumes" && (
+          <div className="mt-5">
+            {/* Search */}
+            <div className="relative">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#aaa]"
+                aria-hidden
+              />
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Rechercher…"
+                autoComplete="off"
+                className="block min-h-[44px] w-full rounded-md border border-black/10 bg-white py-2.5 pl-10 pr-3 text-[15px] text-[#1a1a1a] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
+              />
             </div>
-          ) : (
-            <>
-              {/* Mobile cards */}
-              <ul className="space-y-2 lg:hidden">
-                {filteredPerfumes.map((row) => (
-                  <li
-                    key={row.id}
-                    className="border border-[var(--nurea-border)] bg-[var(--nurea-surface)] p-4"
+
+            {/* Filter pills */}
+            <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
+              {filterPills.map(({ id, label, count }) => {
+                const active = perfumeFilter === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setPerfumeFilter(id)}
+                    className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium transition-all ${
+                      active
+                        ? "bg-blue-500 text-white"
+                        : "bg-black/[0.04] text-[#888] hover:bg-black/[0.06] dark:bg-white/[0.04] dark:text-[#777] dark:hover:bg-white/[0.06]"
+                    }`}
                   >
-                    <div className="flex items-start justify-between gap-3">
+                    {label}
+                    <span className="ml-1 opacity-70">{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Perfume list */}
+            <div className="mt-4">
+              {filteredPerfumes.length === 0 ? (
+                <div className="py-16 text-center">
+                  <p className="text-[14px] text-[#999]">
+                    {perfumes.length === 0 ? "Aucun parfum. Creez-en un." : "Aucun resultat."}
+                  </p>
+                </div>
+              ) : (
+                <ul className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
+                  {filteredPerfumes.map((row) => (
+                    <li key={row.id} className="group flex items-center gap-3 py-3">
                       <div className="min-w-0 flex-1">
-                        <p className="text-[16px] font-medium leading-snug text-[var(--nurea-text)]">
+                        <p className="text-[15px] font-medium leading-snug text-[#1a1a1a] dark:text-[#e5e5e5]">
                           {row.name}
+                          {row.deletedAt && (
+                            <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-red-500">
+                              <Archive className="h-3 w-3" aria-hidden />
+                              masque
+                            </span>
+                          )}
                         </p>
-                        <p className="mt-1 text-[13px] text-[var(--nurea-text-muted)]">
-                          {row.brand.name}
-                        </p>
-                        <div className="mt-2">
-                          <span className={statusPillClass(row.status)}>
+                        <p className="mt-0.5 flex items-center gap-2 text-[13px] text-[#999]">
+                          <span>{row.brand.name}</span>
+                          <span className="text-[#ddd] dark:text-[#444]">·</span>
+                          <span className="flex items-center gap-1">
+                            <StatusDot status={row.status} />
                             {statusLabel(row.status)}
                           </span>
-                          {row.deletedAt ? (
-                            <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-[var(--nurea-accent)]">
-                              <Archive className="h-3 w-3" aria-hidden />
-                              masqué
-                            </span>
-                          ) : null}
-                        </div>
+                        </p>
                       </div>
-                      <div className="flex shrink-0 gap-1.5">
+
+                      <div className="flex shrink-0 gap-1">
                         <Link
                           href={`/admin/perfumes/${row.id}/edit`}
-                          className="flex h-11 w-11 items-center justify-center border border-[var(--nurea-border-hover)] text-[var(--nurea-text-muted)] transition-colors hover:border-[var(--nurea-accent)] hover:text-[var(--nurea-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
-                          aria-label={`Modifier ${row.name}`}
+                          className="flex h-9 w-9 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-black/[0.04] hover:text-[#555] dark:hover:bg-white/[0.06] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                          aria-label={canEdit ? `Modifier ${row.name}` : `Voir ${row.name}`}
                         >
-                          <Pencil className="h-4 w-4" aria-hidden />
+                          {canEdit ? (
+                            <Pencil className="h-4 w-4" aria-hidden />
+                          ) : (
+                            <Eye className="h-4 w-4" aria-hidden />
+                          )}
                         </Link>
-                        {canEdit ? (
+                        {canEdit && (
                           <button
                             type="button"
                             onClick={() => removePerfume(row.id, row.name)}
-                            className="flex h-11 w-11 items-center justify-center border border-[var(--nurea-border-hover)] text-[var(--nurea-text-muted)] transition-colors hover:border-[var(--nurea-accent)] hover:text-[var(--nurea-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
+                            className="flex h-9 w-9 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                             aria-label={`Archiver ${row.name}`}
                           >
                             <Trash2 className="h-4 w-4" aria-hidden />
                           </button>
-                        ) : null}
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ============ Brands tab ============ */}
+        {tab === "brands" && (
+          <div className="mt-5 space-y-4">
+            {canEdit && (
+              <form onSubmit={addBrand} className="flex gap-2">
+                <input
+                  value={newBrand}
+                  onChange={(e) => setNewBrand(e.target.value)}
+                  placeholder="Nouvelle marque…"
+                  className="min-h-[44px] flex-1 rounded-md border border-black/10 bg-white px-3 text-[15px] text-[#1a1a1a] placeholder:text-[#bbb] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5] dark:placeholder:text-[#666]"
+                />
+                <button
+                  type="submit"
+                  className="flex min-h-[44px] items-center gap-1.5 rounded-md bg-blue-500 px-4 text-[13px] font-medium text-white transition-all hover:bg-blue-600 active:scale-[0.98]"
+                >
+                  <Plus className="h-4 w-4" aria-hidden />
+                  Ajouter
+                </button>
+              </form>
+            )}
+            {brandMsg && (
+              <p className="text-[13px] text-[#999]">{brandMsg}</p>
+            )}
+
+            {brands.length === 0 ? (
+              <p className="py-12 text-center text-[14px] text-[#999]">Aucune marque.</p>
+            ) : (
+              <ul className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
+                {brands.map((b) => (
+                  <li key={b.id} className="py-4">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <p className="text-[15px] font-medium text-[#1a1a1a] dark:text-[#e5e5e5]">
+                        {b.name}
+                      </p>
+                      <span className="text-[12px] text-[#bbb] dark:text-[#666]">
+                        {b._count.perfumes} parfum{b._count.perfumes !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">Assortiment</label>
+                        <div className="relative mt-0.5">
+                          <select
+                            value={b.assortment}
+                            disabled={!canEdit}
+                            onChange={(e) => patchBrand(b.id, { assortment: e.target.value })}
+                            className={selectCls}
+                          >
+                            {ASSORTMENT_KEYS.map((k) => (
+                              <option key={k} value={k}>{BRAND_ASSORTMENT_LABELS[k].title}</option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#bbb]" aria-hidden />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-medium text-[#aaa] dark:text-[#666]">Univers</label>
+                        <div className="relative mt-0.5">
+                          <select
+                            value={b.positioning}
+                            disabled={!canEdit}
+                            onChange={(e) => patchBrand(b.id, { positioning: e.target.value })}
+                            className={selectCls}
+                          >
+                            {POSITIONING_KEYS.map((k) => (
+                              <option key={k} value={k}>{BRAND_POSITIONING_LABELS[k].title}</option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#bbb]" aria-hidden />
+                        </div>
                       </div>
                     </div>
                   </li>
                 ))}
               </ul>
-
-              {/* Desktop table */}
-              <div className="hidden overflow-x-auto lg:block">
-                <table className="w-full text-left text-[14px]">
-                  <thead className="border-b border-[var(--nurea-border)] text-[11px] font-semibold uppercase tracking-wider text-[var(--nurea-text-muted)]">
-                    <tr>
-                      <th className="px-4 py-3 font-medium">Nom</th>
-                      <th className="px-4 py-3 font-medium">Marque</th>
-                      <th className="px-4 py-3 font-medium">Catégorie</th>
-                      <th className="px-4 py-3 font-medium">Statut</th>
-                      <th className="px-4 py-3 text-right font-medium">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredPerfumes.map((row) => (
-                      <tr
-                        key={row.id}
-                        className="border-b border-[var(--nurea-border)]/60 transition-colors hover:bg-[var(--nurea-surface-hover)]"
-                      >
-                        <td className="max-w-[240px] px-4 py-3 font-medium">
-                          <span className="line-clamp-1">{row.name}</span>
-                          {row.deletedAt ? (
-                            <span className="ml-2 inline-flex items-center gap-0.5 text-[10px] text-[var(--nurea-accent)]">
-                              <Archive className="h-3 w-3" aria-hidden />
-                              masqué
-                            </span>
-                          ) : null}
-                        </td>
-                        <td className="px-4 py-3 text-[var(--nurea-text-muted)]">
-                          {row.brand.name}
-                        </td>
-                        <td className="px-4 py-3 text-[var(--nurea-text-muted)]">
-                          {row.category}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={statusPillClass(row.status)}>
-                            {statusLabel(row.status)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="inline-flex gap-1.5">
-                            <Link
-                              href={`/admin/perfumes/${row.id}/edit`}
-                              className="inline-flex h-10 w-10 items-center justify-center border border-[var(--nurea-accent)]/40 text-[var(--nurea-accent)] transition-colors hover:border-[var(--nurea-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
-                              aria-label={
-                                canEdit
-                                  ? `Modifier ${row.name}`
-                                  : `Voir ${row.name}`
-                              }
-                            >
-                              {canEdit ? (
-                                <Pencil className="h-4 w-4" aria-hidden />
-                              ) : (
-                                <Eye className="h-4 w-4" aria-hidden />
-                              )}
-                            </Link>
-                            {canEdit ? (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  removePerfume(row.id, row.name)
-                                }
-                                className="inline-flex h-10 w-10 items-center justify-center border border-[var(--nurea-border-hover)] text-[var(--nurea-text-muted)] transition-colors hover:border-[var(--nurea-accent)] hover:text-[var(--nurea-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
-                                aria-label={`Archiver ${row.name}`}
-                              >
-                                <Trash2 className="h-4 w-4" aria-hidden />
-                              </button>
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Brands section (collapsible, secondary) */}
-        <div className="mt-10 border-t border-[var(--nurea-border)] pt-6">
-          <button
-            type="button"
-            onClick={() => setBrandsOpen((v) => !v)}
-            className="flex w-full min-h-12 items-center justify-between gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
-          >
-            <span className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-[var(--nurea-cuivre)]" aria-hidden />
-              <span className="text-[15px] font-semibold text-[var(--nurea-text)]">
-                Gérer les marques
-              </span>
-              <span className="text-[13px] text-[var(--nurea-text-muted)]">
-                ({brands.length})
-              </span>
-            </span>
-            {brandsOpen ? (
-              <ChevronUp className="h-5 w-5 text-[var(--nurea-text-muted)]" aria-hidden />
-            ) : (
-              <ChevronDown className="h-5 w-5 text-[var(--nurea-text-muted)]" aria-hidden />
             )}
-          </button>
-
-          {brandsOpen ? (
-            <div className="mt-4 space-y-4">
-              {/* Brand list */}
-              <ul className="divide-y divide-[var(--nurea-border)]">
-                {brands.length === 0 ? (
-                  <li className="py-6 text-center text-[14px] text-[var(--nurea-text-muted)]">
-                    Aucune marque.
-                  </li>
-                ) : (
-                  brands.map((b) => (
-                    <li key={b.id} className="py-4">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <p className="font-medium text-[var(--nurea-text)]">
-                          {b.name}
-                        </p>
-                        <span className="text-[12px] text-[var(--nurea-text-subtle)]">
-                          {b._count.perfumes} parfum
-                          {b._count.perfumes !== 1 ? "s" : ""}
-                        </span>
-                      </div>
-                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <label className="block text-[11px] font-semibold uppercase tracking-wider text-[var(--nurea-text-muted)]">
-                          Assortiment
-                          <select
-                            value={b.assortment}
-                            disabled={!canEdit}
-                            onChange={(e) =>
-                              patchBrand(b.id, { assortment: e.target.value })
-                            }
-                            className={selectClass}
-                          >
-                            {ASSORTMENT_KEYS.map((k) => (
-                              <option key={k} value={k}>
-                                {BRAND_ASSORTMENT_LABELS[k].title}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <label className="block text-[11px] font-semibold uppercase tracking-wider text-[var(--nurea-text-muted)]">
-                          Univers
-                          <select
-                            value={b.positioning}
-                            disabled={!canEdit}
-                            onChange={(e) =>
-                              patchBrand(b.id, { positioning: e.target.value })
-                            }
-                            className={selectClass}
-                          >
-                            {POSITIONING_KEYS.map((k) => (
-                              <option key={k} value={k}>
-                                {BRAND_POSITIONING_LABELS[k].title}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                      </div>
-                    </li>
-                  ))
-                )}
-              </ul>
-
-              {/* Add brand form */}
-              {canEdit ? (
-                <form
-                  onSubmit={addBrand}
-                  className="flex gap-2 border-t border-[var(--nurea-border)] pt-4"
-                >
-                  <input
-                    value={newBrand}
-                    onChange={(e) => setNewBrand(e.target.value)}
-                    placeholder="Nouvelle marque…"
-                    className="min-h-12 flex-1 border border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-3 text-[15px] text-[var(--nurea-text)] placeholder:text-[var(--nurea-text-subtle)] focus-visible:border-[var(--nurea-accent)] focus-visible:outline-none"
-                  />
-                  <button
-                    type="submit"
-                    className="inline-flex min-h-12 items-center gap-2 bg-[var(--nurea-accent)] px-4 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)]"
-                  >
-                    <Plus className="h-4 w-4" aria-hidden />
-                    Ajouter
-                  </button>
-                </form>
-              ) : null}
-              {brandMsg ? (
-                <p className="text-[13px] text-[var(--nurea-text-muted)]">
-                  {brandMsg}
-                </p>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
+          </div>
+        )}
       </main>
+
+      {/* FAB mobile — new perfume */}
+      {canEdit && tab === "perfumes" && (
+        <Link
+          href="/admin/perfumes/new"
+          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-600 hover:shadow-xl active:scale-95 md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          aria-label="Nouveau parfum"
+        >
+          <Plus className="h-6 w-6" aria-hidden />
+        </Link>
+      )}
     </div>
   );
 }

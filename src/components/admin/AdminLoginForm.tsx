@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, KeyRound, Loader2, Lock, User } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 
 export function AdminLoginForm() {
   const router = useRouter();
@@ -17,9 +17,9 @@ export function AdminLoginForm() {
 
   const configErr =
     errQ === "config"
-      ? "Serveur mal configuré (ADMIN_JWT_SECRET). Vérifiez les variables d’environnement."
+      ? "Serveur mal configure (ADMIN_JWT_SECRET). Verifiez les variables d'environnement."
       : errQ === "session"
-        ? "Session expirée. Reconnectez-vous."
+        ? "Session expiree. Reconnectez-vous."
         : null;
 
   async function onSubmit(e: React.FormEvent) {
@@ -35,52 +35,41 @@ export function AdminLoginForm() {
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Échec de la connexion.");
+        setError(data.error ?? "Echec de la connexion.");
         return;
       }
       router.replace("/admin");
       router.refresh();
     } catch {
-      setError("Réseau indisponible.");
+      setError("Reseau indisponible.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="w-full max-w-md overflow-x-clip border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
-      <div className="border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)]/60 px-5 py-6 sm:px-8 sm:py-8">
-        <div className="flex items-center gap-3">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] text-[var(--nurea-cuivre)]">
-            <KeyRound className="h-6 w-6" aria-hidden />
-          </span>
-          <div>
-            <h1 className="font-serif text-2xl leading-tight text-[var(--nurea-text)] sm:text-3xl">
-              Connexion
-            </h1>
-            <p className="mt-1 text-[13px] text-[var(--nurea-text-muted)]">Espace réservé — Nurea Parfums</p>
-          </div>
-        </div>
+    <div className="w-full max-w-sm">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight text-[#1a1a1a] dark:text-white">
+          Connexion
+        </h1>
+        <p className="mt-1 text-[13px] text-[#999]">Espace administration</p>
       </div>
 
-      <form
-        onSubmit={onSubmit}
-        className="space-y-5 px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-6 sm:space-y-6 sm:px-8 sm:pb-8 sm:pt-8"
-      >
+      <form onSubmit={onSubmit} className="space-y-4">
         {(configErr || error) && (
-          <p
-            className="border border-[var(--nurea-accent)]/40 bg-[var(--nurea-accent-subtle)] px-4 py-3 text-[14px] text-[var(--nurea-accent)]"
+          <div
+            className="rounded-md bg-red-50 px-4 py-3 text-[14px] text-red-700 dark:bg-red-500/10 dark:text-red-400"
             role="alert"
           >
             {configErr || error}
-          </p>
+          </div>
         )}
 
-        <label className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--nurea-text-muted)]">
-          <span className="mb-2 flex items-center gap-2">
-            <User className="h-3.5 w-3.5 text-[var(--nurea-cuivre)]" aria-hidden />
+        <div>
+          <label className="block text-[13px] font-medium text-[#555] dark:text-[#aaa]">
             Identifiant
-          </span>
+          </label>
           <input
             type="text"
             name="username"
@@ -91,15 +80,14 @@ export function AdminLoginForm() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            className="block min-h-12 w-full border border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-3 py-3 text-base text-[var(--nurea-text)] focus-visible:border-[var(--nurea-accent)] focus-visible:outline-none"
+            className="mt-1.5 block min-h-[44px] w-full rounded-md border border-black/10 bg-white px-3 py-2.5 text-[15px] text-[#1a1a1a] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]"
           />
-        </label>
+        </div>
 
-        <label className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--nurea-text-muted)]">
-          <span className="mb-2 flex items-center gap-2">
-            <Lock className="h-3.5 w-3.5 text-[var(--nurea-cuivre)]" aria-hidden />
+        <div>
+          <label className="block text-[13px] font-medium text-[#555] dark:text-[#aaa]">
             Mot de passe
-          </span>
+          </label>
           <input
             type="password"
             name="password"
@@ -107,14 +95,14 @@ export function AdminLoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="block min-h-12 w-full border border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-3 py-3 text-base text-[var(--nurea-text)] focus-visible:border-[var(--nurea-accent)] focus-visible:outline-none"
+            className="mt-1.5 block min-h-[44px] w-full rounded-md border border-black/10 bg-white px-3 py-2.5 text-[15px] text-[#1a1a1a] focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e5e5e5]"
           />
-        </label>
+        </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="btn-nurea btn-accent flex min-h-12 w-full items-center justify-center gap-2 text-[13px] tracking-[0.12em] disabled:opacity-50"
+          className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-md bg-blue-500 text-[14px] font-semibold text-white transition-all hover:bg-blue-600 active:scale-[0.99] disabled:opacity-50"
         >
           {loading ? (
             <>
@@ -128,7 +116,7 @@ export function AdminLoginForm() {
 
         <Link
           href="/"
-          className="flex min-h-12 items-center justify-center gap-2 text-[13px] font-medium text-[var(--nurea-accent)] transition-colors hover:text-[var(--nurea-accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nurea-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--nurea-surface)] sm:justify-start sm:min-h-0 sm:py-1"
+          className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-md text-[13px] font-medium text-blue-500 transition-colors hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:justify-start sm:min-h-0 sm:py-1"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
           Retour au site
