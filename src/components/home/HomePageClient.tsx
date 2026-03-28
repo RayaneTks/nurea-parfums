@@ -199,8 +199,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
 
   const featuredPerfumes = (() => {
     const featured = catalogPerfumes.filter((p) => p.isFeatured);
-    if (featured.length > 0) return featured.slice(0, 2);
-    return catalogPerfumes.filter((p) => FALLBACK_FEATURED_IDS.includes(p.id)).slice(0, 2);
+    return featured.slice(0, 2);
   })();
 
   const maisonDisplayName = useMemo(() => {
