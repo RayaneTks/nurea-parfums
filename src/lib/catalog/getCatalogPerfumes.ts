@@ -61,12 +61,14 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
 
   try {
     const perfumes = await prisma.perfume.findMany({
-      where: { status: "PUBLISHED", brand: { catalogMode: "CURATED", status: "PUBLISHED" } },
+      where: { status: "PUBLISHED", brand: { status: "PUBLISHED" } },
       select: {
         id: true,
         name: true,
         slug: true,
         image: true,
+        imageLight: true,
+        isFeatured: true,
         brand: {
           select: {
             name: true,
@@ -79,7 +81,7 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
     });
     const rangeBrands = await prisma.brand.findMany({
       where: { catalogMode: "COMPLETE", status: "PUBLISHED" },
-      select: { id: true, name: true, slug: true, image: true },
+      select: { id: true, name: true, slug: true, image: true, imageLight: true },
       orderBy: { name: "asc" },
     });
 
@@ -93,11 +95,12 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
         brandSlug: b.slug,
         category: "Gammes Complètes",
         image: b.image!,
+        imageLight: b.imageLight ?? undefined,
         tags: ["Gamme complète"],
       }));
 
     registerPrismaCatalogSuccess();
-    // On mappe manuellement pour s'assurer que imageLight et isFeatured sont undefined si absents du select
+    
     const mappedPerfumes = perfumes.map(p => ({
       id: p.id,
       name: p.name,
@@ -105,6 +108,8 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
       brandSlug: p.brand.slug,
       category: (p.brand.catalogMode === "COMPLETE" ? "Gammes Complètes" : "Sélections Individuelles") as Category,
       image: p.image,
+      imageLight: p.imageLight ?? undefined,
+      isFeatured: p.isFeatured,
       tags: p.brand.catalogMode === "COMPLETE" ? ["Gamme complète"] : undefined,
     }));
 

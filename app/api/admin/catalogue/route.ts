@@ -22,6 +22,7 @@ export async function GET(request: Request) {
           catalogMode: true,
           status: true,
           image: true,
+          imageLight: true,
           _count: {
             select: { perfumes: true }
           }
@@ -34,6 +35,8 @@ export async function GET(request: Request) {
           name: true,
           slug: true,
           image: true,
+          imageLight: true,
+          isFeatured: true,
           status: true,
           updatedAt: true,
           brand: {
@@ -41,6 +44,7 @@ export async function GET(request: Request) {
               id: true,
               name: true,
               image: true,
+              imageLight: true,
               catalogMode: true,
               status: true
             }

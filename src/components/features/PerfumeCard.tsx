@@ -117,7 +117,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
           src={imageSrc}
           alt={`${perfume.brand} - ${perfume.name}`}
           fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          sizes="(max-width: 480px) 50vw, (max-width: 768px) 45vw, (max-width: 1200px) 30vw, 300px"
           className="object-cover card-image-zoom"
           placeholder="blur"
           blurDataURL={NUREA_IMAGE_BLUR_DATA_URL}

@@ -123,7 +123,8 @@ function VisualizerDrawer({
             alt={item.name}
             fill
             className="object-cover transition-all duration-700 ease-in-out"
-            sizes="300px"
+            sizes="(max-width: 768px) 260px, 300px"
+            quality={85}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           <div className="absolute bottom-6 left-0 right-0 text-center">
