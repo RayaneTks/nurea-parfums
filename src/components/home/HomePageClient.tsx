@@ -134,17 +134,30 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
 
   useEffect(() => setMounted(true), []);
 
+  // Sync state from URL only on initial mount or popstate (back/forward)
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      setSearchTerm(params.get("q")?.trim() ?? "");
+      setSelectedCategory(categoryFromSearchParams(params));
+      setSortKey(sortFromSearchParams(params));
+      setMaisonSlug(params.get("maison")?.trim() ?? "");
+      const brandsRaw = params.get("brands")?.trim();
+      setSelectedBrandSlugs(brandsRaw ? new Set(brandsRaw.split(",").filter(Boolean)) : new Set());
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => {
       const offset = window.scrollY;
       setScrolled(offset > 50);
       
       if (stickyRef.current) {
-        // On récupère la position de la barre par rapport au haut du viewport
         const rect = stickyRef.current.getBoundingClientRect();
-        // On considère qu'elle est "fixée" si elle est proche de son point d'attache sticky (env 60-80px)
-        // et on n'active le masquage que si l'utilisateur a déjà scrollé au-delà de son point naturel
-        const stickyThreshold = 100; // Seuil de sécurité
+        const stickyThreshold = 100;
         setIsInCatalogView(rect.top <= stickyThreshold && offset > 400);
       }
     };
@@ -152,23 +165,9 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Update URL side-effect (Debounced)
   useEffect(() => {
-    const curr = searchParams.toString();
-    if (paramsStringRef.current === null) {
-      paramsStringRef.current = curr;
-      return;
-    }
-    if (paramsStringRef.current === curr) return;
-    paramsStringRef.current = curr;
-    setSearchTerm(searchParams.get("q")?.trim() ?? "");
-    setSelectedCategory(categoryFromSearchParams(searchParams));
-    setSortKey(sortFromSearchParams(searchParams));
-    setMaisonSlug(searchParams.get("maison")?.trim() ?? "");
-    const brandsRaw = searchParams.get("brands")?.trim();
-    setSelectedBrandSlugs(brandsRaw ? new Set(brandsRaw.split(",").filter(Boolean)) : new Set());
-  }, [searchParams]);
-
-  useEffect(() => {
+    if (!mounted) return;
     const t = window.setTimeout(() => {
       const next = new URLSearchParams();
       const q = searchTerm.trim();
@@ -178,11 +177,15 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
       const m = maisonSlug.trim();
       if (m) next.set("maison", m);
       if (selectedBrandSlugs.size > 0) next.set("brands", [...selectedBrandSlugs].join(","));
+      
       const qs = next.toString();
-      const href = qs ? `${pathname}?${qs}` : pathname;
-      if (qs === searchParams.toString()) return;
-      router.replace(href, { scroll: false });
-    }, 280);
+      const currentQs = window.location.search.replace(/^\?/, "");
+      
+      if (qs !== currentQs) {
+        const href = qs ? `${pathname}?${qs}` : pathname;
+        window.history.replaceState(null, "", href);
+      }
+    }, 400);
     return () => window.clearTimeout(t);
   }, [
     searchTerm,
@@ -191,14 +194,12 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
     maisonSlug,
     selectedBrandSlugs,
     pathname,
-    router,
-    searchParams,
+    mounted
   ]);
 
   const featuredPerfumes = (() => {
     const featured = catalogPerfumes.filter((p) => p.isFeatured);
     if (featured.length > 0) return featured.slice(0, 2);
-    // Fallback to mock ids if no featured flag is set in DB yet
     return catalogPerfumes.filter((p) => FALLBACK_FEATURED_IDS.includes(p.id)).slice(0, 2);
   })();
 
@@ -230,45 +231,6 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
     ]
   );
 
-  useEffect(() => {
-    const q = searchTerm.trim();
-    const noLocal = filteredPerfumes.length === 0;
-
-    if (q.length < 3 || !noLocal) {
-      setSearchFallback({ kind: "idle" });
-      return;
-    }
-
-    setSearchFallback({ kind: "loading" });
-
-    const ac = new AbortController();
-    const debounceId = window.setTimeout(async () => {
-      try {
-        const params = new URLSearchParams({ q });
-        if (selectedCategory !== "Tout voir") {
-          params.set("cat", selectedCategory);
-        }
-        const res = await fetch(`/api/perfume-search?${params}`, {
-          signal: ac.signal,
-        });
-        if (!res.ok) {
-          if (!ac.signal.aborted) setSearchFallback({ kind: "error" });
-          return;
-        }
-        const data = (await res.json()) as PerfumeSearchResponse;
-        if (ac.signal.aborted) return;
-        setSearchFallback({ kind: "success", data });
-      } catch {
-        if (!ac.signal.aborted) setSearchFallback({ kind: "error" });
-      }
-    }, 400);
-
-    return () => {
-      window.clearTimeout(debounceId);
-      ac.abort();
-    };
-  }, [searchTerm, selectedCategory, filteredPerfumes.length]);
-
   const sortedPerfumes = useMemo(() => {
     const list = [...filteredPerfumes];
     const q = searchTerm.trim();
@@ -299,31 +261,47 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
   const hasActiveFilters = hasCollectionFilters || sortKey !== "default";
   const showFeatured = !hasCollectionFilters;
 
-  // We determine if we should truncate the catalog based on state & filters
-  const shouldTruncateCatalog = !hasCollectionFilters && !showFullCatalog && sortedPerfumes.length > 12;
-  const displayedPerfumes = shouldTruncateCatalog ? sortedPerfumes.slice(0, 12) : sortedPerfumes;
+  const displayedPerfumes = (!hasCollectionFilters && !showFullCatalog && sortedPerfumes.length > 12) 
+    ? sortedPerfumes.slice(0, 12) 
+    : sortedPerfumes;
 
-  const scrollCatalogIntoView = useCallback(() => {
+  const scrollToCatalogTop = useCallback((instant = false) => {
+    const el = document.getElementById("collection");
+    if (!el) return;
+    
+    // We use a double requestAnimationFrame + a small timeout to be 100% sure 
+    // the FeaturedSection has either appeared or disappeared and the layout is stable.
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        const el = document.getElementById("collection");
-        if (!el) return;
-        const offset = 80; // Buffer for header
-        const bodyRect = document.body.getBoundingClientRect().top;
-        const elementRect = el.getBoundingClientRect().top;
-        const elementPosition = elementRect - bodyRect;
-        const offsetPosition = elementPosition - offset;
+        setTimeout(() => {
+          const offset = 85; 
+          const bodyRect = document.body.getBoundingClientRect().top;
+          const elementRect = el.getBoundingClientRect().top;
+          const elementPosition = elementRect - bodyRect;
+          const offsetPosition = elementPosition - offset;
 
-        // Only scroll if the catalog is significantly above the viewport
-        if (window.scrollY > offsetPosition + 300) {
-           window.scrollTo({
-             top: offsetPosition,
-             behavior: "smooth"
-           });
-        }
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: instant ? "auto" : "smooth"
+          });
+        }, 60);
       });
     });
   }, []);
+
+  // Handle category change specifically
+  const handleCategoryChange = (category: Category) => {
+    if (category === selectedCategory) return;
+    setActiveItem(null);
+    setSelectedCategory(category);
+    setSelectedBrandSlugs(new Set());
+    setMaisonSlug("");
+    
+    // If we are deep in the page, bring back to catalog start
+    if (window.scrollY > 400) {
+      scrollToCatalogTop();
+    }
+  };
 
   useEffect(() => {
     if (catalogScrollSkipRef.current) {
@@ -331,28 +309,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
       return;
     }
     setActiveItem(null);
-    
-    // On laisse React finir le rendu de la nouvelle liste
-    requestAnimationFrame(() => {
-      const el = document.getElementById("collection");
-      if (el) {
-        const offset = 80;
-        const bodyRect = document.body.getBoundingClientRect().top;
-        const elementRect = el.getBoundingClientRect().top;
-        const elementPosition = elementRect - bodyRect;
-        const offsetPosition = elementPosition - offset;
-
-        // On ne ramène au début du catalogue que si l'utilisateur est déjà 
-        // en train de le parcourir ou s'il est plus bas.
-        if (window.scrollY > offsetPosition) {
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: "smooth"
-          });
-        }
-      }
-    });
-  }, [selectedCategory, sortKey]);
+  }, [sortKey]);
 
   useEffect(() => {
     setActiveItem(null);
@@ -365,7 +322,8 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
     setMaisonSlug("");
     setSelectedBrandSlugs(new Set());
     setShowFullCatalog(false);
-  }, []);
+    scrollToCatalogTop();
+  }, [scrollToCatalogTop]);
 
   const externalHint = useMemo(
     () => (searchTerm.trim() ? findExternalPerfumeHint(searchTerm) : null),
@@ -565,10 +523,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
                 <button
                   type="button"
                   key={category}
-                  onClick={() => {
-                    setSelectedCategory(category);
-                    setSelectedBrandSlugs(new Set());
-                  }}
+                  onClick={() => handleCategoryChange(category)}
                   className={`relative shrink-0 min-h-[44px] px-3.5 py-2.5 text-[11px] font-medium uppercase tracking-nurea-label transition-all duration-300 touch-manipulation md:px-4 md:py-3 md:text-[12px] ${
                     selectedCategory === category
                       ? "text-[var(--nurea-accent)]"
@@ -619,7 +574,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
             {selectedCategory !== "Tout voir" && (
               <FilterChip
                 label={selectedCategory}
-                onRemove={() => setSelectedCategory("Tout voir")}
+                onRemove={() => handleCategoryChange("Tout voir")}
               />
             )}
             {maisonSlug.trim() !== "" && (
