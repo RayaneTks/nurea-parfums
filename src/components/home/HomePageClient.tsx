@@ -122,6 +122,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
   const [showFullCatalog, setShowFullCatalog] = useState(false);
   const [isInCatalogView, setIsInCatalogView] = useState(false);
   const scrollDirection = useScrollDirection();
+  const stickyRef = useRef<HTMLDivElement>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const paramsStringRef = useRef<string | null>(null);
@@ -138,12 +139,13 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
       const offset = window.scrollY;
       setScrolled(offset > 50);
       
-      // On détecte si on est arrivé au niveau du catalogue (id="collection")
-      const catalogEl = document.getElementById("collection");
-      if (catalogEl) {
-        const catalogTop = catalogEl.offsetTop;
-        // On active l'effet sticky "intelligent" seulement si on a dépassé le début du catalogue
-        setIsInCatalogView(offset > catalogTop - 100);
+      if (stickyRef.current) {
+        // On récupère la position de la barre par rapport au haut du viewport
+        const rect = stickyRef.current.getBoundingClientRect();
+        // On considère qu'elle est "fixée" si elle est proche de son point d'attache sticky (env 60-80px)
+        // et on n'active le masquage que si l'utilisateur a déjà scrollé au-delà de son point naturel
+        const stickyThreshold = 100; // Seuil de sécurité
+        setIsInCatalogView(rect.top <= stickyThreshold && offset > 400);
       }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -519,7 +521,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
           </div>
         </ScrollReveal>
 
-        <div className={`sticky z-30 -mx-4 mb-4 border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-4 pb-3 transition-transform duration-500 ease-out-expo [top:calc(env(safe-area-inset-top,0px)+3.625rem)] md:mx-0 md:mb-3 md:px-0 md:top-[calc(env(safe-area-inset-top,0px)+4.25rem)] ${
+        <div ref={stickyRef} className={`sticky z-30 -mx-4 mb-4 border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-4 pb-3 transition-transform duration-500 ease-out-expo [top:calc(env(safe-area-inset-top,0px)+3.625rem)] md:mx-0 md:mb-3 md:px-0 md:top-[calc(env(safe-area-inset-top,0px)+4.25rem)] ${
           isHeaderVisible ? "translate-y-0" : "-translate-y-[calc(100%+env(safe-area-inset-top,0px)+4.25rem)]"
         }`}>
           <ScrollReveal className="mb-0" delay={80}>
