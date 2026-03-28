@@ -329,8 +329,26 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
       return;
     }
     setActiveItem(null);
-    // Removed unconditional scroll on filter change to avoid jumpiness.
-    // scrollCatalogIntoView(); 
+    
+    // Quand on change de catégorie ou de tri, on ramène l'utilisateur
+    // au début du catalogue pour qu'il voit les nouveaux résultats.
+    const el = document.getElementById("collection");
+    if (el) {
+      const offset = 80;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = el.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      // On ne scroll que si on est déjà engagé dans le catalogue
+      // pour éviter de voler le scroll si l'utilisateur est encore en haut (Hero)
+      if (window.scrollY > offsetPosition - 100) {
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        });
+      }
+    }
   }, [selectedCategory, sortKey]);
 
   useEffect(() => {
@@ -479,7 +497,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
 
       <main
         id="collection"
-        className="mx-auto w-full max-w-[1200px] flex-grow scroll-mt-[calc(env(safe-area-inset-top,0px)+3.75rem)] px-4 py-12 pb-[max(3.5rem,env(safe-area-inset-bottom,0px))] md:scroll-mt-[calc(env(safe-area-inset-top,0px)+4.5rem)] md:px-10 md:py-24"
+        className="mx-auto w-full max-w-[1200px] flex-grow scroll-mt-[calc(env(safe-area-inset-top,0px)+3.75rem)] px-4 py-12 pb-[max(3.5rem,env(safe-area-inset-bottom,0px))] md:scroll-mt-[calc(env(safe-area-inset-top,0px)+4.5rem)] md:px-10 md:py-24 min-h-[800px]"
       >
         <ScrollReveal className="mb-8 md:mb-12">
           <div>
