@@ -2,9 +2,9 @@
 
 import type { FC, FormEvent } from "react";
 import { useState } from "react";
-import Image from "next/image";
 import { useTheme } from "next-themes";
 import { ArrowRight, Send } from "lucide-react";
+import { WhatsAppIcon, SnapchatIcon } from "@/components/ui/Icons";
 import { CONTACT } from "@/lib/data";
 import { buildContactMailto } from "@/lib/contactMailto";
 import { submitContactForm } from "@/actions/contact";
@@ -22,13 +22,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 export const ContactSection: FC = () => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme !== "light";
-
-  const whatsappIcon = isDark
-    ? "/branding/icons/nurea_icon_whatsapp_ivory.svg"
-    : "/branding/icons/nurea_icon_whatsapp_bordeaux.svg";
-  const snapchatIcon = isDark
-    ? "/branding/icons/nurea_icon_snapchat_ivory.svg"
-    : "/branding/icons/nurea_icon_snapchat_bordeaux.svg";
 
   const [formState, setFormState] = useState<ContactFormState>({
     name: "",
@@ -135,8 +128,8 @@ export const ContactSection: FC = () => {
               rel="noopener noreferrer"
               className="group flex min-h-[72px] items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-4 py-4 transition-colors hover:border-[var(--nurea-accent)] hover:bg-[var(--nurea-surface-hover)]"
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)]">
-                <Image src={whatsappIcon} alt="" width={24} height={24} className="h-6 w-6" />
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors group-hover:border-[var(--nurea-accent)]">
+                <WhatsAppIcon className="h-6 w-6 text-[var(--nurea-text-muted)] transition-colors group-hover:text-[var(--nurea-accent)]" />
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
@@ -153,8 +146,8 @@ export const ContactSection: FC = () => {
               rel="noopener noreferrer"
               className="group flex min-h-[72px] items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-4 py-4 transition-colors hover:border-[var(--nurea-snapchat)] hover:bg-[var(--nurea-surface-hover)]"
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)]">
-                <Image src={snapchatIcon} alt="" width={24} height={24} className="h-6 w-6" />
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors group-hover:border-[var(--nurea-snapchat)]">
+                <SnapchatIcon className="h-6 w-6 text-[var(--nurea-text-muted)] transition-colors group-hover:text-[var(--nurea-snapchat)]" />
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">

@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState, type FC } from "react";
 import { CONTACT } from "@/lib/data";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { WhatsAppIcon, SnapchatIcon } from "@/components/ui/Icons";
 
 export const Footer: FC = () => {
   const { resolvedTheme } = useTheme();
@@ -54,17 +55,7 @@ export const Footer: FC = () => {
               aria-label="WhatsApp"
             >
               <span className="flex h-[64px] w-[64px] shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-all duration-300 group-hover:border-[var(--nurea-accent)] group-hover:bg-[var(--nurea-accent-subtle)]">
-                <Image
-                  src={
-                    isDark
-                      ? "/branding/icons/nurea_icon_whatsapp_ivory.svg"
-                      : "/branding/icons/nurea_icon_whatsapp_bordeaux.svg"
-                  }
-                  alt=""
-                  width={24}
-                  height={24}
-                  className="h-6 w-6 object-contain"
-                />
+                <WhatsAppIcon className="h-6 w-6 text-[var(--nurea-text)] transition-colors group-hover:text-[var(--nurea-accent)]" />
               </span>
               <span className="text-[10px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-accent)] md:text-[11px]">
                 WhatsApp
@@ -83,17 +74,7 @@ export const Footer: FC = () => {
               aria-label="Snapchat"
             >
               <span className="flex h-[64px] w-[64px] shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-all duration-300 group-hover:border-[var(--nurea-snapchat)] group-hover:bg-[var(--nurea-snapchat)]/5">
-                <Image
-                  src={
-                    isDark
-                      ? "/branding/icons/nurea_icon_snapchat_ivory.svg"
-                      : "/branding/icons/nurea_icon_snapchat_bordeaux.svg"
-                  }
-                  alt=""
-                  width={24}
-                  height={24}
-                  className="h-6 w-6 object-contain"
-                />
+                <SnapchatIcon className="h-6 w-6 text-[var(--nurea-text)] transition-colors group-hover:text-[var(--nurea-snapchat)]" />
               </span>
               <span className="text-[10px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] transition-colors duration-300 group-hover:text-[var(--nurea-snapchat)] md:text-[11px]">
                 Snapchat
