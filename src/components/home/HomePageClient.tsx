@@ -120,6 +120,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
   const [browseOpen, setBrowseOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [showFullCatalog, setShowFullCatalog] = useState(false);
+  const [isInCatalogView, setIsInCatalogView] = useState(false);
   const scrollDirection = useScrollDirection();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -134,9 +135,16 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
 
   useEffect(() => {
     const handleScroll = () => {
-      // Small threshold to avoid issues with bouncy headers
       const offset = window.scrollY;
       setScrolled(offset > 50);
+      
+      // On détecte si on est arrivé au niveau du catalogue (id="collection")
+      const catalogEl = document.getElementById("collection");
+      if (catalogEl) {
+        const catalogTop = catalogEl.offsetTop;
+        // On active l'effet sticky "intelligent" seulement si on a dépassé le début du catalogue
+        setIsInCatalogView(offset > catalogTop - 100);
+      }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -439,7 +447,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
     [catalogPerfumes],
   );
 
-  const isHeaderVisible = scrollDirection === "up" || !scrolled;
+  const isHeaderVisible = !isInCatalogView || scrollDirection === "up";
 
   return (
     <div
