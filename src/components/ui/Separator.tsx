@@ -21,7 +21,7 @@ export const Separator = ({
       <div className="flex flex-col items-center gap-5">
         {withMonogram && (
           <Image
-            src="/branding/monogram/np-free-cuivre.png"
+            src="/branding/monogram/np-free-cuivre.webp"
             alt=""
             width={36}
             height={36}

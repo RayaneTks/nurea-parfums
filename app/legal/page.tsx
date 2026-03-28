@@ -9,7 +9,7 @@ import { ScrollReveal } from "@/components/ui/ScrollReveal";
 export default function LegalComingSoon() {
   return (
     <div className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
-      <Navbar scrolled={true} />
+      <Navbar />
       
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-24 text-center">
         <ScrollReveal direction="scale">

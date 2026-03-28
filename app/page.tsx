@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { HomePageClient } from "@/components/home/HomePageClient";
+import { Navbar } from "@/components/layout/Navbar";
+import { Hero } from "@/components/features/Hero";
+import { Separator } from "@/components/ui/Separator";
+import { FeaturedSection } from "@/components/features/FeaturedSection";
+import { CatalogSection } from "@/components/home/CatalogSection";
+import { Footer } from "@/components/layout/Footer";
 import { CatalogSkeleton } from "@/components/features/PerfumeCardSkeleton";
 import { getCatalogBrowse } from "@/lib/catalog/getCatalogBrowse";
 import { getCatalogPerfumes } from "@/lib/catalog/getCatalogPerfumes";
@@ -8,7 +13,7 @@ import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "La Galerie",
-  description: `${SITE_NAME} — Une invitation à l&apos;exceptionnel. Découvrez notre sélection de sillages rares et engagez le dialogue pour une expertise personnalisée. Site officiel.`,
+  description: `${SITE_NAME} — Une invitation à l'exceptionnel. Découvrez notre sélection de sillages rares et engagez le dialogue pour une expertise personnalisée. Site officiel.`,
   keywords: [
     "Nuréa Parfums",
     "parfumerie d'exception",
@@ -39,10 +44,28 @@ export default async function HomePage() {
     getCatalogPerfumes(),
     getCatalogBrowse(),
   ]);
-  
+
+  const featuredPerfumes = catalogPerfumes.filter((p) => p.isFeatured).slice(0, 2);
+
   return (
-    <Suspense fallback={<HomeFallback />}>
-      <HomePageClient catalogPerfumes={catalogPerfumes} browseBrands={browseBrands} />
-    </Suspense>
+    <div id="main-content" className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
+      <Navbar />
+      
+      <Hero />
+      <Separator variant="copper" withMonogram />
+
+      {featuredPerfumes.length > 0 && (
+        <>
+          <FeaturedSection perfumes={featuredPerfumes} />
+          <Separator variant="bordeaux" />
+        </>
+      )}
+
+      <Suspense fallback={<HomeFallback />}>
+        <CatalogSection catalogPerfumes={catalogPerfumes} browseBrands={browseBrands} />
+      </Suspense>
+
+      <Footer />
+    </div>
   );
 }

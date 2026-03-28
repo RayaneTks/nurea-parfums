@@ -2,6 +2,7 @@ import type { Category, Perfume } from "@/lib/data";
 import { unstable_noStore as noStore } from "next/cache";
 import { categories, mockPerfumes } from "@/lib/data";
 import { prisma } from "@/lib/db/prisma";
+import { getBlurPlaceholder } from "@/lib/blurPlaceholder";
 import {
   prismaCatalogInCooldown,
   registerPrismaCatalogFailure,
@@ -12,36 +13,8 @@ function isCategory(s: string): s is Category {
   return (categories as readonly string[]).includes(s);
 }
 
-function rowToPerfume(row: {
-  id: number;
-  name: string;
-  image: string;
-  imageLight: string | null;
-  isFeatured?: boolean;
-  brand: { name: string; slug: string; catalogMode: "CURATED" | "COMPLETE" };
-}): Perfume {
-  const cat: Category =
-    row.brand.catalogMode === "COMPLETE"
-      ? "Gammes Complètes"
-      : "Sélections Individuelles";
-  if (!isCategory(cat)) {
-    throw new Error(`Catégorie catalogue invalide en base : ${cat}`);
-  }
-  return {
-    id: row.id,
-    name: row.name,
-    brand: row.brand.name,
-    brandSlug: row.brand.slug,
-    category: cat,
-    image: row.image,
-    imageLight: row.imageLight ?? undefined,
-    tags: row.brand.catalogMode === "COMPLETE" ? ["Gamme complète"] : undefined,
-    isFeatured: row.isFeatured,
-  };
-}
-
 /**
- * Catalogue publié : PostgreSQL si `DATABASE_URL`, sinon `mockPerfumes` (comportement actuel).
+ * Catalogue publié : PostgreSQL si `DATABASE_URL`, sinon `mockPerfumes` (vide désormais).
  */
 export async function getCatalogPerfumes(): Promise<Perfume[]> {
   noStore();
@@ -79,6 +52,7 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
       },
       orderBy: { id: "asc" },
     });
+
     const rangeBrands = await prisma.brand.findMany({
       where: { catalogMode: "COMPLETE", status: "PUBLISHED" },
       select: { id: true, name: true, slug: true, image: true, imageLight: true },
@@ -86,6 +60,8 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
     });
 
     const maxId = perfumes.reduce((acc, p) => Math.max(acc, p.id), 0);
+    
+    // 1. Transformation des marques en "Gammes Complètes"
     const asPerfumesFromBrands: Perfume[] = rangeBrands
       .filter((b) => Boolean(b.image))
       .map((b, idx) => ({
@@ -96,23 +72,28 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
         category: "Gammes Complètes",
         image: b.image!,
         imageLight: b.imageLight ?? undefined,
+        blurDataURL: getBlurPlaceholder(b.image),
         tags: ["Gamme complète"],
       }));
 
-    registerPrismaCatalogSuccess();
-    
-    const mappedPerfumes = perfumes.map(p => ({
-      id: p.id,
-      name: p.name,
-      brand: p.brand.name,
-      brandSlug: p.brand.slug,
-      category: (p.brand.catalogMode === "COMPLETE" ? "Gammes Complètes" : "Sélections Individuelles") as Category,
-      image: p.image,
-      imageLight: p.imageLight ?? undefined,
-      isFeatured: p.isFeatured,
-      tags: p.brand.catalogMode === "COMPLETE" ? ["Gamme complète"] : undefined,
-    }));
+    // 2. Transformation des parfums individuels
+    const mappedPerfumes: Perfume[] = perfumes.map(p => {
+      const isComplete = p.brand.catalogMode === "COMPLETE";
+      return {
+        id: p.id,
+        name: p.name,
+        brand: p.brand.name,
+        brandSlug: p.brand.slug,
+        category: isComplete ? "Gammes Complètes" : "Sélections Individuelles",
+        image: p.image,
+        imageLight: p.imageLight ?? undefined,
+        blurDataURL: getBlurPlaceholder(p.image),
+        isFeatured: p.isFeatured,
+        tags: isComplete ? ["Gamme complète"] : undefined,
+      };
+    });
 
+    registerPrismaCatalogSuccess();
     return [...mappedPerfumes, ...asPerfumesFromBrands];
   } catch (e: any) {
     registerPrismaCatalogFailure();

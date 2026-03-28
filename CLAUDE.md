@@ -29,7 +29,7 @@ Tout travail sur ce dépôt doit suivre la **Boucle de Qualité** définie dans 
 ### Key Directories
 
 - `src/components/layout/` — Navbar, Footer.
-- `src/components/home/` — HomePageClient (catalogue, filtres, sync URL).
+- `src/components/home/` — CatalogSection (catalogue, filtres, sync URL).
 - `src/components/features/` — Hero, PerfumeCard, **PerfumeCardSkeleton (CatalogSkeleton)**.
 - `src/components/admin/` — AdminDashboard, Formulaires, Visualiseurs.
 - `src/hooks/` — useScrollReveal, **useScrollDirection**.
@@ -49,7 +49,7 @@ Tout travail sur ce dépôt doit suivre la **Boucle de Qualité** définie dans 
   - Toute nouvelle propriété UI doit être ajoutée au schéma et gérée de manière défensive (try/catch sur le code `P2022`).
 - **Next.js & Hydration Mismatch** : 
   - Ne **jamais** cacher conditionnellement un élément clé du LCP (comme l'image Hero) via un flag `mounted` côté client pour régler un warning d'hydratation. Préférer l'utilisation de variables CSS ou accepter un rendu serveur par défaut, pour ne pas détruire les performances.
-  - Tout composant utilisant `useSearchParams()` (ex: `AdminDashboard`, `HomePageClient`) **DOIT** être wrappé dans `<Suspense>` pour éviter l'erreur de build "CSR Bailout".
+  - Tout composant utilisant `useSearchParams()` (ex: `AdminDashboard`, `CatalogSection`) **DOIT** être wrappé dans `<Suspense>` pour éviter l'erreur de build "CSR Bailout".
 - **Identité de Marque** :
   - Le nom est **Nuréa Parfums** (avec l'accent). À respecter scrupuleusement dans l'UI, le SEO et les alts.
   - Localisation : **Marseille**. Pas de références à Paris ou Dubai.

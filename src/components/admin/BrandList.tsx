@@ -16,6 +16,7 @@ type BrandRow = {
   catalogMode: "CURATED" | "COMPLETE";
   status: "PUBLISHED" | "DRAFT";
   image: string | null;
+  imageLight: string | null;
   _count: { perfumes: number };
 };
 
@@ -120,12 +121,13 @@ export function BrandList({
                 ${pendingBrandIds.has(brand.id) ? "opacity-50 pointer-events-none" : ""}
               `}
             >
-              <div 
-                className="relative shrink-0 h-[80px] w-[60px] rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-xl cursor-pointer active:scale-95 transition-transform"
+              <BrandVisual 
+                name={brand.name} 
+                image={brand.image} 
+                imageLight={brand.imageLight}
+                size={80} 
                 onClick={() => onPreview(brand)}
-              >
-                <BrandVisual name={brand.name} image={brand.image} size={80} />
-              </div>
+              />
               
               <div className="min-w-0 flex-1">
                 <h4 className="text-[16px] font-bold text-zinc-100 truncate group-hover:text-blue-400 transition-colors">

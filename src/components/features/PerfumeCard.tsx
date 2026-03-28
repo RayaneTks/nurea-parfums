@@ -40,6 +40,8 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
     ? getPerfumeImage(perfume, isDark ? "dark" : "light")
     : perfume.image;
 
+  const blurUrl = perfume.blurDataURL || NUREA_IMAGE_BLUR_DATA_URL;
+
   useEffect(() => {
     if (!isActive) return;
     let removeListener: (() => void) | undefined;
@@ -84,7 +86,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
     <article
       ref={cardRef}
       data-open={isActive ? "true" : "false"}
-      className={`group relative flex flex-col card-hover touch-manipulation ${
+      className={`group relative flex w-full min-h-0 flex-col card-hover touch-manipulation ${
         featured ? "card-featured" : ""
       }`}
     >
@@ -93,7 +95,10 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         <div className="absolute inset-0 bg-gradient-to-b from-[var(--nurea-accent-subtle)] to-transparent blur-2xl" />
       </div>
 
-      <div className="card-image-wrapper relative z-10 aspect-[3/4] overflow-hidden bg-[var(--nurea-surface)]">
+      <div 
+        className="card-image-wrapper relative z-10 aspect-[3/4] w-full min-h-0 overflow-hidden bg-[var(--nurea-surface)]"
+        style={{ backfaceVisibility: 'hidden', transform: 'translate3d(0,0,0)' }}
+      >
         {perfume.tags && (
           <div
             data-testid="perfume-tag-strip"
@@ -120,7 +125,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
           sizes="(max-width: 480px) 50vw, (max-width: 768px) 45vw, (max-width: 1200px) 30vw, 300px"
           className="object-cover card-image-zoom"
           placeholder="blur"
-          blurDataURL={NUREA_IMAGE_BLUR_DATA_URL}
+          blurDataURL={blurUrl}
           priority={imagePriority}
           quality={80}
         />
@@ -221,7 +226,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         type="button"
         id={`perfume-toggle-${perfume.id}`}
         aria-expanded={isActive}
-        aria-label={`Détails du parfum ${perfume.name} de ${perfume.brand}`}
+        aria-label={`${isGammeComplete ? "Explorer la Sélection" : "Engager le Dialogue"} - ${perfume.brand} ${perfume.name}`}
         aria-controls={isActive ? panelId : undefined}
         className="relative z-10 flex w-full flex-col border-0 bg-transparent p-0 pt-3 text-left text-[var(--nurea-text)] outline-none md:pt-3.5"
         onClick={toggleActive}

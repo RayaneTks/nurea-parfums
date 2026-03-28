@@ -261,6 +261,12 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 18px;
+  width: 100%;
+  grid-auto-rows: min-content;
+}
+.catalogue-grid > * {
+  min-width: 0;
+  min-height: 0;
 }
 @media (min-width: 768px) {
   .catalogue-grid {
@@ -415,7 +421,10 @@
 .btn-accent {
   background: var(--nurea-accent);
   border-color: var(--nurea-accent);
-  color: #FDF8F4;
+  color: var(--nurea-bg); /* Use dark background color for text to ensure contrast in dark mode */
+}
+.light .btn-accent {
+  color: #FDF8F4; /* Light text on dark accent in light mode */
 }
 .btn-accent:hover {
   background: var(--nurea-accent-hover);

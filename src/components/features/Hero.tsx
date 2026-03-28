@@ -15,8 +15,8 @@ export const Hero: FC = () => {
   // On utilise des valeurs par défaut stables pour le SSR afin d'éviter le mismatch
   const isDark = !mounted || resolvedTheme !== "light";
   const monogramSrc = isDark
-    ? "/branding/monogram/np-free-cuivre.png"
-    : "/branding/monogram/np-free-bordeaux.png";
+    ? "/branding/monogram/np-free-cuivre.webp"
+    : "/branding/monogram/np-free-bordeaux.webp";
 
   const handleScroll = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -31,7 +31,7 @@ export const Hero: FC = () => {
       {/* Background Image - LCP Candidate */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/branding/visuel-hero.png"
+          src="/branding/visuel-hero.webp"
           alt=""
           fill
           sizes="100vw"
@@ -61,8 +61,8 @@ export const Hero: FC = () => {
         <Image
           src={
             mounted && !isDark
-              ? "/branding/monogram/np-free-bordeaux.png"
-              : "/branding/monogram/np-free-cuivre.png"
+              ? "/branding/monogram/np-free-bordeaux.webp"
+              : "/branding/monogram/np-free-cuivre.webp"
           }
           alt=""
           width={440}
@@ -127,9 +127,9 @@ export const Hero: FC = () => {
             href="#collection"
             onClick={handleScroll}
             className="btn-nurea btn-accent group w-full justify-center shadow-[0_0_40px_-8px_var(--nurea-glow)] sm:w-auto"
-            aria-label="Voir la collection"
-          >
-            Découvrir la Collection
+            aria-label="DÃ‰COUVRIR LA COLLECTION"
+            >
+            DÃ‰COUVRIR LA COLLECTION
             <ChevronDown
               size={14}
               className="transition-transform duration-500 group-hover:translate-y-1"

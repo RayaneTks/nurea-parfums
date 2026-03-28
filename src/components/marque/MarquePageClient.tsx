@@ -9,19 +9,11 @@ import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const MarquePageClient = () => {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   const domain = SITE_URL.replace(/^https?:\/\//, "");
 
   return (
     <div className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
-      <Navbar scrolled={scrolled} />
+      <Navbar />
       
       <main id="main-content" className="flex-1">
         {/* Hero Section Marque */}

@@ -2,9 +2,10 @@
 
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, Plus, SunMoon } from "lucide-react";
+import { AlertCircle, Plus, SunMoon, Upload, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRef } from "react";
 import { AdminNav } from "./AdminNav";
 import { DashboardHeader } from "./DashboardHeader";
 import { PerfumeList } from "./PerfumeList";
@@ -22,6 +23,7 @@ type BrandRow = {
   catalogMode: "CURATED" | "COMPLETE";
   status: "PUBLISHED" | "DRAFT";
   image: string | null;
+  imageLight: string | null;
   _count: { perfumes: number };
 };
 
@@ -79,16 +81,20 @@ function ConfirmDeleteModal({
 function VisualizerDrawer({
   item,
   onClose,
+  onUpdate,
 }: {
   item: PerfumeRow | BrandRow;
   onClose: () => void;
+  onUpdate: (id: string | number, data: Partial<PerfumeRow | BrandRow>) => Promise<void>;
 }) {
   const [mode, setMode] = useState<"dark" | "light">("dark");
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchOffset, setTouchOffset] = useState(0);
+  const [uploading, setUploading] = useState<"dark" | "light" | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isPerfume = "brand" in item;
-  const imageLight = isPerfume ? (item as PerfumeRow).imageLight : null;
+  const imageLight = isPerfume ? (item as PerfumeRow).imageLight : (item as BrandRow).imageLight;
   const hasLight = !!imageLight;
   const mainImage = item.image || "/placeholder.svg";
 
@@ -105,6 +111,35 @@ function VisualizerDrawer({
     setTouchOffset(0);
   };
 
+  const handleUploadClick = (targetMode: "dark" | "light") => {
+    setMode(targetMode);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const targetMode = mode;
+    setUploading(targetMode);
+    
+    try {
+      const { uploadFile } = await import("@/lib/admin/image-utils");
+      const url = await uploadFile(file);
+      
+      const updateData = targetMode === "dark" 
+        ? { image: url } 
+        : { imageLight: url };
+        
+      await onUpdate(item.id, updateData);
+    } catch (err) {
+      console.error("Upload failed", err);
+    } finally {
+      setUploading(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose}>
       <div 
@@ -117,42 +152,81 @@ function VisualizerDrawer({
       >
         <div className="mx-auto w-12 h-1.5 rounded-full bg-zinc-800 mb-8 sm:hidden" />
         
-        <div className="relative aspect-[3/4] w-full max-w-[260px] mx-auto rounded-[32px] overflow-hidden bg-zinc-950 shadow-2xl border border-zinc-800">
+        <div 
+          className="group relative aspect-[3/4] w-full max-w-[260px] mx-auto rounded-[32px] overflow-hidden bg-zinc-950 shadow-2xl border border-zinc-800 cursor-pointer active:scale-[0.98] transition-all"
+          onClick={() => handleUploadClick(mode)}
+        >
           <Image
             src={mode === "dark" ? mainImage : (imageLight || mainImage)}
             alt={item.name}
             fill
-            className="object-cover transition-all duration-700 ease-in-out"
+            className={`object-cover transition-all duration-700 ease-in-out ${uploading ? "opacity-40 blur-sm" : ""}`}
             sizes="(max-width: 768px) 260px, 300px"
             quality={85}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <div className="absolute bottom-6 left-0 right-0 text-center">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">Mode actuel</p>
+          
+          <div className={`absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity ${uploading ? "opacity-100" : ""}`}>
+            {uploading ? (
+              <Loader2 className="h-10 w-10 animate-spin text-white" />
+            ) : (
+              <>
+                <Upload className="h-8 w-8 text-white mb-2" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Changer l&apos;image {mode}</span>
+              </>
+            )}
+          </div>
+
+          <div className="absolute bottom-6 left-0 right-0 text-center pointer-events-none">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">Aperçu</p>
             <p className="text-sm font-bold text-white uppercase tracking-widest">{mode === "dark" ? "Sombre (Dark)" : "Clair (Light)"}</p>
           </div>
         </div>
 
-        <div className="mt-10 text-center">
+        <input 
+          ref={fileInputRef}
+          type="file"
+          className="sr-only"
+          accept="image/*"
+          onChange={handleFileChange}
+        />
+
+        <div className="mt-8 text-center">
           <h3 className="text-2xl font-bold text-zinc-100 tracking-tight">{item.name}</h3>
           <p className="text-sm text-zinc-500 mt-1">{isPerfume ? (item as PerfumeRow).brand.name : "Marque"}</p>
         </div>
 
-        <div className="mt-8 flex flex-col gap-3">
+        <div className="mt-8 grid grid-cols-2 gap-3">
+          <button
+            onClick={() => handleUploadClick("dark")}
+            className={`flex flex-col items-center justify-center gap-2 h-20 rounded-2xl border transition-all active:scale-95 ${mode === "dark" ? "bg-zinc-100 border-zinc-100 text-zinc-900 shadow-xl" : "bg-zinc-800/50 border-zinc-700 text-zinc-400"}`}
+          >
+            <Upload className="h-4 w-4" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Upload Dark</span>
+          </button>
+          <button
+            onClick={() => handleUploadClick("light")}
+            className={`flex flex-col items-center justify-center gap-2 h-20 rounded-2xl border transition-all active:scale-95 ${mode === "light" ? "bg-zinc-100 border-zinc-100 text-zinc-900 shadow-xl" : "bg-zinc-800/50 border-zinc-700 text-zinc-400"}`}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">{hasLight ? "Upload Light" : "Add Light"}</span>
+          </button>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-3">
           {hasLight && (
             <button
               onClick={() => setMode(mode === "dark" ? "light" : "dark")}
-              className="flex h-16 items-center justify-center gap-3 rounded-2xl bg-zinc-100 text-zinc-900 font-bold active:scale-95 transition-all shadow-xl"
+              className="flex h-14 items-center justify-center gap-3 rounded-2xl bg-zinc-800 text-zinc-200 font-bold active:scale-95 transition-all border border-zinc-700"
             >
               <SunMoon className="h-5 w-5" />
-              Basculer le mode (Clair / Sombre)
+              Basculer l&apos;aperçu
             </button>
           )}
           <button
             onClick={onClose}
-            className="flex h-14 items-center justify-center rounded-2xl bg-zinc-800/50 text-zinc-400 font-semibold active:scale-95 transition-all"
+            className="flex h-14 items-center justify-center rounded-2xl text-zinc-500 font-semibold active:scale-95 transition-all hover:text-zinc-300"
           >
-            Fermer l&apos;aperçu
+            Fermer
           </button>
         </div>
       </div>
@@ -357,6 +431,48 @@ export function AdminDashboard() {
     setPendingBrandIds((prev) => { const c = new Set(prev); c.delete(id); return c; });
   }
 
+  async function handleQuickUpdate(id: string | number, data: Partial<PerfumeRow | BrandRow>) {
+    if (!canEdit) return;
+    const isPerfume = typeof id === "number";
+    const endpoint = isPerfume ? `/api/admin/perfumes/${id}` : `/api/admin/brands/${id}`;
+    const method = isPerfume ? "PUT" : "PATCH"; // Based on existing API conventions
+
+    // Optimistic UI update
+    if (isPerfume) {
+      const perfId = id as number;
+      const perfData = data as Partial<PerfumeRow>;
+      setPerfumes((prev) => prev.map((p) => (p.id === perfId ? { ...p, ...perfData } : p)));
+    } else {
+      const brandId = id as string;
+      const brandData = data as Partial<BrandRow>;
+      setBrands((prev) => prev.map((b) => (b.id === brandId ? { ...b, ...brandData } : b)));
+    }
+    
+    // Also update preview item if it's the one being modified
+    if (previewItem && previewItem.id === id) {
+      setPreviewItem((prev: any) => (prev ? { ...prev, ...data } : null));
+    }
+
+    try {
+      const r = await fetch(endpoint, {
+        method,
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!r.ok) {
+        const j = await readJsonSafe<{ error?: string }>(r);
+        throw new Error(j?.error ?? "Mise à jour échouée.");
+      }
+      
+      setActionMsg({ type: "success", text: "Image mise à jour." });
+    } catch (err) {
+      setActionMsg({ type: "error", text: err instanceof Error ? err.message : "Erreur" });
+      refresh(); // Revert to server state
+    }
+  }
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-blue-500/30">
       <AdminNav />
@@ -436,6 +552,7 @@ export function AdminDashboard() {
         <VisualizerDrawer
           item={previewItem}
           onClose={() => setPreviewItem(null)}
+          onUpdate={handleQuickUpdate}
         />
       )}
 

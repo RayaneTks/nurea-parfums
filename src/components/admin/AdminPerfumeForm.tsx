@@ -48,6 +48,7 @@ function ImageUploadField({
   subtitle,
   value,
   onChange,
+  onUploadDone,
   required,
   readOnly,
   onError,
@@ -57,14 +58,15 @@ function ImageUploadField({
   subtitle?: string;
   value: string;
   onChange: (url: string) => void;
+  onUploadDone?: (url: string) => void;
   required?: boolean;
   readOnly: boolean;
   onError: (msg: string) => void;
   allowClear?: boolean;
 }) {
   const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const preview = value.trim();
-  const isRemote = /^https?:\/\//i.test(preview);
 
   async function handleUpload(file: File | null) {
     if (!file || readOnly) return;
@@ -72,12 +74,21 @@ function ImageUploadField({
     try {
       const url = await uploadFile(file);
       onChange(url);
+      if (onUploadDone) {
+        onUploadDone(url);
+      }
     } catch (e) {
       onError(e instanceof Error ? e.message : "Upload échoué");
     } finally {
       setUploading(false);
     }
   }
+
+  const triggerUpload = () => {
+    if (!readOnly && !uploading) {
+      fileInputRef.current?.click();
+    }
+  };
 
   return (
     <div className="space-y-3">
@@ -89,52 +100,77 @@ function ImageUploadField({
       </div>
 
       <div className="grid gap-4">
-        <AdminInput
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={readOnly}
-          required={required}
-          placeholder="/parfums/... ou https://..."
-          onClear={!readOnly && value.trim().length > 0 ? () => onChange("") : undefined}
-        />
-        
-        <label className="group relative">
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif,image/*"
-            className="sr-only"
-            disabled={uploading || readOnly}
-            onChange={(e) => handleUpload(e.target.files?.[0] ?? null)}
-          />
-          <AdminButton
-            type="button"
-            variant="outline"
-            className="w-full pointer-events-none"
-            isLoading={uploading}
-            leftIcon={Upload}
+        <div className="flex gap-4 items-start">
+          <div 
+            className={`relative aspect-[3/4] w-32 shrink-0 overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl group transition-all duration-300 ${!readOnly ? "cursor-pointer active:scale-95 hover:border-blue-500/50" : ""}`}
+            onClick={triggerUpload}
           >
-            {uploading ? "Envoi..." : "Importer un fichier"}
-          </AdminButton>
-        </label>
+            {preview ? (
+              <Image src={preview} alt="Aperçu" fill className="object-contain p-2" sizes="128px" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-zinc-700">
+                <Upload className="h-8 w-8" />
+              </div>
+            )}
+            
+            {!readOnly && (
+              <div className={`absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${uploading ? "opacity-100" : ""}`}>
+                {uploading ? (
+                  <Loader2 className="h-8 w-8 animate-spin text-white" />
+                ) : (
+                  <div className="flex flex-col items-center gap-1">
+                    <Upload className="h-6 w-6 text-white" />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-white">Remplacer</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 space-y-3">
+            <AdminInput
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              disabled={readOnly}
+              required={required}
+              placeholder="/parfums/... ou https://..."
+              onClear={!readOnly && value.trim().length > 0 ? () => onChange("") : undefined}
+            />
+            
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif,image/*"
+              className="sr-only"
+              disabled={uploading || readOnly}
+              onChange={(e) => handleUpload(e.target.files?.[0] ?? null)}
+            />
+            
+            <AdminButton
+              type="button"
+              variant="outline"
+              className="w-full"
+              size="sm"
+              isLoading={uploading}
+              leftIcon={Upload}
+              onClick={triggerUpload}
+              disabled={readOnly}
+            >
+              {uploading ? "Envoi..." : "Importer un fichier"}
+            </AdminButton>
+          </div>
+        </div>
       </div>
 
-      {preview && (
-        <div className="relative aspect-[2/3] w-32 overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl group">
-          {isRemote ? (
-            <Image src={preview} alt="Aperçu" fill className="object-contain p-2" sizes="128px" />
-          ) : (
-            <Image src={preview} alt="Aperçu" width={128} height={192} className="h-full w-full object-contain p-2" />
-          )}
-          {allowClear && !readOnly && (
-            <button
-              type="button"
-              onClick={() => onChange("")}
-              className="absolute top-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-lg bg-red-500 text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
+      {preview && allowClear && !readOnly && (
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          className="flex items-center gap-2 text-[11px] font-bold text-red-500/70 hover:text-red-500 transition-colors uppercase tracking-widest"
+        >
+          <X className="h-3.5 w-3.5" />
+          Supprimer l&apos;image
+        </button>
       )}
     </div>
   );
@@ -414,6 +450,35 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     }
   }
 
+  const handleAutoSave = useCallback(async (overrides: Partial<PerfumePayload>) => {
+    if (isNew || readOnly || saving) return;
+    
+    const body = {
+      brandId,
+      name,
+      image,
+      imageLight: imageLight.trim() || null,
+      status: isLockedByBrandMode || isLockedByBrandVisibility ? "DRAFT" : status,
+      ...overrides
+    };
+
+    try {
+      const r = await fetch(`/api/admin/perfumes/${perfumeId}`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) {
+        const j = await readJsonSafe<{ error?: string }>(r);
+        throw new Error(j?.error ?? "Auto-save échoué");
+      }
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur lors de la sauvegarde automatique");
+    }
+  }, [isNew, readOnly, saving, perfumeId, brandId, name, image, imageLight, isLockedByBrandMode, isLockedByBrandVisibility, status, router]);
+
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20 gap-4">
       <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -501,6 +566,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               subtitle="Utilisée pour tous les thèmes. Format WebP recommandé."
               value={image}
               onChange={setImage}
+              onUploadDone={(url) => handleAutoSave({ image: url })}
               required
               readOnly={readOnly}
               onError={setError}
@@ -512,6 +578,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               subtitle="S'affiche uniquement en thème clair si spécifiée."
               value={imageLight}
               onChange={setImageLight}
+              onUploadDone={(url) => handleAutoSave({ imageLight: url })}
               readOnly={readOnly}
               onError={setError}
             />

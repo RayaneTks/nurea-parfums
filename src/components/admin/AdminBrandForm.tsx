@@ -44,6 +44,7 @@ function ImageUploadField({
   subtitle,
   value,
   onChange,
+  onUploadDone,
   required,
   readOnly,
   onError,
@@ -53,14 +54,15 @@ function ImageUploadField({
   subtitle?: string;
   value: string;
   onChange: (url: string) => void;
+  onUploadDone?: (url: string) => void;
   required?: boolean;
   readOnly: boolean;
   onError: (msg: string) => void;
   allowClear?: boolean;
 }) {
   const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const preview = value?.trim();
-  const isRemote = preview && /^https?:\/\//i.test(preview);
 
   async function handleUpload(file: File | null) {
     if (!file || readOnly) return;
@@ -68,12 +70,26 @@ function ImageUploadField({
     try {
       const url = await uploadFile(file);
       onChange(url);
+      if (onUploadDone) {
+        onUploadDone(url);
+      }
     } catch (e) {
       onError(e instanceof Error ? e.message : "Upload échoué");
     } finally {
       setUploading(false);
     }
   }
+
+  const triggerUpload = () => {
+    if (!readOnly && !uploading) {
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleDeleteImage = () => {
+    onChange("");
+    if (onUploadDone) onUploadDone("");
+  };
 
   return (
     <div className="space-y-3">
@@ -85,49 +101,80 @@ function ImageUploadField({
       </div>
 
       <div className="grid gap-4">
-        <AdminInput
-          value={value || ""}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={readOnly}
-          required={required}
-          placeholder="/branding/... ou https://..."
-          onClear={!readOnly && value?.trim() ? () => onChange("") : undefined}
-        />
-        
-        <label className="group relative">
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif,image/*"
-            className="sr-only"
-            disabled={uploading || readOnly}
-            onChange={(e) => handleUpload(e.target.files?.[0] ?? null)}
-          />
-          <AdminButton
-            type="button"
-            variant="outline"
-            className="w-full pointer-events-none"
-            isLoading={uploading}
-            leftIcon={Upload}
+        <div className="flex gap-4 items-start">
+          <div 
+            className={`relative aspect-square w-32 shrink-0 overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl group transition-all duration-300 ${!readOnly ? "cursor-pointer active:scale-95 hover:border-blue-500/50" : ""}`}
+            onClick={triggerUpload}
           >
-            {uploading ? "Envoi..." : "Importer un fichier"}
-          </AdminButton>
-        </label>
-      </div>
+            {preview ? (
+              <Image src={preview} alt="Aperçu" fill className="object-contain p-2" sizes="128px" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-zinc-700">
+                <Upload className="h-8 w-8" />
+              </div>
+            )}
+            
+            {!readOnly && (
+              <div className={`absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${uploading ? "opacity-100" : ""}`}>
+                {uploading ? (
+                  <Loader2 className="h-8 w-8 animate-spin text-white" />
+                ) : (
+                  <div className="flex flex-col items-center gap-1">
+                    <Upload className="h-6 w-6 text-white" />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-white">Remplacer</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
-      {preview && (
-        <div className="relative aspect-square w-32 overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl group">
-          <Image src={preview} alt="Aperçu" fill className="object-contain p-2" sizes="128px" />
-          {allowClear && !readOnly && (
-            <button
-              type="button"
-              onClick={() => onChange("")}
-              className="absolute top-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-lg bg-red-500 text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
+          <div className="flex-1 space-y-3">
+            <AdminInput
+              value={value || ""}
+              onChange={(e) => onChange(e.target.value)}
+              disabled={readOnly}
+              required={required}
+              placeholder="/branding/... ou https://..."
+              onClear={!readOnly && value?.trim() ? handleDeleteImage : undefined}
+            />
+            
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif,image/*"
+              className="sr-only"
+              disabled={uploading || readOnly}
+              onChange={(e) => handleUpload(e.target.files?.[0] ?? null)}
+            />
+            
+            <div className="flex gap-2">
+              <AdminButton
+                type="button"
+                variant="outline"
+                className="flex-1"
+                size="sm"
+                isLoading={uploading}
+                leftIcon={Upload}
+                onClick={triggerUpload}
+                disabled={readOnly}
+              >
+                {uploading ? "Envoi..." : "Importer"}
+              </AdminButton>
+              {preview && allowClear && !readOnly && (
+                <AdminButton
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleDeleteImage}
+                  className="px-3 text-red-500 hover:bg-red-500/10"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </AdminButton>
+              )}
+            </div>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -245,6 +292,37 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
     }
   }
 
+  const handleAutoSave = useCallback(async (overrides: Partial<BrandPayload>) => {
+    if (isNew || readOnly || saving) return;
+    
+    // We use the current state + the specific override for this field
+    const payload = {
+      name,
+      catalogMode,
+      status,
+      image,
+      imageLight,
+      ...overrides
+    };
+
+    try {
+      const r = await fetch(`/api/admin/brands/${brandId}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!r.ok) {
+        const j = await readJsonSafe<{ error?: string }>(r);
+        throw new Error(j?.error ?? "Auto-save échoué");
+      }
+      // Success - no need for toast to avoid noise, but maybe a subtle indicator later?
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur lors de la sauvegarde automatique");
+    }
+  }, [isNew, readOnly, saving, brandId, name, catalogMode, status, image, imageLight, router]);
+
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20 gap-4">
       <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -334,22 +412,25 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
 
           <div className="grid gap-8 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
             <ImageUploadField
-              label="Logo principal (Dark)"
-              subtitle="Obligatoire pour une gamme complète. Format WebP/SVG."
+              label={imageLight ? "Image mode sombre (Dark)" : "Image principale (Mode sombre + clair)"}
+              subtitle="Format WebP/SVG recommandé. Utilisée par défaut pour le thème sombre."
               value={image}
               onChange={setImage}
+              onUploadDone={(url) => handleAutoSave({ image: url })}
               readOnly={readOnly}
               onError={setError}
               allowClear={true}
             />
             <div className="h-px bg-zinc-800/50" />
             <ImageUploadField
-              label="Variante mode clair (Light)"
-              subtitle="Optionnelle. Utilisée pour le thème clair."
+              label="Image mode clair (Light)"
+              subtitle="Optionnel. Si ajoutée, l'image ci-dessus devient l'image 'Sombre' uniquement."
               value={imageLight}
               onChange={setImageLight}
+              onUploadDone={(url) => handleAutoSave({ imageLight: url })}
               readOnly={readOnly}
               onError={setError}
+              allowClear={true}
             />
           </div>
         </section>
@@ -388,8 +469,8 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
           </div>
         </section>
 
-        <div className="sticky bottom-6 z-50 pt-4 mt-8">
-          <div className="p-2 bg-zinc-950/80 backdrop-blur-xl border border-zinc-800 rounded-3xl shadow-2xl">
+        <div className="pt-4 mt-8">
+          <div className="p-2 bg-zinc-900/80 border border-zinc-800 rounded-3xl shadow-2xl">
             <AdminButton
               type="submit"
               className="w-full"
@@ -402,24 +483,25 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
           </div>
           
           {!isNew && !readOnly && (
-            <div className="pt-6 flex flex-col items-center">
+            <div className="pt-12 pb-8 flex flex-col items-center border-t border-zinc-800/50 mt-12">
               {!deleteConfirm ? (
                 <button
                   type="button"
                   onClick={() => setDeleteConfirm(true)}
-                  className="text-[13px] font-bold text-red-500/70 hover:text-red-500 transition-colors uppercase tracking-widest"
+                  className="px-6 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-[13px] font-bold text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 uppercase tracking-widest"
                 >
-                  Supprimer cette marque
+                  Supprimer définitivement cette marque
                 </button>
               ) : (
-                <div className="flex flex-col items-center gap-3 p-4 bg-red-500/5 border border-red-500/10 rounded-2xl w-full animate-in zoom-in-95">
-                  <p className="text-xs text-red-400 font-bold uppercase tracking-wider">Supprimer la marque et ses parfums ?</p>
+                <div className="flex flex-col items-center gap-3 p-6 bg-red-500/5 border border-red-500/10 rounded-[32px] w-full animate-in zoom-in-95">
+                  <p className="text-sm text-red-400 font-bold uppercase tracking-wider">Confirmer la suppression irréversible ?</p>
+                  <p className="text-xs text-red-500/60 mb-2">Tous les parfums associés seront également supprimés.</p>
                   <div className="flex gap-2 w-full">
                     <AdminButton variant="ghost" className="flex-1" onClick={() => setDeleteConfirm(false)} disabled={deleting}>
                       Annuler
                     </AdminButton>
                     <AdminButton variant="danger" className="flex-1" onClick={handleDelete} isLoading={deleting}>
-                      Confirmer
+                      Oui, Supprimer
                     </AdminButton>
                   </div>
                 </div>

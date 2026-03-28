@@ -14,23 +14,31 @@ export function StatusDot({ status }: { status: string }) {
   );
 }
 
-export function BrandVisual({ name, image, size = 52 }: { name: string; image: string | null; size?: number }) {
-  if (image?.trim()) {
-    return (
-      <div 
-        className="relative shrink-0 rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-inner group-active:scale-95 transition-transform"
-        style={{ width: size, height: size }}
-      >
-        <Image src={image} alt={name} fill className="object-cover" sizes={`${size}px`} />
-      </div>
-    );
-  }
+export function BrandVisual({ name, image, imageLight, size = 52, onClick }: { name: string; image: string | null; imageLight?: string | null; size?: number; onClick?: () => void }) {
+  const content = image?.trim() ? (
+    <>
+      <Image src={image} alt={name} fill className="object-cover" sizes={`${size}px`} />
+      {imageLight && (
+        <div className="absolute bottom-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/90">
+          <SunMoon className="h-2.5 w-2.5" />
+        </div>
+      )}
+    </>
+  ) : (
+    <div className="flex h-full w-full items-center justify-center text-[13px] font-black uppercase tracking-wider text-zinc-500">
+      {name.slice(0, 2)}
+    </div>
+  );
+
   return (
     <div 
-      className="flex shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-[13px] font-black uppercase tracking-wider text-zinc-500 border border-zinc-800 shadow-inner group-active:scale-95 transition-transform"
+      className={`relative shrink-0 rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-inner transition-transform
+        ${onClick ? "cursor-pointer active:scale-95" : ""}
+      `}
       style={{ width: size, height: size }}
+      onClick={onClick}
     >
-      {name.slice(0, 2)}
+      {content}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { createPortal } from "react-dom";
 import { Filter, Menu, Moon, Search, Sun, X } from "lucide-react";
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -15,21 +16,38 @@ import {
 } from "react";
 
 interface NavbarProps {
-  scrolled: boolean;
-  /** Accueil : ouvre le panneau « Explorer » (tiroir à droite). */
+  /** Accueil : ouvre le panneau Â« Explorer Â» (tiroir Ã  droite). */
   onOpenBrowse?: () => void;
 }
 
-export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenBrowse }) => {
+export const Navbar: FC<NavbarProps> = ({ onOpenBrowse: initialOnOpenBrowse }) => {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuPanelRef = useRef<HTMLDivElement>(null);
   const prevMenuOpen = useRef(false);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const onOpenBrowse = useCallback(() => {
+    if (initialOnOpenBrowse) {
+      initialOnOpenBrowse();
+    } else {
+      window.dispatchEvent(new CustomEvent('open-catalog-browse'));
+    }
+  }, [initialOnOpenBrowse]);
+
 
   useEffect(() => {
     if (prevMenuOpen.current && !menuOpen) {
@@ -93,8 +111,8 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenBrowse }) => {
   }, [menuOpen]);
 
   const logoSrc = isDark
-    ? "/branding/logos/nurea-logo-horizontal-dark.png"
-    : "/branding/logos/nurea-logo-horizontal-light.png";
+    ? "/branding/logos/nurea-logo-horizontal-dark.webp"
+    : "/branding/logos/nurea-logo-horizontal-light.webp";
 
   return (
     <nav
@@ -319,7 +337,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenBrowse }) => {
               {/* Footer */}
               <div className="flex items-center justify-center px-5 py-5 border-t border-[var(--nurea-border)]">
                 <Image
-                  src={isDark ? "/branding/monogram/np-free-cuivre.png" : "/branding/monogram/np-free-bordeaux.png"}
+                  src={isDark ? "/branding/monogram/np-free-cuivre.webp" : "/branding/monogram/np-free-bordeaux.webp"}
                   alt=""
                   width={36}
                   height={36}
