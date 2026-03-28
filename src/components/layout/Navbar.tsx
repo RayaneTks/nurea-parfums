@@ -128,6 +128,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenBrowse }) => {
               width={260}
               height={72}
               className="h-[54px] w-auto md:h-[62px]"
+              style={{ width: "auto" }}
               priority
             />
           ) : (

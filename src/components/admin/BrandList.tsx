@@ -109,7 +109,7 @@ export function BrandList({
             title={brands.length === 0 ? "Aucune marque" : "Aucun résultat"}
             description={brands.length === 0 ? "Ajoutez des marques pour organiser votre catalogue de parfums." : "Essayez d'ajuster vos filtres ou votre recherche."}
             hasSearch={!!search}
-            onClearSearch={() => setSearch("")}
+            onClearSearch={() => onSearchChange("")}
           />
         ) : (
           filtered.map((brand) => (

@@ -123,7 +123,7 @@ export function PerfumeList({
             title={perfumes.length === 0 ? "Aucun parfum" : "Aucun résultat"}
             description={perfumes.length === 0 ? "Commencez par ajouter votre premier parfum au catalogue." : "Essayez d'ajuster vos filtres ou votre recherche."}
             hasSearch={!!search}
-            onClearSearch={() => setSearch("")}
+            onClearSearch={() => onSearchChange("")}
           />
         ) : (
           grouped.map((group) => (
