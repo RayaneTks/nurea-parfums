@@ -22,20 +22,20 @@
     --nurea-bg: #0A0508;
     --nurea-surface: #140E12;
     --nurea-surface-hover: #1C1418;
-    --nurea-accent: #C46A6A;
-    --nurea-accent-hover: #D47A7A;
-    --nurea-accent-solid: #8B3A3A;
-    --nurea-accent-subtle: rgba(139, 58, 58, 0.14);
-    --nurea-text: #F0E6E0;
-    --nurea-text-muted: #B89AA8;
-    --nurea-text-subtle: #7A5E6E;
-    --nurea-cuivre: #C4956A;
+    --nurea-accent: #D88080;
+    --nurea-accent-hover: #E89595;
+    --nurea-accent-solid: #A64545;
+    --nurea-accent-subtle: rgba(216, 128, 128, 0.14);
+    --nurea-text: #FDF8F4;
+    --nurea-text-muted: #D1B8C4;
+    --nurea-text-subtle: #9A7E8E;
+    --nurea-cuivre: #D4A57A;
     --nurea-snapchat: #FFD100;
-    --nurea-border: rgba(139, 58, 58, 0.12);
-    --nurea-border-hover: rgba(139, 58, 58, 0.30);
-    --nurea-glow: rgba(139, 58, 58, 0.06);
-    --nurea-overlay: rgba(10, 5, 8, 0.92);
-    --nurea-overlay-light: rgba(10, 5, 8, 0.72);
+    --nurea-border: rgba(216, 128, 128, 0.12);
+    --nurea-border-hover: rgba(216, 128, 128, 0.30);
+    --nurea-glow: rgba(216, 128, 128, 0.06);
+    --nurea-overlay: rgba(10, 5, 8, 0.94);
+    --nurea-overlay-light: rgba(10, 5, 8, 0.75);
     color-scheme: dark;
   }
 

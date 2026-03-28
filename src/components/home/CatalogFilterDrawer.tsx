@@ -82,7 +82,7 @@ export function CatalogFilterDrawer({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar overscroll-contain pb-32">
+        <div className="flex-1 overflow-y-auto custom-scrollbar overscroll-contain pb-40">
           {grouped.length === 0 ? (
             <div className="px-6 py-12 text-center">
               <p className="text-sm text-[var(--nurea-text-muted)]">
@@ -91,29 +91,29 @@ export function CatalogFilterDrawer({
             </div>
           ) : (
             grouped.map(([letter, items]) => (
-              <div key={letter}>
-                <div className="sticky top-0 z-10 border-b border-[var(--nurea-border)]/50 bg-[var(--nurea-surface)]/95 px-5 py-2.5 backdrop-blur-md">
-                  <span className="text-[11px] font-medium uppercase tracking-[0.25em] text-[var(--nurea-accent)]">
+              <div key={letter} className="relative">
+                <div className="sticky top-0 z-20 border-b border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)]/95 px-5 py-2.5 backdrop-blur-md shadow-sm">
+                  <span className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--nurea-accent)]">
                     {letter}
                   </span>
                 </div>
-                <ul className="divide-y divide-[var(--nurea-border)]/30">
+                <ul className="divide-y divide-[var(--nurea-border)]/40">
                   {items.map((b) => {
                     const checked = draftBrands.has(b.slug);
                     return (
                       <li key={b.id}>
-                        <label className="group flex min-h-[52px] w-full cursor-pointer items-center gap-4 px-5 py-3 text-left transition-all hover:bg-[var(--nurea-surface-hover)] active:scale-[0.98]">
+                        <label className="group flex min-h-[56px] w-full cursor-pointer items-center gap-4 px-5 py-3 text-left transition-all hover:bg-[var(--nurea-surface-hover)] active:bg-[var(--nurea-surface-hover)]/50 active:scale-[0.99] touch-manipulation">
                           <div
                             className={`flex h-5 w-5 shrink-0 items-center justify-center border transition-all duration-300 ${
                               checked
-                                ? "border-[var(--nurea-accent)] bg-[var(--nurea-accent)]"
-                                : "border-[var(--nurea-border)] bg-transparent group-hover:border-[var(--nurea-accent)]"
+                                ? "border-[var(--nurea-accent)] bg-[var(--nurea-accent)] shadow-[0_0_10px_rgba(216,128,128,0.2)]"
+                                : "border-[var(--nurea-text-subtle)]/30 bg-transparent group-hover:border-[var(--nurea-accent)]"
                             }`}
                           >
                             {checked && (
                               <Check
                                 size={13}
-                                strokeWidth={3}
+                                strokeWidth={3.5}
                                 className="text-white animate-scale-in"
                               />
                             )}
@@ -126,10 +126,10 @@ export function CatalogFilterDrawer({
                             }
                             className="sr-only"
                           />
-                          <span className={`flex-1 text-[15px] transition-colors duration-300 ${checked ? "text-[var(--nurea-text)] font-medium" : "text-[var(--nurea-text-muted)] group-hover:text-[var(--nurea-text)]"}`}>
+                          <span className={`flex-1 text-[15px] tracking-wide transition-colors duration-300 ${checked ? "text-[var(--nurea-text)] font-semibold" : "text-[var(--nurea-text-muted)] group-hover:text-[var(--nurea-text)]"}`}>
                             {b.name}
                           </span>
-                          <span className="shrink-0 font-mono text-[10px] tracking-wider text-[var(--nurea-text-subtle)] opacity-60">
+                          <span className={`shrink-0 font-mono text-[10px] font-bold tracking-wider transition-colors duration-300 ${checked ? "text-[var(--nurea-accent)]" : "text-[var(--nurea-text-subtle)] opacity-80"}`}>
                             {b.assortment === "COMPLETE" ? "TOUT" : b.publishedCount.toString().padStart(2, '0')}
                           </span>
                         </label>
@@ -142,7 +142,7 @@ export function CatalogFilterDrawer({
           )}
         </div>
 
-        <div className="absolute bottom-0 left-0 w-full border-t border-[var(--nurea-border)]/50 bg-[var(--nurea-surface)]/90 p-6 backdrop-blur-xl">
+        <div className="absolute bottom-0 left-0 z-30 w-full border-t border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_-10px_40px_rgba(0,0,0,0.4)] backdrop-blur-xl">
           <div className="mb-4 flex items-center justify-between px-1">
             <span className="text-[11px] font-bold uppercase tracking-widest text-[var(--nurea-text-subtle)]">
               {draftBrands.size} sélection{draftBrands.size > 1 ? "s" : ""}
