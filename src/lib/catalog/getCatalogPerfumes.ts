@@ -62,8 +62,18 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
   try {
     const perfumes = await prisma.perfume.findMany({
       where: { status: "PUBLISHED", brand: { catalogMode: "CURATED", status: "PUBLISHED" } },
-      include: {
-        brand: { select: { name: true, slug: true, catalogMode: true } },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        image: true,
+        brand: {
+          select: {
+            name: true,
+            slug: true,
+            catalogMode: true
+          }
+        }
       },
       orderBy: { id: "asc" },
     });
@@ -87,12 +97,19 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
       }));
 
     registerPrismaCatalogSuccess();
-    return [...perfumes.map(rowToPerfume), ...asPerfumesFromBrands];
+    // On mappe manuellement pour s'assurer que imageLight et isFeatured sont undefined si absents du select
+    const mappedPerfumes = perfumes.map(p => ({
+      id: p.id,
+      name: p.name,
+      brand: p.brand.name,
+      brandSlug: p.brand.slug,
+      category: (p.brand.catalogMode === "COMPLETE" ? "Gammes Complètes" : "Sélections Individuelles") as Category,
+      image: p.image,
+      tags: p.brand.catalogMode === "COMPLETE" ? ["Gamme complète"] : undefined,
+    }));
+
+    return [...mappedPerfumes, ...asPerfumesFromBrands];
   } catch (e: any) {
-    // Si l'erreur est liée à une colonne manquante (P2022), on log et on fallback sur mock
-    if (e.code === 'P2022') {
-      console.warn("[getCatalogPerfumes] Database column missing, check schema sync:", e.message);
-    }
     registerPrismaCatalogFailure();
     console.error("[getCatalogPerfumes] database error:", e);
     return fromMock();

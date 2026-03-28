@@ -15,7 +15,13 @@ export async function GET(request: Request) {
     const [brands, perfumes] = await Promise.all([
       prisma.brand.findMany({
         orderBy: { name: "asc" },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          catalogMode: true,
+          status: true,
+          image: true,
           _count: {
             select: { perfumes: true }
           }
@@ -23,7 +29,13 @@ export async function GET(request: Request) {
       }),
       prisma.perfume.findMany({
         orderBy: { updatedAt: "desc" },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          image: true,
+          status: true,
+          updatedAt: true,
           brand: {
             select: {
               id: true,
