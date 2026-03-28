@@ -35,9 +35,11 @@ function HomeFallback() {
 }
 
 export default async function HomePage() {
-  // Sequential fetch lowers DB connection pressure in serverless spikes.
-  const catalogPerfumes = await getCatalogPerfumes();
-  const browseBrands = await getCatalogBrowse();
+  const [catalogPerfumes, browseBrands] = await Promise.all([
+    getCatalogPerfumes(),
+    getCatalogBrowse(),
+  ]);
+  
   return (
     <Suspense fallback={<HomeFallback />}>
       <HomePageClient catalogPerfumes={catalogPerfumes} browseBrands={browseBrands} />

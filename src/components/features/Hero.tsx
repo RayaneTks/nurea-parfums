@@ -35,6 +35,7 @@ export const Hero: FC = () => {
             className="object-cover object-[center_30%]"
             priority
             fetchPriority="high"
+            quality={85}
           />
           <div
             className="absolute inset-0"
@@ -84,10 +85,12 @@ export const Hero: FC = () => {
               : "/branding/monogram/np-free-bordeaux.png"
           }
           alt=""
-          width={600}
-          height={600}
+          width={440}
+          height={440}
           loading="eager"
           className="h-[280px] w-[280px] select-none md:h-[440px] md:w-[440px] lg:h-[540px] lg:w-[540px]"
+          sizes="(max-width: 768px) 280px, 440px"
+          quality={80}
           style={{
             opacity: isDark ? 0.04 : 0.045,
           }}

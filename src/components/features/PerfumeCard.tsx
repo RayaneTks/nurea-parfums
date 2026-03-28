@@ -122,6 +122,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
           placeholder="blur"
           blurDataURL={NUREA_IMAGE_BLUR_DATA_URL}
           priority={imagePriority}
+          quality={80}
         />
 
         <div

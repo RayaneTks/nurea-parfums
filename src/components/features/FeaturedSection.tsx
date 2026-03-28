@@ -40,11 +40,13 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                 src={
                   mounted ? getPerfumeImage(perfume, activeTheme) : perfume.image
                 }
-                alt={perfume.name}
+                alt={`${perfume.brand} - ${perfume.name}`}
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover"
                 priority={index === 0}
+                fetchPriority={index === 0 ? "high" : "auto"}
+                quality={85}
                 placeholder="blur"
                 blurDataURL={NUREA_IMAGE_BLUR_DATA_URL}
               />

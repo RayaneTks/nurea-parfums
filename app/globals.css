@@ -415,7 +415,7 @@
 .btn-accent {
   background: var(--nurea-accent);
   border-color: var(--nurea-accent);
-  color: #F0E6E0;
+  color: #0A0508;
 }
 .btn-accent:hover {
   background: var(--nurea-accent-hover);
