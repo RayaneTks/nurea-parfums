@@ -261,7 +261,8 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
   const hasActiveFilters = hasCollectionFilters || sortKey !== "default";
   const showFeatured = !hasCollectionFilters;
 
-  const displayedPerfumes = (!hasCollectionFilters && !showFullCatalog && sortedPerfumes.length > 12) 
+  const shouldTruncateCatalog = !hasCollectionFilters && !showFullCatalog && sortedPerfumes.length > 12;
+  const displayedPerfumes = shouldTruncateCatalog 
     ? sortedPerfumes.slice(0, 12) 
     : sortedPerfumes;
 
@@ -401,16 +402,16 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
 
   const openBrowse = useCallback(() => {
     setBrowseOpen(true);
-    scrollCatalogIntoView();
-  }, [scrollCatalogIntoView]);
+    scrollToCatalogTop();
+  }, [scrollToCatalogTop]);
 
   const handleFilterApply = useCallback((brands: Set<string>) => {
     setSelectedBrandSlugs(brands);
     setMaisonSlug("");
     setSelectedCategory("Tout voir");
     setBrowseOpen(false);
-    scrollCatalogIntoView();
-  }, [scrollCatalogIntoView]);
+    scrollToCatalogTop();
+  }, [scrollToCatalogTop]);
 
   const handleResetPanelFilters = useCallback(() => {
     setMaisonSlug("");
