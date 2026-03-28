@@ -29,7 +29,8 @@ const nextConfig = {
     viewTransition: true,
   },
   images: {
-    remotePatterns: [...supabaseImageRemotes()],
+    remotePatterns: supabaseImageRemotes(),
+    qualities: [75, 80, 85],
   },
   typescript: {
     ignoreBuildErrors: false,

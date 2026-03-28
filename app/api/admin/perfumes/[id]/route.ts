@@ -188,12 +188,25 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
     if (body.isFeatured !== undefined) {
        // if we are setting to true, we must ensure max 2 are featured.
        if (body.isFeatured === true) {
-          const featuredCount = await prisma.perfume.count({ where: { isFeatured: true } });
-          if (featuredCount >= 2) {
-             return NextResponse.json({ error: "Maximum de 2 parfums mis en avant atteint." }, { status: 400 });
+          try {
+            const featuredCount = await prisma.perfume.count({ where: { isFeatured: true } });
+            if (featuredCount >= 2) {
+               return NextResponse.json({ error: "Maximum de 2 parfums mis en avant atteint." }, { status: 400 });
+            }
+            updates.isFeatured = body.isFeatured;
+          } catch (e: any) {
+            if (e.code === 'P2022') {
+              return NextResponse.json({ error: "La fonctionnalité de mise en avant nécessite une mise à jour de la base de données (colonne isFeatured manquante)." }, { status: 400 });
+            }
+            throw e;
+          }
+       } else {
+          try {
+            updates.isFeatured = body.isFeatured;
+          } catch (e: any) {
+            if (e.code !== 'P2022') throw e;
           }
        }
-       updates.isFeatured = body.isFeatured;
     }
 
     if (Object.keys(updates).length > 0) {

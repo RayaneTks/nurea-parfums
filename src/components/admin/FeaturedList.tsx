@@ -108,7 +108,7 @@ function PerfumeFeatureCard({
   return (
     <div className={`flex items-center gap-4 p-3 bg-zinc-900 border ${isFeatured ? 'border-yellow-500/30 shadow-[0_0_15px_rgba(234,179,8,0.1)]' : 'border-zinc-800'} rounded-2xl transition-all`}>
       <div className="relative h-16 w-12 rounded-lg overflow-hidden bg-zinc-950 shrink-0">
-        <Image src={perfume.image} alt={perfume.name} fill className="object-cover" />
+        <Image src={perfume.image} alt={perfume.name} fill className="object-cover" sizes="48px" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-zinc-100 truncate">{perfume.name}</p>

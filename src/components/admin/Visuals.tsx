@@ -21,7 +21,7 @@ export function BrandVisual({ name, image, size = 52 }: { name: string; image: s
         className="relative shrink-0 rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-inner group-active:scale-95 transition-transform"
         style={{ width: size, height: size }}
       >
-        <Image src={image} alt={name} fill className="object-cover" />
+        <Image src={image} alt={name} fill className="object-cover" sizes={`${size}px`} />
       </div>
     );
   }
