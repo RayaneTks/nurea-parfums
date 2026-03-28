@@ -34,6 +34,7 @@ export const Hero: FC = () => {
             sizes="100vw"
             className="object-cover object-[center_30%]"
             priority
+            fetchPriority="high"
           />
           <div
             className="absolute inset-0"

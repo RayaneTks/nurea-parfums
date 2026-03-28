@@ -5,11 +5,12 @@ import type { ExternalPerfumeHint } from "./externalSearchTypes";
 
 export const CONTACT = {
   whatsapp:
-    "https://wa.me/1234567890?text=Bonjour,%20je%20souhaite%20des%20informations%20sur%20un%20parfum",
+    "https://wa.me/33600000000?text=Bonjour%20Maison%20Nur%C3%A9a,%20je%20souhaite%20me%20renseigner%20sur...",
   snapchat: "https://snapchat.com/add/nureaparfums",
   /** Affichage footer / UI (cohérent avec l’URL snapchat.com/add/…) */
   snapchatHandle: "@nureaparfums",
-  email: "conciergerie@nureaparfums.com",
+  email: "contact@nureaparfum.fr",
+  location: "Marseille & alentours",
 };
 
 export type Category =

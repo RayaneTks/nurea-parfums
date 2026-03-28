@@ -115,9 +115,9 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
 
         <Image
           src={imageSrc}
-          alt={perfume.name}
+          alt={`${perfume.brand} - ${perfume.name}`}
           fill
-          sizes="(max-width: 768px) 50vw, 33vw"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover card-image-zoom"
           placeholder="blur"
           blurDataURL={NUREA_IMAGE_BLUR_DATA_URL}
@@ -128,6 +128,8 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
           className={`absolute inset-0 z-[8] transition-colors duration-500 ${isActive ? "pointer-events-none bg-black/20" : "bg-transparent hover:bg-black/5"}`}
           onClick={toggleActive}
           aria-hidden="true"
+          role="button"
+          aria-label={`En savoir plus sur ${perfume.name}`}
         />
 
         {!isActive && (
@@ -177,6 +179,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
                 </div>
                 <button
                   onClick={() => setActiveItem(null)}
+                  aria-label="Fermer la sélection"
                   className="mt-2 text-[9px] uppercase tracking-[0.3em] text-[var(--nurea-text-subtle)] hover:text-[var(--nurea-text)] transition-colors p-2"
                 >
                   Fermer
@@ -202,6 +205,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
                 </Link>
                 <button
                   onClick={() => setActiveItem(null)}
+                  aria-label="Fermer le dialogue"
                   className="text-[9px] uppercase tracking-[0.3em] text-[var(--nurea-text-subtle)] hover:text-[var(--nurea-text)] transition-colors p-1"
                 >
                   Fermer
@@ -216,6 +220,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         type="button"
         id={`perfume-toggle-${perfume.id}`}
         aria-expanded={isActive}
+        aria-label={`Détails du parfum ${perfume.name} de ${perfume.brand}`}
         aria-controls={isActive ? panelId : undefined}
         className="relative z-10 flex w-full flex-col border-0 bg-transparent p-0 pt-3 text-left text-[var(--nurea-text)] outline-none md:pt-3.5"
         onClick={toggleActive}

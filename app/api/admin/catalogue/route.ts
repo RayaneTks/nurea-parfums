@@ -38,7 +38,11 @@ export async function GET(request: Request) {
     ]);
 
     return NextResponse.json({ brands, perfumes });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.code === 'P2022') {
+      console.error("[CATALOGUE_GET] Database schema out of sync (missing columns):", error.message);
+      return NextResponse.json({ error: "Schéma de base de données non synchronisé. Veuillez exécuter 'npx prisma db push'." }, { status: 500 });
+    }
     console.error("[CATALOGUE_GET]", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }

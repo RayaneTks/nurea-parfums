@@ -48,15 +48,6 @@ export const Footer: FC = () => {
             </p>
             <div className="flex items-center gap-4">
               <a 
-                href={CONTACT.instagram || "#"} 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--nurea-border)] text-[var(--nurea-text-muted)] transition-all hover:border-[var(--nurea-accent)] hover:text-[var(--nurea-accent)] active:scale-95"
-                aria-label="Instagram"
-              >
-                <Instagram size={18} strokeWidth={1.5} />
-              </a>
-              <a 
                 href={CONTACT.whatsapp} 
                 target="_blank"
                 rel="noopener noreferrer"
@@ -83,10 +74,10 @@ export const Footer: FC = () => {
               Navigation
             </h3>
             <ul className="flex flex-col gap-3 text-[14px] text-[var(--nurea-text-muted)]">
-              <li><Link href="/" className="transition-colors hover:text-[var(--nurea-text)]">Collection</Link></li>
+              <li><Link href="/" className="transition-colors hover:text-[var(--nurea-text)]">La Galerie</Link></li>
               <li><Link href="/marque" className="transition-colors hover:text-[var(--nurea-text)]">La Maison</Link></li>
               <li><Link href="/contact" className="transition-colors hover:text-[var(--nurea-text)]">Contact & Conseils</Link></li>
-              <li><Link href="/admin" className="transition-colors hover:text-[var(--nurea-text)]">Accès Réservé</Link></li>
+              <li><Link href="/admin" className="transition-colors hover:text-[var(--nurea-text)] text-[10px] opacity-40">Accès Réservé</Link></li>
             </ul>
           </div>
 
@@ -104,7 +95,7 @@ export const Footer: FC = () => {
               </li>
               <li className="flex items-start gap-3">
                 <MapPin size={16} strokeWidth={1.5} className="mt-0.5 shrink-0 text-[var(--nurea-accent)]" />
-                <span>Showroom privé sur rendez-vous uniquement.</span>
+                <span>Basé à Marseille & alentours. Envoi possible sur demande.</span>
               </li>
             </ul>
           </div>
@@ -132,7 +123,7 @@ export const Footer: FC = () => {
               <span className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
               Service Client Actif
             </span>
-            <p className="uppercase tracking-widest opacity-60">Paris — Dubai</p>
+            <p className="uppercase tracking-widest opacity-60">Marseille</p>
           </div>
         </div>
       </div>

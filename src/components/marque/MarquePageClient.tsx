@@ -84,10 +84,10 @@ export const MarquePageClient = () => {
         <section className="px-4 py-16 md:py-24 bg-black/20">
           <div className="mx-auto max-w-[880px]">
             <ScrollReveal>
-              <h2 className="font-serif text-xl text-[var(--nurea-text)] mb-8">Identité Officielle</h2>
+              <h2 className="font-serif text-xl text-[var(--nurea-text)] mb-8">Ancrage & Identité</h2>
               <div className="grid gap-8 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
                 <p>
-                  Pour vous garantir l&apos;authenticité de nos produits et de nos échanges, veillez à toujours consulter notre domaine unique : <span className="text-[var(--nurea-text)] font-medium">{domain}</span>. 
+                  Basée à Marseille, la Maison Nuréa Parfums cultive la proximité et la discrétion. Pour vous garantir l&apos;authenticité de nos produits et de nos échanges, veillez à toujours consulter notre domaine unique : <span className="text-[var(--nurea-text)] font-medium">{domain}</span>. 
                 </p>
                 <p>
                   L&apos;orthographe de la Maison s&apos;écrit avec élégance : <strong className="text-[var(--nurea-accent)] font-semibold italic">Nuréa Parfums</strong>. Un accent sur le « é », un « s » à Parfums. Cette précision reflète l&apos;attention que nous portons à chaque détail de votre expérience.

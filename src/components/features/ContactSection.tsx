@@ -112,7 +112,7 @@ export const ContactSection: FC = () => {
             Le Dialogue se poursuit
           </h1>
           <p className="mx-auto max-w-lg text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-            Privilégiez le canal qui vous ressemble. Chaque message est lu avec attention par la Maison Nuréa Parfums pour vous offrir une réponse sur-mesure.
+            Privilégiez le canal qui vous ressemble. Chaque message est lu avec attention par la Maison Nuréa Parfums pour vous offrir une réponse personnalisée. Basés à Marseille, nous expédions dans toute la France.
           </p>
         </ScrollReveal>
 

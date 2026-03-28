@@ -84,6 +84,7 @@ export function CatalogFilterDrawer({
           </h2>
           <button
             onClick={onClose}
+            aria-label="Fermer le menu des filtres"
             className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-[var(--nurea-surface-hover)] text-[var(--nurea-text-muted)]"
           >
             <X size={20} strokeWidth={1.5} />

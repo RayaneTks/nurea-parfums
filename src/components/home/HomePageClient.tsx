@@ -774,7 +774,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
                       activeItem={activeItem}
                       setActiveItem={setActiveItem}
                       featured={perfume.category === "Gammes Complètes"}
-                      imagePriority={index < 6}
+                      imagePriority={index < 4}
                     />
                   ))}
                 </div>
@@ -791,7 +791,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
                   activeItem={activeItem}
                   setActiveItem={setActiveItem}
                   featured={perfume.category === "Gammes Complètes"}
-                  imagePriority={index < 6}
+                  imagePriority={index < 4}
                 />
               ))}
             </div>

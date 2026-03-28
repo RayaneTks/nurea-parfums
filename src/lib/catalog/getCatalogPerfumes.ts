@@ -88,9 +88,13 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
 
     registerPrismaCatalogSuccess();
     return [...perfumes.map(rowToPerfume), ...asPerfumesFromBrands];
-  } catch (e) {
+  } catch (e: any) {
+    // Si l'erreur est liée à une colonne manquante (P2022), on log et on fallback sur mock
+    if (e.code === 'P2022') {
+      console.warn("[getCatalogPerfumes] Database column missing, check schema sync:", e.message);
+    }
     registerPrismaCatalogFailure();
-    console.error("[getCatalogPerfumes] database unavailable:", e);
+    console.error("[getCatalogPerfumes] database error:", e);
     return fromMock();
   }
 }
