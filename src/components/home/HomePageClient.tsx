@@ -332,25 +332,26 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
     }
     setActiveItem(null);
     
-    // Quand on change de catégorie ou de tri, on ramène l'utilisateur
-    // au début du catalogue pour qu'il voit les nouveaux résultats.
-    const el = document.getElementById("collection");
-    if (el) {
-      const offset = 80;
-      const bodyRect = document.body.getBoundingClientRect().top;
-      const elementRect = el.getBoundingClientRect().top;
-      const elementPosition = elementRect - bodyRect;
-      const offsetPosition = elementPosition - offset;
+    // On laisse React finir le rendu de la nouvelle liste
+    requestAnimationFrame(() => {
+      const el = document.getElementById("collection");
+      if (el) {
+        const offset = 80;
+        const bodyRect = document.body.getBoundingClientRect().top;
+        const elementRect = el.getBoundingClientRect().top;
+        const elementPosition = elementRect - bodyRect;
+        const offsetPosition = elementPosition - offset;
 
-      // On ne scroll que si on est déjà engagé dans le catalogue
-      // pour éviter de voler le scroll si l'utilisateur est encore en haut (Hero)
-      if (window.scrollY > offsetPosition - 100) {
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: "smooth"
-        });
+        // On ne ramène au début du catalogue que si l'utilisateur est déjà 
+        // en train de le parcourir ou s'il est plus bas.
+        if (window.scrollY > offsetPosition) {
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+          });
+        }
       }
-    }
+    });
   }, [selectedCategory, sortKey]);
 
   useEffect(() => {
