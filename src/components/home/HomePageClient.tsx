@@ -47,16 +47,13 @@ function ExternalSearchFootnote({ hint }: { hint: ExternalPerfumeHint }) {
   if (mode === "legacy-offline") {
     return (
       <p className="mt-3 text-[12px] leading-relaxed text-[var(--nurea-text-subtle)]">
-        Ce parfum ou cette maison n&apos;est pas présenté en fiche sur la
-        vitrine. Écrivez-nous : la maison confirme commandes et alternatives
-        possibles.
+        Ce parfum ou cette Maison n&apos;est pas présenté en fiche sur la Galerie Nuréa Parfums. Écrivez-nous : la Maison confirme commandes et alternatives possibles.
       </p>
     );
   }
   return (
     <p className="mt-3 text-[12px] leading-relaxed text-[var(--nurea-text-subtle)]">
-      Pour un conseil ou une commande précise, passez par la page Contact :
-      nous reprenons l&apos;échange avec vous.
+      Pour un conseil ou une commande précise, passez par la page Contact : nous reprenons l&apos;échange avec vous.
     </p>
   );
 }
@@ -610,7 +607,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
             {!mounted ? (
               <div className="mt-8">
                 <p className="mb-5 text-center text-[10px] uppercase tracking-[0.28em] text-[var(--nurea-text-muted)] animate-pulse">
-                  Chargement de la collection...
+                  Chargement de la Galerie Nuréa Parfums...
                 </p>
                 <CatalogSkeleton />
               </div>
@@ -716,12 +713,11 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
             )}
             {mounted && inspirationWhenEmpty.length > 0 && (
               <div className="mt-12">
-                <p className="mb-5 text-center text-[10px] uppercase tracking-[0.28em] text-[var(--nurea-text-muted)]">
-                  {searchTerm.trim() !== ""
-                    ? "Pistes dans notre sélection"
-                    : "Inspirations"}
-                </p>
-                <div className="catalogue-grid stagger-grid">
+              <p className="mb-5 text-center text-[10px] uppercase tracking-[0.28em] text-[var(--nurea-text-muted)]">
+                {searchTerm.trim() !== ""
+                  ? "Pistes dans notre Galerie"
+                  : "Inspirations"}
+              </p>                <div className="catalogue-grid stagger-grid">
                   {inspirationWhenEmpty.map((perfume, index) => (
                     <PerfumeCard
                       key={perfume.id}
@@ -759,7 +755,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
                     onClick={() => setShowFullCatalog(true)}
                     className="relative btn-nurea bg-[var(--nurea-surface)] border-[var(--nurea-border)] text-[var(--nurea-text)] px-8 py-4 tracking-[0.2em] text-[11px] md:text-[12px] group-hover:bg-[var(--nurea-accent-subtle)] group-hover:border-[var(--nurea-accent)]"
                   >
-                    Découvrir toute la collection ({sortedPerfumes.length})
+                    Découvrir toute la Galerie ({sortedPerfumes.length})
                   </button>
                 </div>
               </div>

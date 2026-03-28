@@ -7,7 +7,7 @@ import { useEffect, useState, type FC } from "react";
 import { CONTACT } from "@/lib/data";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { WhatsAppIcon, SnapchatIcon } from "@/components/ui/Icons";
-import { Instagram, Mail, MapPin } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 
 export const Footer: FC = () => {
   const { resolvedTheme } = useTheme();

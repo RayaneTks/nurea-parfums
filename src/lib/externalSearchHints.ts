@@ -11,7 +11,7 @@ export type { ExternalPerfumeHint };
 
 /** Message quand la requête ne correspond à aucune fiche connue (ni au catalogue). */
 export const EXTERNAL_SEARCH_FALLBACK_MESSAGE =
-  "Aucune correspondance dans notre base : reformulez (nom exact, marque) ou écrivez-nous depuis la page Contact avec un peu de contexte — un nom précis accélère la réponse.";
+  "Nous n'avons pas trouvé de sillage correspondant à votre recherche. Sollicitez la Maison Nuréa Parfums depuis la page Contact pour une recherche personnalisée ou une alternative sur-mesure.";
 
 export const EXTERNAL_PERFUME_HINTS: ExternalPerfumeHint[] = [
   /* —— Déjà demandés / viral niche —— */
