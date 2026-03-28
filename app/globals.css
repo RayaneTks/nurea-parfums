@@ -448,6 +448,23 @@
   outline-offset: 2px;
 }
 
+/* Mobile Tactile Utilities */
+.active-scale {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.active-scale:active {
+  transform: scale(0.96) !important;
+}
+
+.tap-highlight-transparent {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure content is not hidden by BottomNav on mobile */
+.pb-safe-bottom {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -70,7 +70,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
               className="flex min-h-[42vh] flex-col justify-center bg-[var(--nurea-surface)] px-6 py-12 md:min-h-[70vh] md:px-14 md:py-24 lg:px-20"
             >
               <span className="mb-3 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
-                Signature du Moment
+                Parfum du Moment
               </span>
               <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.22em] text-[var(--nurea-text-muted)]">
                 {perfume.brand}
@@ -89,13 +89,13 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                 )}
               </h2>
               <p className="mb-8 max-w-[420px] text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] md:text-[14px] md:leading-[1.85]">
-                {index === 0 
-                  ? "Une pièce maîtresse de notre sélection privée. Ce sillage témoigne d'une exigence absolue ; sollicitez la Maison pour en faire votre empreinte personnelle."
-                  : "L'expression pure d'un savoir-faire d'exception. Une fragrance rare qui bouscule les sens ; engagez le dialogue avec nous pour une expérience olfactive singulière."
+                {index === 0
+                  ? "Un incontournable de notre catalogue actuel. Une fragrance d'exception choisie pour sa tenue et son caractère unique. Disponible dès maintenant."
+                  : "L'un des plus grands succès de la parfumerie actuelle. Un parfum de caractère qui ne laisse personne indifférent. Commandez-le en direct."
                 }
               </p>
               <Link href="/contact" className="btn-nurea group w-fit">
-                Engager le Dialogue
+                Commander ce Parfum
                 <ArrowRight
                   size={13}
                   className="text-[var(--nurea-accent)] transition-transform duration-300 group-hover:-rotate-45"

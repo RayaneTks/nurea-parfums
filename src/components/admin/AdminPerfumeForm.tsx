@@ -1,6 +1,4 @@
 "use client";
-
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -9,6 +7,7 @@ import { AdminButton } from "./ui/AdminButton";
 import { AdminInput } from "./ui/AdminInput";
 import { AdminBadge } from "./ui/AdminBadge";
 import { uploadFile } from "@/lib/admin/image-utils";
+import Image from "next/image";
 
 type BrandOpt = {
   id: string;
@@ -101,7 +100,7 @@ function ImageUploadField({
 
       <div className="grid gap-4">
         <div className="flex gap-4 items-start">
-          <div 
+          <div
             className={`relative aspect-[3/4] w-32 shrink-0 overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl group transition-all duration-300 ${!readOnly ? "cursor-pointer active:scale-95 hover:border-blue-500/50" : ""}`}
             onClick={triggerUpload}
           >
@@ -112,7 +111,7 @@ function ImageUploadField({
                 <Upload className="h-8 w-8" />
               </div>
             )}
-            
+
             {!readOnly && (
               <div className={`absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${uploading ? "opacity-100" : ""}`}>
                 {uploading ? (
@@ -133,10 +132,10 @@ function ImageUploadField({
               onChange={(e) => onChange(e.target.value)}
               disabled={readOnly}
               required={required}
-              placeholder="/parfums/... ou https://..."
+              placeholder="https://..."
               onClear={!readOnly && value.trim().length > 0 ? () => onChange("") : undefined}
             />
-            
+
             <input
               ref={fileInputRef}
               type="file"
@@ -145,7 +144,7 @@ function ImageUploadField({
               disabled={uploading || readOnly}
               onChange={(e) => handleUpload(e.target.files?.[0] ?? null)}
             />
-            
+
             <AdminButton
               type="button"
               variant="outline"
@@ -169,7 +168,7 @@ function ImageUploadField({
           className="flex items-center gap-2 text-[11px] font-bold text-red-500/70 hover:text-red-500 transition-colors uppercase tracking-widest"
         >
           <X className="h-3.5 w-3.5" />
-          Supprimer l&apos;image
+          Supprimer l'image
         </button>
       )}
     </div>
@@ -262,8 +261,8 @@ function BrandCombobox({
         />
         {brandId && selectedBrand && !open && (
           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
-             <AdminBadge 
-              label={selectedBrand.catalogMode === "COMPLETE" ? "Gamme complète" : "Sélection"} 
+             <AdminBadge
+              label={selectedBrand.catalogMode === "COMPLETE" ? "Gamme complète" : "Sélection"}
               variant={selectedBrand.catalogMode === "COMPLETE" ? "warning" : "info"}
             />
           </div>
@@ -291,7 +290,7 @@ function BrandCombobox({
                   className={`flex w-full items-center gap-3 px-3 py-3 text-left text-[14px] font-medium rounded-xl transition-all active:scale-[0.98] ${b.id === brandId ? "bg-blue-600 text-white" : "text-zinc-200 hover:bg-zinc-800"}`}
                 >
                   <span className="flex-1 truncate">{b.name}</span>
-                  {b.id === brandId && <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />}
+                  {b.id === brandId && <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />}     
                 </button>
               ))
             ) : query.trim().length < 2 ? (
@@ -379,7 +378,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
   }, [isNew, perfumeId]);
 
   useEffect(() => {
-    if (error && errorRef.current) errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (error && errorRef.current) errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });    
   }, [error]);
 
   const selectedBrand = useMemo(() => brands.find((b) => b.id === brandId), [brands, brandId]);
@@ -411,7 +410,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (readOnly || !brandId || !name || !image) return;
-    
+
     setSaving(true);
     setError(null);
     try {
@@ -452,7 +451,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
   const handleAutoSave = useCallback(async (overrides: Partial<PerfumePayload>) => {
     if (isNew || readOnly || saving) return;
-    
+
     const body = {
       brandId,
       name,
@@ -487,24 +486,30 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
   );
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
-      <div className="flex flex-col gap-4">
-        <Link href="/admin" className="group w-fit">
-          <AdminButton variant="ghost" size="sm" leftIcon={ArrowLeft} className="text-zinc-500 group-hover:text-zinc-300">
-            Retour au catalogue
-          </AdminButton>
-        </Link>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
-              {isNew ? "Nouveau parfum" : "Modifier le parfum"}
-            </h1>
-            <p className="text-sm text-zinc-500 mt-1">
-              Remplissez les informations essentielles du parfum.
-            </p>
+    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32">  
+      {/* Header Sticky avec bouton Retour */}
+      <div className="sticky top-0 z-[60] -mx-4 px-4 py-4 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/50 mb-8">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <button 
+              type="button"
+              onClick={() => router.back()}
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all active:scale-95 shadow-lg shadow-black/20"
+              title="Retour"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight text-zinc-100 line-clamp-1">
+                {isNew ? "Nouveau parfum" : name || "Sans nom"}
+              </h1>
+              {!isNew && (
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">ID #{perfumeId}</p>
+              )}
+            </div>
           </div>
           {!isNew && (
-            <AdminBadge label={`#${perfumeId}`} />
+            <AdminBadge label={status === "PUBLISHED" ? "Visible" : "Masqué"} variant={status === "PUBLISHED" ? "success" : "warning"} />
           )}
         </div>
       </div>
@@ -522,7 +527,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             <div className="h-6 w-1 bg-blue-600 rounded-full" />
             <h2 className="text-lg font-bold text-zinc-100">Informations générales</h2>
           </div>
-          
+
           <div className="space-y-6 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
             <div className="space-y-2">
               <label className="text-[14px] font-bold text-zinc-200">Marque</label>
@@ -537,7 +542,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               />
               {(isLockedByBrandMode || isLockedByBrandVisibility) && (
                 <p className="text-[12px] text-amber-500 font-medium">
-                  Marque {isLockedByBrandMode ? "en gamme complète" : "masquée"}. Le parfum sera masqué.
+                  Marque {isLockedByBrandMode ? "en gamme complète" : "masquée"}. Le parfum sera masqué.     
                 </p>
               )}
             </div>
@@ -563,7 +568,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           <div className="grid gap-8 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
             <ImageUploadField
               label="Image principale"
-              subtitle="Utilisée pour tous les thèmes. Format WebP recommandé."
+              subtitle="Optimisation automatique (WebP, 1024x1536) lors de l'import."
               value={image}
               onChange={setImage}
               onUploadDone={(url) => handleAutoSave({ image: url })}
@@ -595,7 +600,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             <div className="flex gap-3">
               {STATUS_OPTIONS.map((opt) => {
                 const active = status === opt.value;
-                const locked = (isLockedByBrandMode || isLockedByBrandVisibility) && opt.value === "PUBLISHED";
+                const locked = (isLockedByBrandMode || isLockedByBrandVisibility) && opt.value === "PUBLISHED"; 
                 return (
                   <button
                     key={opt.value}
@@ -604,13 +609,13 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                     onClick={() => setStatus(opt.value)}
                     className={`
                       relative flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all duration-300 active:scale-[0.97] select-none touch-manipulation
-                      ${active 
-                        ? "bg-zinc-100 border-zinc-100 shadow-xl shadow-zinc-100/10" 
+                      ${active
+                        ? "bg-zinc-100 border-zinc-100 shadow-xl shadow-zinc-100/10"
                         : "bg-zinc-900/50 border-zinc-800 text-zinc-500 [@media(hover:hover)]:hover:border-zinc-700"}
                       ${locked ? "opacity-30 grayscale cursor-not-allowed" : ""}
                     `}
                   >
-                    <AdminBadge label={opt.label} variant={active ? opt.variant : "neutral"} dot={active} />
+                    <AdminBadge label={opt.label} variant={active ? opt.variant : "neutral"} dot={active} />    
                     <span className={`text-[11px] font-bold uppercase tracking-widest ${active ? "text-zinc-900" : "text-zinc-600"}`}>
                       {opt.value === "PUBLISHED" ? "Public" : "Interne"}
                     </span>
@@ -626,11 +631,41 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           </div>
         </section>
 
-        <div className="sticky bottom-6 z-50 pt-4 mt-8">
-          <div className="p-2 bg-zinc-950/80 backdrop-blur-xl border border-zinc-800 rounded-3xl shadow-2xl">
+        {/* Bouton de suppression fixé en bas du flux, pas sticky */}
+        {!isNew && !readOnly && (
+          <div className="pt-12 flex flex-col items-center border-t border-zinc-800/50">
+            {!deleteConfirm ? (
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm(true)}
+                className="group flex items-center gap-2 text-[13px] font-bold text-zinc-600 hover:text-red-500 transition-all uppercase tracking-widest"
+              >
+                <Trash2 className="h-4 w-4" />
+                Supprimer ce parfum
+              </button>
+            ) : (
+              <div className="flex flex-col items-center gap-3 p-6 bg-red-500/5 border border-red-500/10 rounded-3xl w-full animate-in zoom-in-95">
+                <p className="text-xs text-red-400 font-bold uppercase tracking-wider text-center">Suppression irréversible ?</p>
+                <div className="flex gap-2 w-full max-w-xs">
+                  <AdminButton variant="ghost" className="flex-1" onClick={() => setDeleteConfirm(false)} disabled={deleting}>
+                    Annuler
+                  </AdminButton>
+                  <AdminButton variant="danger" className="flex-1" onClick={handleDelete} isLoading={deleting} leftIcon={Trash2}>
+                    Confirmer
+                  </AdminButton>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Barre d'action sticky pour la sauvegarde */}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-[70]">
+          <div className="p-2 bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-3xl shadow-2xl ring-1 ring-white/5">   
             <AdminButton
               type="submit"
-              className="w-full"
+              form="perfume-form"
+              className="w-full h-14 rounded-2xl text-base shadow-lg shadow-blue-500/20"
               size="lg"
               isLoading={saving}
               disabled={readOnly || !brandId || !name || !image}
@@ -638,32 +673,6 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               {isNew ? "Créer le parfum" : "Enregistrer les modifications"}
             </AdminButton>
           </div>
-          
-          {!isNew && !readOnly && (
-            <div className="pt-6 flex flex-col items-center">
-              {!deleteConfirm ? (
-                <button
-                  type="button"
-                  onClick={() => setDeleteConfirm(true)}
-                  className="text-[13px] font-bold text-red-500/70 hover:text-red-500 transition-colors uppercase tracking-widest"
-                >
-                  Supprimer ce parfum
-                </button>
-              ) : (
-                <div className="flex flex-col items-center gap-3 p-4 bg-red-500/5 border border-red-500/10 rounded-2xl w-full animate-in zoom-in-95">
-                  <p className="text-xs text-red-400 font-bold uppercase tracking-wider">Suppression irréversible ?</p>
-                  <div className="flex gap-2 w-full">
-                    <AdminButton variant="ghost" className="flex-1" onClick={() => setDeleteConfirm(false)} disabled={deleting}>
-                      Annuler
-                    </AdminButton>
-                    <AdminButton variant="danger" className="flex-1" onClick={handleDelete} isLoading={deleting}>
-                      Confirmer
-                    </AdminButton>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </form>
     </div>

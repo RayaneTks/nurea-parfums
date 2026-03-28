@@ -33,22 +33,32 @@ export const Footer: FC = () => {
                 <Image
                   src={
                     isDark
-                      ? "/branding/logos/nurea_logo_white.svg"
-                      : "/branding/logos/nurea_logo_black.svg"
+                      ? "/branding/logos/nurea-logo-horizontal-dark.webp"
+                      : "/branding/logos/nurea-logo-horizontal-black.webp"
                   }
                   alt="Nuréa Parfums"
-                  width={140}
-                  height={40}
-                  className="h-10 w-auto"
+                  width={469}
+                  height={100}
+                  className="h-8 w-auto md:h-10"
+                  style={{ width: "auto", height: "auto" }}
                 />
               )}
             </Link>
             <p className="max-w-xs text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-              Maison de Haute Parfumerie dédiée à l&apos;art de la séduction et à l&apos;exception olfactive. Une sélection rigoureuse des plus grandes références mondiales.
+              Retrouvez vos parfums préférés au meilleur prix. Une sélection rigoureuse des plus grandes marques mondiales, disponible immédiatement.
             </p>
             <div className="flex items-center gap-4">
-              <a 
-                href={CONTACT.whatsapp} 
+              <a
+                href={CONTACT.snapchat}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--nurea-border)] text-[var(--nurea-text-muted)] transition-all hover:border-[var(--nurea-snapchat)] hover:text-[var(--nurea-snapchat)] active:scale-95"
+                aria-label="Snapchat"
+              >
+                <SnapchatIcon className="h-[18px] w-[18px]" />
+              </a>
+              <a
+                href={CONTACT.whatsapp}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--nurea-border)] text-[var(--nurea-text-muted)] transition-all hover:border-[var(--nurea-accent)] hover:text-[var(--nurea-accent)] active:scale-95"
@@ -56,32 +66,20 @@ export const Footer: FC = () => {
               >
                 <WhatsAppIcon className="h-[18px] w-[18px]" />
               </a>
-              <a 
-                href={CONTACT.snapchat} 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--nurea-border)] text-[var(--nurea-text-muted)] transition-all hover:border-[var(--nurea-accent)] hover:text-[var(--nurea-accent)] active:scale-95"
-                aria-label="Snapchat"
-              >
-                <SnapchatIcon className="h-[18px] w-[18px]" />
-              </a>
             </div>
-          </div>
+            </div>
 
-          {/* Navigation */}
-          <div className="flex flex-col gap-6">
+            {/* Navigation */}
+            <div className="flex flex-col gap-6">
             <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--nurea-accent)]">
               Navigation
             </h3>
             <ul className="flex flex-col gap-3 text-[14px] text-[var(--nurea-text-muted)]">
-              <li><Link href="/" className="transition-colors hover:text-[var(--nurea-text)]">La Galerie</Link></li>
-              <li><Link href="/marque" className="transition-colors hover:text-[var(--nurea-text)]">La Maison</Link></li>
-              <li><Link href="/contact" className="transition-colors hover:text-[var(--nurea-text)]">Contact & Conseils</Link></li>
-              <li><Link href="/admin" className="transition-colors hover:text-[var(--nurea-text)] text-[10px] opacity-80">Accès Réservé</Link></li>
+              <li><Link href="/" className="transition-colors hover:text-[var(--nurea-text)]">Le Catalogue</Link></li>
+              <li><Link href="/marque" className="transition-colors hover:text-[var(--nurea-text)]">La Parfumerie</Link></li>
+              <li><Link href="/contact" className="transition-colors hover:text-[var(--nurea-text)]">Contact & Commande</Link></li>
             </ul>
-          </div>
-
-          {/* Contact Direct */}
+            </div>          {/* Contact Direct */}
           <div className="flex flex-col gap-6">
             <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--nurea-accent)]">
               Contact

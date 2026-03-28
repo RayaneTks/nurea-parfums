@@ -105,31 +105,31 @@ export const Hero: FC = () => {
         />
       </div>
 
-      <div className="hero-stagger relative z-10 flex max-w-2xl flex-col items-center px-5 text-center">
+      <div className="hero-stagger relative z-10 flex max-w-2xl flex-col items-center px-5 text-center">        
         <span className="mb-5 text-[11px] font-medium uppercase tracking-nurea-wide text-[var(--nurea-accent)] md:text-[12px]">
-          Maison de Parfums
+          Parfumerie d'Exception
         </span>
 
-        <h1 className="mb-5 font-serif text-[clamp(38px,9vw,76px)] leading-[1.04] text-[var(--nurea-text)]">
-          L&apos;Émotion par le
+        <h1 className="mb-5 font-serif text-[clamp(38px,9vw,76px)] leading-[1.04] text-[var(--nurea-text)]">    
+          L'Excellence du
           <br />
           <em className="not-italic" style={{ fontStyle: "italic" }}>
-            Sillage
+            Parfum
           </em>
         </h1>
 
-        <p className="mb-8 max-w-md text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] md:max-w-xl">
-          Une galerie confidentielle dédiée aux essences d&apos;exception. Parcourez notre sélection et sollicitez la Maison pour une expertise personnalisée ou une commande privée.
+        <p className="mb-8 max-w-md text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] md:max-w-xl">     
+          Retrouvez vos parfums préférés au meilleur prix. Une sélection rigoureuse des plus grandes marques pour homme et femme, disponible immédiatement.
         </p>
 
         <div className="flex w-full max-w-md flex-col items-center justify-center gap-3 sm:flex-row">
           <a
             href="#collection"
             onClick={handleScroll}
-            className="btn-nurea btn-accent group w-full justify-center shadow-[0_0_40px_-8px_var(--nurea-glow)] sm:w-auto"
-            aria-label="DÃ‰COUVRIR LA COLLECTION"
-            >
-            DÃ‰COUVRIR LA COLLECTION
+            className="btn-nurea btn-accent group w-full justify-center shadow-[0_0_40px_-8px_var(--nurea-glow)] sm:w-auto active-scale tap-highlight-transparent"
+            aria-label="VOIR LE CATALOGUE"
+          >
+            VOIR LE CATALOGUE
             <ChevronDown
               size={14}
               className="transition-transform duration-500 group-hover:translate-y-1"
@@ -137,12 +137,13 @@ export const Hero: FC = () => {
           </a>
           <Link
             href="/contact"
-            className="btn-nurea group w-full justify-center sm:w-auto"
+            className="btn-nurea group w-full justify-center sm:w-auto active-scale tap-highlight-transparent"
+            aria-label="COMMANDER"
           >
-            Engager le Dialogue
+            Commander un Parfum
             <MessageCircleMore
               size={14}
-              className="text-[var(--nurea-accent)] transition-transform duration-300 group-hover:-rotate-6"
+              className="text-[var(--nurea-accent)] transition-transform duration-300 group-hover:-rotate-6"    
             />
           </Link>
         </div>

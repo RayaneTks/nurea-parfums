@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import { Search, X } from "lucide-react";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { ArrowLeft, Search, X } from "lucide-react";
 import { PerfumeCard } from "@/components/features/PerfumeCard";
 import { CatalogSkeleton } from "@/components/features/PerfumeCardSkeleton";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
@@ -47,13 +47,13 @@ function ExternalSearchFootnote({ hint }: { hint: ExternalPerfumeHint }) {
   if (mode === "legacy-offline") {
     return (
       <p className="mt-3 text-[12px] leading-relaxed text-[var(--nurea-text-subtle)]">
-        Ce parfum ou cette Maison n&apos;est pas prÃ©sentÃ© en fiche sur la Galerie NurÃ©a Parfums. Ã‰crivez-nous : la Maison confirme commandes et alternatives possibles.
+        Ce parfum ou cette Maison n&apos;est pas présenté en fiche sur le Catalogue Nuréa Parfums. Écrivez-nous : la Marque confirme commandes et alternatives possibles.
       </p>
     );
   }
   return (
     <p className="mt-3 text-[12px] leading-relaxed text-[var(--nurea-text-subtle)]">
-      Pour un conseil ou une commande prÃ©cise, passez par la page Contact : nous reprenons l&apos;Ã©change avec vous.
+      Pour un conseil ou une commande précise, passez par la page Contact : nous reprenons l&apos;échange avec vous.
     </p>
   );
 }
@@ -115,6 +115,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
   const [mounted, setMounted] = useState(false);
   const [showFullCatalog, setShowFullCatalog] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const catalogScrollSkipRef = useRef(true);
@@ -210,6 +211,22 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
       selectedBrandSlugs,
     ]
   );
+
+  const resultLabel = useMemo(() => {
+    const count = filteredPerfumes.length;
+    if (count === 0) return "0 résultat";
+
+    const hasRanges = filteredPerfumes.some(p => p.category === "Gammes Complètes");
+    const hasPerfumes = filteredPerfumes.some(p => p.category === "Sélections Individuelles" || p.category === "Nouveautés");
+
+    if (hasRanges && !hasPerfumes) {
+      return `${count} marque${count > 1 ? "s" : ""}`;
+    }
+    if (!hasRanges && hasPerfumes) {
+      return `${count} parfum${count > 1 ? "s" : ""}`;
+    }
+    return `${count} résultat${count > 1 ? "s" : ""}`;
+  }, [filteredPerfumes]);
 
   const sortedPerfumes = useMemo(() => {
     const list = [...filteredPerfumes];
@@ -315,7 +332,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
   const apiSuggestionBrandRangeMatch = useMemo(() => {
     if (!apiSuggestion) return null;
     const brand = (apiSuggestion.brand ?? "").trim();
-    if (!brand || brand === "â€”") return null;
+    if (!brand || brand === "—") return null;
     return (
       catalogPerfumes.find(
         (p) =>
@@ -397,27 +414,51 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
     [catalogPerfumes],
   );
 
-  // Sync scroll visibility from window (Navbar behavior)
+  // Sync scroll visibility with intelligent threshold and tolerance
   useEffect(() => {
     let lastScrollY = window.scrollY;
+    let accumulatedScroll = 0;
+    const TOLERANCE = 60; // Pixels avant de déclencher le hide/show
+
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      const direction = currentScrollY > lastScrollY ? "down" : "up";
+      const delta = currentScrollY - lastScrollY;
+      const direction = delta > 0 ? "down" : "up";
       
-      const stickyThreshold = 400;
+      const catalogEl = document.getElementById("collection");
+      const catalogTop = catalogEl?.offsetTop ?? 400;
+      const stickyThreshold = catalogTop + 100;
+      
       const isInCatalog = currentScrollY > stickyThreshold;
       
       if (isInCatalog) {
-        setIsHeaderVisible(direction === "up");
+        if ((direction === "down" && accumulatedScroll >= 0) || (direction === "up" && accumulatedScroll <= 0)) {
+          accumulatedScroll += delta;
+        } else {
+          accumulatedScroll = delta;
+        }
+
+        if (direction === "down" && Math.abs(accumulatedScroll) > TOLERANCE) {
+          setIsHeaderVisible(false);
+        } else if (direction === "up" && Math.abs(accumulatedScroll) > TOLERANCE) {
+          setIsHeaderVisible(true);
+        }
       } else {
         setIsHeaderVisible(true);
+        accumulatedScroll = 0;
       }
       
+      setShowScrollTop(currentScrollY > 1000);
       lastScrollY = currentScrollY;
     };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <>
@@ -434,7 +475,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
 
       <main
         id="collection"
-        className="mx-auto w-full max-w-[1200px] flex-grow scroll-mt-[calc(env(safe-area-inset-top,0px)+3.75rem)] px-4 py-12 pb-[max(3.5rem,env(safe-area-inset-bottom,0px))] md:scroll-mt-[calc(env(safe-area-inset-top,0px)+4.5rem)] md:px-10 md:py-24 min-h-[800px]"
+        className="mx-auto w-full max-w-[1200px] flex-grow scroll-mt-[calc(env(safe-area-inset-top,0px)+3.75rem)] px-4 py-12 pb-safe-bottom md:scroll-mt-[calc(env(safe-area-inset-top,0px)+4.5rem)] md:px-10 md:py-24 min-h-[800px]"
       >
         <ScrollReveal className="mb-8 md:mb-12">
           <div>
@@ -442,14 +483,13 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
               Catalogue
             </span>
             <h2 className="font-serif text-[clamp(24px,5vw,36px)] leading-tight text-[var(--nurea-text)]">      
-              La Galerie
+              Le Catalogue
             </h2>
             <span className="mt-1.5 block text-[11px] tracking-[0.1em] text-[var(--nurea-text-muted)]">
-              {filteredPerfumes.length} sillage
-              {filteredPerfumes.length !== 1 ? "s" : ""}
+              {resultLabel}
             </span>
             <p className="mt-3 max-w-xl text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
-              Une curation exigeante des plus belles Maisons. Chaque sillage est une promesse ; sollicitez la Maison NurÃ©a Parfums pour confirmer une disponibilitÃ© ou bÃ©nÃ©ficier d&apos;un conseil singulier.
+              Découvrez notre sélection des plus grandes marques de parfums. Qualité garantie et meilleurs prix : contactez-nous sur Snapchat ou WhatsApp pour passer commande.
             </p>
           </div>
         </ScrollReveal>
@@ -460,7 +500,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
           <ScrollReveal className="mb-0" delay={80}>
             <div className="relative mb-3 flex items-center">
               <label htmlFor={CATALOG_SEARCH_ID} className="sr-only">
-                Rechercher une Maison, une note ou un sillage
+                Rechercher une marque ou un parfum
               </label>
 
               <Search
@@ -477,7 +517,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
                 autoComplete="off"
                 enterKeyHint="search"
                 inputMode="search"
-                placeholder="Une Maison, une note, un sillage..."
+                placeholder="Rechercher une marque, un parfum..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full min-h-[48px] border-b border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)]/50 py-3 pl-10 pr-11 text-base leading-snug text-[var(--nurea-text)] transition-colors duration-300 placeholder:text-[var(--nurea-text-subtle)] focus:border-[var(--nurea-accent)] focus:bg-[var(--nurea-surface)] focus:outline-none touch-manipulation md:min-h-[52px] md:text-[15px] rounded-t-sm"
@@ -494,13 +534,13 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
               )}
             </div>
 
-            <div className="no-scrollbar flex gap-0.5 overflow-x-auto border-b border-[var(--nurea-border)]/80 pb-px">
+            <div className="no-scrollbar flex gap-0.5 overflow-x-auto border-b border-[var(--nurea-border)]/80 pb-px tap-highlight-transparent">
               {categories.map((category) => (
                 <button
                   type="button"
                   key={category}
                   onClick={() => handleCategoryChange(category)}
-                  className={`relative shrink-0 min-h-[44px] px-3.5 py-2.5 text-[11px] font-medium uppercase tracking-nurea-label transition-all duration-300 touch-manipulation md:px-4 md:py-3 md:text-[12px] ${
+                  className={`relative shrink-0 min-h-[44px] px-3.5 py-2.5 text-[11px] font-medium uppercase tracking-nurea-label transition-all duration-300 touch-manipulation md:px-4 md:py-3 md:text-[12px] active-scale ${
                     selectedCategory === category
                       ? "text-[var(--nurea-accent)]"
                       : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
@@ -543,7 +583,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
             </span>
             {searchTerm.trim() !== "" && (
               <FilterChip
-                label={`Â« ${searchTerm.trim()} Â»`}
+                label={`« ${searchTerm.trim()} »`}
                 onRemove={() => setSearchTerm("")}
               />
             )}
@@ -567,14 +607,14 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
             )}
             {sortKey !== "default" && (
               <FilterChip
-                label="Tri personnalisÃ©"
+                label="Tri personnalisé"
                 onRemove={() => setSortKey("default")}
               />
             )}
             <button
               type="button"
               onClick={handleResetFilters}
-              className="ml-1 min-h-[44px] px-1 text-[10px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-accent)] touch-manipulation"
+              className="ml-1 min-h-[44px] px-1 text-[10px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-accent)] active-scale touch-manipulation"
             >
               Tout effacer
             </button>
@@ -594,10 +634,10 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
                     {showExtendedSearchLoading ? (
                       <>
                         <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
-                          Recherche en coursâ€¦
+                          Recherche en cours...
                         </p>
                         <p className="mb-2 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
-                          Nous vÃ©rifions Ã©galement des sources au-delÃ  du catalogue affichÃ©.
+                          Nous vérifions également nos stocks étendus.
                         </p>
                       </>
                     ) : apiSuggestion ? (
@@ -606,12 +646,12 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
                         className="rounded-sm border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-5 py-6 text-left md:px-8 md:py-8"
                       >
                         <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
-                          Vous cherchez Â«{" "}
+                          Vous cherchez «{" "}
                           {formatExternalSuggestionDisplay(
                             apiSuggestion,
                             searchTerm.trim()
                           )}
-                          Â»{apiSuggestion.brand && apiSuggestion.brand !== "â€”"
+                          »{apiSuggestion.brand && apiSuggestion.brand !== "—"
                             ? ` de ${apiSuggestion.brand}`
                             : ""}{" "}
                           ?
@@ -619,19 +659,18 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
                         <p className="mb-4 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
                           {apiSuggestionBrandRangeMatch ? (
                             <>
-                              Bonne nouvelle : la gamme complÃ¨te{" "}
-                              {apiSuggestionBrandRangeMatch.brand} est dÃ©jÃ  au catalogue. Ce parfum peut Ãªtre demandÃ© directement via la page Contact.
+                              Bonne nouvelle : la gamme complète {apiSuggestionBrandRangeMatch.brand} est déjà au catalogue. Ce parfum peut être demandé directement via la page Contact.
                             </>
                           ) : (
                             <>
-                              Cette rÃ©fÃ©rence n&apos;est pas encore en fiche ici. La maison Nurea Parfums peut confirmer une disponibilitÃ©, un arrivage ou une alternative : contactez-nous.
+                              Cette référence n&apos;est pas encore en ligne. Nuréa Parfums peut confirmer une disponibilité ou vous proposer une alternative : contactez-nous.
                             </>
                           )}
                         </p>
                         <button
                           type="button"
                           disabled
-                          title="Fonction Ã  venir"
+                          title="Fonction à venir"
                           className="w-full border border-[var(--nurea-border)] bg-transparent px-4 py-3 text-[10px] font-medium uppercase tracking-nurea-label text-[var(--nurea-text-muted)] opacity-60 md:w-auto md:min-w-[240px]"
                         >
                           Ajouter ce parfum au catalogue
@@ -641,14 +680,14 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
                       <>
                         <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
                           {externalHint
-                            ? `Vous cherchez Â« ${externalHint.displayName} Â» ?`
-                            : `Aucun rÃ©sultat pour Â« ${searchTerm.trim()} Â»`}
+                            ? `Vous cherchez « ${externalHint.displayName} » ?`
+                            : `Aucun résultat pour « ${searchTerm.trim()} »`}
                         </p>
                         <p className="mb-2 text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
                           {externalHint
                             ? externalHint.caption
                             : searchFallback.kind === "error"
-                              ? "Le service de recherche Ã©largie est momentanÃ©ment indisponible. Vous pouvez reformuler ou nous Ã©crire directement."
+                              ? "Le service de recherche élargie est momentanément indisponible. Vous pouvez reformuler ou nous écrire directement."
                               : EXTERNAL_SEARCH_FALLBACK_MESSAGE}
                         </p>
                         {externalHint ? (
@@ -660,17 +699,17 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
                 ) : (
                   <>
                     <p className="mb-3 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
-                      Aucune crÃ©ation ne correspond Ã  ces filtres
+                      Aucune création ne correspond à ces filtres
                     </p>
                     <p className="mb-2 text-[13px] text-[var(--nurea-text-muted)]">
-                      Ã‰largissez la recherche ou explorez nos suggestions ci-dessous.
+                      Élargissez la recherche ou explorez nos suggestions ci-dessous.
                     </p>
                   </>
                 )}
                 <div className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
                   <Link
                     href="/contact"
-                    className="btn-nurea text-[10px] md:text-[11px]"
+                    className="btn-nurea text-[10px] md:text-[11px] active-scale"
                   >
                     Nous contacter
                   </Link>
@@ -681,7 +720,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
               <div className="mt-12">
               <p className="mb-5 text-center text-[10px] uppercase tracking-[0.28em] text-[var(--nurea-text-muted)]">
                 {searchTerm.trim() !== ""
-                  ? "Pistes dans notre Galerie"
+                  ? "Pistes dans notre Catalogue"
                   : "Inspirations"}
               </p>                <div className="catalogue-grid stagger-grid">
                   {inspirationWhenEmpty.map((perfume, index) => (
@@ -719,9 +758,9 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
                   <div className="absolute -inset-1 bg-gradient-to-r from-[var(--nurea-accent)] to-[var(--nurea-cuivre)] rounded opacity-20 group-hover:opacity-40 blur transition duration-500"></div>
                   <button
                     onClick={() => setShowFullCatalog(true)}
-                    className="relative btn-nurea bg-[var(--nurea-surface)] border-[var(--nurea-border)] text-[var(--nurea-text)] px-8 py-4 tracking-[0.2em] text-[11px] md:text-[12px] group-hover:bg-[var(--nurea-accent-subtle)] group-hover:border-[var(--nurea-accent)]"
+                    className="relative btn-nurea bg-[var(--nurea-surface)] border-[var(--nurea-border)] text-[var(--nurea-text)] px-8 py-4 tracking-[0.2em] text-[11px] md:text-[12px] group-hover:bg-[var(--nurea-accent-subtle)] group-hover:border-[var(--nurea-accent)] active-scale"
                   >
-                    DÃ©couvrir toute la Galerie ({sortedPerfumes.length})
+                    Voir tout le Catalogue ({sortedPerfumes.length})
                   </button>
                 </div>
               </div>
@@ -729,6 +768,17 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
           </div>
         )}
       </main>
+
+      {/* Scroll to Top FAB */}
+      <div className={`fixed bottom-[calc(80px+env(safe-area-inset-bottom,0px))] right-4 z-[90] transition-all duration-500 md:hidden ${showScrollTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"}`}>
+        <button
+          onClick={scrollToTop}
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--nurea-accent)] text-white shadow-2xl active-scale tap-highlight-transparent"
+          aria-label="Retour en haut"
+        >
+          <ArrowLeft size={20} className="rotate-90" />
+        </button>
+      </div>
     </>
   );
 };
@@ -743,7 +793,7 @@ const FilterChip = ({
   <button
     type="button"
     onClick={onRemove}
-    className="inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-sm border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-left text-[10px] text-[var(--nurea-text)] transition-colors hover:border-[var(--nurea-accent)] active:scale-[0.99]"
+    className="inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-sm border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-left text-[10px] text-[var(--nurea-text)] transition-colors hover:border-[var(--nurea-accent)] active-scale tap-highlight-transparent"
     aria-label={`Retirer le filtre ${label}`}
   >
     <span className="min-w-0 flex-1 truncate">{label}</span>

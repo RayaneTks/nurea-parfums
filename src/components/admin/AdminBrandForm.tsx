@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Loader2, Plus, Trash2, Upload, X, AlertCircle } from "lucide-react";
@@ -102,7 +101,7 @@ function ImageUploadField({
 
       <div className="grid gap-4">
         <div className="flex gap-4 items-start">
-          <div 
+          <div
             className={`relative aspect-square w-32 shrink-0 overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl group transition-all duration-300 ${!readOnly ? "cursor-pointer active:scale-95 hover:border-blue-500/50" : ""}`}
             onClick={triggerUpload}
           >
@@ -113,7 +112,7 @@ function ImageUploadField({
                 <Upload className="h-8 w-8" />
               </div>
             )}
-            
+
             {!readOnly && (
               <div className={`absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${uploading ? "opacity-100" : ""}`}>
                 {uploading ? (
@@ -134,10 +133,10 @@ function ImageUploadField({
               onChange={(e) => onChange(e.target.value)}
               disabled={readOnly}
               required={required}
-              placeholder="/branding/... ou https://..."
+              placeholder="https://..."
               onClear={!readOnly && value?.trim() ? handleDeleteImage : undefined}
             />
-            
+
             <input
               ref={fileInputRef}
               type="file"
@@ -146,7 +145,7 @@ function ImageUploadField({
               disabled={uploading || readOnly}
               onChange={(e) => handleUpload(e.target.files?.[0] ?? null)}
             />
-            
+
             <div className="flex gap-2">
               <AdminButton
                 type="button"
@@ -209,7 +208,7 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
     (async () => {
       setLoading(true);
       try {
-        const r = await fetch(`/api/admin/brands/${brandId}`, { credentials: "include", cache: "no-store" });
+        const r = await fetch(`/api/admin/brands/${brandId}`, { credentials: "include", cache: "no-store" });   
         const j = await readJsonSafe<{ error?: string; brand?: BrandPayload }>(r);
         if (!r.ok) throw new Error(j?.error ?? "Chargement impossible");
         if (j?.brand) {
@@ -228,7 +227,7 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
   }, [isNew, brandId]);
 
   useEffect(() => {
-    if (error && errorRef.current) errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (error && errorRef.current) errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });    
   }, [error]);
 
   async function handleDelete() {
@@ -260,7 +259,7 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
       setError("Une image est obligatoire pour le mode gamme complète.");
       return;
     }
-    
+
     setSaving(true);
     setError(null);
     try {
@@ -294,8 +293,7 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
 
   const handleAutoSave = useCallback(async (overrides: Partial<BrandPayload>) => {
     if (isNew || readOnly || saving) return;
-    
-    // We use the current state + the specific override for this field
+
     const payload = {
       name,
       catalogMode,
@@ -316,7 +314,6 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
         const j = await readJsonSafe<{ error?: string }>(r);
         throw new Error(j?.error ?? "Auto-save échoué");
       }
-      // Success - no need for toast to avoid noise, but maybe a subtle indicator later?
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur lors de la sauvegarde automatique");
@@ -331,27 +328,35 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
   );
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
-      <div className="flex flex-col gap-4">
-        <Link href="/admin/catalogue" className="group w-fit">
-          <AdminButton variant="ghost" size="sm" leftIcon={ArrowLeft} className="text-zinc-500 group-hover:text-zinc-300">
-            Retour au catalogue
-          </AdminButton>
-        </Link>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
-              {isNew ? "Nouvelle marque" : "Modifier la marque"}
-            </h1>
-            <p className="text-sm text-zinc-500 mt-1">
-              Gérez l&apos;identité et le mode d&apos;affichage de la marque.
-            </p>
+    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32">  
+      {/* Header Sticky avec bouton Retour */}
+      <div className="sticky top-0 z-[60] -mx-4 px-4 py-4 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/50 mb-8">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <button 
+              type="button"
+              onClick={() => router.back()}
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all active:scale-95 shadow-lg shadow-black/20"
+              title="Retour"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight text-zinc-100 line-clamp-1">
+                {isNew ? "Nouvelle marque" : name || "Sans nom"}
+              </h1>
+              {!isNew && (
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">ID #{brandId.slice(0,8)}</p>
+              )}
+            </div>
           </div>
-          {!isNew && <AdminBadge label={`ID: ${brandId.slice(0,8)}`} />}
+          {!isNew && (
+            <AdminBadge label={status === "PUBLISHED" ? "Visible" : "Masquée"} variant={status === "PUBLISHED" ? "success" : "warning"} />
+          )}
         </div>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-10">
+      <form id="brand-form" onSubmit={onSubmit} className="space-y-10">
         {error && (
           <div ref={errorRef} className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl animate-in shake duration-500">
             <AlertCircle className="h-5 w-5 text-red-500 shrink-0" />
@@ -364,7 +369,7 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
             <div className="h-6 w-1 bg-blue-600 rounded-full" />
             <h2 className="text-lg font-bold text-zinc-100">Configuration</h2>
           </div>
-          
+
           <div className="space-y-6 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
             <AdminInput
               label="Nom de la marque"
@@ -389,8 +394,8 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
                       onClick={() => setCatalogMode(opt.value)}
                       className={`
                         flex flex-col text-left p-4 rounded-2xl border transition-all duration-300 active:scale-[0.97]
-                        ${active 
-                          ? "bg-zinc-100 border-zinc-100 shadow-xl" 
+                        ${active
+                          ? "bg-zinc-100 border-zinc-100 shadow-xl"
                           : "bg-zinc-900/50 border-zinc-800 hover:border-zinc-700"}
                       `}
                     >
@@ -412,8 +417,8 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
 
           <div className="grid gap-8 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
             <ImageUploadField
-              label={imageLight ? "Image mode sombre (Dark)" : "Image principale (Mode sombre + clair)"}
-              subtitle="Format WebP/SVG recommandé. Utilisée par défaut pour le thème sombre."
+              label={imageLight ? "Image mode sombre (Dark)" : "Image principale (Mode sombre + clair)"}        
+              subtitle="Optimisation automatique (WebP, 1024x1536) recommandée."
               value={image}
               onChange={setImage}
               onUploadDone={(url) => handleAutoSave({ image: url })}
@@ -453,12 +458,12 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
                     onClick={() => setStatus(opt.value)}
                     className={`
                       relative flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all duration-300 active:scale-[0.97]
-                      ${active 
-                        ? "bg-zinc-100 border-zinc-100 shadow-xl" 
+                      ${active
+                        ? "bg-zinc-100 border-zinc-100 shadow-xl"
                         : "bg-zinc-900/50 border-zinc-800 text-zinc-500"}
                     `}
                   >
-                    <AdminBadge label={opt.label} variant={active ? opt.variant : "neutral"} dot={active} />
+                    <AdminBadge label={opt.label} variant={active ? opt.variant : "neutral"} dot={active} />    
                     <span className={`text-[11px] font-bold uppercase tracking-widest ${active ? "text-zinc-900" : "text-zinc-600"}`}>
                       {opt.value === "PUBLISHED" ? "Public" : "Interne"}
                     </span>
@@ -469,11 +474,42 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
           </div>
         </section>
 
-        <div className="pt-4 mt-8">
-          <div className="p-2 bg-zinc-900/80 border border-zinc-800 rounded-3xl shadow-2xl">
+        {/* Bouton de suppression fixé en bas du flux, pas sticky */}
+        {!isNew && !readOnly && (
+          <div className="pt-12 flex flex-col items-center border-t border-zinc-800/50">
+            {!deleteConfirm ? (
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm(true)}
+                className="group flex items-center gap-2 text-[13px] font-bold text-zinc-600 hover:text-red-500 transition-all uppercase tracking-widest"
+              >
+                <Trash2 className="h-4 w-4" />
+                Supprimer cette marque
+              </button>
+            ) : (
+              <div className="flex flex-col items-center gap-3 p-6 bg-red-500/5 border border-red-500/10 rounded-3xl w-full animate-in zoom-in-95">
+                <p className="text-xs text-red-400 font-bold uppercase tracking-wider text-center">Suppression irréversible ?</p>
+                <p className="text-[10px] text-zinc-500 text-center -mt-1">Tous les parfums associés seront supprimés.</p>
+                <div className="flex gap-2 w-full max-w-xs mt-2">
+                  <AdminButton variant="ghost" className="flex-1" onClick={() => setDeleteConfirm(false)} disabled={deleting}>
+                    Annuler
+                  </AdminButton>
+                  <AdminButton variant="danger" className="flex-1" onClick={handleDelete} isLoading={deleting} leftIcon={Trash2}>
+                    Confirmer
+                  </AdminButton>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Barre d'action sticky pour la sauvegarde */}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-[70]">
+          <div className="p-2 bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-3xl shadow-2xl ring-1 ring-white/5">   
             <AdminButton
               type="submit"
-              className="w-full"
+              form="brand-form"
+              className="w-full h-14 rounded-2xl text-base shadow-lg shadow-blue-500/20"
               size="lg"
               isLoading={saving}
               disabled={readOnly || !name || (catalogMode === "COMPLETE" && !image)}
@@ -481,33 +517,6 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
               {isNew ? "Créer la marque" : "Enregistrer les modifications"}
             </AdminButton>
           </div>
-          
-          {!isNew && !readOnly && (
-            <div className="pt-12 pb-8 flex flex-col items-center border-t border-zinc-800/50 mt-12">
-              {!deleteConfirm ? (
-                <button
-                  type="button"
-                  onClick={() => setDeleteConfirm(true)}
-                  className="px-6 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-[13px] font-bold text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 uppercase tracking-widest"
-                >
-                  Supprimer définitivement cette marque
-                </button>
-              ) : (
-                <div className="flex flex-col items-center gap-3 p-6 bg-red-500/5 border border-red-500/10 rounded-[32px] w-full animate-in zoom-in-95">
-                  <p className="text-sm text-red-400 font-bold uppercase tracking-wider">Confirmer la suppression irréversible ?</p>
-                  <p className="text-xs text-red-500/60 mb-2">Tous les parfums associés seront également supprimés.</p>
-                  <div className="flex gap-2 w-full">
-                    <AdminButton variant="ghost" className="flex-1" onClick={() => setDeleteConfirm(false)} disabled={deleting}>
-                      Annuler
-                    </AdminButton>
-                    <AdminButton variant="danger" className="flex-1" onClick={handleDelete} isLoading={deleting}>
-                      Oui, Supprimer
-                    </AdminButton>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </form>
     </div>

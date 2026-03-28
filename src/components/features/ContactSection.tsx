@@ -109,18 +109,36 @@ export const ContactSection: FC = () => {
             Contact
           </span>
           <h1 className="mb-4 font-serif text-[clamp(28px,7vw,48px)] leading-[1.1] text-[var(--nurea-text)]">
-            Le Dialogue se poursuit
+            Passer Commande
           </h1>
           <p className="mx-auto max-w-lg text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-            Privilégiez le canal qui vous ressemble. Chaque message est lu avec attention par la Maison Nuréa Parfums pour vous offrir une réponse personnalisée. Basés à Marseille, nous expédions dans toute la France.
+            Une question sur un parfum ou une commande à passer ? Nous sommes disponibles pour vous conseiller. Basés à Marseille, nous expédions dans toute la France.
           </p>
         </ScrollReveal>
 
         <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-[1fr_1.2fr] md:gap-10">
           <ScrollReveal direction="left" className="space-y-4">
             <h2 className="text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--nurea-text-muted)]">
-              Échange Instantané
+              Réponse Rapide
             </h2>
+
+            <a
+              href={CONTACT.snapchat}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex min-h-[72px] items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-4 py-4 transition-colors hover:border-[var(--nurea-snapchat)] hover:bg-[var(--nurea-surface-hover)]"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors group-hover:border-[var(--nurea-snapchat)]">
+                <SnapchatIcon className="h-6 w-6 text-[var(--nurea-text-muted)] transition-colors group-hover:text-[var(--nurea-snapchat)]" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
+                  Canal Principal
+                </p>
+                <p className="font-serif text-[18px] text-[var(--nurea-text)]">Snapchat</p>
+              </div>
+              <ArrowRight size={16} className="text-[var(--nurea-text-muted)] transition-transform group-hover:-rotate-45" />
+            </a>
 
             <a
               href={CONTACT.whatsapp}
@@ -140,24 +158,6 @@ export const ContactSection: FC = () => {
               <ArrowRight size={16} className="text-[var(--nurea-accent)] transition-transform group-hover:-rotate-45" />
             </a>
 
-            <a
-              href={CONTACT.snapchat}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex min-h-[72px] items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-4 py-4 transition-colors hover:border-[var(--nurea-snapchat)] hover:bg-[var(--nurea-surface-hover)]"
-            >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors group-hover:border-[var(--nurea-snapchat)]">
-                <SnapchatIcon className="h-6 w-6 text-[var(--nurea-text-muted)] transition-colors group-hover:text-[var(--nurea-snapchat)]" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
-                  Galerie Éphémère
-                </p>
-                <p className="font-serif text-[18px] text-[var(--nurea-text)]">Snapchat</p>
-              </div>
-              <ArrowRight size={16} className="text-[var(--nurea-text-muted)] transition-transform group-hover:-rotate-45" />
-            </a>
-
             <div className="border border-[var(--nurea-border)] bg-[var(--nurea-surface)] px-4 py-4">
               <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
                 Courrier Électronique
@@ -171,10 +171,10 @@ export const ContactSection: FC = () => {
           <ScrollReveal direction="right" delay={100}>
             <div className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-5 md:p-7">
               <h3 className="text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--nurea-text-muted)]">
-                Confidences
+                Formulaire
               </h3>
               <p className="mb-6 mt-1 font-serif text-[22px] text-[var(--nurea-text)]">
-                Laisser une Empreinte
+                Nous Contacter
               </p>
 
               {isSubmitted ? (
@@ -183,11 +183,11 @@ export const ContactSection: FC = () => {
                     {submitChannel === "resend" ? "Message transmis" : "Messagerie ouverte"}
                   </p>
                   <p className="mt-2 font-serif text-[22px] text-[var(--nurea-text)]">
-                    Merci pour votre confiance
+                    Merci pour votre message
                   </p>
                   <p className="mx-auto mt-3 max-w-sm text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
                     {submitChannel === "resend"
-                      ? "Nous reviendrons vers vous avec la plus grande attention."
+                      ? "Nous vous répondrons dans les plus brefs délais."
                       : "Si votre application ne s'ouvre pas, n'hésitez pas à nous écrire directement."}
                   </p>
                 </div>
@@ -197,7 +197,7 @@ export const ContactSection: FC = () => {
                     <FormField
                       id="name"
                       name="name"
-                      label="Votre Identité"
+                      label="Votre Nom"
                       type="text"
                       value={formState.name}
                       error={fieldErrors.name}
@@ -206,7 +206,7 @@ export const ContactSection: FC = () => {
                     <FormField
                       id="email"
                       name="email"
-                      label="E-mail"
+                      label="Votre E-mail"
                       type="email"
                       value={formState.email}
                       error={fieldErrors.email}
@@ -217,7 +217,7 @@ export const ContactSection: FC = () => {
                   <FormField
                     id="subject"
                     name="subject"
-                    label="Sujet de l'échange"
+                    label="Sujet"
                     type="text"
                     value={formState.subject}
                     error={fieldErrors.subject}
@@ -246,7 +246,7 @@ export const ContactSection: FC = () => {
                   </div>
 
                   <p className="text-[12px] leading-relaxed text-[var(--nurea-text-muted)] italic">
-                    Précisez la Maison et le nom du sillage pour une expertise ciblée.
+                    Précisez la marque et le nom du parfum pour une réponse plus précise.
                   </p>
 
                   {serverError ? (

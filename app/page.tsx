@@ -12,13 +12,13 @@ import { getCatalogPerfumes } from "@/lib/catalog/getCatalogPerfumes";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "La Galerie",
-  description: `${SITE_NAME} — Une invitation à l'exceptionnel. Découvrez notre sélection de sillages rares et engagez le dialogue pour une expertise personnalisée. Site officiel.`,
+  title: "Le Catalogue",
+  description: `${SITE_NAME} — Retrouvez vos parfums préférés au meilleur prix. Découvrez notre sélection des plus grandes marques et contactez-nous sur Snapchat ou WhatsApp pour toute commande.`,
   keywords: [
     "Nuréa Parfums",
-    "parfumerie d'exception",
-    "sillage rare",
-    "haute parfumerie",
+    "parfums pas cher",
+    "grandes marques parfum",
+    "parfumerie en ligne",
   ],
   alternates: {
     canonical: "/",

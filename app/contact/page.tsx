@@ -1,26 +1,32 @@
 import type { Metadata } from "next";
 import { ContactPageClient } from "@/components/contact/ContactPageClient";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Contact & Conseils",
-  description: `Entrez en contact avec la Maison ${SITE_NAME}. Recommandations personnalisées, disponibilités et échanges privés. Site officiel ${SITE_URL.replace("https://", "")}.`,
-  keywords: [
-    "contact Nuréa Parfums",
-    "conseil parfum personnalisé",
-    "Nuréa Parfums commande",
-  ],
+  title: "Contact & Commande",
+  description: `Contactez ${SITE_NAME} pour passer commande ou obtenir un conseil. Stock disponible immédiatement, réponse rapide sur Snapchat et WhatsApp.`,
   alternates: {
     canonical: "/contact",
   },
   openGraph: {
-    title: `Contact & Conseils — ${SITE_NAME}`,
-    description: `Engagez le dialogue avec la maison ${SITE_NAME} (site officiel).`,
+    title: `Contact & Commande — ${SITE_NAME}`,
+    description: `Une question sur un parfum ? Contactez-nous sur Snapchat ou WhatsApp pour commander.`,
     url: `${SITE_URL}/contact`,
     type: "website",
   },
 };
 
 export default function ContactPage() {
-  return <ContactPageClient />;
+  return (
+    <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Accueil", path: "/" },
+          { name: "Contact", path: "/contact" },
+        ]}
+      />
+      <ContactPageClient />
+    </>
+  );
 }

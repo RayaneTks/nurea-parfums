@@ -15,6 +15,7 @@ function isCategory(s: string): s is Category {
 
 /**
  * Catalogue publié : PostgreSQL si `DATABASE_URL`, sinon `mockPerfumes` (vide désormais).
+ * Filtre automatiquement les entrées corrompues (pas d'image, pas de nom, pas de marque).
  */
 export async function getCatalogPerfumes(): Promise<Perfume[]> {
   noStore();
@@ -34,7 +35,13 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
 
   try {
     const perfumes = await prisma.perfume.findMany({
-      where: { status: "PUBLISHED", brand: { status: "PUBLISHED" } },
+      where: { 
+        status: "PUBLISHED", 
+        brand: { status: "PUBLISHED" },
+        // Sécurité : on ne récupère que ce qui a un nom et une image
+        name: { not: "" },
+        image: { not: "" },
+      },
       select: {
         id: true,
         name: true,
@@ -54,7 +61,12 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
     });
 
     const rangeBrands = await prisma.brand.findMany({
-      where: { catalogMode: "COMPLETE", status: "PUBLISHED" },
+      where: { 
+        catalogMode: "COMPLETE", 
+        status: "PUBLISHED",
+        name: { not: "" },
+        image: { not: "" },
+      },
       select: { id: true, name: true, slug: true, image: true, imageLight: true },
       orderBy: { name: "asc" },
     });
@@ -63,7 +75,7 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
     
     // 1. Transformation des marques en "Gammes Complètes"
     const asPerfumesFromBrands: Perfume[] = rangeBrands
-      .filter((b) => Boolean(b.image))
+      .filter((b) => Boolean(b.image) && Boolean(b.name))
       .map((b, idx) => ({
         id: maxId + idx + 1,
         name: b.name,
@@ -77,21 +89,23 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
       }));
 
     // 2. Transformation des parfums individuels
-    const mappedPerfumes: Perfume[] = perfumes.map(p => {
-      const isComplete = p.brand.catalogMode === "COMPLETE";
-      return {
-        id: p.id,
-        name: p.name,
-        brand: p.brand.name,
-        brandSlug: p.brand.slug,
-        category: isComplete ? "Gammes Complètes" : "Sélections Individuelles",
-        image: p.image,
-        imageLight: p.imageLight ?? undefined,
-        blurDataURL: getBlurPlaceholder(p.image),
-        isFeatured: p.isFeatured,
-        tags: isComplete ? ["Gamme complète"] : undefined,
-      };
-    });
+    const mappedPerfumes: Perfume[] = perfumes
+      .filter(p => p.brand && p.brand.name) // Sécurité supplémentaire
+      .map(p => {
+        const isComplete = p.brand.catalogMode === "COMPLETE";
+        return {
+          id: p.id,
+          name: p.name,
+          brand: p.brand.name,
+          brandSlug: p.brand.slug,
+          category: isComplete ? "Gammes Complètes" : "Sélections Individuelles",
+          image: p.image,
+          imageLight: p.imageLight ?? undefined,
+          blurDataURL: getBlurPlaceholder(p.image),
+          isFeatured: p.isFeatured,
+          tags: isComplete ? ["Gamme complète"] : undefined,
+        };
+      });
 
     registerPrismaCatalogSuccess();
     return [...mappedPerfumes, ...asPerfumesFromBrands];

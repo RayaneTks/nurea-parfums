@@ -2,24 +2,23 @@ export const SITE_URL = "https://nureaparfum.fr" as const;
 
 export const SITE_NAME = "Nuréa Parfums";
 export const SITE_SHORT_NAME = "Nuréa";
-export const SITE_TAGLINE = "Maison de Haute Parfumerie";
+export const SITE_TAGLINE = "Parfumerie d'Exception";
 
 export const DEFAULT_DESCRIPTION =
-  "Nuréa Parfums — Une invitation à l'exceptionnel. Maison de haute parfumerie indépendante basée à Marseille, nous cultivons l'art du sillage rare et de la confidence. Découvrez notre galerie privée.";
+  "Nuréa Parfums — Retrouvez vos parfums préférés au meilleur prix. Une sélection rigoureuse des plus grandes marques pour homme et femme. Découvrez notre catalogue et commandez directement sur Snapchat ou WhatsApp.";
 
 /**
- * Noms alternatifs pour schema.org et cohérence SEO (recherches avec/sans « s », fautes fréquentes).
- * Inclut des variantes utiles sans citer de concurrents nominalement dans le code métier.
+ * Noms alternatifs pour schema.org et cohérence SEO.
  */
 export const BRAND_ALTERNATE_NAMES: string[] = [
   "Nuréa Parfums",
-  "Nuréa Parfums",
+  "Nurea Parfums",
   "Nuréa Parfum",
-  "Nuréa Parfum",
+  "Nurea Parfum",
   "Nuréa",
-  "Nuréa",
-  "Maison Nuréa",
-  "Nuréa haute parfumerie",
+  "Nurea",
+  "Parfumerie Nuréa",
+  "Nurea Parfumerie",
 ];
 
 /**
@@ -29,8 +28,9 @@ export const SEO_KEYWORDS: string[] = [
   "Nuréa Parfums",
   "site officiel Nuréa Parfums",
   "nureaparfum.fr",
-  "maison de parfum marseille",
-  "parfums d'exception",
-  "haute parfumerie",
-  "sélection privée parfum",
+  "parfums pas cher",
+  "parfums de luxe",
+  "parfumerie marseille",
+  "meilleur prix parfum",
+  "catalogue parfum",
 ];

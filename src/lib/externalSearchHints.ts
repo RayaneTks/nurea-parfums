@@ -1,6 +1,6 @@
 /**
  * Parfums / marques souvent recherchés mais absents du catalogue local.
- * Alimenté à partir de tendances marché (niche, TikTok, best-sellers, maisons du Golfe).
+ * Alimenté à partir de tendances marché (niche, TikTok, best-sellers, marques du Golfe).
  * Chaque entrée : requêtes reconnues + alternatives dans notre catalogue (IDs mockPerfumes).
  */
 
@@ -11,7 +11,7 @@ export type { ExternalPerfumeHint };
 
 /** Message quand la requête ne correspond à aucune fiche connue (ni au catalogue). */
 export const EXTERNAL_SEARCH_FALLBACK_MESSAGE =
-  "Nous n'avons pas trouvé de sillage correspondant à votre recherche. Sollicitez la Maison Nuréa Parfums depuis la page Contact pour une recherche personnalisée ou une alternative sur-mesure.";
+  "Nous n'avons pas trouvé de parfum correspondant à votre recherche. Contactez Nuréa Parfums depuis la page Contact pour une recherche personnalisée ou une alternative sur-mesure.";
 
 export const EXTERNAL_PERFUME_HINTS: ExternalPerfumeHint[] = [
   /* —— Déjà demandés / viral niche —— */
@@ -39,7 +39,7 @@ export const EXTERNAL_PERFUME_HINTS: ExternalPerfumeHint[] = [
     ],
     displayName: "Arabian Oud",
     caption:
-      "Grande maison du Golfe très recherchée : elle n’est pas encore sur notre vitrine en ligne, mais dites-nous la référence exacte — nous pouvons souvent la sourcer ou vous proposer un oud dans le même esprit.",
+      "Grande marque du Golfe très recherchée : elle n’est pas encore sur notre vitrine en ligne, mais dites-nous la référence exacte — nous pouvons souvent la sourcer ou vous proposer un oud dans le même esprit.",
     similarCatalogIds: [13, 9, 16],
   },
   {
@@ -84,7 +84,7 @@ export const EXTERNAL_PERFUME_HINTS: ExternalPerfumeHint[] = [
     queries: ["sauvage", "dior sauvage", "sauvage dior", "sauvage elixir"],
     displayName: "Dior — Sauvage",
     caption:
-      "Référence ultra-diffusée — notre gamme Dior couvre la maison ; demandez la variante souhaitée.",
+      "Référence ultra-diffusée — notre gamme Dior couvre la marque ; demandez la variante souhaitée.",
     similarCatalogIds: [2, 17, 18],
   },
   {
@@ -531,7 +531,7 @@ export const EXTERNAL_PERFUME_HINTS: ExternalPerfumeHint[] = [
     queries: ["chanel parfum", "parfum chanel", "chanel fragrance"],
     displayName: "Chanel",
     caption:
-      "La maison Chanel n’est pas listée article par article — dites-nous le flacon exact.",
+      "La marque Chanel n’est pas listée article par article — dites-nous le flacon exact.",
     similarCatalogIds: [9, 10, 14],
   },
   {
