@@ -129,17 +129,15 @@ export const Hero: FC = () => {
         </span>
 
         <h1 className="mb-5 font-serif text-[clamp(38px,9vw,76px)] leading-[1.04] text-[var(--nurea-text)]">
-          L&apos;Art de la
+          L&apos;Émotion par le
           <br />
           <em className="not-italic" style={{ fontStyle: "italic" }}>
-            Séduction
+            Sillage
           </em>
         </h1>
 
         <p className="mb-8 max-w-md text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] md:max-w-xl">
-          Une vitrine pour parcourir la maison et ses références. Pour une
-          disponibilité ou un conseil, écrivez-nous : nous reprenons l&apos;échange
-          avec vous.
+          Une galerie confidentielle dédiée aux essences d&apos;exception. Parcourez notre sélection et sollicitez la Maison pour une expertise personnalisée ou une commande privée.
         </p>
 
         <div className="flex w-full max-w-md flex-col items-center justify-center gap-3 sm:flex-row">
@@ -149,7 +147,7 @@ export const Hero: FC = () => {
             className="btn-nurea btn-accent group w-full justify-center shadow-[0_0_40px_-8px_var(--nurea-glow)] sm:w-auto"
             aria-label="Voir la collection"
           >
-            Voir la Collection
+            Découvrir la Collection
             <ChevronDown
               size={14}
               className="transition-transform duration-500 group-hover:translate-y-1"
@@ -159,7 +157,7 @@ export const Hero: FC = () => {
             href="/contact"
             className="btn-nurea group w-full justify-center sm:w-auto"
           >
-            Nous contacter
+            Engager le Dialogue
             <MessageCircleMore
               size={14}
               className="text-[var(--nurea-accent)] transition-transform duration-300 group-hover:-rotate-6"
@@ -168,7 +166,7 @@ export const Hero: FC = () => {
         </div>
 
         <p className="mt-5 max-w-md text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-subtle)] md:text-[11px]">
-          Disponibilités confirmées en conversation
+          Échanges privés & Conseils sur-mesure
         </p>
       </div>
 

@@ -508,16 +508,14 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
               Catalogue
             </span>
             <h2 className="font-serif text-[clamp(24px,5vw,36px)] leading-tight text-[var(--nurea-text)]">
-              La Collection
+              La Galerie
             </h2>
             <span className="mt-1.5 block text-[11px] tracking-[0.1em] text-[var(--nurea-text-muted)]">
-              {filteredPerfumes.length} création
+              {filteredPerfumes.length} sillage
               {filteredPerfumes.length !== 1 ? "s" : ""}
             </span>
             <p className="mt-3 max-w-xl text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
-              Maisons et références en vitrine : pour une disponibilité, un
-              arrivage ou un avis, écrivez à la maison Nurea Parfums via la page
-              Contact.
+              Une curation exigeante des plus belles Maisons. Chaque sillage est une promesse ; sollicitez la Maison Nuréa Parfums pour confirmer une disponibilité ou bénéficier d&apos;un conseil singulier.
             </p>
           </div>
         </ScrollReveal>
@@ -528,7 +526,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
           <ScrollReveal className="mb-0" delay={80}>
             <div className="relative mb-3 flex items-center">
               <label htmlFor={CATALOG_SEARCH_ID} className="sr-only">
-                Rechercher un parfum, une maison, une marque ou un mot-clé
+                Rechercher une Maison, une note ou un sillage
               </label>
               
               <Search
@@ -545,7 +543,7 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
                 autoComplete="off"
                 enterKeyHint="search"
                 inputMode="search"
-                placeholder="Maison, parfum, gamme, note…"
+                placeholder="Une Maison, une note, un sillage..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full min-h-[48px] border-b border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)]/50 py-3 pl-10 pr-11 text-base leading-snug text-[var(--nurea-text)] transition-colors duration-300 placeholder:text-[var(--nurea-text-subtle)] focus:border-[var(--nurea-accent)] focus:bg-[var(--nurea-surface)] focus:outline-none touch-manipulation md:min-h-[52px] md:text-[15px] rounded-t-sm"

@@ -124,7 +124,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenBrowse }) => {
           {mounted ? (
             <Image
               src={logoSrc}
-              alt="Nurea Parfums"
+              alt="Nuréa Parfums"
               width={260}
               height={72}
               className="h-[54px] w-auto md:h-[62px]"
@@ -132,7 +132,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenBrowse }) => {
             />
           ) : (
             <span className="font-serif text-lg tracking-[0.2em] text-[var(--nurea-text)]">
-              NUREA
+              NURÉA
             </span>
           )}
         </Link>
@@ -147,7 +147,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenBrowse }) => {
                 : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
             }`}
           >
-            Collection
+            La Galerie
           </Link>
           <Link
             href="/marque"
@@ -157,7 +157,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenBrowse }) => {
                 : "text-[var(--nurea-text-muted)] hover:text-[var(--nurea-text)]"
             }`}
           >
-            Marque
+            La Maison
           </Link>
           <Link
             href="/contact"
@@ -277,7 +277,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenBrowse }) => {
                       : "text-[var(--nurea-text)]"
                   }`}
                 >
-                  La Collection
+                  La Galerie
                 </Link>
                 <Link
                   href="/marque"
@@ -288,7 +288,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenBrowse }) => {
                       : "text-[var(--nurea-text)]"
                   }`}
                 >
-                  Notre marque
+                  La Maison
                 </Link>
                 <Link
                   href="/contact"

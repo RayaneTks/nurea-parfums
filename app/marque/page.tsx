@@ -5,26 +5,26 @@ import { MarqueFaqJsonLd } from "@/components/seo/MarqueFaqJsonLd";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Marque officielle & orthographe",
-  description: `${SITE_NAME} — orthographe officielle Nurea (N-U-R-E-A), site officiel ${SITE_URL.replace("https://", "")}. Retrouvez la maison sans confusion avec d'autres marques au nom proche.`,
+  title: "La Maison",
+  description: `${SITE_NAME} — Découvrez l&apos;histoire et l&apos;exigence de notre Maison de Haute Parfumerie. Un sillage, une émotion, une signature unique.`,
   keywords: [
-    "Nurea Parfums officiel",
-    "nurea parfum site officiel",
-    "orthographe Nurea",
-    "nurea parfums",
+    "Nuréa Parfums",
+    "maison de parfum",
+    "art du sillage",
+    "parfumerie artisanale",
   ],
   alternates: {
     canonical: "/marque",
   },
   openGraph: {
-    title: `${SITE_NAME} — Marque officielle`,
+    title: `${SITE_NAME} — La Maison`,
     description: DEFAULT_DESCRIPTION,
     url: `${SITE_URL}/marque`,
     locale: "fr_FR",
     type: "website",
   },
   twitter: {
-    title: `${SITE_NAME} — Marque officielle`,
+    title: `${SITE_NAME} — La Maison`,
     description: DEFAULT_DESCRIPTION,
   },
 };
@@ -35,7 +35,7 @@ export default function MarquePage() {
       <BreadcrumbJsonLd
         items={[
           { name: "Accueil", path: "/" },
-          { name: "Notre marque", path: "/marque" },
+          { name: "La Maison", path: "/marque" },
         ]}
       />
       <MarqueFaqJsonLd />

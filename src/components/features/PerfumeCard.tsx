@@ -77,8 +77,8 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
   };
 
   const hintLabel = isGammeComplete
-    ? "Voir la sélection"
-    : "Continuer avec nous";
+    ? "Explorer la Sélection"
+    : "Engager le Dialogue";
 
   return (
     <article
@@ -154,7 +154,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
                   La Maison {perfume.brand}
                 </p>
                 <p className="mb-3 mt-2 w-full text-center text-[9px] uppercase tracking-[0.25em] text-[var(--nurea-accent)]">
-                  Sélection officielle
+                  Édition Privée
                 </p>
                 <div className="min-h-0 w-full max-w-[280px] flex-1 overflow-y-auto overscroll-y-contain custom-scrollbar [-webkit-overflow-scrolling:touch]">
                   <div className="flex flex-col gap-1.5 pb-2">
@@ -185,16 +185,16 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
             ) : (
               <div className="mx-auto flex w-full max-w-[260px] flex-col gap-3 self-center px-4 py-2">
                 <p className="text-center font-serif text-[15px] leading-snug text-[var(--nurea-text)] md:text-lg">
-                  Continuer l&apos;échange
+                  Poursuivre l&apos;Émotion
                 </p>
                 <p className="mb-2 text-center text-[9px] uppercase tracking-[0.25em] text-[var(--nurea-text-muted)]">
-                  Disponibilité & Conseils
+                  Expertise & Disponibilité
                 </p>
                 <Link
                   href="/contact"
                   className="group/btn flex min-h-[48px] w-full items-center justify-center gap-2 border border-[var(--nurea-accent)] bg-[var(--nurea-accent-subtle)] px-4 py-3 text-[10px] font-medium uppercase tracking-nurea-wide text-[var(--nurea-text)] transition-all duration-500 hover:bg-[var(--nurea-accent-solid)] hover:text-white md:px-5 md:py-3.5 md:text-[11px]"
                 >
-                  Nous contacter
+                  Engager le Dialogue
                   <ArrowRight
                     size={12}
                     className="transition-transform duration-500 group-hover/btn:-rotate-45"
@@ -228,10 +228,11 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
           {perfume.name}
         </span>
         <span className="mt-2 flex items-center gap-2 text-[10px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] transition-colors duration-500 group-hover:text-[var(--nurea-text)] md:text-[11px]">
-          {isGammeComplete ? "Voir la sélection" : "Continuer avec nous"}
+          {isGammeComplete ? "Explorer la Sélection" : "Engager le Dialogue"}
           <ArrowRight size={10} className="text-[var(--nurea-accent)] opacity-0 -translate-x-2 transition-all duration-500 group-hover:opacity-100 group-hover:translate-x-0" />
         </span>
       </button>
     </article>
   );
+
 };

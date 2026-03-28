@@ -68,7 +68,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
               className="flex min-h-[42vh] flex-col justify-center bg-[var(--nurea-surface)] px-6 py-12 md:min-h-[70vh] md:px-14 md:py-24 lg:px-20"
             >
               <span className="mb-3 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
-                Référence mise en avant
+                Signature du Moment
               </span>
               <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.22em] text-[var(--nurea-text-muted)]">
                 {perfume.brand}
@@ -87,12 +87,10 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                 )}
               </h2>
               <p className="mb-8 max-w-[420px] text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] md:text-[14px] md:leading-[1.85]">
-                Deux signatures qui donnent le ton de la maison. Ici, une
-                vitrine : disponibilités, arrivages et options se confirment
-                avec vous.
+                Une pièce maîtresse de notre sélection privée. Chaque sillage exposé témoigne de notre exigence ; sollicitez la Maison pour en faire votre empreinte personnelle.
               </p>
               <Link href="/contact" className="btn-nurea group w-fit">
-                Nous contacter
+                Engager le Dialogue
                 <ArrowRight
                   size={13}
                   className="text-[var(--nurea-accent)] transition-transform duration-300 group-hover:-rotate-45"

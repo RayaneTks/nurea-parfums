@@ -8,21 +8,6 @@ import { Separator } from "@/components/ui/Separator";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
-const steps = [
-  {
-    title: "Explorer la sélection",
-    body: "Le catalogue présente les maisons, signatures et gammes visibles du moment sans se substituer à la conversation.",
-  },
-  {
-    title: "Confirmer avec la maison",
-    body: "Disponibilités, arrivages, variantes ou recommandations se confirment en direct avec Nurea Parfums.",
-  },
-  {
-    title: "Poursuivre l’échange",
-    body: "La page Contact regroupe messagerie instantanée et e-mail : vous choisissez le canal qui vous convient.",
-  },
-];
-
 export const MarquePageClient = () => {
   const [scrolled, setScrolled] = useState(false);
 
@@ -37,143 +22,112 @@ export const MarquePageClient = () => {
   return (
     <div className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
       <Navbar scrolled={scrolled} />
-      <main
-        id="main-content"
-        className="mx-auto flex-1 w-full max-w-[880px] px-4 py-16 md:px-10 md:py-24"
-      >
-        <ScrollReveal>
-          <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
-            Identité
-          </p>
-          <h1 className="font-serif text-[clamp(28px,6vw,40px)] leading-tight text-[var(--nurea-text)]">
-            {SITE_NAME} — site officiel
-          </h1>
-          <p className="mt-4 text-[15px] leading-relaxed text-[var(--nurea-text-muted)]">
-            {SITE_NAME} est une maison de haute parfumerie indépendante. Le
-            site officiel présente la sélection et les références du moment, et
-            relie à la maison pour tout ce qui dépasse la vitrine.
-          </p>
-          <p className="mt-4 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-            Pour nous retrouver en ligne, vérifiez toujours l’orthographe{" "}
-            <strong className="font-medium text-[var(--nurea-text)]">Nurea</strong>{" "}
-            (N-U-R-E-A) ainsi que le domaine officiel{" "}
-            <strong className="font-medium text-[var(--nurea-text)]">
-              {domain}
-            </strong>
-            . C’est le seul site qui rassemble la collection, l’univers de marque
-            et le contact officiel avec la maison.
-          </p>
-        </ScrollReveal>
+      
+      <main id="main-content" className="flex-1">
+        {/* Hero Section Marque */}
+        <section className="relative px-4 pt-24 pb-16 md:pt-36 md:pb-24 overflow-hidden">
+          <div className="mx-auto max-w-[880px]">
+            <ScrollReveal>
+              <span className="mb-4 block text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)] md:text-[12px]">
+                La Maison
+              </span>
+              <h1 className="font-serif text-[clamp(32px,7vw,56px)] leading-[1.1] text-[var(--nurea-text)]">
+                L&apos;Éloge de l&apos;Exceptionnel
+              </h1>
+              <p className="mt-8 text-[17px] leading-[1.8] text-[var(--nurea-text-muted)] font-light">
+                {SITE_NAME} n&apos;est pas simplement une parfumerie. C&apos;est un sanctuaire dédié aux sillages qui racontent une histoire, à ces essences rares qui capturent l&apos;invisible et subliment l&apos;instant.
+              </p>
+            </ScrollReveal>
+          </div>
+        </section>
 
-        <Separator variant="copper" className="my-12 opacity-60" />
+        <Separator variant="bordeaux" className="opacity-40" />
 
-        <ScrollReveal delay={80}>
-          <h2 className="font-serif text-[22px] tracking-wide text-[var(--nurea-text)] md:text-[26px]">
-            Notre manière de faire
-          </h2>
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {steps.map((step) => (
-              <div
-                key={step.title}
-                className="group flex flex-col border border-[var(--nurea-border)] bg-[var(--nurea-surface)] p-6 transition-all duration-500 hover:border-[var(--nurea-accent)] hover:shadow-2xl hover:shadow-[var(--nurea-accent-subtle)]"
-              >
-                <div className="mb-4 h-[2px] w-8 bg-[var(--nurea-accent)] transition-all duration-500 group-hover:w-full" />
-                <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-[var(--nurea-accent)]">
-                  {step.title}
+        {/* Vision Section */}
+        <section className="px-4 py-16 md:py-24">
+          <div className="mx-auto max-w-[880px] grid gap-12 md:gap-20">
+            <ScrollReveal delay={100}>
+              <div className="grid md:grid-cols-2 gap-8 items-start">
+                <div>
+                  <h2 className="font-serif text-2xl text-[var(--nurea-text)] mb-6">Une Sélection Sans Compromis</h2>
+                  <p className="text-[15px] leading-[1.7] text-[var(--nurea-text-muted)]">
+                    Chaque flacon présent dans notre collection est le fruit d&apos;une quête obsessionnelle de la qualité. Nous ne référençons que des créations qui possèdent une âme, une tenue exemplaire et une signature olfactive qui ne laisse personne indifférent.
+                  </p>
+                </div>
+                <div className="pt-2 md:pt-12">
+                  <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--nurea-accent)] mb-4">Notre Expertise</h3>
+                  <p className="text-[14px] leading-[1.6] text-[var(--nurea-text-muted)]">
+                    Des maisons de niche confidentielles aux classiques intemporels, nous explorons les territoires olfactifs les plus exigeants pour vous offrir l&apos;inattendu.
+                  </p>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            <ScrollReveal delay={200}>
+              <div className="border border-[var(--nurea-border)] bg-[var(--nurea-surface)] p-8 md:p-12 relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-1 h-full bg-[var(--nurea-accent)] opacity-20 group-hover:h-full transition-all duration-700" />
+                <h2 className="font-serif text-2xl text-[var(--nurea-text)] mb-6 text-center md:text-left">La Proximité au Cœur de l&apos;Échange</h2>
+                <p className="text-[15px] leading-[1.8] text-[var(--nurea-text-muted)] max-w-2xl">
+                  À l&apos;ère du tout numérique, nous avons choisi de préserver l&apos;humain. Notre catalogue est une invitation au dialogue. Pour chaque référence, nous sommes là pour vous conseiller, vérifier une disponibilité ou organiser une découverte personnalisée.
                 </p>
-                <p className="mt-4 text-[14px] leading-relaxed text-[var(--nurea-text-muted)] group-hover:text-[var(--nurea-text)] transition-colors duration-500">
-                  {step.body}
+                <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                  <Link href="/contact" className="btn-nurea text-[11px]">Engager la conversation</Link>
+                </div>
+              </div>
+            </ScrollReveal>
+          </div>
+        </section>
+
+        <Separator variant="copper" className="opacity-30" />
+
+        {/* Identité & Sécurité Section (Clean SEO) */}
+        <section className="px-4 py-16 md:py-24 bg-black/20">
+          <div className="mx-auto max-w-[880px]">
+            <ScrollReveal>
+              <h2 className="font-serif text-xl text-[var(--nurea-text)] mb-8">Identité Officielle</h2>
+              <div className="grid gap-8 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
+                <p>
+                  Pour vous garantir l&apos;authenticité de nos produits et de nos échanges, veillez à toujours consulter notre domaine unique : <span className="text-[var(--nurea-text)] font-medium">{domain}</span>. 
+                </p>
+                <p>
+                  L&apos;orthographe de la Maison s&apos;écrit avec élégance : <strong className="text-[var(--nurea-accent)] font-semibold italic">Nuréa Parfums</strong>. Un accent sur le « é », un « s » à Parfums. Cette précision reflète l&apos;attention que nous portons à chaque détail de votre expérience.
                 </p>
               </div>
-            ))}
+            </ScrollReveal>
+
+            <ScrollReveal delay={100}>
+              <div className="mt-16 border-t border-[var(--nurea-border)] pt-12">
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--nurea-accent)] mb-8">Questions Fréquentes</h3>
+                <div className="grid gap-10">
+                  <div className="group">
+                    <h4 className="text-[15px] font-medium text-[var(--nurea-text)] mb-3 group-hover:text-[var(--nurea-accent)] transition-colors italic">Le catalogue est-il exhaustif ?</h4>
+                    <p className="text-[14px] text-[var(--nurea-text-muted)] leading-relaxed">
+                      Notre vitrine numérique présente une sélection soigneusement éditée. De nombreuses exclusivités et arrivages ne sont confirmés qu&apos;en direct avec nos clients.
+                    </p>
+                  </div>
+                  <div className="group">
+                    <h4 className="text-[15px] font-medium text-[var(--nurea-text)] mb-3 group-hover:text-[var(--nurea-accent)] transition-colors italic">Comment se déroule une commande ?</h4>
+                    <p className="text-[14px] text-[var(--nurea-text-muted)] leading-relaxed">
+                      Tout commence par un échange sur WhatsApp, Snapchat ou par e-mail. Nous confirmons la disponibilité, vous conseillons sur le sillage, et finalisons la transaction de manière sécurisée et personnalisée.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
           </div>
-        </ScrollReveal>
+        </section>
 
-        <ScrollReveal delay={120}>
-          <h2 className="mt-12 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
-            Orthographe et recherches
-          </h2>
-          <p className="mt-4 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-            Les recherches du type « nurea parfum », « nurea parfums » ou «
-            nurea » sans accent doivent mener vers ce site. Le nom complet de
-            la maison s’écrit{" "}
-            <strong className="text-[var(--nurea-text)]">{SITE_NAME}</strong>{" "}
-            avec « Parfums » au pluriel.
-          </p>
-          <p className="mt-4 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-            Des marques distinctes existent avec des graphies proches sur le
-            marché du parfum et du luxe. Si le domaine ou le logo ne
-            correspondent pas à {domain}, vous n’êtes pas sur la présence
-            officielle {SITE_NAME}.
-          </p>
-        </ScrollReveal>
-
-        <ScrollReveal delay={160}>
-          <h2 className="mt-12 font-serif text-xl text-[var(--nurea-text)] md:text-2xl">
-            Questions fréquentes
-          </h2>
-          <dl className="mt-6 space-y-8">
-            <div>
-              <dt className="text-[12px] font-medium uppercase tracking-[0.12em] text-[var(--nurea-accent)]">
-                Comment s’écrit correctement le nom {SITE_NAME} ?
-              </dt>
-              <dd className="mt-2 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-                L’orthographe officielle est « Nurea » (N-U-R-E-A), suivie de
-                « Parfums » au pluriel : {SITE_NAME}.
-              </dd>
+        <section className="px-4 py-20 text-center">
+          <ScrollReveal direction="scale">
+            <h2 className="font-serif text-3xl mb-8">Prêt à trouver votre signature ?</h2>
+            <div className="flex justify-center gap-4 flex-wrap">
+              <Link href="/" className="btn-nurea btn-accent">Explorer la Collection</Link>
+              <Link href="/contact" className="btn-nurea">Nous écrire</Link>
             </div>
-            <div>
-              <dt className="text-[12px] font-medium uppercase tracking-[0.12em] text-[var(--nurea-accent)]">
-                Quel est le site officiel de {SITE_NAME} ?
-              </dt>
-              <dd className="mt-2 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-                Le site officiel est {domain}. Vérifiez toujours l’adresse dans
-                votre navigateur avant de poursuivre un échange.
-              </dd>
-            </div>
-            <div>
-              <dt className="text-[12px] font-medium uppercase tracking-[0.12em] text-[var(--nurea-accent)]">
-                Le catalogue montre-t-il tout ce que la maison peut proposer ?
-              </dt>
-              <dd className="mt-2 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-                Non. Le catalogue reste une vitrine éditoriale. Certaines
-                références, arrivages ou alternatives se confirment uniquement
-                en conversation avec la maison.
-              </dd>
-            </div>
-            <div>
-              <dt className="text-[12px] font-medium uppercase tracking-[0.12em] text-[var(--nurea-accent)]">
-                Je ne trouve pas un parfum dans le catalogue, que faire ?
-              </dt>
-              <dd className="mt-2 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-                Passez par la{" "}
-                <Link
-                  href="/contact"
-                  className="text-[var(--nurea-accent)] underline-offset-4 hover:underline"
-                >
-                  page Contact
-                </Link>{" "}
-                : nous vous orientons ou vérifions une référence plus
-                précisément.
-              </dd>
-            </div>
-          </dl>
-        </ScrollReveal>
-
-        <ScrollReveal delay={200}>
-          <div className="mt-14 flex flex-wrap gap-4">
-            <Link href="/" className="btn-nurea text-[10px] md:text-[11px]">
-              Voir la collection
-            </Link>
-            <Link
-              href="/contact"
-              className="border border-[var(--nurea-border-hover)] px-5 py-3 text-[10px] uppercase tracking-[0.15em] text-[var(--nurea-text-muted)] transition-colors hover:border-[var(--nurea-accent)] hover:text-[var(--nurea-accent)]"
-            >
-              Nous contacter
-            </Link>
-          </div>
-        </ScrollReveal>
+          </ScrollReveal>
+        </section>
       </main>
+
       <Footer />
     </div>
   );

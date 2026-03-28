@@ -38,7 +38,7 @@ export async function submitContactForm(
       from,
       to,
       replyTo: email,
-      subject: `[Nurea] ${subject}`,
+      subject: `[Nuréa] ${subject}`,
       text: `Nom : ${name}\nE-mail : ${email}\n\n${message}`,
     });
     if (error) {

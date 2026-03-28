@@ -10,10 +10,10 @@ export default function NotFound() {
         Page introuvable
       </h1>
       <p className="mb-10 max-w-sm text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-        Cette adresse ne correspond à aucune page du site officiel Nurea Parfums.
+        Cette adresse ne correspond à aucune page de la Maison Nuréa Parfums.
       </p>
       <Link href="/" className="btn-nurea btn-accent">
-        Retour à la collection
+        Découvrir la Galerie
       </Link>
     </div>
   );

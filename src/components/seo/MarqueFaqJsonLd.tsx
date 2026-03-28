@@ -11,7 +11,7 @@ export function MarqueFaqJsonLd() {
         name: `Comment s'écrit correctement le nom ${SITE_NAME} ?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `L'orthographe officielle est « Nurea » (N-U-R-E-A), suivi de « Parfums » au pluriel : ${SITE_NAME}.`,
+          text: `L'orthographe officielle est « Nuréa » (N-U-R-É-A), suivi de « Parfums » au pluriel : ${SITE_NAME}.`,
         },
       },
       {

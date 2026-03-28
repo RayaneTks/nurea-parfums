@@ -109,17 +109,17 @@ export const ContactSection: FC = () => {
             Contact
           </span>
           <h1 className="mb-4 font-serif text-[clamp(28px,7vw,48px)] leading-[1.1] text-[var(--nurea-text)]">
-            On vous répond vite
+            Le Dialogue se poursuit
           </h1>
           <p className="mx-auto max-w-lg text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-            Choisissez votre canal : WhatsApp, Snapchat ou formulaire. Plus votre demande est précise, plus la réponse est rapide.
+            Privilégiez le canal qui vous ressemble. Chaque message est lu avec attention par la Maison Nuréa Parfums pour vous offrir une réponse sur-mesure.
           </p>
         </ScrollReveal>
 
         <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-[1fr_1.2fr] md:gap-10">
           <ScrollReveal direction="left" className="space-y-4">
             <h2 className="text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--nurea-text-muted)]">
-              Message direct
+              Échange Instantané
             </h2>
 
             <a
@@ -133,7 +133,7 @@ export const ContactSection: FC = () => {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
-                  Le plus rapide
+                  Disponibilité Immédiate
                 </p>
                 <p className="font-serif text-[18px] text-[var(--nurea-text)]">WhatsApp</p>
               </div>
@@ -151,7 +151,7 @@ export const ContactSection: FC = () => {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
-                  Discussion
+                  Galerie Éphémère
                 </p>
                 <p className="font-serif text-[18px] text-[var(--nurea-text)]">Snapchat</p>
               </div>
@@ -160,7 +160,7 @@ export const ContactSection: FC = () => {
 
             <div className="border border-[var(--nurea-border)] bg-[var(--nurea-surface)] px-4 py-4">
               <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
-                Email
+                Courrier Électronique
               </p>
               <a href={`mailto:${CONTACT.email}`} className="mt-1 block text-[15px] text-[var(--nurea-text)] hover:text-[var(--nurea-accent)]">
                 {CONTACT.email}
@@ -171,24 +171,24 @@ export const ContactSection: FC = () => {
           <ScrollReveal direction="right" delay={100}>
             <div className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-5 md:p-7">
               <h3 className="text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--nurea-text-muted)]">
-                Formulaire
+                Confidences
               </h3>
               <p className="mb-6 mt-1 font-serif text-[22px] text-[var(--nurea-text)]">
-                Envoyer un message
+                Laisser une Empreinte
               </p>
 
               {isSubmitted ? (
                 <div className="animate-fade-in-up py-10 text-center">
                   <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--nurea-accent)]">
-                    {submitChannel === "resend" ? "Message envoyé" : "Messagerie ouverte"}
+                    {submitChannel === "resend" ? "Message transmis" : "Messagerie ouverte"}
                   </p>
                   <p className="mt-2 font-serif text-[22px] text-[var(--nurea-text)]">
-                    Merci pour votre message
+                    Merci pour votre confiance
                   </p>
                   <p className="mx-auto mt-3 max-w-sm text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
                     {submitChannel === "resend"
-                      ? "Nous revenons vers vous rapidement."
-                      : "Si rien ne s'ouvre, envoyez-nous un e-mail directement."}
+                      ? "Nous reviendrons vers vous avec la plus grande attention."
+                      : "Si votre application ne s'ouvre pas, n'hésitez pas à nous écrire directement."}
                   </p>
                 </div>
               ) : (
@@ -197,7 +197,7 @@ export const ContactSection: FC = () => {
                     <FormField
                       id="name"
                       name="name"
-                      label="Nom et prénom"
+                      label="Votre Identité"
                       type="text"
                       value={formState.name}
                       error={fieldErrors.name}
@@ -217,7 +217,7 @@ export const ContactSection: FC = () => {
                   <FormField
                     id="subject"
                     name="subject"
-                    label="Sujet"
+                    label="Sujet de l'échange"
                     type="text"
                     value={formState.subject}
                     error={fieldErrors.subject}
@@ -226,7 +226,7 @@ export const ContactSection: FC = () => {
 
                   <div>
                     <label htmlFor="message" className="mb-1.5 block text-[12px] font-medium text-[var(--nurea-text-muted)]">
-                      Message
+                      Votre Message
                     </label>
                     <textarea
                       id="message"
@@ -245,8 +245,8 @@ export const ContactSection: FC = () => {
                     ) : null}
                   </div>
 
-                  <p className="text-[12px] leading-relaxed text-[var(--nurea-text-muted)]">
-                    Besoin d&apos;une disponibilité ou d&apos;une alternative ? Donnez la marque et le nom du parfum.
+                  <p className="text-[12px] leading-relaxed text-[var(--nurea-text-muted)] italic">
+                    Précisez la Maison et le nom du sillage pour une expertise ciblée.
                   </p>
 
                   {serverError ? (
@@ -260,9 +260,9 @@ export const ContactSection: FC = () => {
                     disabled={isSubmitting}
                     className="btn-nurea btn-accent mt-2 w-full justify-center disabled:opacity-50"
                   >
-                    {isSubmitting ? "Envoi…" : (
+                    {isSubmitting ? "Transmission…" : (
                       <>
-                        Envoyer
+                        Envoyer le message
                         <Send size={13} className="text-white" />
                       </>
                     )}

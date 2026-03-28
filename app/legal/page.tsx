@@ -21,10 +21,10 @@ export default function LegalComingSoon() {
             Nuréa Parfums
           </span>
           <h1 className="mb-6 font-serif text-[clamp(28px,5vw,42px)] leading-tight text-[var(--nurea-text)]">
-            Page en cours de rédaction
+            Parachever l&apos;Expérience
           </h1>
           <p className="mx-auto max-w-md text-[15px] leading-relaxed text-[var(--nurea-text-muted)]">
-            Nous préparons actuellement nos documents légaux pour vous garantir une transparence totale. Cette section sera disponible très prochainement.
+            Nous rédigeons actuellement les derniers détails de nos engagements légaux pour vous assurer une sérénité absolue. Cette section sera dévoilée très prochainement.
           </p>
           
           <div className="mt-12">

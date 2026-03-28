@@ -1,44 +1,38 @@
 /** URL canonique du site (sans slash final dans les concaténations courantes). */
 export const SITE_URL = "https://nureaparfums.com" as const;
 
-export const SITE_NAME = "Nurea Parfums";
-export const SITE_SHORT_NAME = "Nurea";
+export const SITE_NAME = "Nuréa Parfums";
+export const SITE_SHORT_NAME = "Nuréa";
 export const SITE_TAGLINE = "Maison de Haute Parfumerie";
 
 export const DEFAULT_DESCRIPTION =
-  "Nurea Parfums — maison de haute parfumerie. Catalogue de fragrances d'exception, sélection privée ; disponibilités et commandes se confirment avec la maison. Site officiel nureaparfums.com.";
+  "Nuréa Parfums — Une invitation à l'exceptionnel. Maison de haute parfumerie indépendante, nous cultivons l'art du sillage rare et de la confidence. Découvrez notre sélection privée et engagez le dialogue avec la Maison.";
 
 /**
  * Noms alternatifs pour schema.org et cohérence SEO (recherches avec/sans « s », fautes fréquentes).
  * Inclut des variantes utiles sans citer de concurrents nominalement dans le code métier.
  */
 export const BRAND_ALTERNATE_NAMES: string[] = [
-  "Nurea Parfums",
-  "Nurea Parfum",
-  "Nurea",
-  "Maison Nurea",
-  "Nurea parfumerie",
-  "Nurea haute parfumerie",
+  "Nuréa Parfums",
+  "Nuréa Parfums",
+  "Nuréa Parfum",
+  "Nuréa Parfum",
+  "Nuréa",
+  "Nuréa",
+  "Maison Nuréa",
+  "Nuréa haute parfumerie",
 ];
 
 /**
  * Mots-clés ciblant la marque et les requêtes à risque de confusion orthographique.
- * (Les meta keywords sont un signal mineur pour Google mais restent utiles à d'autres systèmes.)
  */
 export const SEO_KEYWORDS: string[] = [
-  "Nurea Parfums",
-  "Nurea Parfum",
-  "nurea parfums",
-  "nurea parfum",
-  "nurea",
-  "nurea parfums officiel",
-  "site officiel Nurea",
-  "nureaparfums",
+  "Nuréa Parfums",
+  "Nuréa Parfums",
+  "site officiel Nuréa Parfums",
   "nureaparfums.com",
-  "maison Nurea",
-  "parfumerie Nurea",
-  "parfums Nurea",
-  "contact parfumerie Nurea",
-  "parfums de luxe",
-  "haute parfumerie",
+  "maison de parfum indépendante",
+  "parfums d'exception",
+  "haute parfumerie paris",
+  "sélection privée parfum",
 ];

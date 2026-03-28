@@ -6,7 +6,7 @@ export function buildContactMailto(fields: {
   subject: string;
   message: string;
 }): string {
-  const subject = `[Nurea] ${fields.subject}`.trim();
+  const subject = `[Nuréa] ${fields.subject}`.trim();
   const body = `Nom : ${fields.name}\nE-mail : ${fields.email}\n\n${fields.message}`;
   return `mailto:${CONTACT.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }

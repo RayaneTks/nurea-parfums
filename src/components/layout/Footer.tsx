@@ -36,7 +36,7 @@ export const Footer: FC = () => {
                       ? "/branding/logos/nurea_logo_white.svg"
                       : "/branding/logos/nurea_logo_black.svg"
                   }
-                  alt="Nurea Parfums"
+                  alt="Nuréa Parfums"
                   width={140}
                   height={40}
                   className="h-10 w-auto"

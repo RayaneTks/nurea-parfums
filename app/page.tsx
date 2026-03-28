@@ -7,19 +7,19 @@ import { getCatalogPerfumes } from "@/lib/catalog/getCatalogPerfumes";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Collection",
-  description: `${SITE_NAME} — catalogue officiel : parfums d'exception et gammes complètes. Disponibilités avec la maison via la page Contact. Recherche « nurea parfums », « nurea parfum » ou ${SITE_URL.replace("https://", "")}.`,
+  title: "La Galerie",
+  description: `${SITE_NAME} — Une invitation à l&apos;exceptionnel. Découvrez notre sélection de sillages rares et engagez le dialogue pour une expertise personnalisée. Site officiel.`,
   keywords: [
-    "Nurea Parfums catalogue",
-    "nurea parfum",
-    "nurea parfums",
-    "parfums luxe",
+    "Nuréa Parfums",
+    "parfumerie d'exception",
+    "sillage rare",
+    "haute parfumerie",
   ],
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: `Collection — ${SITE_NAME}`,
+    title: `La Galerie — ${SITE_NAME}`,
     description: DEFAULT_DESCRIPTION,
     url: SITE_URL,
     type: "website",
