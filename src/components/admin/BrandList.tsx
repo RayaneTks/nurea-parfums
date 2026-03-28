@@ -30,6 +30,8 @@ interface BrandListProps {
   onPreview: (brand: BrandRow) => void;
   pendingBrandIds: Set<string>;
   hasMutationInFlight: boolean;
+  search: string;
+  onSearchChange: (val: string) => void;
 }
 
 export function BrandList({
@@ -41,8 +43,9 @@ export function BrandList({
   onPreview,
   pendingBrandIds,
   hasMutationInFlight,
+  search,
+  onSearchChange,
 }: BrandListProps) {
-  const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<BrandFilter>("all");
 
   const filtered = useMemo(() => {
@@ -75,8 +78,8 @@ export function BrandList({
           isSearch
           placeholder="Rechercher une marque..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onClear={() => setSearch("")}
+          onChange={(e) => onSearchChange(e.target.value)}
+          onClear={() => onSearchChange("")}
         />
         
         <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
@@ -133,6 +136,14 @@ export function BrandList({
                     label={brand.catalogMode === "COMPLETE" ? "Gamme complète" : "Sélection"}
                     variant={brand.catalogMode === "COMPLETE" ? "warning" : "info"}
                   />
+                  {brand.catalogMode === "CURATED" && (
+                    <button
+                      onClick={() => onFilterPerfumes(brand.name)}
+                      className="text-[11px] font-bold text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 px-2 py-0.5 rounded-md active:scale-95"
+                    >
+                      {brand._count.perfumes} parfum{brand._count.perfumes > 1 ? "s" : ""}
+                    </button>
+                  )}
                   <div className="flex items-center gap-1.5 ml-0.5">
                     <StatusDot status={brand.status} />
                     <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide">

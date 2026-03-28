@@ -180,6 +180,7 @@ export function AdminDashboard() {
   const [loadErr, setLoadErr] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [tab, setTab] = useState<Tab>(initialTab);
+  const [search, setSearch] = useState("");
   const [actionMsg, setActionMsg] = useState<{ type: ToastType; text: string } | null>(null);
 
   // States for mutations
@@ -194,6 +195,12 @@ export function AdminDashboard() {
   const [previewItem, setPreviewItem] = useState<PerfumeRow | BrandRow | null>(null);
 
   const hasMutationInFlight = pendingDeleteIds.size > 0 || pendingStatusIds.size > 0 || pendingBrandIds.size > 0 || pendingFeaturedIds.size > 0;
+
+  const handleSearchBrand = useCallback((brandName: string, targetTab: Tab) => {
+    setSearch(brandName);
+    setTab(targetTab);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   const refresh = useCallback(async () => {
     setIsLoading(true);
@@ -390,6 +397,8 @@ export function AdminDashboard() {
               canEdit={canEdit}
               onToggleFeatured={toggleFeatured}
               pendingFeaturedIds={pendingFeaturedIds}
+              search={search}
+              onSearchChange={setSearch}
             />
           ) : tab === "perfumes" ? (
             <PerfumeList
@@ -397,11 +406,13 @@ export function AdminDashboard() {
               canEdit={canEdit}
               onToggleVisibility={toggleVisibility}
               onDelete={(id, name) => setDeleteTarget({ id, name })}
-              onGoToBrand={(name) => { setTab("brands"); /* Search will be handled by list internal state or lifted up if needed */ }}
+              onGoToBrand={(name) => handleSearchBrand(name, "brands")}
               onPreview={setPreviewItem}
               pendingStatusIds={pendingStatusIds}
               pendingDeleteIds={pendingDeleteIds}
               hasMutationInFlight={hasMutationInFlight}
+              search={search}
+              onSearchChange={setSearch}
             />
           ) : (
             <BrandList
@@ -409,10 +420,12 @@ export function AdminDashboard() {
               canEdit={canEdit}
               onToggleVisibility={toggleBrandVisibility}
               onDelete={(id, name, count) => setBrandDeleteTarget({ id, name, count })}
-              onFilterPerfumes={(name) => { setTab("perfumes"); /* Lift up search if cross-tab search is needed */ }}
+              onFilterPerfumes={(name) => handleSearchBrand(name, "perfumes")}
               onPreview={setPreviewItem}
               pendingBrandIds={pendingBrandIds}
               hasMutationInFlight={hasMutationInFlight}
+              search={search}
+              onSearchChange={setSearch}
             />
           )}
         </div>

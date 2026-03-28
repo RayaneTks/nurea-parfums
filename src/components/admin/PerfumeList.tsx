@@ -30,6 +30,8 @@ interface PerfumeListProps {
   pendingDeleteIds: Set<number>;
   hasMutationInFlight: boolean;
   onGoToBrand: (name: string) => void;
+  search: string;
+  onSearchChange: (val: string) => void;
 }
 
 export function PerfumeList({
@@ -42,8 +44,9 @@ export function PerfumeList({
   pendingDeleteIds,
   hasMutationInFlight,
   onGoToBrand,
+  search,
+  onSearchChange,
 }: PerfumeListProps) {
-  const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<PerfumeFilter>("all");
 
   const filtered = useMemo(() => {
@@ -89,8 +92,8 @@ export function PerfumeList({
           isSearch
           placeholder="Rechercher un parfum ou une marque..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onClear={() => setSearch("")}
+          onChange={(e) => onSearchChange(e.target.value)}
+          onClear={() => onSearchChange("")}
         />
         
         <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">

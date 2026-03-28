@@ -1,5 +1,7 @@
+import { useMemo, useState } from "react";
 import { Star, StarOff, Info } from "lucide-react";
 import Image from "next/image";
+import { AdminInput } from "./ui/AdminInput";
 
 type PerfumeRow = {
   id: number;
@@ -16,6 +18,8 @@ interface FeaturedListProps {
   canEdit: boolean;
   onToggleFeatured: (id: number, currentFeatured: boolean) => void;
   pendingFeaturedIds: Set<number>;
+  search: string;
+  onSearchChange: (val: string) => void;
 }
 
 export function FeaturedList({
@@ -23,9 +27,20 @@ export function FeaturedList({
   canEdit,
   onToggleFeatured,
   pendingFeaturedIds,
+  search,
+  onSearchChange,
 }: FeaturedListProps) {
   const featuredPerfumes = perfumes.filter(p => p.isFeatured);
-  const otherPerfumes = perfumes.filter(p => !p.isFeatured && p.status === "PUBLISHED");
+  
+  const otherPerfumes = useMemo(() => {
+    let rows = perfumes.filter(p => !p.isFeatured && p.status === "PUBLISHED");
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter(p => 
+      p.name.toLowerCase().includes(q) || 
+      p.brand.name.toLowerCase().includes(q)
+    );
+  }, [perfumes, search]);
 
   const canAddMore = featuredPerfumes.length < 2;
 
@@ -69,21 +84,39 @@ export function FeaturedList({
         )}
       </div>
 
-      <div>
-        <h3 className="text-lg font-bold text-zinc-100 mb-4">Autres parfums publiés</h3>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {otherPerfumes.map(p => (
-            <PerfumeFeatureCard
-              key={p.id}
-              perfume={p}
-              isFeatured={false}
-              canEdit={canEdit}
-              disabled={!canAddMore}
-              onToggle={() => onToggleFeatured(p.id, false)}
-              isPending={pendingFeaturedIds.has(p.id)}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h3 className="text-lg font-bold text-zinc-100">Autres parfums publiés</h3>
+          <div className="w-full sm:max-w-xs">
+            <AdminInput
+              isSearch
+              placeholder="Chercher un parfum..."
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              onClear={() => onSearchChange("")}
             />
-          ))}
+          </div>
         </div>
+        
+        {otherPerfumes.length === 0 ? (
+          <div className="p-12 text-center bg-zinc-900/20 rounded-2xl border border-zinc-800 border-dashed">
+            <p className="text-zinc-500 text-sm">Aucun résultat pour cette recherche.</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {otherPerfumes.map(p => (
+              <PerfumeFeatureCard
+                key={p.id}
+                perfume={p}
+                isFeatured={false}
+                canEdit={canEdit}
+                disabled={!canAddMore}
+                onToggle={() => onToggleFeatured(p.id, false)}
+                isPending={pendingFeaturedIds.has(p.id)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
     </div>
