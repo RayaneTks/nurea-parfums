@@ -89,7 +89,10 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                 )}
               </h2>
               <p className="mb-8 max-w-[420px] text-[15px] leading-[1.75] text-[var(--nurea-text-muted)] md:text-[14px] md:leading-[1.85]">
-                Une pièce maîtresse de notre sélection privée. Chaque sillage exposé témoigne de notre exigence ; sollicitez la Maison pour en faire votre empreinte personnelle.
+                {index === 0 
+                  ? "Une pièce maîtresse de notre sélection privée. Ce sillage témoigne d'une exigence absolue ; sollicitez la Maison pour en faire votre empreinte personnelle."
+                  : "L'expression pure d'un savoir-faire d'exception. Une fragrance rare qui bouscule les sens ; engagez le dialogue avec nous pour une expérience olfactive singulière."
+                }
               </p>
               <Link href="/contact" className="btn-nurea group w-fit">
                 Engager le Dialogue
