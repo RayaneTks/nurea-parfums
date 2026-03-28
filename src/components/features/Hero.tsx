@@ -35,24 +35,33 @@ export const Hero: FC = () => {
           alt=""
           fill
           sizes="100vw"
-          className={`object-cover object-[center_30%] transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
+          className="object-cover object-[center_30%]"
           priority
           fetchPriority="high"
           quality={85}
         />
-        {/* Overlays */}
+        {/* Overlays for contrast */}
         <div
-          className="absolute inset-0 bg-[var(--nurea-bg)]/70 transition-colors duration-500"
+          className="absolute inset-0"
+          style={{ background: "rgba(10, 5, 8, 0.72)" }}
         />
         <div
-          className="absolute inset-0 bg-gradient-to-b from-[var(--nurea-bg)]/50 via-transparent to-[var(--nurea-bg)]"
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(10,5,8,0.5) 0%, rgba(10,5,8,0.2) 35%, rgba(10,5,8,0.4) 60%, rgba(10,5,8,0.85) 100%)",
+          }}
         />
       </div>
 
       {/* Monogram - Optimized for LCP discovery */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[1]">
         <Image
-          src={monogramSrc}
+          src={
+            mounted && !isDark
+              ? "/branding/monogram/np-free-bordeaux.png"
+              : "/branding/monogram/np-free-cuivre.png"
+          }
           alt=""
           width={440}
           height={440}
@@ -61,7 +70,7 @@ export const Hero: FC = () => {
           sizes="(max-width: 768px) 280px, 440px"
           quality={80}
           style={{
-            opacity: mounted ? (isDark ? 0.04 : 0.045) : 0,
+            opacity: mounted ? (isDark ? 0.04 : 0.045) : 0.04,
           }}
         />
       </div>
@@ -69,9 +78,7 @@ export const Hero: FC = () => {
       <div
         className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[1]"
         style={{
-          background: isDark
-            ? "radial-gradient(circle, rgba(216,128,128,0.08) 0%, transparent 60%)"
-            : "radial-gradient(circle, rgba(139,58,58,0.06) 0%, transparent 55%)",
+          background: "radial-gradient(circle, rgba(216,128,128,0.08) 0%, transparent 60%)"
         }}
       />
 
