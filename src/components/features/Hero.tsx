@@ -12,8 +12,11 @@ export const Hero: FC = () => {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const isDark = resolvedTheme !== "light";
-  const showThemeContent = mounted;
+  // On utilise des valeurs par défaut stables pour le SSR afin d'éviter le mismatch
+  const isDark = !mounted || resolvedTheme !== "light";
+  const monogramSrc = isDark
+    ? "/branding/monogram/np-free-cuivre.png"
+    : "/branding/monogram/np-free-bordeaux.png";
 
   const handleScroll = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -25,65 +28,31 @@ export const Hero: FC = () => {
 
   return (
     <header className="relative flex min-h-[88svh] items-center justify-center overflow-hidden bg-[var(--nurea-bg)] pb-10 pt-[calc(env(safe-area-inset-top,0px)+4.5rem)] md:min-h-[100svh] md:pb-16 md:pt-24">
-      {showThemeContent && isDark && (
-        <>
-          <Image
-            src="/branding/visuel-hero.png"
-            alt=""
-            fill
-            sizes="100vw"
-            className="object-cover object-[center_30%]"
-            priority
-            fetchPriority="high"
-            quality={85}
-          />
-          <div
-            className="absolute inset-0"
-            style={{ background: "rgba(10, 5, 8, 0.72)" }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(to bottom, rgba(10,5,8,0.5) 0%, rgba(10,5,8,0.2) 35%, rgba(10,5,8,0.4) 60%, rgba(10,5,8,0.85) 100%)",
-            }}
-          />
-        </>
-      )}
-
-      {showThemeContent && !isDark && (
-        <>
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(160deg, #FAF6F2 0%, #F4ECE4 30%, #EDE2D8 60%, #FAF6F2 100%)",
-            }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 70% 50% at 50% 40%, rgba(139,58,58,0.07) 0%, transparent 70%)",
-            }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(to bottom, transparent 0%, rgba(139,58,58,0.03) 50%, rgba(250,246,242,0.8) 100%)",
-            }}
-          />
-        </>
-      )}
-
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      {/* Background Image - LCP Candidate */}
+      <div className="absolute inset-0 z-0">
         <Image
-          src={
-            isDark
-              ? "/branding/monogram/np-free-cuivre.png"
-              : "/branding/monogram/np-free-bordeaux.png"
-          }
+          src="/branding/visuel-hero.png"
+          alt=""
+          fill
+          sizes="100vw"
+          className={`object-cover object-[center_30%] transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
+          priority
+          fetchPriority="high"
+          quality={85}
+        />
+        {/* Overlays */}
+        <div
+          className="absolute inset-0 bg-[var(--nurea-bg)]/70 transition-colors duration-500"
+        />
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-[var(--nurea-bg)]/50 via-transparent to-[var(--nurea-bg)]"
+        />
+      </div>
+
+      {/* Monogram - Optimized for LCP discovery */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[1]">
+        <Image
+          src={monogramSrc}
           alt=""
           width={440}
           height={440}
@@ -92,16 +61,16 @@ export const Hero: FC = () => {
           sizes="(max-width: 768px) 280px, 440px"
           quality={80}
           style={{
-            opacity: isDark ? 0.04 : 0.045,
+            opacity: mounted ? (isDark ? 0.04 : 0.045) : 0,
           }}
         />
       </div>
 
       <div
-        className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 pointer-events-none md:h-[700px] md:w-[700px]"
+        className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[1]"
         style={{
           background: isDark
-            ? "radial-gradient(circle, rgba(139,58,58,0.08) 0%, transparent 60%)"
+            ? "radial-gradient(circle, rgba(216,128,128,0.08) 0%, transparent 60%)"
             : "radial-gradient(circle, rgba(139,58,58,0.06) 0%, transparent 55%)",
         }}
       />

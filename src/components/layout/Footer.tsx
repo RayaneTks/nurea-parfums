@@ -77,7 +77,7 @@ export const Footer: FC = () => {
               <li><Link href="/" className="transition-colors hover:text-[var(--nurea-text)]">La Galerie</Link></li>
               <li><Link href="/marque" className="transition-colors hover:text-[var(--nurea-text)]">La Maison</Link></li>
               <li><Link href="/contact" className="transition-colors hover:text-[var(--nurea-text)]">Contact & Conseils</Link></li>
-              <li><Link href="/admin" className="transition-colors hover:text-[var(--nurea-text)] text-[10px] opacity-60">Accès Réservé</Link></li>
+              <li><Link href="/admin" className="transition-colors hover:text-[var(--nurea-text)] text-[10px] opacity-80">Accès Réservé</Link></li>
             </ul>
           </div>
 

@@ -153,7 +153,7 @@ export function CatalogFilterDrawer({
 
         <div className="absolute bottom-0 left-0 z-30 w-full border-t border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_-10px_40px_rgba(0,0,0,0.4)] backdrop-blur-xl">
           <div className="mb-4 flex items-center justify-between px-1">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-[var(--nurea-text-subtle)]">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-[var(--nurea-text-muted)]">
               {draftBrands.size} sélection{draftBrands.size > 1 ? "s" : ""}
             </span>
             {draftBrands.size > 0 && (

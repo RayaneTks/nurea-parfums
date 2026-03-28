@@ -138,7 +138,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-0 bottom-0 z-[10] flex translate-y-3 justify-start p-3 opacity-0 transition-all duration-500 md:group-hover:translate-y-0 md:group-hover:opacity-100"
           >
-            <div className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-overlay-light)] px-3 py-2 text-[9px] font-medium uppercase tracking-[0.2em] text-[var(--nurea-text)] backdrop-blur-xl">
+            <div className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)]/90 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--nurea-text)] backdrop-blur-xl shadow-lg">
               {hintLabel}
             </div>
           </div>

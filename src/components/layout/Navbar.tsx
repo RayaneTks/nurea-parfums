@@ -323,6 +323,7 @@ export const Navbar: FC<NavbarProps> = ({ scrolled, onOpenBrowse }) => {
                   width={36}
                   height={36}
                   className="opacity-30"
+                  sizes="36px"
                 />
               </div>
             </div>
