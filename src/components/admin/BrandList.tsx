@@ -139,7 +139,7 @@ export function BrandList({
                   {brand.catalogMode === "CURATED" && (
                     <button
                       onClick={() => onFilterPerfumes(brand.name)}
-                      className="text-[11px] font-bold text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 px-2 py-0.5 rounded-md active:scale-95"
+                      className="text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors underline decoration-zinc-800 underline-offset-4 active:opacity-70"
                     >
                       {brand._count.perfumes} parfum{brand._count.perfumes > 1 ? "s" : ""}
                     </button>
