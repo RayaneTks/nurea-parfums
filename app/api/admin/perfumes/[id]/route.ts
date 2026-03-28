@@ -189,18 +189,22 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
        // if we are setting to true, we must ensure max 2 are featured.
        if (body.isFeatured === true) {
           try {
+            // Check count only if the column exists
             const featuredCount = await prisma.perfume.count({ where: { isFeatured: true } });
             if (featuredCount >= 2) {
                return NextResponse.json({ error: "Maximum de 2 parfums mis en avant atteint." }, { status: 400 });
             }
             updates.isFeatured = body.isFeatured;
           } catch (e: any) {
+            // P2022: Column does not exist
             if (e.code === 'P2022') {
-              return NextResponse.json({ error: "La fonctionnalité de mise en avant nécessite une mise à jour de la base de données (colonne isFeatured manquante)." }, { status: 400 });
+              console.warn("[PATCH] isFeatured column missing in DB. Migration needed.");
+              return NextResponse.json({ error: "La fonctionnalité 'Mise en avant' nécessite une synchronisation de la base de données (npx prisma db push)." }, { status: 400 });
             }
             throw e;
           }
        } else {
+          // Setting to false: if column is missing, ignore silently
           try {
             updates.isFeatured = body.isFeatured;
           } catch (e: any) {

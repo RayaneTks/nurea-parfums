@@ -27,6 +27,7 @@ export const Separator = ({
             height={36}
             className="opacity-20"
             sizes="36px"
+            style={{ height: "auto" }}
           />
         )}
         <Image
@@ -36,6 +37,7 @@ export const Separator = ({
           height={14}
           className="h-auto w-auto max-w-[100px] opacity-30 md:max-w-[140px]"
           sizes="(max-width: 768px) 100px, 140px"
+          style={{ height: "auto" }}
         />      </div>
     </ScrollReveal>
   );

@@ -39,17 +39,19 @@ export const Hero: FC = () => {
           priority
           fetchPriority="high"
           quality={85}
+          style={{ opacity: isDark ? 1 : 0.15 }}
         />
         {/* Overlays for contrast */}
         <div
           className="absolute inset-0"
-          style={{ background: "rgba(10, 5, 8, 0.72)" }}
+          style={{ background: isDark ? "rgba(10, 5, 8, 0.72)" : "rgba(250, 246, 242, 0.4)" }}
         />
         <div
           className="absolute inset-0"
           style={{
-            background:
-              "linear-gradient(to bottom, rgba(10,5,8,0.5) 0%, rgba(10,5,8,0.2) 35%, rgba(10,5,8,0.4) 60%, rgba(10,5,8,0.85) 100%)",
+            background: isDark
+              ? "linear-gradient(to bottom, rgba(10,5,8,0.5) 0%, rgba(10,5,8,0.2) 35%, rgba(10,5,8,0.4) 60%, rgba(10,5,8,0.85) 100%)"
+              : "linear-gradient(to bottom, transparent 0%, rgba(250,246,242,0.6) 70%, rgba(250,246,242,1) 100%)",
           }}
         />
       </div>
