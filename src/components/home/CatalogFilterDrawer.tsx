@@ -31,6 +31,10 @@ export function CatalogFilterDrawer({
     new Set(selectedBrandSlugs)
   );
 
+  // Pour éviter le rendu initial sur le serveur et les problèmes d'hydratation
+  const [isRendered, setIsRendered] = useState(false);
+  useEffect(() => setIsRendered(true), []);
+
   useEffect(() => {
     if (open) setDraftBrands(new Set(selectedBrandSlugs));
   }, [open, selectedBrandSlugs]);
@@ -56,19 +60,23 @@ export function CatalogFilterDrawer({
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
   }, [brands]);
 
-  if (!open) return null;
+  if (!isRendered) return null;
 
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm animate-in fade-in duration-500"
+        className={`fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm transition-all duration-500 ${
+          open ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
         onClick={onClose}
       />
 
       {/* Drawer */}
       <aside
-        className="fixed right-0 top-0 z-[110] flex h-full w-full max-w-[400px] flex-col bg-[var(--nurea-surface)] shadow-2xl animate-in slide-in-from-right duration-500 ease-out-expo"
+        className={`fixed right-0 top-0 z-[110] flex h-full w-full max-w-[400px] flex-col bg-[var(--nurea-surface)] shadow-2xl transition-transform duration-500 ease-out-expo ${
+          open ? "translate-x-0" : "translate-x-full"
+        }`}
       >
         <div className="flex items-center justify-between border-b border-[var(--nurea-border)]/50 px-6 py-5">
           <h2 className="font-serif text-xl tracking-tight text-[var(--nurea-text)]">
