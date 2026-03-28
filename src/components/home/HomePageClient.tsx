@@ -525,10 +525,6 @@ export const HomePageClient = ({ catalogPerfumes, browseBrands }: HomePageClient
           isHeaderVisible ? "translate-y-0" : "-translate-y-[calc(100%+env(safe-area-inset-top,0px)+4.25rem)]"
         }`}>
           <ScrollReveal className="mb-0" delay={80}>
-            <p className="mb-2 text-[11px] text-[var(--nurea-text-subtle)] md:hidden">
-              L’icône « Filtrer » en haut à droite ouvre les filtres marque
-              et type ; ce champ reste votre recherche libre.
-            </p>
             <div className="relative mb-3 flex items-center">
               <label htmlFor={CATALOG_SEARCH_ID} className="sr-only">
                 Rechercher un parfum, une maison, une marque ou un mot-clé
