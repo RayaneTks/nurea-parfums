@@ -39,10 +39,17 @@ alwaysApply: true
   - appliquer des filtres drawer reset la catégorie vers "Tout voir",
   - choisir un onglet catégorie reset les filtres drawer.
 
-## Copywriting attendu
+## Copywriting & Identité attendus
+- **Nom de marque** : Toujours utiliser **Nuréa Parfums** (avec l'accent sur le "é").
+- **Localisation** : La Maison est basée à **Marseille** (et alentours). Les expéditions se font dans toute la France. Pas de mentions de "Paris - Dubai" ou de "Showroom".
+- **Contact** : Utiliser l'email `contact@nureaparfum.fr` et les réseaux officiels (Snapchat/WhatsApp). Pas d'Instagram.
 - Français simple, direct, compréhensible par un admin non formé.
 - Préférer des termes usuels: "Marque", "Gamme complète", "Visible", "Masqué", "Supprimer".
 - Eviter les termes abstraits ou hérités d'ancien schéma ("Assortiment", "Univers", etc.).
+
+## Base de données (Prisma) & Next.js
+- **Stabilité Schema** : Toujours utiliser des `select` explicites dans `findMany()` pour éviter que des colonnes manquantes (ex: `isFeatured`) ne crashent le frontend en production. Gérer l'erreur `P2022` avec des try/catch gracieux.
+- **Hydration vs Performance** : Ne jamais corriger une erreur d'hydratation Next.js en masquant un élément critique pour le LCP (comme l'image Hero) au premier rendu. Préférer le CSS ou assumer le rendu serveur.
 
 ## Conventions d'exécution agent
 - Implémenter directement (ne pas rester au niveau plan).

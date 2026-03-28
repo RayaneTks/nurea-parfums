@@ -28,7 +28,8 @@ Chaque erreur rencontrée doit être documentée pour éviter sa répétition :
 ## 4. Ethos de Développement
 
 - **Chirurgie Précise** : Appliquer des changements ciblés. Ne jamais refactoriser du code fonctionnel hors scope sans demande explicite.
-- **Zéro Régression** : Toujours lire le code environnant avant de modifier pour respecter les patterns établis (ex: transitions, easings, couleurs variables).
+- **Zéro Régression & Performance** : Toujours lire le code environnant avant de modifier. **Ne jamais sacrifier le LCP (Largest Contentful Paint)** ou l'expérience utilisateur visuelle pour résoudre un warning d'hydratation ou de linter (ex: ne pas masquer une image de fond au premier rendu).
+- **Lighthouse vs Design System** : Lors de corrections Lighthouse (ex: contrastes), toujours vérifier que la modification ne brise pas l'harmonie de la Direction Artistique (ex: ne pas mettre de texte noir sur un bouton sombre si cela dénature le design).
 - **Mobile-First Permanent** : Développer pour l'iPhone en priorité, adapter pour le desktop ensuite.
 - **Performance Perçue** : Utiliser des skeletons et fusionner les appels API pour garantir une sensation de vitesse instantanée.
 

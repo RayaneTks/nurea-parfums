@@ -44,13 +44,17 @@ Tout travail sur ce dépôt doit suivre la **Boucle de Qualité** définie dans 
 
 ## Pièges & Règles critiques (Important)
 
-- **Next.js Suspense** : Tout composant utilisant `useSearchParams()` (ex: `AdminDashboard`, `HomePageClient`) **DOIT** être wrappé dans `<Suspense>` pour éviter l'erreur de build "CSR Bailout" sur Vercel.
-- **Prisma & DB** : 
-  - Les relations doivent être indexées (`@@index`). 
-  - Toute nouvelle propriété UI (ex: `isFeatured`) doit impérativement être ajoutée au schéma Prisma avant le déploiement.
-  - Vérifier l'intégrité des accolades du schéma après modification.
+- **Prisma & Stabilité DB** : 
+  - Ne jamais utiliser `findMany()` avec `include` global si le schéma vient d'évoluer. Préférer un `select` explicite des colonnes connues pour éviter qu'une colonne manquante en production (ex: en attente de `npx prisma db push`) ne provoque une erreur 500 (`P2022`).
+  - Toute nouvelle propriété UI doit être ajoutée au schéma et gérée de manière défensive (try/catch sur le code `P2022`).
+- **Next.js & Hydration Mismatch** : 
+  - Ne **jamais** cacher conditionnellement un élément clé du LCP (comme l'image Hero) via un flag `mounted` côté client pour régler un warning d'hydratation. Préférer l'utilisation de variables CSS ou accepter un rendu serveur par défaut, pour ne pas détruire les performances.
+  - Tout composant utilisant `useSearchParams()` (ex: `AdminDashboard`, `HomePageClient`) **DOIT** être wrappé dans `<Suspense>` pour éviter l'erreur de build "CSR Bailout".
+- **Identité de Marque** :
+  - Le nom est **Nuréa Parfums** (avec l'accent). À respecter scrupuleusement dans l'UI, le SEO et les alts.
+  - Localisation : **Marseille**. Pas de références à Paris ou Dubai.
+  - Contact : **contact@nureaparfum.fr**.
 - **Mobile-First** : Ne jamais développer une vue sans tester le rendu à 390px.
-- **No Hallucination** : Si une information manque, utiliser `grep_search` ou `list_directory`. Ne jamais inventer un chemin de fichier ou une variable d'environnement.
 
 ## Design System
 
