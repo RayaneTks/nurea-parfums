@@ -1,4 +1,4 @@
-import { normalizeForFuzzy } from "./data";
+import { normalizeForFuzzy } from "../data";
 import type { ExternalPerfumeSuggestion } from "./perfumeSearchTypes";
 import { recordFragantyHttpFetch } from "./perfumeSearchInstrumentation";
 import {

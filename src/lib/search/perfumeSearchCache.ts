@@ -4,4 +4,4 @@
 export {
   getExternalSuggestionFromCache,
   setExternalSuggestionCache,
-} from "./catalog/externalSearchCache";
+} from "../catalog/externalSearchCache";

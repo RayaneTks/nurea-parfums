@@ -1,5 +1,5 @@
-import { normalizePerfumeQuery } from "@/lib/normalizePerfumeQuery";
-import type { ExternalPerfumeSuggestion } from "@/lib/perfumeSearchTypes";
+import { normalizePerfumeQuery } from "@/lib/search/normalizePerfumeQuery";
+import type { ExternalPerfumeSuggestion } from "@/lib/search/perfumeSearchTypes";
 
 type MemoryEntry = {
   expires: number;

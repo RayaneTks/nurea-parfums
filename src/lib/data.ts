@@ -1,7 +1,7 @@
 import {
   EXTERNAL_PERFUME_HINTS,
-} from "./externalSearchHints";
-import type { ExternalPerfumeHint } from "./externalSearchTypes";
+} from "./search/externalSearchHints";
+import type { ExternalPerfumeHint } from "./search/externalSearchTypes";
 
 export const CONTACT = {
   whatsapp:
@@ -248,8 +248,8 @@ export function compareSearchRelevance(
   return searchRelevanceScore(b, query) - searchRelevanceScore(a, query);
 }
 
-export type { ExternalPerfumeHint } from "./externalSearchTypes";
+export type { ExternalPerfumeHint } from "./search/externalSearchTypes";
 export {
   EXTERNAL_PERFUME_HINTS,
   EXTERNAL_SEARCH_FALLBACK_MESSAGE,
-} from "./externalSearchHints";
+} from "./search/externalSearchHints";

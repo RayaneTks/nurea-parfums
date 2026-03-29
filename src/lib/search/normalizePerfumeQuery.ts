@@ -1,4 +1,4 @@
-import { normalizeForFuzzy } from "./data";
+import { normalizeForFuzzy } from "../data";
 
 /**
  * Normalise une requête utilisateur : trim, espaces, accents (via normalizeForFuzzy du catalogue).

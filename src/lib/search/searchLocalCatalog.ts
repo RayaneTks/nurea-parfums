@@ -4,7 +4,7 @@ import {
   categories,
   type Category,
   type Perfume,
-} from "./data";
+} from "../data";
 
 export function parseCategoryParam(raw: string | null): Category {
   if (!raw) return "Tout voir";

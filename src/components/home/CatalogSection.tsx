@@ -21,13 +21,13 @@ import {
   type ExternalPerfumeHint,
   type Perfume,
 } from "@/lib/data";
-import { formatExternalSuggestionDisplay } from "@/lib/formatExternalSuggestionDisplay";
+import { formatExternalSuggestionDisplay } from "@/lib/search/formatExternalSuggestionDisplay";
 import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
 import { brandSlug } from "@/lib/slugify";
 import type {
   ExternalPerfumeSuggestion,
   PerfumeSearchResponse,
-} from "@/lib/perfumeSearchTypes";
+} from "@/lib/search/perfumeSearchTypes";
 
 // Lazy load the drawer
 const CatalogFilterDrawer = dynamic(
@@ -47,7 +47,7 @@ function ExternalSearchFootnote({ hint }: { hint: ExternalPerfumeHint }) {
   if (mode === "legacy-offline") {
     return (
       <p className="mt-3 text-[12px] leading-relaxed text-[var(--nurea-text-subtle)]">
-        Ce parfum ou cette Maison n&apos;est pas présenté en fiche sur le Catalogue Nuréa Parfums. Écrivez-nous : la Marque confirme commandes et alternatives possibles.
+        Ce parfum ou cette Marque n&apos;est pas présenté en fiche sur le Catalogue Nuréa Parfums. Écrivez-nous : la Marque confirme commandes et alternatives possibles.
       </p>
     );
   }
@@ -475,7 +475,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
 
       <main
         id="collection"
-        className="mx-auto w-full max-w-[1200px] flex-grow scroll-mt-[calc(env(safe-area-inset-top,0px)+3.75rem)] px-4 py-12 pb-safe-bottom md:scroll-mt-[calc(env(safe-area-inset-top,0px)+4.5rem)] md:px-10 md:py-24 min-h-[800px]"
+        className="mx-auto w-full max-w-[1200px] flex-grow scroll-mt-[calc(env(safe-area-inset-top,0px)+3.5rem)] px-4 py-12 pb-safe-bottom md:scroll-mt-[calc(env(safe-area-inset-top,0px)+4.25rem)] md:px-10 md:py-24 min-h-[800px]"
       >
         <ScrollReveal className="mb-8 md:mb-12">
           <div>
@@ -561,13 +561,13 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
         </div>
 
         <div className="mb-6 flex flex-wrap items-center gap-3 md:mb-8">
-          <label className="flex min-w-[min(100%,220px)] flex-1 items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
-            Trier
+          <label className="flex w-full max-w-[280px] items-center gap-3 text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
+            <span className="shrink-0">Trier par</span>
             <select
               value={sortKey}
               onChange={(e) => setSortKey(e.target.value as SortKey)}
               aria-label="Trier le catalogue"
-              className="min-h-[44px] min-w-0 flex-1 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-base font-medium normal-case tracking-normal text-[var(--nurea-text)] focus:border-[var(--nurea-accent)] focus:outline-none touch-manipulation md:text-[11px]"
+              className="min-h-[40px] min-w-0 flex-1 cursor-pointer border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-base font-medium normal-case tracking-normal text-[var(--nurea-text)] focus:border-[var(--nurea-accent)] focus:outline-none touch-manipulation md:text-[11px] rounded-sm appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239A7E8E%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_16px_center] bg-no-repeat pr-10"
             >
               <option value="default">Ordre du catalogue</option>
               <option value="name">Nom (A-Z)</option>
@@ -577,7 +577,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
         </div>
 
         {hasActiveFilters && (
-          <div className="mb-6 flex flex-wrap items-center gap-1.5 animate-fade-in-up">
+          <div className="mb-6 flex flex-wrap items-center gap-2 animate-fade-in-up">
             <span className="mr-1 text-[10px] uppercase tracking-nurea-wide text-[var(--nurea-text-muted)]">    
               Filtres :
             </span>
@@ -595,7 +595,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
             )}
             {maisonSlug.trim() !== "" && (
               <FilterChip
-                label={`Maison : ${maisonDisplayName}`}
+                label={`Marque : ${maisonDisplayName}`}
                 onRemove={() => setMaisonSlug("")}
               />
             )}
@@ -614,7 +614,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
             <button
               type="button"
               onClick={handleResetFilters}
-              className="ml-1 min-h-[44px] px-1 text-[10px] uppercase tracking-nurea-label text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-accent)] active-scale touch-manipulation"
+              className="ml-auto min-h-[40px] px-2 text-[10px] font-bold uppercase tracking-nurea-label text-[var(--nurea-accent)] transition-colors hover:opacity-80 active-scale touch-manipulation md:ml-2"
             >
               Tout effacer
             </button>
@@ -793,7 +793,7 @@ const FilterChip = ({
   <button
     type="button"
     onClick={onRemove}
-    className="inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-sm border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-left text-[10px] text-[var(--nurea-text)] transition-colors hover:border-[var(--nurea-accent)] active-scale tap-highlight-transparent"
+    className="inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-sm border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-3 py-2 text-left text-[10px] text-[var(--nurea-text)] transition-colors hover:border-[var(--nurea-accent)] active-scale tap-highlight-transparent shadow-sm"
     aria-label={`Retirer le filtre ${label}`}
   >
     <span className="min-w-0 flex-1 truncate">{label}</span>

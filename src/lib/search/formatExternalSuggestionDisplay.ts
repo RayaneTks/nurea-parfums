@@ -1,4 +1,4 @@
-import { normalizeForFuzzy } from "./data";
+import { normalizeForFuzzy } from "../data";
 import type { ExternalPerfumeSuggestion } from "./perfumeSearchTypes";
 
 const JUNK_TAIL =

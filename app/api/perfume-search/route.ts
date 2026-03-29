@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { validatePerfumeSearchQuery } from "@/lib/normalizePerfumeQuery";
-import { parseCategoryParam } from "@/lib/searchLocalCatalog";
-import { searchPerfumeWithFallback } from "@/lib/searchPerfumeWithFallback";
+import { validatePerfumeSearchQuery } from "@/lib/search/normalizePerfumeQuery";
+import { parseCategoryParam } from "@/lib/search/searchLocalCatalog";
+import { searchPerfumeWithFallback } from "@/lib/search/searchPerfumeWithFallback";
 
 export const dynamic = "force-dynamic";
 

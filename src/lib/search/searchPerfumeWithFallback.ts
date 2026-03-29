@@ -1,10 +1,10 @@
-import type { Category } from "./data";
+import type { Category } from "../data";
 import type { PerfumeSearchResponse } from "./perfumeSearchTypes";
-import { getCatalogPerfumes } from "./catalog/getCatalogPerfumes";
+import { getCatalogPerfumes } from "../catalog/getCatalogPerfumes";
 import {
   getExternalSuggestionFromCache,
   setExternalSuggestionCache,
-} from "./catalog/externalSearchCache";
+} from "../catalog/externalSearchCache";
 import { searchExternalPerfumeApi } from "./searchExternalPerfumeApi";
 import { searchFragantyApi } from "./searchFragantyApi";
 import { searchLocalCatalog } from "./searchLocalCatalog";

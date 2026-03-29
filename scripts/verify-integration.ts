@@ -86,7 +86,7 @@ async function main(): Promise<void> {
 
   /* ---------- 2. Catalogue + recherche locale ---------- */
   const { getCatalogPerfumes } = await import("../src/lib/catalog/getCatalogPerfumes");
-  const { searchLocalCatalog } = await import("../src/lib/searchLocalCatalog");
+  const { searchLocalCatalog } = await import("../src/lib/search/searchLocalCatalog");
   const { fuzzySearchMatch } = await import("../src/lib/data");
 
   let catalogLen = 0;
@@ -127,8 +127,8 @@ async function main(): Promise<void> {
   const {
     resetPerfumeSearchInstrumentation,
     getPerfumeSearchInstrumentation,
-  } = await import("../src/lib/perfumeSearchInstrumentation");
-  const { searchPerfumeWithFallback } = await import("../src/lib/searchPerfumeWithFallback");
+  } = await import("../src/lib/search/perfumeSearchInstrumentation");
+  const { searchPerfumeWithFallback } = await import("../src/lib/search/searchPerfumeWithFallback");
 
   const hasFraganty = !!(process.env.FRAGANTY_API_KEY ?? "").trim();
 
@@ -214,7 +214,7 @@ async function main(): Promise<void> {
   }
 
   /* ---------- Contrat JSON (échantillon) ---------- */
-  const { searchPerfumeWithFallback: sp } = await import("../src/lib/searchPerfumeWithFallback");
+  const { searchPerfumeWithFallback: sp } = await import("../src/lib/search/searchPerfumeWithFallback");
   const j1 = await sp("Dior");
   const validLocal =
     j1.type === "local_results" &&
