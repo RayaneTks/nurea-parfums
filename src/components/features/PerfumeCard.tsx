@@ -193,17 +193,17 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
               </div>
             ) : (
               <div className="mx-auto flex w-full max-w-[260px] flex-col gap-3 self-center px-4 py-2">
-                <p className="text-center font-serif text-[15px] leading-snug text-[var(--nurea-text)] md:text-lg">
-                  Commander ce Parfum
+                <p className="text-center font-serif text-[15px] leading-snug text-[var(--nurea-text)] md:text-[18px]">
+                  {isGammeComplete ? "Voir la sélection" : "Commander ce Parfum"}
                 </p>
                 <p className="mb-2 text-center text-[9px] uppercase tracking-[0.25em] text-[var(--nurea-text-muted)]">
-                  Disponibilité & Commande
+                  {isGammeComplete ? "Catalogue de la Marque" : "Disponibilité & Commande"}
                 </p>
                 <Link
                   href="/contact"
-                  className="btn-nurea btn-accent w-full justify-center active-scale tap-highlight-transparent"
+                  className="btn-nurea btn-accent w-full justify-center active-scale tap-highlight-transparent shadow-xl shadow-black/20 border border-white/10"
                 >
-                  <span>Commander ce Parfum</span>
+                  <span>{isGammeComplete ? "Engager le Dialogue" : "Commander ce Parfum"}</span>
                   <ArrowRight
                     size={14}
                     className="transition-transform duration-500 group-hover/btn:-rotate-45"
