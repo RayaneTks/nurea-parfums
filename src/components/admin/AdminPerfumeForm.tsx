@@ -600,7 +600,8 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             <div className="flex gap-3">
               {STATUS_OPTIONS.map((opt) => {
                 const active = status === opt.value;
-                const locked = (isLockedByBrandMode || isLockedByBrandVisibility) && opt.value === "PUBLISHED"; 
+                const isImageMissing = !image || image.trim() === "";
+                const locked = (isLockedByBrandMode || isLockedByBrandVisibility || isImageMissing) && opt.value === "PUBLISHED"; 
                 return (
                   <button
                     key={opt.value}
@@ -619,6 +620,9 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                     <span className={`text-[11px] font-bold uppercase tracking-widest ${active ? "text-zinc-900" : "text-zinc-600"}`}>
                       {opt.value === "PUBLISHED" ? "Public" : "Interne"}
                     </span>
+                    {locked && isImageMissing && opt.value === "PUBLISHED" && (
+                      <span className="absolute -bottom-6 left-0 right-0 text-[9px] text-amber-500 font-bold uppercase text-center">Image requise</span>
+                    )}
                   </button>
                 );
               })}

@@ -450,23 +450,29 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
             <div className="flex gap-3">
               {STATUS_OPTIONS.map((opt) => {
                 const active = status === opt.value;
+                const isImageMissing = !image || image.trim() === "";
+                const locked = isImageMissing && opt.value === "PUBLISHED";
                 return (
                   <button
                     key={opt.value}
                     type="button"
-                    disabled={readOnly}
+                    disabled={readOnly || locked}
                     onClick={() => setStatus(opt.value)}
                     className={`
                       relative flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all duration-300 active:scale-[0.97]
                       ${active
                         ? "bg-zinc-100 border-zinc-100 shadow-xl"
                         : "bg-zinc-900/50 border-zinc-800 text-zinc-500"}
+                      ${locked ? "opacity-30 grayscale cursor-not-allowed" : ""}
                     `}
                   >
                     <AdminBadge label={opt.label} variant={active ? opt.variant : "neutral"} dot={active} />    
                     <span className={`text-[11px] font-bold uppercase tracking-widest ${active ? "text-zinc-900" : "text-zinc-600"}`}>
                       {opt.value === "PUBLISHED" ? "Public" : "Interne"}
                     </span>
+                    {locked && opt.value === "PUBLISHED" && (
+                      <span className="absolute -bottom-6 left-0 right-0 text-[9px] text-amber-500 font-bold uppercase text-center">Image requise</span>
+                    )}
                   </button>
                 );
               })}

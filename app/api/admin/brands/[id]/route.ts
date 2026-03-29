@@ -99,22 +99,29 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
   if (body.image !== undefined) {
     data.image = body.image?.trim() || null;
   }
+
+  // Règle de sécurité : Pas d'image + Gamme Complète = Statut masqué automatique
+  const existing = await prisma.brand.findUnique({
+    where: { id },
+    select: { image: true, status: true, catalogMode: true },
+  });
+  
+  const finalImage = data.image !== undefined ? data.image : existing?.image;
+  const finalMode = data.catalogMode !== undefined ? data.catalogMode : existing?.catalogMode;
+
+  if (finalMode === "COMPLETE" && (!finalImage || finalImage.trim() === "")) {
+    data.status = "DRAFT";
+  }
+
   if (body.imageLight !== undefined) {
     data.imageLight = body.imageLight?.trim() || null;
   }
 
-  if (data.catalogMode === "COMPLETE" && !data.image) {
-    const existing = await prisma.brand.findUnique({
-      where: { id },
-      select: { image: true, catalogMode: true },
-    });
-    const nextImage = data.image ?? existing?.image ?? null;
-    if (!nextImage) {
-      return NextResponse.json(
-        { error: "Image obligatoire en gamme complète." },
-        { status: 400 },
-      );
-    }
+  if ((data.catalogMode === "COMPLETE" || (!data.catalogMode && existing?.catalogMode === "COMPLETE")) && !finalImage) {
+    return NextResponse.json(
+      { error: "Image obligatoire en gamme complète." },
+      { status: 400 },
+    );
   }
 
   if (Object.keys(data).length === 0) {

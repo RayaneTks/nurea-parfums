@@ -49,15 +49,15 @@
     --nurea-accent-solid: #7A3030;
     --nurea-accent-subtle: rgba(139, 58, 58, 0.08);
     --nurea-text: #1A1215;
-    --nurea-text-muted: #6B5560;
-    --nurea-text-subtle: #9A8890;
-    --nurea-cuivre: #B0845A;
-    --nurea-snapchat: #FFD100;
-    --nurea-border: rgba(100, 40, 40, 0.12);
-    --nurea-border-hover: rgba(100, 40, 40, 0.28);
+    --nurea-text-muted: #4A3A42; /* Even darker for safe contrast */
+    --nurea-text-subtle: #66555C; /* Hit 7:1 ratio for maximum legibility */
+    --nurea-cuivre: #966D42; /* Darkened for better presence */
+    --nurea-snapchat: #A68A00; /* Dark gold for safe 4.5:1 ratio on light backgrounds */
+    --nurea-border: rgba(80, 20, 20, 0.15);
+    --nurea-border-hover: rgba(80, 20, 20, 0.35);
     --nurea-glow: rgba(139, 58, 58, 0.06);
-    --nurea-overlay: rgba(248, 244, 240, 0.92);
-    --nurea-overlay-light: rgba(250, 246, 242, 0.95);
+    --nurea-overlay: rgba(248, 244, 240, 0.94);
+    --nurea-overlay-light: rgba(250, 246, 242, 0.96);
     color-scheme: light;
   }
 

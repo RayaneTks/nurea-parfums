@@ -45,7 +45,7 @@ export async function convertToWebp(file: File): Promise<File> {
   ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, targetW, targetH);
   
   const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, "image/webp", 0.80),
+    canvas.toBlob(resolve, "image/webp", 0.95), // Augmentation de la qualité pour le luxe
   );
   bitmap.close();
 

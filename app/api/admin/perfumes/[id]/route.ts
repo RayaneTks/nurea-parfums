@@ -88,10 +88,16 @@ export async function PUT(request: Request, { params }: RouteCtx) {
   if (!brand) {
     return NextResponse.json({ error: "Marque introuvable." }, { status: 404 });
   }
-  const status =
+  let status =
     body.status !== undefined && isPublicationStatus(body.status)
       ? body.status
       : existing.status;
+
+  // Règle de sécurité : Pas d'image = Statut masqué automatique
+  if (!image) {
+    status = "DRAFT";
+  }
+
   if (status === "PUBLISHED" && brand.catalogMode === "COMPLETE") {
     return NextResponse.json(
       {
@@ -170,6 +176,15 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
       if (!perfumeWithBrand) {
         return NextResponse.json({ error: "Parfum introuvable." }, { status: 404 });
       }
+
+      // Règle de sécurité : Pas d'image = Publication impossible
+      if (body.status === "PUBLISHED" && (!perfumeWithBrand.image || perfumeWithBrand.image.trim() === "")) {
+        return NextResponse.json(
+          { error: "Impossible de rendre visible ce parfum sans image." },
+          { status: 400 },
+        );
+      }
+
       if (body.status === "PUBLISHED" && perfumeWithBrand.brand.catalogMode === "COMPLETE") {
         return NextResponse.json(
           { error: "Impossible de rendre visible ce parfum: sa marque est en gamme complète." },

@@ -28,7 +28,6 @@ export interface Perfume {
   category: Category;
   image: string;
   imageLight?: string;
-  imageDark?: string;
   /** Placeholder low-res (Data URL) */
   blurDataURL?: string;
   tags?: string[];
@@ -53,7 +52,9 @@ export const mockPerfumes: Perfume[] = [];
 
 /**
  * Retourne l'URL de l'image appropriée selon le thème.
- * Gère les URLs relatives (/parfums/...) et absolues (Supabase).
+ * Logique Nuréa : 
+ * 1. Image seule -> Utilisée pour Light & Dark.
+ * 2. Image + ImageLight -> Image devient Dark, ImageLight devient Light.
  */
 export function getPerfumeImage(
   perfume: Perfume,
@@ -61,9 +62,11 @@ export function getPerfumeImage(
 ): string {
   const isDark = theme === "dark";
   
-  if (isDark && perfume.imageDark) return perfume.imageDark;
-  if (!isDark && perfume.imageLight) return perfume.imageLight;
+  if (!isDark && perfume.imageLight && perfume.imageLight.trim() !== "") {
+    return perfume.imageLight;
+  }
   
+  // Dans tous les autres cas (thème dark OU pas d'image light), on utilise l'image principale.
   return perfume.image || "/placeholder.svg";
 }
 

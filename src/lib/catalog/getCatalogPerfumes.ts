@@ -15,7 +15,7 @@ function isCategory(s: string): s is Category {
 
 /**
  * Catalogue publié : PostgreSQL si `DATABASE_URL`, sinon `mockPerfumes` (vide désormais).
- * Filtre automatiquement les entrées corrompues (pas d'image, pas de nom, pas de marque).
+ * Filtre strictement les entrées corrompues ou sans visuels.
  */
 export async function getCatalogPerfumes(): Promise<Perfume[]> {
   noStore();
@@ -38,7 +38,7 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
       where: { 
         status: "PUBLISHED", 
         brand: { status: "PUBLISHED" },
-        // Sécurité : on ne récupère que ce qui a un nom et une image
+        // On exclut les chaînes vides au niveau SQL
         name: { not: "" },
         image: { not: "" },
       },
@@ -65,7 +65,11 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
         catalogMode: "COMPLETE", 
         status: "PUBLISHED",
         name: { not: "" },
-        image: { not: "" },
+        // Pour les marques, image est nullable dans le schéma, on filtre les non-null non-vides
+        AND: [
+          { image: { not: null } },
+          { image: { not: "" } }
+        ]
       },
       select: { id: true, name: true, slug: true, image: true, imageLight: true },
       orderBy: { name: "asc" },
@@ -75,7 +79,11 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
     
     // 1. Transformation des marques en "Gammes Complètes"
     const asPerfumesFromBrands: Perfume[] = rangeBrands
-      .filter((b) => Boolean(b.image) && Boolean(b.name))
+      .filter((b) => {
+        // Filtrage JS de sécurité pour exclure tout visuel manquant ou placeholder
+        const hasValidImage = b.image && b.image.trim() !== "" && !b.image.includes("placeholder.svg");
+        return hasValidImage && b.name && b.name.trim() !== "";
+      })
       .map((b, idx) => ({
         id: maxId + idx + 1,
         name: b.name,
@@ -90,7 +98,13 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
 
     // 2. Transformation des parfums individuels
     const mappedPerfumes: Perfume[] = perfumes
-      .filter(p => p.brand && p.brand.name) // Sécurité supplémentaire
+      .filter(p => {
+        // Filtrage JS de sécurité strict
+        const hasValidImage = p.image && p.image.trim() !== "" && !p.image.includes("placeholder.svg");
+        const hasValidBrand = p.brand && p.brand.name && p.brand.name.trim() !== "";
+        const hasValidName = p.name && p.name.trim() !== "";
+        return hasValidImage && hasValidBrand && hasValidName;
+      })
       .map(p => {
         const isComplete = p.brand.catalogMode === "COMPLETE";
         return {

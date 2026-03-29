@@ -105,6 +105,12 @@ export async function POST(request: Request) {
     const slug = perfumeSlug(nextId, name, brand.name);
     let status =
       body.status && Object.values(PublicationStatus).includes(body.status) ? body.status : "DRAFT";
+    
+    // Règle de sécurité : Pas d'image = Statut masqué automatique
+    if (!image) {
+      status = "DRAFT";
+    }
+
     if (brand.catalogMode === "COMPLETE" || brand.status === "DRAFT") {
       status = "DRAFT";
     }

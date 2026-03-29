@@ -68,10 +68,16 @@ export async function POST(request: Request) {
     }
     const image = body.image?.trim() || null;
     const imageLight = body.imageLight?.trim() || null;
-    const statusRaw = (body.status ?? "PUBLISHED").trim();
+    let statusRaw = (body.status ?? "PUBLISHED").trim();
     if (!visibilityStatuses.has(statusRaw)) {
-      return NextResponse.json({ error: "Statut de visibilité invalide." }, { status: 400 });
+      return NextResponse.json({ error: "Statut de visibilitÃ© invalide." }, { status: 400 });
     }
+
+    // Règle de sécurité : Pas d'image + Gamme Complète = Statut masqué automatique
+    if (modeRaw === "COMPLETE" && !image) {
+      statusRaw = "DRAFT";
+    }
+
     if (modeRaw === "COMPLETE" && !image) {
       return NextResponse.json({ error: "Image obligatoire en gamme complète." }, { status: 400 });
     }
