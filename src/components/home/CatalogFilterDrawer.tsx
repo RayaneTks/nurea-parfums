@@ -155,7 +155,7 @@ export function CatalogFilterDrawer({
                             {b.name}
                           </span>
                           <span className={`shrink-0 font-mono text-[10px] font-bold tracking-wider transition-colors duration-300 ${checked ? "text-[var(--nurea-accent)]" : "text-[var(--nurea-text-subtle)] opacity-80"}`}>  
-                            {b.assortment === "COMPLETE" ? "TOUT" : b.publishedCount.toString().padStart(2, '0')}
+                            {b.assortment === "COMPLETE" ? "TOUT" : b.publishedCount}
                           </span>
                         </label>
                       </li>

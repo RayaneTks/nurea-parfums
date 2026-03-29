@@ -567,25 +567,26 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
           <div className="grid gap-8 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
             <ImageUploadField
-              label="Image principale"
-              subtitle="Optimisation automatique (WebP, 1024x1536) lors de l'import."
+              label="Image principale (Dark Mode par défaut)"
+              subtitle="Obligatoire. Utilisée pour les deux modes si l'image Light est absente. Ne peut pas être supprimée, seulement remplacée."
               value={image}
               onChange={setImage}
               onUploadDone={(url) => handleAutoSave({ image: url })}
               required
               readOnly={readOnly}
               onError={setError}
-              allowClear={false}
+              allowClear={false} // Suppression interdite pour l'image principale
             />
             <div className="h-px bg-zinc-800/50" />
             <ImageUploadField
-              label="Variante mode clair (optionnelle)"
-              subtitle="S'affiche uniquement en thème clair si spécifiée."
+              label="Image variante (Light Mode)"
+              subtitle="Optionnelle. Si présente, l'image principale ci-dessus devient exclusivement le visuel Dark."
               value={imageLight}
               onChange={setImageLight}
               onUploadDone={(url) => handleAutoSave({ imageLight: url })}
               readOnly={readOnly}
               onError={setError}
+              allowClear={true} // Suppression autorisée pour l'image secondaire
             />
           </div>
         </section>

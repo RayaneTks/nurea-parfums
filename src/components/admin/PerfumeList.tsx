@@ -140,20 +140,20 @@ export function PerfumeList({
                 {group.rows.map((row) => (
                   <div
                     key={row.id}
-                    className="group relative flex items-center gap-4 p-3.5 bg-zinc-900/40 border border-zinc-800/50 rounded-2xl active:bg-zinc-900/80 transition-all duration-200"
+                    className="group relative flex items-center gap-4 p-4 bg-zinc-900/40 border border-zinc-800/50 rounded-2xl active:bg-zinc-900/80 transition-all duration-200"
                   >
-                    <PerfumeVisual 
-                      name={row.name} 
-                      image={row.image} 
-                      imageLight={row.imageLight} 
+                    <PerfumeVisual
+                      name={row.name}
+                      image={row.image}
+                      imageLight={row.imageLight}
                       onClick={() => onPreview(row)}
                     />
-                    
+
                     <div className="min-w-0 flex-1">
-                      <h4 className="text-[15px] font-bold text-zinc-100 truncate group-hover:text-blue-400 transition-colors">
+                      <h4 className="text-[16px] font-bold text-zinc-100 truncate group-hover:text-blue-400 transition-colors">
                         {row.name}
                       </h4>
-                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                         <button
                           onClick={() => onGoToBrand(row.brand.name)}
                           className="text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors underline decoration-zinc-800 underline-offset-4 active:opacity-70"

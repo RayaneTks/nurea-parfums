@@ -39,10 +39,10 @@ export function AdminToast({ message, type = "success", duration = 3000, onClose
   return (
     <div
       className={`
-        fixed top-6 left-1/2 z-[200] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center gap-3
+        fixed bottom-10 left-1/2 z-[200] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center gap-3
         rounded-2xl border bg-zinc-900/95 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl
         transition-all duration-300 ease-out-expo
-        ${isExiting ? "opacity-0 -translate-y-4 scale-95" : "opacity-100 translate-y-0 scale-100 animate-in fade-in slide-in-from-top-4"}
+        ${isExiting ? "opacity-0 translate-y-4 scale-95" : "opacity-100 translate-y-0 scale-100 animate-in fade-in slide-in-from-bottom-4"}
         ${bgStyles[type]}
       `}
       role="status"

@@ -80,8 +80,11 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
     // 1. Transformation des marques en "Gammes Complètes"
     const asPerfumesFromBrands: Perfume[] = rangeBrands
       .filter((b) => {
-        // Filtrage JS de sécurité pour exclure tout visuel manquant ou placeholder
-        const hasValidImage = b.image && b.image.trim() !== "" && !b.image.includes("placeholder.svg");
+        // Filtrage JS de sécurité pour exclure tout visuel manquant, placeholder ou chemin local obsolète
+        const hasValidImage = b.image && 
+                             b.image.trim() !== "" && 
+                             !b.image.includes("placeholder.svg") &&
+                             !b.image.startsWith("/parfums/");
         return hasValidImage && b.name && b.name.trim() !== "";
       })
       .map((b, idx) => ({
@@ -100,7 +103,10 @@ export async function getCatalogPerfumes(): Promise<Perfume[]> {
     const mappedPerfumes: Perfume[] = perfumes
       .filter(p => {
         // Filtrage JS de sécurité strict
-        const hasValidImage = p.image && p.image.trim() !== "" && !p.image.includes("placeholder.svg");
+        const hasValidImage = p.image && 
+                             p.image.trim() !== "" && 
+                             !p.image.includes("placeholder.svg") &&
+                             !p.image.startsWith("/parfums/");
         const hasValidBrand = p.brand && p.brand.name && p.brand.name.trim() !== "";
         const hasValidName = p.name && p.name.trim() !== "";
         return hasValidImage && hasValidBrand && hasValidName;

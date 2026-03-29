@@ -14,7 +14,7 @@ export function StatusDot({ status }: { status: string }) {
   );
 }
 
-export function BrandVisual({ name, image, imageLight, size = 52, onClick }: { name: string; image: string | null; imageLight?: string | null; size?: number; onClick?: () => void }) {
+export function BrandVisual({ name, image, imageLight, size = 64, onClick }: { name: string; image: string | null; imageLight?: string | null; size?: number; onClick?: () => void }) {
   const content = image?.trim() ? (
     <>
       <Image src={image} alt={name} fill className="object-cover" sizes={`${size}px`} />
@@ -50,7 +50,7 @@ export function PerfumeVisual({ name, image, imageLight, size = "md", onClick }:
     <div 
       className={`relative shrink-0 rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-2xl transition-all duration-300 select-none touch-manipulation
         ${onClick ? "cursor-pointer active:scale-95 active:border-blue-500/50" : ""}
-        ${isLarge ? "h-[320px] w-full max-w-[240px] mx-auto" : "h-[80px] w-[60px]"}
+        ${isLarge ? "h-[320px] w-full max-w-[240px] mx-auto" : "h-[64px] w-[48px]"}
       `}
       onClick={onClick}
     >
@@ -59,12 +59,12 @@ export function PerfumeVisual({ name, image, imageLight, size = "md", onClick }:
         alt={name} 
         fill 
         className="object-cover" 
-        sizes={isLarge ? "240px" : "60px"}
+        sizes={isLarge ? "240px" : "48px"}
         priority={isLarge}
       />
       {imageLight && (
-        <div className="absolute bottom-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/90">
-          <SunMoon className="h-3 w-3" />
+        <div className="absolute bottom-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/90">
+          <SunMoon className="h-2.5 w-2.5" />
         </div>
       )}
     </div>

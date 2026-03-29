@@ -4,20 +4,12 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function supabaseImageRemotes() {
-  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!raw) return [];
-  try {
-    const { hostname } = new URL(raw);
-    return [
-      {
-        protocol: "https",
-        hostname,
-        pathname: "/storage/v1/object/public/**",
-      },
-    ];
-  } catch {
-    return [];
-  }
+  const hostnames = ["lkdhqqzocmxtyarseizc.supabase.co"];
+  return hostnames.map(hostname => ({
+    protocol: "https",
+    hostname,
+    pathname: "/**",
+  }));
 }
 
 /** @type {import('next').NextConfig} */
