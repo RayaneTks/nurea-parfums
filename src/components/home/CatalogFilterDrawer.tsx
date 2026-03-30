@@ -80,9 +80,9 @@ export function CatalogFilterDrawer({
 
       {/* Drawer / Bottom Sheet */}
       <aside
-        className={`fixed z-[120] flex flex-col bg-[var(--nurea-surface)] shadow-2xl transition-all duration-500 ease-out-expo
+        className={`fixed z-[120] flex flex-col bg-[var(--nurea-surface)] shadow-2xl transition-all duration-500 ease-out-expo overscroll-none
           /* Mobile: Bottom Sheet */
-          bottom-0 left-0 right-0 h-[85vh] rounded-t-[32px] md:rounded-t-none
+          bottom-0 left-0 right-0 h-[85vh] h-[85dvh] rounded-t-[32px] md:rounded-t-none
           ${open ? "translate-y-0" : "translate-y-full"}
           /* Desktop: Sidebar Drawer */
           md:right-0 md:left-auto md:top-0 md:h-full md:w-full md:max-w-[400px]
@@ -90,11 +90,11 @@ export function CatalogFilterDrawer({
         `}
       >
         {/* Mobile Drag Handle */}
-        <div className="flex w-full justify-center pt-3 pb-1 md:hidden">
+        <div className="flex w-full justify-center pt-3 pb-1 md:hidden shrink-0">
           <div className="h-1.5 w-12 rounded-full bg-[var(--nurea-border-hover)]" />
         </div>
 
-        <div className="relative flex items-center justify-between border-b border-[var(--nurea-border)]/50 px-6 py-5 z-[50]">  
+        <div className="relative flex items-center justify-between border-b border-[var(--nurea-border)]/50 px-6 py-5 z-[50] shrink-0">  
           <h2 className="font-serif text-xl tracking-tight text-[var(--nurea-text)]">
             Filtrer par Marques
           </h2>
@@ -111,7 +111,7 @@ export function CatalogFilterDrawer({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar overscroll-contain pb-40">
+        <div className="flex-1 overflow-y-auto custom-scrollbar overscroll-contain">
           {grouped.length === 0 ? (
             <div className="px-6 py-12 text-center">
               <p className="text-sm text-[var(--nurea-text-muted)]">
@@ -171,7 +171,7 @@ export function CatalogFilterDrawer({
           )}
         </div>
 
-        <div className="absolute bottom-0 left-0 z-30 w-full border-t border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)]/90 p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_-10px_40px_rgba(0,0,0,0.4)] backdrop-blur-xl md:bg-[var(--nurea-surface)]">
+        <div className="shrink-0 border-t border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:bg-[var(--nurea-surface)]">
           <div className="mb-4 flex items-center justify-between px-1">
             <span className="text-[11px] font-bold uppercase tracking-widest text-[var(--nurea-text-muted)]">   
               {draftBrands.size} marque{draftBrands.size > 1 ? "s" : ""} sélectionnée{draftBrands.size > 1 ? "s" : ""}
