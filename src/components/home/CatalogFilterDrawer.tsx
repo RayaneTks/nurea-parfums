@@ -72,7 +72,7 @@ export function CatalogFilterDrawer({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm transition-all duration-500 ${
+        className={`fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm transition-all duration-500 cursor-pointer ${
           open ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
@@ -94,16 +94,20 @@ export function CatalogFilterDrawer({
           <div className="h-1.5 w-12 rounded-full bg-[var(--nurea-border-hover)]" />
         </div>
 
-        <div className="flex items-center justify-between border-b border-[var(--nurea-border)]/50 px-6 py-5">  
+        <div className="relative flex items-center justify-between border-b border-[var(--nurea-border)]/50 px-6 py-5 z-[50]">  
           <h2 className="font-serif text-xl tracking-tight text-[var(--nurea-text)]">
             Filtrer par Marques
           </h2>
           <button
-            onClick={onClose}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClose();
+            }}
             aria-label="Fermer"
-            className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-[var(--nurea-surface-hover)] text-[var(--nurea-text-muted)]"
+            className="flex h-12 w-12 items-center justify-center rounded-full transition-all hover:bg-[var(--nurea-surface-hover)] active:bg-[var(--nurea-surface-hover)] text-[var(--nurea-text-muted)] active:scale-90 touch-manipulation"
           >
-            <X size={20} strokeWidth={1.5} />
+            <X size={24} strokeWidth={1.5} />
           </button>
         </div>
 

@@ -6,7 +6,6 @@ import { useRouter, usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { createPortal } from "react-dom";
 import { ArrowLeft, Filter, Menu, Moon, Search, Sun, X } from "lucide-react";
-import { BottomNav } from "./BottomNav";
 import {
   useCallback,
   useEffect,
@@ -364,9 +363,6 @@ export const Navbar: FC<NavbarProps> = ({ onOpenBrowse: initialOnOpenBrowse }) =
           document.body
         )}
       </nav>
-
-      {/* Bottom Navigation for Mobile */}
-      <BottomNav onMenuClick={() => setMenuOpen(true)} />
     </>
   );
 };

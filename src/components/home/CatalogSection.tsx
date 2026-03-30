@@ -770,7 +770,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
       </main>
 
       {/* Scroll to Top FAB */}
-      <div className={`fixed bottom-[calc(80px+env(safe-area-inset-bottom,0px))] right-4 z-[90] transition-all duration-500 md:hidden ${showScrollTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"}`}>
+      <div className={`fixed bottom-[calc(20px+env(safe-area-inset-bottom,0px))] right-4 z-[90] transition-all duration-500 md:hidden ${showScrollTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"}`}>
         <button
           onClick={scrollToTop}
           className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--nurea-accent)] text-white shadow-2xl active-scale tap-highlight-transparent"

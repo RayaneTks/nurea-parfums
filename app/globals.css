@@ -468,9 +468,9 @@ input[type="search"]::-webkit-search-results-decoration {
   -webkit-appearance: none;
 }
 
-/* Ensure content is not hidden by BottomNav on mobile */
+/* Mobile safe area padding */
 .pb-safe-bottom {
-  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
 }
 
 /* Reduce motion for users who prefer it */
