@@ -3,7 +3,10 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft } from "lucide-react";
+import { AdminButton } from "./ui/AdminButton";
+import { AdminInput } from "./ui/AdminInput";
 
 export function AdminLoginForm() {
   const router = useRouter();
@@ -17,9 +20,9 @@ export function AdminLoginForm() {
 
   const configErr =
     errQ === "config"
-      ? "Serveur mal configure (ADMIN_JWT_SECRET). Verifiez les variables d'environnement."
+      ? "Serveur mal configuré (ADMIN_JWT_SECRET). Vérifie les variables d'environnement."
       : errQ === "session"
-        ? "Session expiree. Reconnectez-vous."
+        ? "Session expirée. Reconnecte-toi."
         : null;
 
   async function onSubmit(e: React.FormEvent) {
@@ -38,10 +41,10 @@ export function AdminLoginForm() {
         ? ((await res.json()) as { error?: string })
         : { error: "Réponse serveur invalide." };
       if (!res.ok) {
-        setError(data.error ?? "Echec de la connexion.");
+        setError(data.error ?? "Échec de la connexion.");
         return;
       }
-      router.replace("/admin");
+      router.replace("/admin/compta");
       router.refresh();
     } catch {
       setError("Connexion serveur impossible.");
@@ -50,33 +53,48 @@ export function AdminLoginForm() {
     }
   }
 
+  const message = configErr || error;
+
   return (
-    <div className="w-full max-w-sm rounded-2xl bg-zinc-900 p-7 shadow-2xl shadow-black/40">
+    <div className="w-full max-w-sm">
       <Link
         href="/"
-        className="mb-6 inline-flex min-h-[44px] items-center gap-1.5 text-[13px] font-medium text-zinc-500 transition-colors duration-200 hover:text-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="mb-6 inline-flex min-h-11 items-center gap-2 text-[13px] font-medium text-admin-muted transition-colors duration-200 [@media(hover:hover)]:hover:text-admin-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent rounded-lg px-2 -ml-2"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour
+        Retour à la boutique
       </Link>
 
-      <div className="mb-7">
-        <h1 className="text-[22px] font-semibold tracking-tight text-zinc-100">
-          Connexion
-        </h1>
-        <p className="mt-1 text-[13px] text-zinc-500">Espace administration</p>
-      </div>
+      <div className="bg-admin-surface border border-admin-border p-8 rounded-3xl shadow-admin-lg">
+        <div className="mb-7 text-center">
+          <Image
+            src="/branding/monogram/logo4_monogram_free_bordeaux_1024.svg"
+            alt="Nuréa Parfums"
+            width={64}
+            height={64}
+            className="mx-auto mb-4"
+            priority
+          />
+          <h1 className="font-serif text-[26px] leading-[1.1] tracking-[-0.01em] text-admin-text">
+            Bienvenue
+          </h1>
+          <p className="mt-1.5 text-[14px] text-admin-muted">
+            Connecte-toi pour gérer la boutique
+          </p>
+        </div>
 
-      <form onSubmit={onSubmit} className="space-y-4">
-        {(configErr || error) && (
-          <div className="rounded-xl bg-red-500/10 px-4 py-3 text-[13px] text-red-400" role="alert">
-            {configErr || error}
-          </div>
-        )}
+        <form onSubmit={onSubmit} className="space-y-4" noValidate>
+          {message ? (
+            <div
+              role="alert"
+              className="rounded-2xl border border-[var(--admin-danger-border)] bg-[var(--admin-danger-subtle)] px-4 py-3 text-[13px] text-admin-danger"
+            >
+              {message}
+            </div>
+          ) : null}
 
-        <div>
-          <label className="mb-1.5 block text-[13px] font-medium text-zinc-400">Identifiant</label>
-          <input
+          <AdminInput
+            label="Identifiant"
             type="text"
             name="username"
             autoComplete="username"
@@ -86,40 +104,31 @@ export function AdminLoginForm() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            className="block min-h-[48px] w-full rounded-xl bg-zinc-800/70 px-4 text-[15px] text-zinc-100 placeholder:text-zinc-600 transition-all duration-200 focus-visible:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           />
-        </div>
 
-        <div>
-          <label className="mb-1.5 block text-[13px] font-medium text-zinc-400">Mot de passe</label>
-          <input
+          <AdminInput
+            label="Mot de passe"
             type="password"
             name="password"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="block min-h-[48px] w-full rounded-xl bg-zinc-800/70 px-4 text-[15px] text-zinc-100 placeholder:text-zinc-600 transition-all duration-200 focus-visible:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           />
-        </div>
 
-        <div className="pt-1">
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-blue-500 text-[14px] font-semibold text-white transition-all duration-200 hover:bg-blue-400 active:scale-[0.98] disabled:opacity-50"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                Connexion…
-              </>
-            ) : (
-              "Se connecter"
-            )}
-          </button>
-        </div>
-      </form>
+          <div className="pt-2">
+            <AdminButton
+              type="submit"
+              variant="primary"
+              size="lg"
+              isLoading={loading}
+              className="w-full"
+            >
+              {loading ? "Connexion…" : "Se connecter"}
+            </AdminButton>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

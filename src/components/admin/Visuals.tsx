@@ -1,72 +1,110 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
 import { SunMoon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function StatusDot({ status }: { status: string }) {
   const isPublished = status === "PUBLISHED";
   return (
-    <div className="relative flex h-2 w-2 items-center justify-center">
-      <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-20 ${isPublished ? "bg-emerald-400" : "bg-amber-400"}`} />
-      <span className={`relative inline-block h-2 w-2 rounded-full ${isPublished ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]"}`} />
-    </div>
+    <span
+      aria-hidden
+      className={cn(
+        "inline-block h-1.5 w-1.5 rounded-full",
+        isPublished ? "bg-[var(--admin-success)]" : "bg-[var(--admin-warning)]",
+      )}
+    />
   );
 }
 
-export function BrandVisual({ name, image, imageLight, size = 64, onClick }: { name: string; image: string | null; imageLight?: string | null; size?: number; onClick?: () => void }) {
+export function BrandVisual({
+  name,
+  image,
+  imageLight,
+  size = 64,
+  onClick,
+}: {
+  name: string;
+  image: string | null;
+  imageLight?: string | null;
+  size?: number;
+  onClick?: () => void;
+}) {
   const content = image?.trim() ? (
     <>
       <Image src={image} alt={name} fill className="object-cover" sizes={`${size}px`} />
-      {imageLight && (
-        <div className="absolute bottom-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/90">
-          <SunMoon className="h-2.5 w-2.5" />
+      {imageLight ? (
+        <div className="absolute bottom-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-admin-bg/70 backdrop-blur-md border border-admin-border text-admin-text">
+          <SunMoon className="h-2.5 w-2.5" aria-hidden />
         </div>
-      )}
+      ) : null}
     </>
   ) : (
-    <div className="flex h-full w-full items-center justify-center text-[13px] font-black uppercase tracking-wider text-zinc-500">
+    <div className="flex h-full w-full items-center justify-center font-serif text-[14px] uppercase tracking-wider text-admin-subtle">
       {name.slice(0, 2)}
     </div>
   );
 
+  const Component = onClick ? "button" : "div";
+
   return (
-    <div 
-      className={`relative shrink-0 rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-inner transition-transform
-        ${onClick ? "cursor-pointer active:scale-95" : ""}
-      `}
+    <Component
+      type={onClick ? "button" : undefined}
+      className={cn(
+        "relative shrink-0 rounded-xl overflow-hidden bg-admin-surface border border-admin-border",
+        "transition-transform duration-200",
+        onClick && "cursor-pointer tap-scale",
+      )}
       style={{ width: size, height: size }}
       onClick={onClick}
+      aria-label={onClick ? `Aperçu ${name}` : undefined}
     >
       {content}
-    </div>
+    </Component>
   );
 }
 
-export function PerfumeVisual({ name, image, imageLight, size = "md", onClick }: { name: string; image: string; imageLight?: string | null; size?: "md" | "lg"; onClick?: () => void }) {
+export function PerfumeVisual({
+  name,
+  image,
+  imageLight,
+  size = "md",
+  onClick,
+}: {
+  name: string;
+  image: string;
+  imageLight?: string | null;
+  size?: "md" | "lg";
+  onClick?: () => void;
+}) {
   const isLarge = size === "lg";
-  
+  const Component = onClick ? "button" : "div";
+
   return (
-    <div 
-      className={`relative shrink-0 rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-2xl transition-all duration-300 select-none touch-manipulation
-        ${onClick ? "cursor-pointer active:scale-95 active:border-blue-500/50" : ""}
-        ${isLarge ? "h-[320px] w-full max-w-[240px] mx-auto" : "h-[64px] w-[48px]"}
-      `}
+    <Component
+      type={onClick ? "button" : undefined}
+      className={cn(
+        "relative shrink-0 rounded-xl overflow-hidden bg-admin-surface border border-admin-border",
+        "transition-[border-color,transform] duration-200 select-none touch-manipulation",
+        onClick && "cursor-pointer tap-scale",
+        isLarge ? "h-[320px] w-full max-w-[240px] mx-auto" : "h-[64px] w-[48px]",
+      )}
       onClick={onClick}
+      aria-label={onClick ? `Aperçu ${name}` : undefined}
     >
-      <Image 
-        src={image} 
-        alt={name} 
-        fill 
-        className="object-cover" 
+      <Image
+        src={image}
+        alt={name}
+        fill
+        className="object-cover"
         sizes={isLarge ? "240px" : "48px"}
         priority={isLarge}
       />
-      {imageLight && (
-        <div className="absolute bottom-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/90">
-          <SunMoon className="h-2.5 w-2.5" />
+      {imageLight ? (
+        <div className="absolute bottom-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-admin-bg/70 backdrop-blur-md border border-admin-border text-admin-text">
+          <SunMoon className="h-2.5 w-2.5" aria-hidden />
         </div>
-      )}
-    </div>
+      ) : null}
+    </Component>
   );
 }

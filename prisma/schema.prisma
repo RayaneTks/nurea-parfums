@@ -29,6 +29,13 @@ enum AdminRole {
   VIEWER
 }
 
+enum OrderStatus {
+  PENDING
+  READY
+  DELIVERED
+  CANCELLED
+}
+
 model Brand {
   id          String           @id @default(cuid())
   name        String           @unique
@@ -54,6 +61,9 @@ model Perfume {
   status     PublicationStatus @default(PUBLISHED)
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
+
+  orderItems OrderItem[]
+  saleItems  SaleItem[]
 
   @@unique([brandId, name])
   @@index([status])
@@ -93,4 +103,73 @@ model ExternalImportSuggestion {
   createdAt    DateTime  @default(now())
   reviewedAt   DateTime?
   reviewedById String?
+}
+
+// ─── Gestion (compta / ordres / ventes) ────────────────────────────
+// Flux 100% manuel : l'admin enregistre ordres et ventes à la main.
+// Prix/coûts saisis à chaque ligne, figés en snapshot à la création.
+
+model Order {
+  id           String      @id @default(cuid())
+  customerName String?
+  orderedAt    DateTime    @default(now())
+  deliveryAt   DateTime?
+  status       OrderStatus @default(PENDING)
+  notes        String?
+  items        OrderItem[]
+  sale         Sale?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([status])
+  @@index([orderedAt])
+  @@index([deliveryAt])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  perfumeId Int
+  quantity  Int     @default(1)
+  note      String?
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  perfume   Perfume @relation(fields: [perfumeId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([perfumeId])
+}
+
+model Sale {
+  id           String     @id @default(cuid())
+  orderId      String?    @unique
+  customerName String?
+  soldAt       DateTime   @default(now())
+  totalRevenue Decimal    @db.Decimal(10, 2)
+  totalCost    Decimal    @db.Decimal(10, 2)
+  totalMargin  Decimal    @db.Decimal(10, 2)
+  notes        String?
+  items        SaleItem[]
+  order        Order?     @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([soldAt])
+}
+
+model SaleItem {
+  id              String   @id @default(cuid())
+  saleId          String
+  perfumeId       Int?
+  perfumeSnapshot Json
+  quantity        Int      @default(1)
+  unitPrice       Decimal  @db.Decimal(10, 2)
+  unitCost        Decimal  @db.Decimal(10, 2)
+  lineRevenue     Decimal  @db.Decimal(10, 2)
+  lineCost        Decimal  @db.Decimal(10, 2)
+  lineMargin      Decimal  @db.Decimal(10, 2)
+  sale            Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  perfume         Perfume? @relation(fields: [perfumeId], references: [id], onDelete: SetNull)
+
+  @@index([saleId])
+  @@index([perfumeId])
 }

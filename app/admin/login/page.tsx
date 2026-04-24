@@ -1,12 +1,18 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
 
+export const metadata: Metadata = {
+  title: "Administration — Connexion",
+  robots: { index: false, follow: false },
+};
+
 export default function AdminLoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-10 md:px-6">
+    <div className="flex min-h-[100svh] items-center justify-center px-5 py-10">
       <Suspense
         fallback={
-          <div className="text-[13px] text-[var(--nurea-text-subtle)]">Chargement…</div>
+          <div className="text-[13px] text-admin-subtle">Chargement…</div>
         }
       >
         <AdminLoginForm />

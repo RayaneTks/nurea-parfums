@@ -1,13 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pencil, Eye, EyeOff, Trash2 } from "lucide-react";
+import { Pencil, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { AdminInput } from "./ui/AdminInput";
 import { AdminBadge } from "./ui/AdminBadge";
 import { AdminButton } from "./ui/AdminButton";
+import { FilterPills } from "./ui/FilterPills";
+import { SectionCard } from "./ui/SectionCard";
 import { BrandVisual, StatusDot } from "./Visuals";
 import { EmptyState } from "./EmptyState";
+import { cn } from "@/lib/utils";
 
 type BrandRow = {
   id: string;
@@ -39,7 +42,6 @@ export function BrandList({
   brands,
   canEdit,
   onToggleVisibility,
-  onDelete,
   onFilterPerfumes,
   onPreview,
   pendingBrandIds,
@@ -50,134 +52,138 @@ export function BrandList({
   const [filter, setFilter] = useState<BrandFilter>("all");
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
     let rows = brands;
     if (filter === "COMPLETE") rows = rows.filter((b) => b.catalogMode === "COMPLETE");
     if (filter === "CURATED") rows = rows.filter((b) => b.catalogMode === "CURATED");
     if (filter === "DRAFT") rows = rows.filter((b) => b.status === "DRAFT");
-    if (q) {
-      return rows.filter(
-        (b) =>
-          b.name.toLowerCase().includes(q) ||
-          b.slug.toLowerCase().includes(q),
-      );
-    }
-    return rows;
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter(
+      (b) => b.name.toLowerCase().includes(q) || b.slug.toLowerCase().includes(q),
+    );
   }, [brands, search, filter]);
 
-  const filterPills: { id: BrandFilter; label: string; count: number }[] = [
-    { id: "all", label: "Toutes", count: brands.length },
-    { id: "COMPLETE", label: "Gammes", count: brands.filter((b) => b.catalogMode === "COMPLETE").length },
-    { id: "CURATED", label: "Sélections", count: brands.filter((b) => b.catalogMode === "CURATED").length },
-    { id: "DRAFT", label: "Masquées", count: brands.filter((b) => b.status === "DRAFT").length },
+  const pillOptions = [
+    { value: "all" as const, label: `Toutes (${brands.length})` },
+    {
+      value: "COMPLETE" as const,
+      label: `Gammes (${brands.filter((b) => b.catalogMode === "COMPLETE").length})`,
+    },
+    {
+      value: "CURATED" as const,
+      label: `Sélections (${brands.filter((b) => b.catalogMode === "CURATED").length})`,
+    },
+    {
+      value: "DRAFT" as const,
+      label: `Masquées (${brands.filter((b) => b.status === "DRAFT").length})`,
+    },
   ];
 
   return (
-    <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="space-y-5">
       <div className="space-y-3">
         <AdminInput
           isSearch
-          placeholder="Rechercher une marque..."
+          placeholder="Rechercher une marque…"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          onClear={() => onSearchChange("")}
+          onClear={search ? () => onSearchChange("") : undefined}
         />
-        
-        <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-          {filterPills.map((pill) => (
-            <button
-              key={pill.id}
-              onClick={() => setFilter(pill.id)}
-              className={`
-                shrink-0 px-4 py-2 rounded-xl text-[13px] font-semibold transition-all duration-200
-                ${filter === pill.id 
-                  ? "bg-zinc-100 text-zinc-900 shadow-lg shadow-zinc-100/10" 
-                  : "bg-zinc-900 text-zinc-500 hover:text-zinc-300 border border-zinc-800"}
-              `}
-            >
-              {pill.label}
-              <span className={`ml-1.5 opacity-50 ${filter === pill.id ? "text-zinc-500" : ""}`}>
-                {pill.count}
-              </span>
-            </button>
-          ))}
+        <div className="overflow-x-auto no-scrollbar">
+          <FilterPills
+            options={pillOptions}
+            value={filter}
+            onChange={setFilter}
+            ariaLabel="Filtrer les marques"
+          />
         </div>
       </div>
 
-      <div className="space-y-3 pb-20">
-        {filtered.length === 0 ? (
-          <EmptyState
-            title={brands.length === 0 ? "Aucune marque" : "Aucun résultat"}
-            description={brands.length === 0 ? "Ajoutez des marques pour organiser votre catalogue de parfums." : "Essayez d'ajuster vos filtres ou votre recherche."}
-            hasSearch={!!search}
-            onClearSearch={() => onSearchChange("")}
-          />
-        ) : (
-          filtered.map((brand) => (
-            <div
+      {filtered.length === 0 ? (
+        <EmptyState
+          title={brands.length === 0 ? "Aucune marque" : "Aucun résultat"}
+          description={
+            brands.length === 0
+              ? "Ajoute des marques pour organiser ton catalogue."
+              : "Ajuste les filtres ou la recherche."
+          }
+          hasSearch={!!search}
+          onClearSearch={() => onSearchChange("")}
+        />
+      ) : (
+        <div className="flex flex-col gap-2 pb-4">
+          <h2 className="sr-only">Marques du catalogue</h2>
+          {filtered.map((brand) => (
+            <SectionCard
               key={brand.id}
-              className={`
-                group relative flex items-center gap-4 p-4 bg-zinc-900/40 border border-zinc-800/50 rounded-2xl active:bg-zinc-900/80 transition-all duration-200
-                ${pendingBrandIds.has(brand.id) ? "opacity-50 pointer-events-none" : ""}
-              `}
+              className={cn(
+                "flex items-center gap-3 p-3",
+                pendingBrandIds.has(brand.id) && "opacity-50 pointer-events-none",
+              )}
             >
               <BrandVisual
                 name={brand.name}
                 image={brand.image}
                 imageLight={brand.imageLight}
                 onClick={() => onPreview(brand)}
-              />              
+              />
+
               <div className="min-w-0 flex-1">
-                <h4 className="text-[16px] font-bold text-zinc-100 truncate group-hover:text-blue-400 transition-colors">
+                <h3 className="font-serif text-[17px] leading-tight tracking-[-0.01em] text-admin-text truncate">
                   {brand.name}
-                </h4>
+                </h3>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">
-                  <AdminBadge 
+                  <AdminBadge
                     label={brand.catalogMode === "COMPLETE" ? "Gamme complète" : "Sélection"}
                     variant={brand.catalogMode === "COMPLETE" ? "warning" : "info"}
                   />
-                  {brand.catalogMode === "CURATED" && (
+                  {brand.catalogMode === "CURATED" ? (
                     <button
+                      type="button"
                       onClick={() => onFilterPerfumes(brand.name)}
-                      className="text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors underline decoration-zinc-800 underline-offset-4 active:opacity-70"
+                      className="text-[12px] text-admin-muted [@media(hover:hover)]:hover:text-admin-text transition-colors"
                     >
                       {brand._count.perfumes} parfum{brand._count.perfumes > 1 ? "s" : ""}
                     </button>
-                  )}
-                  <div className="flex items-center gap-1.5 ml-0.5">
+                  ) : null}
+                  <span className="inline-flex items-center gap-1.5">
                     <StatusDot status={brand.status} />
-                    <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide">
+                    <span className="text-[10px] uppercase tracking-wider text-admin-muted">
                       {brand.status === "PUBLISHED" ? "Visible" : "Masquée"}
                     </span>
-                  </div>
+                  </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                <Link href={`/admin/brands/${brand.id}/edit`}>
-                  <AdminButton size="icon" variant="secondary" className="h-11 w-11 rounded-xl shadow-sm">
-                    <Pencil className="h-4 w-4" />
-                  </AdminButton>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Link
+                  href={`/admin/brands/${brand.id}/edit`}
+                  aria-label={`Éditer ${brand.name}`}
+                  className="tap-scale inline-flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-xl border border-admin-border bg-admin-surface text-admin-text shadow-admin-sm transition-[background-color,border-color,color] duration-200 [@media(hover:hover)]:hover:bg-admin-surface-muted [@media(hover:hover)]:hover:border-admin-border-hover"
+                >
+                  <Pencil className="h-4 w-4" aria-hidden />
                 </Link>
-                
-                {canEdit && (
-                  <>
-                    <AdminButton
-                      size="icon"
-                      variant="secondary"
-                      className="h-11 w-11 rounded-xl shadow-sm"
-                      disabled={hasMutationInFlight || pendingBrandIds.has(brand.id)}
-                      onClick={() => onToggleVisibility(brand.id, brand.status)}
-                    >
-                      {brand.status === "PUBLISHED" ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                    </AdminButton>
-                  </>
-                )}
+
+                {canEdit ? (
+                  <AdminButton
+                    size="icon"
+                    variant="secondary"
+                    aria-label={brand.status === "PUBLISHED" ? "Masquer" : "Publier"}
+                    disabled={hasMutationInFlight || pendingBrandIds.has(brand.id)}
+                    onClick={() => onToggleVisibility(brand.id, brand.status)}
+                  >
+                    {brand.status === "PUBLISHED" ? (
+                      <Eye className="h-4 w-4" aria-hidden />
+                    ) : (
+                      <EyeOff className="h-4 w-4" aria-hidden />
+                    )}
+                  </AdminButton>
+                ) : null}
               </div>
-            </div>
-          ))
-        )}
-      </div>
+            </SectionCard>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

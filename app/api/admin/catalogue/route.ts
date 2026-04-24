@@ -11,7 +11,31 @@ export async function GET(request: Request) {
       return auth;
     }
 
-    // Récupération simultanée en une seule transaction de lecture
+    const { searchParams } = new URL(request.url);
+    const mode = searchParams.get("mode");
+
+    if (mode === "picker") {
+      const perfumes = await prisma.perfume.findMany({
+        orderBy: { updatedAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          status: true,
+          brand: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+      return NextResponse.json({
+        user: { username: auth.username, role: auth.role },
+        perfumes,
+      });
+    }
+
     const [brands, perfumes] = await Promise.all([
       prisma.brand.findMany({
         orderBy: { name: "asc" },
@@ -33,12 +57,10 @@ export async function GET(request: Request) {
         select: {
           id: true,
           name: true,
-          slug: true,
           image: true,
           imageLight: true,
           isFeatured: true,
           status: true,
-          updatedAt: true,
           brand: {
             select: {
               id: true,
@@ -53,7 +75,11 @@ export async function GET(request: Request) {
       })
     ]);
 
-    return NextResponse.json({ brands, perfumes });
+    return NextResponse.json({
+      user: { username: auth.username, role: auth.role },
+      brands,
+      perfumes,
+    });
   } catch (error: any) {
     if (error.code === 'P2022') {
       console.error("[CATALOGUE_GET] Database schema out of sync (missing columns):", error.message);

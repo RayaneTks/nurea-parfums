@@ -1,13 +1,18 @@
 "use client";
-import Link from "next/link";
+
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Loader2, Plus, Trash2, Upload, X, AlertCircle } from "lucide-react";
+import Image from "next/image";
 import { AdminButton } from "./ui/AdminButton";
 import { AdminInput } from "./ui/AdminInput";
 import { AdminBadge } from "./ui/AdminBadge";
+import { SectionCard } from "./ui/SectionCard";
+import { ConfirmDialog } from "./ui/ConfirmDialog";
+import { PageHeader } from "./shell/PageHeader";
+import { HeaderAction } from "./shell/HeaderAction";
 import { uploadFile } from "@/lib/admin/image-utils";
-import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 type BrandOpt = {
   id: string;
@@ -28,8 +33,8 @@ type PerfumePayload = {
 };
 
 const STATUS_OPTIONS = [
-  { value: "PUBLISHED", label: "Visible", variant: "success" as const },
-  { value: "DRAFT", label: "Masqué", variant: "warning" as const },
+  { value: "PUBLISHED", label: "Visible" },
+  { value: "DRAFT", label: "Masqué" },
 ] as const;
 
 async function readJsonSafe<T>(res: Response): Promise<T | null> {
@@ -73,9 +78,7 @@ function ImageUploadField({
     try {
       const url = await uploadFile(file);
       onChange(url);
-      if (onUploadDone) {
-        onUploadDone(url);
-      }
+      onUploadDone?.(url);
     } catch (e) {
       onError(e instanceof Error ? e.message : "Upload échoué");
     } finally {
@@ -84,93 +87,105 @@ function ImageUploadField({
   }
 
   const triggerUpload = () => {
-    if (!readOnly && !uploading) {
-      fileInputRef.current?.click();
-    }
+    if (!readOnly && !uploading) fileInputRef.current?.click();
   };
 
   return (
     <div className="space-y-3">
       <div>
-        <span className="block text-[14px] font-bold text-zinc-200">{label}</span>
-        {subtitle && (
-          <p className="mt-1 text-[12px] text-zinc-500">{subtitle}</p>
-        )}
+        <p className="text-[12px] font-medium uppercase tracking-wider text-admin-text">
+          {label}
+        </p>
+        {subtitle ? (
+          <p className="mt-1 text-[11px] text-admin-subtle">{subtitle}</p>
+        ) : null}
       </div>
 
-      <div className="grid gap-4">
-        <div className="flex gap-4 items-start">
-          <div
-            className={`relative aspect-[3/4] w-32 shrink-0 overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl group transition-all duration-300 ${!readOnly ? "cursor-pointer active:scale-95 hover:border-blue-500/50" : ""}`}
-            onClick={triggerUpload}
-          >
-            {preview ? (
-              <Image src={preview} alt="Aperçu" fill className="object-contain p-2" sizes="128px" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-zinc-700">
-                <Upload className="h-8 w-8" />
-              </div>
-            )}
-
-            {!readOnly && (
-              <div className={`absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${uploading ? "opacity-100" : ""}`}>
-                {uploading ? (
-                  <Loader2 className="h-8 w-8 animate-spin text-white" />
-                ) : (
-                  <div className="flex flex-col items-center gap-1">
-                    <Upload className="h-6 w-6 text-white" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-white">Remplacer</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="flex-1 space-y-3">
-            <AdminInput
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              disabled={readOnly}
-              required={required}
-              placeholder="https://..."
-              onClear={!readOnly && value.trim().length > 0 ? () => onChange("") : undefined}
-            />
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif,image/*"
-              className="sr-only"
-              disabled={uploading || readOnly}
-              onChange={(e) => handleUpload(e.target.files?.[0] ?? null)}
-            />
-
-            <AdminButton
-              type="button"
-              variant="outline"
-              className="w-full"
-              size="sm"
-              isLoading={uploading}
-              leftIcon={Upload}
-              onClick={triggerUpload}
-              disabled={readOnly}
+      <div className="flex gap-3 items-start">
+        <button
+          type="button"
+          onClick={triggerUpload}
+          disabled={readOnly}
+          className={cn(
+            "relative aspect-[3/4] w-28 shrink-0 overflow-hidden rounded-xl",
+            "bg-admin-bg border border-admin-border",
+            !readOnly && "cursor-pointer tap-scale [@media(hover:hover)]:hover:border-admin-border-hover",
+            "group transition-colors duration-200",
+          )}
+        >
+          {preview ? (
+            <Image src={preview} alt="Aperçu" fill className="object-contain p-2" sizes="112px" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-admin-subtle">
+              <Upload className="h-6 w-6" aria-hidden />
+            </div>
+          )}
+          {!readOnly ? (
+            <div
+              className={cn(
+                "absolute inset-0 flex items-center justify-center bg-[var(--admin-overlay)] opacity-0 transition-opacity duration-200",
+                "[@media(hover:hover)]:group-hover:opacity-100",
+                uploading && "opacity-100",
+              )}
             >
-              {uploading ? "Envoi..." : "Importer un fichier"}
-            </AdminButton>
-          </div>
+              {uploading ? (
+                <Loader2 className="h-6 w-6 animate-spin text-admin-text" aria-hidden />
+              ) : (
+                <div className="flex flex-col items-center gap-1">
+                  <Upload className="h-5 w-5 text-admin-text" aria-hidden />
+                  <span className="text-[9px] uppercase tracking-wider text-admin-text">
+                    Remplacer
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : null}
+        </button>
+
+        <div className="flex-1 space-y-2">
+          <AdminInput
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            disabled={readOnly}
+            required={required}
+            placeholder="https://…"
+            onClear={!readOnly && value.trim().length > 0 ? () => onChange("") : undefined}
+          />
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif,image/*"
+            className="sr-only"
+            disabled={uploading || readOnly}
+            onChange={(e) => handleUpload(e.target.files?.[0] ?? null)}
+          />
+
+          <AdminButton
+            type="button"
+            variant="outline"
+            className="w-full"
+            size="sm"
+            isLoading={uploading}
+            leftIcon={Upload}
+            onClick={triggerUpload}
+            disabled={readOnly}
+          >
+            {uploading ? "Envoi…" : "Importer un fichier"}
+          </AdminButton>
         </div>
       </div>
 
-      {preview && allowClear && !readOnly && (
+      {preview && allowClear && !readOnly ? (
         <button
           type="button"
           onClick={() => onChange("")}
-          className="flex items-center gap-2 text-[11px] font-bold text-red-500/70 hover:text-red-500 transition-colors uppercase tracking-widest"
+          className="inline-flex items-center gap-2 text-[11px] uppercase tracking-wider text-admin-danger [@media(hover:hover)]:hover:opacity-80 transition-opacity"
         >
-          <X className="h-3.5 w-3.5" />
-          Supprimer l'image
+          <X className="h-3.5 w-3.5" aria-hidden />
+          Supprimer l&apos;image
         </button>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -198,7 +213,7 @@ function BrandCombobox({
   const [creating, setCreating] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const displayValue = open ? query : (selectedBrand?.name ?? "");
+  const displayValue = open ? query : selectedBrand?.name ?? "";
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -250,69 +265,81 @@ function BrandCombobox({
 
   return (
     <div ref={ref} className="relative">
-      <div className="relative group">
-        <AdminInput
-          value={displayValue}
-          onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-          onFocus={() => { setOpen(true); setQuery(""); }}
-          disabled={readOnly}
-          placeholder="Rechercher ou créer une marque..."
-          className={`pr-12 transition-all duration-300 ${brandId ? "border-blue-500/40 bg-blue-600/5 focus-visible:bg-zinc-900" : ""}`}
-        />
-        {brandId && selectedBrand && !open && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
-             <AdminBadge
-              label={selectedBrand.catalogMode === "COMPLETE" ? "Gamme complète" : "Sélection"}
-              variant={selectedBrand.catalogMode === "COMPLETE" ? "warning" : "info"}
-            />
-          </div>
-        )}
-        {(query.trim().length > 0 || brandId) && !readOnly && (
-          <button
-            type="button"
-            onClick={() => { setQuery(""); onClear(); setOpen(false); }}
-            className={`absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors ${brandId && !open ? "opacity-0" : "opacity-100"}`}
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
+      <AdminInput
+        label="Marque"
+        value={displayValue}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => {
+          setOpen(true);
+          setQuery("");
+        }}
+        disabled={readOnly}
+        placeholder="Rechercher ou créer une marque…"
+        onClear={
+          (query.trim().length > 0 || brandId) && !readOnly
+            ? () => {
+                setQuery("");
+                onClear();
+                setOpen(false);
+              }
+            : undefined
+        }
+      />
 
-      {open && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-72 overflow-y-auto rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl animate-in fade-in slide-in-from-top-2 ring-1 ring-white/5">
+      {open ? (
+        <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-72 overflow-y-auto rounded-xl border border-admin-border bg-admin-surface shadow-[0_20px_40px_rgba(0,0,0,0.5)] custom-scrollbar">
           <div className="p-1.5">
-            {filtered.length > 0 ? (
-              filtered.map((b) => (
-                <button
-                  key={b.id}
-                  type="button"
-                  onClick={() => { onSelect(b); setQuery(""); setOpen(false); }}
-                  className={`flex w-full items-center gap-3 px-3 py-3 text-left text-[14px] font-medium rounded-xl transition-all active:scale-[0.98] ${b.id === brandId ? "bg-blue-600 text-white" : "text-zinc-200 hover:bg-zinc-800"}`}
-                >
-                  <span className="flex-1 truncate">{b.name}</span>
-                  {b.id === brandId && <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />}     
-                </button>
-              ))
-            ) : query.trim().length < 2 ? (
-              <div className="px-4 py-8 text-center">
-                <p className="text-zinc-500 text-sm font-medium">Commencez à taper pour filtrer...</p>
-              </div>
-            ) : null}
+            {filtered.length > 0
+              ? filtered.map((b) => (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => {
+                      onSelect(b);
+                      setQuery("");
+                      setOpen(false);
+                    }}
+                    className={cn(
+                      "flex w-full items-center gap-3 px-3 py-3 text-left text-[14px] rounded-xl",
+                      "transition-colors duration-200 tap-scale",
+                      b.id === brandId
+                        ? "bg-admin-accent text-admin-bg"
+                        : "text-admin-text [@media(hover:hover)]:hover:bg-admin-surface-hover",
+                    )}
+                  >
+                    <span className="flex-1 truncate">{b.name}</span>
+                    {b.id === brandId ? (
+                      <span className="h-1 w-1 rounded-full bg-admin-bg" aria-hidden />
+                    ) : null}
+                  </button>
+                ))
+              : query.trim().length < 2 ? (
+                  <div className="px-4 py-6 text-center text-[13px] text-admin-subtle">
+                    Commence à taper pour filtrer…
+                  </div>
+                ) : null}
 
-            {query.trim().length >= 2 && !exactMatch && (
+            {query.trim().length >= 2 && !exactMatch ? (
               <button
                 type="button"
                 onClick={createBrand}
                 disabled={creating}
-                className="mt-1 flex w-full items-center gap-3 px-3 py-4 text-left text-[14px] font-bold text-blue-400 bg-blue-500/5 rounded-xl border border-blue-500/20 hover:bg-blue-500/10 transition-colors active:scale-[0.98]"
+                className="mt-1 flex w-full items-center gap-3 px-3 py-3 text-left text-[13px] font-medium text-admin-accent bg-admin-accent-subtle rounded-xl border border-admin-border-hover [@media(hover:hover)]:hover:bg-admin-accent [@media(hover:hover)]:hover:text-admin-bg transition-colors tap-scale"
               >
-                {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4 shrink-0" />}
+                {creating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : (
+                  <Plus className="h-4 w-4 shrink-0" aria-hidden />
+                )}
                 <span className="flex-1">Ajouter la marque « {query.trim()} »</span>
               </button>
-            )}
+            ) : null}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -345,12 +372,16 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     }
   }, []);
 
-  useEffect(() => { loadBrands(); }, [loadBrands]);
+  useEffect(() => {
+    loadBrands();
+  }, [loadBrands]);
 
   useEffect(() => {
     fetch("/api/admin/session", { credentials: "include", cache: "no-store" })
-      .then(r => r.json())
-      .then(j => { if (j.user?.role === "VIEWER") setReadOnly(true); });
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.user?.role === "VIEWER") setReadOnly(true);
+      });
   }, []);
 
   useEffect(() => {
@@ -358,7 +389,10 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     (async () => {
       setLoading(true);
       try {
-        const r = await fetch(`/api/admin/perfumes/${perfumeId}`, { credentials: "include", cache: "no-store" });
+        const r = await fetch(`/api/admin/perfumes/${perfumeId}`, {
+          credentials: "include",
+          cache: "no-store",
+        });
         const j = await readJsonSafe<{ error?: string; perfume?: PerfumePayload }>(r);
         if (!r.ok) throw new Error(j?.error ?? "Chargement impossible");
         if (j?.perfume) {
@@ -378,7 +412,9 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
   }, [isNew, perfumeId]);
 
   useEffect(() => {
-    if (error && errorRef.current) errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });    
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   }, [error]);
 
   const selectedBrand = useMemo(() => brands.find((b) => b.id === brandId), [brands, brandId]);
@@ -416,8 +452,13 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     try {
       let allowCompleteOverride = false;
       if (selectedBrand?.catalogMode === "COMPLETE") {
-        if (!window.confirm("Cette marque est en gamme complète. Le parfum sera masqué automatiquement. Continuer ?")) {
-          setSaving(false); return;
+        if (
+          !window.confirm(
+            "Cette marque est en gamme complète. Le parfum sera masqué automatiquement. Continuer ?",
+          )
+        ) {
+          setSaving(false);
+          return;
         }
         allowCompleteOverride = true;
       }
@@ -449,237 +490,248 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
     }
   }
 
-  const handleAutoSave = useCallback(async (overrides: Partial<PerfumePayload>) => {
-    if (isNew || readOnly || saving) return;
+  const handleAutoSave = useCallback(
+    async (overrides: Partial<PerfumePayload>) => {
+      if (isNew || readOnly || saving) return;
 
-    const body = {
+      const body = {
+        brandId,
+        name,
+        image,
+        imageLight: imageLight.trim() || null,
+        status: isLockedByBrandMode || isLockedByBrandVisibility ? "DRAFT" : status,
+        ...overrides,
+      };
+
+      try {
+        const r = await fetch(`/api/admin/perfumes/${perfumeId}`, {
+          method: "PUT",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!r.ok) {
+          const j = await readJsonSafe<{ error?: string }>(r);
+          throw new Error(j?.error ?? "Auto-save échoué");
+        }
+        router.refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Erreur lors de la sauvegarde automatique");
+      }
+    },
+    [
+      isNew,
+      readOnly,
+      saving,
+      perfumeId,
       brandId,
       name,
       image,
-      imageLight: imageLight.trim() || null,
-      status: isLockedByBrandMode || isLockedByBrandVisibility ? "DRAFT" : status,
-      ...overrides
-    };
-
-    try {
-      const r = await fetch(`/api/admin/perfumes/${perfumeId}`, {
-        method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (!r.ok) {
-        const j = await readJsonSafe<{ error?: string }>(r);
-        throw new Error(j?.error ?? "Auto-save échoué");
-      }
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de la sauvegarde automatique");
-    }
-  }, [isNew, readOnly, saving, perfumeId, brandId, name, image, imageLight, isLockedByBrandMode, isLockedByBrandVisibility, status, router]);
-
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center py-20 gap-4">
-      <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-      <p className="text-zinc-500 text-sm font-medium">Chargement du parfum...</p>
-    </div>
+      imageLight,
+      isLockedByBrandMode,
+      isLockedByBrandVisibility,
+      status,
+      router,
+    ],
   );
 
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <Loader2 className="h-6 w-6 animate-spin text-admin-accent" aria-hidden />
+        <p className="text-[12px] uppercase tracking-wider text-admin-subtle">
+          Chargement…
+        </p>
+      </div>
+    );
+  }
+
+  const isImageMissing = !image || image.trim() === "";
+
   return (
-    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32">  
-      {/* Header Sticky avec bouton Retour */}
-      <div className="sticky top-0 z-[60] -mx-4 px-4 py-4 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/50 mb-8">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <button 
-              type="button"
-              onClick={() => router.back()}
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all active:scale-95 shadow-lg shadow-black/20"
-              title="Retour"
+    <>
+      <PageHeader
+        title={isNew ? "Nouveau parfum" : name || "Sans nom"}
+        eyebrow={isNew ? "Création" : `Parfum #${perfumeId}`}
+        leading={
+          <HeaderAction
+            label="Retour"
+            icon={ArrowLeft}
+            onClick={() => router.back()}
+          />
+        }
+        action={
+          !isNew ? (
+            <AdminBadge
+              label={status === "PUBLISHED" ? "Visible" : "Masqué"}
+              variant={status === "PUBLISHED" ? "success" : "warning"}
+            />
+          ) : null
+        }
+      />
+
+      <main id="main-content" className="flex-1 px-5 pt-6 pb-32">
+        <form id="perfume-form" onSubmit={onSubmit} className="space-y-8">
+          {error ? (
+            <div
+              ref={errorRef}
+              className="flex items-start gap-3 p-4 border border-[var(--admin-danger-border)] bg-[var(--admin-danger-subtle)] rounded-xl"
+              role="alert"
             >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight text-zinc-100 line-clamp-1">
-                {isNew ? "Nouveau parfum" : name || "Sans nom"}
-              </h1>
-              {!isNew && (
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">ID #{perfumeId}</p>
-              )}
+              <AlertCircle className="h-4 w-4 text-admin-danger shrink-0 mt-0.5" aria-hidden />
+              <p className="text-[13px] text-admin-danger">{error}</p>
             </div>
-          </div>
-          {!isNew && (
-            <AdminBadge label={status === "PUBLISHED" ? "Visible" : "Masqué"} variant={status === "PUBLISHED" ? "success" : "warning"} />
-          )}
-        </div>
+          ) : null}
+
+          <section className="space-y-4">
+            <h2 className="text-[10px] font-medium uppercase tracking-wider text-admin-subtle">
+              Informations
+            </h2>
+            <SectionCard className="p-5 space-y-5">
+              <div className="space-y-2">
+                <BrandCombobox
+                  brands={brands}
+                  brandId={brandId}
+                  onSelect={(b) => {
+                    setBrandId(b.id);
+                    if (b.catalogMode === "COMPLETE" || b.status === "DRAFT") setStatus("DRAFT");
+                  }}
+                  onClear={() => setBrandId("")}
+                  readOnly={readOnly}
+                  onBrandCreated={(b) =>
+                    setBrands((prev) => [...prev, b].sort((a, z) => a.name.localeCompare(z.name)))
+                  }
+                  onError={setError}
+                />
+                {isLockedByBrandMode || isLockedByBrandVisibility ? (
+                  <p className="text-[12px] text-[var(--admin-warning)]">
+                    Marque {isLockedByBrandMode ? "en gamme complète" : "masquée"} · le parfum sera masqué.
+                  </p>
+                ) : null}
+              </div>
+
+              <AdminInput
+                label="Nom du parfum"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={readOnly}
+                required
+                placeholder="Ex : Baccarat Rouge 540"
+                onClear={!readOnly && name.length > 0 ? () => setName("") : undefined}
+              />
+            </SectionCard>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-[10px] font-medium uppercase tracking-wider text-admin-subtle">
+              Visuels
+            </h2>
+            <SectionCard className="p-5 space-y-6">
+              <ImageUploadField
+                label="Image principale (dark)"
+                subtitle="Utilisée dans les deux thèmes si la variante claire est absente."
+                value={image}
+                onChange={setImage}
+                onUploadDone={(url) => handleAutoSave({ image: url })}
+                required
+                readOnly={readOnly}
+                onError={setError}
+                allowClear={false}
+              />
+              <div className="h-px bg-admin-border" />
+              <ImageUploadField
+                label="Image variante (light)"
+                subtitle="Optionnelle. Si présente, la principale devient exclusivement le visuel dark."
+                value={imageLight}
+                onChange={setImageLight}
+                onUploadDone={(url) => handleAutoSave({ imageLight: url })}
+                readOnly={readOnly}
+                onError={setError}
+                allowClear
+              />
+            </SectionCard>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-[10px] font-medium uppercase tracking-wider text-admin-subtle">
+              Statut de publication
+            </h2>
+            <SectionCard className="p-5">
+              <div className="flex gap-2">
+                {STATUS_OPTIONS.map((opt) => {
+                  const active = status === opt.value;
+                  const locked =
+                    (isLockedByBrandMode || isLockedByBrandVisibility || isImageMissing) &&
+                    opt.value === "PUBLISHED";
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      disabled={readOnly || locked}
+                      onClick={() => setStatus(opt.value)}
+                      className={cn(
+                        "flex-1 min-h-12 px-4 rounded-xl border",
+                        "text-[12px] uppercase tracking-wider font-medium",
+                        "transition-colors duration-200 tap-scale",
+                        active
+                          ? "bg-admin-accent text-admin-bg border-admin-accent"
+                          : "bg-admin-surface border-admin-border text-admin-muted",
+                        locked && "opacity-40 cursor-not-allowed",
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {isImageMissing && status === "PUBLISHED" ? (
+                <p className="mt-3 text-[11px] text-[var(--admin-warning)]">
+                  Ajoute une image pour pouvoir publier.
+                </p>
+              ) : null}
+            </SectionCard>
+          </section>
+
+          {!isNew && !readOnly ? (
+            <div className="pt-6 flex justify-center border-t border-admin-border">
+              <AdminButton
+                variant="ghost"
+                size="sm"
+                leftIcon={Trash2}
+                onClick={() => setDeleteConfirm(true)}
+                className="text-admin-danger [@media(hover:hover)]:hover:bg-[var(--admin-danger-subtle)]"
+              >
+                Supprimer ce parfum
+              </AdminButton>
+            </div>
+          ) : null}
+        </form>
+      </main>
+
+      <div className="fixed left-1/2 -translate-x-1/2 bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] z-[55] w-full max-w-[430px] px-5">
+        <AdminButton
+          type="submit"
+          form="perfume-form"
+          variant="primary"
+          size="lg"
+          className="w-full"
+          isLoading={saving}
+          disabled={readOnly || !brandId || !name || !image}
+        >
+          {isNew ? "Créer le parfum" : "Enregistrer"}
+        </AdminButton>
       </div>
 
-      <form id="perfume-form" onSubmit={onSubmit} className="space-y-10">
-        {error && (
-          <div ref={errorRef} className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl animate-in shake duration-500">
-            <AlertCircle className="h-5 w-5 text-red-500 shrink-0" />
-            <p className="text-sm font-medium text-red-400">{error}</p>
-          </div>
-        )}
-
-        <section className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="h-6 w-1 bg-blue-600 rounded-full" />
-            <h2 className="text-lg font-bold text-zinc-100">Informations générales</h2>
-          </div>
-
-          <div className="space-y-6 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
-            <div className="space-y-2">
-              <label className="text-[14px] font-bold text-zinc-200">Marque</label>
-              <BrandCombobox
-                brands={brands}
-                brandId={brandId}
-                onSelect={(b) => { setBrandId(b.id); if (b.catalogMode === "COMPLETE" || b.status === "DRAFT") setStatus("DRAFT"); }}
-                onClear={() => setBrandId("")}
-                readOnly={readOnly}
-                onBrandCreated={(b) => setBrands(prev => [...prev, b].sort((a,z) => a.name.localeCompare(z.name)))}
-                onError={setError}
-              />
-              {(isLockedByBrandMode || isLockedByBrandVisibility) && (
-                <p className="text-[12px] text-amber-500 font-medium">
-                  Marque {isLockedByBrandMode ? "en gamme complète" : "masquée"}. Le parfum sera masqué.     
-                </p>
-              )}
-            </div>
-
-            <AdminInput
-              label="Nom du parfum"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              disabled={readOnly}
-              required
-              placeholder="Ex: Baccarat Rouge 540"
-              onClear={!readOnly && name.length > 0 ? () => setName("") : undefined}
-            />
-          </div>
-        </section>
-
-        <section className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="h-6 w-1 bg-blue-600 rounded-full" />
-            <h2 className="text-lg font-bold text-zinc-100">Visuels du produit</h2>
-          </div>
-
-          <div className="grid gap-8 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
-            <ImageUploadField
-              label="Image principale (Dark Mode par défaut)"
-              subtitle="Obligatoire. Utilisée pour les deux modes si l'image Light est absente. Ne peut pas être supprimée, seulement remplacée."
-              value={image}
-              onChange={setImage}
-              onUploadDone={(url) => handleAutoSave({ image: url })}
-              required
-              readOnly={readOnly}
-              onError={setError}
-              allowClear={false} // Suppression interdite pour l'image principale
-            />
-            <div className="h-px bg-zinc-800/50" />
-            <ImageUploadField
-              label="Image variante (Light Mode)"
-              subtitle="Optionnelle. Si présente, l'image principale ci-dessus devient exclusivement le visuel Dark."
-              value={imageLight}
-              onChange={setImageLight}
-              onUploadDone={(url) => handleAutoSave({ imageLight: url })}
-              readOnly={readOnly}
-              onError={setError}
-              allowClear={true} // Suppression autorisée pour l'image secondaire
-            />
-          </div>
-        </section>
-
-        <section className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="h-6 w-1 bg-blue-600 rounded-full" />
-            <h2 className="text-lg font-bold text-zinc-100">Statut de publication</h2>
-          </div>
-
-          <div className="bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
-            <div className="flex gap-3">
-              {STATUS_OPTIONS.map((opt) => {
-                const active = status === opt.value;
-                const isImageMissing = !image || image.trim() === "";
-                const locked = (isLockedByBrandMode || isLockedByBrandVisibility || isImageMissing) && opt.value === "PUBLISHED"; 
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    disabled={readOnly || locked}
-                    onClick={() => setStatus(opt.value)}
-                    className={`
-                      relative flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all duration-300 active:scale-[0.97] select-none touch-manipulation
-                      ${active
-                        ? "bg-zinc-100 border-zinc-100 shadow-xl shadow-zinc-100/10"
-                        : "bg-zinc-900/50 border-zinc-800 text-zinc-500 [@media(hover:hover)]:hover:border-zinc-700"}
-                      ${locked ? "opacity-30 grayscale cursor-not-allowed" : ""}
-                    `}
-                  >
-                    <AdminBadge label={opt.label} variant={active ? opt.variant : "neutral"} dot={active} />    
-                    <span className={`text-[11px] font-bold uppercase tracking-widest ${active ? "text-zinc-900" : "text-zinc-600"}`}>
-                      {opt.value === "PUBLISHED" ? "Public" : "Interne"}
-                    </span>
-                    {locked && isImageMissing && opt.value === "PUBLISHED" && (
-                      <span className="absolute -bottom-6 left-0 right-0 text-[9px] text-amber-500 font-bold uppercase text-center">Image requise</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-            {readOnly && (
-              <p className="mt-4 text-center text-xs text-amber-500 font-medium">
-                Accès limité : modification du statut impossible.
-              </p>
-            )}
-          </div>
-        </section>
-
-        {/* Bouton de suppression fixé en bas du flux, pas sticky */}
-        {!isNew && !readOnly && (
-          <div className="pt-12 flex flex-col items-center border-t border-zinc-800/50">
-            {!deleteConfirm ? (
-              <button
-                type="button"
-                onClick={() => setDeleteConfirm(true)}
-                className="group flex items-center gap-2 text-[13px] font-bold text-zinc-600 hover:text-red-500 transition-all uppercase tracking-widest"
-              >
-                <Trash2 className="h-4 w-4" />
-                Supprimer ce parfum
-              </button>
-            ) : (
-              <div className="flex flex-col items-center gap-3 p-6 bg-red-500/5 border border-red-500/10 rounded-3xl w-full animate-in zoom-in-95">
-                <p className="text-xs text-red-400 font-bold uppercase tracking-wider text-center">Suppression irréversible ?</p>
-                <div className="flex gap-2 w-full max-w-xs">
-                  <AdminButton variant="ghost" className="flex-1" onClick={() => setDeleteConfirm(false)} disabled={deleting}>
-                    Annuler
-                  </AdminButton>
-                  <AdminButton variant="danger" className="flex-1" onClick={handleDelete} isLoading={deleting} leftIcon={Trash2}>
-                    Confirmer
-                  </AdminButton>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Barre d'action sticky pour la sauvegarde */}
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-[70]">
-          <div className="p-2 bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-3xl shadow-2xl ring-1 ring-white/5">   
-            <AdminButton
-              type="submit"
-              form="perfume-form"
-              className="w-full h-14 rounded-2xl text-base shadow-lg shadow-blue-500/20"
-              size="lg"
-              isLoading={saving}
-              disabled={readOnly || !brandId || !name || !image}
-            >
-              {isNew ? "Créer le parfum" : "Enregistrer les modifications"}
-            </AdminButton>
-          </div>
-        </div>
-      </form>
-    </div>
+      <ConfirmDialog
+        open={deleteConfirm}
+        title="Supprimer ce parfum ?"
+        description="Cette action retire le parfum du catalogue."
+        confirmLabel="Supprimer définitivement"
+        destructive
+        isLoading={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteConfirm(false)}
+      />
+    </>
   );
 }

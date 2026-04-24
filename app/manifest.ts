@@ -12,8 +12,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: DEFAULT_DESCRIPTION,
     start_url: "/admin/login",
     display: "standalone",
-    background_color: "#0A0508",
-    theme_color: "#0A0508",
+    background_color: "#F7F4F1",
+    theme_color: "#7F3038",
     lang: "fr",
     icons: [
       {
