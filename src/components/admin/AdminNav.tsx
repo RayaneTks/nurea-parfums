@@ -18,6 +18,7 @@ export function AdminNav() {
   // Détermination du fil d'ariane
   let crumb = "";
   if (pathname.includes("/catalogue")) crumb = "Catalogue";
+  else if (pathname.includes("/caisse")) crumb = "Caisse";
   else if (pathname.includes("/perfumes/new")) crumb = "Nouveau parfum";
   else if (pathname.includes("/perfumes/")) crumb = "Édition parfum";
   else if (pathname.includes("/brands/new")) crumb = "Nouvelle marque";

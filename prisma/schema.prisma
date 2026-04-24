@@ -29,6 +29,12 @@ enum AdminRole {
   VIEWER
 }
 
+enum CustomerOrderStatus {
+  PENDING
+  FULFILLED
+  CANCELLED
+}
+
 model Brand {
   id          String           @id @default(cuid())
   name        String           @unique
@@ -54,10 +60,50 @@ model Perfume {
   status     PublicationStatus @default(PUBLISHED)
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
+  cashSaleLines CashSaleLine[]
 
   @@unique([brandId, name])
   @@index([status])
   @@index([brandId])
+}
+
+/// Vente enregistrée depuis la caisse (une ou plusieurs lignes parfum).
+model CashSale {
+  id        String         @id @default(cuid())
+  note      String?
+  createdAt DateTime       @default(now())
+  lines     CashSaleLine[]
+
+  @@index([createdAt])
+}
+
+/// Ligne de vente : prix d’achat unitaire, prix de vente unitaire, quantité (marges calculées côté appli).
+model CashSaleLine {
+  id             String   @id @default(cuid())
+  saleId         String
+  sale           CashSale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  perfumeId      Int
+  perfume        Perfume  @relation(fields: [perfumeId], references: [id], onDelete: Restrict)
+  buyPriceCents  Int
+  sellPriceCents Int
+  quantity       Int
+
+  @@index([saleId])
+  @@index([perfumeId])
+}
+
+/// Commande client (hors vente immédiate).
+model CustomerOrder {
+  id           String               @id @default(cuid())
+  customerName String
+  details      String
+  status       CustomerOrderStatus  @default(PENDING)
+  note         String?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
 }
 
 model AdminUser {

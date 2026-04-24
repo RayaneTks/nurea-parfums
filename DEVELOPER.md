@@ -24,10 +24,11 @@ Pour Prisma:
   - `npx prisma migrate dev`
   - `npx prisma db seed`
   - `npx prisma studio`
+- Module **Caisse** (ventes `CashSale` / `CashSaleLine`, commandes `CustomerOrder`) : migration `prisma/migrations/20260424120000_cash_sales_orders/`.
 
 ## Structure du dépôt
 
-- `app/` — routes et layout Next.js (App Router)
+- `app/` — routes et layout Next.js (App Router) ; admin caisse : `app/admin/caisse/`, API `app/api/admin/caisse/`
 - `src/components/` — interface (layout, features, home, ui)
 - `src/lib/` — données catalogue (`data.ts`), recherche, types
 - `public/` — images et assets statiques (`parfums/`, `branding/`)
