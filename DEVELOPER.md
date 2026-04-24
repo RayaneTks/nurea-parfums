@@ -27,7 +27,7 @@ Pour Prisma:
 
 ## Structure du dépôt
 
-- `app/` — routes et layout Next.js (App Router)
+- `app/` — routes et layout Next.js (App Router) ; admin : `app/admin/layout.tsx` (manifest `link rel="manifest"` → `/admin/manifest`), login sans barre d’onglets (`app/admin/login/layout.tsx`)
 - `src/components/` — interface (layout, features, home, ui)
 - `src/lib/` — données catalogue (`data.ts`), recherche, types
 - `public/` — images et assets statiques (`parfums/`, `branding/`)

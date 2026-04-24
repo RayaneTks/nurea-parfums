@@ -10,12 +10,14 @@ export const metadata: Metadata = {
 
 export default function AdminCataloguePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4 text-zinc-500">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-        <p className="font-medium">Initialisation du tableau de bord...</p>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex min-h-[50dvh] flex-col items-center justify-center gap-3 px-4 text-[var(--admin-muted)]">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--admin-accent-solid)]" aria-hidden />
+          <p className="text-sm font-medium">Chargement du catalogue…</p>
+        </div>
+      }
+    >
       <AdminDashboard />
     </Suspense>
   );

@@ -21,6 +21,7 @@ Fichier de contexte projet pour Gemini CLI.
 - `src/lib/search/` — Logique de recherche, API Fraganty, Cache.
 - `src/lib/catalog/` — Fetching database et transformation de données.
 - `src/actions/` — Server Actions (Contact, etc.).
+- `src/components/admin/` — Interface admin mobile-first (barre d’onglets, thème clair via variables `--admin-*`), manifest dédié `GET /admin/manifest`.
 
 ## Règles Critiques & Design
 - **Travail Intelligent** : Ne jamais modifier les proportions d'un logo. Toujours rogner le vide inutile des images sources.

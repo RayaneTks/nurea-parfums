@@ -17,9 +17,9 @@ export function AdminLoginForm() {
 
   const configErr =
     errQ === "config"
-      ? "Serveur mal configure (ADMIN_JWT_SECRET). Verifiez les variables d'environnement."
+      ? "Serveur mal configuré (ADMIN_JWT_SECRET). Vérifiez les variables d’environnement."
       : errQ === "session"
-        ? "Session expiree. Reconnectez-vous."
+        ? "Session expirée. Reconnectez-vous."
         : null;
 
   async function onSubmit(e: React.FormEvent) {
@@ -38,7 +38,7 @@ export function AdminLoginForm() {
         ? ((await res.json()) as { error?: string })
         : { error: "Réponse serveur invalide." };
       if (!res.ok) {
-        setError(data.error ?? "Echec de la connexion.");
+        setError(data.error ?? "Échec de la connexion.");
         return;
       }
       router.replace("/admin");
@@ -51,31 +51,34 @@ export function AdminLoginForm() {
   }
 
   return (
-    <div className="w-full max-w-sm rounded-2xl bg-zinc-900 p-7 shadow-2xl shadow-black/40">
+    <div className="w-full max-w-sm border border-[var(--admin-border)] bg-[var(--admin-surface)] p-7 shadow-sm">
       <Link
         href="/"
-        className="mb-6 inline-flex min-h-[44px] items-center gap-1.5 text-[13px] font-medium text-zinc-500 transition-colors duration-200 hover:text-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="mb-6 inline-flex min-h-[44px] items-center gap-1.5 text-[13px] font-medium text-[var(--admin-muted)] transition-colors duration-200 hover:text-[var(--admin-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-surface)]"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Retour
       </Link>
 
       <div className="mb-7">
-        <h1 className="text-[22px] font-semibold tracking-tight text-zinc-100">
+        <h1 className="font-[family-name:var(--font-serif)] text-[26px] font-normal tracking-tight text-[var(--admin-text)]">
           Connexion
         </h1>
-        <p className="mt-1 text-[13px] text-zinc-500">Espace administration</p>
+        <p className="mt-1 text-[13px] text-[var(--admin-muted)]">Espace administration</p>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4">
         {(configErr || error) && (
-          <div className="rounded-xl bg-red-500/10 px-4 py-3 text-[13px] text-red-400" role="alert">
+          <div
+            className="border border-[rgba(163,48,48,0.3)] bg-[rgba(163,48,48,0.06)] px-4 py-3 text-[13px] text-[var(--admin-danger)]"
+            role="alert"
+          >
             {configErr || error}
           </div>
         )}
 
         <div>
-          <label className="mb-1.5 block text-[13px] font-medium text-zinc-400">Identifiant</label>
+          <label className="mb-1.5 block text-[13px] font-medium text-[var(--admin-muted)]">Identifiant</label>
           <input
             type="text"
             name="username"
@@ -86,12 +89,12 @@ export function AdminLoginForm() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            className="block min-h-[48px] w-full rounded-xl bg-zinc-800/70 px-4 text-[15px] text-zinc-100 placeholder:text-zinc-600 transition-all duration-200 focus-visible:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="block min-h-[48px] w-full border border-[var(--admin-border)] bg-[#FDFCFA] px-4 text-[15px] text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]/60 transition-colors duration-200 focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]/25"
           />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[13px] font-medium text-zinc-400">Mot de passe</label>
+          <label className="mb-1.5 block text-[13px] font-medium text-[var(--admin-muted)]">Mot de passe</label>
           <input
             type="password"
             name="password"
@@ -99,7 +102,7 @@ export function AdminLoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="block min-h-[48px] w-full rounded-xl bg-zinc-800/70 px-4 text-[15px] text-zinc-100 placeholder:text-zinc-600 transition-all duration-200 focus-visible:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="block min-h-[48px] w-full border border-[var(--admin-border)] bg-[#FDFCFA] px-4 text-[15px] text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]/60 transition-colors duration-200 focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]/25"
           />
         </div>
 
@@ -107,7 +110,7 @@ export function AdminLoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-blue-500 text-[14px] font-semibold text-white transition-all duration-200 hover:bg-blue-400 active:scale-[0.98] disabled:opacity-50"
+            className="flex min-h-[48px] w-full items-center justify-center gap-2 bg-[var(--admin-accent-solid)] text-[14px] font-semibold text-[#FDFCFA] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[var(--admin-accent)] active:scale-[0.98] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-surface)]"
           >
             {loading ? (
               <>

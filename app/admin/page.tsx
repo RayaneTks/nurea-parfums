@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AdminNav } from "@/components/admin/AdminNav";
-import { PackageSearch, ChevronRight, Settings2 } from "lucide-react";
+import { PackageSearch, Settings2, ChevronRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Administration — Accueil",
@@ -10,62 +9,56 @@ export const metadata: Metadata = {
 
 export default function AdminHomePage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-blue-500/30">
-      <AdminNav />
+    <main className="mx-auto max-w-lg px-4 pb-6 pt-5 sm:px-5 sm:pt-6">
+      <div className="mb-8">
+        <h1 className="font-[family-name:var(--font-serif)] text-[32px] font-normal leading-tight tracking-tight text-[var(--admin-text)]">
+          Tableau de bord
+        </h1>
+        <p className="mt-2 text-[15px] leading-snug text-[var(--admin-muted)]">
+          Raccourcis vers le catalogue et les outils courants.
+        </p>
+      </div>
 
-      <main className="mx-auto max-w-4xl px-5 pt-8 pb-32">
-        <div className="mb-10">
-          <h1 className="text-[28px] font-bold tracking-tight text-zinc-100">
-            Tableau de bord
-          </h1>
-          <p className="mt-1 text-[14px] text-zinc-400">
-            Sélectionnez un module pour commencer.
-          </p>
-        </div>
+      <div className="grid gap-3">
+        <Link
+          href="/admin/catalogue"
+          className="group flex items-stretch gap-4 border border-[var(--admin-border)] bg-[var(--admin-surface)] p-4 shadow-sm transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:bg-[var(--admin-elevated)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-bg)]"
+        >
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-[var(--admin-border)] bg-[rgba(139,58,58,0.08)] text-[var(--admin-accent-solid)] transition-colors group-hover:bg-[rgba(139,58,58,0.12)]">
+            <PackageSearch className="h-6 w-6" aria-hidden />
+          </div>
+          <div className="min-w-0 flex-1 py-0.5">
+            <h2 className="text-[17px] font-semibold tracking-tight text-[var(--admin-text)]">Catalogue</h2>
+            <p className="mt-1 text-[13px] leading-relaxed text-[var(--admin-muted)]">
+              Parfums, marques et visibilité sur la boutique.
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center text-[var(--admin-muted)]">
+            <ChevronRight className="h-5 w-5" aria-hidden />
+          </div>
+        </Link>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {/* Tuile Catalogue */}
-          <Link
-            href="/admin/catalogue"
-            className="group relative flex flex-col justify-between overflow-hidden rounded-3xl bg-zinc-900/50 border border-zinc-800 p-6 transition-all duration-300 hover:bg-zinc-800/80 active:scale-[0.98]"
-          >
-            <div className="flex items-start justify-between mb-8">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors duration-300">
-                <PackageSearch className="h-6 w-6" />
-              </div>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800/50 text-zinc-500 group-hover:bg-zinc-700 group-hover:text-zinc-300 transition-colors">
-                <ChevronRight className="h-5 w-5" />
-              </div>
-            </div>
-            
-            <div>
-              <h2 className="text-xl font-bold text-zinc-100">Catalogue</h2>
-              <p className="mt-2 text-sm text-zinc-400 leading-relaxed">
-                Gérez vos parfums, les marques, et la visibilité des produits sur la boutique.
-              </p>
-            </div>
-          </Link>
-
-          {/* Tuile Placeholder (Prochainement) */}
-          <div className="group relative flex flex-col justify-between overflow-hidden rounded-3xl bg-zinc-950 border border-zinc-900 p-6 opacity-60 grayscale transition-all duration-300">
-            <div className="flex items-start justify-between mb-8">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-800 text-zinc-500">
-                <Settings2 className="h-6 w-6" />
-              </div>
-              <div className="flex px-3 py-1 items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-zinc-500 text-[10px] font-bold uppercase tracking-widest">
+        <div className="flex items-stretch gap-4 border border-[var(--admin-border)] bg-[var(--admin-elevated)]/60 p-4 opacity-75">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-muted)]">
+            <Settings2 className="h-6 w-6" aria-hidden />
+          </div>
+          <div className="min-w-0 flex-1 py-0.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-[17px] font-semibold text-[var(--admin-muted)]">Paramètres</h2>
+              <span className="border border-[var(--admin-border)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--admin-muted)]">
                 Bientôt
-              </div>
+              </span>
             </div>
-            
-            <div>
-              <h2 className="text-xl font-bold text-zinc-400">Paramètres</h2>
-              <p className="mt-2 text-sm text-zinc-500 leading-relaxed">
-                Configuration avancée de la boutique, gestion des administrateurs et préférences globales.
-              </p>
-            </div>
+            <p className="mt-1 text-[13px] leading-relaxed text-[var(--admin-muted)]">
+              Comptes admin et options avancées.
+            </p>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+
+      <p className="mt-10 text-center text-[12px] text-[var(--admin-muted)]">
+        Astuce : ajoutez cette page à l&apos;écran d&apos;accueil pour une ouverture en plein écran.
+      </p>
+    </main>
   );
 }

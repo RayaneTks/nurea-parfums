@@ -6,7 +6,6 @@ import { AlertCircle, Plus, SunMoon, Upload, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRef } from "react";
-import { AdminNav } from "./AdminNav";
 import { DashboardHeader } from "./DashboardHeader";
 import { PerfumeList } from "./PerfumeList";
 import { BrandList } from "./BrandList";
@@ -49,21 +48,21 @@ function ConfirmDeleteModal({
   onConfirm: (id: any) => void;
 }) {
   return (
-    <div className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="w-full sm:max-w-sm rounded-t-[32px] sm:rounded-3xl bg-zinc-900 border-t sm:border border-zinc-800 p-6 sm:p-6 pb-[max(2rem,env(safe-area-inset-bottom))] shadow-2xl animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-300">
-        <div className="mx-auto w-12 h-1.5 rounded-full bg-zinc-800 mb-6 sm:hidden" />
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/10 mb-4">
-          <AlertCircle className="h-6 w-6 text-red-500" />
+    <div className="fixed inset-0 z-[150] flex items-end justify-center bg-[rgba(26,18,21,0.45)] backdrop-blur-sm sm:items-center sm:p-4">
+      <div className="w-full border border-[var(--admin-border)] border-b-0 bg-[var(--admin-surface)] p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-lg sm:max-w-sm sm:border-b">
+        <div className="mx-auto mb-6 h-1 w-10 bg-[var(--admin-border)] sm:hidden" />
+        <div className="mb-4 flex h-12 w-12 items-center justify-center border border-[rgba(163,48,48,0.25)] bg-[rgba(163,48,48,0.08)]">
+          <AlertCircle className="h-6 w-6 text-[var(--admin-danger)]" />
         </div>
-        <h3 className="text-lg font-bold text-zinc-100">Confirmer la suppression</h3>
-        <p className="mt-2 text-sm text-zinc-400 leading-relaxed">
-          Voulez-vous vraiment supprimer <span className="text-zinc-200 font-semibold">«&nbsp;{target.name}&nbsp;»</span> ?
+        <h3 className="text-lg font-semibold text-[var(--admin-text)]">Confirmer la suppression</h3>
+        <p className="mt-2 text-sm leading-relaxed text-[var(--admin-muted)]">
+          Voulez-vous vraiment supprimer <span className="font-semibold text-[var(--admin-text)]">«&nbsp;{target.name}&nbsp;»</span> ?
           {target.count !== undefined && target.count > 0 && (
-            <span className="block mt-2 p-3 bg-red-500/5 rounded-xl border border-red-500/10 text-red-400/80 text-xs">
+            <span className="mt-2 block border border-[rgba(163,48,48,0.25)] bg-[rgba(163,48,48,0.06)] p-3 text-xs text-[var(--admin-danger)]">
               Attention : cela supprimera également {target.count} parfum{target.count > 1 ? "s" : ""} lié{target.count > 1 ? "s" : ""}.
             </span>
           )}
-          <span className="block mt-2 italic">Cette action est irréversible.</span>
+          <span className="mt-2 block italic">Cette action est irréversible.</span>
         </p>
         <div className="mt-6 flex flex-col gap-2">
           <AdminButton variant="danger" onClick={() => onConfirm(target.id)}>
@@ -141,19 +140,22 @@ function VisualizerDrawer({
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose}>
-      <div 
-        className="w-full sm:max-w-md rounded-t-[40px] sm:rounded-[32px] bg-zinc-900 border-t sm:border border-zinc-800 p-8 pb-[max(2.5rem,env(safe-area-inset-bottom))] shadow-2xl transition-transform duration-200 ease-out"
+    <div
+      className="fixed inset-0 z-[200] flex items-end justify-center bg-[rgba(26,18,21,0.5)] backdrop-blur-md sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-h-[92dvh] overflow-y-auto border border-[var(--admin-border)] border-b-0 bg-[var(--admin-surface)] p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-xl transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] sm:max-w-md sm:border-b"
         style={{ transform: `translateY(${touchOffset}px)` }}
         onClick={(e) => e.stopPropagation()}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        <div className="mx-auto w-12 h-1.5 rounded-full bg-zinc-800 mb-8 sm:hidden" />
-        
-        <div 
-          className="group relative aspect-[3/4] w-full max-w-[260px] mx-auto rounded-[32px] overflow-hidden bg-zinc-950 shadow-2xl border border-zinc-800 cursor-pointer active:scale-[0.98] transition-all"
+        <div className="mx-auto mb-6 h-1 w-10 bg-[var(--admin-border)] sm:hidden" />
+
+        <div
+          className="group relative mx-auto aspect-[3/4] w-full max-w-[260px] cursor-pointer overflow-hidden border border-[var(--admin-border)] bg-[var(--admin-elevated)] shadow-sm transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98]"
           onClick={() => handleUploadClick(mode)}
         >
           <Image
@@ -165,20 +167,26 @@ function VisualizerDrawer({
             quality={85}
           />
           
-          <div className={`absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity ${uploading ? "opacity-100" : ""}`}>
+          <div
+            className={`absolute inset-0 flex flex-col items-center justify-center bg-[rgba(26,18,21,0.35)] opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${uploading ? "opacity-100" : ""}`}
+          >
             {uploading ? (
-              <Loader2 className="h-10 w-10 animate-spin text-white" />
+              <Loader2 className="h-10 w-10 animate-spin text-[#FDFCFA]" />
             ) : (
               <>
-                <Upload className="h-8 w-8 text-white mb-2" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Changer l&apos;image {mode}</span>
+                <Upload className="mb-2 h-8 w-8 text-[#FDFCFA]" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#FDFCFA]">
+                  Changer l&apos;image {mode}
+                </span>
               </>
             )}
           </div>
 
-          <div className="absolute bottom-6 left-0 right-0 text-center pointer-events-none">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">Aperçu</p>
-            <p className="text-sm font-bold text-white uppercase tracking-widest">{mode === "dark" ? "Sombre (Dark)" : "Clair (Light)"}</p>
+          <div className="pointer-events-none absolute bottom-4 left-0 right-0 text-center">
+            <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-[#FDFCFA]/70">Aperçu</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-[#FDFCFA]">
+              {mode === "dark" ? "Sombre" : "Clair"}
+            </p>
           </div>
         </div>
 
@@ -190,41 +198,55 @@ function VisualizerDrawer({
           onChange={handleFileChange}
         />
 
-        <div className="mt-8 text-center">
-          <h3 className="text-2xl font-bold text-zinc-100 tracking-tight">{item.name}</h3>
-          <p className="text-sm text-zinc-500 mt-1">{isPerfume ? (item as PerfumeRow).brand.name : "Marque"}</p>
+        <div className="mt-6 text-center">
+          <h3 className="font-[family-name:var(--font-serif)] text-2xl font-normal tracking-tight text-[var(--admin-text)]">
+            {item.name}
+          </h3>
+          <p className="mt-1 text-sm text-[var(--admin-muted)]">{isPerfume ? (item as PerfumeRow).brand.name : "Marque"}</p>
         </div>
 
-        <div className="mt-8 grid grid-cols-2 gap-3">
+        <div className="mt-6 grid grid-cols-2 gap-3">
           <button
+            type="button"
             onClick={() => handleUploadClick("dark")}
-            className={`flex flex-col items-center justify-center gap-2 h-20 rounded-2xl border transition-all active:scale-95 ${mode === "dark" ? "bg-zinc-100 border-zinc-100 text-zinc-900 shadow-xl" : "bg-zinc-800/50 border-zinc-700 text-zinc-400"}`}
+            className={`flex h-20 flex-col items-center justify-center gap-2 border transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] ${
+              mode === "dark"
+                ? "border-[var(--admin-accent)] bg-[rgba(139,58,58,0.08)] text-[var(--admin-text)]"
+                : "border-[var(--admin-border)] bg-[var(--admin-elevated)] text-[var(--admin-muted)]"
+            }`}
           >
             <Upload className="h-4 w-4" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Upload Dark</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">Image sombre</span>
           </button>
           <button
+            type="button"
             onClick={() => handleUploadClick("light")}
-            className={`flex flex-col items-center justify-center gap-2 h-20 rounded-2xl border transition-all active:scale-95 ${mode === "light" ? "bg-zinc-100 border-zinc-100 text-zinc-900 shadow-xl" : "bg-zinc-800/50 border-zinc-700 text-zinc-400"}`}
+            className={`flex h-20 flex-col items-center justify-center gap-2 border transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] ${
+              mode === "light"
+                ? "border-[var(--admin-accent)] bg-[rgba(139,58,58,0.08)] text-[var(--admin-text)]"
+                : "border-[var(--admin-border)] bg-[var(--admin-elevated)] text-[var(--admin-muted)]"
+            }`}
           >
             <Plus className="h-4 w-4" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">{hasLight ? "Upload Light" : "Add Light"}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">{hasLight ? "Image claire" : "Ajouter clair"}</span>
           </button>
         </div>
 
-        <div className="mt-6 flex flex-col gap-3">
+        <div className="mt-6 flex flex-col gap-2">
           {hasLight && (
             <button
+              type="button"
               onClick={() => setMode(mode === "dark" ? "light" : "dark")}
-              className="flex h-14 items-center justify-center gap-3 rounded-2xl bg-zinc-800 text-zinc-200 font-bold active:scale-95 transition-all border border-zinc-700"
+              className="flex min-h-[48px] items-center justify-center gap-3 border border-[var(--admin-border)] bg-[var(--admin-elevated)] text-sm font-semibold text-[var(--admin-text)] transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98]"
             >
               <SunMoon className="h-5 w-5" />
               Basculer l&apos;aperçu
             </button>
           )}
           <button
+            type="button"
             onClick={onClose}
-            className="flex h-14 items-center justify-center rounded-2xl text-zinc-500 font-semibold active:scale-95 transition-all hover:text-zinc-300"
+            className="flex min-h-[48px] items-center justify-center text-sm font-semibold text-[var(--admin-muted)] transition-colors hover:text-[var(--admin-text)]"
           >
             Fermer
           </button>
@@ -474,10 +496,8 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-blue-500/30">
-      <AdminNav />
-
-      <main className="mx-auto max-w-4xl px-5 pt-8 pb-32">
+    <div className="min-h-0 selection:bg-[rgba(139,58,58,0.2)]">
+      <main className="mx-auto max-w-4xl px-4 pb-6 pt-5 sm:px-5 sm:pt-6">
         <DashboardHeader
           perfumeCount={perfumes.length}
           brandCount={brands.length}
@@ -488,12 +508,16 @@ export function AdminDashboard() {
         />
 
         {loadErr && (
-          <div className="mt-6 flex items-start gap-3 rounded-2xl bg-red-500/10 border border-red-500/20 p-4 animate-in fade-in slide-in-from-top-2">
-            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
+          <div className="mt-4 flex items-start gap-3 border border-[rgba(163,48,48,0.3)] bg-[rgba(163,48,48,0.06)] p-4">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--admin-danger)]" />
             <div className="flex-1">
-              <p className="text-sm font-bold text-red-500">Erreur de chargement</p>
-              <p className="text-[13px] text-red-400/80 mt-0.5">{loadErr}</p>
-              <button onClick={refresh} className="mt-3 text-[12px] font-bold uppercase tracking-wider text-red-500 hover:text-red-400 transition-colors">
+              <p className="text-sm font-semibold text-[var(--admin-danger)]">Erreur de chargement</p>
+              <p className="mt-0.5 text-[13px] text-[var(--admin-muted)]">{loadErr}</p>
+              <button
+                type="button"
+                onClick={refresh}
+                className="mt-3 text-[12px] font-bold uppercase tracking-wider text-[var(--admin-danger)] underline decoration-[var(--admin-border)] underline-offset-4 transition-colors hover:opacity-90"
+              >
                 Réessayer
               </button>
             </div>
@@ -502,9 +526,9 @@ export function AdminDashboard() {
 
         <div className="mt-8">
           {isLoading ? (
-            <div className="space-y-4 animate-pulse">
+            <div className="space-y-4">
               {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-24 bg-zinc-900/50 rounded-2xl border border-zinc-800/50" />
+                <div key={i} className="h-24 animate-pulse border border-[var(--admin-border)] bg-[var(--admin-elevated)]" />
               ))}
             </div>
           ) : tab === "featured" ? (
@@ -558,13 +582,13 @@ export function AdminDashboard() {
 
       {/* Mobile FAB */}
       {canEdit && (
-        <Link 
+        <Link
           href={tab === "perfumes" ? "/admin/perfumes/new" : "/admin/brands/new"}
-          className="fixed bottom-8 right-6 z-50 md:hidden animate-in fade-in slide-in-from-bottom-6 duration-500"
+          className="fixed right-4 z-[55] flex h-14 w-14 items-center justify-center border border-[var(--admin-border)] bg-[var(--admin-accent-solid)] text-[#FDFCFA] shadow-md transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-90 md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-bg)]"
+          style={{ bottom: "calc(5.25rem + env(safe-area-inset-bottom, 0px))" }}
+          aria-label={tab === "perfumes" ? "Ajouter un parfum" : "Ajouter une marque"}
         >
-          <button className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-[0_8px_24px_rgba(37,99,235,0.4)] transition-all duration-300 active:scale-90 hover:bg-blue-500">
-            <Plus className="h-7 w-7" />
-          </button>
+          <Plus className="h-7 w-7" aria-hidden />
         </Link>
       )}
 

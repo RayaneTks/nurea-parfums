@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pencil, Eye, EyeOff, Trash2 } from "lucide-react";
+import { Pencil, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { AdminInput } from "./ui/AdminInput";
 import { AdminBadge } from "./ui/AdminBadge";
@@ -86,7 +86,7 @@ export function PerfumeList({
   ];
 
   return (
-    <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="space-y-5">
       <div className="space-y-3">
         <AdminInput
           isSearch
@@ -102,10 +102,10 @@ export function PerfumeList({
               key={pill.id}
               onClick={() => setFilter(pill.id)}
               className={`
-                shrink-0 px-4 py-2 rounded-xl text-[13px] font-semibold transition-all duration-200
+                shrink-0 min-h-[40px] px-4 py-2 text-[13px] font-semibold transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]
                 ${filter === pill.id 
-                  ? "bg-zinc-100 text-zinc-900 shadow-lg shadow-zinc-100/10" 
-                  : "bg-zinc-900 text-zinc-500 hover:text-zinc-300 border border-zinc-800"}
+                  ? "border border-[var(--admin-accent)] bg-[rgba(139,58,58,0.08)] text-[var(--admin-text)]" 
+                  : "border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-muted)] hover:text-[var(--admin-text)]"}
               `}
             >
               {pill.label}
@@ -117,7 +117,7 @@ export function PerfumeList({
         </div>
       </div>
 
-      <div className="space-y-6 pb-20">
+      <div className="space-y-6 pb-4">
         {grouped.length === 0 ? (
           <EmptyState
             title={perfumes.length === 0 ? "Aucun parfum" : "Aucun résultat"}
@@ -129,18 +129,18 @@ export function PerfumeList({
           grouped.map((group) => (
             <div key={group.brandName} className="space-y-3">
               <div className="flex items-center gap-3 px-1">
-                <div className="h-px flex-1 bg-gradient-to-r from-zinc-800 to-transparent" />
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-500">
+                <div className="h-px flex-1 bg-[var(--admin-border)]" />
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--admin-muted)]">
                   {group.brandName}
                 </h3>
-                <div className="h-px flex-1 bg-gradient-to-l from-zinc-800 to-transparent" />
+                <div className="h-px flex-1 bg-[var(--admin-border)]" />
               </div>
 
               <div className="grid gap-3">
                 {group.rows.map((row) => (
                   <div
                     key={row.id}
-                    className="group relative flex items-center gap-4 p-4 bg-zinc-900/40 border border-zinc-800/50 rounded-2xl active:bg-zinc-900/80 transition-all duration-200"
+                    className="group relative flex items-center gap-4 border border-[var(--admin-border)] bg-[var(--admin-surface)] p-4 shadow-sm transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:bg-[var(--admin-elevated)]"
                   >
                     <PerfumeVisual
                       name={row.name}
@@ -150,20 +150,20 @@ export function PerfumeList({
                     />
 
                     <div className="min-w-0 flex-1">
-                      <h4 className="text-[16px] font-bold text-zinc-100 truncate group-hover:text-blue-400 transition-colors">
+                      <h4 className="truncate text-[16px] font-semibold tracking-tight text-[var(--admin-text)] transition-colors group-hover:text-[var(--admin-accent-solid)]">
                         {row.name}
                       </h4>
                       <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                         <button
                           onClick={() => onGoToBrand(row.brand.name)}
-                          className="text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors underline decoration-zinc-800 underline-offset-4 active:opacity-70"
+                          className="text-[12px] text-[var(--admin-muted)] underline decoration-[var(--admin-border)] underline-offset-4 transition-colors hover:text-[var(--admin-text)] active:opacity-70"
                         >
                           {row.brand.name}
                         </button>
-                        <span className="text-zinc-700">·</span>
+                        <span className="text-[var(--admin-border)]">·</span>
                         <div className="flex items-center gap-1.5">
                           <StatusDot status={row.status} />
-                          <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide">
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--admin-muted)]">
                             {row.status === "PUBLISHED" ? "Visible" : "Masqué"}
                           </span>
                         </div>
@@ -172,7 +172,7 @@ export function PerfumeList({
 
                     <div className="flex items-center gap-1.5">
                       <Link href={`/admin/perfumes/${row.id}/edit`}>
-                        <AdminButton size="icon" variant="secondary" className="h-11 w-11 rounded-xl shadow-sm">
+                        <AdminButton size="icon" variant="secondary">
                           <Pencil className="h-4 w-4" />
                         </AdminButton>
                       </Link>
@@ -182,7 +182,7 @@ export function PerfumeList({
                           <AdminButton
                             size="icon"
                             variant="secondary"
-                            className="h-11 w-11 rounded-xl shadow-sm"
+                            className="h-11 w-11"
                             disabled={hasMutationInFlight || pendingStatusIds.has(row.id)}
                             onClick={() => onToggleVisibility(row.id, row.status)}
                           >

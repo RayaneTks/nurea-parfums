@@ -18,43 +18,45 @@ export function AdminToast({ message, type = "success", duration = 3000, onClose
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsExiting(true);
-      setTimeout(onClose, 3000); // Allow exit animation to finish
+      setTimeout(onClose, 300);
     }, duration);
 
     return () => clearTimeout(timer);
   }, [duration, onClose]);
 
   const icons = {
-    success: <CheckCircle2 className="h-4 w-4 text-emerald-400" />,
-    error: <AlertCircle className="h-4 w-4 text-red-400" />,
-    info: <Info className="h-4 w-4 text-blue-400" />,
+    success: <CheckCircle2 className="h-4 w-4 text-[var(--admin-success)]" />,
+    error: <AlertCircle className="h-4 w-4 text-[var(--admin-danger)]" />,
+    info: <Info className="h-4 w-4 text-[var(--admin-accent-solid)]" />,
   };
 
-  const bgStyles = {
-    success: "border-emerald-500/20",
-    error: "border-red-500/20",
-    info: "border-blue-500/20",
+  const borderStyles = {
+    success: "border-[rgba(45,106,79,0.35)]",
+    error: "border-[rgba(163,48,48,0.35)]",
+    info: "border-[rgba(139,58,58,0.25)]",
   };
 
   return (
     <div
       className={`
-        fixed bottom-10 left-1/2 z-[200] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center gap-3
-        rounded-2xl border bg-zinc-900/95 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl
-        transition-all duration-300 ease-out-expo
-        ${isExiting ? "opacity-0 translate-y-4 scale-95" : "opacity-100 translate-y-0 scale-100 animate-in fade-in slide-in-from-bottom-4"}
-        ${bgStyles[type]}
+        fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-[200] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center gap-3
+        border bg-[var(--admin-surface)]/98 p-4 shadow-lg backdrop-blur-md
+        transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]
+        ${isExiting ? "translate-y-2 opacity-0" : "translate-y-0 opacity-100"}
+        ${borderStyles[type]}
       `}
       role="status"
     >
       <div className="shrink-0">{icons[type]}</div>
-      <p className="flex-1 text-[13px] font-medium text-zinc-100">{message}</p>
+      <p className="flex-1 text-[13px] font-medium text-[var(--admin-text)]">{message}</p>
       <button
+        type="button"
         onClick={() => {
           setIsExiting(true);
-          setTimeout(onClose, 300);
+          setTimeout(onClose, 200);
         }}
-        className="shrink-0 text-zinc-500 hover:text-zinc-300 transition-colors"
+        className="shrink-0 text-[var(--admin-muted)] transition-colors hover:text-[var(--admin-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]"
+        aria-label="Fermer"
       >
         <X className="h-4 w-4" />
       </button>

@@ -93,34 +93,34 @@ function ImageUploadField({
   return (
     <div className="space-y-3">
       <div>
-        <span className="block text-[14px] font-bold text-zinc-200">{label}</span>
+        <span className="block text-[14px] font-bold text-[var(--admin-text)]">{label}</span>
         {subtitle && (
-          <p className="mt-1 text-[12px] text-zinc-500">{subtitle}</p>
+          <p className="mt-1 text-[12px] text-[var(--admin-muted)]">{subtitle}</p>
         )}
       </div>
 
       <div className="grid gap-4">
         <div className="flex gap-4 items-start">
           <div
-            className={`relative aspect-square w-32 shrink-0 overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl group transition-all duration-300 ${!readOnly ? "cursor-pointer active:scale-95 hover:border-blue-500/50" : ""}`}
+            className={`relative aspect-square w-32 shrink-0 overflow-hidden  bg-[var(--admin-elevated)] border border-[var(--admin-border)] shadow-xl group transition-all duration-300 ${!readOnly ? "cursor-pointer active:scale-95 hover:border-[var(--admin-accent)]" : ""}`}
             onClick={triggerUpload}
           >
             {preview ? (
               <Image src={preview} alt="Aperçu" fill className="object-contain p-2" sizes="128px" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-zinc-700">
+              <div className="flex h-full w-full items-center justify-center text-[var(--admin-muted)]">
                 <Upload className="h-8 w-8" />
               </div>
             )}
 
             {!readOnly && (
-              <div className={`absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${uploading ? "opacity-100" : ""}`}>
+              <div className={`absolute inset-0 flex items-center justify-center bg-[rgba(26,18,21,0.45)] backdrop-blur-[2px] opacity-0 transition-opacity duration-300 group-hover:opacity-100 ${uploading ? "opacity-100" : ""}`}>
                 {uploading ? (
-                  <Loader2 className="h-8 w-8 animate-spin text-white" />
+                  <Loader2 className="h-8 w-8 animate-spin text-[#FDFCFA]" />
                 ) : (
                   <div className="flex flex-col items-center gap-1">
-                    <Upload className="h-6 w-6 text-white" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-white">Remplacer</span>
+                    <Upload className="h-6 w-6 text-[#FDFCFA]" />
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#FDFCFA]">Remplacer</span>
                   </div>
                 )}
               </div>
@@ -322,31 +322,31 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20 gap-4">
-      <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-      <p className="text-zinc-500 text-sm font-medium">Chargement de la marque...</p>
+      <Loader2 className="h-8 w-8 animate-spin text-[var(--admin-accent-solid)]" />
+      <p className="text-[var(--admin-muted)] text-sm font-medium">Chargement de la marque...</p>
     </div>
   );
 
   return (
     <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32">  
       {/* Header Sticky avec bouton Retour */}
-      <div className="sticky top-0 z-[60] -mx-4 px-4 py-4 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/50 mb-8">
+      <div className="sticky top-0 z-[60] -mx-4 px-4 py-4 bg-[var(--admin-surface)]/95 backdrop-blur-xl border-b border-[var(--admin-border)] mb-8">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               type="button"
               onClick={() => router.back()}
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all active:scale-95 shadow-lg shadow-black/20"
+              className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--admin-border)] bg-[var(--admin-elevated)] text-[var(--admin-muted)] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#EDE8E3] hover:text-[var(--admin-text)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-surface)]"
               title="Retour"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div>
-              <h1 className="text-lg font-bold tracking-tight text-zinc-100 line-clamp-1">
+              <h1 className="text-lg font-bold tracking-tight text-[var(--admin-text)] line-clamp-1">
                 {isNew ? "Nouvelle marque" : name || "Sans nom"}
               </h1>
               {!isNew && (
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">ID #{brandId.slice(0,8)}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--admin-muted)]">ID #{brandId.slice(0,8)}</p>
               )}
             </div>
           </div>
@@ -358,19 +358,22 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
 
       <form id="brand-form" onSubmit={onSubmit} className="space-y-10">
         {error && (
-          <div ref={errorRef} className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl animate-in shake duration-500">
-            <AlertCircle className="h-5 w-5 text-red-500 shrink-0" />
-            <p className="text-sm font-medium text-red-400">{error}</p>
+          <div
+            ref={errorRef}
+            className="flex animate-in items-center gap-3 border border-[rgba(163,48,48,0.3)] bg-[rgba(163,48,48,0.06)] p-4 duration-500"
+          >
+            <AlertCircle className="h-5 w-5 shrink-0 text-[var(--admin-danger)]" />
+            <p className="text-sm font-medium text-[var(--admin-danger)]">{error}</p>
           </div>
         )}
 
         <section className="space-y-6">
           <div className="flex items-center gap-3">
-            <div className="h-6 w-1 bg-blue-600 rounded-full" />
-            <h2 className="text-lg font-bold text-zinc-100">Configuration</h2>
+            <div className="h-6 w-[3px] shrink-0 bg-[var(--admin-accent-solid)]" aria-hidden />
+            <h2 className="text-lg font-semibold text-[var(--admin-text)]">Configuration</h2>
           </div>
 
-          <div className="space-y-6 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
+          <div className="space-y-6 bg-[var(--admin-elevated)]/90 border border-[var(--admin-border)] p-6 ">
             <AdminInput
               label="Nom de la marque"
               value={name}
@@ -382,7 +385,7 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
             />
 
             <div className="space-y-3">
-              <label className="text-[14px] font-bold text-zinc-200">Mode catalogue</label>
+              <label className="text-[14px] font-bold text-[var(--admin-text)]">Mode catalogue</label>
               <div className="grid gap-3 sm:grid-cols-2">
                 {MODE_OPTIONS.map((opt) => {
                   const active = catalogMode === opt.value;
@@ -393,14 +396,14 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
                       disabled={readOnly}
                       onClick={() => setCatalogMode(opt.value)}
                       className={`
-                        flex flex-col text-left p-4 rounded-2xl border transition-all duration-300 active:scale-[0.97]
+                        flex flex-col text-left p-4  border transition-all duration-300 active:scale-[0.97]
                         ${active
-                          ? "bg-zinc-100 border-zinc-100 shadow-xl"
-                          : "bg-zinc-900/50 border-zinc-800 hover:border-zinc-700"}
+                          ? "bg-[#F4EFEA] border-[var(--admin-accent)] shadow-xl"
+                          : "bg-[var(--admin-elevated)] border-[var(--admin-border)] hover:border-[var(--admin-border)]"}
                       `}
                     >
-                      <span className={`text-sm font-bold ${active ? "text-zinc-900" : "text-zinc-100"}`}>{opt.label}</span>
-                      <span className={`text-[11px] mt-1 ${active ? "text-zinc-500" : "text-zinc-500"}`}>{opt.subtitle}</span>
+                      <span className="text-sm font-semibold text-[var(--admin-text)]">{opt.label}</span>
+                      <span className="mt-1 text-[11px] text-[var(--admin-muted)]">{opt.subtitle}</span>
                     </button>
                   );
                 })}
@@ -411,11 +414,11 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
 
         <section className="space-y-6">
           <div className="flex items-center gap-3">
-            <div className="h-6 w-1 bg-blue-600 rounded-full" />
-            <h2 className="text-lg font-bold text-zinc-100">Visuels de marque</h2>
+            <div className="h-6 w-[3px] shrink-0 bg-[var(--admin-accent-solid)]" aria-hidden />
+            <h2 className="text-lg font-semibold text-[var(--admin-text)]">Visuels de marque</h2>
           </div>
 
-          <div className="grid gap-8 bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
+          <div className="grid gap-8 bg-[var(--admin-elevated)]/90 border border-[var(--admin-border)] p-6 ">
             <ImageUploadField
               label={imageLight ? "Image mode sombre (Dark)" : "Image principale (Mode sombre + clair)"}        
               subtitle="Optimisation automatique (WebP, 1024x1536) recommandée."
@@ -426,7 +429,7 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
               onError={setError}
               allowClear={true}
             />
-            <div className="h-px bg-zinc-800/50" />
+            <div className="h-px bg-[#EDE8E3]" />
             <ImageUploadField
               label="Image mode clair (Light)"
               subtitle="Optionnel. Si ajoutée, l'image ci-dessus devient l'image 'Sombre' uniquement."
@@ -442,11 +445,11 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
 
         <section className="space-y-6">
           <div className="flex items-center gap-3">
-            <div className="h-6 w-1 bg-blue-600 rounded-full" />
-            <h2 className="text-lg font-bold text-zinc-100">Visibilité</h2>
+            <div className="h-6 w-[3px] shrink-0 bg-[var(--admin-accent-solid)]" aria-hidden />
+            <h2 className="text-lg font-semibold text-[var(--admin-text)]">Visibilité</h2>
           </div>
 
-          <div className="bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-3xl">
+          <div className="bg-[var(--admin-elevated)]/90 border border-[var(--admin-border)] p-6 ">
             <div className="flex gap-3">
               {STATUS_OPTIONS.map((opt) => {
                 const active = status === opt.value;
@@ -459,15 +462,15 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
                     disabled={readOnly || locked}
                     onClick={() => setStatus(opt.value)}
                     className={`
-                      relative flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all duration-300 active:scale-[0.97]
+                      relative flex-1 flex flex-col items-center gap-2 p-4  border transition-all duration-300 active:scale-[0.97]
                       ${active
-                        ? "bg-zinc-100 border-zinc-100 shadow-xl"
-                        : "bg-zinc-900/50 border-zinc-800 text-zinc-500"}
+                        ? "bg-[#F4EFEA] border-[var(--admin-accent)] shadow-xl"
+                        : "bg-[var(--admin-elevated)] border-[var(--admin-border)] text-[var(--admin-muted)]"}
                       ${locked ? "opacity-30 grayscale cursor-not-allowed" : ""}
                     `}
                   >
                     <AdminBadge label={opt.label} variant={active ? opt.variant : "neutral"} dot={active} />    
-                    <span className={`text-[11px] font-bold uppercase tracking-widest ${active ? "text-zinc-900" : "text-zinc-600"}`}>
+                    <span className={`text-[11px] font-bold uppercase tracking-widest ${active ? "text-[var(--admin-text)]" : "text-[var(--admin-muted)]"}`}>
                       {opt.value === "PUBLISHED" ? "Public" : "Interne"}
                     </span>
                     {locked && opt.value === "PUBLISHED" && (
@@ -482,20 +485,20 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
 
         {/* Bouton de suppression fixé en bas du flux, pas sticky */}
         {!isNew && !readOnly && (
-          <div className="pt-12 flex flex-col items-center border-t border-zinc-800/50">
+          <div className="pt-12 flex flex-col items-center border-t border-[var(--admin-border)]">
             {!deleteConfirm ? (
               <button
                 type="button"
                 onClick={() => setDeleteConfirm(true)}
-                className="group flex items-center gap-2 text-[13px] font-bold text-zinc-600 hover:text-red-500 transition-all uppercase tracking-widest"
+                className="group flex items-center gap-2 text-[13px] font-bold text-[var(--admin-muted)] hover:text-red-500 transition-all uppercase tracking-widest"
               >
                 <Trash2 className="h-4 w-4" />
                 Supprimer cette marque
               </button>
             ) : (
-              <div className="flex flex-col items-center gap-3 p-6 bg-red-500/5 border border-red-500/10 rounded-3xl w-full animate-in zoom-in-95">
+              <div className="flex flex-col items-center gap-3 p-6 bg-red-500/5 border border-red-500/10  w-full animate-in zoom-in-95">
                 <p className="text-xs text-red-400 font-bold uppercase tracking-wider text-center">Suppression irréversible ?</p>
-                <p className="text-[10px] text-zinc-500 text-center -mt-1">Tous les parfums associés seront supprimés.</p>
+                <p className="text-[10px] text-[var(--admin-muted)] text-center -mt-1">Tous les parfums associés seront supprimés.</p>
                 <div className="flex gap-2 w-full max-w-xs mt-2">
                   <AdminButton variant="ghost" className="flex-1" onClick={() => setDeleteConfirm(false)} disabled={deleting}>
                     Annuler
@@ -510,13 +513,17 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
         )}
 
         {/* Barre d'action sticky pour la sauvegarde */}
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-[70]">
-          <div className="p-2 bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-3xl shadow-2xl ring-1 ring-white/5">   
+        <div
+          className="fixed left-1/2 z-[65] w-full max-w-md -translate-x-1/2 px-4"
+          style={{ bottom: "calc(5.25rem + env(safe-area-inset-bottom, 0px))" }}
+        >
+          <div className="border border-[var(--admin-border)] bg-[var(--admin-surface)]/98 p-2 shadow-md backdrop-blur-md">
             <AdminButton
               type="submit"
               form="brand-form"
-              className="w-full h-14 rounded-2xl text-base shadow-lg shadow-blue-500/20"
+              variant="primary"
               size="lg"
+              className="h-14 w-full text-base"
               isLoading={saving}
               disabled={readOnly || !name || (catalogMode === "COMPLETE" && !image)}
             >

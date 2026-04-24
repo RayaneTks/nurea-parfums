@@ -10,22 +10,24 @@ interface AdminBadgeProps {
 
 export function AdminBadge({ label, variant = "neutral", dot = false }: AdminBadgeProps) {
   const variants = {
-    success: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-    warning: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-    info: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    neutral: "bg-zinc-800 text-zinc-400 border-zinc-700/50",
+    success: "bg-[rgba(45,106,79,0.12)] text-[#1B4332] border-[rgba(45,106,79,0.28)]",
+    warning: "bg-[rgba(180,120,40,0.12)] text-[#5C3D0A] border-[rgba(180,120,40,0.35)]",
+    info: "bg-[rgba(139,58,58,0.1)] text-[var(--admin-accent-solid)] border-[rgba(139,58,58,0.22)]",
+    neutral: "bg-[var(--admin-elevated)] text-[var(--admin-muted)] border-[var(--admin-border)]",
   };
 
   const dots = {
-    success: "bg-emerald-500",
-    warning: "bg-amber-500",
-    info: "bg-blue-500",
-    neutral: "bg-zinc-500",
+    success: "bg-[#2D6A4F]",
+    warning: "bg-[#B8860B]",
+    info: "bg-[var(--admin-accent-solid)]",
+    neutral: "bg-[var(--admin-muted)]",
   };
 
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-semibold tracking-wide uppercase ${variants[variant]}`}>
-      {dot && <span className={`h-1.5 w-1.5 rounded-full ${dots[variant]}`} />}
+    <span
+      className={`inline-flex items-center gap-1.5 border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${variants[variant]}`}
+    >
+      {dot && <span className={`h-1.5 w-1.5 shrink-0 ${dots[variant]}`} />}
       {label}
     </span>
   );

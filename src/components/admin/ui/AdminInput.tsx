@@ -22,27 +22,25 @@ export function AdminInput({
   return (
     <div className="w-full">
       {label && (
-        <label className="mb-1.5 block text-[13px] font-medium text-zinc-400">
-          {label}
-        </label>
+        <label className="mb-1.5 block text-[13px] font-medium text-[var(--admin-muted)]">{label}</label>
       )}
-      <div className="relative group">
+      <div className="group relative">
         {isSearch && (
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors group-focus-within:text-blue-500">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--admin-muted)] transition-colors duration-200 group-focus-within:text-[var(--admin-accent-solid)]">
             <Search className="h-4 w-4" />
           </div>
         )}
         <input
           value={value}
           className={`
-            block w-full min-h-[48px] rounded-xl bg-zinc-900/50 border border-zinc-800
-            px-4 text-[15px] text-zinc-100 placeholder:text-zinc-600
-            transition-all duration-200
-            focus-visible:bg-zinc-900 focus-visible:border-blue-500/50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/10
+            block w-full min-h-[48px] border border-[var(--admin-border)] bg-[var(--admin-surface)]
+            px-4 text-[15px] text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]/70
+            transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]
+            focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]/25
             disabled:opacity-40 disabled:cursor-not-allowed
             ${isSearch ? "pl-11" : ""}
             ${onClear && value ? "pr-11" : ""}
-            ${error ? "border-red-500/50 focus-visible:border-red-500/50 focus-visible:ring-red-500/10" : ""}
+            ${error ? "border-[var(--admin-danger)] focus-visible:ring-[var(--admin-danger)]/20" : ""}
             ${className}
           `}
           {...props}
@@ -51,15 +49,14 @@ export function AdminInput({
           <button
             type="button"
             onClick={onClear}
-            className="absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 active:scale-90 transition-all duration-200"
+            className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-[var(--admin-muted)] transition-colors duration-200 hover:bg-[var(--admin-elevated)] hover:text-[var(--admin-text)] active:scale-90"
+            aria-label="Effacer"
           >
             <X className="h-4 w-4" />
           </button>
         )}
       </div>
-      {error && (
-        <p className="mt-1.5 text-xs text-red-400 font-medium">{error}</p>
-      )}
+      {error && <p className="mt-1.5 text-xs font-medium text-[var(--admin-danger)]">{error}</p>}
     </div>
   );
 }

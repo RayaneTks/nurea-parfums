@@ -22,27 +22,27 @@ export function DashboardHeader({
   isLoading = false,
 }: DashboardHeaderProps) {
   return (
-    <div className="space-y-6">
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-[28px] font-bold tracking-tight text-zinc-100">
+    <div className="space-y-5">
+      <div className="flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="font-[family-name:var(--font-serif)] text-[26px] font-normal leading-tight tracking-tight text-[var(--admin-text)] sm:text-[30px]">
             Catalogue
           </h1>
           <div className="mt-1 flex items-center gap-2">
             {isLoading ? (
-              <div className="h-4 w-32 bg-zinc-800 animate-pulse rounded-md" />
+              <div className="h-4 w-36 animate-pulse bg-[var(--admin-elevated)]" />
             ) : (
-              <p className="text-[13px] font-medium text-zinc-500">
+              <p className="text-[13px] font-medium text-[var(--admin-muted)]">
                 {perfumeCount} parfums · {brandCount} marques
               </p>
             )}
           </div>
         </div>
-        
+
         {canEdit && activeTab !== "featured" && (
-          <div className="hidden md:block">
+          <div className="hidden shrink-0 sm:block">
             <Link href={activeTab === "perfumes" ? "/admin/perfumes/new" : "/admin/brands/new"}>
-              <AdminButton leftIcon={Plus}>
+              <AdminButton leftIcon={Plus} size="sm">
                 Ajouter {activeTab === "perfumes" ? "un parfum" : "une marque"}
               </AdminButton>
             </Link>
@@ -50,45 +50,63 @@ export function DashboardHeader({
         )}
       </div>
 
-      <div className="relative flex p-1 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
+      <div className="flex border border-[var(--admin-border)] bg-[var(--admin-surface)] p-1">
         <button
+          type="button"
           onClick={() => onTabChange("perfumes")}
-          className={`
-            relative flex-1 flex items-center justify-center gap-2 min-h-[44px] rounded-xl text-sm font-semibold transition-all duration-300
-            ${activeTab === "perfumes" ? "bg-zinc-800 text-white shadow-lg" : "text-zinc-500 hover:text-zinc-300"}
-          `}
+          className={`relative flex min-h-[44px] flex-1 items-center justify-center gap-2 text-sm font-semibold transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-surface)] ${
+            activeTab === "perfumes"
+              ? "bg-[var(--admin-elevated)] text-[var(--admin-text)]"
+              : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
+          }`}
         >
           Parfums
           {isLoading ? (
-            <div className="h-4 w-6 bg-zinc-800 animate-pulse rounded-md" />
+            <div className="h-4 w-6 animate-pulse bg-[var(--admin-border)]" />
           ) : (
-            <span className={`text-[11px] px-1.5 py-0.5 rounded-md ${activeTab === "perfumes" ? "bg-blue-500/20 text-blue-400" : "bg-zinc-800 text-zinc-600"}`}>
+            <span
+              className={`text-[11px] px-1.5 py-0.5 font-semibold ${
+                activeTab === "perfumes"
+                  ? "bg-[rgba(139,58,58,0.12)] text-[var(--admin-accent-solid)]"
+                  : "bg-[var(--admin-elevated)] text-[var(--admin-muted)]"
+              }`}
+            >
               {perfumeCount}
             </span>
           )}
         </button>
         <button
+          type="button"
           onClick={() => onTabChange("brands")}
-          className={`
-            relative flex-1 flex items-center justify-center gap-2 min-h-[44px] rounded-xl text-sm font-semibold transition-all duration-300
-            ${activeTab === "brands" ? "bg-zinc-800 text-white shadow-lg" : "text-zinc-500 hover:text-zinc-300"}
-          `}
+          className={`relative flex min-h-[44px] flex-1 items-center justify-center gap-2 text-sm font-semibold transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-surface)] ${
+            activeTab === "brands"
+              ? "bg-[var(--admin-elevated)] text-[var(--admin-text)]"
+              : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
+          }`}
         >
           Marques
           {isLoading ? (
-            <div className="h-4 w-6 bg-zinc-800 animate-pulse rounded-md" />
+            <div className="h-4 w-6 animate-pulse bg-[var(--admin-border)]" />
           ) : (
-            <span className={`text-[11px] px-1.5 py-0.5 rounded-md ${activeTab === "brands" ? "bg-blue-500/20 text-blue-400" : "bg-zinc-800 text-zinc-600"}`}>
+            <span
+              className={`text-[11px] px-1.5 py-0.5 font-semibold ${
+                activeTab === "brands"
+                  ? "bg-[rgba(139,58,58,0.12)] text-[var(--admin-accent-solid)]"
+                  : "bg-[var(--admin-elevated)] text-[var(--admin-muted)]"
+              }`}
+            >
               {brandCount}
             </span>
           )}
         </button>
         <button
+          type="button"
           onClick={() => onTabChange("featured")}
-          className={`
-            relative flex-1 flex items-center justify-center gap-2 min-h-[44px] rounded-xl text-sm font-semibold transition-all duration-300
-            ${activeTab === "featured" ? "bg-zinc-800 text-white shadow-lg" : "text-zinc-500 hover:text-zinc-300"}
-          `}
+          className={`relative flex min-h-[44px] flex-1 items-center justify-center gap-2 text-sm font-semibold transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-surface)] ${
+            activeTab === "featured"
+              ? "bg-[var(--admin-elevated)] text-[var(--admin-text)]"
+              : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
+          }`}
         >
           Mise en avant
         </button>
