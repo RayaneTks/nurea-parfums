@@ -15,19 +15,19 @@ export function AdminTopBar() {
   }
 
   return (
-    <header className="sticky top-0 z-[60] border-b border-[var(--admin-border)] bg-[var(--admin-surface)]/90 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md">
+    <header className="sticky top-0 z-[60] border-b border-[var(--admin-border)] bg-[var(--admin-surface)]/88 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md supports-[backdrop-filter]:bg-[var(--admin-surface)]/75">
       <div className="mx-auto flex h-12 max-w-4xl items-center justify-between px-4">
         <Link
           href="/admin"
-          className="flex min-h-[44px] min-w-[44px] items-center gap-2.5 rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-surface)]"
+          className="flex min-h-[44px] min-w-[44px] items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-ring-offset)]"
           aria-label="Admin — accueil"
         >
           <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden">
             <Image
-              src="/branding/monogram/logo4_monogram_free_black_1024.svg"
+              src="/branding/monogram/logo4_monogram_free_white_1024.svg"
               alt=""
               fill
-              className="object-contain opacity-[0.88]"
+              className="object-contain opacity-90"
               sizes="36px"
             />
           </span>
@@ -41,18 +41,18 @@ export function AdminTopBar() {
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-11 w-11 items-center justify-center text-[var(--admin-muted)] transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-[var(--admin-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-surface)]"
-            aria-label="Voir le site"
+            className="flex h-11 w-11 items-center justify-center text-[var(--admin-muted)] transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-[var(--admin-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-ring-offset)]"
+            aria-label="Voir le site public"
           >
-            <ExternalLink className="h-[18px] w-[18px]" />
+            <ExternalLink className="h-[18px] w-[18px]" aria-hidden />
           </Link>
           <button
             type="button"
             onClick={logout}
-            className="flex h-11 w-11 items-center justify-center text-[var(--admin-muted)] transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-[var(--admin-accent-solid)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-surface)]"
+            className="flex h-11 w-11 items-center justify-center text-[var(--admin-muted)] transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-[var(--admin-danger)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-ring-offset)]"
             aria-label="Se déconnecter"
           >
-            <LogOut className="h-[18px] w-[18px]" />
+            <LogOut className="h-[18px] w-[18px]" aria-hidden />
           </button>
         </div>
       </div>

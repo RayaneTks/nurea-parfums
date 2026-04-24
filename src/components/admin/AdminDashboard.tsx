@@ -171,11 +171,11 @@ function VisualizerDrawer({
             className={`absolute inset-0 flex flex-col items-center justify-center bg-[rgba(26,18,21,0.35)] opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${uploading ? "opacity-100" : ""}`}
           >
             {uploading ? (
-              <Loader2 className="h-10 w-10 animate-spin text-[#FDFCFA]" />
+              <Loader2 className="h-10 w-10 animate-spin text-[#EDE9E6]" />
             ) : (
               <>
-                <Upload className="mb-2 h-8 w-8 text-[#FDFCFA]" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#FDFCFA]">
+                <Upload className="mb-2 h-8 w-8 text-[#EDE9E6]" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#EDE9E6]">
                   Changer l&apos;image {mode}
                 </span>
               </>
@@ -183,8 +183,8 @@ function VisualizerDrawer({
           </div>
 
           <div className="pointer-events-none absolute bottom-4 left-0 right-0 text-center">
-            <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-[#FDFCFA]/70">Aperçu</p>
-            <p className="text-sm font-semibold uppercase tracking-wide text-[#FDFCFA]">
+            <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-[#EDE9E6]/75">Aperçu</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-[#EDE9E6]">
               {mode === "dark" ? "Sombre" : "Clair"}
             </p>
           </div>
@@ -584,7 +584,7 @@ export function AdminDashboard() {
       {canEdit && (
         <Link
           href={tab === "perfumes" ? "/admin/perfumes/new" : "/admin/brands/new"}
-          className="fixed right-4 z-[55] flex h-14 w-14 items-center justify-center border border-[var(--admin-border)] bg-[var(--admin-accent-solid)] text-[#FDFCFA] shadow-md transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-90 md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-bg)]"
+          className="fixed right-4 z-[55] flex h-14 w-14 items-center justify-center border border-[var(--admin-border)] bg-[var(--admin-accent-solid)] text-[#EDE9E6] shadow-md transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-90 md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-bg)]"
           style={{ bottom: "calc(5.25rem + env(safe-area-inset-bottom, 0px))" }}
           aria-label={tab === "perfumes" ? "Ajouter un parfum" : "Ajouter une marque"}
         >

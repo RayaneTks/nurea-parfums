@@ -31,9 +31,9 @@ export function AdminToast({ message, type = "success", duration = 3000, onClose
   };
 
   const borderStyles = {
-    success: "border-[rgba(45,106,79,0.35)]",
-    error: "border-[rgba(163,48,48,0.35)]",
-    info: "border-[rgba(139,58,58,0.25)]",
+    success: "border-[rgba(123,201,164,0.45)]",
+    error: "border-[rgba(224,122,122,0.45)]",
+    info: "border-[rgba(216,128,128,0.35)]",
   };
 
   return (

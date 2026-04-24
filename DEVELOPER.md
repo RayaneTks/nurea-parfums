@@ -24,10 +24,11 @@ Pour Prisma:
   - `npx prisma migrate dev`
   - `npx prisma db seed`
   - `npx prisma studio`
+- Caisse admin : migration `prisma/migrations/20260425120000_admin_cash_models/`.
 
 ## Structure du dépôt
 
-- `app/` — routes et layout Next.js (App Router) ; admin : `app/admin/layout.tsx` (manifest `link rel="manifest"` → `/admin/manifest`), login sans barre d’onglets (`app/admin/login/layout.tsx`)
+- `app/` — routes Next.js ; admin : `app/admin/layout.tsx` (PWA `manifest` → `/admin/manifest`, thème sombre), `app/admin/caisse/`, `app/api/admin/caisse/`, login sans tab bar (`app/admin/login/layout.tsx`)
 - `src/components/` — interface (layout, features, home, ui)
 - `src/lib/` — données catalogue (`data.ts`), recherche, types
 - `public/` — images et assets statiques (`parfums/`, `branding/`)

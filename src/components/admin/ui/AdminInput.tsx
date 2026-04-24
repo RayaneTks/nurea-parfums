@@ -33,7 +33,7 @@ export function AdminInput({
         <input
           value={value}
           className={`
-            block w-full min-h-[48px] border border-[var(--admin-border)] bg-[var(--admin-surface)]
+            block w-full min-h-[48px] border border-[var(--admin-border)] bg-[var(--admin-input-bg)]
             px-4 text-[15px] text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]/70
             transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]
             focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]/25

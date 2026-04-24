@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-/** Manifest PWA dédié à l’admin (thème clair, démarrage sur l’accueil admin). */
+/** Manifest PWA admin : standalone, scope /admin, thème sombre cohérent avec la barre de statut iOS. */
 export async function GET() {
   const body = {
     name: "Nuréa — Administration",
@@ -9,10 +9,12 @@ export async function GET() {
     start_url: "/admin",
     scope: "/admin",
     display: "standalone",
+    display_override: ["standalone", "minimal-ui"],
     orientation: "portrait-primary",
-    background_color: "#FAF6F2",
-    theme_color: "#FAF6F2",
+    background_color: "#121014",
+    theme_color: "#121014",
     lang: "fr",
+    categories: ["business", "productivity"],
     icons: [
       {
         src: "/branding/monogram/np-circle-bordeaux.png",

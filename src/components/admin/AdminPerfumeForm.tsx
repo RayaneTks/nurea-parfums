@@ -115,11 +115,11 @@ function ImageUploadField({
             {!readOnly && (
               <div className={`absolute inset-0 flex items-center justify-center bg-[rgba(26,18,21,0.45)] backdrop-blur-[2px] opacity-0 transition-opacity duration-300 group-hover:opacity-100 ${uploading ? "opacity-100" : ""}`}>
                 {uploading ? (
-                  <Loader2 className="h-8 w-8 animate-spin text-[#FDFCFA]" />
+                  <Loader2 className="h-8 w-8 animate-spin text-[#EDE9E6]" />
                 ) : (
                   <div className="flex flex-col items-center gap-1">
-                    <Upload className="h-6 w-6 text-[#FDFCFA]" />
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#FDFCFA]">Remplacer</span>
+                    <Upload className="h-6 w-6 text-[#EDE9E6]" />
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-[#EDE9E6]">Remplacer</span>
                   </div>
                 )}
               </div>
@@ -271,7 +271,7 @@ function BrandCombobox({
           <button
             type="button"
             onClick={() => { setQuery(""); onClear(); setOpen(false); }}
-            className={`absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-[var(--admin-muted)] transition-colors hover:bg-[#EDE8E3] hover:text-[var(--admin-text)] ${brandId && !open ? "opacity-0" : "opacity-100"}`}
+            className={`absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-[var(--admin-muted)] transition-colors hover:bg-[rgba(237,233,230,0.08)] hover:text-[var(--admin-text)] ${brandId && !open ? "opacity-0" : "opacity-100"}`}
           >
             <X className="h-4 w-4" />
           </button>
@@ -290,7 +290,7 @@ function BrandCombobox({
                   className={`flex w-full items-center gap-3 px-3 py-3 text-left text-[14px] font-medium transition-colors active:scale-[0.98] ${
                     b.id === brandId
                       ? "bg-[rgba(139,58,58,0.12)] text-[var(--admin-text)]"
-                      : "text-[var(--admin-text)] hover:bg-[#EDE8E3]"
+                      : "text-[var(--admin-text)] hover:bg-[rgba(237,233,230,0.08)]"
                   }`}
                 >
                   <span className="flex-1 truncate">{b.name}</span>
@@ -498,7 +498,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--admin-border)] bg-[var(--admin-elevated)] text-[var(--admin-muted)] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#EDE8E3] hover:text-[var(--admin-text)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-surface)]"
+              className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--admin-border)] bg-[var(--admin-elevated)] text-[var(--admin-muted)] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[rgba(237,233,230,0.08)] hover:text-[var(--admin-text)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-ring-offset)]"
               title="Retour"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -584,7 +584,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               onError={setError}
               allowClear={false} // Suppression interdite pour l'image principale
             />
-            <div className="h-px bg-[#EDE8E3]" />
+            <div className="h-px bg-[var(--admin-border)]" />
             <ImageUploadField
               label="Image variante (Light Mode)"
               subtitle="Optionnelle. Si présente, l'image principale ci-dessus devient exclusivement le visuel Dark."

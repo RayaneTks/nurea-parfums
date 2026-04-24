@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PackageSearch, Settings2, ChevronRight } from "lucide-react";
+import { PackageSearch, Settings2, ChevronRight, Wallet } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Administration — Accueil",
@@ -15,11 +15,29 @@ export default function AdminHomePage() {
           Tableau de bord
         </h1>
         <p className="mt-2 text-[15px] leading-snug text-[var(--admin-muted)]">
-          Raccourcis vers le catalogue et les outils courants.
+          Raccourcis : caisse, catalogue et outils.
         </p>
       </div>
 
       <div className="grid gap-3">
+        <Link
+          href="/admin/caisse"
+          className="group flex items-stretch gap-4 border border-[var(--admin-border)] bg-[var(--admin-surface)] p-4 shadow-sm transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:bg-[var(--admin-elevated)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-bg)]"
+        >
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-[var(--admin-border)] bg-[var(--admin-tab-active)] text-[var(--admin-accent)] transition-colors group-hover:border-[var(--admin-accent)]/40">
+            <Wallet className="h-6 w-6" aria-hidden />
+          </div>
+          <div className="min-w-0 flex-1 py-0.5">
+            <h2 className="text-[17px] font-semibold tracking-tight text-[var(--admin-text)]">Caisse</h2>
+            <p className="mt-1 text-[13px] leading-relaxed text-[var(--admin-muted)]">
+              Ventes, comptabilité et commandes clients.
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center text-[var(--admin-muted)]">
+            <ChevronRight className="h-5 w-5" aria-hidden />
+          </div>
+        </Link>
+
         <Link
           href="/admin/catalogue"
           className="group flex items-stretch gap-4 border border-[var(--admin-border)] bg-[var(--admin-surface)] p-4 shadow-sm transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:bg-[var(--admin-elevated)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-bg)]"

@@ -27,13 +27,13 @@ export function AdminButton({
   ...props
 }: AdminButtonProps) {
   const baseStyles =
-    "inline-flex items-center justify-center font-medium transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.96] disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-surface)] select-none touch-manipulation";
+    "inline-flex items-center justify-center font-medium transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.96] disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-ring-offset)] select-none touch-manipulation";
 
   const variants = {
     primary:
-      "bg-[var(--admin-accent-solid)] text-[#FDFCFA] hover:bg-[var(--admin-accent)] shadow-sm",
+      "bg-[var(--admin-accent-solid)] text-[#EDE9E6] hover:bg-[var(--admin-accent)] shadow-sm",
     secondary:
-      "bg-[var(--admin-elevated)] text-[var(--admin-text)] border border-[var(--admin-border)] hover:bg-[#EDE8E3]",
+      "bg-[var(--admin-elevated)] text-[var(--admin-text)] border border-[var(--admin-border)] hover:bg-[rgba(237,233,230,0.08)]",
     ghost: "bg-transparent text-[var(--admin-muted)] hover:bg-[var(--admin-elevated)] hover:text-[var(--admin-text)]",
     danger:
       "bg-transparent text-[var(--admin-danger)] border border-[rgba(163,48,48,0.35)] hover:bg-[rgba(163,48,48,0.08)]",

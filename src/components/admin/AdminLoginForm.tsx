@@ -54,7 +54,7 @@ export function AdminLoginForm() {
     <div className="w-full max-w-sm border border-[var(--admin-border)] bg-[var(--admin-surface)] p-7 shadow-sm">
       <Link
         href="/"
-        className="mb-6 inline-flex min-h-[44px] items-center gap-1.5 text-[13px] font-medium text-[var(--admin-muted)] transition-colors duration-200 hover:text-[var(--admin-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-surface)]"
+        className="mb-6 inline-flex min-h-[44px] items-center gap-1.5 text-[13px] font-medium text-[var(--admin-muted)] transition-colors duration-200 hover:text-[var(--admin-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-ring-offset)]"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Retour
@@ -89,7 +89,7 @@ export function AdminLoginForm() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            className="block min-h-[48px] w-full border border-[var(--admin-border)] bg-[#FDFCFA] px-4 text-[15px] text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]/60 transition-colors duration-200 focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]/25"
+            className="block min-h-[48px] w-full border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-4 text-[15px] text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]/60 transition-colors duration-200 focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]/30"
           />
         </div>
 
@@ -102,7 +102,7 @@ export function AdminLoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="block min-h-[48px] w-full border border-[var(--admin-border)] bg-[#FDFCFA] px-4 text-[15px] text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]/60 transition-colors duration-200 focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]/25"
+            className="block min-h-[48px] w-full border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-4 text-[15px] text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]/60 transition-colors duration-200 focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]/30"
           />
         </div>
 
@@ -110,7 +110,7 @@ export function AdminLoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="flex min-h-[48px] w-full items-center justify-center gap-2 bg-[var(--admin-accent-solid)] text-[14px] font-semibold text-[#FDFCFA] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[var(--admin-accent)] active:scale-[0.98] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-surface)]"
+            className="flex min-h-[48px] w-full items-center justify-center gap-2 bg-[var(--admin-accent-solid)] text-[14px] font-semibold text-[#EDE9E6] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[var(--admin-accent)] active:scale-[0.98] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-ring-offset)]"
           >
             {loading ? (
               <>

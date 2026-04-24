@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { AdminLayoutClient } from "@/components/admin/AdminLayoutClient";
 
 export const viewport: Viewport = {
-  themeColor: "#FAF6F2",
+  themeColor: "#121014",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   manifest: "/admin/manifest",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Admin Nuréa",
   },
   formatDetection: {
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <div
-      className="admin-theme min-h-dvh [--admin-bg:#FAF6F2] [--admin-surface:#FDFCFA] [--admin-elevated:#F4EFEA] [--admin-text:#1A1215] [--admin-muted:#5C4F55] [--admin-border:rgba(80,20,20,0.12)] [--admin-accent:#8B3A3A] [--admin-accent-solid:#7A3030] [--admin-tab-bg:#FDFCFA] [--admin-danger:#A33030] [--admin-success:#2D6A4F]"
+      className="admin-theme scheme-dark min-h-dvh [--admin-bg:#121014] [--admin-surface:#1A171C] [--admin-elevated:#242026] [--admin-input-bg:#141218] [--admin-text:#EDE9E6] [--admin-muted:#9A9299] [--admin-border:rgba(232,224,216,0.12)] [--admin-accent:#D88080] [--admin-accent-solid:#C46F6F] [--admin-tab-bg:#161418] [--admin-tab-active:rgba(216,128,128,0.14)] [--admin-danger:#E07A7A] [--admin-success:#7BC9A4] [--admin-overlay:rgba(10,8,11,0.78)] [--admin-ring-offset:#1A171C]"
       style={{ fontFamily: "var(--font-sans), system-ui, sans-serif" }}
     >
       <AdminLayoutClient>{children}</AdminLayoutClient>
