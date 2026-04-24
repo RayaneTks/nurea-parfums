@@ -398,7 +398,7 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
                       className={`
                         flex flex-col text-left p-4  border transition-all duration-300 active:scale-[0.97]
                         ${active
-                          ? "bg-[#F4EFEA] border-[var(--admin-accent)] shadow-xl"
+                          ? "border-[var(--admin-accent)] bg-[var(--admin-accent-muted)]"
                           : "bg-[var(--admin-elevated)] border-[var(--admin-border)] hover:border-[var(--admin-border)]"}
                       `}
                     >
@@ -464,7 +464,7 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
                     className={`
                       relative flex-1 flex flex-col items-center gap-2 p-4  border transition-all duration-300 active:scale-[0.97]
                       ${active
-                        ? "bg-[#F4EFEA] border-[var(--admin-accent)] shadow-xl"
+                        ? "border-[var(--admin-accent)] bg-[var(--admin-accent-muted)]"
                         : "bg-[var(--admin-elevated)] border-[var(--admin-border)] text-[var(--admin-muted)]"}
                       ${locked ? "opacity-30 grayscale cursor-not-allowed" : ""}
                     `}

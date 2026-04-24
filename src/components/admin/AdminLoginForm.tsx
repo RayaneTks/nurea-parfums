@@ -61,7 +61,7 @@ export function AdminLoginForm() {
       </Link>
 
       <div className="mb-7">
-        <h1 className="font-[family-name:var(--font-serif)] text-[26px] font-normal tracking-tight text-[var(--admin-text)]">
+        <h1 className="text-[28px] font-bold leading-tight tracking-[-0.02em] text-[var(--admin-text)]">
           Connexion
         </h1>
         <p className="mt-1 text-[13px] text-[var(--admin-muted)]">Espace administration</p>

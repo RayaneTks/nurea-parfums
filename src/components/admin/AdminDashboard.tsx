@@ -199,7 +199,7 @@ function VisualizerDrawer({
         />
 
         <div className="mt-6 text-center">
-          <h3 className="font-[family-name:var(--font-serif)] text-2xl font-normal tracking-tight text-[var(--admin-text)]">
+          <h3 className="text-[22px] font-bold leading-tight tracking-[-0.02em] text-[var(--admin-text)]">
             {item.name}
           </h3>
           <p className="mt-1 text-sm text-[var(--admin-muted)]">{isPerfume ? (item as PerfumeRow).brand.name : "Marque"}</p>
@@ -211,7 +211,7 @@ function VisualizerDrawer({
             onClick={() => handleUploadClick("dark")}
             className={`flex h-20 flex-col items-center justify-center gap-2 border transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] ${
               mode === "dark"
-                ? "border-[var(--admin-accent)] bg-[rgba(139,58,58,0.08)] text-[var(--admin-text)]"
+                ? "border-[var(--admin-accent)] bg-[var(--admin-accent-muted)] text-[var(--admin-text)]"
                 : "border-[var(--admin-border)] bg-[var(--admin-elevated)] text-[var(--admin-muted)]"
             }`}
           >
@@ -223,7 +223,7 @@ function VisualizerDrawer({
             onClick={() => handleUploadClick("light")}
             className={`flex h-20 flex-col items-center justify-center gap-2 border transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] ${
               mode === "light"
-                ? "border-[var(--admin-accent)] bg-[rgba(139,58,58,0.08)] text-[var(--admin-text)]"
+                ? "border-[var(--admin-accent)] bg-[var(--admin-accent-muted)] text-[var(--admin-text)]"
                 : "border-[var(--admin-border)] bg-[var(--admin-elevated)] text-[var(--admin-muted)]"
             }`}
           >
@@ -496,8 +496,8 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-0 selection:bg-[rgba(139,58,58,0.2)]">
-      <main className="mx-auto max-w-4xl px-4 pb-6 pt-5 sm:px-5 sm:pt-6">
+    <div className="min-h-0 selection:bg-[var(--admin-accent-muted)]">
+      <main className="mx-auto max-w-lg px-4 pb-6 pt-5 sm:px-5 sm:pt-6">
         <DashboardHeader
           perfumeCount={perfumes.length}
           brandCount={brands.length}
@@ -508,7 +508,7 @@ export function AdminDashboard() {
         />
 
         {loadErr && (
-          <div className="mt-4 flex items-start gap-3 border border-[rgba(163,48,48,0.3)] bg-[rgba(163,48,48,0.06)] p-4">
+          <div className="mt-4 flex items-start gap-3 rounded-[12px] border border-[rgba(255,69,58,0.4)] bg-[rgba(255,69,58,0.12)] p-4">
             <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--admin-danger)]" />
             <div className="flex-1">
               <p className="text-sm font-semibold text-[var(--admin-danger)]">Erreur de chargement</p>

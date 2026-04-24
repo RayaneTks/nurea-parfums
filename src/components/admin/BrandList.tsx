@@ -8,6 +8,7 @@ import { AdminBadge } from "./ui/AdminBadge";
 import { AdminButton } from "./ui/AdminButton";
 import { BrandVisual, StatusDot } from "./Visuals";
 import { EmptyState } from "./EmptyState";
+import { AdminGrouped } from "./ui/AdminGrouped";
 
 type BrandRow = {
   id: string;
@@ -89,14 +90,14 @@ export function BrandList({
               key={pill.id}
               onClick={() => setFilter(pill.id)}
               className={`
-                shrink-0 min-h-[40px] px-4 py-2 text-[13px] font-semibold transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]
+                shrink-0 min-h-[40px] rounded-[10px] px-4 py-2 text-[13px] font-semibold transition-opacity duration-150 ease-out active:opacity-80
                 ${filter === pill.id 
-                  ? "border border-[var(--admin-accent)] bg-[rgba(139,58,58,0.08)] text-[var(--admin-text)]" 
-                  : "border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-muted)] hover:text-[var(--admin-text)]"}
+                  ? "border border-[var(--admin-accent)] bg-[var(--admin-accent-muted)] text-[var(--admin-text)]" 
+                  : "border border-[var(--admin-border)] bg-[var(--admin-grouped-bg)] text-[var(--admin-secondary)] hover:text-[var(--admin-text)]"}
               `}
             >
               {pill.label}
-              <span className={`ml-1.5 opacity-50 ${filter === pill.id ? "text-zinc-500" : ""}`}>
+              <span className={`ml-1.5 tabular-nums opacity-60 ${filter === pill.id ? "text-[var(--admin-accent)]" : ""}`}>
                 {pill.count}
               </span>
             </button>
@@ -113,11 +114,13 @@ export function BrandList({
             onClearSearch={() => onSearchChange("")}
           />
         ) : (
-          filtered.map((brand) => (
+          <AdminGrouped>
+            {filtered.map((brand, idx) => (
             <div
               key={brand.id}
               className={`
-                group relative flex items-center gap-4 border border-[var(--admin-border)] bg-[var(--admin-surface)] p-4 shadow-sm transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] active:bg-[var(--admin-elevated)]
+                group relative flex items-center gap-4 px-4 py-3 transition-opacity duration-150 active:opacity-80
+                ${idx < filtered.length - 1 ? "border-b border-[var(--admin-separator)]" : ""}
                 ${pendingBrandIds.has(brand.id) ? "pointer-events-none opacity-50" : ""}
               `}
             >
@@ -128,7 +131,7 @@ export function BrandList({
                 onClick={() => onPreview(brand)}
               />              
               <div className="min-w-0 flex-1">
-                <h4 className="truncate text-[16px] font-semibold tracking-tight text-[var(--admin-text)] transition-colors group-hover:text-[var(--admin-accent-solid)]">
+                <h4 className="truncate text-[17px] font-semibold leading-snug tracking-tight text-[var(--admin-text)]">
                   {brand.name}
                 </h4>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">
@@ -175,7 +178,8 @@ export function BrandList({
                 )}
               </div>
             </div>
-          ))
+            ))}
+          </AdminGrouped>
         )}
       </div>
     </div>

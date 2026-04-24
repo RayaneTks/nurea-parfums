@@ -257,7 +257,7 @@ function BrandCombobox({
           onFocus={() => { setOpen(true); setQuery(""); }}
           disabled={readOnly}
           placeholder="Rechercher ou créer une marque..."
-          className={`pr-12 transition-all duration-300 ${brandId ? "border-[var(--admin-accent)]/50 bg-[rgba(139,58,58,0.06)] focus-visible:bg-[var(--admin-surface)]" : ""}`}
+          className={`pr-12 transition-all duration-300 ${brandId ? "border-[var(--admin-accent)]/45 bg-[var(--admin-accent-muted)] focus-visible:bg-[var(--admin-surface)]" : ""}`}
         />
         {brandId && selectedBrand && !open && (
           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
@@ -289,7 +289,7 @@ function BrandCombobox({
                   onClick={() => { onSelect(b); setQuery(""); setOpen(false); }}
                   className={`flex w-full items-center gap-3 px-3 py-3 text-left text-[14px] font-medium transition-colors active:scale-[0.98] ${
                     b.id === brandId
-                      ? "bg-[rgba(139,58,58,0.12)] text-[var(--admin-text)]"
+                      ? "bg-[var(--admin-accent-muted)] text-[var(--admin-text)]"
                       : "text-[var(--admin-text)] hover:bg-[rgba(237,233,230,0.08)]"
                   }`}
                 >
@@ -308,7 +308,7 @@ function BrandCombobox({
                 type="button"
                 onClick={createBrand}
                 disabled={creating}
-                className="mt-1 flex w-full items-center gap-3 border border-[var(--admin-border)] bg-[rgba(139,58,58,0.06)] px-3 py-4 text-left text-[14px] font-semibold text-[var(--admin-accent-solid)] transition-colors hover:bg-[rgba(139,58,58,0.1)] active:scale-[0.98]"
+                className="mt-1 flex w-full items-center gap-3 border border-[var(--admin-separator)] bg-[var(--admin-accent-muted)] px-3 py-4 text-left text-[15px] font-semibold text-[var(--admin-accent)] transition-colors hover:opacity-90 active:opacity-80"
               >
                 {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4 shrink-0" />}
                 <span className="flex-1">Ajouter la marque « {query.trim()} »</span>
@@ -619,7 +619,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                     className={`
                       relative flex-1 flex flex-col items-center gap-2 p-4  border transition-all duration-300 active:scale-[0.97] select-none touch-manipulation
                       ${active
-                        ? "border-[var(--admin-accent)] bg-[#F4EFEA] shadow-sm"
+                        ? "border-[var(--admin-accent)] bg-[var(--admin-accent-muted)]"
                         : "bg-[var(--admin-elevated)] border-[var(--admin-border)] text-[var(--admin-muted)] [@media(hover:hover)]:hover:border-[var(--admin-border)]"}
                       ${locked ? "opacity-30 grayscale cursor-not-allowed" : ""}
                     `}

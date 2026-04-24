@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 
-/** Manifest PWA admin : standalone, scope /admin, thème sombre cohérent avec la barre de statut iOS. */
+/** PWA admin : standalone, scope /admin, thème aligné sur iOS sombre (noir système). */
 export async function GET() {
   const body = {
-    name: "Nuréa — Administration",
-    short_name: "Admin Nuréa",
-    description: "Espace d’administration catalogue Nuréa Parfums",
+    name: "Admin",
+    short_name: "Admin",
+    description: "Administration Nuréa Parfums",
     start_url: "/admin",
     scope: "/admin",
     display: "standalone",
     display_override: ["standalone", "minimal-ui"],
     orientation: "portrait-primary",
-    background_color: "#121014",
-    theme_color: "#121014",
+    background_color: "#000000",
+    theme_color: "#000000",
     lang: "fr",
     categories: ["business", "productivity"],
     icons: [

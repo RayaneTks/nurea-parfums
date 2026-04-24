@@ -2,8 +2,12 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { AdminLayoutClient } from "@/components/admin/AdminLayoutClient";
 
+/**
+ * Admin = app distincte du site vitrine : couleurs type iOS (mode sombre),
+ * teinte système, séparateurs et surfaces « grouped » — pas la DA bordeaux public.
+ */
 export const viewport: Viewport = {
-  themeColor: "#121014",
+  themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -14,7 +18,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Admin Nuréa",
+    title: "Admin",
   },
   formatDetection: {
     telephone: false,
@@ -24,8 +28,11 @@ export const metadata: Metadata = {
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <div
-      className="admin-theme scheme-dark min-h-dvh [--admin-bg:#121014] [--admin-surface:#1A171C] [--admin-elevated:#242026] [--admin-input-bg:#141218] [--admin-text:#EDE9E6] [--admin-muted:#9A9299] [--admin-border:rgba(232,224,216,0.12)] [--admin-accent:#D88080] [--admin-accent-solid:#C46F6F] [--admin-tab-bg:#161418] [--admin-tab-active:rgba(216,128,128,0.14)] [--admin-danger:#E07A7A] [--admin-success:#7BC9A4] [--admin-overlay:rgba(10,8,11,0.78)] [--admin-ring-offset:#1A171C]"
-      style={{ fontFamily: "var(--font-sans), system-ui, sans-serif" }}
+      className="admin-theme scheme-dark min-h-dvh antialiased [--admin-accent:#0A84FF] [--admin-accent-solid:#0A84FF] [--admin-accent-muted:rgba(10,132,255,0.22)] [--admin-bg:#000000] [--admin-border:rgba(84,84,86,0.36)] [--admin-danger:#FF453A] [--admin-elevated:#1C1C1E] [--admin-fill:#2C2C2E] [--admin-grouped-bg:#1C1C1E] [--admin-input-bg:#2C2C2E] [--admin-muted:#8E8E93] [--admin-overlay:rgba(0,0,0,0.55)] [--admin-ring-offset:#1C1C1E] [--admin-secondary:#8E8E93] [--admin-separator:rgba(84,84,86,0.65)] [--admin-success:#32D74B] [--admin-surface:#1C1C1E] [--admin-tab-active:rgba(58,58,60,0.95)] [--admin-tab-bg:rgba(28,28,30,0.92)] [--admin-text:#F2F2F7] [--admin-tertiary:#636366]"
+      style={{
+        fontFamily:
+          '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", sans-serif',
+      }}
     >
       <AdminLayoutClient>{children}</AdminLayoutClient>
     </div>

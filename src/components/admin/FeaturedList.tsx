@@ -45,9 +45,9 @@ export function FeaturedList({
 
   return (
     <div className="space-y-8">
-      <div className="flex gap-3 border border-[rgba(139,58,58,0.22)] bg-[rgba(139,58,58,0.06)] p-4">
-        <Info className="mt-0.5 h-5 w-5 shrink-0 text-[var(--admin-accent-solid)]" aria-hidden />
-        <div className="text-sm text-[var(--admin-muted)]">
+      <div className="flex gap-3 rounded-[12px] border border-[var(--admin-separator)] bg-[var(--admin-accent-muted)] p-4">
+        <Info className="mt-0.5 h-5 w-5 shrink-0 text-[var(--admin-accent)]" aria-hidden />
+        <div className="text-[15px] leading-snug text-[var(--admin-secondary)]">
           <p className="mb-1 font-semibold text-[var(--admin-text)]">Mise en avant sur l&apos;accueil</p>
           Jusqu&apos;à 2 parfums en tête de page. Seuls les parfums visibles sont proposés.
           <span className="mt-2 block font-medium text-[var(--admin-text)]">

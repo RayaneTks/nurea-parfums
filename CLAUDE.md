@@ -21,7 +21,7 @@ Fichier de contexte projet pour Gemini CLI.
 - `src/lib/search/` — Logique de recherche, API Fraganty, Cache.
 - `src/lib/catalog/` — Fetching database et transformation de données.
 - `src/actions/` — Server Actions (Contact, etc.).
-- `src/components/admin/` — Interface admin **mobile-first / PWA** (tab bar, thème **sombre** via `--admin-*`), caisse (`AdminCaisseDashboard`), manifest `GET /admin/manifest`.
+- `src/components/admin/` — Interface admin **PWA mobile** distincte du site : style **iOS / HIG** (mode sombre système, SF-like stack, teinte `#0A84FF`), composants partagés (`AdminScreen`, `AdminGrouped`, `AdminButton`…), caisse (`AdminCaisseDashboard`), manifest `GET /admin/manifest`.
 - **Admin — Caisse** (`/admin/caisse`) : onglets Comptabilité · Enregistrement · Commandes ; API `/api/admin/caisse/*` ; modèles Prisma `CashSale`, `CashSaleLine`, `CustomerOrder` (migration `20260425120000_admin_cash_models`).
 
 ## Règles Critiques & Design

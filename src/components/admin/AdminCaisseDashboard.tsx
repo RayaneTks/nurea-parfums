@@ -416,16 +416,16 @@ function InnerCaisse() {
   return (
     <main className="mx-auto max-w-lg px-4 pb-6 pt-5 sm:px-5 sm:pt-6">
       <div className="mb-6">
-        <h1 className="font-[family-name:var(--font-serif)] text-[30px] font-normal leading-tight tracking-tight text-[var(--admin-text)]">
+        <h1 className="text-[32px] font-bold leading-[1.15] tracking-[-0.02em] text-[var(--admin-text)]">
           Caisse
         </h1>
-        <p className="mt-2 text-[14px] leading-snug text-[var(--admin-muted)]">
+        <p className="mt-2 text-[15px] leading-snug text-[var(--admin-secondary)]">
           Ventes, marges et commandes clients.
         </p>
       </div>
 
       <div
-        className="mb-6 flex border border-[var(--admin-border)] bg-[var(--admin-surface)] p-1"
+        className="mb-6 flex rounded-[10px] bg-[var(--admin-fill)] p-1"
         role="tablist"
         aria-label="Sections caisse"
       >
@@ -440,11 +440,11 @@ function InnerCaisse() {
               aria-controls={`caisse-panel-${id}`}
               id={`caisse-tab-${id}`}
               onClick={() => setTab(id)}
-              className={`flex min-h-[48px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[11px] font-semibold transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-ring-offset)] sm:flex-row sm:text-xs ${
-                active ? "bg-[var(--admin-elevated)] text-[var(--admin-text)]" : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
+              className={`flex min-h-[44px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-[8px] px-1 text-[11px] font-semibold transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-fill)] sm:flex-row sm:text-[12px] ${
+                active ? "bg-[var(--admin-elevated)] text-[var(--admin-text)] shadow-sm" : "text-[var(--admin-secondary)]"
               }`}
             >
-              <Icon className="h-[18px] w-[18px] shrink-0 opacity-90" strokeWidth={active ? 2.2 : 1.7} aria-hidden />
+              <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={active ? 2.2 : 1.7} aria-hidden />
               <span className="truncate">{label}</span>
             </button>
           );
@@ -452,15 +452,18 @@ function InnerCaisse() {
       </div>
 
       {loadErr && (
-        <div className="mb-6 flex items-start gap-3 border border-[rgba(224,122,122,0.35)] bg-[rgba(224,122,122,0.08)] p-4" role="alert">
+        <div
+          className="mb-6 flex items-start gap-3 rounded-[12px] border border-[rgba(255,69,58,0.4)] bg-[rgba(255,69,58,0.12)] p-4"
+          role="alert"
+        >
           <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--admin-danger)]" aria-hidden />
           <div className="flex-1">
             <p className="text-sm font-semibold text-[var(--admin-danger)]">Erreur de chargement</p>
-            <p className="mt-0.5 text-[13px] text-[var(--admin-muted)]">{loadErr}</p>
+            <p className="mt-0.5 text-[15px] text-[var(--admin-secondary)]">{loadErr}</p>
             <button
               type="button"
               onClick={refreshSessionAndPerfumes}
-              className="mt-3 text-[12px] font-bold uppercase tracking-wider text-[var(--admin-accent)] underline decoration-[var(--admin-border)] underline-offset-4"
+              className="mt-3 text-[15px] font-semibold text-[var(--admin-accent)]"
             >
               Réessayer
             </button>
@@ -469,7 +472,7 @@ function InnerCaisse() {
       )}
 
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center gap-4 py-20 text-[var(--admin-muted)]">
+        <div className="flex flex-col items-center justify-center gap-4 py-20 text-[var(--admin-secondary)]">
           <Loader2 className="h-8 w-8 animate-spin text-[var(--admin-accent)]" aria-hidden />
           <p className="font-medium">Chargement…</p>
         </div>
@@ -504,16 +507,16 @@ function InnerCaisse() {
                 </div>
 
                 {formLines.map((row, idx) => (
-                  <div key={row.id} className="space-y-3 border border-[var(--admin-border)] bg-[var(--admin-surface)] p-4">
+                  <div key={row.id} className="space-y-3 rounded-[12px] border border-[var(--admin-separator)] bg-[var(--admin-grouped-bg)] p-4">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--admin-muted)]">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--admin-secondary)]">
                         Ligne {idx + 1}
                       </span>
                       {canEdit && formLines.length > 1 && (
                         <button
                           type="button"
                           onClick={() => setFormLines((prev) => prev.filter((l) => l.id !== row.id))}
-                          className="flex h-11 w-11 shrink-0 items-center justify-center text-[var(--admin-muted)] transition-colors hover:bg-[var(--admin-elevated)] hover:text-[var(--admin-danger)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]"
+                          className="flex h-11 w-11 shrink-0 items-center justify-center text-[var(--admin-secondary)] transition-colors hover:bg-[var(--admin-elevated)] hover:text-[var(--admin-danger)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]"
                           aria-label={`Retirer la ligne ${idx + 1}`}
                         >
                           <Trash2 className="h-4 w-4" aria-hidden />
@@ -522,9 +525,9 @@ function InnerCaisse() {
                     </div>
 
                     <label className="block">
-                      <span className="mb-1.5 block text-[13px] font-medium text-[var(--admin-muted)]">Parfum</span>
+                      <span className="mb-1.5 block text-[13px] font-medium text-[var(--admin-secondary)]">Parfum</span>
                       <select
-                        className="block w-full min-h-[48px] border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 text-[15px] text-[var(--admin-text)] focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]/30 disabled:opacity-40"
+                        className="block w-full min-h-[48px] rounded-[10px] border border-transparent bg-[var(--admin-input-bg)] px-3 text-[17px] text-[var(--admin-text)] focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]/35 disabled:opacity-40"
                         value={row.perfumeId}
                         onChange={(e) =>
                           setFormLines((prev) =>
@@ -587,10 +590,10 @@ function InnerCaisse() {
                       if (b === null || s === null || !Number.isFinite(q) || q < 1) return null;
                       const { margin, revenue } = lineTotals(b, s, q);
                       return (
-                        <p className="text-[13px] text-[var(--admin-muted)]">
+                        <p className="text-[13px] text-[var(--admin-secondary)]">
                           Marge ligne :{" "}
                           <span className="font-semibold text-[var(--admin-success)]">{formatEuroFromCents(margin)} €</span>
-                          <span className="text-[var(--admin-border)]"> · </span>
+                          <span className="text-[var(--admin-tertiary)]"> · </span>
                           CA ligne :{" "}
                           <span className="font-medium text-[var(--admin-text)]">{formatEuroFromCents(revenue)} €</span>
                         </p>
@@ -600,23 +603,23 @@ function InnerCaisse() {
                 ))}
               </div>
 
-              <div className="border border-[var(--admin-border)] bg-[var(--admin-surface)] p-4">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--admin-muted)]">Synthèse brouillon</p>
-                <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-                  <div className="flex justify-between gap-4 border-b border-[var(--admin-border)] py-2 sm:border-0">
-                    <dt className="text-[var(--admin-muted)]">Chiffre d’affaires</dt>
+              <div className="rounded-[12px] border border-[var(--admin-separator)] bg-[var(--admin-grouped-bg)] p-4">
+                <p className="text-[13px] font-semibold uppercase tracking-wide text-[var(--admin-secondary)]">Synthèse brouillon</p>
+                <dl className="mt-3 grid gap-2 text-[15px] sm:grid-cols-2">
+                  <div className="flex justify-between gap-4 border-b border-[var(--admin-separator)] py-2 sm:border-0">
+                    <dt className="text-[var(--admin-secondary)]">Chiffre d’affaires</dt>
                     <dd className="font-semibold text-[var(--admin-text)]">{formatEuroFromCents(draftTotals.revenue)} €</dd>
                   </div>
-                  <div className="flex justify-between gap-4 border-b border-[var(--admin-border)] py-2 sm:border-0">
-                    <dt className="text-[var(--admin-muted)]">Coût d’achat</dt>
+                  <div className="flex justify-between gap-4 border-b border-[var(--admin-separator)] py-2 sm:border-0">
+                    <dt className="text-[var(--admin-secondary)]">Coût d’achat</dt>
                     <dd className="font-semibold text-[var(--admin-text)]">{formatEuroFromCents(draftTotals.cost)} €</dd>
                   </div>
-                  <div className="flex justify-between gap-4 border-b border-[var(--admin-border)] py-2 sm:border-0">
-                    <dt className="text-[var(--admin-muted)]">Marge nette</dt>
+                  <div className="flex justify-between gap-4 border-b border-[var(--admin-separator)] py-2 sm:border-0">
+                    <dt className="text-[var(--admin-secondary)]">Marge nette</dt>
                     <dd className="font-semibold text-[var(--admin-success)]">{formatEuroFromCents(draftTotals.margin)} €</dd>
                   </div>
                   <div className="flex justify-between gap-4 py-2">
-                    <dt className="text-[var(--admin-muted)]">Taux de marge</dt>
+                    <dt className="text-[var(--admin-secondary)]">Taux de marge</dt>
                     <dd className="font-semibold text-[var(--admin-text)]">
                       {(draftTotals.rate * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
                     </dd>
@@ -625,9 +628,9 @@ function InnerCaisse() {
               </div>
 
               <label className="block">
-                <span className="mb-1.5 block text-[13px] font-medium text-[var(--admin-muted)]">Note (optionnel)</span>
+                <span className="mb-1.5 block text-[13px] font-medium text-[var(--admin-secondary)]">Note (optionnel)</span>
                 <textarea
-                  className="min-h-[88px] w-full resize-y border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-4 py-3 text-[15px] text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]/60 focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]/30 disabled:opacity-40"
+                  className="min-h-[88px] w-full resize-y rounded-[10px] border border-transparent bg-[var(--admin-input-bg)] px-4 py-3 text-[17px] leading-snug text-[var(--admin-text)] placeholder:text-[var(--admin-tertiary)] focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]/35 disabled:opacity-40"
                   value={saleNote}
                   onChange={(e) => setSaleNote(e.target.value)}
                   disabled={!canEdit}
@@ -641,7 +644,7 @@ function InnerCaisse() {
                   Enregistrer la vente
                 </AdminButton>
               ) : (
-                <p className="text-sm text-[var(--admin-muted)]">Lecture seule : compte éditeur requis pour enregistrer.</p>
+                <p className="text-sm text-[var(--admin-secondary)]">Lecture seule : compte éditeur requis pour enregistrer.</p>
               )}
             </section>
           )}
@@ -660,15 +663,15 @@ function InnerCaisse() {
                       ["Unités vendues", String(summary.kpis.unitsSold), false],
                       ["Nombre de ventes", String(summary.kpis.saleCount), false],
                     ].map(([label, val, accent]) => (
-                      <div key={String(label)} className="border border-[var(--admin-border)] bg-[var(--admin-surface)] p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--admin-muted)]">{label}</p>
+                      <div key={String(label)} className="border border-[var(--admin-separator)] bg-[var(--admin-grouped-bg)] p-4">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--admin-secondary)]">{label}</p>
                         <p className={`mt-2 text-xl font-semibold tabular-nums ${accent ? "text-[var(--admin-success)]" : "text-[var(--admin-text)]"}`}>
                           {val}
                         </p>
                       </div>
                     ))}
                   </div>
-                  <p className="mt-3 text-[13px] text-[var(--admin-muted)]">
+                  <p className="mt-3 text-[13px] text-[var(--admin-secondary)]">
                     Commandes en attente : {summary.orders.pending} · Traitées : {summary.orders.fulfilled}
                   </p>
                 </div>
@@ -683,11 +686,11 @@ function InnerCaisse() {
                 </div>
 
                 {salesLoading ? (
-                  <div className="flex justify-center py-12 text-[var(--admin-muted)]">
+                  <div className="flex justify-center py-12 text-[var(--admin-secondary)]">
                     <Loader2 className="h-6 w-6 animate-spin" aria-hidden />
                   </div>
                 ) : sales.length === 0 ? (
-                  <p className="border border-[var(--admin-border)] bg-[var(--admin-surface)] p-6 text-sm text-[var(--admin-muted)]">
+                  <p className="border border-[var(--admin-separator)] bg-[var(--admin-grouped-bg)] p-6 text-sm text-[var(--admin-secondary)]">
                     Aucune vente. Utilisez l’onglet Enregistrement pour saisir une vente.
                   </p>
                 ) : (
@@ -695,7 +698,7 @@ function InnerCaisse() {
                     {sales.map((sale) => {
                       const t = saleTotals(sale);
                       return (
-                        <li key={sale.id} className="border border-[var(--admin-border)] bg-[var(--admin-surface)] p-4">
+                        <li key={sale.id} className="border border-[var(--admin-separator)] bg-[var(--admin-grouped-bg)] p-4">
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div>
                               <p className="text-sm font-semibold text-[var(--admin-text)]">
@@ -706,13 +709,13 @@ function InnerCaisse() {
                                   })}
                                 </time>
                               </p>
-                              {sale.note && <p className="mt-1 text-[13px] text-[var(--admin-muted)]">{sale.note}</p>}
+                              {sale.note && <p className="mt-1 text-[13px] text-[var(--admin-secondary)]">{sale.note}</p>}
                             </div>
                             {canEdit && (
                               <button
                                 type="button"
                                 onClick={() => setDeleteSaleId(sale.id)}
-                                className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 border border-[var(--admin-border)] px-3 text-sm text-[var(--admin-danger)] transition-colors hover:bg-[rgba(224,122,122,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]"
+                                className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 border border-[var(--admin-separator)] px-3 text-sm text-[var(--admin-danger)] transition-colors hover:bg-[rgba(255,69,58,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]"
                                 aria-label="Supprimer cette vente"
                               >
                                 <Trash2 className="h-4 w-4" aria-hidden />
@@ -720,33 +723,33 @@ function InnerCaisse() {
                               </button>
                             )}
                           </div>
-                          <ul className="mt-3 space-y-2 border-t border-[var(--admin-border)] pt-3">
+                          <ul className="mt-3 space-y-2 border-t border-[var(--admin-separator)] pt-3">
                             {sale.lines.map((l) => {
                               const lt = lineTotals(l.buyPriceCents, l.sellPriceCents, l.quantity);
                               return (
-                                <li key={l.id} className="text-[13px] text-[var(--admin-muted)]">
+                                <li key={l.id} className="text-[13px] text-[var(--admin-secondary)]">
                                   <span className="font-medium text-[var(--admin-text)]">
                                     {l.perfume.brand.name} — {l.perfume.name}
                                   </span>
-                                  <span className="text-[var(--admin-border)]"> · </span>
+                                  <span className="text-[var(--admin-tertiary)]"> · </span>
                                   {l.quantity} × {formatEuroFromCents(l.sellPriceCents)} €
-                                  <span className="text-[var(--admin-border)]"> · </span>
+                                  <span className="text-[var(--admin-tertiary)]"> · </span>
                                   marge {formatEuroFromCents(lt.margin)} €
                                 </li>
                               );
                             })}
                           </ul>
-                          <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 border-t border-[var(--admin-border)] pt-3 text-[13px]">
+                          <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 border-t border-[var(--admin-separator)] pt-3 text-[13px]">
                             <div>
-                              <dt className="inline text-[var(--admin-muted)]">CA </dt>
+                              <dt className="inline text-[var(--admin-secondary)]">CA </dt>
                               <dd className="inline font-semibold text-[var(--admin-text)]">{formatEuroFromCents(t.revenue)} €</dd>
                             </div>
                             <div>
-                              <dt className="inline text-[var(--admin-muted)]">Coût </dt>
+                              <dt className="inline text-[var(--admin-secondary)]">Coût </dt>
                               <dd className="inline font-semibold text-[var(--admin-text)]">{formatEuroFromCents(t.cost)} €</dd>
                             </div>
                             <div>
-                              <dt className="inline text-[var(--admin-muted)]">Marge </dt>
+                              <dt className="inline text-[var(--admin-secondary)]">Marge </dt>
                               <dd className="inline font-semibold text-[var(--admin-success)]">{formatEuroFromCents(t.margin)} €</dd>
                             </div>
                           </dl>
@@ -763,7 +766,7 @@ function InnerCaisse() {
             <section id="caisse-panel-commandes" role="tabpanel" aria-labelledby="caisse-tab-commandes" className="space-y-8">
               <div>
                 <h2 className="mb-4 text-base font-semibold text-[var(--admin-text)]">Nouvelle commande</h2>
-                <div className="space-y-4 border border-[var(--admin-border)] bg-[var(--admin-surface)] p-4">
+                <div className="space-y-4 border border-[var(--admin-separator)] bg-[var(--admin-grouped-bg)] p-4">
                   <AdminInput
                     label="Nom du client"
                     value={orderForm.customerName}
@@ -773,9 +776,9 @@ function InnerCaisse() {
                     autoComplete="name"
                   />
                   <label className="block">
-                    <span className="mb-1.5 block text-[13px] font-medium text-[var(--admin-muted)]">Détail de la commande</span>
+                    <span className="mb-1.5 block text-[13px] font-medium text-[var(--admin-secondary)]">Détail de la commande</span>
                     <textarea
-                      className="min-h-[120px] w-full resize-y border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-4 py-3 text-[15px] text-[var(--admin-text)] placeholder:text-[var(--admin-muted)]/60 focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]/30 disabled:opacity-40"
+                      className="min-h-[120px] w-full resize-y border border-[var(--admin-separator)] bg-[var(--admin-input-bg)] px-4 py-3 text-[15px] text-[var(--admin-text)] placeholder:text-[var(--admin-secondary)]/60 focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]/30 disabled:opacity-40"
                       value={orderForm.details}
                       onChange={(e) => setOrderForm((f) => ({ ...f, details: e.target.value }))}
                       disabled={!canEdit}
@@ -807,7 +810,7 @@ function InnerCaisse() {
                       className={`min-h-[44px] px-4 text-sm font-semibold transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--admin-bg)] ${
                         orderFilter === f
                           ? "border border-[var(--admin-accent)] bg-[var(--admin-elevated)] text-[var(--admin-text)]"
-                          : "border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
+                          : "border border-[var(--admin-separator)] bg-[var(--admin-grouped-bg)] text-[var(--admin-secondary)] hover:text-[var(--admin-text)]"
                       }`}
                     >
                       {f === "ALL" ? "Toutes" : statusLabel[f]}
@@ -816,21 +819,21 @@ function InnerCaisse() {
                 </div>
 
                 {ordersLoading ? (
-                  <div className="flex justify-center py-12 text-[var(--admin-muted)]">
+                  <div className="flex justify-center py-12 text-[var(--admin-secondary)]">
                     <Loader2 className="h-6 w-6 animate-spin" aria-hidden />
                   </div>
                 ) : orders.length === 0 ? (
-                  <p className="border border-[var(--admin-border)] bg-[var(--admin-surface)] p-6 text-sm text-[var(--admin-muted)]">
+                  <p className="border border-[var(--admin-separator)] bg-[var(--admin-grouped-bg)] p-6 text-sm text-[var(--admin-secondary)]">
                     Aucune commande avec ce filtre.
                   </p>
                 ) : (
                   <ul className="space-y-4">
                     {orders.map((o) => (
-                      <li key={o.id} className="border border-[var(--admin-border)] bg-[var(--admin-surface)] p-4">
+                      <li key={o.id} className="border border-[var(--admin-separator)] bg-[var(--admin-grouped-bg)] p-4">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
                             <p className="font-semibold text-[var(--admin-text)]">{o.customerName}</p>
-                            <p className="mt-1 text-[13px] text-[var(--admin-muted)]">
+                            <p className="mt-1 text-[13px] text-[var(--admin-secondary)]">
                               <time dateTime={o.createdAt}>
                                 {new Date(o.createdAt).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}
                               </time>
@@ -839,7 +842,7 @@ function InnerCaisse() {
                           <div className="flex flex-wrap items-center gap-2">
                             {canEdit ? (
                               <select
-                                className="min-h-[44px] min-w-[160px] border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 text-sm text-[var(--admin-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]"
+                                className="min-h-[44px] min-w-[160px] border border-[var(--admin-separator)] bg-[var(--admin-input-bg)] px-3 text-sm text-[var(--admin-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]"
                                 value={o.status}
                                 onChange={(e) => patchOrderStatus(o.id, e.target.value as CustomerOrderDto["status"])}
                                 disabled={pendingOrderPatch.has(o.id)}
@@ -850,13 +853,13 @@ function InnerCaisse() {
                                 <option value="CANCELLED">{statusLabel.CANCELLED}</option>
                               </select>
                             ) : (
-                              <span className="text-sm text-[var(--admin-muted)]">{statusLabel[o.status]}</span>
+                              <span className="text-sm text-[var(--admin-secondary)]">{statusLabel[o.status]}</span>
                             )}
                             {canEdit && (
                               <button
                                 type="button"
                                 onClick={() => setDeleteOrderId(o.id)}
-                                className="flex h-11 w-11 items-center justify-center text-[var(--admin-muted)] hover:bg-[var(--admin-elevated)] hover:text-[var(--admin-danger)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]"
+                                className="flex h-11 w-11 items-center justify-center text-[var(--admin-secondary)] hover:bg-[var(--admin-elevated)] hover:text-[var(--admin-danger)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent)]"
                                 aria-label={`Supprimer la commande de ${o.customerName}`}
                               >
                                 <Trash2 className="h-4 w-4" aria-hidden />
@@ -866,8 +869,8 @@ function InnerCaisse() {
                         </div>
                         <p className="mt-3 whitespace-pre-wrap text-sm text-[var(--admin-text)]">{o.details}</p>
                         {o.note && (
-                          <p className="mt-2 text-[13px] text-[var(--admin-muted)]">
-                            <span className="font-medium text-[var(--admin-muted)]">Note :</span> {o.note}
+                          <p className="mt-2 text-[13px] text-[var(--admin-secondary)]">
+                            <span className="font-medium text-[var(--admin-secondary)]">Note :</span> {o.note}
                           </p>
                         )}
                       </li>
@@ -887,7 +890,7 @@ function InnerCaisse() {
       {deleteSaleId && (
         <div className="fixed inset-0 z-[150] flex items-end justify-center bg-[var(--admin-overlay)] backdrop-blur-sm sm:items-center sm:p-4">
           <div
-            className="w-full max-h-[90dvh] overflow-y-auto border border-[var(--admin-border)] border-b-0 bg-[var(--admin-surface)] p-6 sm:max-w-sm sm:border-b"
+            className="w-full max-h-[90dvh] overflow-y-auto rounded-t-[16px] border border-[var(--admin-separator)] border-b-0 bg-[var(--admin-grouped-bg)] p-6 sm:max-w-sm sm:border-b"
             role="dialog"
             aria-modal="true"
             aria-labelledby="delete-sale-title"
@@ -895,7 +898,7 @@ function InnerCaisse() {
             <h3 id="delete-sale-title" className="text-lg font-semibold text-[var(--admin-text)]">
               Supprimer cette vente ?
             </h3>
-            <p className="mt-2 text-sm text-[var(--admin-muted)]">Cette action retire la vente de la comptabilité. Irréversible.</p>
+            <p className="mt-2 text-sm text-[var(--admin-secondary)]">Cette action retire la vente de la comptabilité. Irréversible.</p>
             <div className="mt-6 flex flex-col gap-2">
               <AdminButton variant="danger" onClick={() => confirmDeleteSale(deleteSaleId)}>
                 Supprimer
@@ -911,7 +914,7 @@ function InnerCaisse() {
       {deleteOrderId && (
         <div className="fixed inset-0 z-[150] flex items-end justify-center bg-[var(--admin-overlay)] backdrop-blur-sm sm:items-center sm:p-4">
           <div
-            className="w-full max-h-[90dvh] overflow-y-auto border border-[var(--admin-border)] border-b-0 bg-[var(--admin-surface)] p-6 sm:max-w-sm sm:border-b"
+            className="w-full max-h-[90dvh] overflow-y-auto rounded-t-[16px] border border-[var(--admin-separator)] border-b-0 bg-[var(--admin-grouped-bg)] p-6 sm:max-w-sm sm:border-b"
             role="dialog"
             aria-modal="true"
             aria-labelledby="delete-order-title"
@@ -919,7 +922,7 @@ function InnerCaisse() {
             <h3 id="delete-order-title" className="text-lg font-semibold text-[var(--admin-text)]">
               Supprimer cette commande ?
             </h3>
-            <p className="mt-2 text-sm text-[var(--admin-muted)]">Irréversible.</p>
+            <p className="mt-2 text-sm text-[var(--admin-secondary)]">Irréversible.</p>
             <div className="mt-6 flex flex-col gap-2">
               <AdminButton variant="danger" onClick={() => confirmDeleteOrder(deleteOrderId)}>
                 Supprimer
@@ -939,7 +942,7 @@ export function AdminCaisseDashboard() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-[40dvh] flex-col items-center justify-center gap-3 text-[var(--admin-muted)]">
+        <div className="flex min-h-[40dvh] flex-col items-center justify-center gap-3 text-[var(--admin-secondary)]">
           <Loader2 className="h-8 w-8 animate-spin text-[var(--admin-accent)]" aria-hidden />
           <p className="text-sm font-medium">Chargement de la caisse…</p>
         </div>
