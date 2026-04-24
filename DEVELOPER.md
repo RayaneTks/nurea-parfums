@@ -19,6 +19,13 @@
 
 Variables d’environnement : voir `.env.example` (contact / envoi mail).
 
+**Local `npm run dev`**
+
+- Copier `.env.example` vers `.env.local` (non versionné).
+- Définir au minimum `ADMIN_JWT_SECRET` (≥ 24 caractères), par ex. `openssl rand -hex 32`. Sans cette variable, la connexion admin échoue côté API.
+- `DATABASE_URL` peut rester vide : le catalogue public utilise alors le mock (`mockPerfumes`).
+- Si le terminal affiche **« Another next dev server is already running »**, un ancien `next dev` tourne encore : `kill <PID>` indiqué, ou libérer le port (souvent 3000).
+
 Pour Prisma:
 - `DATABASE_URL` est requis pour les commandes DB:
   - `npx prisma migrate dev`

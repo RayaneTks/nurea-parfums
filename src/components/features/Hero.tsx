@@ -107,11 +107,11 @@ export const Hero: FC = () => {
 
       <div className="hero-stagger relative z-10 flex max-w-2xl flex-col items-center px-5 text-center">        
         <span className="mb-5 text-[11px] font-medium uppercase tracking-nurea-wide text-[var(--nurea-accent)] md:text-[12px]">
-          Parfumerie d'Exception
+          Parfumerie d&apos;Exception
         </span>
 
         <h1 className="mb-5 font-serif text-[clamp(38px,9vw,76px)] leading-[1.04] text-[var(--nurea-text)]">    
-          L'Excellence du
+          L&apos;Excellence du
           <br />
           <em className="not-italic" style={{ fontStyle: "italic" }}>
             Parfum

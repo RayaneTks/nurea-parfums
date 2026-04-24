@@ -124,17 +124,40 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
     kind: "idle",
   });
 
+  const scrollToCatalogTop = useCallback((instant = false) => {
+    const el = document.getElementById("collection");
+    if (!el) return;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const offset = 85;
+          const bodyRect = document.body.getBoundingClientRect().top;
+          const elementRect = el.getBoundingClientRect().top;
+          const elementPosition = elementRect - bodyRect;
+          const offsetPosition = elementPosition - offset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: instant ? "auto" : "smooth",
+          });
+        }, 60);
+      });
+    });
+  }, []);
+
   useEffect(() => {
     setMounted(true);
-    
+
     // Listen for open-catalog-browse event (from Navbar)
     const handleOpenBrowse = () => {
       setBrowseOpen(true);
       scrollToCatalogTop();
     };
-    window.addEventListener('open-catalog-browse', handleOpenBrowse);
-    return () => window.removeEventListener('open-catalog-browse', handleOpenBrowse);
-  }, []);
+    window.addEventListener("open-catalog-browse", handleOpenBrowse);
+    return () =>
+      window.removeEventListener("open-catalog-browse", handleOpenBrowse);
+  }, [scrollToCatalogTop]);
 
   // Sync state from URL only on initial mount or popstate (back/forward)
   useEffect(() => {
@@ -261,28 +284,6 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
   const displayedPerfumes = shouldTruncateCatalog
     ? sortedPerfumes.slice(0, 12)
     : sortedPerfumes;
-
-  const scrollToCatalogTop = useCallback((instant = false) => {
-    const el = document.getElementById("collection");
-    if (!el) return;
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          const offset = 85;
-          const bodyRect = document.body.getBoundingClientRect().top;
-          const elementRect = el.getBoundingClientRect().top;
-          const elementPosition = elementRect - bodyRect;
-          const offsetPosition = elementPosition - offset;
-
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: instant ? "auto" : "smooth"
-          });
-        }, 60);
-      });
-    });
-  }, []);
 
   const handleCategoryChange = (category: Category) => {
     if (category === selectedCategory) return;

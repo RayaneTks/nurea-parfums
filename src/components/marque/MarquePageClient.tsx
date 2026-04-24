@@ -24,7 +24,7 @@ export const MarquePageClient = () => {
                 La Parfumerie
               </span>
               <h1 className="font-serif text-[clamp(32px,7vw,56px)] leading-[1.1] text-[var(--nurea-text)]">    
-                L'Excellence à votre portée
+                L&apos;Excellence à votre portée
               </h1>
               <p className="mt-8 text-[17px] leading-[1.8] text-[var(--nurea-text-muted)] font-light">
                 {SITE_NAME} est votre destination privilégiée pour les plus grands parfums au meilleur prix. Nous sélectionnons rigoureusement chaque référence pour vous garantir une qualité irréprochable et une authenticité totale.
@@ -49,7 +49,7 @@ export const MarquePageClient = () => {
                 <div className="pt-2 md:pt-12">
                   <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--nurea-accent)] mb-4">Prix Compétitifs</h3>
                   <p className="text-[14px] leading-[1.6] text-[var(--nurea-text-muted)]">
-                    Nous travaillons au quotidien pour vous proposer les tarifs les plus justes sur l'ensemble de notre catalogue, sans jamais sacrifier la qualité.
+                    Nous travaillons au quotidien pour vous proposer les tarifs les plus justes sur l&apos;ensemble de notre catalogue, sans jamais sacrifier la qualité.
                   </p>
                 </div>
               </div>
@@ -60,7 +60,7 @@ export const MarquePageClient = () => {
                 <div className="absolute top-0 left-0 w-1 h-full bg-[var(--nurea-accent)] opacity-20 group-hover:h-full transition-all duration-700" />
                 <h2 className="font-serif text-2xl text-[var(--nurea-text)] mb-6 text-center md:text-left">Conseils & Commande</h2>
                 <p className="text-[15px] leading-[1.8] text-[var(--nurea-text-muted)] max-w-2xl">
-                  Parce qu'un parfum est un choix personnel, nous sommes à votre disposition pour vous conseiller. Notre catalogue est une vitrine : pour commander, il vous suffit de nous contacter sur Snapchat ou WhatsApp.
+                  Parce qu&apos;un parfum est un choix personnel, nous sommes à votre disposition pour vous conseiller. Notre catalogue est une vitrine : pour commander, il vous suffit de nous contacter sur Snapchat ou WhatsApp.
                 </p>
                 <div className="mt-8 flex flex-col sm:flex-row gap-4">
                   <Link href="/contact" className="btn-nurea text-[11px]">Nous contacter</Link>        
@@ -79,10 +79,10 @@ export const MarquePageClient = () => {
               <h2 className="font-serif text-xl text-[var(--nurea-text)] mb-8">Notre Identité</h2>
               <div className="grid gap-8 text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
                 <p>
-                  Basée à Marseille, Nuréa Parfums cultive la proximité et la réactivité. Pour vous garantir l'authenticité de nos produits, veillez à toujours consulter notre site officiel : <span className="text-[var(--nurea-text)] font-medium">{domain}</span>.
+                  Basée à Marseille, Nuréa Parfums cultive la proximité et la réactivité. Pour vous garantir l&apos;authenticité de nos produits, veillez à toujours consulter notre site officiel : <span className="text-[var(--nurea-text)] font-medium">{domain}</span>.
                 </p>
                 <p>
-                  L'orthographe de notre nom s'écrit avec soin : <strong className="text-[var(--nurea-accent)] font-semibold italic">Nuréa Parfums</strong>. Un accent sur le « é », un « s » à Parfums. Cette précision reflète l'attention que nous portons à chaque détail de votre commande.
+                  L&apos;orthographe de notre nom s&apos;écrit avec soin : <strong className="text-[var(--nurea-accent)] font-semibold italic">Nuréa Parfums</strong>. Un accent sur le « é », un « s » à Parfums. Cette précision reflète l&apos;attention que nous portons à chaque détail de votre commande.
                 </p>
               </div>
             </ScrollReveal>
@@ -100,7 +100,7 @@ export const MarquePageClient = () => {
                   <div className="group">
                     <h4 className="text-[15px] font-medium text-[var(--nurea-text)] mb-3 group-hover:text-[var(--nurea-accent)] transition-colors italic">Comment commander ?</h4>
                     <p className="text-[14px] text-[var(--nurea-text-muted)] leading-relaxed">
-                      C'est très simple : envoyez-nous une capture d'écran du parfum souhaité sur Snapchat ou WhatsApp. Nous confirmons le prix et la disponibilité, puis finalisons la livraison ensemble.
+                      C&apos;est très simple : envoyez-nous une capture d&apos;écran du parfum souhaité sur Snapchat ou WhatsApp. Nous confirmons le prix et la disponibilité, puis finalisons la livraison ensemble.
                     </p>
                   </div>
                 </div>
