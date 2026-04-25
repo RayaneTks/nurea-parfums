@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { AlertCircle, Plus, SunMoon, Upload, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -14,55 +14,22 @@ import { ConfirmDialog } from "./ui/ConfirmDialog";
 import { FAB } from "./ui/FAB";
 import { SectionCard } from "./ui/SectionCard";
 import { cn } from "@/lib/utils";
+import type {
+  AdminBrandRow,
+  AdminCatalogueCache,
+  AdminCataloguePayload,
+  AdminPerfumeRow,
+  AdminSessionUser,
+} from "@/lib/admin";
+import { readJsonSafe } from "@/lib/admin";
 
-type SessionUser = { username: string; role: string };
-
-type BrandRow = {
-  id: string;
-  name: string;
-  slug: string;
-  catalogMode: "CURATED" | "COMPLETE";
-  status: "PUBLISHED" | "DRAFT";
-  image: string | null;
-  imageLight: string | null;
-  _count: { perfumes: number };
-};
-
-type PerfumeRow = {
-  id: number;
-  image: string;
-  imageLight: string | null;
-  name: string;
-  status: string;
-  isFeatured?: boolean;
-  brand: {
-    id: string;
-    name: string;
-    image: string | null;
-    catalogMode: "CURATED" | "COMPLETE";
-    status: "PUBLISHED" | "DRAFT";
-  };
-};
-
+type SessionUser = AdminSessionUser;
+type BrandRow = AdminBrandRow;
+type PerfumeRow = AdminPerfumeRow;
 type Tab = "perfumes" | "brands" | "featured";
-
-type CatalogueCache = {
-  user: SessionUser | null;
-  brands: BrandRow[];
-  perfumes: PerfumeRow[];
-};
+type CatalogueCache = AdminCatalogueCache;
 
 let catalogueCache: CatalogueCache | null = null;
-
-async function readJsonSafe<T>(res: Response): Promise<T | null> {
-  const contentType = res.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) return null;
-  try {
-    return (await res.json()) as T;
-  } catch {
-    return null;
-  }
-}
 
 function VisualizerSheet({
   item,
@@ -248,6 +215,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
   const [perfumes, setPerfumes] = useState<PerfumeRow[]>([]);
   const [loadErr, setLoadErr] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshingCatalog, setIsRefreshingCatalog] = useState(false);
   const [tab, setTab] = useState<Tab>("perfumes");
   const [isTabTransitioning, setIsTabTransitioning] = useState(false);
   const [search, setSearch] = useState("");
@@ -272,6 +240,11 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
     pendingBrandIds.size > 0 ||
     pendingFeaturedIds.size > 0;
 
+  const featuredCount = useMemo(
+    () => perfumes.filter((p) => p.isFeatured).length,
+    [perfumes],
+  );
+
   const handleSearchBrand = useCallback((brandName: string, targetTab: Tab) => {
     setSearch(brandName);
     setTab(targetTab);
@@ -286,7 +259,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
     try {
       const res = await fetch("/api/admin/catalogue", { credentials: "include", cache: "no-store" });
       if (!res.ok) throw new Error("Impossible de charger le catalogue.");
-      const data = await readJsonSafe<{ user?: SessionUser; brands: BrandRow[]; perfumes: PerfumeRow[] }>(res);
+      const data = await readJsonSafe<AdminCataloguePayload>(res);
       const nextUser = data?.user ?? null;
       const nextBrands = data?.brands ?? [];
       const nextPerfumes = data?.perfumes ?? [];
@@ -307,6 +280,15 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
       }
     }
   }, []);
+
+  const handleRefreshCatalog = useCallback(async () => {
+    setIsRefreshingCatalog(true);
+    try {
+      await refresh(true);
+    } finally {
+      setIsRefreshingCatalog(false);
+    }
+  }, [refresh]);
 
   useEffect(() => {
     if (initialData) {
@@ -561,10 +543,13 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
       <DashboardHeader
         perfumeCount={perfumes.length}
         brandCount={brands.length}
+        featuredCount={featuredCount}
         activeTab={tab}
         onTabChange={handleTabChange}
         canEdit={canEdit}
         isLoading={isLoading}
+        onRefresh={handleRefreshCatalog}
+        isRefreshing={isRefreshingCatalog}
       />
 
       <main

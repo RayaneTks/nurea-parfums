@@ -11,17 +11,9 @@ import { SectionCard } from "./ui/SectionCard";
 import { BrandVisual, StatusDot } from "./Visuals";
 import { EmptyState } from "./EmptyState";
 import { cn } from "@/lib/utils";
+import type { AdminBrandRow } from "@/lib/admin";
 
-type BrandRow = {
-  id: string;
-  name: string;
-  slug: string;
-  catalogMode: "CURATED" | "COMPLETE";
-  status: "PUBLISHED" | "DRAFT";
-  image: string | null;
-  imageLight: string | null;
-  _count: { perfumes: number };
-};
+type BrandRow = AdminBrandRow;
 
 type BrandFilter = "all" | "COMPLETE" | "CURATED" | "DRAFT";
 

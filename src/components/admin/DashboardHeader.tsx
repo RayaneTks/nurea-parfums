@@ -1,17 +1,21 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { HeaderAction } from "./shell/HeaderAction";
 import { PageHeader } from "./shell/PageHeader";
 import { FilterPills } from "./ui/FilterPills";
+import { cn } from "@/lib/utils";
 
 interface DashboardHeaderProps {
   perfumeCount: number;
   brandCount: number;
+  featuredCount: number;
   activeTab: "perfumes" | "brands" | "featured";
   onTabChange: (tab: "perfumes" | "brands" | "featured") => void;
   canEdit: boolean;
   isLoading?: boolean;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
 const tabs: { id: DashboardHeaderProps["activeTab"]; label: string }[] = [
@@ -23,15 +27,18 @@ const tabs: { id: DashboardHeaderProps["activeTab"]; label: string }[] = [
 export function DashboardHeader({
   perfumeCount,
   brandCount,
+  featuredCount,
   activeTab,
   onTabChange,
   canEdit,
   isLoading = false,
+  onRefresh,
+  isRefreshing = false,
 }: DashboardHeaderProps) {
   const countsByTab: Record<string, number | null> = {
     perfumes: perfumeCount,
     brands: brandCount,
-    featured: null,
+    featured: featuredCount,
   };
 
   const addHref =
@@ -53,14 +60,30 @@ export function DashboardHeader({
             : `${perfumeCount} parfum${perfumeCount > 1 ? "s" : ""} · ${brandCount} marque${brandCount > 1 ? "s" : ""}`
         }
         action={
-          canEdit && addHref ? (
-            <HeaderAction
-              href={addHref}
-              icon={Plus}
-              label={activeTab === "perfumes" ? "Ajouter un parfum" : "Ajouter une marque"}
-              tone="accent"
-            />
-          ) : null
+          <div className="flex shrink-0 items-center gap-1.5">
+            {onRefresh ? (
+              <HeaderAction
+                label="Actualiser le catalogue"
+                tone="default"
+                disabled={isLoading || isRefreshing}
+                onClick={() => onRefresh()}
+                className={cn(isRefreshing && "pointer-events-none opacity-70")}
+              >
+                <RefreshCw
+                  className={cn("h-[18px] w-[18px]", isRefreshing && "animate-spin")}
+                  aria-hidden
+                />
+              </HeaderAction>
+            ) : null}
+            {canEdit && addHref ? (
+              <HeaderAction
+                href={addHref}
+                icon={Plus}
+                label={activeTab === "perfumes" ? "Ajouter un parfum" : "Ajouter une marque"}
+                tone="accent"
+              />
+            ) : null}
+          </div>
         }
       />
       <div className="px-5 pt-4">

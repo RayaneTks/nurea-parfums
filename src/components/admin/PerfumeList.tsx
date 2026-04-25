@@ -9,21 +9,9 @@ import { FilterPills } from "./ui/FilterPills";
 import { SectionCard } from "./ui/SectionCard";
 import { PerfumeVisual, StatusDot } from "./Visuals";
 import { EmptyState } from "./EmptyState";
+import type { AdminPerfumeRow } from "@/lib/admin";
 
-type PerfumeRow = {
-  id: number;
-  image: string;
-  imageLight: string | null;
-  name: string;
-  status: string;
-  brand: {
-    id: string;
-    name: string;
-    image: string | null;
-    catalogMode: "CURATED" | "COMPLETE";
-    status: "PUBLISHED" | "DRAFT";
-  };
-};
+type PerfumeRow = AdminPerfumeRow;
 
 type PerfumeFilter = "all" | "PUBLISHED" | "DRAFT";
 

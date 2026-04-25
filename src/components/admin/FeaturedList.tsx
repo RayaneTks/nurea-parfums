@@ -6,16 +6,9 @@ import Image from "next/image";
 import { AdminInput } from "./ui/AdminInput";
 import { SectionCard } from "./ui/SectionCard";
 import { cn } from "@/lib/utils";
+import type { AdminPerfumeRow } from "@/lib/admin";
 
-type PerfumeRow = {
-  id: number;
-  name: string;
-  image: string;
-  imageLight: string | null;
-  status: string;
-  isFeatured?: boolean;
-  brand: { name: string };
-};
+type PerfumeRow = AdminPerfumeRow;
 
 interface FeaturedListProps {
   perfumes: PerfumeRow[];
