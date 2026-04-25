@@ -269,7 +269,7 @@ function OrderCard({ order, overdue }: { order: OrderRow; overdue: boolean }) {
   const extra = order.items.length > 2 ? ` +${order.items.length - 2}` : "";
 
   return (
-    <Link href={`/admin/ordres/${order.id}`} className="block tap-scale">
+    <Link href={`/admin/ordres/${order.id}`} prefetch={false} className="block tap-scale">
       <SectionCard
         className={cn(
           "p-4",

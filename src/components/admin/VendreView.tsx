@@ -235,6 +235,7 @@ export function VendreView() {
             <p className="text-[13px] text-admin-danger">{orderError}</p>
             <Link
               href="/admin/ordres"
+              prefetch={false}
               className="mt-2 inline-block text-[11px] uppercase tracking-wider text-admin-accent font-medium"
             >
               Retour aux ordres

@@ -150,6 +150,7 @@ export function BrandList({
               <div className="flex items-center gap-1.5 shrink-0">
                 <Link
                   href={`/admin/brands/${brand.id}/edit`}
+                  prefetch={false}
                   aria-label={`Éditer ${brand.name}`}
                   className="tap-scale inline-flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-xl border border-admin-border bg-admin-surface text-admin-text shadow-admin-sm transition-[background-color,border-color,color] duration-200 [@media(hover:hover)]:hover:bg-admin-surface-muted [@media(hover:hover)]:hover:border-admin-border-hover"
                 >

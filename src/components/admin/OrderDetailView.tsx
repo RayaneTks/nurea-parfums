@@ -246,6 +246,7 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
             </p>
             <Link
               href="/admin/compta"
+              prefetch={false}
               className="mt-2 inline-block text-[12px] uppercase tracking-wider text-[var(--admin-success)] font-medium [@media(hover:hover)]:hover:opacity-80"
             >
               Voir dans la Compta
@@ -303,6 +304,7 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
         <div className="fixed left-1/2 -translate-x-1/2 bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] z-[55] w-full max-w-[430px] px-5">
           <Link
             href={`/admin/vendre?fromOrder=${order.id}`}
+            prefetch={false}
             className="inline-flex w-full items-center justify-center gap-2 min-h-[52px] px-6 rounded-xl border border-admin-accent bg-admin-accent text-admin-bg text-[13px] uppercase tracking-[0.12em] font-medium tap-scale transition-colors [@media(hover:hover)]:hover:bg-admin-accent-hover [@media(hover:hover)]:hover:border-admin-accent-hover"
           >
             <Calculator className="h-4 w-4" aria-hidden />

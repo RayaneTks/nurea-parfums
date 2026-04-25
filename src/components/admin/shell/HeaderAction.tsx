@@ -50,7 +50,14 @@ export function HeaderAction(props: HeaderActionProps) {
   if ("href" in props && props.href) {
     const { href, target, rel } = props;
     return (
-      <Link href={href} target={target} rel={rel} aria-label={label} className={classes}>
+      <Link
+        href={href}
+        prefetch={false}
+        target={target}
+        rel={rel}
+        aria-label={label}
+        className={classes}
+      >
         {content}
       </Link>
     );

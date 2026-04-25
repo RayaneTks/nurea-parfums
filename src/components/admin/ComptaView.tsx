@@ -234,6 +234,7 @@ export function ComptaView() {
             action={
               <Link
                 href="/admin/vendre"
+                prefetch={false}
                 className="inline-flex items-center justify-center gap-2 min-h-11 px-4 rounded-xl border border-admin-accent bg-admin-accent text-admin-bg text-[13px] uppercase tracking-[0.08em] font-medium tap-scale transition-colors [@media(hover:hover)]:hover:bg-admin-accent-hover [@media(hover:hover)]:hover:border-admin-accent-hover"
               >
                 <Calculator className="h-4 w-4" aria-hidden />
@@ -379,6 +380,7 @@ function SaleDetailModal({
             </p>
             <Link
               href={`/admin/ordres/${sale.order.id}`}
+              prefetch={false}
               className="mt-1 inline-block text-[13px] text-admin-accent [@media(hover:hover)]:hover:text-admin-accent-hover"
             >
               Voir l&apos;ordre du {formatDate(sale.order.orderedAt)}

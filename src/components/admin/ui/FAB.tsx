@@ -46,7 +46,12 @@ export function FAB(props: FABProps) {
   if ("href" in props && props.href) {
     return (
       <div className={wrapperClasses}>
-        <Link href={props.href} aria-label={label} className={cn(classes, className)}>
+        <Link
+          href={props.href}
+          prefetch={false}
+          aria-label={label}
+          className={cn(classes, className)}
+        >
           {body}
         </Link>
       </div>

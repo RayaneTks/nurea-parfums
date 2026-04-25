@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { AlertCircle, Plus, SunMoon, Upload, Loader2 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
 import { DashboardHeader } from "./DashboardHeader";
 import { PerfumeList } from "./PerfumeList";
