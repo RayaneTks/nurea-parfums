@@ -129,7 +129,7 @@ export function Modal({
           "relative w-full rounded-t-3xl sm:rounded-3xl",
           "bg-admin-surface border border-admin-border",
           "shadow-admin-xl",
-          "flex flex-col max-h-[92svh]",
+          "flex flex-col max-h-[92dvh]",
           isClosing
             ? "animate-out slide-out-to-bottom-full sm:zoom-out-95 sm:slide-out-to-bottom-0 duration-200 ease-out-expo"
             : "animate-in slide-in-from-bottom-full sm:zoom-in-95 sm:slide-in-from-bottom-0 duration-300 ease-out-expo",
@@ -164,7 +164,9 @@ export function Modal({
           ) : null}
         </div>
         <div className="border-t border-admin-border" />
-        <div className="flex-1 overflow-y-auto px-5 py-5">{children}</div>
+        <div className="flex-1 overflow-y-auto overscroll-y-contain px-5 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))] [-webkit-overflow-scrolling:touch]">
+          {children}
+        </div>
         {footer ? (
           <div className="border-t border-admin-border px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] bg-admin-surface rounded-b-3xl">
             {footer}

@@ -96,7 +96,7 @@ export function PerfumePicker({
             {query ? "Aucun parfum ne correspond." : "Aucun parfum disponible."}
           </p>
         ) : (
-          <div className="flex flex-col gap-2 max-h-[60svh] overflow-y-auto custom-scrollbar -mx-1 px-1">
+          <div className="flex flex-col gap-2 max-h-[60dvh] overflow-y-auto overscroll-y-contain custom-scrollbar -mx-1 px-1 [-webkit-overflow-scrolling:touch]">
             {filtered.map((p) => (
               <button
                 key={p.id}

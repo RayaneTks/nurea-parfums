@@ -7,6 +7,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#7F3038",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

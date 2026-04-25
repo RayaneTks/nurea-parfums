@@ -315,7 +315,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
       setPerfumes(initialData.perfumes);
       setIsLoading(false);
       catalogueCache = initialData;
-      void refresh(true);
+      /* Données déjà fournies par le SSR : évite un second GET /api/admin/catalogue au montage. */
       return;
     }
     if (catalogueCache) {

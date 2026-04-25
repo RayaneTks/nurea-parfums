@@ -25,7 +25,7 @@ export function AdminShellClient({ children }: AdminShellClientProps) {
 
   if (isLogin) {
     return (
-      <div className="admin-theme min-h-[100svh] bg-admin-bg text-admin-text">
+      <div className="admin-theme min-h-[100dvh] bg-admin-bg text-admin-text">
         <div className="admin-mobile-shell !pb-0 pt-[env(safe-area-inset-top,0px)]">
           {children}
         </div>
@@ -34,7 +34,7 @@ export function AdminShellClient({ children }: AdminShellClientProps) {
   }
 
   return (
-    <div className="admin-theme min-h-[100svh] bg-admin-bg text-admin-text">
+    <div className="admin-theme min-h-[100dvh] bg-admin-bg text-admin-text">
       <AdminShell>{children}</AdminShell>
       <BottomNav />
     </div>
