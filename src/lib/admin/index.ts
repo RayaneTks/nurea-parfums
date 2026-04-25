@@ -13,3 +13,5 @@ export type {
   AdminSessionUser,
 } from "./catalogue-types";
 export { adminFetchJson, readJsonSafe } from "./http";
+export { getAdminCatalogueSnapshot, ADMIN_CATALOGUE_CACHE_TAG } from "./getCatalogueSnapshot";
+export { revalidateAdminCatalogue } from "./revalidateAdminCatalogue";

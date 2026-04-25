@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
 import { PublicationStatus } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
@@ -132,6 +133,7 @@ export async function POST(request: Request) {
 
     revalidatePath("/");
     revalidatePath("/marque");
+    revalidateAdminCatalogue();
     await writeAudit(ctx.sub, "perfume.create", "Perfume", String(perfume.id), { name });
     return NextResponse.json({
       perfume,

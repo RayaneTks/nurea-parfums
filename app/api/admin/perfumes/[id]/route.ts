@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
 import { Prisma, PublicationStatus } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
@@ -137,6 +138,7 @@ export async function PUT(request: Request, { params }: RouteCtx) {
 
     revalidatePath("/");
     revalidatePath("/marque");
+    revalidateAdminCatalogue();
     await writeAudit(ctx.sub, "perfume.update", "Perfume", String(id), { name });
     return NextResponse.json({ perfume });
   } catch (error) {
@@ -235,6 +237,7 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
       });
       revalidatePath("/");
       revalidatePath("/marque");
+      revalidateAdminCatalogue();
       await writeAudit(ctx.sub, "perfume.patch", "Perfume", String(id), updates);
       return NextResponse.json({ perfume });
     }
@@ -268,6 +271,7 @@ export async function DELETE(request: Request, { params }: RouteCtx) {
 
     revalidatePath("/");
     revalidatePath("/marque");
+    revalidateAdminCatalogue();
     await writeAudit(ctx.sub, "perfume.hard_delete", "Perfume", String(id), { name: deleted.name });
     return NextResponse.json({ ok: true });
   } catch (error) {

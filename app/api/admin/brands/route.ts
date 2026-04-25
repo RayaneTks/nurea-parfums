@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
 import { BrandCatalogMode, BrandVisibilityStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
@@ -106,6 +107,7 @@ export async function POST(request: Request) {
         data: { status: "DRAFT" },
       });
     }
+    revalidateAdminCatalogue();
     await writeAudit(ctx.sub, "brand.create", "Brand", brand.id);
     return NextResponse.json({ brand });
   } catch (error) {

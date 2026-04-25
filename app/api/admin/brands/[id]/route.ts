@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
 import { BrandCatalogMode, BrandVisibilityStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
@@ -151,6 +152,7 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
     }
     revalidatePath("/");
     revalidatePath("/marque");
+    revalidateAdminCatalogue();
     await writeAudit(ctx.sub, "brand.update", "Brand", brand.id, data);
     return NextResponse.json({ brand });
   } catch (error) {
@@ -186,6 +188,7 @@ export async function DELETE(request: Request, { params }: RouteCtx) {
 
     revalidatePath("/");
     revalidatePath("/marque");
+    revalidateAdminCatalogue();
     await writeAudit(ctx.sub, "brand.hard_delete", "Brand", deleted.id, { name: deleted.name });
     return NextResponse.json({ ok: true, brand: deleted });
   } catch (error) {

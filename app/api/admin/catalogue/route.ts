@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
+import { getAdminCatalogueSnapshot } from "@/lib/admin/getCatalogueSnapshot";
 
 export const dynamic = "force-dynamic";
 
@@ -14,66 +15,21 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode");
 
+    const { brands, perfumes } = await getAdminCatalogueSnapshot();
+
     if (mode === "picker") {
-      const perfumes = await prisma.perfume.findMany({
-        orderBy: { updatedAt: "desc" },
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          status: true,
-          brand: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      });
+      const pickerPerfumes = perfumes.map((p) => ({
+        id: p.id,
+        name: p.name,
+        image: p.image,
+        status: p.status,
+        brand: { id: p.brand.id, name: p.brand.name },
+      }));
       return NextResponse.json({
         user: { username: auth.username, role: auth.role },
-        perfumes,
+        perfumes: pickerPerfumes,
       });
     }
-
-    const [brands, perfumes] = await Promise.all([
-      prisma.brand.findMany({
-        orderBy: { name: "asc" },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          catalogMode: true,
-          status: true,
-          image: true,
-          imageLight: true,
-          _count: {
-            select: { perfumes: true }
-          }
-        }
-      }),
-      prisma.perfume.findMany({
-        orderBy: { updatedAt: "desc" },
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          imageLight: true,
-          isFeatured: true,
-          status: true,
-          brand: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              imageLight: true,
-              catalogMode: true,
-              status: true
-            }
-          }
-        }
-      })
-    ]);
 
     return NextResponse.json({
       user: { username: auth.username, role: auth.role },

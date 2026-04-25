@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/admin/session";
-import { prisma } from "@/lib/db/prisma";
+import { getAdminCatalogueSnapshot } from "@/lib/admin/getCatalogueSnapshot";
 
 export const metadata: Metadata = {
   title: "Administration — Catalogue",
@@ -21,41 +21,7 @@ export default async function AdminCataloguePage() {
     redirect("/admin/login");
   }
 
-  const [brands, perfumes] = await Promise.all([
-    prisma.brand.findMany({
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        catalogMode: true,
-        status: true,
-        image: true,
-        imageLight: true,
-        _count: { select: { perfumes: true } },
-      },
-    }),
-    prisma.perfume.findMany({
-      orderBy: { updatedAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        image: true,
-        imageLight: true,
-        isFeatured: true,
-        status: true,
-        brand: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-            catalogMode: true,
-            status: true,
-          },
-        },
-      },
-    }),
-  ]);
+  const { brands, perfumes } = await getAdminCatalogueSnapshot();
 
   return (
     <AdminDashboard
