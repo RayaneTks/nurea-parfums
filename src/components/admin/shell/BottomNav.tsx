@@ -52,7 +52,7 @@ export function BottomNav() {
   const pathname = usePathname() ?? "/admin";
 
   return (
-    <nav aria-label="Navigation principale" className="admin-bottom-nav">
+    <nav aria-label="Navigation principale" className="admin-bottom-nav admin-nav-no-select">
       <ul className="flex items-stretch justify-around px-2">
         {items.map((item) => {
           const isActive = item.match(pathname);

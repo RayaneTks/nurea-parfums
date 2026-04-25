@@ -52,7 +52,7 @@ export function BrandVisual({
       type={onClick ? "button" : undefined}
       className={cn(
         "relative shrink-0 rounded-xl overflow-hidden bg-admin-surface border border-admin-border",
-        "transition-transform duration-200",
+        "transition-transform duration-100 ease-out-expo",
         onClick && "cursor-pointer tap-scale",
       )}
       style={{ width: size, height: size }}
@@ -85,7 +85,7 @@ export function PerfumeVisual({
       type={onClick ? "button" : undefined}
       className={cn(
         "relative shrink-0 rounded-xl overflow-hidden bg-admin-surface border border-admin-border",
-        "transition-[border-color,transform] duration-200 select-none touch-manipulation",
+        "transition-[border-color,transform] duration-100 ease-out-expo select-none touch-manipulation",
         onClick && "cursor-pointer tap-scale",
         isLarge ? "h-[320px] w-full max-w-[240px] mx-auto" : "h-[64px] w-[48px]",
       )}

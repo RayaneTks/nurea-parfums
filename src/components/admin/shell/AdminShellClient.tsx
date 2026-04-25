@@ -34,7 +34,7 @@ export function AdminShellClient({ children }: AdminShellClientProps) {
   }
 
   return (
-    <div className="admin-theme min-h-[100dvh] bg-admin-bg text-admin-text">
+    <div className="admin-theme flex min-h-[100dvh] flex-col bg-admin-bg text-admin-text">
       <AdminShell>{children}</AdminShell>
       <BottomNav />
     </div>

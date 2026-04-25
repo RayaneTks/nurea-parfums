@@ -8,8 +8,8 @@ interface AdminShellProps {
 
 export function AdminShell({ children, className }: AdminShellProps) {
   return (
-    <div className={cn("admin-mobile-shell flex flex-col", className)}>
-      <div className="flex-1 flex flex-col">{children}</div>
+    <div className={cn("admin-mobile-shell flex min-h-0 flex-1 flex-col", className)}>
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
     </div>
   );
 }

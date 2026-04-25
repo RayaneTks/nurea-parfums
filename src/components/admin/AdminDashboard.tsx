@@ -82,7 +82,7 @@ function VisualizerSheet({
       aria-label={`Aperçu ${item.name}`}
     >
       <div
-        className="w-full sm:max-w-md bg-admin-surface border-t sm:border border-admin-border p-7 pb-[max(2rem,env(safe-area-inset-bottom))] shadow-[0_-20px_60px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-300 ease-out-expo"
+        className="w-full sm:max-w-md bg-admin-surface border-t sm:border border-admin-border p-7 pb-[max(2rem,max(16px,env(safe-area-inset-bottom,16px)))] shadow-[0_-20px_60px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-300 ease-out-expo overscroll-y-contain"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -318,7 +318,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
       window.requestAnimationFrame(() => {
         setIsTabTransitioning(false);
       });
-    }, 90);
+    }, 200);
   }, [tab]);
 
   const canEdit = user?.role !== "VIEWER";
@@ -554,7 +554,7 @@ export function AdminDashboard({ initialData }: AdminDashboardProps) {
       <main
         id="main-content"
         className={cn(
-          "flex-1 px-5 pt-5 transition-opacity duration-150 ease-out",
+          "flex-1 min-w-0 px-5 pt-5 admin-tab-panel-fade overscroll-y-contain",
           isTabTransitioning ? "opacity-0" : "opacity-100",
         )}
       >

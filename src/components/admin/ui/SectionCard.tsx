@@ -29,7 +29,7 @@ export function SectionCard({
         toneStyles[tone],
         !flat && "shadow-admin-sm",
         interactive &&
-          "cursor-pointer tap-scale admin-lift [@media(hover:hover)]:hover:border-admin-border-hover",
+          "cursor-pointer admin-card-press admin-lift [@media(hover:hover)]:hover:border-admin-border-hover",
         className,
       )}
       {...props}

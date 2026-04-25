@@ -62,7 +62,8 @@ export function AdminButton({
       type={type ?? "button"}
       className={cn(
         "inline-flex items-center justify-center font-medium",
-        "transition-[background-color,border-color,color,box-shadow,transform] duration-200 ease-out-expo active:scale-[0.97]",
+        "transition-transform duration-100 ease-out-expo active:scale-[0.97]",
+        "transition-[background-color,border-color,color,box-shadow] duration-200 ease-out-expo",
         "admin-button-micro",
         "disabled:opacity-40 disabled:pointer-events-none",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent focus-visible:ring-offset-2 focus-visible:ring-offset-admin-bg",

@@ -86,7 +86,7 @@ export function DashboardHeader({
           </div>
         }
       />
-      <div className="px-5 pt-4">
+      <div className="admin-nav-no-select px-5 pt-4">
         <FilterPills
           ariaLabel="Sections du catalogue"
           value={activeTab}

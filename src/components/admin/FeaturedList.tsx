@@ -41,7 +41,7 @@ export function FeaturedList({
   const canAddMore = featuredPerfumes.length < 2;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overscroll-y-contain">
       <div className="flex gap-3 p-4 rounded-xl border border-admin-border bg-admin-accent-subtle">
         <Info className="h-4 w-4 text-admin-accent shrink-0 mt-0.5" aria-hidden />
         <div className="text-[13px] leading-relaxed text-admin-muted">
@@ -136,7 +136,7 @@ function FeatureRow({
   return (
     <SectionCard
       tone={isFeatured ? "accent" : "default"}
-      className="flex items-center gap-3 p-3"
+      className="flex min-w-0 items-center gap-3 p-3"
     >
       <div className="relative h-14 w-11 rounded-xl overflow-hidden bg-admin-bg border border-admin-border shrink-0">
         <Image src={perfume.image} alt={perfume.name} fill className="object-cover" sizes="44px" />
@@ -163,7 +163,7 @@ function FeatureRow({
           }
           className={cn(
             "shrink-0 h-11 w-11 flex items-center justify-center rounded-xl border",
-            "transition-colors duration-200 tap-scale",
+            "transition-[color,transform] duration-100 tap-scale",
             isPending && "opacity-50 cursor-not-allowed",
             isFeatured
               ? "bg-admin-accent-subtle border-admin-border-hover text-admin-accent"

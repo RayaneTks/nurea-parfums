@@ -164,11 +164,11 @@ export function Modal({
           ) : null}
         </div>
         <div className="border-t border-admin-border" />
-        <div className="flex-1 overflow-y-auto overscroll-y-contain px-5 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom,0px))] [-webkit-overflow-scrolling:touch]">
+        <div className="flex-1 overflow-y-auto overscroll-y-contain px-5 py-5 pb-[max(1.25rem,max(16px,env(safe-area-inset-bottom,16px)))] [-webkit-overflow-scrolling:touch]">
           {children}
         </div>
         {footer ? (
-          <div className="border-t border-admin-border px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] bg-admin-surface rounded-b-3xl">
+          <div className="border-t border-admin-border px-5 py-4 pb-[max(1rem,max(16px,env(safe-area-inset-bottom,16px)))] bg-admin-surface rounded-b-3xl">
             {footer}
           </div>
         ) : null}

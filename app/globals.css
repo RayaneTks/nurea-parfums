@@ -555,8 +555,11 @@ input[type="search"]::-webkit-search-results-decoration {
   --admin-text: #171114;
   --admin-text-muted: #55484E;
   --admin-text-subtle: #665860;
-  --admin-border: #DCD4CD;
-  --admin-border-hover: #C8BCB3;
+  /* Bordures type iOS : trait fin (clair / sombre prêt pour thème futur) */
+  --admin-border-hairline: rgba(0, 0, 0, 0.055);
+  --admin-border-hairline-dark: rgba(255, 255, 255, 0.1);
+  --admin-border: color-mix(in srgb, var(--admin-text) 9%, transparent);
+  --admin-border-hover: color-mix(in srgb, var(--admin-text) 16%, transparent);
   --admin-accent: #7F3038;
   --admin-accent-hover: #943B44;
   --admin-accent-subtle: rgba(127, 48, 56, 0.12);
@@ -581,6 +584,13 @@ input[type="search"]::-webkit-search-results-decoration {
   --admin-shadow-lg: 0 12px 32px rgba(26, 18, 21, 0.08), 0 4px 8px rgba(139, 58, 58, 0.05);
   --admin-shadow-xl: 0 24px 60px rgba(26, 18, 21, 0.12), 0 8px 16px rgba(139, 58, 58, 0.06);
   color-scheme: light;
+  /* Viewport dynamique : évite les sauts quand la barre d’adresse iOS apparaît / disparaît */
+  min-height: 100dvh;
+}
+
+html.admin-route-root,
+body.admin-route {
+  min-height: 100dvh;
 }
 
 body.admin-route {
@@ -602,8 +612,11 @@ body.admin-route .nurea-viewport-top-shield {
   color: var(--admin-text);
   position: relative;
   overflow-x: clip;
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5.5rem);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding-bottom: calc(max(16px, env(safe-area-inset-bottom, 16px)) + 5.5rem);
   font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 768px) {
@@ -633,8 +646,11 @@ body.admin-route .nurea-viewport-top-shield {
   backdrop-filter: blur(8px) saturate(125%);
   -webkit-backdrop-filter: blur(8px) saturate(125%);
   border-top: 1px solid var(--admin-border);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* Zone sûre iOS : au moins 16px + encoche home indicator */
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
   box-shadow: 0 -1px 0 0 rgba(255, 255, 255, 0.6) inset;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 @media (min-width: 768px) {
@@ -644,11 +660,10 @@ body.admin-route .nurea-viewport-top-shield {
   }
 }
 
-/* Clavier iOS : empêche le bottom-nav de monter */
+/* iPhone : colle la barre au-dessus de l’indicateur d’accueil sans retirer le padding tactile */
 @supports (-webkit-touch-callout: none) {
   .admin-bottom-nav {
     bottom: env(safe-area-inset-bottom, 0px);
-    padding-bottom: 0;
   }
 }
 
@@ -664,13 +679,35 @@ body.admin-route .nurea-viewport-top-shield {
   outline-offset: 2px;
 }
 
-/* Utilitaires mobile tactiles admin */
+/* Utilitaires mobile tactiles admin — pression type iOS (~100ms) */
 .tap-scale {
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.1s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .tap-scale:active {
   transform: scale(0.97);
+}
+
+/* Cartes / lignes cliquables : même feedback pression */
+.admin-card-press {
+  transition: transform 0.1s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.admin-card-press:active {
+  transform: scale(0.97);
+}
+
+/* Navigation admin : pas de sélection accidentelle au tap rapide */
+.admin-nav-no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Transitions d’onglets catalogue admin */
+.admin-tab-panel-fade {
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .admin-skeleton {

@@ -72,7 +72,7 @@ export function BrandList({
   ];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 overscroll-y-contain">
       <div className="space-y-3">
         <AdminInput
           isSearch
@@ -103,13 +103,13 @@ export function BrandList({
           onClearSearch={() => onSearchChange("")}
         />
       ) : (
-        <div className="flex flex-col gap-2 pb-4">
+        <div className="flex flex-col gap-2 overscroll-y-contain pb-4">
           <h2 className="sr-only">Marques du catalogue</h2>
           {filtered.map((brand) => (
             <SectionCard
               key={brand.id}
               className={cn(
-                "flex items-center gap-3 p-3",
+                "flex min-w-0 items-center gap-3 p-3",
                 pendingBrandIds.has(brand.id) && "opacity-50 pointer-events-none",
               )}
             >
@@ -152,7 +152,7 @@ export function BrandList({
                   href={`/admin/brands/${brand.id}/edit`}
                   prefetch={false}
                   aria-label={`Éditer ${brand.name}`}
-                  className="tap-scale inline-flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-xl border border-admin-border bg-admin-surface text-admin-text shadow-admin-sm transition-[background-color,border-color,color] duration-200 [@media(hover:hover)]:hover:bg-admin-surface-muted [@media(hover:hover)]:hover:border-admin-border-hover"
+                  className="tap-scale inline-flex h-11 w-11 min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl border border-admin-border bg-admin-surface text-admin-text shadow-admin-sm transition-[background-color,border-color,color,transform] duration-100 [@media(hover:hover)]:hover:bg-admin-surface-muted [@media(hover:hover)]:hover:border-admin-border-hover"
                 >
                   <Pencil className="h-4 w-4" aria-hidden />
                 </Link>

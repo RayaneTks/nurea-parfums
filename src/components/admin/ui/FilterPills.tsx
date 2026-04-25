@@ -43,7 +43,7 @@ export function FilterPills<V extends string>({
       role="radiogroup"
       aria-label={ariaLabel}
       className={cn(
-        "relative inline-flex items-center gap-1 p-1 bg-admin-surface-muted border border-admin-border rounded-full",
+        "admin-nav-no-select relative inline-flex items-center gap-1 p-1 bg-admin-surface-muted border border-admin-border rounded-full",
         className,
       )}
     >
