@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+
+/** Données via `getCachedCatalogue` (tag `public-catalogue`) — pas de HTML figé au build. */
+export const dynamic = "force-dynamic";
 import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/features/Hero";
 import { Separator } from "@/components/ui/Separator";
@@ -7,8 +10,7 @@ import { FeaturedSection } from "@/components/features/FeaturedSection";
 import { CatalogSection } from "@/components/home/CatalogSection";
 import { Footer } from "@/components/layout/Footer";
 import { CatalogSkeleton } from "@/components/features/PerfumeCardSkeleton";
-import { getCatalogBrowse } from "@/lib/catalog/getCatalogBrowse";
-import { getCatalogPerfumes } from "@/lib/catalog/getCatalogPerfumes";
+import { getCachedCatalogue } from "@/lib/catalogue-service";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -40,10 +42,7 @@ function HomeFallback() {
 }
 
 export default async function HomePage() {
-  const [catalogPerfumes, browseBrands] = await Promise.all([
-    getCatalogPerfumes(),
-    getCatalogBrowse(),
-  ]);
+  const { perfumes: catalogPerfumes, browseBrands } = await getCachedCatalogue();
 
   const featuredPerfumes = catalogPerfumes.filter((p) => p.isFeatured).slice(0, 2);
 

@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/admin/session";
-import { getAdminCatalogueSnapshot } from "@/lib/admin/getCatalogueSnapshot";
+import { getCachedAdminCatalogue } from "@/lib/catalogue-service";
 
 export const metadata: Metadata = {
   title: "Administration — Catalogue",
@@ -21,7 +21,7 @@ export default async function AdminCataloguePage() {
     redirect("/admin/login");
   }
 
-  const { brands, perfumes } = await getAdminCatalogueSnapshot();
+  const { brands, perfumes } = await getCachedAdminCatalogue();
 
   return (
     <AdminDashboard

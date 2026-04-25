@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
-import { getAdminCatalogueSnapshot } from "@/lib/admin/getCatalogueSnapshot";
+import { getCachedAdminCatalogue } from "@/lib/catalogue-service";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode");
 
-    const { brands, perfumes } = await getAdminCatalogueSnapshot();
+    const { brands, perfumes } = await getCachedAdminCatalogue();
 
     if (mode === "picker") {
       const pickerPerfumes = perfumes.map((p) => ({

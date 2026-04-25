@@ -19,8 +19,8 @@ import type {
   AdminCataloguePayload,
   AdminPerfumeRow,
   AdminSessionUser,
-} from "@/lib/admin";
-import { readJsonSafe } from "@/lib/admin";
+} from "@/lib/admin/catalogue-types";
+import { readJsonSafe } from "@/lib/admin/http";
 
 type SessionUser = AdminSessionUser;
 type BrandRow = AdminBrandRow;

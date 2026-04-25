@@ -9,7 +9,7 @@ import { FilterPills } from "./ui/FilterPills";
 import { SectionCard } from "./ui/SectionCard";
 import { PerfumeVisual, StatusDot } from "./Visuals";
 import { EmptyState } from "./EmptyState";
-import type { AdminPerfumeRow } from "@/lib/admin";
+import type { AdminPerfumeRow } from "@/lib/admin/catalogue-types";
 
 type PerfumeRow = AdminPerfumeRow;
 

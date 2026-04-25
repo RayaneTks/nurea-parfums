@@ -6,7 +6,7 @@ import Image from "next/image";
 import { AdminInput } from "./ui/AdminInput";
 import { SectionCard } from "./ui/SectionCard";
 import { cn } from "@/lib/utils";
-import type { AdminPerfumeRow } from "@/lib/admin";
+import type { AdminPerfumeRow } from "@/lib/admin/catalogue-types";
 
 type PerfumeRow = AdminPerfumeRow;
 
