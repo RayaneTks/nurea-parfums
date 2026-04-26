@@ -92,6 +92,12 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     statusBarStyle: "black-translucent",
   },
+  icons: {
+    icon: "/favicon.ico",
+    apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
+  },
+  /** Sert d’icône sur Android; `app/manifest.ts` alimente le manifeste PWA. */
+  other: { "mobile-web-app-capable": "yes" },
 };
 
 interface RootLayoutProps {

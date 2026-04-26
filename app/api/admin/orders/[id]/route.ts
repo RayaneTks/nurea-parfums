@@ -3,8 +3,10 @@ import { OrderStatus } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
+import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const VALID_STATUSES = Object.values(OrderStatus) as OrderStatus[];
 
@@ -60,10 +62,7 @@ export async function GET(
     return NextResponse.json({ order });
   } catch (error) {
     console.error("[api/admin/orders/[id]][GET]", error);
-    return NextResponse.json(
-      { error: "Impossible de charger l'ordre." },
-      { status: 500 },
-    );
+    return jsonFromPrismaGestionError(error, "Impossible de charger l'ordre.");
   }
 }
 
@@ -182,6 +181,13 @@ export async function PATCH(
       };
     }
 
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json(
+        { error: "Aucun champ à mettre à jour." },
+        { status: 400 },
+      );
+    }
+
     const updated = await prisma.order.update({
       where: { id },
       data,
@@ -195,10 +201,7 @@ export async function PATCH(
     return NextResponse.json({ order: updated });
   } catch (error) {
     console.error("[api/admin/orders/[id]][PATCH]", error);
-    return NextResponse.json(
-      { error: "Impossible de mettre à jour l'ordre." },
-      { status: 500 },
-    );
+    return jsonFromPrismaGestionError(error, "Impossible de mettre à jour l'ordre.");
   }
 }
 
@@ -237,9 +240,6 @@ export async function DELETE(
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[api/admin/orders/[id]][DELETE]", error);
-    return NextResponse.json(
-      { error: "Impossible de supprimer l'ordre." },
-      { status: 500 },
-    );
+    return jsonFromPrismaGestionError(error, "Impossible de supprimer l'ordre.");
   }
 }

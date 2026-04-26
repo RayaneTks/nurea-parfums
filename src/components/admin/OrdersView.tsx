@@ -17,6 +17,7 @@ import { EmptyState } from "./ui/EmptyState";
 import { AdminButton } from "./ui/AdminButton";
 import { AdminInput } from "./ui/AdminInput";
 import { FAB } from "./ui/FAB";
+import { AdminOrdersListSkeleton } from "./ui/AdminLoadingPrimitives";
 import { Modal } from "./ui/Modal";
 import { AdminToast, type ToastType } from "./ui/AdminToast";
 import { OrderStatusBadge } from "./ui/OrderStatusBadge";
@@ -159,10 +160,8 @@ export function OrdersView() {
 
       <main
         id="main-content"
-        className={cn(
-          "flex-1 px-5 pt-5 pb-4 space-y-6 transition-opacity duration-200 ease-out",
-          loading ? "opacity-95" : "opacity-100",
-        )}
+        className="flex-1 space-y-6 px-5 pt-5 pb-4"
+        aria-busy={loading}
       >
         {error ? (
           <SectionCard className="p-4 border-[var(--admin-danger-border)] bg-[var(--admin-danger-subtle)]">
@@ -178,14 +177,7 @@ export function OrdersView() {
         ) : null}
 
         {loading ? (
-          <div className="space-y-2">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-24 rounded-xl border border-admin-border admin-skeleton"
-              />
-            ))}
-          </div>
+          <AdminOrdersListSkeleton count={3} />
         ) : orders.length === 0 ? (
           <EmptyState
             icon={ClipboardList}
@@ -269,7 +261,7 @@ function OrderCard({ order, overdue }: { order: OrderRow; overdue: boolean }) {
   const extra = order.items.length > 2 ? ` +${order.items.length - 2}` : "";
 
   return (
-    <Link href={`/admin/ordres/${order.id}`} prefetch={false} className="block tap-scale">
+    <Link href={`/admin/ordres/${order.id}`} prefetch className="block tap-scale">
       <SectionCard
         className={cn(
           "p-4",

@@ -12,6 +12,7 @@ import { EmptyState } from "./ui/EmptyState";
 import { AdminToast, type ToastType } from "./ui/AdminToast";
 import { ConfirmDialog } from "./ui/ConfirmDialog";
 import { AdminButton } from "./ui/AdminButton";
+import { AdminComptaListSkeleton } from "./ui/AdminLoadingPrimitives";
 import { Modal } from "./ui/Modal";
 import {
   formatDate,
@@ -175,7 +176,7 @@ export function ComptaView() {
         }
       />
 
-      <main id="main-content" className="flex-1 px-5 pt-5 space-y-6">
+      <main id="main-content" className="flex-1 px-5 pt-5 space-y-6" aria-busy={loading}>
         <div className="flex justify-center">
           <FilterPills
             options={periodOptions}
@@ -218,14 +219,7 @@ export function ComptaView() {
         ) : null}
 
         {loading ? (
-          <div className="space-y-2">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="h-20 rounded-xl border border-admin-border admin-skeleton"
-              />
-            ))}
-          </div>
+          <AdminComptaListSkeleton count={4} />
         ) : groups.length === 0 ? (
           <EmptyState
             icon={Receipt}
@@ -234,7 +228,7 @@ export function ComptaView() {
             action={
               <Link
                 href="/admin/vendre"
-                prefetch={false}
+                prefetch
                 className="inline-flex items-center justify-center gap-2 min-h-11 px-4 rounded-xl border border-admin-accent bg-admin-accent text-admin-bg text-[13px] uppercase tracking-[0.08em] font-medium tap-scale transition-colors [@media(hover:hover)]:hover:bg-admin-accent-hover [@media(hover:hover)]:hover:border-admin-accent-hover"
               >
                 <Calculator className="h-4 w-4" aria-hidden />
@@ -380,7 +374,7 @@ function SaleDetailModal({
             </p>
             <Link
               href={`/admin/ordres/${sale.order.id}`}
-              prefetch={false}
+              prefetch
               className="mt-1 inline-block text-[13px] text-admin-accent [@media(hover:hover)]:hover:text-admin-accent-hover"
             >
               Voir l&apos;ordre du {formatDate(sale.order.orderedAt)}

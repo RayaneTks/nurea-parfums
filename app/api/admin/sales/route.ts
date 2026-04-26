@@ -9,8 +9,10 @@ import {
   periodStartDate,
   sumSaleTotals,
 } from "@/lib/gestion/calculations";
+import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 type SaleLineInputBody = {
   perfumeId?: number | null;
@@ -61,10 +63,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ sales, period });
   } catch (error) {
     console.error("[api/admin/sales][GET]", error);
-    return NextResponse.json(
-      { error: "Impossible de charger les ventes." },
-      { status: 500 },
-    );
+    return jsonFromPrismaGestionError(error, "Impossible de charger les ventes.");
   }
 }
 
@@ -260,9 +259,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ sale });
   } catch (error) {
     console.error("[api/admin/sales][POST]", error);
-    return NextResponse.json(
-      { error: "Impossible d'enregistrer la vente." },
-      { status: 500 },
-    );
+    return jsonFromPrismaGestionError(error, "Impossible d'enregistrer la vente.");
   }
 }

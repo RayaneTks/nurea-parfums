@@ -17,6 +17,7 @@ import { SectionCard } from "./ui/SectionCard";
 import { AdminButton } from "./ui/AdminButton";
 import { AdminToast, type ToastType } from "./ui/AdminToast";
 import { ConfirmDialog } from "./ui/ConfirmDialog";
+import { AdminOrderDetailBodySkeleton } from "./ui/AdminLoadingPrimitives";
 import { OrderStatusBadge } from "./ui/OrderStatusBadge";
 import { formatDate, formatDateTime, relativeDayLabel } from "@/lib/utils";
 import type { OrderRow, OrderStatusValue } from "@/lib/gestion/types";
@@ -123,16 +124,7 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
           eyebrow="Chargement…"
           leading={<HeaderAction label="Retour" icon={ArrowLeft} onClick={() => router.back()} />}
         />
-        <main id="main-content" className="flex-1 px-5 pt-5 pb-10 space-y-5">
-          <div className="h-24 rounded-2xl border border-admin-border admin-skeleton" />
-          <div className="space-y-2">
-            <div className="h-4 w-24 rounded-full admin-skeleton" />
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="h-[76px] rounded-xl border border-admin-border admin-skeleton" />
-            ))}
-          </div>
-          <div className="h-12 rounded-xl border border-admin-border admin-skeleton" />
-        </main>
+        <AdminOrderDetailBodySkeleton />
       </>
     );
   }
@@ -246,7 +238,7 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
             </p>
             <Link
               href="/admin/compta"
-              prefetch={false}
+              prefetch
               className="mt-2 inline-block text-[12px] uppercase tracking-wider text-[var(--admin-success)] font-medium [@media(hover:hover)]:hover:opacity-80"
             >
               Voir dans la Compta
@@ -304,7 +296,7 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
         <div className="fixed left-1/2 -translate-x-1/2 bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] z-[55] w-full max-w-[430px] px-5">
           <Link
             href={`/admin/vendre?fromOrder=${order.id}`}
-            prefetch={false}
+            prefetch
             className="inline-flex w-full items-center justify-center gap-2 min-h-[52px] px-6 rounded-xl border border-admin-accent bg-admin-accent text-admin-bg text-[13px] uppercase tracking-[0.12em] font-medium tap-scale transition-colors [@media(hover:hover)]:hover:bg-admin-accent-hover [@media(hover:hover)]:hover:border-admin-accent-hover"
           >
             <Calculator className="h-4 w-4" aria-hidden />

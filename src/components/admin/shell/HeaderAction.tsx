@@ -52,7 +52,7 @@ export function HeaderAction(props: HeaderActionProps) {
     return (
       <Link
         href={href}
-        prefetch={false}
+        prefetch
         target={target}
         rel={rel}
         aria-label={label}

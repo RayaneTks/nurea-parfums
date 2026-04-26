@@ -642,6 +642,9 @@ body.admin-route .nurea-viewport-top-shield {
   margin-left: auto;
   margin-right: auto;
   max-width: 430px;
+  /* Hauteur stable (onglets 4rem + zone sûre) : pas de reflow iOS PWA au changement d’onglet */
+  min-height: calc(4rem + max(16px, env(safe-area-inset-bottom, 16px)));
+  isolation: isolate;
   background-color: color-mix(in oklab, var(--admin-surface) 82%, transparent);
   backdrop-filter: blur(8px) saturate(125%);
   -webkit-backdrop-filter: blur(8px) saturate(125%);
@@ -705,6 +708,35 @@ body.admin-route .nurea-viewport-top-shield {
   -webkit-user-select: none;
 }
 
+.admin-nav-cell {
+  min-height: 4rem;
+}
+
+.admin-nav-item {
+  contain: paint;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Retour bref après changement d’onglet (ombre uniquement, pas de déplacement de layout) */
+.admin-nav-arrival {
+  animation: adminNavArrivalPulse 0.45s cubic-bezier(0.16, 1, 0.3, 1) 1;
+}
+
+@keyframes adminNavArrivalPulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--admin-accent) 38%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-nav-arrival {
+    animation: none;
+  }
+}
+
 /* Transitions d’onglets catalogue admin */
 .admin-tab-panel-fade {
   transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -718,6 +750,13 @@ body.admin-route .nurea-viewport-top-shield {
 @keyframes adminSkeletonPulse {
   0%, 100% { opacity: 0.72; }
   50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-skeleton {
+    animation: none;
+    opacity: 0.88;
+  }
 }
 
 /* Lift doux au hover pour cards interactives (souris seulement) */

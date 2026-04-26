@@ -3,8 +3,10 @@ import { OrderStatus } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
+import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const VALID_STATUSES = Object.values(OrderStatus) as OrderStatus[];
 
@@ -56,10 +58,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ orders });
   } catch (error) {
     console.error("[api/admin/orders][GET]", error);
-    return NextResponse.json(
-      { error: "Impossible de charger les ordres." },
-      { status: 500 },
-    );
+    return jsonFromPrismaGestionError(error, "Impossible de charger les ordres.");
   }
 }
 
@@ -164,9 +163,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ order });
   } catch (error) {
     console.error("[api/admin/orders][POST]", error);
-    return NextResponse.json(
-      { error: "Impossible de créer l'ordre." },
-      { status: 500 },
-    );
+    return jsonFromPrismaGestionError(error, "Impossible de créer l'ordre.");
   }
 }

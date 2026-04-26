@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 import { parsePeriod, periodStartDate } from "@/lib/gestion/calculations";
+import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   try {
@@ -43,9 +45,9 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("[api/admin/sales/stats][GET]", error);
-    return NextResponse.json(
-      { error: "Impossible de calculer les statistiques." },
-      { status: 500 },
+    return jsonFromPrismaGestionError(
+      error,
+      "Impossible de calculer les statistiques.",
     );
   }
 }

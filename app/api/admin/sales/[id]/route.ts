@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
+import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const saleInclude = {
   items: {
@@ -42,10 +44,7 @@ export async function GET(
     return NextResponse.json({ sale });
   } catch (error) {
     console.error("[api/admin/sales/[id]][GET]", error);
-    return NextResponse.json(
-      { error: "Impossible de charger la vente." },
-      { status: 500 },
-    );
+    return jsonFromPrismaGestionError(error, "Impossible de charger la vente.");
   }
 }
 
@@ -77,9 +76,6 @@ export async function DELETE(
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[api/admin/sales/[id]][DELETE]", error);
-    return NextResponse.json(
-      { error: "Impossible de supprimer la vente." },
-      { status: 500 },
-    );
+    return jsonFromPrismaGestionError(error, "Impossible de supprimer la vente.");
   }
 }

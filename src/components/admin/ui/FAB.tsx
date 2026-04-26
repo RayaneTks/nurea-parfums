@@ -49,7 +49,7 @@ export function FAB(props: FABProps) {
       <div className={wrapperClasses}>
         <Link
           href={props.href}
-          prefetch={false}
+          prefetch
           aria-label={label}
           className={cn(classes, className)}
         >

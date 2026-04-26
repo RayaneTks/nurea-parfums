@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { Search, Check } from "lucide-react";
+import { AdminPickerListSkeleton } from "../ui/AdminLoadingPrimitives";
 import { Modal } from "../ui/Modal";
 import { AdminInput } from "../ui/AdminInput";
 import { cn } from "@/lib/utils";
@@ -83,14 +84,7 @@ export function PerfumePicker({
         {error ? (
           <p className="text-[13px] text-admin-danger">{error}</p>
         ) : loading ? (
-          <div className="space-y-2">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="h-16 rounded-xl border border-admin-border admin-skeleton"
-              />
-            ))}
-          </div>
+          <AdminPickerListSkeleton count={4} />
         ) : filtered.length === 0 ? (
           <p className="text-[13px] text-admin-subtle text-center py-10">
             {query ? "Aucun parfum ne correspond." : "Aucun parfum disponible."}
