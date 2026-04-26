@@ -1,29 +1,17 @@
 import { NextResponse } from "next/server";
-import { OrderStatus } from "@prisma/client";
+import { Prisma, OrderStatus } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
+import { serializeOrder } from "@/lib/gestion/orderJson";
+import { purgeOrderIfEphemeral } from "@/lib/gestion/orderPurge";
+import { isValidVolumeMl, parseOptionalMoneyToZero } from "@/lib/gestion/orderLineValidation";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const VALID_STATUSES = Object.values(OrderStatus) as OrderStatus[];
-
-type OrderItemInput = {
-  id?: string;
-  perfumeId?: number;
-  quantity?: number;
-  note?: string | null;
-};
-
-type UpdateOrderBody = {
-  customerName?: string | null;
-  deliveryAt?: string | null;
-  status?: OrderStatus;
-  notes?: string | null;
-  items?: OrderItemInput[];
-};
 
 const orderInclude = {
   items: {
@@ -41,6 +29,26 @@ const orderInclude = {
   sale: { select: { id: true, soldAt: true } },
 } as const;
 
+type OrderItemInput = {
+  id?: string;
+  perfumeId?: number;
+  quantity?: number;
+  note?: string | null;
+  volumeMl?: number;
+  unitPrice?: number | string;
+  unitCost?: number | string;
+};
+
+type UpdateOrderBody = {
+  customerName?: string | null;
+  deliveryAt?: string | null;
+  status?: OrderStatus;
+  notes?: string | null;
+  depositPaid?: boolean;
+  depositAmount?: number | string | null;
+  items?: OrderItemInput[];
+};
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -50,19 +58,24 @@ export async function GET(
     if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
+    const removed = await purgeOrderIfEphemeral(prisma, id);
+    if (removed) {
+      return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
+    }
+
     const order = await prisma.order.findUnique({
       where: { id },
       include: orderInclude,
     });
 
     if (!order) {
-      return NextResponse.json({ error: "Ordre introuvable." }, { status: 404 });
+      return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
     }
 
-    return NextResponse.json({ order });
+    return NextResponse.json({ order: serializeOrder(order) });
   } catch (error) {
     console.error("[api/admin/orders/[id]][GET]", error);
-    return jsonFromPrismaGestionError(error, "Impossible de charger l'ordre.");
+    return jsonFromPrismaGestionError(error, "Impossible de charger la commande.");
   }
 }
 
@@ -87,15 +100,21 @@ export async function PATCH(
 
     const existing = await prisma.order.findUnique({
       where: { id },
-      select: { id: true, sale: { select: { id: true } } },
+      select: {
+        id: true,
+        sale: { select: { id: true } },
+        status: true,
+        depositPaid: true,
+        depositAmount: true,
+      },
     });
     if (!existing) {
-      return NextResponse.json({ error: "Ordre introuvable." }, { status: 404 });
+      return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
     }
 
     const hasSale = !!existing.sale;
 
-    const data: Record<string, unknown> = {};
+    const data: Prisma.OrderUpdateInput = {};
 
     if ("customerName" in body) {
       data.customerName = body.customerName?.trim() || null;
@@ -105,9 +124,42 @@ export async function PATCH(
       data.notes = body.notes?.trim() || null;
     }
 
+    if ("depositPaid" in body) {
+      const nextPaid = Boolean(body.depositPaid);
+      data.depositPaid = nextPaid;
+      if (nextPaid === false) {
+        if (!("depositAmount" in body)) {
+          data.depositAmount = new Prisma.Decimal(0);
+        }
+        if (existing.status === OrderStatus.READY) {
+          data.status = OrderStatus.PENDING;
+        }
+      }
+    }
+
+    if ("depositAmount" in body) {
+      const d = parseOptionalMoneyToZero(body.depositAmount);
+      if (d === null) {
+        return NextResponse.json(
+          { error: "Montant d'acompte invalide (nombre ≥ 0 ou vide pour 0 €)." },
+          { status: 400 },
+        );
+      }
+      data.depositAmount = new Prisma.Decimal(d);
+    }
+
     if ("status" in body && body.status) {
       if (!VALID_STATUSES.includes(body.status)) {
         return NextResponse.json({ error: "Statut invalide." }, { status: 400 });
+      }
+      if (body.status === OrderStatus.CANCELLED) {
+        return NextResponse.json(
+          {
+            error:
+              "Les commandes annulées ne sont pas conservées : utilise « Supprimer la commande » sur la fiche.",
+          },
+          { status: 400 },
+        );
       }
       data.status = body.status;
     }
@@ -128,22 +180,33 @@ export async function PATCH(
     if ("items" in body && Array.isArray(body.items)) {
       if (hasSale) {
         return NextResponse.json(
-          { error: "Les items ne peuvent plus être modifiés : une vente est liée à cet ordre." },
+          { error: "Les items ne peuvent plus être modifiés : une vente est liée à cette commande." },
           { status: 409 },
         );
       }
       if (body.items.length === 0) {
         return NextResponse.json(
-          { error: "L'ordre doit contenir au moins un parfum." },
+          { error: "La commande doit contenir au moins un parfum." },
           { status: 400 },
         );
       }
-      const cleanItems: { perfumeId: number; quantity: number; note: string | null }[] = [];
+      const cleanItems: {
+        perfumeId: number;
+        quantity: number;
+        note: string | null;
+        volumeMl: number;
+        unitPrice: Prisma.Decimal;
+        unitCost: Prisma.Decimal;
+      }[] = [];
       for (const raw of body.items) {
         const perfumeId =
           typeof raw.perfumeId === "number" ? raw.perfumeId : Number(raw.perfumeId);
         const quantity =
           typeof raw.quantity === "number" ? raw.quantity : Number(raw.quantity ?? 1);
+        const vol =
+          raw.volumeMl === undefined || raw.volumeMl === null
+            ? 100
+            : Number(raw.volumeMl);
         if (!Number.isFinite(perfumeId) || perfumeId <= 0) {
           return NextResponse.json(
             { error: "Parfum invalide dans une des lignes." },
@@ -156,10 +219,33 @@ export async function PATCH(
             { status: 400 },
           );
         }
+        if (!isValidVolumeMl(vol)) {
+          return NextResponse.json(
+            { error: "Volume invalide (30, 50 ou 100 ml par ligne)." },
+            { status: 400 },
+          );
+        }
+        const up = parseOptionalMoneyToZero(raw.unitPrice);
+        const uc = parseOptionalMoneyToZero(raw.unitCost);
+        if (up === null) {
+          return NextResponse.json(
+            { error: "Prix client invalide sur une ligne." },
+            { status: 400 },
+          );
+        }
+        if (uc === null) {
+          return NextResponse.json(
+            { error: "Prix d'achat (ton coût) invalide sur une ligne." },
+            { status: 400 },
+          );
+        }
         cleanItems.push({
           perfumeId: Math.floor(perfumeId),
           quantity: Math.floor(quantity),
           note: raw.note?.trim() || null,
+          volumeMl: vol,
+          unitPrice: new Prisma.Decimal(up),
+          unitCost: new Prisma.Decimal(uc),
         });
       }
 
@@ -188,6 +274,37 @@ export async function PATCH(
       );
     }
 
+    const nextDepositPaid = "depositPaid" in data ? Boolean(data.depositPaid) : existing.depositPaid;
+    const nextDepositAmount: Prisma.Decimal =
+      "depositAmount" in data
+        ? (data.depositAmount as Prisma.Decimal)
+        : (existing.depositAmount as Prisma.Decimal);
+    const nextAmtNum = Number(nextDepositAmount);
+    if (nextDepositPaid && nextAmtNum <= 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Indique le montant d’acompte (supérieur à 0 €) pour enregistrer l’acompte payé, ou remets l’acompte en attente.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const mergedPaidForStatus =
+      "depositPaid" in data ? Boolean(data.depositPaid) : existing.depositPaid;
+    const mergedAmtForStatus = Number("depositAmount" in data ? data.depositAmount : existing.depositAmount);
+    if ("status" in data && (data as { status?: OrderStatus }).status === OrderStatus.READY) {
+      if (!mergedPaidForStatus || mergedAmtForStatus <= 0) {
+        return NextResponse.json(
+          {
+            error:
+              "Acompte reçu (montant > 0 €) requis pour passer en « à traiter ».",
+          },
+          { status: 400 },
+        );
+      }
+    }
+
     const updated = await prisma.order.update({
       where: { id },
       data,
@@ -198,10 +315,10 @@ export async function PATCH(
       fields: Object.keys(data),
     });
 
-    return NextResponse.json({ order: updated });
+    return NextResponse.json({ order: serializeOrder(updated) });
   } catch (error) {
     console.error("[api/admin/orders/[id]][PATCH]", error);
-    return jsonFromPrismaGestionError(error, "Impossible de mettre à jour l'ordre.");
+    return jsonFromPrismaGestionError(error, "Impossible de mettre à jour la commande.");
   }
 }
 
@@ -219,20 +336,10 @@ export async function DELETE(
 
     const existing = await prisma.order.findUnique({
       where: { id },
-      select: { id: true, sale: { select: { id: true } } },
+      select: { id: true },
     });
     if (!existing) {
-      return NextResponse.json({ error: "Ordre introuvable." }, { status: 404 });
-    }
-
-    if (existing.sale) {
-      return NextResponse.json(
-        {
-          error:
-            "Impossible de supprimer : une vente est déjà liée à cet ordre. Supprime d'abord la vente ou garde l'ordre en historique.",
-        },
-        { status: 409 },
-      );
+      return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
     }
 
     await prisma.order.delete({ where: { id } });
@@ -240,6 +347,6 @@ export async function DELETE(
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[api/admin/orders/[id]][DELETE]", error);
-    return jsonFromPrismaGestionError(error, "Impossible de supprimer l'ordre.");
+    return jsonFromPrismaGestionError(error, "Impossible de supprimer la commande.");
   }
 }

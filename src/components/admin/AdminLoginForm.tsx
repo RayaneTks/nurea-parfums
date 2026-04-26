@@ -44,7 +44,7 @@ export function AdminLoginForm() {
         setError(data.error ?? "Échec de la connexion.");
         return;
       }
-      router.replace("/admin/compta");
+      router.replace("/admin/catalogue");
       router.refresh();
     } catch {
       setError("Connexion serveur impossible.");

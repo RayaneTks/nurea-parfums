@@ -10,6 +10,7 @@ import {
   sumSaleTotals,
 } from "@/lib/gestion/calculations";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
+import { isValidVolumeMl } from "@/lib/gestion/orderLineValidation";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -19,6 +20,7 @@ type SaleLineInputBody = {
   quantity?: number;
   unitPrice?: number | string;
   unitCost?: number | string;
+  volumeMl?: number;
 };
 
 type CreateSaleBody = {
@@ -91,6 +93,7 @@ export async function POST(request: Request) {
 
     const normalizedLines: {
       perfumeId: number | null;
+      volumeMl: number;
       quantity: number;
       unitPrice: Prisma.Decimal;
       unitCost: Prisma.Decimal;
@@ -123,17 +126,28 @@ export async function POST(request: Request) {
         );
       }
 
+      const vol =
+        raw.volumeMl === undefined || raw.volumeMl === null
+          ? 100
+          : Number(raw.volumeMl);
+      if (!isValidVolumeMl(vol)) {
+        return NextResponse.json(
+          { error: "Volume invalide (30, 50 ou 100 ml par ligne)." },
+          { status: 400 },
+        );
+      }
+
       const unitPriceN = Number(raw.unitPrice);
       const unitCostN = Number(raw.unitCost);
       if (!Number.isFinite(unitPriceN) || unitPriceN < 0) {
         return NextResponse.json(
-          { error: "Prix de vente invalide (doit être ≥ 0)." },
+          { error: "Prix client invalide (doit être ≥ 0)." },
           { status: 400 },
         );
       }
       if (!Number.isFinite(unitCostN) || unitCostN < 0) {
         return NextResponse.json(
-          { error: "Coût de revient invalide (doit être ≥ 0)." },
+          { error: "Prix d'achat (ton coût) invalide (doit être ≥ 0)." },
           { status: 400 },
         );
       }
@@ -145,6 +159,7 @@ export async function POST(request: Request) {
       });
       normalizedLines.push({
         perfumeId: perfumeId ?? null,
+        volumeMl: vol,
         ...totals,
       });
     }
@@ -177,11 +192,11 @@ export async function POST(request: Request) {
         include: { sale: { select: { id: true } } },
       });
       if (!order) {
-        return NextResponse.json({ error: "Ordre introuvable." }, { status: 404 });
+        return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
       }
       if (order.sale) {
         return NextResponse.json(
-          { error: "Cet ordre a déjà une vente associée." },
+          { error: "Cette commande a déjà une vente associée." },
           { status: 409 },
         );
       }
@@ -221,12 +236,20 @@ export async function POST(request: Request) {
                     brand: perfume.brand
                       ? { id: perfume.brand.id, name: perfume.brand.name }
                       : null,
+                    volumeMl: line.volumeMl,
                   }
-                : { perfumeId: null, name: "Vente libre", image: null, brand: null };
+                : {
+                    perfumeId: null,
+                    name: "Vente libre",
+                    image: null,
+                    brand: null,
+                    volumeMl: line.volumeMl,
+                  };
               return {
                 perfumeId: line.perfumeId,
                 perfumeSnapshot: snapshot,
                 quantity: line.quantity,
+                volumeMl: line.volumeMl,
                 unitPrice: line.unitPrice,
                 unitCost: line.unitCost,
                 lineRevenue: line.lineRevenue,

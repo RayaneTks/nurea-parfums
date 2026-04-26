@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 
 /**
- * Mappe les erreurs Prisma des routes Gestion (compta / ordres / ventes) vers
+ * Mappe les erreurs Prisma des routes Gestion (compta / commandes / ventes) vers
  * des réponses JSON compréhensibles (schéma, connexion, contraintes).
  */
 export function jsonFromPrismaGestionError(
@@ -16,13 +16,13 @@ export function jsonFromPrismaGestionError(
         return NextResponse.json(
           {
             error:
-              "Schéma base de données incomplet. Exécutez « npx prisma migrate deploy » sur cette base (les tables compta/ordres doivent exister).",
+              "Schéma base de données incomplet. Exécutez « npx prisma migrate deploy » sur cette base (tables compta et commandes requises).",
           },
           { status: 503 },
         );
       case "P2003":
         return NextResponse.json(
-          { error: "Référence invalide (clé étrangère) : parfum ou ordre manquant." },
+          { error: "Référence invalide (clé étrangère) : parfum ou commande introuvable." },
           { status: 400 },
         );
       case "P2002":

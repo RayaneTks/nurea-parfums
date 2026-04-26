@@ -48,8 +48,9 @@ export function AdminToast({ message, emphasis, type = "success", duration = 300
       role={type === "error" ? "alert" : "status"}
       aria-live={type === "error" ? "assertive" : "polite"}
       className={cn(
-        "fixed left-1/2 z-[200] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-start gap-3 rounded-2xl border p-4",
-        "bg-admin-surface/95 backdrop-blur-xl shadow-admin-xl",
+        "fixed left-1/2 z-[300] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-start gap-3 rounded-2xl border p-4",
+        "bg-white text-[var(--admin-text)] shadow-[0_8px_30px_rgba(15,15,20,0.12)]",
+        "ring-1 ring-black/10 [color-scheme:light]",
         "transition-all duration-300 ease-out-expo",
         "bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))]",
         isExiting || !isEntered
@@ -59,13 +60,13 @@ export function AdminToast({ message, emphasis, type = "success", duration = 300
       )}
     >
       <div className="shrink-0 pt-0.5">{icons[type]}</div>
-      <div className="flex-1 text-[14px] leading-snug text-admin-text">
+      <div className="min-w-0 flex-1 text-base font-medium leading-snug text-neutral-900 break-words">
         {emphasis ? (
-          <p className="text-[11px] uppercase tracking-wider text-admin-muted mb-0.5 font-medium">
+          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-1">
             {emphasis}
           </p>
         ) : null}
-        <p>{message}</p>
+        <p className="text-[15px] sm:text-base">{message}</p>
       </div>
       <button
         type="button"
@@ -74,7 +75,7 @@ export function AdminToast({ message, emphasis, type = "success", duration = 300
           window.setTimeout(onClose, EXIT_MS);
         }}
         aria-label="Fermer la notification"
-        className="shrink-0 h-11 w-11 flex items-center justify-center rounded-full text-admin-subtle transition-colors [@media(hover:hover)]:hover:text-admin-text tap-scale"
+        className="shrink-0 h-11 w-11 flex items-center justify-center rounded-full text-neutral-500 transition-colors [@media(hover:hover)]:hover:text-neutral-900 tap-scale"
       >
         <X className="h-4 w-4" />
       </button>

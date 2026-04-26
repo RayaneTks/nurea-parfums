@@ -6,7 +6,7 @@ export type OrderStatusValue = "PENDING" | "READY" | "DELIVERED" | "CANCELLED";
 
 const config: Record<OrderStatusValue, { label: string; variant: BadgeVariant; dot: boolean }> = {
   PENDING: { label: "En attente", variant: "warning", dot: true },
-  READY: { label: "Prête", variant: "accent", dot: true },
+  READY: { label: "À traiter", variant: "accent", dot: true },
   DELIVERED: { label: "Livrée", variant: "success", dot: false },
   CANCELLED: { label: "Annulée", variant: "neutral", dot: false },
 };

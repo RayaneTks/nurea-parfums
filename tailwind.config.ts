@@ -44,6 +44,11 @@ export default {
           "info-subtle": "var(--nurea-info-subtle)",
           "info-border": "var(--nurea-info-border)",
         },
+        /* Admin — app nuréa-admin (Vite) */
+        "nurea-bordeaux": "#7b0b1d",
+        "nurea-bordeaux-light": "#9d1c2e",
+        "ios-bg": "#f2f2f7",
+        "ios-card": "#ffffff",
         admin: {
           bg: "var(--admin-bg)",
           surface: "var(--admin-surface)",

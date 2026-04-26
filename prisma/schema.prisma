@@ -110,30 +110,41 @@ model ExternalImportSuggestion {
 // Prix/coûts saisis à chaque ligne, figés en snapshot à la création.
 
 model Order {
-  id           String      @id @default(cuid())
-  customerName String?
-  orderedAt    DateTime    @default(now())
-  deliveryAt   DateTime?
-  status       OrderStatus @default(PENDING)
-  notes        String?
-  items        OrderItem[]
-  sale         Sale?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id             String      @id @default(cuid())
+  customerName   String?
+  orderedAt      DateTime    @default(now())
+  deliveryAt     DateTime?
+  status         OrderStatus @default(PENDING)
+  notes          String?
+  /// Acompte encaissé (obligatoire pour passer en READY / « À traiter »)
+  depositPaid    Boolean     @default(false)
+  /// Montant de l’acompte payé (€), 0 si non payé
+  depositAmount  Decimal     @default(0) @db.Decimal(10, 2)
+  items          OrderItem[]
+  sale           Sale?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   @@index([status])
   @@index([orderedAt])
   @@index([deliveryAt])
+  @@index([depositPaid])
 }
 
 model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
-  perfumeId Int
-  quantity  Int     @default(1)
-  note      String?
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  perfume   Perfume @relation(fields: [perfumeId], references: [id], onDelete: Restrict)
+  id         String   @id @default(cuid())
+  orderId    String
+  perfumeId  Int
+  quantity   Int      @default(1)
+  note       String?
+  /// Flacon 30, 50 ou 100 ml
+  volumeMl   Int      @default(100)
+  /// Prix unitaire de vente (€) pour ce flacon
+  unitPrice  Decimal  @default(0) @db.Decimal(10, 2)
+  /// Coût de revient unitaire (€)
+  unitCost   Decimal  @default(0) @db.Decimal(10, 2)
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  perfume    Perfume  @relation(fields: [perfumeId], references: [id], onDelete: Restrict)
 
   @@index([orderId])
   @@index([perfumeId])
@@ -162,6 +173,7 @@ model SaleItem {
   perfumeId       Int?
   perfumeSnapshot Json
   quantity        Int      @default(1)
+  volumeMl        Int?
   unitPrice       Decimal  @db.Decimal(10, 2)
   unitCost        Decimal  @db.Decimal(10, 2)
   lineRevenue     Decimal  @db.Decimal(10, 2)

@@ -548,8 +548,10 @@ input[type="search"]::-webkit-search-results-decoration {
    ═══════════════════════════════════════════════════════════ */
 
 .admin-theme {
-  --admin-bg: #F7F4F1;
-  --admin-surface: #FFFEFC;
+  /* Fond proche iOS (maquette nuréa-admin) */
+  --admin-bg: #f2f2f7;
+  --admin-ios-bordeaux: #7b0b1d;
+  --admin-surface: #fffefc;
   --admin-surface-muted: #EFEAE4;
   --admin-surface-hover: #E9E2DA;
   --admin-text: #171114;
@@ -560,8 +562,8 @@ input[type="search"]::-webkit-search-results-decoration {
   --admin-border-hairline-dark: rgba(255, 255, 255, 0.1);
   --admin-border: color-mix(in srgb, var(--admin-text) 9%, transparent);
   --admin-border-hover: color-mix(in srgb, var(--admin-text) 16%, transparent);
-  --admin-accent: #7F3038;
-  --admin-accent-hover: #943B44;
+  --admin-accent: #7b0b1d;
+  --admin-accent-hover: #8f1428;
   --admin-accent-subtle: rgba(127, 48, 56, 0.12);
   --admin-accent-ring: rgba(127, 48, 56, 0.3);
   --admin-cuivre: #B4895E;
@@ -682,6 +684,26 @@ body.admin-route .nurea-viewport-top-shield {
   outline-offset: 2px;
 }
 
+/* Affordance pointeur cohérente (PWA / tactile + desktop) */
+body.admin-route .admin-theme button:not(:disabled),
+body.admin-route .admin-theme a[href] {
+  cursor: pointer;
+}
+body.admin-route .admin-theme button:disabled {
+  cursor: not-allowed;
+}
+
+/* Réduit le bruit moteur sur les actions « pression » (tap-scale) */
+@media (prefers-reduced-motion: reduce) {
+  .tap-scale,
+  .tap-scale:active,
+  .admin-card-press,
+  .admin-card-press:active {
+    transform: none;
+    transition: none;
+  }
+}
+
 /* Utilitaires mobile tactiles admin — pression type iOS (~100ms) */
 .tap-scale {
   transition: transform 0.1s cubic-bezier(0.16, 1, 0.3, 1);
@@ -735,6 +757,55 @@ body.admin-route .nurea-viewport-top-shield {
   .admin-nav-arrival {
     animation: none;
   }
+}
+
+/* Barre fine sous l’en-tête admin : navigation inter-route en cours (feedback immédiat) */
+.admin-nav-route-progress {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: color-mix(in oklab, #7b0b1d 12%, transparent);
+}
+.admin-nav-route-progress__bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 38%;
+  border-radius: 1px;
+  background: #7b0b1d;
+  opacity: 0.9;
+  animation: adminNavRouteIndeterminate 0.9s ease-in-out infinite;
+}
+
+@keyframes adminNavRouteIndeterminate {
+  0% {
+    transform: translateX(-30%);
+  }
+  100% {
+    transform: translateX(280%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-nav-route-progress__bar {
+    animation: none;
+    left: 0;
+    width: 100%;
+    opacity: 0.5;
+  }
+}
+
+/* Ombre type iOS (maquette admin) */
+.admin-ios-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.admin-ios-transition,
+.ios-transition {
+  transition: all 0.3s ease-in-out;
 }
 
 /* Transitions d’onglets catalogue admin */

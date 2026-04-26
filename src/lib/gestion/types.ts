@@ -3,6 +3,7 @@ export type PerfumeSnapshot = {
   name: string;
   image: string | null;
   brand: { id: string; name: string } | null;
+  volumeMl?: number;
 };
 
 export type SaleItemRow = {
@@ -11,6 +12,7 @@ export type SaleItemRow = {
   perfumeId: number | null;
   perfumeSnapshot: PerfumeSnapshot;
   quantity: number;
+  volumeMl: number | null;
   unitPrice: string;
   unitCost: string;
   lineRevenue: string;
@@ -45,6 +47,9 @@ export type OrderItemRow = {
   perfumeId: number;
   quantity: number;
   note: string | null;
+  volumeMl: number;
+  unitPrice: string;
+  unitCost: string;
   perfume: {
     id: number;
     name: string;
@@ -62,6 +67,9 @@ export type OrderRow = {
   deliveryAt: string | null;
   status: OrderStatusValue;
   notes: string | null;
+  depositPaid: boolean;
+  depositAmount: string;
+  orderTotal: string;
   createdAt: string;
   updatedAt: string;
   items: OrderItemRow[];

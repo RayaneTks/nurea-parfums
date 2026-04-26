@@ -35,6 +35,7 @@ export function Modal({
   const dialogRef = useRef<HTMLDivElement>(null);
   const lastFocusedRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
+  const descId = useId();
   const [isRendered, setIsRendered] = useState(open);
   const [isClosing, setIsClosing] = useState(false);
 
@@ -124,12 +125,13 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        aria-describedby={description ? descId : undefined}
         onClick={(e) => e.stopPropagation()}
         className={cn(
           "relative w-full rounded-t-3xl sm:rounded-3xl",
           "bg-admin-surface border border-admin-border",
           "shadow-admin-xl",
-          "flex flex-col max-h-[92dvh]",
+          "flex flex-col max-h-[min(92dvh,calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)))]",
           isClosing
             ? "animate-out slide-out-to-bottom-full sm:zoom-out-95 sm:slide-out-to-bottom-0 duration-200 ease-out-expo"
             : "animate-in slide-in-from-bottom-full sm:zoom-in-95 sm:slide-in-from-bottom-0 duration-300 ease-out-expo",
@@ -144,12 +146,14 @@ export function Modal({
           <div className="min-w-0 flex-1 pt-1">
             <h2
               id={titleId}
-              className="font-serif text-[22px] leading-[1.15] tracking-[-0.01em] text-admin-text"
+              className="font-sans text-[1.25rem] font-bold leading-tight tracking-tight text-admin-text sm:text-[1.375rem]"
             >
               {title}
             </h2>
             {description ? (
-              <p className="mt-1 text-[13px] text-admin-muted">{description}</p>
+              <p id={descId} className="mt-1.5 text-[13px] leading-snug text-admin-muted">
+                {description}
+              </p>
             ) : null}
           </div>
           {dismissible ? (
@@ -157,7 +161,7 @@ export function Modal({
               type="button"
               onClick={onClose}
               aria-label="Fermer"
-              className="shrink-0 h-11 w-11 flex items-center justify-center rounded-full text-admin-subtle transition-colors tap-scale [@media(hover:hover)]:hover:bg-admin-surface-muted [@media(hover:hover)]:hover:text-admin-text"
+              className="shrink-0 h-11 w-11 flex items-center justify-center rounded-full text-admin-subtle transition-colors tap-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent focus-visible:ring-offset-2 focus-visible:ring-offset-admin-surface [@media(hover:hover)]:hover:bg-admin-surface-muted [@media(hover:hover)]:hover:text-admin-text"
             >
               <X className="h-4 w-4" />
             </button>

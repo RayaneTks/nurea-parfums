@@ -67,8 +67,9 @@ export function FilterPills<V extends string>({
             aria-checked={isActive}
             onClick={() => onChange(option.value)}
             className={cn(
-              "relative z-[1] min-h-11 px-4 text-[13px] font-medium rounded-full",
+              "relative z-[1] min-h-11 min-w-[2.5rem] px-3.5 sm:px-4 text-[13px] font-medium rounded-full",
               "transition-[color,transform] duration-200 ease-out-expo tap-scale",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent focus-visible:ring-offset-2 focus-visible:ring-offset-admin-surface",
               isActive
                 ? "text-admin-text"
                 : "text-admin-muted [@media(hover:hover)]:hover:text-admin-text",

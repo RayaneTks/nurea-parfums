@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { NureaCatalogPage } from "@/components/admin/nurea/CatalogPage";
 import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/admin/session";
 import { getCachedAdminCatalogue } from "@/lib/catalogue-service";
 
@@ -24,7 +24,7 @@ export default async function AdminCataloguePage() {
   const { brands, perfumes } = await getCachedAdminCatalogue();
 
   return (
-    <AdminDashboard
+    <NureaCatalogPage
       initialData={{
         user: { username: user.username, role: user.role },
         brands,

@@ -33,10 +33,12 @@
     "clsx": "^2.1.1",
     "jose": "^6.2.2",
     "lucide-react": "^0.462.0",
+    "motion": "^12.23.0",
     "next": "^16.1.6",
     "next-themes": "^0.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "recharts": "^2.15.4",
     "resend": "^6.9.4",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7"

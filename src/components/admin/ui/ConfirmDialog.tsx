@@ -58,7 +58,7 @@ export function ConfirmDialog({
         ) : null}
         <div className="flex-1">
           {description ? (
-            <p className="text-[14px] leading-relaxed text-admin-muted">{description}</p>
+            <p className="text-[13px] leading-snug text-admin-muted">{description}</p>
           ) : null}
           {destructive ? (
             <p className="mt-2 text-[12px] italic text-admin-subtle">

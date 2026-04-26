@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
 import { Prisma, PublicationStatus } from "@prisma/client";
@@ -136,9 +136,11 @@ export async function PUT(request: Request, { params }: RouteCtx) {
       },
     });
 
-    revalidatePath("/");
-    revalidatePath("/marque");
-    revalidateAdminCatalogue();
+    after(() => {
+      revalidatePath("/");
+      revalidatePath("/marque");
+      revalidateAdminCatalogue();
+    });
     await writeAudit(ctx.sub, "perfume.update", "Perfume", String(id), { name });
     return NextResponse.json({ perfume });
   } catch (error) {
@@ -235,9 +237,11 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
         where: { id },
         data: updates,
       });
-      revalidatePath("/");
-      revalidatePath("/marque");
-      revalidateAdminCatalogue();
+      after(() => {
+        revalidatePath("/");
+        revalidatePath("/marque");
+        revalidateAdminCatalogue();
+      });
       await writeAudit(ctx.sub, "perfume.patch", "Perfume", String(id), updates);
       return NextResponse.json({ perfume });
     }
@@ -269,9 +273,11 @@ export async function DELETE(request: Request, { params }: RouteCtx) {
 
     const deleted = await prisma.perfume.delete({ where: { id } });
 
-    revalidatePath("/");
-    revalidatePath("/marque");
-    revalidateAdminCatalogue();
+    after(() => {
+      revalidatePath("/");
+      revalidatePath("/marque");
+      revalidateAdminCatalogue();
+    });
     await writeAudit(ctx.sub, "perfume.hard_delete", "Perfume", String(id), { name: deleted.name });
     return NextResponse.json({ ok: true });
   } catch (error) {

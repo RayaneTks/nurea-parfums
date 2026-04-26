@@ -3,14 +3,13 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import type { ReactNode } from "react";
-import { AdminShell } from "./AdminShell";
-import { BottomNav } from "./BottomNav";
+import { NureaAdminShell } from "../nurea/NureaAdminShell";
 
 const ADMIN_TAB_ROUTES = [
-  "/admin/compta",
-  "/admin/ordres",
-  "/admin/vendre",
   "/admin/catalogue",
+  "/admin/vendre",
+  "/admin/ordres",
+  "/admin/compta",
 ] as const;
 
 function runWhenIdle(fn: () => void): () => void {
@@ -45,17 +44,17 @@ export function AdminShellClient({ children }: AdminShellClientProps) {
     if (isLogin) return;
     return runWhenIdle(() => {
       for (const href of ADMIN_TAB_ROUTES) {
-        if (href === "/admin/compta" && (pathname === "/admin" || pathname.startsWith("/admin/compta")))
-          continue;
-        if (href === "/admin/ordres" && pathname.startsWith("/admin/ordres")) continue;
-        if (href === "/admin/vendre" && pathname.startsWith("/admin/vendre")) continue;
         if (
           href === "/admin/catalogue" &&
-          (pathname.startsWith("/admin/catalogue") ||
+          (pathname === "/admin" ||
+            pathname.startsWith("/admin/catalogue") ||
             pathname.startsWith("/admin/perfumes") ||
             pathname.startsWith("/admin/brands"))
         )
           continue;
+        if (href === "/admin/vendre" && pathname.startsWith("/admin/vendre")) continue;
+        if (href === "/admin/ordres" && pathname.startsWith("/admin/ordres")) continue;
+        if (href === "/admin/compta" && pathname.startsWith("/admin/compta")) continue;
         router.prefetch(href);
       }
     });
@@ -72,9 +71,10 @@ export function AdminShellClient({ children }: AdminShellClientProps) {
   }
 
   return (
-    <div className="admin-theme flex min-h-[100dvh] flex-col bg-admin-bg text-admin-text">
-      <AdminShell>{children}</AdminShell>
-      <BottomNav />
+    <div className="admin-theme min-h-[100dvh] text-neutral-900">
+      <div className="mx-auto w-full min-h-[100dvh] max-w-[430px] shadow-none md:shadow-[0_0_0_1px_rgba(0,0,0,0.08)]">
+        <NureaAdminShell>{children}</NureaAdminShell>
+      </div>
     </div>
   );
 }

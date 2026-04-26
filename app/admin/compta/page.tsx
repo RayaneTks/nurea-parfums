@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ComptaView } from "@/components/admin/ComptaView";
+import { NureaAccountingPage } from "@/components/admin/nurea/AccountingPage";
 
 export const metadata: Metadata = {
   title: "Administration — Compta",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function ComptaPage() {
-  return <ComptaView />;
+  return <NureaAccountingPage />;
 }

@@ -2,15 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Loader2, Plus, Trash2, Upload, X, AlertCircle } from "lucide-react";
+import { Loader2, Plus, Trash2, Upload, X, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { AdminButton } from "./ui/AdminButton";
 import { AdminInput } from "./ui/AdminInput";
 import { AdminBadge } from "./ui/AdminBadge";
 import { SectionCard } from "./ui/SectionCard";
 import { ConfirmDialog } from "./ui/ConfirmDialog";
-import { PageHeader } from "./shell/PageHeader";
-import { HeaderAction } from "./shell/HeaderAction";
+import { NureaFormPageTop, NureaFormSectionLabel } from "./nurea/NureaFormPageTop";
 import { uploadFile } from "@/lib/admin/image-utils";
 import { cn } from "@/lib/utils";
 
@@ -53,7 +52,6 @@ function ImageUploadField({
   value,
   onChange,
   onUploadDone,
-  required,
   readOnly,
   onError,
   allowClear = true,
@@ -63,7 +61,6 @@ function ImageUploadField({
   value: string;
   onChange: (url: string) => void;
   onUploadDone?: (url: string) => void;
-  required?: boolean;
   readOnly: boolean;
   onError: (msg: string) => void;
   allowClear?: boolean;
@@ -142,16 +139,7 @@ function ImageUploadField({
           ) : null}
         </button>
 
-        <div className="flex-1 space-y-2">
-          <AdminInput
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            disabled={readOnly}
-            required={required}
-            placeholder="https://…"
-            onClear={!readOnly && value.trim().length > 0 ? () => onChange("") : undefined}
-          />
-
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
           <input
             ref={fileInputRef}
             type="file"
@@ -159,6 +147,7 @@ function ImageUploadField({
             className="sr-only"
             disabled={uploading || readOnly}
             onChange={(e) => handleUpload(e.target.files?.[0] ?? null)}
+            aria-label={label}
           />
 
           <AdminButton
@@ -537,11 +526,9 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-3">
-        <Loader2 className="h-6 w-6 animate-spin text-admin-accent" aria-hidden />
-        <p className="text-[12px] uppercase tracking-wider text-admin-subtle">
-          Chargement…
-        </p>
+      <div className="flex flex-col items-center justify-center gap-3 px-5 py-24">
+        <Loader2 className="h-8 w-8 animate-spin text-nurea-bordeaux" aria-hidden />
+        <p className="text-sm text-neutral-500">Chargement…</p>
       </div>
     );
   }
@@ -550,17 +537,16 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
   return (
     <>
-      <PageHeader
+      <NureaFormPageTop
         title={isNew ? "Nouveau parfum" : name || "Sans nom"}
-        eyebrow={isNew ? "Création" : `Parfum #${perfumeId}`}
-        leading={
-          <HeaderAction
-            label="Retour"
-            icon={ArrowLeft}
-            onClick={() => router.back()}
-          />
+        eyebrow={isNew ? "Création" : `Parfum · #${perfumeId}`}
+        subtitle={
+          isNew
+            ? "Renseigne la marque, le nom et une image. Tu pourras publier depuis cette fiche."
+            : undefined
         }
-        action={
+        onBack={() => router.back()}
+        end={
           !isNew ? (
             <AdminBadge
               label={status === "PUBLISHED" ? "Visible" : "Masqué"}
@@ -570,24 +556,22 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         }
       />
 
-      <main id="main-content" className="flex-1 px-5 pt-6 pb-32">
-        <form id="perfume-form" onSubmit={onSubmit} className="space-y-8">
+      <main id="main-content" className="flex-1 px-5 pb-32 pt-0">
+        <form id="perfume-form" onSubmit={onSubmit} className="space-y-7">
           {error ? (
             <div
               ref={errorRef}
-              className="flex items-start gap-3 p-4 border border-[var(--admin-danger-border)] bg-[var(--admin-danger-subtle)] rounded-xl"
+              className="flex items-start gap-3 rounded-2xl border border-rose-200/80 bg-rose-50/90 p-4 shadow-sm"
               role="alert"
             >
-              <AlertCircle className="h-4 w-4 text-admin-danger shrink-0 mt-0.5" aria-hidden />
-              <p className="text-[13px] text-admin-danger">{error}</p>
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" aria-hidden />
+              <p className="text-[13px] font-medium text-rose-900">{error}</p>
             </div>
           ) : null}
 
-          <section className="space-y-4">
-            <h2 className="text-[10px] font-medium uppercase tracking-wider text-admin-subtle">
-              Informations
-            </h2>
-            <SectionCard className="p-5 space-y-5">
+          <section className="space-y-3">
+            <NureaFormSectionLabel>Informations</NureaFormSectionLabel>
+            <SectionCard className="space-y-5 border-neutral-200/60 bg-white p-5 shadow-sm">
               <div className="space-y-2">
                 <BrandCombobox
                   brands={brands}
@@ -622,23 +606,20 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             </SectionCard>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-[10px] font-medium uppercase tracking-wider text-admin-subtle">
-              Visuels
-            </h2>
-            <SectionCard className="p-5 space-y-6">
+          <section className="space-y-3">
+            <NureaFormSectionLabel>Visuels</NureaFormSectionLabel>
+            <SectionCard className="space-y-6 border-neutral-200/60 bg-white p-5 shadow-sm">
               <ImageUploadField
                 label="Image principale (dark)"
                 subtitle="Utilisée dans les deux thèmes si la variante claire est absente."
                 value={image}
                 onChange={setImage}
                 onUploadDone={(url) => handleAutoSave({ image: url })}
-                required
                 readOnly={readOnly}
                 onError={setError}
                 allowClear={false}
               />
-              <div className="h-px bg-admin-border" />
+              <div className="h-px bg-neutral-200/70" />
               <ImageUploadField
                 label="Image variante (light)"
                 subtitle="Optionnelle. Si présente, la principale devient exclusivement le visuel dark."
@@ -652,12 +633,10 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             </SectionCard>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-[10px] font-medium uppercase tracking-wider text-admin-subtle">
-              Statut de publication
-            </h2>
-            <SectionCard className="p-5">
-              <div className="flex gap-2">
+          <section className="space-y-3">
+            <NureaFormSectionLabel>Publication</NureaFormSectionLabel>
+            <SectionCard className="p-1.5 border-neutral-200/60 bg-white shadow-sm">
+              <div className="flex gap-1 rounded-2xl bg-neutral-200/50 p-1">
                 {STATUS_OPTIONS.map((opt) => {
                   const active = status === opt.value;
                   const locked =
@@ -670,13 +649,11 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                       disabled={readOnly || locked}
                       onClick={() => setStatus(opt.value)}
                       className={cn(
-                        "flex-1 min-h-12 px-4 rounded-xl border",
-                        "text-[12px] uppercase tracking-wider font-medium",
-                        "transition-colors duration-200 tap-scale",
+                        "ios-transition tap-scale min-h-11 flex-1 rounded-xl px-3 py-2 text-[13px] font-semibold",
                         active
-                          ? "bg-admin-accent text-admin-bg border-admin-accent"
-                          : "bg-admin-surface border-admin-border text-admin-muted",
-                        locked && "opacity-40 cursor-not-allowed",
+                          ? "bg-white text-neutral-900 shadow-sm"
+                          : "text-neutral-500 [@media(hover:hover)]:hover:text-neutral-700",
+                        locked && "cursor-not-allowed opacity-40",
                       )}
                     >
                       {opt.label}
@@ -685,7 +662,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                 })}
               </div>
               {isImageMissing && status === "PUBLISHED" ? (
-                <p className="mt-3 text-[11px] text-[var(--admin-warning)]">
+                <p className="px-2 pb-1 pt-2 text-xs text-amber-800/90">
                   Ajoute une image pour pouvoir publier.
                 </p>
               ) : null}
@@ -693,7 +670,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           </section>
 
           {!isNew && !readOnly ? (
-            <div className="pt-6 flex justify-center border-t border-admin-border">
+            <div className="flex justify-center border-t border-neutral-200/70 pt-6">
               <AdminButton
                 variant="ghost"
                 size="sm"
@@ -708,13 +685,13 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         </form>
       </main>
 
-      <div className="fixed left-1/2 -translate-x-1/2 bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] z-[55] w-full max-w-[430px] px-5">
+      <div className="pointer-events-auto fixed bottom-[calc(5.5rem+max(16px,env(safe-area-inset-bottom,16px)))] left-1/2 z-[55] w-full max-w-[430px] -translate-x-1/2 px-5">
         <AdminButton
           type="submit"
           form="perfume-form"
           variant="primary"
           size="lg"
-          className="w-full"
+          className="w-full shadow-md"
           isLoading={saving}
           disabled={readOnly || !brandId || !name || !image}
         >

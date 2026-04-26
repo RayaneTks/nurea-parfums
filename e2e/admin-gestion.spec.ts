@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
 /**
- * Tests e2e pour la section Gestion (Compta / Ordres / Vendre) en mobile-first.
+ * Tests e2e pour la section Gestion (Compta / commandes / Vendre) en mobile-first.
  * Les tests smoke (login, redirect) n'ont pas besoin de DB ni de session.
  * Le test "workflow complet" utilise des mocks API + un faux cookie de session
  * pour éviter d'avoir à seeder la DB à chaque run.
@@ -14,8 +14,8 @@ test.describe("Admin — smoke (sans session)", () => {
 
   test("la page de connexion s'affiche avec le bon design Nuréa", async ({ page }) => {
     await page.goto("/admin/login");
-    await expect(page.getByRole("heading", { level: 1, name: "Connexion" })).toBeVisible();
-    await expect(page.getByText(/Espace administration/i)).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Bienvenue" })).toBeVisible();
+    await expect(page.getByText(/gérer la boutique/i)).toBeVisible();
     await expect(page.getByLabel("Identifiant")).toBeVisible();
     await expect(page.getByLabel("Mot de passe")).toBeVisible();
     await expect(page.getByRole("button", { name: /Se connecter/i })).toBeVisible();
@@ -143,25 +143,25 @@ test.describe("Admin Gestion — UI (mocks API)", () => {
     await expect(page.getByText("Aucune vente sur cette période")).toBeVisible();
   });
 
-  test("BottomNav : 4 items Compta / Ordres / Vendre / Catalogue", async ({ page }) => {
+  test("BottomNav : 4 items Produits / Vendre / Commandes / Compta", async ({ page }) => {
     await setupAdminSession(page);
     await page.goto("/admin/compta");
 
     const nav = page.getByRole("navigation", { name: "Navigation principale" });
     await expect(nav).toBeVisible();
-    await expect(nav.getByRole("link", { name: /Compta/i })).toBeVisible();
-    await expect(nav.getByRole("link", { name: /Ordres/i })).toBeVisible();
+    await expect(nav.getByRole("link", { name: /Produits/i })).toBeVisible();
     await expect(nav.getByRole("link", { name: /Vendre/i })).toBeVisible();
-    await expect(nav.getByRole("link", { name: /Catalogue/i })).toBeVisible();
+    await expect(nav.getByRole("link", { name: /Commandes/i })).toBeVisible();
+    await expect(nav.getByRole("link", { name: /Compta/i })).toBeVisible();
   });
 
-  test("Ordres : empty state + FAB création", async ({ page }) => {
+  test("Commandes : empty state + FAB création", async ({ page }) => {
     await setupAdminSession(page);
     await page.goto("/admin/ordres");
 
-    await expect(page.getByRole("heading", { name: "Ordres" })).toBeVisible();
-    await expect(page.getByText(/Aucun ordre enregistré/)).toBeVisible();
-    await expect(page.getByRole("button", { name: /Nouvel ordre/i }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Commandes" })).toBeVisible();
+    await expect(page.getByText(/Aucune commande/)).toBeVisible();
+    await expect(page.getByRole("button", { name: /Nouvelle commande/i }).first()).toBeVisible();
   });
 
   test("Vendre : saisie rapide avec totaux live", async ({ page }) => {

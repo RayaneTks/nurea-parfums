@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { OrdersView } from "@/components/admin/OrdersView";
+import { NureaOrdersPage } from "@/components/admin/nurea/OrdersPage";
 
 export const metadata: Metadata = {
-  title: "Administration — Ordres",
+  title: "Administration — Commandes",
   robots: { index: false, follow: false },
 };
 
 export default function OrdersPage() {
-  return <OrdersView />;
+  return <NureaOrdersPage />;
 }

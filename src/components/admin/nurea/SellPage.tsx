@@ -5,6 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion } from "motion/react";
 import {
   ArrowLeft,
   Loader2,
@@ -12,14 +13,14 @@ import {
   Trash2,
   ReceiptText,
 } from "lucide-react";
-import { PageHeader } from "./shell/PageHeader";
-import { HeaderAction } from "./shell/HeaderAction";
-import { SectionCard } from "./ui/SectionCard";
-import { AdminButton } from "./ui/AdminButton";
-import { AdminInput } from "./ui/AdminInput";
-import { AdminToast, type ToastType } from "./ui/AdminToast";
-import { StatCard } from "./ui/StatCard";
+import { HeaderAction } from "../shell/HeaderAction";
+import { SectionCard } from "../ui/SectionCard";
+import { AdminButton } from "../ui/AdminButton";
+import { AdminInput } from "../ui/AdminInput";
+import { AdminToast, type ToastType } from "../ui/AdminToast";
+import { StatCard } from "../ui/StatCard";
 import { cn, formatMoney } from "@/lib/utils";
+import { ORDER_VOLUMES_ML } from "@/lib/gestion/orderLineValidation";
 import type {
   OrderRow,
   PerfumePickerRow,
@@ -31,6 +32,7 @@ type Line = {
   quantity: number;
   unitPrice: string;
   unitCost: string;
+  volumeMl: (typeof ORDER_VOLUMES_ML)[number];
 };
 
 async function readJsonSafe<T>(res: Response): Promise<T | null> {
@@ -59,11 +61,11 @@ function lineMargin(l: Line) {
 }
 
 const PerfumePicker = dynamic(
-  () => import("./gestion/PerfumePicker").then((mod) => mod.PerfumePicker),
+  () => import("../gestion/PerfumePicker").then((mod) => mod.PerfumePicker),
   { ssr: false },
 );
 
-export function VendreView() {
+export function NureaSellPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fromOrder = searchParams.get("fromOrder");
@@ -88,12 +90,12 @@ export function VendreView() {
       });
       if (!r.ok) {
         const j = await readJsonSafe<{ error?: string }>(r);
-        throw new Error(j?.error ?? "Impossible de charger l'ordre.");
+        throw new Error(j?.error ?? "Impossible de charger la commande.");
       }
       const j = await readJsonSafe<{ order: OrderRow }>(r);
-      if (!j?.order) throw new Error("Ordre introuvable.");
+      if (!j?.order) throw new Error("Commande introuvable.");
       if (j.order.sale) {
-        throw new Error("Cet ordre a déjà une vente associée.");
+        throw new Error("Cette commande a déjà une vente associée.");
       }
       setOrder(j.order);
       setCustomerName(j.order.customerName ?? "");
@@ -110,8 +112,11 @@ export function VendreView() {
               brand: item.perfume!.brand,
             },
             quantity: item.quantity,
-            unitPrice: "",
-            unitCost: "",
+            unitPrice: item.unitPrice ?? "",
+            unitCost: item.unitCost ?? "",
+            volumeMl: (ORDER_VOLUMES_ML as readonly number[]).includes(item.volumeMl)
+              ? (item.volumeMl as Line["volumeMl"])
+              : 100,
           })),
       );
     } catch (e) {
@@ -141,8 +146,6 @@ export function VendreView() {
     lines.every(
       (l) =>
         l.quantity >= 1 &&
-        l.unitPrice.trim() !== "" &&
-        l.unitCost.trim() !== "" &&
         toNum(l.unitPrice) >= 0 &&
         toNum(l.unitCost) >= 0,
     ) &&
@@ -158,6 +161,7 @@ export function VendreView() {
         quantity: 1,
         unitPrice: "",
         unitCost: "",
+        volumeMl: 100,
       },
     ]);
   };
@@ -184,6 +188,7 @@ export function VendreView() {
           quantity: l.quantity,
           unitPrice: toNum(l.unitPrice),
           unitCost: toNum(l.unitCost),
+          volumeMl: l.volumeMl,
         })),
       };
       const r = await fetch("/api/admin/sales", {
@@ -210,12 +215,11 @@ export function VendreView() {
   if (orderLoading) {
     return (
       <>
-        <PageHeader
-          title="Vendre"
-          eyebrow="Chargement…"
-          leading={<HeaderAction label="Retour" icon={ArrowLeft} onClick={() => router.back()} />}
-        />
-        <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <div className="flex items-center gap-2 px-5 pt-3">
+          <HeaderAction label="Retour" icon={ArrowLeft} onClick={() => router.back()} />
+          <h1 className="text-lg font-bold text-admin-text">Vendre</h1>
+        </div>
+        <div className="flex flex-col items-center justify-center gap-3 py-20">
           <Loader2 className="h-6 w-6 animate-spin text-admin-accent" aria-hidden />
         </div>
       </>
@@ -225,11 +229,10 @@ export function VendreView() {
   if (orderError) {
     return (
       <>
-        <PageHeader
-          title="Vendre"
-          eyebrow="Erreur"
-          leading={<HeaderAction label="Retour" icon={ArrowLeft} onClick={() => router.back()} />}
-        />
+        <div className="flex items-center gap-2 px-5 pt-3">
+          <HeaderAction label="Retour" icon={ArrowLeft} onClick={() => router.back()} />
+          <h1 className="text-lg font-bold text-admin-text">Vendre</h1>
+        </div>
         <main id="main-content" className="flex-1 px-5 pt-5">
           <SectionCard className="p-4 border-[var(--admin-danger-border)] bg-[var(--admin-danger-subtle)]">
             <p className="text-[13px] text-admin-danger">{orderError}</p>
@@ -238,7 +241,7 @@ export function VendreView() {
               prefetch
               className="mt-2 inline-block text-[11px] uppercase tracking-wider text-admin-accent font-medium"
             >
-              Retour aux ordres
+              Retour aux commandes
             </Link>
           </SectionCard>
         </main>
@@ -248,34 +251,37 @@ export function VendreView() {
 
   return (
     <>
-      <PageHeader
-        title={isBridge ? "Encaisser" : "Vendre"}
-        eyebrow={isBridge ? `Ordre · ${order!.customerName || "Client"}` : "Caisse rapide"}
-        leading={
-          isBridge ? (
+      <main id="main-content" className="flex-1 space-y-6 px-5 pb-40 pt-2">
+        {isBridge ? (
+          <div className="flex items-center gap-2">
             <HeaderAction
-              label="Retour à l'ordre"
+              label="Retour à la commande"
               icon={ArrowLeft}
               onClick={() => router.push(`/admin/ordres/${order!.id}`)}
             />
-          ) : null
-        }
-      />
+          </div>
+        ) : null}
+        <motion.header
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <h1 className="text-3xl font-bold leading-tight tracking-tight text-admin-text">
+            {isBridge ? "Encaisser" : "Vendre"}
+          </h1>
+          <p className="mt-0.5 text-sm text-admin-subtle">
+            {isBridge ? (order!.customerName || "—") : "Hors commande"}
+          </p>
+        </motion.header>
 
-      <main id="main-content" className="flex-1 px-5 pt-5 pb-40 space-y-6">
         {isBridge ? (
-          <SectionCard className="p-3 border-admin-border-hover bg-admin-accent-subtle">
-            <p className="text-[11px] uppercase tracking-wider text-admin-accent">
-              Mode encaissement
-            </p>
-            <p className="mt-1 text-[13px] text-admin-muted">
-              Les parfums viennent de l&apos;ordre. Ajuste les prix et coûts puis valide pour convertir en vente.
-            </p>
-          </SectionCard>
+          <p className="text-center text-[11px] font-semibold uppercase tracking-wider text-admin-accent">
+            Depuis la commande
+          </p>
         ) : null}
 
         <AdminInput
-          label="Client (optionnel)"
+          label="Client"
           name="customerName"
           value={customerName}
           onChange={(e) => setCustomerName(e.target.value)}
@@ -300,10 +306,13 @@ export function VendreView() {
           </div>
 
           {lines.length === 0 ? (
-            <SectionCard className="p-6 text-center border-dashed">
-              <p className="text-[13px] text-admin-subtle">
-                Aucune ligne. Ajoute un parfum pour commencer.
-              </p>
+            <SectionCard className="p-6 text-center border-dashed border-admin-border">
+              <ReceiptText
+                className="mx-auto mb-2 h-8 w-8 text-admin-accent/80"
+                aria-hidden
+                strokeWidth={1.5}
+              />
+              <p className="text-[13px] text-admin-muted">Ajoute un parfum, puis enregistre la vente.</p>
             </SectionCard>
           ) : (
             <div className="flex flex-col gap-2">
@@ -338,14 +347,14 @@ export function VendreView() {
             htmlFor="sale-notes"
             className="mb-2 block text-[11px] font-medium uppercase tracking-wider text-admin-muted"
           >
-            Notes (optionnel)
+            Notes
           </label>
           <textarea
             id="sale-notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
-            placeholder="Remarques, remise exceptionnelle…"
+            placeholder="—"
             className="block w-full rounded-xl bg-admin-surface border border-admin-border px-4 py-3 text-[16px] text-admin-text placeholder:text-admin-subtle transition-colors focus-visible:border-admin-accent focus-visible:outline-none"
           />
         </div>
@@ -374,7 +383,7 @@ export function VendreView() {
           disabled={!canSubmit}
           onClick={onSubmit}
         >
-          {isBridge ? "Encaisser l'ordre" : "Valider la vente"}
+          {isBridge ? "Encaisser la commande" : "Valider la vente"}
         </AdminButton>
       </div>
 
@@ -438,11 +447,32 @@ function SaleLineEditor({
         ) : null}
       </div>
 
+      <div>
+        <label className="mb-1.5 block text-[10px] uppercase tracking-wider text-admin-subtle">
+          Volume
+        </label>
+        <div className="mb-3 flex gap-1">
+          {ORDER_VOLUMES_ML.map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => onUpdate({ volumeMl: v })}
+              className={cn(
+                "flex-1 rounded-lg py-1.5 text-center text-[12px] font-semibold",
+                line.volumeMl === v
+                  ? "bg-admin-accent text-white"
+                  : "border border-admin-border bg-admin-bg text-admin-muted",
+              )}
+            >
+              {v} ml
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="grid grid-cols-3 gap-2">
         <div>
-          <label className="block text-[10px] uppercase tracking-wider text-admin-subtle mb-1">
-            Quantité
-          </label>
+          <label className="block text-[10px] uppercase tracking-wider text-admin-subtle mb-1">Qté</label>
           <input
             type="number"
             inputMode="numeric"
@@ -456,37 +486,45 @@ function SaleLineEditor({
           />
         </div>
         <div>
-          <label className="block text-[10px] uppercase tracking-wider text-admin-subtle mb-1">
-            Prix vente €
+          <label className="mb-0.5 block text-[10px] uppercase leading-tight text-admin-subtle">
+            Prix client (€)
           </label>
+          <p className="mb-1.5 text-[8px] font-normal normal-case text-admin-muted">
+            Ce que le client paie
+          </p>
           <input
             type="text"
             inputMode="decimal"
-            placeholder="0,00"
+            placeholder="ex. 35"
             value={line.unitPrice}
             onChange={(e) => onUpdate({ unitPrice: e.target.value })}
+            title="Montant facturé au client pour ce flacon (prix de vente)"
+            aria-label="Prix client, montant facturé pour ce flacon"
             className="block w-full min-h-11 rounded-xl bg-admin-surface border border-admin-border px-3 text-[16px] tabular-nums text-admin-text placeholder:text-admin-subtle focus-visible:border-admin-accent focus-visible:outline-none"
           />
         </div>
         <div>
-          <label className="block text-[10px] uppercase tracking-wider text-admin-subtle mb-1">
-            Coût €
+          <label className="mb-0.5 block text-[10px] uppercase leading-tight text-admin-subtle">
+            Mon achat (€)
           </label>
+          <p className="mb-1.5 text-[8px] font-normal normal-case text-admin-muted">
+            Ce que le flacon te coûte
+          </p>
           <input
             type="text"
             inputMode="decimal"
-            placeholder="0,00"
+            placeholder="ex. 10,86"
             value={line.unitCost}
             onChange={(e) => onUpdate({ unitCost: e.target.value })}
+            title="Prix d’achat : à combien tu l’as eu le flacon (revient)"
+            aria-label="Mon prix d'achat du flacon (revient)"
             className="block w-full min-h-11 rounded-xl bg-admin-surface border border-admin-border px-3 text-[16px] tabular-nums text-admin-text placeholder:text-admin-subtle focus-visible:border-admin-accent focus-visible:outline-none"
           />
         </div>
       </div>
 
       <div className="flex items-center justify-between pt-2 border-t border-admin-border text-[12px] tabular-nums">
-        <span className="text-admin-subtle">
-          Total · {formatMoney(revenue)}
-        </span>
+        <span className="text-admin-muted">{formatMoney(revenue)}</span>
         <span
           className={cn(
             "font-medium",

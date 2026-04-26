@@ -22,7 +22,7 @@ type AdminListItemSkeletonProps = {
 };
 
 /**
- * Ligne de liste type carte — utilisé en Compta, Ordres, Picker, etc.
+ * Ligne de liste type carte — utilisé en Compta, commandes, Picker, etc.
  */
 export function AdminListItemSkeleton({ className }: AdminListItemSkeletonProps) {
   return (
@@ -51,11 +51,11 @@ export function AdminRouteFallback({ rows = 6, rowClassName = "h-[72px]" }: Admi
       aria-label="Chargement de la page"
     >
       <AdminLoadingHeader />
-      <main className="min-h-0 flex-1 space-y-3 px-5 pb-6 pt-5">
+      <div className="min-h-0 flex-1 space-y-3 px-5 pb-4 pt-5">
         {Array.from({ length: rows }, (_, i) => (
           <AdminListItemSkeleton key={i} className={rowClassName} />
         ))}
-      </main>
+      </div>
     </div>
   );
 }
@@ -97,15 +97,15 @@ export function AdminPickerListSkeleton({ count = 4 }: AdminPickerListSkeletonPr
 }
 
 /**
- * Contenu chargement détail d’ordre (sans PageHeader — le parent gère l’en-tête).
+ * Contenu chargement détail commande (sans PageHeader — le parent gère l’en-tête).
  */
 export function AdminOrderDetailBodySkeleton() {
   return (
-    <main
+    <div
       id="main-content"
       className="flex-1 space-y-5 px-5 pb-10 pt-5"
       aria-busy="true"
-      aria-label="Chargement de l'ordre"
+      aria-label="Chargement de la commande"
     >
       <div className="h-24 rounded-2xl border border-admin-border admin-skeleton" role="presentation" />
       <div className="space-y-2">
@@ -115,6 +115,6 @@ export function AdminOrderDetailBodySkeleton() {
         ))}
       </div>
       <div className="h-12 rounded-xl border border-admin-border admin-skeleton" role="presentation" />
-    </main>
+    </div>
   );
 }

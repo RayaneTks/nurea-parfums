@@ -109,6 +109,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html
       lang="fr"
       className="dark transition-colors duration-300 ease-out"
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <body

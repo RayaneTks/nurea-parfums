@@ -24,11 +24,11 @@ export function EmptyState({ icon: Icon, title, description, action, className }
           <Icon className="h-6 w-6 text-admin-accent" aria-hidden strokeWidth={1.8} />
         </div>
       ) : null}
-      <h2 className="font-serif text-[20px] leading-[1.15] tracking-[-0.01em] text-admin-text">
+      <h2 className="text-[1.15rem] font-bold font-sans leading-snug tracking-tight text-admin-text sm:text-lg">
         {title}
       </h2>
       {description ? (
-        <p className="mt-2 text-[14px] leading-relaxed text-admin-muted max-w-sm">{description}</p>
+        <p className="mt-2 text-[13px] leading-snug text-admin-muted max-w-xs">{description}</p>
       ) : null}
       {action ? <div className="mt-5">{action}</div> : null}
     </div>
