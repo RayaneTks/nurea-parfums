@@ -30,6 +30,7 @@ import type {
 type Line = {
   key: string;
   perfume: PerfumePickerRow;
+  manualLabel: string | null;
   quantity: number;
   unitPrice: string;
   unitCost: string;
@@ -112,6 +113,7 @@ export function NureaSellPage() {
               status: "PUBLISHED",
               brand: item.perfume!.brand,
             },
+            manualLabel: item.manualLabel?.trim() || null,
             quantity: item.quantity,
             unitPrice: item.unitPrice ?? "",
             unitCost: item.unitCost ?? "",
@@ -159,6 +161,7 @@ export function NureaSellPage() {
       {
         key: `${p.id}-${Date.now()}`,
         perfume: p,
+        manualLabel: null,
         quantity: 1,
         unitPrice: "",
         unitCost: "",
@@ -186,6 +189,7 @@ export function NureaSellPage() {
         notes: notes.trim() || null,
         items: lines.map((l) => ({
           perfumeId: l.perfume.id,
+          manualLabel: l.manualLabel?.trim() || null,
           quantity: l.quantity,
           unitPrice: toNum(l.unitPrice),
           unitCost: toNum(l.unitCost),
@@ -433,10 +437,10 @@ function SaleLineEditor({
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-sans text-[14px] font-semibold leading-tight text-admin-text truncate">
-            {line.perfume.name}
+            {line.manualLabel?.trim() || line.perfume.name}
           </p>
           <p className="mt-0.5 text-[10px] uppercase tracking-wider text-admin-subtle truncate">
-            {line.perfume.brand.name}
+            {line.manualLabel?.trim() ? "Hors catalogue" : line.perfume.brand.name}
           </p>
         </div>
         {!isBridge ? (

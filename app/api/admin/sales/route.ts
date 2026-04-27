@@ -21,6 +21,8 @@ type SaleLineInputBody = {
   unitPrice?: number | string;
   unitCost?: number | string;
   volumeMl?: number;
+  /** Libellé saisi sur la commande (ligne hors catalogue). */
+  manualLabel?: string | null;
 };
 
 type CreateSaleBody = {
@@ -93,6 +95,7 @@ export async function POST(request: Request) {
 
     const normalizedLines: {
       perfumeId: number | null;
+      manualLabel: string | null;
       volumeMl: number;
       quantity: number;
       unitPrice: Prisma.Decimal;
@@ -103,6 +106,16 @@ export async function POST(request: Request) {
     }[] = [];
 
     for (const raw of rawItems) {
+      const manualTrim = (raw.manualLabel ?? "").trim();
+      const manualLabel =
+        manualTrim.length >= 2 ? manualTrim.slice(0, 500) : null;
+      if (manualTrim.length > 0 && manualTrim.length < 2) {
+        return NextResponse.json(
+          { error: "Libellé hors catalogue : au moins 2 caractères, ou laisse vide." },
+          { status: 400 },
+        );
+      }
+
       const perfumeIdRaw = raw.perfumeId;
       const perfumeId =
         perfumeIdRaw === null || perfumeIdRaw === undefined
@@ -159,6 +172,7 @@ export async function POST(request: Request) {
       });
       normalizedLines.push({
         perfumeId: perfumeId ?? null,
+        manualLabel,
         volumeMl: vol,
         ...totals,
       });
@@ -228,22 +242,30 @@ export async function POST(request: Request) {
           items: {
             create: normalizedLines.map((line) => {
               const perfume = line.perfumeId !== null ? perfumeById.get(line.perfumeId) : null;
+              const snapshotName =
+                perfume && line.manualLabel
+                  ? line.manualLabel
+                  : perfume
+                    ? perfume.name
+                    : line.manualLabel || "Vente libre";
               const snapshot = perfume
                 ? {
                     perfumeId: perfume.id,
-                    name: perfume.name,
+                    name: snapshotName,
                     image: perfume.image,
                     brand: perfume.brand
                       ? { id: perfume.brand.id, name: perfume.brand.name }
                       : null,
                     volumeMl: line.volumeMl,
+                    manualLabel: line.manualLabel,
                   }
                 : {
                     perfumeId: null,
-                    name: "Vente libre",
+                    name: snapshotName,
                     image: null,
                     brand: null,
                     volumeMl: line.volumeMl,
+                    manualLabel: line.manualLabel,
                   };
               return {
                 perfumeId: line.perfumeId,
