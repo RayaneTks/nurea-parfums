@@ -75,7 +75,7 @@ export function AdminLoginForm() {
             className="mx-auto mb-4"
             priority
           />
-          <h1 className="font-serif text-[26px] leading-[1.1] tracking-[-0.01em] text-admin-text">
+          <h1 className="font-sans text-[26px] font-bold leading-[1.1] tracking-tight text-admin-text">
             Bienvenue
           </h1>
           <p className="mt-1.5 text-[14px] text-admin-muted">

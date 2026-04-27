@@ -115,7 +115,7 @@ export function Modal({
     <div
       aria-hidden={!open}
       className={cn(
-        "fixed inset-0 z-[150] max-h-dvh min-h-0 w-full min-w-0 max-w-full overflow-x-clip admin-theme",
+        "fixed inset-0 z-[150] max-h-dvh min-h-0 w-full min-w-0 max-w-full overflow-x-hidden overflow-y-hidden overscroll-x-none admin-theme",
         "flex items-end justify-center sm:items-center sm:p-4",
         "touch-pan-y overscroll-y-contain bg-[var(--admin-overlay)] backdrop-blur-sm",
         isClosing
@@ -132,7 +132,7 @@ export function Modal({
         aria-describedby={description ? descId : undefined}
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          "relative w-full min-w-0 max-w-full rounded-t-3xl sm:rounded-3xl",
+          "relative w-full min-w-0 max-w-full overflow-x-hidden rounded-t-3xl sm:rounded-3xl",
           "bg-admin-surface border border-admin-border",
           "shadow-admin-xl",
           "flex max-h-[min(92dvh,calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)))] flex-col",
@@ -172,7 +172,7 @@ export function Modal({
           ) : null}
         </div>
         <div className="border-t border-admin-border" />
-        <div className="flex-1 overflow-y-auto overscroll-y-contain px-5 py-5 pb-[max(1.25rem,max(16px,env(safe-area-inset-bottom,16px)))] [-webkit-overflow-scrolling:touch]">
+        <div className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain overscroll-x-none px-5 py-5 pb-[max(1.25rem,max(16px,env(safe-area-inset-bottom,16px)))] [-webkit-overflow-scrolling:touch] [touch-action:pan-y]">
           {children}
         </div>
         {footer ? (

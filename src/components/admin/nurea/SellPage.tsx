@@ -432,7 +432,7 @@ function SaleLineEditor({
           />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-serif text-[14px] leading-tight tracking-[-0.01em] text-admin-text truncate">
+          <p className="font-sans text-[14px] font-semibold leading-tight text-admin-text truncate">
             {line.perfume.name}
           </p>
           <p className="mt-0.5 text-[10px] uppercase tracking-wider text-admin-subtle truncate">

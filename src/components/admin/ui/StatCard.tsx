@@ -29,7 +29,7 @@ export function StatCard({ label, value, hint, tone = "default", className }: St
       <p className="text-[11px] text-admin-subtle font-medium">{label}</p>
       <p
         className={cn(
-          "mt-2 font-serif text-[22px] leading-none tabular-nums tracking-[-0.01em] break-words",
+          "mt-2 font-sans text-[22px] font-semibold leading-none tabular-nums tracking-tight break-words",
           toneText[tone],
         )}
       >

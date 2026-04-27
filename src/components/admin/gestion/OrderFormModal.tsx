@@ -3,7 +3,7 @@
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Minus, Plus, Trash2, AlertCircle } from "lucide-react";
+import { Minus, Plus, Trash2, AlertCircle, ListOrdered } from "lucide-react";
 import { SectionCard } from "../ui/SectionCard";
 import { AdminButton } from "../ui/AdminButton";
 import { AdminInput } from "../ui/AdminInput";
@@ -34,12 +34,21 @@ export function toNum(v: string): number {
 }
 
 export type OrderFormLine = {
+  lineKey: string;
   perfume: PerfumePickerRow;
+  manualLabel: string | null;
   quantity: number;
   volumeMl: (typeof ORDER_VOLUMES_ML)[number];
   unitPrice: string;
   unitCost: string;
 };
+
+function newLineKey() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `k-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
 
 function toDatetimeLocal(iso: string | null): string {
   if (!iso) return "";
@@ -53,14 +62,17 @@ function orderItemToLine(item: OrderItemRow): OrderFormLine | null {
   if (!item.perfume) return null;
   const vol = item.volumeMl;
   const volumeMl: (typeof ORDER_VOLUMES_ML)[number] = isValidVolumeMl(vol) ? vol : 100;
+  const manual = item.manualLabel?.trim() || null;
   return {
+    lineKey: item.id,
     perfume: {
-      id: item.perfumeId,
+      id: item.perfume.id,
       name: item.perfume.name,
       image: item.perfume.image,
       status: "PUBLISHED",
       brand: item.perfume.brand,
     },
+    manualLabel: manual && manual.length >= 2 ? manual : null,
     quantity: item.quantity,
     volumeMl,
     unitPrice: item.unitPrice,
@@ -94,6 +106,8 @@ export function OrderFormModal({
   const [saving, setSaving] = useState(false);
   const [depositPaid, setDepositPaid] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
+  const [manualPlaceholder, setManualPlaceholder] = useState<PerfumePickerRow | null>(null);
+  const [manualPlaceholderError, setManualPlaceholderError] = useState<string | null>(null);
 
   const resetEmpty = useCallback(() => {
     setCustomerName("");
@@ -103,6 +117,8 @@ export function OrderFormModal({
     setSaving(false);
     setDepositPaid(false);
     setDepositAmount("");
+    setManualPlaceholder(null);
+    setManualPlaceholderError(null);
   }, []);
 
   useEffect(() => {
@@ -114,6 +130,27 @@ export function OrderFormModal({
       resetEmpty();
     }
   }, [open, mode, resetEmpty]);
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setManualPlaceholderError(null);
+    fetch("/api/admin/orders/manual-placeholder", { credentials: "include", cache: "no-store" })
+      .then(async (r) => {
+        const j = await readJsonSafe<{ perfume?: PerfumePickerRow; error?: string }>(r);
+        if (!r.ok) throw new Error(j?.error ?? "Préparation hors catalogue impossible.");
+        if (!j?.perfume) throw new Error("Réponse invalide.");
+        if (!cancelled) setManualPlaceholder(j.perfume);
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setManualPlaceholderError(e instanceof Error ? e.message : "Erreur");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open || mode !== "edit" || !order) return;
@@ -140,23 +177,47 @@ export function OrderFormModal({
 
   const addPerfume = (p: PerfumePickerRow) => {
     setItems((prev) => {
-      if (prev.some((it) => it.perfume.id === p.id)) return prev;
+      if (prev.some((it) => it.manualLabel == null && it.perfume.id === p.id)) return prev;
       return [
         ...prev,
-        { perfume: p, quantity: 1, volumeMl: 100, unitPrice: "", unitCost: "" },
+        {
+          lineKey: newLineKey(),
+          perfume: p,
+          manualLabel: null,
+          quantity: 1,
+          volumeMl: 100,
+          unitPrice: "",
+          unitCost: "",
+        },
       ];
     });
   };
 
-  const patchItem = (id: number, patch: Partial<OrderFormLine>) => {
-    setItems((prev) => prev.map((it) => (it.perfume.id === id ? { ...it, ...patch } : it)));
+  const addManualLine = () => {
+    if (!manualPlaceholder) return;
+    setItems((prev) => [
+      ...prev,
+      {
+        lineKey: newLineKey(),
+        perfume: manualPlaceholder,
+        manualLabel: "",
+        quantity: 1,
+        volumeMl: 100,
+        unitPrice: "",
+        unitCost: "",
+      },
+    ]);
   };
 
-  const updateQty = (id: number, delta: number) => {
+  const patchItem = (lineKey: string, patch: Partial<OrderFormLine>) => {
+    setItems((prev) => prev.map((it) => (it.lineKey === lineKey ? { ...it, ...patch } : it)));
+  };
+
+  const updateQty = (lineKey: string, delta: number) => {
     setItems((prev) =>
       prev
         .map((it) =>
-          it.perfume.id === id
+          it.lineKey === lineKey
             ? { ...it, quantity: Math.max(1, it.quantity + delta) }
             : it,
         )
@@ -164,8 +225,8 @@ export function OrderFormModal({
     );
   };
 
-  const removeItem = (id: number) => {
-    setItems((prev) => prev.filter((it) => it.perfume.id !== id));
+  const removeItem = (lineKey: string) => {
+    setItems((prev) => prev.filter((it) => it.lineKey !== lineKey));
   };
 
   const canSubmit = useMemo(() => {
@@ -174,10 +235,13 @@ export function OrderFormModal({
     if (items.length === 0) return false;
     for (const it of items) {
       if (toNum(it.unitPrice) < 0 || toNum(it.unitCost) < 0) return false;
+      if (it.perfume.id === manualPlaceholder?.id) {
+        if ((it.manualLabel ?? "").trim().length < 2) return false;
+      }
     }
     if (depositPaid && toNum(depositAmount) <= 0) return false;
     return true;
-  }, [items, saving, customerName, depositPaid, depositAmount]);
+  }, [items, saving, customerName, depositPaid, depositAmount, manualPlaceholder?.id]);
 
   const onSubmit = async () => {
     if (!canSubmit) return;
@@ -188,14 +252,19 @@ export function OrderFormModal({
         deliveryAt: deliveryAt ? new Date(deliveryAt).toISOString() : null,
         notes: notes.trim() || null,
         depositPaid,
-        depositAmount: toNum(depositAmount),
-        items: items.map((i) => ({
-          perfumeId: i.perfume.id,
-          quantity: i.quantity,
-          volumeMl: i.volumeMl,
-          unitPrice: toNum(i.unitPrice),
-          unitCost: toNum(i.unitCost),
-        })),
+        depositAmount: depositPaid ? toNum(depositAmount) : 0,
+        items: items.map((i) => {
+          const manual = (i.manualLabel ?? "").trim();
+          const isMan = manual.length >= 2 && i.perfume.id === manualPlaceholder?.id;
+          return {
+            perfumeId: i.perfume.id,
+            manualLabel: isMan ? manual : null,
+            quantity: i.quantity,
+            volumeMl: i.volumeMl,
+            unitPrice: toNum(i.unitPrice),
+            unitCost: toNum(i.unitCost),
+          };
+        }),
       };
 
       if (mode === "create") {
@@ -233,12 +302,22 @@ export function OrderFormModal({
   const title = mode === "create" ? "Nouvelle commande" : "Modifier la commande";
   const submitLabel = mode === "create" ? "Créer la commande" : "Enregistrer les modifications";
 
+  const displayName = (it: OrderFormLine) => {
+    const m = (it.manualLabel ?? "").trim();
+    if (m.length >= 2) return m;
+    return it.perfume.name;
+  };
+
+  const showManualField = (it: OrderFormLine) =>
+    it.perfume.id === manualPlaceholder?.id || Boolean((it.manualLabel ?? "").trim());
+
   return (
     <>
       <Modal
         open={open}
         onClose={onClose}
         title={title}
+        description="Client, lignes, puis acompte si besoin. Défilement vertical uniquement."
         size="md"
         footer={
           <AdminButton
@@ -253,17 +332,25 @@ export function OrderFormModal({
           </AdminButton>
         }
       >
-        <div className="max-h-[min(70dvh,540px)] space-y-5 overflow-y-auto pr-0.5">
+        <div className="space-y-6">
+          <div className="flex items-start gap-3 rounded-xl border border-admin-border bg-admin-bg/60 px-3 py-2.5">
+            <ListOrdered className="mt-0.5 h-4 w-4 shrink-0 text-admin-accent" aria-hidden />
+            <p className="text-[12px] leading-snug text-admin-muted">
+              <span className="font-medium text-admin-text">Étapes :</span> client → parfums (catalogue ou hors
+              site) → prix par ligne → acompte seulement si déjà encaissé.
+            </p>
+          </div>
+
           <AdminInput
             label="Client"
             name="customerName"
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
-            placeholder="Nom"
+            placeholder="Nom ou pseudo"
           />
 
           <AdminInput
-            label="Livraison"
+            label="Livraison prévue"
             name="deliveryAt"
             type="datetime-local"
             value={deliveryAt}
@@ -274,48 +361,57 @@ export function OrderFormModal({
             <p className="text-[10px] font-medium uppercase tracking-wider text-admin-muted">Acompte</p>
             {mode === "edit" && order?.status === "PENDING" ? (
               <p className="text-[11px] leading-snug text-admin-muted">
-                Acompte + passage en « à traiter » : bouton sur la fiche. Ici : client, panier, corrections.
+                Premier encaissement : depuis la fiche commande (« Passer en à traiter »). Ici : client, panier,
+                corrections.
               </p>
             ) : null}
-            <label className="flex items-center gap-2 text-[14px] text-admin-text">
+            <label className="flex min-h-11 cursor-pointer items-center gap-3 text-[14px] text-admin-text">
               <input
                 type="checkbox"
                 checked={depositPaid}
-                onChange={(e) => setDepositPaid(e.target.checked)}
-                className="h-4 w-4 rounded border-admin-border"
+                onChange={(e) => {
+                  const on = e.target.checked;
+                  setDepositPaid(on);
+                  if (!on) setDepositAmount("");
+                }}
+                className="h-4 w-4 shrink-0 rounded border-admin-border"
               />
-              Acompte encaissé
+              Acompte déjà encaissé
             </label>
-            <AdminInput
-              label="Montant acompte (€)"
-              name="depositAmount"
-              value={depositAmount}
-              onChange={(e) => setDepositAmount(e.target.value)}
-              inputMode="decimal"
-              placeholder={depositPaid ? "ex. 25" : "— si non payé"}
-              hint={
-                mode === "edit" && order?.status === "PENDING"
-                  ? "Obligatoire si coché. Premier encaissement : depuis la fiche."
-                  : depositPaid
-                    ? "Obligatoire si coché (> 0 €)."
-                    : "Saisir seulement si encaissé."
-              }
-            />
+            {depositPaid ? (
+              <AdminInput
+                label="Montant encaissé (€)"
+                name="depositAmount"
+                value={depositAmount}
+                onChange={(e) => setDepositAmount(e.target.value)}
+                inputMode="decimal"
+                placeholder="ex. 25"
+                hint={
+                  mode === "edit" && order?.status === "PENDING"
+                    ? "Obligatoire si coché. Sinon utilise la fiche pour l’encaissement."
+                    : "Obligatoire si coché (> 0 €)."
+                }
+              />
+            ) : (
+              <p className="text-[11px] text-admin-muted">Pas d’acompte : aucun montant à saisir.</p>
+            )}
           </SectionCard>
 
-          <div className="space-y-2">
-            <p className="text-[11px] uppercase tracking-wider font-medium text-admin-muted">
-              Parfums ({items.length})
-            </p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-2 px-0.5">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-admin-muted">
+                Parfums · {items.length}
+              </p>
+            </div>
             <div className="flex flex-col gap-2">
               {items.map((it) => (
-                <SectionCard key={it.perfume.id} className="space-y-3 p-3">
+                <SectionCard key={it.lineKey} className="space-y-3 p-3">
                   <div className="flex items-start gap-3">
-                    <div className="relative h-12 w-9 shrink-0 overflow-hidden rounded-xl border border-admin-border bg-admin-bg">
+                    <div className="relative h-12 w-9 shrink-0 overflow-hidden rounded-none border border-admin-border bg-admin-bg">
                       <Image
                         loader={nureaAdminThumbLoader}
                         src={it.perfume.image}
-                        alt={it.perfume.name}
+                        alt=""
                         fill
                         className="object-cover"
                         sizes="36px"
@@ -324,17 +420,32 @@ export function OrderFormModal({
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-serif text-[14px] leading-tight tracking-[-0.01em] text-admin-text">
-                        {it.perfume.name}
-                      </p>
-                      <p className="mt-0.5 text-[10px] uppercase tracking-wider text-admin-subtle">
-                        {it.perfume.brand.name}
-                      </p>
+                      {showManualField(it) ? (
+                        <AdminInput
+                          label="Libellé (hors catalogue)"
+                          name={`manual-${it.lineKey}`}
+                          value={it.manualLabel ?? ""}
+                          onChange={(e) =>
+                            patchItem(it.lineKey, { manualLabel: e.target.value || null })
+                          }
+                          placeholder="ex. Fragrance X — édition limitée"
+                          hint="Ce texte figure sur la commande pour trace écrite."
+                        />
+                      ) : (
+                        <>
+                          <p className="font-sans text-[14px] font-semibold leading-tight text-admin-text">
+                            {displayName(it)}
+                          </p>
+                          <p className="mt-0.5 text-[10px] uppercase tracking-wider text-admin-subtle">
+                            {it.perfume.brand.name}
+                          </p>
+                        </>
+                      )}
                     </div>
                     <button
                       type="button"
-                      onClick={() => removeItem(it.perfume.id)}
-                      aria-label="Retirer"
+                      onClick={() => removeItem(it.lineKey)}
+                      aria-label="Retirer la ligne"
                       className="h-9 w-9 shrink-0 text-admin-subtle tap-scale [@media(hover:hover)]:hover:text-admin-danger"
                     >
                       <Trash2 className="h-4 w-4" aria-hidden />
@@ -342,17 +453,17 @@ export function OrderFormModal({
                   </div>
                   <div>
                     <p className="mb-1.5 text-[10px] uppercase tracking-wider text-admin-subtle">Volume</p>
-                    <div className="flex gap-1">
+                    <div className="flex min-w-0 gap-1">
                       {ORDER_VOLUMES_ML.map((v) => (
                         <button
                           key={v}
                           type="button"
-                          onClick={() => patchItem(it.perfume.id, { volumeMl: v })}
+                          onClick={() => patchItem(it.lineKey, { volumeMl: v })}
                           className={cn(
-                            "flex-1 rounded-lg py-1.5 text-center text-[12px] font-semibold",
+                            "min-h-9 min-w-0 flex-1 rounded-none py-2 text-center text-[12px] font-semibold",
                             it.volumeMl === v
                               ? "bg-admin-accent text-white"
-                              : "bg-admin-bg text-admin-muted border border-admin-border",
+                              : "border border-admin-border bg-admin-bg text-admin-muted",
                           )}
                         >
                           {v} ml
@@ -360,94 +471,112 @@ export function OrderFormModal({
                       ))}
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="min-w-0 space-y-3">
                     <div>
                       <p className="mb-1 text-[10px] uppercase tracking-wider text-admin-subtle">Qté</p>
-                      <div className="flex items-center gap-0.5">
+                      <div className="flex items-center gap-1">
                         <button
                           type="button"
-                          onClick={() => updateQty(it.perfume.id, -1)}
-                          className="h-9 w-8 rounded-lg border border-admin-border"
+                          onClick={() => updateQty(it.lineKey, -1)}
+                          className="flex h-9 w-10 shrink-0 items-center justify-center rounded-none border border-admin-border"
+                          aria-label="Diminuer la quantité"
                         >
-                          <Minus className="mx-auto h-3 w-3" />
+                          <Minus className="h-3 w-3" />
                         </button>
-                        <span className="w-7 text-center text-[15px] tabular-nums">{it.quantity}</span>
+                        <span className="min-w-[2rem] text-center text-[15px] font-sans tabular-nums">
+                          {it.quantity}
+                        </span>
                         <button
                           type="button"
-                          onClick={() => updateQty(it.perfume.id, 1)}
-                          className="h-9 w-8 rounded-lg border border-admin-border"
+                          onClick={() => updateQty(it.lineKey, 1)}
+                          className="flex h-9 w-10 shrink-0 items-center justify-center rounded-none border border-admin-border"
+                          aria-label="Augmenter la quantité"
                         >
-                          <Plus className="mx-auto h-3 w-3" />
+                          <Plus className="h-3 w-3" />
                         </button>
                       </div>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="mb-1 text-[10px] font-medium uppercase leading-tight text-admin-subtle">
                         Prix client (€)
                       </p>
                       <p className="mb-1 text-[8px] font-normal normal-case leading-tight text-admin-muted">
-                        Ce que le client paie
+                        Facturé au client pour ce flacon
                       </p>
                       <input
                         type="text"
                         inputMode="decimal"
                         value={it.unitPrice}
-                        onChange={(e) => patchItem(it.perfume.id, { unitPrice: e.target.value })}
-                        className="h-9 w-full rounded-lg border border-admin-border bg-admin-surface px-2 text-[14px] tabular-nums"
+                        onChange={(e) => patchItem(it.lineKey, { unitPrice: e.target.value })}
+                        className="h-9 w-full max-w-full rounded-none border border-admin-border bg-admin-surface px-2 font-sans text-[14px] tabular-nums text-admin-text"
                         placeholder="ex. 35"
                         autoComplete="off"
-                        title="Montant facturé au client pour ce flacon (prix de vente)"
-                        aria-label="Prix client, montant facturé pour ce flacon"
+                        aria-label="Prix client pour ce flacon"
                       />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="mb-1 text-[10px] font-medium uppercase leading-tight text-admin-subtle">
                         Mon achat (€)
                       </p>
                       <p className="mb-1 text-[8px] font-normal normal-case leading-tight text-admin-muted">
-                        Ce que le flacon te coûte
+                        Coût d’achat du flacon
                       </p>
                       <input
                         type="text"
                         inputMode="decimal"
                         value={it.unitCost}
-                        onChange={(e) => patchItem(it.perfume.id, { unitCost: e.target.value })}
-                        className="h-9 w-full rounded-lg border border-admin-border bg-admin-surface px-2 text-[14px] tabular-nums"
+                        onChange={(e) => patchItem(it.lineKey, { unitCost: e.target.value })}
+                        className="h-9 w-full max-w-full rounded-none border border-admin-border bg-admin-surface px-2 font-sans text-[14px] tabular-nums text-admin-text"
                         placeholder="ex. 10,86"
                         autoComplete="off"
-                        title="Prix d'achat : à combien tu l'as eu le flacon"
-                        aria-label="Mon prix d'achat du flacon (revient)"
+                        aria-label="Prix d’achat du flacon"
                       />
                     </div>
                   </div>
-                  <p className="text-right text-[12px] tabular-nums text-admin-text">
+                  <p className="text-right font-sans text-[12px] tabular-nums text-admin-text">
                     {(toNum(it.unitPrice) * it.quantity).toFixed(2).replace(".", ",")}&nbsp;€
                   </p>
                 </SectionCard>
               ))}
             </div>
-            <AdminButton
-              type="button"
-              variant="outline"
-              size="md"
-              leftIcon={Plus}
-              className="w-full"
-              onClick={() => setPickerOpen(true)}
-            >
-              Ajouter un parfum
-            </AdminButton>
+
+            <div className="flex flex-col gap-2">
+              <AdminButton
+                type="button"
+                variant="outline"
+                size="md"
+                leftIcon={Plus}
+                className="w-full"
+                onClick={() => setPickerOpen(true)}
+              >
+                Depuis le catalogue
+              </AdminButton>
+              <AdminButton
+                type="button"
+                variant="secondary"
+                size="md"
+                className="w-full"
+                disabled={!manualPlaceholder}
+                onClick={addManualLine}
+              >
+                Hors catalogue (nom manuel)
+              </AdminButton>
+            </div>
+            {manualPlaceholderError ? (
+              <p className="text-[11px] text-admin-danger">{manualPlaceholderError}</p>
+            ) : null}
             {items.length === 0 ? (
               <p className="flex items-center gap-2 text-[11px] text-[color:var(--admin-warning)]">
                 <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                Sélectionne au moins un parfum (panier) pour valider la commande.
+                Ajoute au moins une ligne (catalogue ou libellé manuel).
               </p>
             ) : null}
           </div>
 
           {items.length > 0 ? (
-            <div className="flex items-center justify-between rounded-xl border border-admin-border bg-admin-surface px-3 py-2">
-              <span className="text-[12px] font-medium text-admin-muted">Total</span>
-              <span className="text-[18px] font-serif tabular-nums text-admin-text">
+            <div className="flex items-center justify-between rounded-none border border-admin-border bg-admin-surface px-3 py-2.5">
+              <span className="font-sans text-[12px] font-medium text-admin-muted">Total commande</span>
+              <span className="font-sans text-[18px] font-semibold tabular-nums text-admin-text">
                 {orderTotal.toFixed(2).replace(".", ",")} €
               </span>
             </div>
@@ -465,8 +594,8 @@ export function OrderFormModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              placeholder="—"
-              className="block w-full rounded-xl border border-admin-border bg-admin-surface px-4 py-3 text-[16px] text-admin-text placeholder:text-admin-subtle transition-colors focus-visible:border-admin-accent focus-visible:outline-none"
+              placeholder="Optionnel"
+              className="block w-full max-w-full rounded-none border border-admin-border bg-admin-surface px-4 py-3 font-sans text-[16px] text-admin-text placeholder:text-admin-subtle transition-colors focus-visible:border-admin-accent focus-visible:outline-none"
             />
           </div>
         </div>
@@ -476,7 +605,15 @@ export function OrderFormModal({
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
         onSelect={addPerfume}
-        excludedIds={items.map((i) => i.perfume.id)}
+        excludedIds={(() => {
+          const ids = new Set<number>();
+          if (manualPlaceholder) ids.add(manualPlaceholder.id);
+          for (const i of items) {
+            if (manualPlaceholder && i.perfume.id === manualPlaceholder.id) continue;
+            ids.add(i.perfume.id);
+          }
+          return [...ids];
+        })()}
       />
     </>
   );

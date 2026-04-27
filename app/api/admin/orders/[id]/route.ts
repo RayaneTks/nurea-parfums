@@ -7,6 +7,7 @@ import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { serializeOrder } from "@/lib/gestion/orderJson";
 import { purgeOrderIfEphemeral } from "@/lib/gestion/orderPurge";
 import { isValidVolumeMl, parseOptionalMoneyToZero } from "@/lib/gestion/orderLineValidation";
+import { ensureOrderManualPlaceholderPerfume } from "@/lib/gestion/orderManualPlaceholder";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -34,6 +35,7 @@ type OrderItemInput = {
   perfumeId?: number;
   quantity?: number;
   note?: string | null;
+  manualLabel?: string | null;
   volumeMl?: number;
   unitPrice?: number | string;
   unitCost?: number | string;
@@ -190,17 +192,32 @@ export async function PATCH(
           { status: 400 },
         );
       }
+      const placeholder = await ensureOrderManualPlaceholderPerfume(prisma);
+
       const cleanItems: {
         perfumeId: number;
         quantity: number;
         note: string | null;
+        manualLabel: string | null;
         volumeMl: number;
         unitPrice: Prisma.Decimal;
         unitCost: Prisma.Decimal;
       }[] = [];
       for (const raw of body.items) {
-        const perfumeId =
+        const manualTrim = (raw.manualLabel ?? "").trim();
+        const useManual = manualTrim.length >= 2;
+        if (useManual && manualTrim.length > 500) {
+          return NextResponse.json(
+            { error: "Libellé « hors site » trop long (500 caractères max)." },
+            { status: 400 },
+          );
+        }
+
+        let perfumeId =
           typeof raw.perfumeId === "number" ? raw.perfumeId : Number(raw.perfumeId);
+        if (useManual) {
+          perfumeId = placeholder.id;
+        }
         const quantity =
           typeof raw.quantity === "number" ? raw.quantity : Number(raw.quantity ?? 1);
         const vol =
@@ -243,6 +260,7 @@ export async function PATCH(
           perfumeId: Math.floor(perfumeId),
           quantity: Math.floor(quantity),
           note: raw.note?.trim() || null,
+          manualLabel: useManual ? manualTrim : null,
           volumeMl: vol,
           unitPrice: new Prisma.Decimal(up),
           unitCost: new Prisma.Decimal(uc),

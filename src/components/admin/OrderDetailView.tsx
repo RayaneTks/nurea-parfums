@@ -230,7 +230,7 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
               <p className="text-[10px] uppercase tracking-wider text-admin-subtle">
                 Livraison prévue
               </p>
-              <p className="mt-0.5 font-serif text-[16px] leading-tight tracking-[-0.01em] text-admin-text">
+              <p className="mt-0.5 font-sans text-[16px] font-medium leading-tight text-admin-text">
                 {order.deliveryAt
                   ? `${relativeDayLabel(order.deliveryAt)} · ${formatDateTime(order.deliveryAt)}`
                   : "Non planifiée"}
@@ -240,7 +240,7 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
               <p className="text-[10px] uppercase tracking-wider text-admin-subtle">
                 Acompte
               </p>
-              <p className="mt-0.5 font-serif text-[16px] tabular-nums text-admin-text">
+              <p className="mt-0.5 font-sans text-[16px] font-semibold tabular-nums text-admin-text">
                 {order.depositPaid ? "Payé" : "Non reçu"} · {formatMoney(order.depositAmount)}
               </p>
             </div>
@@ -310,18 +310,24 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
                     <div className="h-14 w-11 rounded-xl bg-admin-bg border border-admin-border shrink-0" />
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="font-serif text-[15px] leading-tight tracking-[-0.01em] text-admin-text truncate">
-                      {item.perfume?.name ?? "Parfum"}
+                    <p className="font-sans text-[15px] font-semibold leading-tight text-admin-text truncate">
+                      {item.manualLabel?.trim()
+                        ? item.manualLabel.trim()
+                        : (item.perfume?.name ?? "Parfum")}
                     </p>
                     <p className="mt-0.5 text-[11px] uppercase tracking-wider text-admin-subtle truncate">
-                      {item.perfume?.brand?.name ?? "—"} · {item.volumeMl} ml
+                      {item.manualLabel?.trim()
+                        ? `Hors catalogue · ${item.volumeMl} ml`
+                        : `${item.perfume?.brand?.name ?? "—"} · ${item.volumeMl} ml`}
                     </p>
                     <p className="mt-1 text-[11px] tabular-nums text-admin-muted">
                       Prix client {formatMoney(item.unitPrice)} · Mon achat {formatMoney(item.unitCost)}
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="font-serif text-[16px] tabular-nums text-admin-text">×{item.quantity}</span>
+                    <span className="font-sans text-[16px] font-semibold tabular-nums text-admin-text">
+                      ×{item.quantity}
+                    </span>
                   </div>
                 </div>
               </SectionCard>

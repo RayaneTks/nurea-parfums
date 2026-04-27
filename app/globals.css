@@ -672,6 +672,9 @@ body.admin-route .nurea-viewport-top-shield {
   z-index: 60;
   box-sizing: border-box;
   width: 100%;
+  max-width: 430px;
+  margin-left: auto;
+  margin-right: auto;
   isolation: isolate;
   background-color: color-mix(in oklab, var(--admin-surface) 88%, transparent);
   backdrop-filter: blur(10px) saturate(130%);

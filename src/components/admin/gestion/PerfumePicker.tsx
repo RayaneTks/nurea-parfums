@@ -119,7 +119,7 @@ export function PerfumePicker({
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-serif text-[15px] leading-tight tracking-[-0.01em] text-admin-text truncate">
+                  <p className="font-sans text-[15px] font-semibold leading-tight text-admin-text truncate">
                     {p.name}
                   </p>
                   <p className="mt-0.5 text-[11px] uppercase tracking-wider text-admin-subtle truncate">

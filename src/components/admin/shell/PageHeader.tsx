@@ -59,7 +59,7 @@ export function PageHeader({
           ) : null}
           <h1
             className={cn(
-              "font-serif leading-[1.1] tracking-[-0.01em] text-admin-text transition-[font-size] duration-200 ease-out-expo",
+              "font-sans font-bold leading-[1.1] tracking-tight text-admin-text transition-[font-size] duration-200 ease-out-expo",
               isCompact ? "text-[24px]" : "text-[28px]",
             )}
           >

@@ -47,6 +47,7 @@ export type OrderItemRow = {
   perfumeId: number;
   quantity: number;
   note: string | null;
+  manualLabel: string | null;
   volumeMl: number;
   unitPrice: string;
   unitCost: string;

@@ -137,6 +137,8 @@ model OrderItem {
   perfumeId  Int
   quantity   Int      @default(1)
   note       String?
+  /// Libellé saisi à la main quand le parfum n’est pas (encore) sur le catalogue (ligne technique).
+  manualLabel String?
   /// Flacon 30, 50 ou 100 ml
   volumeMl   Int      @default(100)
   /// Prix unitaire de vente (€) pour ce flacon

@@ -563,7 +563,7 @@ function SaleDetailModal({
                 <SectionCard key={item.id} className="p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="font-serif text-[15px] leading-tight tracking-[-0.01em] text-admin-text truncate">
+                      <p className="font-sans text-[15px] font-semibold leading-tight text-admin-text truncate">
                         {item.perfumeSnapshot?.name || "Ligne"}
                       </p>
                       <p className="mt-0.5 text-[11px] uppercase tracking-wider text-admin-subtle">
@@ -571,7 +571,7 @@ function SaleDetailModal({
                       </p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="font-serif text-[15px] tabular-nums text-admin-text">
+                      <p className="font-sans text-[15px] font-semibold tabular-nums text-admin-text">
                         {formatMoney(item.lineRevenue)}
                       </p>
                       <p className="mt-0.5 text-[11px] tabular-nums text-admin-subtle">
