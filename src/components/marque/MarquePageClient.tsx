@@ -12,10 +12,10 @@ export const MarquePageClient = () => {
   const domain = SITE_URL.replace(/^https?:\/\//, "");
 
   return (
-    <div className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
+    <div className="nurea-vitrine-shell grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
       <Navbar />
 
-      <main id="main-content" className="flex-1">
+      <main id="main-content" className="min-w-0 flex-1">
         {/* Hero Section */}
         <section className="relative px-4 pt-24 pb-16 md:pt-36 md:pb-24 overflow-hidden">
           <div className="mx-auto max-w-[880px]">

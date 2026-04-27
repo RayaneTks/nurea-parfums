@@ -62,7 +62,7 @@ export function AdminShellClient({ children }: AdminShellClientProps) {
 
   if (isLogin) {
     return (
-      <div className="admin-theme min-h-[100dvh] bg-admin-bg text-admin-text">
+      <div className="admin-theme min-h-[100dvh] w-full min-w-0 max-w-full overflow-x-clip bg-admin-bg text-admin-text">
         <div className="admin-mobile-shell !pb-0 pt-[env(safe-area-inset-top,0px)]">
           {children}
         </div>
@@ -71,8 +71,8 @@ export function AdminShellClient({ children }: AdminShellClientProps) {
   }
 
   return (
-    <div className="admin-theme min-h-[100dvh] text-neutral-900">
-      <div className="mx-auto w-full min-h-[100dvh] max-w-[430px] shadow-none md:shadow-[0_0_0_1px_rgba(0,0,0,0.08)]">
+    <div className="admin-theme min-h-[100dvh] w-full min-w-0 max-w-full overflow-x-clip text-neutral-900">
+      <div className="mx-auto w-full min-h-[100dvh] min-w-0 max-w-[430px] shadow-none md:shadow-[0_0_0_1px_rgba(0,0,0,0.08)]">
         <NureaAdminShell>{children}</NureaAdminShell>
       </div>
     </div>

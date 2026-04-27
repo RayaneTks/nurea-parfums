@@ -100,6 +100,8 @@
     overflow-x: hidden;
     overflow-x: clip;
     overscroll-behavior-x: none;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
     /* Barre de navigation fixe + ancres (#collection, scrollIntoView) */
     scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 3.75rem);
     @media (min-width: 768px) {
@@ -129,6 +131,24 @@
     overscroll-behavior-x: none;
     /* Limite le « rubber band » qui révèle le contenu au-dessus du header sur mobile */
     overscroll-behavior-y: none;
+  }
+
+  /**
+   * Colonnes de la grille / split éditorial : sans min-width, le contenu peut forcer
+   * un scroll horizontal (images, mots longs).
+   */
+  .editorial-split > * {
+    min-width: 0;
+  }
+
+  /**
+   * Shell pages vitrine : empêche le débordement sur l’axe X (full-bleed, -mx, flex).
+   */
+  .nurea-vitrine-shell {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
   ::selection {
@@ -598,6 +618,9 @@ body.admin-route {
 body.admin-route {
   background-color: var(--admin-bg);
   color-scheme: light;
+  overflow-x: hidden;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
 }
 
 body.admin-route .nurea-viewport-top-shield {

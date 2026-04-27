@@ -20,12 +20,16 @@ test.describe("Catalogue — parcours principaux", () => {
     await page.locator("#collection").waitFor({ state: "visible" });
   });
 
-  test("affiche le titre et le compteur de créations", async ({ page }) => {
+  test("affiche le titre et le compteur de résultats", async ({ page }) => {
     const zone = page.locator("#collection");
     await expect(
-      zone.getByRole("heading", { level: 2, name: "La Collection" })
+      zone.getByRole("heading", { level: 2, name: "Le Catalogue" })
     ).toBeVisible();
-    await expect(zone.getByText(/\d+ création/)).toBeVisible();
+    await expect(
+      zone.getByText(
+        /\d+ (parfum|résultat|marque|parfums|résultats|marques)/
+      )
+    ).toBeVisible();
   });
 
   test("ouvre le panneau Explorer depuis la barre de navigation", async ({

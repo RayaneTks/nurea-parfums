@@ -475,7 +475,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
 
       <main
         id="collection"
-        className="mx-auto w-full max-w-[1200px] flex-grow scroll-mt-[calc(env(safe-area-inset-top,0px)+3.5rem)] px-4 py-12 pb-safe-bottom md:scroll-mt-[calc(env(safe-area-inset-top,0px)+4.25rem)] md:px-10 md:py-24 min-h-[800px]"
+        className="mx-auto min-h-[800px] w-full min-w-0 max-w-[1200px] flex-grow scroll-mt-[calc(env(safe-area-inset-top,0px)+3.5rem)] px-4 py-12 pb-safe-bottom md:scroll-mt-[calc(env(safe-area-inset-top,0px)+4.25rem)] md:px-10 md:py-24"
       >
         <ScrollReveal className="mb-8 md:mb-12">
           <div>
@@ -494,7 +494,8 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
           </div>
         </ScrollReveal>
 
-        <div className={`sticky z-30 -mx-4 mb-4 border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-4 pt-4 pb-3 transition-transform duration-500 ease-out-expo [top:calc(env(safe-area-inset-top,0px)+3.5rem)] md:mx-0 md:mb-3 md:px-0 md:top-[calc(env(safe-area-inset-top,0px)+4.25rem)] ${
+        <div
+          className={`sticky z-30 -mx-4 mb-4 min-w-0 overflow-x-clip border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-4 pt-4 pb-3 transition-transform duration-500 ease-out-expo [top:calc(env(safe-area-inset-top,0px)+3.5rem)] md:mx-0 md:mb-3 md:px-0 md:top-[calc(env(safe-area-inset-top,0px)+4.25rem)] ${
           isHeaderVisible ? "translate-y-0" : "-translate-y-[calc(100%+env(safe-area-inset-top,0px)+4.25rem)]"  
         }`}>
           <ScrollReveal className="mb-0" delay={80}>

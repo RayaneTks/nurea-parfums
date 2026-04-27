@@ -35,7 +35,10 @@ export const metadata: Metadata = {
 
 function HomeFallback() {
   return (
-    <div className="grain min-h-screen bg-[var(--nurea-bg)] p-10 pt-32" aria-busy="true">
+    <div
+      className="nurea-vitrine-shell grain min-h-screen bg-[var(--nurea-bg)] p-10 pt-32"
+      aria-busy="true"
+    >
       <CatalogSkeleton />
     </div>
   );
@@ -47,7 +50,10 @@ export default async function HomePage() {
   const featuredPerfumes = catalogPerfumes.filter((p) => p.isFeatured).slice(0, 2);
 
   return (
-    <div id="main-content" className="grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
+    <div
+      id="main-content"
+      className="nurea-vitrine-shell grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]"
+    >
       <Navbar />
       
       <Hero />

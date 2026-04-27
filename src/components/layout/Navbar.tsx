@@ -103,9 +103,17 @@ export const Navbar: FC<NavbarProps> = ({ onOpenBrowse: initialOnOpenBrowse }) =
   /* Lock scroll when menu is open */
   useEffect(() => {
     if (typeof document === "undefined") return;
-    document.documentElement.style.overflow = menuOpen ? "hidden" : "";
+    const html = document.documentElement;
+    if (menuOpen) {
+      html.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    } else {
+      html.style.overflow = "";
+      document.body.style.overflow = "";
+    }
     return () => {
-      document.documentElement.style.overflow = "";
+      html.style.overflow = "";
+      document.body.style.overflow = "";
     };
   }, [menuOpen]);
 
@@ -122,7 +130,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenBrowse: initialOnOpenBrowse }) =
             : "border-[var(--nurea-border)]/0 bg-[var(--nurea-bg)]"
         }`}
       >
-        <div className="relative z-10 mx-auto flex h-[56px] max-w-[1200px] items-center justify-between px-4 md:h-[68px] md:px-10">
+        <div className="relative z-10 mx-auto flex h-[56px] w-full min-w-0 max-w-[1200px] items-center justify-between px-4 md:h-[68px] md:px-10">
           {/* Back button or Burger — mobile only */}
           <div className="flex h-11 w-11 items-center justify-start md:hidden">
             {!isHome ? (

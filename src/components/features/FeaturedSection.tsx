@@ -23,7 +23,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
   const activeTheme = resolvedTheme === "light" ? "light" : "dark";
 
   return (
-    <section className="w-full">
+    <section className="w-full min-w-0 max-w-full overflow-x-clip">
       {perfumes.map((perfume, index) => {
         const isReverse = index % 2 !== 0;
 

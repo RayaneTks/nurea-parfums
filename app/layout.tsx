@@ -92,11 +92,13 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     statusBarStyle: "black-translucent",
   },
+  /** Vitrine : manifeste PWA = entrée sur `/` (voir `app/api/pwa/shop`). */
+  manifest: "/api/pwa/shop",
   icons: {
     icon: "/favicon.ico",
     apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
   },
-  /** Sert d’icône sur Android; `app/manifest.ts` alimente le manifeste PWA. */
+  /** Sert d’icône sur Android; le manifeste PWA est `manifest` + `/api/pwa/shop` */
   other: { "mobile-web-app-capable": "yes" },
 };
 
