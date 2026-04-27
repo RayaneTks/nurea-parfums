@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AdminListItemSkeleton } from "../ui/AdminLoadingPrimitives";
+import { AdminMobilePwaHint } from "./AdminMobilePwaHint";
 import type { ReactNode } from "react";
 
 const TABS: { href: string; label: string; icon: typeof Package; match: (p: string) => boolean }[] =
@@ -115,7 +116,7 @@ export function NureaAdminShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex h-[100dvh] w-full min-w-0 max-w-full flex-col overflow-x-clip overflow-y-hidden bg-ios-bg font-sans text-neutral-900">
+    <div className="flex h-[100dvh] min-h-0 w-full min-w-0 max-w-full flex-col overflow-x-clip bg-ios-bg font-sans text-neutral-900">
       <header className="safe-top z-40 flex w-full min-w-0 shrink-0 items-center justify-between border-b border-neutral-200/50 bg-ios-bg/80 px-5 py-3.5 pt-[max(0.5rem,env(safe-area-inset-top,0px))] backdrop-blur-md">
         <h1 className="m-0 min-w-0">
           <Link
@@ -156,6 +157,8 @@ export function NureaAdminShell({ children }: { children: ReactNode }) {
         </button>
       </header>
 
+      <AdminMobilePwaHint />
+
       {isTabRoutePending ? (
         <div
           className="admin-nav-route-progress z-30"
@@ -168,7 +171,7 @@ export function NureaAdminShell({ children }: { children: ReactNode }) {
       ) : null}
 
       <div
-        className="ios-transition min-h-0 w-full min-w-0 flex-1 overflow-y-auto overscroll-y-contain pb-[calc(5.5rem+max(0px,env(safe-area-inset-bottom,0px)))] [touch-action:pan-y]"
+        className="ios-transition min-h-0 w-full min-w-0 flex-1 overflow-y-auto overscroll-y-contain pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] [touch-action:pan-y]"
         aria-busy={isTabRoutePending}
       >
         {isTabRoutePending ? (
@@ -194,49 +197,48 @@ export function NureaAdminShell({ children }: { children: ReactNode }) {
         )}
       </div>
 
-      <nav
-        className="admin-bottom-nav flex items-start justify-around gap-0 pt-2"
-        aria-label="Navigation principale"
-      >
-        {TABS.map((tab) => {
-          const active = isTabActive(tab);
-          const Icon = tab.icon;
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              prefetch
-              onPointerDown={() => {
-                if (!tab.match(pathname)) {
-                  setNavPendingHref(tab.href);
-                }
-              }}
-              onClick={() => onTabActivate(tab)}
-              scroll={true}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "admin-nav-item ios-transition relative flex min-h-[44px] min-w-0 flex-1 select-none flex-col items-center justify-center rounded-md p-2 motion-safe:active:scale-[0.98] transition-colors duration-200 ease-out-expo",
-                active
-                  ? "text-nurea-bordeaux before:absolute before:left-1/2 before:top-0 before:h-[3px] before:w-10 before:-translate-x-1/2 before:rounded-b-full before:bg-nurea-bordeaux before:transition-transform before:duration-200 before:ease-out-expo before:content-['']"
-                  : "text-neutral-600",
-              )}
-            >
-              <Icon
-                size={24}
-                strokeWidth={active ? 2.5 : 2}
-                className="ios-transition transition-transform duration-200 ease-out-expo"
-              />
-              <span
+      <nav className="admin-bottom-nav" aria-label="Navigation principale">
+        <div className="admin-bottom-nav__inner">
+          {TABS.map((tab) => {
+            const active = isTabActive(tab);
+            const Icon = tab.icon;
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                prefetch
+                onPointerDown={() => {
+                  if (!tab.match(pathname)) {
+                    setNavPendingHref(tab.href);
+                  }
+                }}
+                onClick={() => onTabActivate(tab)}
+                scroll={true}
+                aria-current={active ? "page" : undefined}
                 className={cn(
-                  "mt-1 text-[10px] font-medium tracking-tight transition-[color,font-weight] duration-200 ease-out-expo",
-                  active ? "font-bold text-nurea-bordeaux" : "text-neutral-600",
+                  "admin-nav-item ios-transition relative flex min-h-[44px] min-w-0 flex-1 select-none flex-col items-center justify-center rounded-md p-2 motion-safe:active:scale-[0.98] transition-colors duration-200 ease-out-expo",
+                  active
+                    ? "text-nurea-bordeaux before:absolute before:left-1/2 before:top-0 before:h-[3px] before:w-10 before:-translate-x-1/2 before:rounded-b-full before:bg-nurea-bordeaux before:transition-transform before:duration-200 before:ease-out-expo before:content-['']"
+                    : "text-neutral-600",
                 )}
               >
-                {tab.label}
-              </span>
-            </Link>
-          );
-        })}
+                <Icon
+                  size={24}
+                  strokeWidth={active ? 2.5 : 2}
+                  className="ios-transition transition-transform duration-200 ease-out-expo"
+                />
+                <span
+                  className={cn(
+                    "mt-1 text-[10px] font-medium tracking-tight transition-[color,font-weight] duration-200 ease-out-expo",
+                    active ? "font-bold text-nurea-bordeaux" : "text-neutral-600",
+                  )}
+                >
+                  {tab.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </nav>
     </div>
   );

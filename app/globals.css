@@ -613,6 +613,7 @@ input[type="search"]::-webkit-search-results-decoration {
 html.admin-route-root,
 body.admin-route {
   min-height: 100dvh;
+  min-height: -webkit-fill-available;
 }
 
 body.admin-route {
@@ -658,40 +659,49 @@ body.admin-route .nurea-viewport-top-shield {
   -webkit-backdrop-filter: blur(14px) saturate(150%);
 }
 
+/**
+ * Barre d’onglets : collée au bas du viewport (PWA / Safari iOS).
+ * Ne pas utiliser bottom: env(safe-area-inset) ici : cela décale toute la barre
+ * vers le haut et la fait flotter ; le padding-bottom suffit pour l’indicateur d’accueil.
+ */
 .admin-bottom-nav {
   position: fixed;
-  bottom: 0;
   left: 0;
   right: 0;
+  bottom: 0;
   z-index: 60;
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 430px;
-  /* Hauteur stable (onglets 4rem + zone sûre) : pas de reflow iOS PWA au changement d’onglet */
-  min-height: calc(4rem + max(16px, env(safe-area-inset-bottom, 16px)));
+  box-sizing: border-box;
+  width: 100%;
   isolation: isolate;
-  background-color: color-mix(in oklab, var(--admin-surface) 82%, transparent);
-  backdrop-filter: blur(8px) saturate(125%);
-  -webkit-backdrop-filter: blur(8px) saturate(125%);
+  background-color: color-mix(in oklab, var(--admin-surface) 88%, transparent);
+  backdrop-filter: blur(10px) saturate(130%);
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
   border-top: 1px solid var(--admin-border);
-  /* Zone sûre iOS : au moins 16px + encoche home indicator */
-  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
   box-shadow: 0 -1px 0 0 rgba(255, 255, 255, 0.6) inset;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.admin-bottom-nav__inner {
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  max-width: 430px;
+  width: 100%;
+  min-height: 4rem;
+  align-items: flex-start;
+  justify-content: space-around;
+  gap: 0;
+  /* pt-2 + espace pour l’indicateur d’accueil iOS (une seule fois) */
+  padding: 0.5rem 0 calc(12px + env(safe-area-inset-bottom, 0px));
 }
 
 @media (min-width: 768px) {
   .admin-bottom-nav {
     border-left: 1px solid var(--admin-border);
     border-right: 1px solid var(--admin-border);
-  }
-}
-
-/* iPhone : colle la barre au-dessus de l’indicateur d’accueil sans retirer le padding tactile */
-@supports (-webkit-touch-callout: none) {
-  .admin-bottom-nav {
-    bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 
