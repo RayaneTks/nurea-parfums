@@ -35,8 +35,8 @@ const classes = cn(
 
 const wrapperClasses = cn(
   "fixed left-1/2 z-[55] w-full max-w-[430px] -translate-x-1/2 px-5",
-  /* Au-dessus de la bottom nav + zone sûre iPhone (home indicator) + marge pour ne pas coller */
-  "bottom-[calc(5.5rem+max(16px,env(safe-area-inset-bottom,16px))+12px)]",
+  /* Au-dessus de la tab bar (+ marge) — aligné sur --admin-bottom-nav-scroll-pad (globals.css) */
+  "bottom-[calc(var(--admin-bottom-nav-scroll-pad)+12px)]",
   "flex justify-end pointer-events-none",
 );
 

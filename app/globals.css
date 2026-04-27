@@ -640,7 +640,7 @@ body.admin-route .nurea-viewport-top-shield {
   overflow-x: clip;
   overflow-y: auto;
   overscroll-behavior-y: contain;
-  padding-bottom: calc(max(16px, env(safe-area-inset-bottom, 16px)) + 5.5rem);
+  padding-bottom: calc(max(16px, env(safe-area-inset-bottom, 16px)) + 4rem + 1.25rem);
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-overflow-scrolling: touch;
 }
@@ -671,34 +671,31 @@ body.admin-route .nurea-viewport-top-shield {
   bottom: 0;
   z-index: 60;
   box-sizing: border-box;
-  width: 100%;
-  max-width: 430px;
-  margin-left: auto;
-  margin-right: auto;
+  display: flex;
+  justify-content: center;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  /* Zone sûre iOS : une seule fois ici (évite double padding si la barre est en portail body) */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   isolation: isolate;
   background-color: color-mix(in oklab, var(--admin-surface) 88%, transparent);
   backdrop-filter: blur(10px) saturate(130%);
   -webkit-backdrop-filter: blur(10px) saturate(130%);
   border-top: 1px solid var(--admin-border);
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
   box-shadow: 0 -1px 0 0 rgba(255, 255, 255, 0.6) inset;
   user-select: none;
   -webkit-user-select: none;
 }
 
 .admin-bottom-nav__inner {
-  margin-left: auto;
-  margin-right: auto;
   display: flex;
-  max-width: 430px;
   width: 100%;
+  max-width: 430px;
   min-height: 4rem;
   align-items: flex-start;
   justify-content: space-around;
   gap: 0;
-  /* pt-2 + espace pour l’indicateur d’accueil iOS (une seule fois) */
-  padding: 0.5rem 0 calc(12px + env(safe-area-inset-bottom, 0px));
+  padding: 0.5rem 0 12px;
 }
 
 @media (min-width: 768px) {
@@ -706,6 +703,14 @@ body.admin-route .nurea-viewport-top-shield {
     border-left: 1px solid var(--admin-border);
     border-right: 1px solid var(--admin-border);
   }
+}
+
+/**
+ * Hauteur réservée au-dessus du home indicator : barre (min 4rem + paddings internes) + safe area (déjà sur .admin-bottom-nav).
+ * Utiliser pour le scroll principal et les FAB / toasts au-dessus de la tab bar.
+ */
+:root {
+  --admin-bottom-nav-scroll-pad: calc(4rem + 1.25rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* Override sélection dans la zone admin pour rester dans la palette claire */

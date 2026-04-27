@@ -44,7 +44,7 @@ export function AdminToast({ message, emphasis, type = "success", duration = 300
   }, [duration, onClose]);
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] z-[300] flex justify-center px-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[var(--admin-bottom-nav-scroll-pad)] z-[300] flex justify-center px-4">
       <div
         role={type === "error" ? "alert" : "status"}
         aria-live={type === "error" ? "assertive" : "polite"}

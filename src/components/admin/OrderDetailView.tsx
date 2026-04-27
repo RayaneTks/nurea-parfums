@@ -377,7 +377,7 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
       </main>
 
       {!isDelivered && !hasSale ? (
-        <div className="fixed left-1/2 -translate-x-1/2 bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] z-[55] w-full max-w-[430px] px-5">
+        <div className="fixed left-1/2 -translate-x-1/2 bottom-[var(--admin-bottom-nav-scroll-pad)] z-[55] w-full max-w-[430px] px-5">
           <Link
             href={`/admin/vendre?fromOrder=${order.id}`}
             prefetch
@@ -392,7 +392,6 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
       <ConfirmDialog
         open={deleteOpen}
         title="Supprimer cette commande ?"
-        description="Suppression définitive."
         confirmLabel="Supprimer définitivement"
         destructive
         isLoading={deleting}
@@ -403,7 +402,6 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
       <ConfirmDialog
         open={clearDepositOpen}
         title="Remettre l'acompte en attente ?"
-        description="Acompte effacé (0 €), commande repassée en attente d’encaissement."
         confirmLabel="Confirmer"
         isLoading={clearingDeposit}
         onConfirm={clearDepositPending}
@@ -414,7 +412,6 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
         open={readyDialogOpen}
         onClose={() => setReadyDialogOpen(false)}
         title="Passer en à traiter"
-        description="Montant reçu. La commande passera en « à traiter »."
         size="sm"
         footer={
           <AdminButton
@@ -430,12 +427,12 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
         }
       >
         <AdminInput
-          label="Montant acompte reçu (€)"
+          label="Acompte (€)"
           name="readyDepositAmount"
           value={readyDepositInput}
           onChange={(e) => setReadyDepositInput(e.target.value)}
           inputMode="decimal"
-          placeholder="ex. 25"
+          placeholder="0"
           autoFocus
         />
       </Modal>

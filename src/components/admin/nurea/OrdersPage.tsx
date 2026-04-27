@@ -79,22 +79,10 @@ function groupOrders(orders: OrderRow[]): { label: GroupLabel; orders: OrderRow[
 
 type OrderListFilter = "all" | "pending" | "ready";
 
-const ORDER_FILTER_COPY: Record<
-  OrderListFilter,
-  { title: string; description: string }
-> = {
-  all: {
-    title: "Tout",
-    description: "Toutes les commandes actives (sauf livrées).",
-  },
-  pending: {
-    title: "En attente",
-    description: "Encaisse l’acompte et passe en « à traiter » depuis la fiche commande.",
-  },
-  ready: {
-    title: "À traiter",
-    description: "Acompte reçu — à préparer, livrer ou encaisser le solde.",
-  },
+const ORDER_FILTER_TITLES: Record<OrderListFilter, string> = {
+  all: "Tout",
+  pending: "En attente",
+  ready: "À traiter",
 };
 
 export function NureaOrdersPage() {
@@ -182,14 +170,13 @@ export function NureaOrdersPage() {
           <div
             className="mt-4 flex gap-1 rounded-2xl bg-[color-mix(in_srgb,var(--admin-text)_5%,transparent)] p-1"
             role="group"
-            aria-label="Statut de commande"
-            aria-describedby="orders-filter-hint"
+            aria-label="Filtre commandes"
           >
             {(
               [
-                { id: "all" as const, label: ORDER_FILTER_COPY.all.title },
-                { id: "pending" as const, label: ORDER_FILTER_COPY.pending.title },
-                { id: "ready" as const, label: ORDER_FILTER_COPY.ready.title },
+                { id: "all" as const, label: ORDER_FILTER_TITLES.all },
+                { id: "pending" as const, label: ORDER_FILTER_TITLES.pending },
+                { id: "ready" as const, label: ORDER_FILTER_TITLES.ready },
               ] as const
             ).map((f) => (
               <button
@@ -209,12 +196,6 @@ export function NureaOrdersPage() {
               </button>
             ))}
           </div>
-          <p
-            id="orders-filter-hint"
-            className="mt-2 text-[12px] leading-snug text-admin-muted"
-          >
-            {ORDER_FILTER_COPY[orderFilter].description}
-          </p>
         </motion.header>
         {error ? (
           <SectionCard className="p-4 border-[var(--admin-danger-border)] bg-[var(--admin-danger-subtle)]">
@@ -235,7 +216,6 @@ export function NureaOrdersPage() {
           <EmptyState
             icon={ClipboardList}
             title="Aucune commande"
-            description="Change le filtre ou crée une commande."
             action={
               <AdminButton
                 variant="primary"

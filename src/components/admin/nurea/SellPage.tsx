@@ -365,7 +365,7 @@ export function NureaSellPage() {
         </div>
       </main>
 
-      <div className="fixed left-1/2 -translate-x-1/2 bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] z-[55] w-full max-w-[430px] px-5 space-y-3 pointer-events-none">
+      <div className="fixed left-1/2 -translate-x-1/2 bottom-[var(--admin-bottom-nav-scroll-pad)] z-[55] w-full max-w-[430px] px-5 space-y-3 pointer-events-none">
         <SectionCard className="p-4 bg-admin-surface/95 backdrop-blur-xl border-admin-border-hover pointer-events-auto">
           <div className="grid grid-cols-3 gap-2">
             <StatCard label="CA" value={formatMoney(totals.revenue)} />
@@ -495,37 +495,29 @@ function SaleLineEditor({
         </div>
         <div>
           <label className="mb-0.5 block text-[10px] uppercase leading-tight text-admin-subtle">
-            Prix client (€)
+            Prix vente (€)
           </label>
-          <p className="mb-1.5 text-[8px] font-normal normal-case text-admin-muted">
-            Ce que le client paie
-          </p>
           <input
             type="text"
             inputMode="decimal"
-            placeholder="ex. 35"
+            placeholder="0"
             value={line.unitPrice}
             onChange={(e) => onUpdate({ unitPrice: e.target.value })}
-            title="Montant facturé au client pour ce flacon (prix de vente)"
-            aria-label="Prix client, montant facturé pour ce flacon"
+            aria-label="Prix de vente"
             className="block w-full min-h-11 rounded-xl bg-admin-surface border border-admin-border px-3 text-[16px] tabular-nums text-admin-text placeholder:text-admin-subtle focus-visible:border-admin-accent focus-visible:outline-none"
           />
         </div>
         <div>
           <label className="mb-0.5 block text-[10px] uppercase leading-tight text-admin-subtle">
-            Mon achat (€)
+            Coût (€)
           </label>
-          <p className="mb-1.5 text-[8px] font-normal normal-case text-admin-muted">
-            Ce que le flacon te coûte
-          </p>
           <input
             type="text"
             inputMode="decimal"
-            placeholder="ex. 10,86"
+            placeholder="0"
             value={line.unitCost}
             onChange={(e) => onUpdate({ unitCost: e.target.value })}
-            title="Prix d’achat : à combien tu l’as eu le flacon (revient)"
-            aria-label="Mon prix d'achat du flacon (revient)"
+            aria-label="Coût d’achat"
             className="block w-full min-h-11 rounded-xl bg-admin-surface border border-admin-border px-3 text-[16px] tabular-nums text-admin-text placeholder:text-admin-subtle focus-visible:border-admin-accent focus-visible:outline-none"
           />
         </div>

@@ -544,7 +544,7 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
             <div className="min-w-0 pr-1">
               <h2 className="text-3xl font-bold tracking-tight text-admin-text">Catalogue</h2>
               <p className="mt-0.5 text-sm tabular-nums text-admin-subtle">
-                {isLoading ? "…" : `${perfumes.length} · ${brands.length}`}
+                {isLoading ? "…" : tab === "brands" ? `${brands.length} marques` : `${perfumes.length} parfums`}
               </p>
             </div>
             <button
@@ -593,11 +593,7 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
             <input
               id="admin-nurea-search"
               type="search"
-              placeholder={
-                tab === "brands"
-                  ? "Rechercher une marque…"
-                  : "Rechercher un parfum ou une marque…"
-              }
+              placeholder={tab === "brands" ? "Marque…" : "Parfum, marque…"}
               value={search}
               onChange={(e) => onSearchFieldChange(e.target.value)}
               className="w-full rounded-2xl border border-neutral-200 bg-white py-3 pl-10 pr-4 text-sm shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-nurea-bordeaux/30"
@@ -732,9 +728,7 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
               </div>
             ) : null}
             {filteredPerfumes.length === 0 ? (
-              <p className="px-1 py-8 text-center text-sm text-admin-muted">
-                Aucun résultat. Ajuste la recherche ou le filtre.
-              </p>
+              <p className="px-1 py-8 text-center text-sm text-admin-muted">Aucun résultat</p>
             ) : null}
             {filteredPerfumes.map((per) => {
               const pending = pendingStatusIds.has(per.id);
@@ -818,15 +812,13 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
         ) : tab === "brands" ? (
           <div className="min-h-[20rem] space-y-3 px-5 pb-24">
             {filteredBrands.length === 0 ? (
-              <p className="px-1 py-8 text-center text-sm text-admin-muted">
-                Aucun résultat. Ajuste la recherche ou le filtre.
-              </p>
+              <p className="px-1 py-8 text-center text-sm text-admin-muted">Aucun résultat</p>
             ) : null}
             {filteredBrands.map((brand) => {
               const isComplete = brand.catalogMode === "COMPLETE";
               const ariaLine = isComplete
-                ? "Gamme complète, tout le catalogue de la marque est proposé"
-                : `${brand._count.perfumes} parfum${brand._count.perfumes !== 1 ? "s" : ""} en sélection`;
+                ? "Gamme complète"
+                : `${brand._count.perfumes} parfum${brand._count.perfumes !== 1 ? "s" : ""}`;
               return (
                 <Link
                   key={brand.id}
@@ -838,9 +830,8 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
                   <div className="min-w-0 flex-1">
                     <h3 className="text-sm font-bold text-neutral-900">{brand.name}</h3>
                     {isComplete ? (
-                      <p className="mt-1 text-[11px] leading-snug text-neutral-600">
-                        <span className="font-semibold text-nurea-bordeaux">Gamme complète</span>
-                        <span> — tout le catalogue de la marque est proposé.</span>
+                      <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-nurea-bordeaux">
+                        Gamme complète
                       </p>
                     ) : (
                       <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-neutral-600">
@@ -855,20 +846,6 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
           </div>
         ) : (
           <div className="min-h-[20rem] space-y-6 px-5 pb-24">
-            <div className="rounded-3xl border border-nurea-bordeaux/10 bg-nurea-bordeaux/5 p-5">
-              <div className="flex items-start gap-4">
-                <div className="rounded-full bg-nurea-bordeaux p-2 text-white">
-                  <Star size={16} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-nurea-bordeaux">Mise en avant sur l&apos;accueil</h4>
-                  <p className="mt-1 text-xs leading-relaxed text-nurea-bordeaux/80">
-                    Jusqu&apos;à 2 produits recommandés. Sélection gérée côté boutique.
-                  </p>
-                </div>
-              </div>
-            </div>
-
             <div className="ios-shadow rounded-[32px] border border-neutral-100 bg-white p-4">
               <div className="mb-4 flex items-center gap-3 px-2">
                 <Star className="fill-nurea-bordeaux text-nurea-bordeaux" size={16} />
@@ -879,7 +856,7 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
               <div className="space-y-2">
                 {featuredOnes.length === 0 ? (
                   <div className="rounded-2xl border-2 border-dashed border-neutral-100 py-6 text-center">
-                    <p className="text-xs text-admin-muted">Rien en avant — choisis jusqu’à 2 parfums.</p>
+                    <p className="text-xs text-admin-muted">Aucun · max 2</p>
                   </div>
                 ) : (
                   featuredOnes.map((per) => (

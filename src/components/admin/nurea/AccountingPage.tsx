@@ -313,7 +313,6 @@ export function NureaAccountingPage() {
           <EmptyState
             icon={Receipt}
             title="Aucune vente"
-            description="Passe par « Vendre » pour encaisser."
             action={
               <Link
                 href="/admin/vendre"

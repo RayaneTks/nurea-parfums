@@ -3,7 +3,7 @@
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Minus, Plus, Trash2, AlertCircle, ListOrdered } from "lucide-react";
+import { Minus, Plus, Trash2, AlertCircle } from "lucide-react";
 import { SectionCard } from "../ui/SectionCard";
 import { AdminButton } from "../ui/AdminButton";
 import { AdminInput } from "../ui/AdminInput";
@@ -317,7 +317,6 @@ export function OrderFormModal({
         open={open}
         onClose={onClose}
         title={title}
-        description="Client, lignes, puis acompte si besoin. Défilement vertical uniquement."
         size="md"
         footer={
           <AdminButton
@@ -333,14 +332,6 @@ export function OrderFormModal({
         }
       >
         <div className="space-y-6">
-          <div className="flex items-start gap-3 rounded-xl border border-admin-border bg-admin-bg/60 px-3 py-2.5">
-            <ListOrdered className="mt-0.5 h-4 w-4 shrink-0 text-admin-accent" aria-hidden />
-            <p className="text-[12px] leading-snug text-admin-muted">
-              <span className="font-medium text-admin-text">Étapes :</span> client → parfums (catalogue ou hors
-              site) → prix par ligne → acompte seulement si déjà encaissé.
-            </p>
-          </div>
-
           <AdminInput
             label="Client"
             name="customerName"
@@ -359,12 +350,6 @@ export function OrderFormModal({
 
           <SectionCard className="space-y-3 p-3">
             <p className="text-[10px] font-medium uppercase tracking-wider text-admin-muted">Acompte</p>
-            {mode === "edit" && order?.status === "PENDING" ? (
-              <p className="text-[11px] leading-snug text-admin-muted">
-                Premier encaissement : depuis la fiche commande (« Passer en à traiter »). Ici : client, panier,
-                corrections.
-              </p>
-            ) : null}
             <label className="flex min-h-11 cursor-pointer items-center gap-3 text-[14px] text-admin-text">
               <input
                 type="checkbox"
@@ -380,21 +365,14 @@ export function OrderFormModal({
             </label>
             {depositPaid ? (
               <AdminInput
-                label="Montant encaissé (€)"
+                label="Montant (€)"
                 name="depositAmount"
                 value={depositAmount}
                 onChange={(e) => setDepositAmount(e.target.value)}
                 inputMode="decimal"
-                placeholder="ex. 25"
-                hint={
-                  mode === "edit" && order?.status === "PENDING"
-                    ? "Obligatoire si coché. Sinon utilise la fiche pour l’encaissement."
-                    : "Obligatoire si coché (> 0 €)."
-                }
+                placeholder="0"
               />
-            ) : (
-              <p className="text-[11px] text-admin-muted">Pas d’acompte : aucun montant à saisir.</p>
-            )}
+            ) : null}
           </SectionCard>
 
           <div className="space-y-3">
@@ -422,14 +400,13 @@ export function OrderFormModal({
                     <div className="min-w-0 flex-1">
                       {showManualField(it) ? (
                         <AdminInput
-                          label="Libellé (hors catalogue)"
+                          label="Nom sur la commande"
                           name={`manual-${it.lineKey}`}
                           value={it.manualLabel ?? ""}
                           onChange={(e) =>
                             patchItem(it.lineKey, { manualLabel: e.target.value || null })
                           }
-                          placeholder="ex. Fragrance X — édition limitée"
-                          hint="Ce texte figure sur la commande pour trace écrite."
+                          placeholder="Parfum ou référence"
                         />
                       ) : (
                         <>
@@ -498,10 +475,7 @@ export function OrderFormModal({
                     </div>
                     <div className="min-w-0">
                       <p className="mb-1 text-[10px] font-medium uppercase leading-tight text-admin-subtle">
-                        Prix client (€)
-                      </p>
-                      <p className="mb-1 text-[8px] font-normal normal-case leading-tight text-admin-muted">
-                        Facturé au client pour ce flacon
+                        Prix vente (€)
                       </p>
                       <input
                         type="text"
@@ -516,10 +490,7 @@ export function OrderFormModal({
                     </div>
                     <div className="min-w-0">
                       <p className="mb-1 text-[10px] font-medium uppercase leading-tight text-admin-subtle">
-                        Mon achat (€)
-                      </p>
-                      <p className="mb-1 text-[8px] font-normal normal-case leading-tight text-admin-muted">
-                        Coût d’achat du flacon
+                        Coût (€)
                       </p>
                       <input
                         type="text"
@@ -559,7 +530,7 @@ export function OrderFormModal({
                 disabled={!manualPlaceholder}
                 onClick={addManualLine}
               >
-                Hors catalogue (nom manuel)
+                Autre (hors catalogue)
               </AdminButton>
             </div>
             {manualPlaceholderError ? (
@@ -568,7 +539,7 @@ export function OrderFormModal({
             {items.length === 0 ? (
               <p className="flex items-center gap-2 text-[11px] text-[color:var(--admin-warning)]">
                 <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                Ajoute au moins une ligne (catalogue ou libellé manuel).
+                Ajoute au moins une ligne.
               </p>
             ) : null}
           </div>

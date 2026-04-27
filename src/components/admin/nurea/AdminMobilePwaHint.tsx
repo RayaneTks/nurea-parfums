@@ -64,30 +64,19 @@ export function AdminMobilePwaHint() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[12px] font-semibold leading-snug text-admin-text">
-            Conseil : installez l’app sur l’écran d’accueil
+            Ajouter à l’écran d’accueil
           </p>
-          <p className="mt-1 text-[11px] leading-relaxed text-admin-muted">
-            <span className="whitespace-nowrap sm:whitespace-normal">iOS :</span> touchez{" "}
-            <span className="font-medium text-admin-text/90">Partager</span>{" "}
-            <span className="text-admin-subtle" aria-hidden>
-              {" "}
-            </span>
-            puis <span className="font-medium text-admin-text/90">Sur l’écran d’accueil</span>.{" "}
-            <span className="whitespace-nowrap sm:whitespace-normal">Android :</span> menu{" "}
-            <span className="font-medium text-admin-text/90">⋮</span> ou bannière «&nbsp;Installer&nbsp;».
-          </p>
-          <p className="mt-2 border-t border-nurea-bordeaux/10 pt-2 text-center">
+          <p className="mt-2 text-center">
             <button
               type="button"
               onClick={dismiss}
               className={cn(
-                "text-[10px] font-medium uppercase tracking-wider text-admin-subtle",
-                "underline decoration-admin-border/80 underline-offset-2 transition-colors",
+                "text-[11px] font-medium text-admin-muted",
                 "tap-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nurea-bordeaux/30 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
-                "[@media(hover:hover)]:text-admin-muted",
+                "[@media(hover:hover)]:text-admin-text/80",
               )}
             >
-              Accéder quand même via le web
+              Continuer dans le navigateur
             </button>
           </p>
         </div>

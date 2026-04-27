@@ -685,7 +685,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         </form>
       </main>
 
-      <div className="pointer-events-auto fixed bottom-[calc(5.5rem+max(16px,env(safe-area-inset-bottom,16px)))] left-1/2 z-[55] w-full max-w-[430px] -translate-x-1/2 px-5">
+      <div className="pointer-events-auto fixed bottom-[var(--admin-bottom-nav-scroll-pad)] left-1/2 z-[55] w-full max-w-[430px] -translate-x-1/2 px-5">
         <AdminButton
           type="submit"
           form="perfume-form"
