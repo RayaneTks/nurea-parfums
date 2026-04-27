@@ -22,7 +22,8 @@ const nextConfig = {
   },
   images: {
     remotePatterns: supabaseImageRemotes(),
-    qualities: [75, 80, 85],
+    /** Inclut des qualités « vignettes » (admin catalogue, listes). */
+    qualities: [60, 65, 70, 75, 80, 85, 90],
   },
   typescript: {
     ignoreBuildErrors: false,

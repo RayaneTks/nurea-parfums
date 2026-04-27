@@ -20,6 +20,7 @@ import { AdminInput } from "../ui/AdminInput";
 import { AdminToast, type ToastType } from "../ui/AdminToast";
 import { StatCard } from "../ui/StatCard";
 import { cn, formatMoney } from "@/lib/utils";
+import { nureaAdminThumbLoader } from "@/lib/image/cappedImageLoader";
 import { ORDER_VOLUMES_ML } from "@/lib/gestion/orderLineValidation";
 import type {
   OrderRow,
@@ -420,11 +421,14 @@ function SaleLineEditor({
       <div className="flex items-center gap-3">
         <div className="relative h-12 w-9 rounded-xl overflow-hidden bg-admin-bg border border-admin-border shrink-0">
           <Image
+            loader={nureaAdminThumbLoader}
             src={line.perfume.image}
             alt={line.perfume.name}
             fill
             className="object-cover"
             sizes="36px"
+            quality={60}
+            fetchPriority="low"
           />
         </div>
         <div className="min-w-0 flex-1">

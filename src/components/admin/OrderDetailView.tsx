@@ -22,6 +22,7 @@ import {
   relativeDayLabel,
 } from "@/lib/utils";
 import type { OrderRow } from "@/lib/gestion/types";
+import { nureaAdminThumbLoader } from "@/lib/image/cappedImageLoader";
 import { OrderFormModal, toNum } from "./gestion/OrderFormModal";
 
 async function readJsonSafe<T>(res: Response): Promise<T | null> {
@@ -295,11 +296,14 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
                   {item.perfume?.image ? (
                     <div className="relative h-14 w-11 rounded-xl overflow-hidden bg-admin-bg border border-admin-border shrink-0">
                       <Image
+                        loader={nureaAdminThumbLoader}
                         src={item.perfume.image}
                         alt={item.perfume.name}
                         fill
                         className="object-cover"
                         sizes="44px"
+                        quality={60}
+                        fetchPriority="low"
                       />
                     </div>
                   ) : (

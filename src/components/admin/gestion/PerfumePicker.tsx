@@ -7,6 +7,7 @@ import { AdminPickerListSkeleton } from "../ui/AdminLoadingPrimitives";
 import { Modal } from "../ui/Modal";
 import { AdminInput } from "../ui/AdminInput";
 import { cn } from "@/lib/utils";
+import { nureaAdminThumbLoader } from "@/lib/image/cappedImageLoader";
 import type { PerfumePickerRow } from "@/lib/gestion/types";
 
 let pickerCache: PerfumePickerRow[] | null = null;
@@ -106,7 +107,16 @@ export function PerfumePicker({
                 )}
               >
                 <div className="relative h-14 w-11 rounded-xl overflow-hidden bg-admin-bg border border-admin-border shrink-0">
-                  <Image src={p.image} alt={p.name} fill className="object-cover" sizes="44px" />
+                  <Image
+                    loader={nureaAdminThumbLoader}
+                    src={p.image}
+                    alt={p.name}
+                    fill
+                    className="object-cover"
+                    sizes="44px"
+                    quality={60}
+                    fetchPriority="low"
+                  />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-serif text-[15px] leading-tight tracking-[-0.01em] text-admin-text truncate">

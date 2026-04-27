@@ -29,6 +29,7 @@ import type {
   AdminSessionUser,
 } from "@/lib/admin/catalogue-types";
 import { readJsonSafe } from "@/lib/admin/http";
+import { nureaAdminThumbLoader } from "@/lib/image/cappedImageLoader";
 
 type SessionUser = AdminSessionUser;
 type BrandRow = AdminBrandRow;
@@ -65,11 +66,13 @@ function BrandListThumb({
   return (
     <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-admin-border bg-admin-surface">
       <Image
+        loader={nureaAdminThumbLoader}
         src={src}
         alt={`Visuel marque ${name}`}
         width={48}
         height={48}
         sizes="48px"
+        quality={60}
         className="h-full w-full object-cover"
         onError={() => setBroken(true)}
       />
@@ -744,11 +747,14 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-neutral-100 bg-neutral-100">
                     {per.image ? (
                       <Image
+                        loader={nureaAdminThumbLoader}
                         src={per.image}
                         alt={`Visuel ${per.name}`}
                         width={56}
                         height={56}
                         sizes="56px"
+                        quality={60}
+                        fetchPriority="low"
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -884,11 +890,14 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
                       <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-neutral-100 bg-white">
                         {per.image ? (
                           <Image
+                            loader={nureaAdminThumbLoader}
                             src={per.image}
                             alt={`Visuel ${per.name}`}
                             width={40}
                             height={40}
                             sizes="40px"
+                            quality={60}
+                            fetchPriority="low"
                             className="h-full w-full object-cover"
                           />
                         ) : (
@@ -935,11 +944,14 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
                     <div className="relative mb-3 h-12 w-12 overflow-hidden rounded-xl border border-neutral-100 bg-neutral-50">
                       {per.image ? (
                         <Image
+                          loader={nureaAdminThumbLoader}
                           src={per.image}
                           alt={`Visuel ${per.name}`}
                           width={48}
                           height={48}
                           sizes="48px"
+                          quality={60}
+                          fetchPriority="low"
                           className="h-full w-full object-cover"
                         />
                       ) : (

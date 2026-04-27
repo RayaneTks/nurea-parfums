@@ -9,6 +9,7 @@ import { AdminButton } from "../ui/AdminButton";
 import { AdminInput } from "../ui/AdminInput";
 import { Modal } from "../ui/Modal";
 import { cn } from "@/lib/utils";
+import { nureaAdminThumbLoader } from "@/lib/image/cappedImageLoader";
 import { ORDER_VOLUMES_ML, isValidVolumeMl } from "@/lib/gestion/orderLineValidation";
 import type { OrderItemRow, OrderRow, PerfumePickerRow } from "@/lib/gestion/types";
 
@@ -312,11 +313,14 @@ export function OrderFormModal({
                   <div className="flex items-start gap-3">
                     <div className="relative h-12 w-9 shrink-0 overflow-hidden rounded-xl border border-admin-border bg-admin-bg">
                       <Image
+                        loader={nureaAdminThumbLoader}
                         src={it.perfume.image}
                         alt={it.perfume.name}
                         fill
                         className="object-cover"
                         sizes="36px"
+                        quality={60}
+                        fetchPriority="low"
                       />
                     </div>
                     <div className="min-w-0 flex-1">
