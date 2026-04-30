@@ -140,10 +140,14 @@ model OrderItem {
   /// Flacon 30, 50 ou 100 ml
   volumeMl   Int      @default(100)
   /// Prix unitaire de vente (€) pour ce flacon
-  unitPrice  Decimal  @default(0) @db.Decimal(10, 2)
-  /// Coût de revient unitaire (€)
-  unitCost   Decimal  @default(0) @db.Decimal(10, 2)
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  unitPrice    Decimal  @default(0) @db.Decimal(10, 2)
+  /// Coût de revient unitaire (€) - Calculé via unitCostDzd / exchangeRate
+  unitCost     Decimal  @default(0) @db.Decimal(10, 2)
+  /// Coût d'achat en DZD
+  unitCostDzd  Decimal? @db.Decimal(10, 2)
+  /// Taux de change (ex: 277)
+  exchangeRate Decimal? @db.Decimal(10, 2)
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   perfume    Perfume  @relation(fields: [perfumeId], references: [id], onDelete: Restrict)
 
   @@index([orderId])
@@ -176,6 +180,8 @@ model SaleItem {
   volumeMl        Int?
   unitPrice       Decimal  @db.Decimal(10, 2)
   unitCost        Decimal  @db.Decimal(10, 2)
+  unitCostDzd     Decimal? @db.Decimal(10, 2)
+  exchangeRate    Decimal? @db.Decimal(10, 2)
   lineRevenue     Decimal  @db.Decimal(10, 2)
   lineCost        Decimal  @db.Decimal(10, 2)
   lineMargin      Decimal  @db.Decimal(10, 2)

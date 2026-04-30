@@ -171,7 +171,7 @@ export function NureaAdminShell({ children }: { children: ReactNode }) {
       ) : null}
 
       <div
-        className="ios-transition min-h-0 w-full min-w-0 flex-1 overflow-y-auto overscroll-y-contain pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] [touch-action:pan-y]"
+        className="ios-transition w-full pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]"
         aria-busy={isTabRoutePending}
       >
         {isTabRoutePending ? (

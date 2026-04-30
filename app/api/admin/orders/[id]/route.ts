@@ -37,6 +37,8 @@ type OrderItemInput = {
   volumeMl?: number;
   unitPrice?: number | string;
   unitCost?: number | string;
+  unitCostDzd?: number | string | null;
+  exchangeRate?: number | string | null;
 };
 
 type UpdateOrderBody = {
@@ -197,6 +199,8 @@ export async function PATCH(
         volumeMl: number;
         unitPrice: Prisma.Decimal;
         unitCost: Prisma.Decimal;
+        unitCostDzd: Prisma.Decimal | null;
+        exchangeRate: Prisma.Decimal | null;
       }[] = [];
       for (const raw of body.items) {
         const perfumeId =
@@ -239,6 +243,9 @@ export async function PATCH(
             { status: 400 },
           );
         }
+        const ucd = raw.unitCostDzd ? parseOptionalMoneyToZero(raw.unitCostDzd) : null;
+        const exRate = raw.exchangeRate ? parseOptionalMoneyToZero(raw.exchangeRate) : null;
+
         cleanItems.push({
           perfumeId: Math.floor(perfumeId),
           quantity: Math.floor(quantity),
@@ -246,6 +253,8 @@ export async function PATCH(
           volumeMl: vol,
           unitPrice: new Prisma.Decimal(up),
           unitCost: new Prisma.Decimal(uc),
+          unitCostDzd: ucd !== null ? new Prisma.Decimal(ucd) : null,
+          exchangeRate: exRate !== null ? new Prisma.Decimal(exRate) : null,
         });
       }
 

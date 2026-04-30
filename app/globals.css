@@ -638,11 +638,8 @@ body.admin-route .nurea-viewport-top-shield {
   color: var(--admin-text);
   position: relative;
   overflow-x: clip;
-  overflow-y: auto;
-  overscroll-behavior-y: contain;
   padding-bottom: calc(max(16px, env(safe-area-inset-bottom, 16px)) + 5.5rem);
   font-family: var(--font-sans), system-ui, sans-serif;
-  -webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 768px) {
@@ -673,7 +670,7 @@ body.admin-route .nurea-viewport-top-shield {
   box-sizing: border-box;
   width: 100%;
   isolation: isolate;
-  background-color: color-mix(in oklab, var(--admin-surface) 88%, transparent);
+  background-color: color-mix(in oklab, var(--admin-surface) 97%, transparent);
   backdrop-filter: blur(10px) saturate(130%);
   -webkit-backdrop-filter: blur(10px) saturate(130%);
   border-top: 1px solid var(--admin-border);

@@ -32,9 +32,18 @@ type Line = {
   perfume: PerfumePickerRow;
   quantity: number;
   unitPrice: string;
-  unitCost: string;
+  unitCostDzd: string;
+  exchangeRate: string;
   volumeMl: (typeof ORDER_VOLUMES_ML)[number];
 };
+
+function computeEuroCost(dzd: string, rate: string): string {
+  const d = toNum(dzd);
+  const r = toNum(rate);
+  if (d === 0 && r === 0) return "";
+  if (r <= 0) return "0";
+  return (d / r).toFixed(2);
+}
 
 async function readJsonSafe<T>(res: Response): Promise<T | null> {
   const contentType = res.headers.get("content-type") ?? "";
@@ -55,7 +64,7 @@ function lineRevenue(l: Line) {
   return toNum(l.unitPrice) * l.quantity;
 }
 function lineCost(l: Line) {
-  return toNum(l.unitCost) * l.quantity;
+  return toNum(computeEuroCost(l.unitCostDzd, l.exchangeRate)) * l.quantity;
 }
 function lineMargin(l: Line) {
   return lineRevenue(l) - lineCost(l);
@@ -114,7 +123,8 @@ export function NureaSellPage() {
             },
             quantity: item.quantity,
             unitPrice: item.unitPrice ?? "",
-            unitCost: item.unitCost ?? "",
+            unitCostDzd: item.unitCostDzd !== null ? String(item.unitCostDzd) : "",
+            exchangeRate: item.exchangeRate !== null ? String(item.exchangeRate) : "",
             volumeMl: (ORDER_VOLUMES_ML as readonly number[]).includes(item.volumeMl)
               ? (item.volumeMl as Line["volumeMl"])
               : 100,
@@ -148,7 +158,8 @@ export function NureaSellPage() {
       (l) =>
         l.quantity >= 1 &&
         toNum(l.unitPrice) >= 0 &&
-        toNum(l.unitCost) >= 0,
+        toNum(l.unitCostDzd) >= 0 &&
+        toNum(l.exchangeRate) >= 0,
     ) &&
     !saving;
 
@@ -161,7 +172,8 @@ export function NureaSellPage() {
         perfume: p,
         quantity: 1,
         unitPrice: "",
-        unitCost: "",
+        unitCostDzd: "",
+        exchangeRate: "",
         volumeMl: 100,
       },
     ]);
@@ -188,7 +200,9 @@ export function NureaSellPage() {
           perfumeId: l.perfume.id,
           quantity: l.quantity,
           unitPrice: toNum(l.unitPrice),
-          unitCost: toNum(l.unitCost),
+          unitCost: toNum(computeEuroCost(l.unitCostDzd, l.exchangeRate)),
+          unitCostDzd: toNum(l.unitCostDzd),
+          exchangeRate: toNum(l.exchangeRate),
           volumeMl: l.volumeMl,
         })),
       };
@@ -444,7 +458,7 @@ function SaleLineEditor({
             type="button"
             onClick={onRemove}
             aria-label="Retirer cette ligne"
-            className="h-9 w-9 flex items-center justify-center rounded-xl text-admin-subtle tap-scale [@media(hover:hover)]:hover:text-admin-danger"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-admin-subtle tap-scale [@media(hover:hover)]:hover:text-admin-danger"
           >
             <Trash2 className="h-4 w-4" aria-hidden />
           </button>
@@ -474,7 +488,7 @@ function SaleLineEditor({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-[10px] uppercase tracking-wider text-admin-subtle mb-1">Qté</label>
           <input
@@ -493,35 +507,38 @@ function SaleLineEditor({
           <label className="mb-0.5 block text-[10px] uppercase leading-tight text-admin-subtle">
             Prix client (€)
           </label>
-          <p className="mb-1.5 text-[8px] font-normal normal-case text-admin-muted">
-            Ce que le client paie
-          </p>
           <input
             type="text"
             inputMode="decimal"
             placeholder="ex. 35"
             value={line.unitPrice}
             onChange={(e) => onUpdate({ unitPrice: e.target.value })}
-            title="Montant facturé au client pour ce flacon (prix de vente)"
-            aria-label="Prix client, montant facturé pour ce flacon"
             className="block w-full min-h-11 rounded-xl bg-admin-surface border border-admin-border px-3 text-[16px] tabular-nums text-admin-text placeholder:text-admin-subtle focus-visible:border-admin-accent focus-visible:outline-none"
           />
         </div>
         <div>
           <label className="mb-0.5 block text-[10px] uppercase leading-tight text-admin-subtle">
-            Mon achat (€)
+            Achat (DZD)
           </label>
-          <p className="mb-1.5 text-[8px] font-normal normal-case text-admin-muted">
-            Ce que le flacon te coûte
-          </p>
           <input
             type="text"
             inputMode="decimal"
-            placeholder="ex. 10,86"
-            value={line.unitCost}
-            onChange={(e) => onUpdate({ unitCost: e.target.value })}
-            title="Prix d’achat : à combien tu l’as eu le flacon (revient)"
-            aria-label="Mon prix d'achat du flacon (revient)"
+            placeholder="ex. 2000"
+            value={line.unitCostDzd}
+            onChange={(e) => onUpdate({ unitCostDzd: e.target.value })}
+            className="block w-full min-h-11 rounded-xl bg-admin-surface border border-admin-border px-3 text-[16px] tabular-nums text-admin-text placeholder:text-admin-subtle focus-visible:border-admin-accent focus-visible:outline-none"
+          />
+        </div>
+        <div>
+          <label className="mb-0.5 block text-[10px] uppercase leading-tight text-admin-subtle">
+            Taux
+          </label>
+          <input
+            type="text"
+            inputMode="decimal"
+            placeholder="ex. 277"
+            value={line.exchangeRate}
+            onChange={(e) => onUpdate({ exchangeRate: e.target.value })}
             className="block w-full min-h-11 rounded-xl bg-admin-surface border border-admin-border px-3 text-[16px] tabular-nums text-admin-text placeholder:text-admin-subtle focus-visible:border-admin-accent focus-visible:outline-none"
           />
         </div>

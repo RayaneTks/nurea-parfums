@@ -15,6 +15,8 @@ export type SaleItemRow = {
   volumeMl: number | null;
   unitPrice: string;
   unitCost: string;
+  unitCostDzd: string | null;
+  exchangeRate: string | null;
   lineRevenue: string;
   lineCost: string;
   lineMargin: string;
@@ -50,6 +52,8 @@ export type OrderItemRow = {
   volumeMl: number;
   unitPrice: string;
   unitCost: string;
+  unitCostDzd: string | null;
+  exchangeRate: string | null;
   perfume: {
     id: number;
     name: string;

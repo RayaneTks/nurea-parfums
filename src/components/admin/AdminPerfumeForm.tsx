@@ -130,7 +130,7 @@ function ImageUploadField({
               ) : (
                 <div className="flex flex-col items-center gap-1">
                   <Upload className="h-5 w-5 text-admin-text" aria-hidden />
-                  <span className="text-[9px] uppercase tracking-wider text-admin-text">
+                  <span className="text-[10px] uppercase tracking-wider text-admin-text">
                     Remplacer
                   </span>
                 </div>

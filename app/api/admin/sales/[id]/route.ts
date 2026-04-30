@@ -55,6 +55,8 @@ type PatchSaleItemBody = {
   id: string;
   unitPrice?: number | string;
   unitCost?: number | string;
+  unitCostDzd?: number | string | null;
+  exchangeRate?: number | string | null;
   quantity?: number;
   volumeMl?: number;
 };
@@ -185,6 +187,11 @@ export async function PATCH(
             unitCost: coN,
           });
 
+          const ucdRaw = p.unitCostDzd === undefined ? item.unitCostDzd : p.unitCostDzd;
+          const exRaw = p.exchangeRate === undefined ? item.exchangeRate : p.exchangeRate;
+          const ucdN = ucdRaw !== null && ucdRaw !== undefined ? Number(ucdRaw) : null;
+          const exN = exRaw !== null && exRaw !== undefined ? Number(exRaw) : null;
+
           const snap = item.perfumeSnapshot;
           const baseObj =
             typeof snap === "object" && snap !== null && !Array.isArray(snap)
@@ -202,6 +209,8 @@ export async function PATCH(
               volumeMl: volIn,
               unitPrice: totals.unitPrice,
               unitCost: totals.unitCost,
+              unitCostDzd: ucdN !== null && Number.isFinite(ucdN) ? new Prisma.Decimal(ucdN) : null,
+              exchangeRate: exN !== null && Number.isFinite(exN) ? new Prisma.Decimal(exN) : null,
               lineRevenue: totals.lineRevenue,
               lineCost: totals.lineCost,
               lineMargin: totals.lineMargin,

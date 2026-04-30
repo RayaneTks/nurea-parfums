@@ -781,7 +781,7 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
                           pub ? "bg-green-500" : "bg-neutral-300",
                         )}
                       />
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-600">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-600">
                         {pub ? "Visible" : "Masqué"}
                       </span>
                     </div>
@@ -789,7 +789,7 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
                   <div className="flex items-center gap-1">
                     <Link
                       href={`/admin/perfumes/${per.id}/edit`}
-                      className="rounded-xl bg-neutral-50 p-2.5 text-neutral-600 hover:text-neutral-900"
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-neutral-50 text-neutral-600 hover:text-neutral-900"
                       aria-label="Fiche parfum"
                     >
                       <LayoutGrid size={18} />
@@ -800,7 +800,7 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
                         disabled={pending}
                         onClick={() => void toggleVisibility(per.id, per.status)}
                         className={cn(
-                          "ios-transition rounded-xl p-2.5",
+                          "ios-transition min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl",
                           pub
                             ? "bg-nurea-bordeaux/5 text-nurea-bordeaux"
                             : "bg-neutral-50 text-neutral-300",

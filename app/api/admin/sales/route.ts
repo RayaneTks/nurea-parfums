@@ -20,6 +20,8 @@ type SaleLineInputBody = {
   quantity?: number;
   unitPrice?: number | string;
   unitCost?: number | string;
+  unitCostDzd?: number | string | null;
+  exchangeRate?: number | string | null;
   volumeMl?: number;
 };
 
@@ -97,6 +99,8 @@ export async function POST(request: Request) {
       quantity: number;
       unitPrice: Prisma.Decimal;
       unitCost: Prisma.Decimal;
+      unitCostDzd: Prisma.Decimal | null;
+      exchangeRate: Prisma.Decimal | null;
       lineRevenue: Prisma.Decimal;
       lineCost: Prisma.Decimal;
       lineMargin: Prisma.Decimal;
@@ -157,9 +161,16 @@ export async function POST(request: Request) {
         unitPrice: unitPriceN,
         unitCost: unitCostN,
       });
+      const ucdRaw = raw.unitCostDzd;
+      const exRaw = raw.exchangeRate;
+      const ucdN = ucdRaw ? Number(ucdRaw) : null;
+      const exN = exRaw ? Number(exRaw) : null;
+
       normalizedLines.push({
         perfumeId: perfumeId ?? null,
         volumeMl: vol,
+        unitCostDzd: ucdN !== null && Number.isFinite(ucdN) ? new Prisma.Decimal(ucdN) : null,
+        exchangeRate: exN !== null && Number.isFinite(exN) ? new Prisma.Decimal(exN) : null,
         ...totals,
       });
     }
@@ -252,6 +263,8 @@ export async function POST(request: Request) {
                 volumeMl: line.volumeMl,
                 unitPrice: line.unitPrice,
                 unitCost: line.unitCost,
+                unitCostDzd: line.unitCostDzd,
+                exchangeRate: line.exchangeRate,
                 lineRevenue: line.lineRevenue,
                 lineCost: line.lineCost,
                 lineMargin: line.lineMargin,

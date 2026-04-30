@@ -23,7 +23,7 @@ import {
 } from "@/lib/utils";
 import type { OrderRow } from "@/lib/gestion/types";
 import { nureaAdminThumbLoader } from "@/lib/image/cappedImageLoader";
-import { OrderFormModal, toNum } from "./gestion/OrderFormModal";
+import { toNum } from "./gestion/OrderFullPageForm";
 
 async function readJsonSafe<T>(res: Response): Promise<T | null> {
   const contentType = res.headers.get("content-type") ?? "";
@@ -44,7 +44,6 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
   const [toast, setToast] = useState<{ type: ToastType; text: string } | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
   const [clearDepositOpen, setClearDepositOpen] = useState(false);
   const [clearingDeposit, setClearingDeposit] = useState(false);
   const [readyDialogOpen, setReadyDialogOpen] = useState(false);
@@ -258,7 +257,7 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
                   variant="secondary"
                   size="md"
                   leftIcon={Pencil}
-                  onClick={() => setEditOpen(true)}
+                  onClick={() => router.push(`/admin/ordres/${order.id}/edit`)}
                 >
                   Modifier
                 </AdminButton>
@@ -317,8 +316,13 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
                       {item.perfume?.brand?.name ?? "—"} · {item.volumeMl} ml
                     </p>
                     <p className="mt-1 text-[11px] tabular-nums text-admin-muted">
-                      Prix client {formatMoney(item.unitPrice)} · Mon achat {formatMoney(item.unitCost)}
+                      Client {formatMoney(item.unitPrice)} · Achat {formatMoney(item.unitCost)}
                     </p>
+                    {item.unitCostDzd !== null && item.exchangeRate !== null ? (
+                      <p className="mt-0.5 text-[10px] tabular-nums text-admin-subtle">
+                        (Détail : {Number(item.unitCostDzd).toString()} DZD @ {Number(item.exchangeRate).toString()})
+                      </p>
+                    ) : null}
                   </div>
                   <div className="text-right">
                     <span className="font-serif text-[16px] tabular-nums text-admin-text">×{item.quantity}</span>
@@ -433,19 +437,6 @@ export function OrderDetailView({ params }: { params: Promise<{ id: string }> })
           autoFocus
         />
       </Modal>
-
-      <OrderFormModal
-        mode="edit"
-        order={order}
-        open={editOpen}
-        onClose={() => setEditOpen(false)}
-        onSuccess={() => {
-          setEditOpen(false);
-          setToast({ type: "success", text: "Commande mise à jour." });
-          refresh();
-        }}
-        onError={(msg) => setToast({ type: "error", text: msg })}
-      />
 
       {toast ? (
         <AdminToast

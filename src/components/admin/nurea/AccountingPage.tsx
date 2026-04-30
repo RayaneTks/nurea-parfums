@@ -426,7 +426,7 @@ function SaleRowCard({ sale, onTap }: { sale: SaleRow; onTap: () => void }) {
   );
 }
 
-type LineDraft = { unitPrice: string; unitCost: string; volumeMl: number };
+type LineDraft = { unitPrice: string; unitCostDzd: string; exchangeRate: string; volumeMl: number };
 
 function SaleDetailModal({
   sale,
@@ -458,7 +458,8 @@ function SaleDetailModal({
           : 100);
       d[it.id] = {
         unitPrice: it.unitPrice,
-        unitCost: it.unitCost,
+        unitCostDzd: it.unitCostDzd !== null ? String(it.unitCostDzd) : "",
+        exchangeRate: it.exchangeRate !== null ? String(it.exchangeRate) : "",
         volumeMl: (ORDER_VOLUMES_ML as readonly number[]).includes(vol) ? vol : 100,
       };
     }
@@ -482,7 +483,8 @@ function SaleDetailModal({
         return {
           id: it.id,
           unitPrice: d.unitPrice,
-          unitCost: d.unitCost,
+          unitCostDzd: d.unitCostDzd,
+          exchangeRate: d.exchangeRate,
           volumeMl: d.volumeMl,
         };
       });
@@ -582,7 +584,7 @@ function SaleDetailModal({
                   {draft ? (
                     <div className="mt-3 space-y-2 border-t border-admin-border pt-3">
                       <p className="text-[10px] uppercase tracking-wider text-admin-subtle">
-                        Corriger (prix client, ton achat, flacon)
+                        Corriger (client, achat DZD, taux, flacon)
                       </p>
                       <div className="flex gap-1">
                         {ORDER_VOLUMES_ML.map((v) => (
@@ -606,14 +608,11 @@ function SaleDetailModal({
                           </button>
                         ))}
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-3 gap-2">
                         <div>
-                          <label className="mb-0.5 block text-[9px] uppercase leading-tight text-admin-subtle">
-                            Prix client (€)
+                          <label className="mb-0.5 block text-[10px] uppercase leading-tight text-admin-subtle">
+                            Client (€)
                           </label>
-                          <p className="mb-1 text-[7px] font-normal normal-case text-admin-muted">
-                            facturé au client
-                          </p>
                           <AdminInput
                             value={draft.unitPrice}
                             onChange={(e) =>
@@ -624,28 +623,40 @@ function SaleDetailModal({
                             }
                             inputMode="decimal"
                             placeholder="ex. 35"
-                            title="Montant facturé au client pour ce flacon"
                             className="min-h-10 text-[15px]"
                           />
                         </div>
                         <div>
-                          <label className="mb-0.5 block text-[9px] uppercase leading-tight text-admin-subtle">
-                            Mon achat (€)
+                          <label className="mb-0.5 block text-[10px] uppercase leading-tight text-admin-subtle">
+                            Achat (DZD)
                           </label>
-                          <p className="mb-1 text-[7px] font-normal normal-case text-admin-muted">
-                            ton coût flacon
-                          </p>
                           <AdminInput
-                            value={draft.unitCost}
+                            value={draft.unitCostDzd}
                             onChange={(e) =>
                               setLineDraft((prev) => ({
                                 ...prev!,
-                                [item.id]: { ...draft, unitCost: e.target.value },
+                                [item.id]: { ...draft, unitCostDzd: e.target.value },
                               }))
                             }
                             inputMode="decimal"
-                            placeholder="ex. 10,86"
-                            title="À combien le flacon t’a coûté (revient)"
+                            placeholder="ex. 2000"
+                            className="min-h-10 text-[15px]"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-0.5 block text-[10px] uppercase leading-tight text-admin-subtle">
+                            Taux
+                          </label>
+                          <AdminInput
+                            value={draft.exchangeRate}
+                            onChange={(e) =>
+                              setLineDraft((prev) => ({
+                                ...prev!,
+                                [item.id]: { ...draft, exchangeRate: e.target.value },
+                              }))
+                            }
+                            inputMode="decimal"
+                            placeholder="ex. 277"
                             className="min-h-10 text-[15px]"
                           />
                         </div>

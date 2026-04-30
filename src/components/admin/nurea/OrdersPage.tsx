@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { Plus, ClipboardList, User } from "lucide-react";
@@ -13,7 +14,6 @@ import { AdminToast, type ToastType } from "../ui/AdminToast";
 import { OrderStatusBadge } from "../ui/OrderStatusBadge";
 import { cn, relativeDayLabel } from "@/lib/utils";
 import type { OrderRow } from "@/lib/gestion/types";
-import { OrderFormModal } from "../gestion/OrderFormModal";
 
 async function readJsonSafe<T>(res: Response): Promise<T | null> {
   const contentType = res.headers.get("content-type") ?? "";
@@ -102,7 +102,7 @@ export function NureaOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: ToastType; text: string } | null>(null);
-  const [createOpen, setCreateOpen] = useState(false);
+  const router = useRouter();
   const [orderFilter, setOrderFilter] = useState<OrderListFilter>("all");
 
   const ordersUrl = useMemo(() => {
@@ -241,7 +241,7 @@ export function NureaOrdersPage() {
                 variant="primary"
                 size="md"
                 leftIcon={Plus}
-                onClick={() => setCreateOpen(true)}
+                onClick={() => router.push("/admin/ordres/new")}
               >
                 Nouvelle commande
               </AdminButton>
@@ -283,19 +283,7 @@ export function NureaOrdersPage() {
       <FAB
         icon={Plus}
         label="Nouvelle commande"
-        onClick={() => setCreateOpen(true)}
-      />
-
-      <OrderFormModal
-        mode="create"
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        onSuccess={() => {
-          setCreateOpen(false);
-          setToast({ type: "success", text: "Commande créée." });
-          void refresh(true);
-        }}
-        onError={(msg) => setToast({ type: "error", text: msg })}
+        onClick={() => router.push("/admin/ordres/new")}
       />
 
       {toast ? (
@@ -349,7 +337,7 @@ function OrderCard({ order, overdue }: { order: OrderRow; overdue: boolean }) {
           <div className="flex shrink-0 flex-col items-end gap-1">
             <span
               className={cn(
-                "rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide",
+                "rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
                 order.depositPaid
                   ? "bg-[var(--admin-success-subtle)] text-[var(--admin-success)]"
                   : "bg-[color-mix(in_srgb,var(--admin-cuivre)_20%,white)] text-[var(--admin-warning)]",
@@ -371,7 +359,7 @@ function OrderCard({ order, overdue }: { order: OrderRow; overdue: boolean }) {
               </span>
             ) : null}
           </span>
-          <span className="rounded-lg bg-[color-mix(in_srgb,var(--admin-text)_5%,transparent)] px-2 py-0.5 text-[9px] font-bold uppercase text-admin-text">
+          <span className="rounded-lg bg-[color-mix(in_srgb,var(--admin-text)_5%,transparent)] px-2 py-0.5 text-[10px] font-bold uppercase text-admin-text">
             {order.items.length} flacon{order.items.length > 1 ? "s" : ""}
           </span>
         </div>
