@@ -6,23 +6,43 @@ const fullName = z
   .min(2, "Nom requis (minimum 2 caractères).")
   .max(120);
 
+// Phone & snap: empty string treated as null FIRST, then regex applied to non-empty.
 const phone = z
-  .string()
-  .trim()
-  .regex(/^\+\d{8,15}$/, "Numéro au format E.164 (+33612345678).")
-  .nullable()
-  .optional();
+  .union([z.string(), z.null(), z.undefined()])
+  .transform((v) => {
+    if (v === null || v === undefined) return null;
+    const t = v.trim();
+    return t === "" ? null : t;
+  })
+  .refine(
+    (v) => v === null || /^\+\d{8,15}$/.test(v),
+    "Numéro au format E.164 (+33612345678).",
+  );
 
-const snapchat = z.string().trim().min(2).max(40).nullable().optional();
+const snapchat = z
+  .union([z.string(), z.null(), z.undefined()])
+  .transform((v) => {
+    if (v === null || v === undefined) return null;
+    const t = v.trim();
+    return t === "" ? null : t;
+  })
+  .refine((v) => v === null || (v.length >= 2 && v.length <= 40), "Snap entre 2 et 40 caractères.");
 
 const optionalText = (max: number) =>
-  z.string().trim().max(max).nullable().optional().transform((v) => (v === "" ? null : v ?? null));
+  z
+    .union([z.string(), z.null(), z.undefined()])
+    .transform((v) => {
+      if (v === null || v === undefined) return null;
+      const t = v.trim();
+      return t === "" ? null : t;
+    })
+    .refine((v) => v === null || v.length <= max, `Trop long (max ${max}).`);
 
 export const customerCreateSchema = z.object({
   fullName,
-  phoneE164: phone.transform((v) => (v === "" ? null : v ?? null)),
-  snapchat: snapchat.transform((v) => (v === "" ? null : v ?? null)),
-  whatsappE164: phone.transform((v) => (v === "" ? null : v ?? null)),
+  phoneE164: phone,
+  snapchat,
+  whatsappE164: phone,
   address: optionalText(500),
   notes: optionalText(2000),
 });
