@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db/prisma";
 import { revalidatePath } from "next/cache";
 import Decimal from "decimal.js-light";
 import { writeAudit } from "@/lib/admin/audit";
+import { revalidateTag } from "next/cache";
+import { tagFor } from "@/lib/admin/cache-tags";
 import { createOrderInputSchema, updateOrderInputSchema } from "@/schemas/order";
 import type { CreateOrderInput, UpdateOrderInput } from "@/schemas/order";
 import type { ActionResult } from "@/server/customers/actions";
@@ -124,6 +126,9 @@ export async function createOrderAction(
 
     revalidatePath("/admin/ordres");
     revalidatePath("/admin");
+    revalidateTag(tagFor.orders(), "default");
+    revalidateTag(tagFor.pipeline(), "default");
+    revalidateTag(tagFor.kpi(), "default");
     return { ok: true, data: { id: created.id, status: created.status as "PENDING" | "READY" } };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Création impossible." };
@@ -205,6 +210,9 @@ export async function updateOrderAction(
     await writeAudit(undefined, "order.update", "Order", orderId);
     revalidatePath("/admin/ordres");
     revalidatePath(`/admin/ordres/${orderId}`);
+    revalidateTag(tagFor.orders(), "default");
+    revalidateTag(tagFor.order(orderId), "default");
+    revalidateTag(tagFor.pipeline(), "default");
     return { ok: true, data: { id: orderId } };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Mise à jour impossible." };

@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db/prisma";
 import { revalidatePath } from "next/cache";
 import Decimal from "decimal.js-light";
 import { writeAudit } from "@/lib/admin/audit";
+import { revalidateTag } from "next/cache";
+import { tagFor } from "@/lib/admin/cache-tags";
 import { createSaleInputSchema } from "@/schemas/sale";
 import type { CreateSaleInput, SaleItemInput } from "@/schemas/sale";
 import type { ActionResult } from "@/server/customers/actions";
@@ -156,9 +158,14 @@ export async function createSaleAction(
 
     revalidatePath("/admin/compta");
     revalidatePath("/admin");
+    revalidateTag(tagFor.sales(), "default");
+    revalidateTag(tagFor.kpi(), "default");
     if (data.orderId) {
       revalidatePath("/admin/ordres");
       revalidatePath(`/admin/ordres/${data.orderId}`);
+      revalidateTag(tagFor.orders(), "default");
+      revalidateTag(tagFor.order(data.orderId), "default");
+      revalidateTag(tagFor.pipeline(), "default");
     }
     return { ok: true, data: { saleId: sale.id } };
   } catch (e) {

@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import Decimal from "decimal.js-light";
+import { unstable_cache } from "next/cache";
+import { tagFor } from "@/lib/admin/cache-tags";
 
 export type PeriodRange = { start: Date; end: Date };
 
@@ -29,12 +31,19 @@ export type RevenueSummary = {
   avgValue: string;
 };
 
+const cachedRevenueSummary = unstable_cache(
+  async (start: Date, end: Date) =>
+    prisma.sale.aggregate({
+      where: { soldAt: { gte: start, lt: end } },
+      _sum: { totalRevenue: true, totalCost: true, totalMargin: true },
+      _count: true,
+    }),
+  ["kpi-revenue-summary"],
+  { tags: [tagFor.kpi(), tagFor.sales()], revalidate: 60 },
+);
+
 export async function revenueSummary(range: PeriodRange): Promise<RevenueSummary> {
-  const agg = await prisma.sale.aggregate({
-    where: { soldAt: { gte: range.start, lt: range.end } },
-    _sum: { totalRevenue: true, totalCost: true, totalMargin: true },
-    _count: true,
-  });
+  const agg = await cachedRevenueSummary(range.start, range.end);
 
   const totalRevenue = new Decimal((agg._sum.totalRevenue ?? 0).toString());
   const totalCost = new Decimal((agg._sum.totalCost ?? 0).toString());
@@ -203,17 +212,26 @@ export type Pipeline = {
   dueAmount: string;     // total dû (Orders actives, calc balance)
 };
 
+const cachedPipelineCounts = unstable_cache(
+  async () => {
+    const [pending, ready, overdue] = await Promise.all([
+      prisma.order.count({ where: { status: "PENDING" } }),
+      prisma.order.count({ where: { status: "READY" } }),
+      prisma.order.count({
+        where: {
+          status: { in: ["PENDING", "READY"] },
+          deliveryAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+        },
+      }),
+    ]);
+    return { pending, ready, overdue };
+  },
+  ["kpi-pipeline-counts"],
+  { tags: [tagFor.pipeline(), tagFor.orders()], revalidate: 30 },
+);
+
 export async function pipelineCounts(): Promise<Pipeline> {
-  const [pending, ready, overdue] = await Promise.all([
-    prisma.order.count({ where: { status: "PENDING" } }),
-    prisma.order.count({ where: { status: "READY" } }),
-    prisma.order.count({
-      where: {
-        status: { in: ["PENDING", "READY"] },
-        deliveryAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      },
-    }),
-  ]);
+  const { pending, ready, overdue } = await cachedPipelineCounts();
 
   // dueAmount : somme (items total) - somme (payments hors REFUND) sur commandes actives.
   type Row = { due: string | null };
