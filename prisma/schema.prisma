@@ -158,6 +158,7 @@ model Customer {
   updatedAt    DateTime @updatedAt
 
   orders Order[]
+  sales  Sale[]
 
   @@index([fullName])
 }
@@ -251,10 +252,11 @@ model PaymentTransaction {
 model Sale {
   id           String     @id @default(cuid())
   orderId      String?    @unique
-  /// Dénormalisé. Pour ventes directes, peut différer de Order.customer.fullName.
+  /// Dénormalisé. Pour ventes directes, peut différer de customer.fullName.
   customerName String?
   /// FK vers Customer (P3). Nullable pour ventes orphelines historiques.
   customerId   String?
+  customer     Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
   soldAt       DateTime   @default(now())
   totalRevenue Decimal    @db.Decimal(10, 2)
   totalCost    Decimal    @db.Decimal(10, 2)
