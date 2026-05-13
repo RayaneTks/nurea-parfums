@@ -23,7 +23,7 @@ import {
 } from "@/lib/utils";
 import type { OrderRow } from "@/lib/gestion/types";
 import { nureaAdminThumbLoader } from "@/lib/image/cappedImageLoader";
-import { toNum } from "./gestion/OrderFullPageForm";
+import { toNum } from "@/lib/numeric";
 
 async function readJsonSafe<T>(res: Response): Promise<T | null> {
   const contentType = res.headers.get("content-type") ?? "";
