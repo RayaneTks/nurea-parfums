@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db/prisma";
 import { revalidatePath } from "next/cache";
 import Decimal from "decimal.js-light";
 import { writeAudit } from "@/lib/admin/audit";
+import { revalidateTag } from "next/cache";
+import { tagFor } from "@/lib/admin/cache-tags";
 import { paymentCreateSchema, paymentVoidSchema } from "@/schemas/payment";
 import type { ActionResult } from "@/server/customers/actions";
 import { computeOrderBalance } from "./payments";
@@ -88,6 +90,9 @@ export async function recordPaymentAction(
     revalidatePath(`/admin/ordres/${orderId}`);
     revalidatePath("/admin/ordres");
     revalidatePath("/admin");
+    revalidateTag(tagFor.orders(), "default");
+    revalidateTag(tagFor.order(orderId), "default");
+    revalidateTag(tagFor.pipeline(), "default");
     return { ok: true, data: { id: payment.id, orderStatus: nextStatus } };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Enregistrement impossible." };
