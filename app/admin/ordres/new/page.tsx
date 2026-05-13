@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { OrderFullPageForm } from "@/components/admin/gestion/OrderFullPageForm";
+import { OrderForm } from "@/components/admin/orders/OrderForm";
 import { QuickOrderForm } from "@/components/admin/orders/QuickOrderForm";
 import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/admin/session";
 
@@ -36,5 +36,5 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
     );
   }
 
-  return <OrderFullPageForm mode="create" />;
+  return <OrderForm mode="create" />;
 }
