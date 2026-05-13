@@ -15,6 +15,7 @@
     "db:sync": "dotenv -e .env.local -- prisma db push --skip-generate",
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
     "db:seed": "dotenv -e .env.local -- prisma db seed",
+    "db:seed-migrate": "dotenv -e .env.local -- tsx prisma/seed-migrate.ts",
     "admin:create-user": "dotenv -e .env.local -- tsx scripts/create-admin.ts",
     "verify:integration": "tsx scripts/verify-integration.ts",
     "test": "vitest run",
