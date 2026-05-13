@@ -224,7 +224,7 @@ async function main(): Promise<void> {
 
   const failed = cases.filter((c) => !c.ok);
   const onlyRemoteDb =
-    failed.length === 1 && failed[0].name.startsWith("DB: connexion");
+    failed.length === 1 && failed[0]!.name.startsWith("DB: connexion");
   console.log(
     "\n[verify] Résumé:",
     failed.length === 0

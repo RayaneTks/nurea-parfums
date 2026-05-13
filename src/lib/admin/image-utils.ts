@@ -82,7 +82,13 @@ export async function uploadFile(file: File): Promise<string> {
     body: JSON.stringify({ filename: prepared.name }),
   });
 
-  const j = await sign.json();
+  type SignResponse = {
+    error?: string;
+    token?: string;
+    signedUrl?: string;
+    publicUrl?: string;
+  };
+  const j = (await sign.json()) as SignResponse;
   if (!sign.ok) throw new Error(j.error ?? "Signature refusée");
 
   const headers: Record<string, string> = {
@@ -90,10 +96,11 @@ export async function uploadFile(file: File): Promise<string> {
   };
   if (j.token) headers.Authorization = `Bearer ${j.token}`;
 
-  const put = await fetch(j.signedUrl!, {
+  if (!j.signedUrl) throw new Error("URL signée manquante.");
+  const put = await fetch(j.signedUrl, {
     method: "PUT",
     body: prepared,
-    headers
+    headers,
   });
 
   if (!put.ok) throw new Error(`Upload refusé (${put.status})`);

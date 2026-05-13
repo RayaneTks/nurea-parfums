@@ -82,6 +82,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenBrowse: initialOnOpenBrowse }) =
     if (list.length === 0) return;
     const first = list[0];
     const last = list[list.length - 1];
+    if (!first || !last) return;
     const active = document.activeElement;
     if (e.shiftKey) {
       if (active === first) {

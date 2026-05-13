@@ -33,13 +33,7 @@ const nextConfig = {
     formats: ["image/avif", "image/webp"],
   },
   typescript: {
-    // TEMP : 38 erreurs ts-reset/noUncheckedIndexedAccess héritées du baseline
-    // rework-admin (lib/data.ts, searchExternalPerfumeApi, image-utils JSON casts,
-    // OrderWithItems trop strict, Modal/Navbar/useScrollReveal index-access).
-    // À nettoyer fichier par fichier puis remettre `false` avant merge prod.
-    // Aucun code introduit en P0-P10 ne contient d'erreur — tous nouveaux fichiers
-    // typecheckent strict.
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   /**
    * Obligatoire si un autre package-lock.json existe plus haut dans l'arborescence
