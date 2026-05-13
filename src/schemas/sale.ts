@@ -44,5 +44,22 @@ export const createSaleInputSchema = z.object({
   items: z.array(saleItemInputSchema).min(1, "Au moins une ligne."),
 });
 
+/**
+ * Update d'une vente existante (admin uniquement, via TicketSheet edit mode).
+ *
+ * - customerId / customerName : modification du client lié (réassignation + snapshot).
+ * - items : replace complet (deleteMany + createMany). Margins recalculées serveur.
+ * - notes, soldAt : modification possible.
+ * - orderId : NON modifiable (lien historique préservé).
+ */
+export const updateSaleInputSchema = z.object({
+  customerId: z.string().min(1).nullable().optional(),
+  customerName: z.string().trim().min(2).max(120).nullable().optional(),
+  soldAt: z.coerce.date().optional(),
+  notes: z.string().trim().max(2000).nullable().optional(),
+  items: z.array(saleItemInputSchema).min(1, "Au moins une ligne.").optional(),
+});
+
 export type SaleItemInput = z.infer<typeof saleItemInputSchema>;
 export type CreateSaleInput = z.infer<typeof createSaleInputSchema>;
+export type UpdateSaleInput = z.infer<typeof updateSaleInputSchema>;
