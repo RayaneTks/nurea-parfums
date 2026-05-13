@@ -19,7 +19,7 @@ type OrderWithItems = {
   items: {
     id: string;
     orderId: string;
-    perfumeId: number;
+    perfumeId: number | null;
     quantity: number;
     note: string | null;
     volumeMl: number | null;
