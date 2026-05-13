@@ -30,6 +30,8 @@ dist-ssr
 
 # Build outputs
 build
+.next
+out
 *.tsbuildinfo
 
 # Coverage
@@ -38,7 +40,20 @@ coverage
 
 # Testing
 .nyc_output
+test-results/
+playwright-report/
+playwright/.cache/
 
 # Temporary files
 *.tmp
 *.temp
+
+# Captures / audits locaux (ne pas versionner)
+audit-*.png
+Visuel.png
+screen.png
+
+# Outils / dossiers locaux optionnels
+.claude/
+.omc/
+.superpowers/

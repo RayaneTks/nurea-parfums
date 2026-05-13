@@ -1,39 +1,29 @@
 # Nuréa Parfums
 
-Site web catalogue pour Nuréa Parfums - Sélection de parfums de luxe et grands classiques.
+Site catalogue pour **Nuréa Parfums** : sélection de parfums de luxe et grands classiques.
 
 ## Description
 
-Site vitrine présentant le catalogue de parfums de luxe de Nuréa Parfums. Le site permet aux clients de découvrir la collection, rechercher des parfums par marque ou catégorie, et contacter directement la marque via Snapchat ou WhatsApp.
+Les visiteurs peuvent parcourir la collection, filtrer par catégorie ou marque, rechercher un parfum et contacter la maison (WhatsApp, Snapchat, formulaire).
 
 ## Fonctionnalités
 
-- Catalogue complet de parfums de luxe
-- Recherche en temps réel par nom ou marque
-- Filtres par catégorie et marque
-- Fiches détaillées pour chaque parfum
-- Contact direct via Snapchat et WhatsApp
-- Design premium mobile-first
-- Interface responsive
+- Catalogue avec filtres et tri
+- Recherche floue (tolérance aux fautes)
+- Thème clair / sombre
+- Pages marque et contact
+- Métadonnées SEO et partage social (Open Graph)
 
-## Technologies
+## Stack technique
 
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-- shadcn/ui
+- **Next.js** 16 (App Router)
+- **React** 18
+- **TypeScript**
+- **Tailwind CSS**
+- **Playwright** (tests E2E)
 
-## Structure
+Voir [DEVELOPER.md](DEVELOPER.md) pour les commandes et l’organisation du code.
 
-Le site présente plus de 200 parfums organisés par catégories :
-- Grands classiques
-- Louis Vuitton
-- Tom Ford
-- Parfums de niche
-- Cartier
-- Autres références
+## Licence
 
-## Contact
-
-Pour toute demande, contactez-nous via Snapchat ou WhatsApp depuis le site.
+Voir le fichier [LICENSE](LICENSE).

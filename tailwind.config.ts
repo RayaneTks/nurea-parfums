@@ -1,101 +1,108 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
-  prefix: "",
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   theme: {
     container: {
       center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
+      padding: "1.25rem",
+      screens: { "2xl": "1200px" },
     },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+        nurea: {
+          bg: "var(--nurea-bg)",
+          surface: "var(--nurea-surface)",
+          "surface-hover": "var(--nurea-surface-hover)",
+          accent: "var(--nurea-accent)",
+          "accent-hover": "var(--nurea-accent-hover)",
+          "accent-subtle": "var(--nurea-accent-subtle)",
+          text: "var(--nurea-text)",
+          muted: "var(--nurea-text-muted)",
+          subtle: "var(--nurea-text-subtle)",
+          cuivre: "var(--nurea-cuivre)",
+          border: "var(--nurea-border)",
+          "border-hover": "var(--nurea-border-hover)",
+          glow: "var(--nurea-glow)",
+          success: "var(--nurea-success)",
+          "success-subtle": "var(--nurea-success-subtle)",
+          "success-border": "var(--nurea-success-border)",
+          warning: "var(--nurea-warning)",
+          "warning-subtle": "var(--nurea-warning-subtle)",
+          "warning-border": "var(--nurea-warning-border)",
+          danger: "var(--nurea-danger)",
+          "danger-subtle": "var(--nurea-danger-subtle)",
+          "danger-border": "var(--nurea-danger-border)",
+          info: "var(--nurea-info)",
+          "info-subtle": "var(--nurea-info-subtle)",
+          "info-border": "var(--nurea-info-border)",
         },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+        /* Admin — app nuréa-admin (Vite) */
+        "nurea-bordeaux": "#7b0b1d",
+        "nurea-bordeaux-light": "#9d1c2e",
+        "ios-bg": "#f2f2f7",
+        "ios-card": "#ffffff",
+        admin: {
+          bg: "var(--admin-bg)",
+          surface: "var(--admin-surface)",
+          "surface-muted": "var(--admin-surface-muted)",
+          "surface-hover": "var(--admin-surface-hover)",
+          text: "var(--admin-text)",
+          muted: "var(--admin-text-muted)",
+          subtle: "var(--admin-text-subtle)",
+          border: "var(--admin-border)",
+          "border-hover": "var(--admin-border-hover)",
+          accent: "var(--admin-accent)",
+          "accent-hover": "var(--admin-accent-hover)",
+          "accent-subtle": "var(--admin-accent-subtle)",
+          "accent-ring": "var(--admin-accent-ring)",
+          cuivre: "var(--admin-cuivre)",
+          "cuivre-subtle": "var(--admin-cuivre-subtle)",
+          success: "var(--admin-success)",
+          "success-subtle": "var(--admin-success-subtle)",
+          "success-border": "var(--admin-success-border)",
+          warning: "var(--admin-warning)",
+          "warning-subtle": "var(--admin-warning-subtle)",
+          "warning-border": "var(--admin-warning-border)",
+          danger: "var(--admin-danger)",
+          "danger-subtle": "var(--admin-danger-subtle)",
+          "danger-border": "var(--admin-danger-border)",
+          info: "var(--admin-info)",
+          "info-subtle": "var(--admin-info-subtle)",
+          "info-border": "var(--admin-info-border)",
         },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
-        },
-        luxury: {
-          gold: "hsl(var(--luxury-gold))",
-          "gold-light": "hsl(var(--luxury-gold-light))",
-          dark: "hsl(var(--luxury-dark))",
-          ivory: "hsl(var(--luxury-ivory))",
-        },
+      },
+      boxShadow: {
+        "admin-sm": "var(--admin-shadow-sm)",
+        "admin-md": "var(--admin-shadow-md)",
+        "admin-lg": "var(--admin-shadow-lg)",
+        "admin-xl": "var(--admin-shadow-xl)",
       },
       fontFamily: {
-        serif: ["Playfair Display", "Georgia", "serif"],
-        sans: ["Inter", "system-ui", "sans-serif"],
+        serif: ["var(--font-serif)", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "0px",
+        md: "2px",
+        sm: "2px",
       },
-      keyframes: {
-        "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
-        },
-        "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
-        },
+      transitionTimingFunction: {
+        "out-expo": "cubic-bezier(0.16, 1, 0.3, 1)",
       },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+      letterSpacing: {
+        "nurea-tight": "var(--nurea-tracking-tight)",
+        "nurea-label": "var(--nurea-tracking-label)",
+        "nurea-wide": "var(--nurea-tracking-wide)",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;
