@@ -36,17 +36,25 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum PaymentType {
+  DEPOSIT
+  BALANCE
+  REFUND
+}
+
 model Brand {
-  id          String           @id @default(cuid())
-  name        String           @unique
-  slug        String           @unique
-  catalogMode BrandCatalogMode @default(CURATED)
+  id          String                @id @default(cuid())
+  name        String                @unique
+  slug        String                @unique
+  catalogMode BrandCatalogMode      @default(CURATED)
   status      BrandVisibilityStatus @default(PUBLISHED)
   image       String?
   imageLight  String?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
   perfumes    Perfume[]
+
+  @@index([status])
 }
 
 model Perfume {
@@ -58,26 +66,46 @@ model Perfume {
   image      String
   imageLight String?
   isFeatured Boolean           @default(false)
+  /// Parfum privé : utilisable dans commandes/ventes mais exclu du catalogue public.
+  isPrivate  Boolean           @default(false)
   status     PublicationStatus @default(PUBLISHED)
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
 
   orderItems OrderItem[]
   saleItems  SaleItem[]
+  pricings   PerfumePricing[]
 
   @@unique([brandId, name])
   @@index([status])
   @@index([brandId])
+  @@index([status, brandId])
+  @@index([isPrivate])
+}
+
+/// Prix de référence côté serveur. Remplace la `pricingMemory` localStorage.
+/// Une ligne par (parfum, volume). Pré-remplit le form commande/vente.
+model PerfumePricing {
+  perfumeId           Int
+  volumeMl            Int
+  defaultUnitPriceEur Decimal  @db.Decimal(10, 2)
+  defaultUnitCostDzd  Decimal? @db.Decimal(10, 2)
+  updatedAt           DateTime @updatedAt
+
+  perfume Perfume @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
+
+  @@id([perfumeId, volumeMl])
 }
 
 model AdminUser {
-  id           String     @id @default(cuid())
-  username     String     @unique
+  id           String               @id @default(cuid())
+  username     String               @unique
   passwordHash String
-  role         AdminRole  @default(EDITOR)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  role         AdminRole            @default(EDITOR)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
   auditLogs    AuditLog[]
+  payments     PaymentTransaction[]
 }
 
 model AuditLog {
@@ -91,6 +119,7 @@ model AuditLog {
   createdAt DateTime   @default(now())
 
   @@index([createdAt])
+  @@index([entity, entityId])
 }
 
 model ExternalImportSuggestion {
@@ -105,23 +134,56 @@ model ExternalImportSuggestion {
   reviewedById String?
 }
 
+/// Paramètres globaux (taux de change DZD→EUR par défaut, etc.).
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Clients ────────────────────────────────────────────────────
+// Source de vérité des acheteurs. Permet historique, ardoise (solde dû),
+// KPI clients récurrents, autocomplete dans forms.
+
+model Customer {
+  id           String   @id @default(cuid())
+  fullName     String
+  /// Téléphone normalisé E.164 (ex: +33612345678).
+  phoneE164    String?  @unique
+  snapchat     String?
+  whatsappE164 String?
+  address      String?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orders Order[]
+
+  @@index([fullName])
+}
+
 // ─── Gestion (compta / ordres / ventes) ────────────────────────────
 // Flux 100% manuel : l'admin enregistre ordres et ventes à la main.
 // Prix/coûts saisis à chaque ligne, figés en snapshot à la création.
 
 model Order {
   id             String      @id @default(cuid())
+  /// FK vers Customer (P3). Nullable pour rétro-compat (commandes sans client lié).
+  customerId     String?
+  customer       Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  /// Dénormalisé : nom du client au moment de la commande (snapshot historique).
   customerName   String?
   orderedAt      DateTime    @default(now())
   deliveryAt     DateTime?
   status         OrderStatus @default(PENDING)
   notes          String?
-  /// Acompte encaissé (obligatoire pour passer en READY / « À traiter »)
+  /// CACHE dénormalisé : true si depositPaidTotal > 0. Source de vérité = PaymentTransaction.
   depositPaid    Boolean     @default(false)
-  /// Montant de l’acompte payé (€), 0 si non payé
+  /// CACHE dénormalisé : somme des DEPOSIT moins REFUND (€). Recalculé sur mutation paiement.
   depositAmount  Decimal     @default(0) @db.Decimal(10, 2)
   items          OrderItem[]
   sale           Sale?
+  payments       PaymentTransaction[]
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 
@@ -129,35 +191,70 @@ model Order {
   @@index([orderedAt])
   @@index([deliveryAt])
   @@index([depositPaid])
+  @@index([status, deliveryAt])
+  @@index([customerId])
 }
 
 model OrderItem {
-  id         String   @id @default(cuid())
-  orderId    String
-  perfumeId  Int
-  quantity   Int      @default(1)
-  note       String?
+  id        String  @id @default(cuid())
+  orderId   String
+  /// Nullable pour parfums hors-catalogue (one-shots). Si null, perfumeSnapshot obligatoire.
+  perfumeId Int?
+  quantity  Int     @default(1)
+  note      String?
   /// Flacon 30, 50 ou 100 ml
-  volumeMl   Int      @default(100)
+  volumeMl  Int     @default(100)
   /// Prix unitaire de vente (€) pour ce flacon
-  unitPrice    Decimal  @default(0) @db.Decimal(10, 2)
+  unitPrice Decimal @default(0) @db.Decimal(10, 2)
   /// Coût de revient unitaire (€) - Calculé via unitCostDzd / exchangeRate
-  unitCost     Decimal  @default(0) @db.Decimal(10, 2)
+  unitCost  Decimal @default(0) @db.Decimal(10, 2)
   /// Coût d'achat en DZD
   unitCostDzd  Decimal? @db.Decimal(10, 2)
   /// Taux de change (ex: 277)
   exchangeRate Decimal? @db.Decimal(10, 2)
-  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  perfume    Perfume  @relation(fields: [perfumeId], references: [id], onDelete: Restrict)
+  /// Snapshot perfume si perfumeId null (off-catalog).
+  perfumeSnapshot Json?
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  perfume Perfume? @relation(fields: [perfumeId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
   @@index([perfumeId])
 }
 
+/// Historique des paiements liés aux commandes.
+/// Source de vérité pour `Order.depositPaid` et `Order.depositAmount` (cache dénormalisé).
+/// Types :
+///   DEPOSIT — acompte initial. Premier DEPOSIT déclenche PENDING → READY.
+///   BALANCE — solde encaissé (après livraison, ou à la livraison).
+///   REFUND  — remboursement (montant positif, soustrait du total payé).
+model PaymentTransaction {
+  id           String      @id @default(cuid())
+  orderId      String
+  order        Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  type         PaymentType
+  /// Montant positif (€). Pour REFUND, le sens "sortant" est porté par le type.
+  amount       Decimal     @db.Decimal(10, 2)
+  paidAt       DateTime    @default(now())
+  /// Moyen de paiement libre (cash, virement, snap-pay, ...).
+  method       String?
+  note         String?
+  recordedById String?
+  recordedBy   AdminUser?  @relation(fields: [recordedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime    @default(now())
+
+  @@index([orderId])
+  @@index([paidAt])
+  @@index([type])
+}
+
 model Sale {
   id           String     @id @default(cuid())
   orderId      String?    @unique
+  /// Dénormalisé. Pour ventes directes, peut différer de Order.customer.fullName.
   customerName String?
+  /// FK vers Customer (P3). Nullable pour ventes orphelines historiques.
+  customerId   String?
   soldAt       DateTime   @default(now())
   totalRevenue Decimal    @db.Decimal(10, 2)
   totalCost    Decimal    @db.Decimal(10, 2)
@@ -169,6 +266,7 @@ model Sale {
   updatedAt    DateTime   @updatedAt
 
   @@index([soldAt])
+  @@index([customerId])
 }
 
 model SaleItem {
