@@ -4,7 +4,12 @@ import path from "node:path";
 export default defineConfig({
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts", "src/**/__tests__/**/*.ts"],
+    include: [
+      "src/**/*.test.ts",
+      "src/**/*.test.tsx",
+      "src/**/__tests__/**/*.ts",
+      "src/**/__tests__/**/*.tsx",
+    ],
     exclude: ["node_modules", ".next", "e2e"],
     coverage: {
       provider: "v8",
