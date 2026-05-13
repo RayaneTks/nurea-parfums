@@ -17,40 +17,55 @@
     "db:seed": "dotenv -e .env.local -- prisma db seed",
     "admin:create-user": "dotenv -e .env.local -- tsx scripts/create-admin.ts",
     "verify:integration": "tsx scripts/verify-integration.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "typecheck": "tsc --noEmit",
+    "analyze": "ANALYZE=true next build"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "6.19.2",
+    "@radix-ui/react-dialog": "^1.1.2",
+    "@radix-ui/react-popover": "^1.1.2",
     "@radix-ui/react-slot": "^1.2.3",
     "@supabase/supabase-js": "^2.100.1",
+    "@tanstack/react-query": "^5.83.0",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "decimal.js-light": "^2.5.1",
     "jose": "^6.2.2",
     "lucide-react": "^0.462.0",
     "motion": "^12.23.0",
     "next": "^16.1.6",
     "next-themes": "^0.3.0",
+    "nuqs": "^2.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^2.15.4",
     "resend": "^6.9.4",
     "tailwind-merge": "^2.6.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "vaul": "^1.1.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@next/bundle-analyzer": "^16.1.6",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/typography": "^0.5.16",
+    "@total-typescript/ts-reset": "^0.6.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.16.5",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.21",
     "dotenv-cli": "^11.0.0",
     "eslint": "^9.32.0",
@@ -63,6 +78,7 @@
     "tailwindcss": "^3.4.17",
     "tsx": "^4.21.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.38.0"
+    "typescript-eslint": "^8.38.0",
+    "vitest": "^2.1.8"
   }
 }
