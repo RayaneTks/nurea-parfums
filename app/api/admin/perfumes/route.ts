@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     const denied = requireEditor(ctx);
     if (denied) return denied;
 
-    let body: {
+    type PerfumeCreateBody = {
       brandId?: string;
       brandName?: string;
       name?: string;
@@ -56,8 +56,9 @@ export async function POST(request: Request) {
       status?: PublicationStatus;
       allowCompleteOverride?: boolean;
     };
+    let body: PerfumeCreateBody;
     try {
-      body = await request.json();
+      body = (await request.json()) as PerfumeCreateBody;
     } catch {
       return NextResponse.json({ error: "JSON invalide." }, { status: 400 });
     }

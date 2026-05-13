@@ -64,15 +64,16 @@ export async function PUT(request: Request, { params }: RouteCtx) {
     return NextResponse.json({ error: "Parfum introuvable." }, { status: 404 });
   }
 
-  let body: {
+  type PerfumePatchBody = {
     brandId?: string;
     name?: string;
     image?: string;
     imageLight?: string | null;
     status?: string;
   };
+  let body: PerfumePatchBody;
   try {
-    body = await request.json();
+    body = (await request.json()) as PerfumePatchBody;
   } catch {
     return NextResponse.json({ error: "JSON invalide." }, { status: 400 });
   }
@@ -164,9 +165,10 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
     return NextResponse.json({ error: "ID invalide." }, { status: 400 });
   }
 
-  let body: { status?: string; isFeatured?: boolean };
+  type PerfumePatchStatusBody = { status?: string; isFeatured?: boolean };
+  let body: PerfumePatchStatusBody;
   try {
-    body = await request.json();
+    body = (await request.json()) as PerfumePatchStatusBody;
   } catch {
     return NextResponse.json({ error: "JSON invalide." }, { status: 400 });
   }

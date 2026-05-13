@@ -367,7 +367,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
   useEffect(() => {
     fetch("/api/admin/session", { credentials: "include", cache: "no-store" })
-      .then((r) => r.json())
+      .then((r) => r.json() as Promise<{ user?: { role?: string } }>)
       .then((j) => {
         if (j.user?.role === "VIEWER") setReadOnly(true);
       });
