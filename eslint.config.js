@@ -1,26 +1,25 @@
-import js from "@eslint/js";
-import globals from "globals";
-import reactHooks from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
-import tseslint from "typescript-eslint";
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 
-export default tseslint.config(
-  { ignores: ["dist"] },
+/** @type {import("eslint").Linter.Config[]} */
+const config = [
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["**/*.{ts,tsx}"],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-    },
-    plugins: {
-      "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
-    },
+    ignores: [
+      "dist/**",
+      ".next/**",
+      "node_modules/**",
+      "playwright-report/**",
+      "test-results/**",
+      "eslint.config.js",
+      "postcss.config.js",
+    ],
+  },
+  ...nextCoreWebVitals,
+  {
     rules: {
-      ...reactHooks.configs.recommended.rules,
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "@typescript-eslint/no-unused-vars": "off",
+      /* Trop strict pour next-themes (mounted) et sync URL ↔ état local (App Router). */
+      "react-hooks/set-state-in-effect": "off",
     },
   },
-);
+];
+
+export default config;

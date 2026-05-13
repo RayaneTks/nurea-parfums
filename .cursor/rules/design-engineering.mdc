@@ -1,0 +1,52 @@
+---
+description: Règles permanentes de design, engineering et craft pour Nurea Parfums. Appliquées à chaque génération de code frontend, UI/UX, copy.
+globs:
+  - "src/**/*.tsx"
+  - "src/**/*.ts"
+  - "app/**/*.tsx"
+  - "app/**/*.ts"
+alwaysApply: true
+---
+
+# Design & Engineering Standards — Nurea Parfums
+
+Lire `.impeccable.md` à la racine pour le contexte design complet.
+
+## Reflexes non-négociables
+
+### Anti-slop
+- Jamais Inter/Poppins/Roboto en display — GFS Didot pour les titres
+- Jamais de gradient violet-bleu, cyan-on-dark, néon
+- Jamais de noir pur (#000) ou blanc pur (#fff)
+- Jamais de cartes dans des cartes
+- Jamais de bounce/elastic easing
+- Jamais de rounded rectangles génériques avec drop shadow
+- Chaque interface doit avoir UN élément mémorable
+
+### Tokens
+- Toutes les couleurs via variables CSS --nurea-*
+- Spacing en multiples de 4px
+- Border radius : 0px (esthétique Nurea = angles vifs)
+- Easing : cubic-bezier(0.16, 1, 0.3, 1) partout
+
+### Accessibilité
+- Touch targets >= 44x44px
+- Focus rings visibles sur tout élément interactif
+- aria-label sur boutons icône-seuls
+- Contraste >= 4.5:1
+
+### Copy
+- Français. Direct. Voix active. Phrases courtes.
+- Boutons = verbes : "Enregistrer", "Créer", "Explorer"
+- Erreurs = problème + action corrective
+- Empty states = guidage, pas "rien ici"
+- Interdit : formules creuses, "N'hésitez pas", "Bienvenue sur"
+
+### Performance
+- next/image avec width/height explicites
+- next/font/google avec swap
+- Squelettes (pulse) pour l'async
+- Pas d'import mort
+
+### Self-audit avant output
+Si un designer senior chez Linear/Vercel/Stripe froncerait les sourcils → refaire.
