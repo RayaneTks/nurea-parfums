@@ -259,6 +259,10 @@ model Sale {
   totalRevenue Decimal    @db.Decimal(10, 2)
   totalCost    Decimal    @db.Decimal(10, 2)
   totalMargin  Decimal    @db.Decimal(10, 2)
+  /// Solde restant dû sur les ventes livrées partiellement payées (legacy main).
+  /// Remplacé fonctionnellement par PaymentTransaction (REFUND/BALANCE) en P6 ;
+  /// gardé pour compat schéma DB existante.
+  remainingDue Decimal    @default(0) @db.Decimal(10, 2)
   notes        String?
   items        SaleItem[]
   order        Order?     @relation(fields: [orderId], references: [id], onDelete: SetNull)
