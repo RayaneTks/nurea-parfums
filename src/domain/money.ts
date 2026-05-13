@@ -20,11 +20,11 @@ export type Currency = "EUR" | "DZD";
 export type Money = {
   readonly amount: Decimal;
   readonly currency: Currency;
-  readonly [__moneyBrand]: "Money";
+  readonly [__moneyBrand]?: "Money";
 };
 
 function make(amount: Decimal, currency: Currency): Money {
-  return { amount, currency, [__moneyBrand]: "Money" } as Money;
+  return { amount, currency } as Money;
 }
 
 function toDecimal(v: number | string | Decimal): Decimal {
@@ -35,9 +35,7 @@ function toDecimal(v: number | string | Decimal): Decimal {
   }
   const cleaned = String(v).replace(",", ".").trim();
   if (cleaned === "") return new Decimal(0);
-  const d = new Decimal(cleaned);
-  if (!d.isFinite()) throw new Error(`Money: non-finite string ${v}`);
-  return d;
+  return new Decimal(cleaned);
 }
 
 export function eur(v: number | string | Decimal): Money {
@@ -94,7 +92,7 @@ export function gte(a: Money, b: Money): boolean {
 }
 
 export function isPositive(m: Money): boolean {
-  return m.amount.isPositive() && !m.amount.isZero();
+  return m.amount.greaterThan(0);
 }
 
 export function isZero(m: Money): boolean {
@@ -113,7 +111,7 @@ export function dzdToEur(amount: Money, ratePerEur: number | string | Decimal): 
     throw new Error(`Money: expected DZD, got ${amount.currency}`);
   }
   const r = toDecimal(ratePerEur);
-  if (r.isZero() || r.isNegative()) {
+  if (r.isZero() || r.lessThan(0)) {
     throw new Error("Money: exchange rate must be positive");
   }
   return make(amount.amount.dividedBy(r), "EUR");
