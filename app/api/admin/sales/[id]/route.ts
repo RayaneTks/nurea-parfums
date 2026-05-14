@@ -47,6 +47,7 @@ type PatchSaleBody = {
   customerId?: string | null;
   customerName?: string | null;
   notes?: string | null;
+  remainingDue?: number | string | null;
   items?: PatchSaleItemBody[];
 };
 
@@ -74,7 +75,8 @@ export async function PATCH(
     const hasCustomerName = "customerName" in body;
     const hasCustomerId = "customerId" in body;
     const hasCustomer = hasCustomerName || hasCustomerId;
-    if (!hasItems && !hasNotes && !hasCustomer) {
+    const hasRemainingDue = "remainingDue" in body;
+    if (!hasItems && !hasNotes && !hasCustomer && !hasRemainingDue) {
       return NextResponse.json(
         { error: "Rien à mettre à jour." },
         { status: 400 },
@@ -155,8 +157,29 @@ export async function PATCH(
       }
     }
 
+    let remainingDueN = 0;
+    if (hasRemainingDue) {
+      const raw = body.remainingDue;
+      remainingDueN =
+        raw === null || raw === undefined || raw === ""
+          ? 0
+          : Number(String(raw).replace(",", "."));
+      if (!Number.isFinite(remainingDueN) || remainingDueN < 0) {
+        return NextResponse.json(
+          { error: "Reste à payer invalide (doit être ≥ 0)." },
+          { status: 400 },
+        );
+      }
+      if (remainingDueN > Number(existing.totalRevenue)) {
+        return NextResponse.json(
+          { error: "Reste à payer ne peut pas dépasser le total de la vente." },
+          { status: 400 },
+        );
+      }
+    }
+
     const updated = await prisma.$transaction(async (tx) => {
-      if (hasNotes || hasCustomer) {
+      if (hasNotes || hasCustomer || hasRemainingDue) {
         const saleData: Prisma.SaleUpdateInput = {};
         if (hasNotes) saleData.notes = body.notes?.trim() || null;
         if (hasCustomerId) {
@@ -168,6 +191,9 @@ export async function PATCH(
         }
         if (hasCustomerName) {
           saleData.customerName = body.customerName?.trim() || null;
+        }
+        if (hasRemainingDue) {
+          saleData.remainingDue = new Prisma.Decimal(remainingDueN);
         }
         await tx.sale.update({ where: { id }, data: saleData });
       }
@@ -247,14 +273,17 @@ export async function PATCH(
             lineMargin: i.lineMargin,
           })),
         );
-        await tx.sale.update({
-          where: { id },
-          data: {
-            totalRevenue: t.totalRevenue,
-            totalCost: t.totalCost,
-            totalMargin: t.totalMargin,
-          },
-        });
+        const newTotal = Number(t.totalRevenue);
+        const currentRem = Number(existing.remainingDue);
+        const saleUpdate: Prisma.SaleUpdateInput = {
+          totalRevenue: t.totalRevenue,
+          totalCost: t.totalCost,
+          totalMargin: t.totalMargin,
+        };
+        if (currentRem > newTotal) {
+          saleUpdate.remainingDue = t.totalRevenue;
+        }
+        await tx.sale.update({ where: { id }, data: saleUpdate });
       }
       return id;
     });

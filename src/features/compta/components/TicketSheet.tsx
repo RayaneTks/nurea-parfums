@@ -8,6 +8,7 @@ import { Toast, type ToastType } from "@/ui/primitives/Toast";
 import { Skeleton } from "@/ui/primitives/Skeleton";
 import { TicketHeader } from "./TicketHeader";
 import { TicketTotals } from "./TicketTotals";
+import { TicketPayment } from "./TicketPayment";
 import { TicketItemsList } from "./TicketItemsList";
 import { useTicketEdit } from "../hooks/useTicketEdit";
 import type { SaleDetailRow } from "@/server/sales/queries";
@@ -55,6 +56,7 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
     totalRevenue: "0",
     totalCost: "0",
     totalMargin: "0",
+    remainingDue: "0",
     itemCount: 0,
     orderId: null,
     notes: null,
@@ -67,6 +69,7 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
         customerId: sale.customerId,
         customerName: sale.customerName ?? "",
         notes: sale.notes ?? "",
+        remainingDue: sale.remainingDue ?? "0",
         lines: sale.items.map((it) => ({
           key: `id:${it.id}`,
           perfumeId: it.perfumeId,
@@ -137,6 +140,9 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
       }
       if (ticket.draft.customerName !== (sale.customerName ?? "")) {
         payload.customerName = ticket.draft.customerName;
+      }
+      if (ticket.draft.remainingDue !== (sale.remainingDue ?? "0")) {
+        payload.remainingDue = ticket.draft.remainingDue.replace(",", ".");
       }
       const res = await fetch(`/api/admin/sales/${sale.id}`, {
         method: "PATCH",
@@ -230,6 +236,12 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
               }}
             />
             <TicketTotals sale={sale} />
+            <TicketPayment
+              total={Number(sale.totalRevenue)}
+              remainingDue={ticket.draft.remainingDue}
+              mode={ticket.mode}
+              onChange={ticket.setRemainingDue}
+            />
             <TicketItemsList
               lines={ticket.draft.lines}
               mode={ticket.mode}

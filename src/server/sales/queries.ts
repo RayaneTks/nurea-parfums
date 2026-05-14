@@ -9,6 +9,7 @@ export type SaleRowLite = {
   totalRevenue: string;
   totalCost: string;
   totalMargin: string;
+  remainingDue: string;
   itemCount: number;
   orderId: string | null;
 };
@@ -56,6 +57,7 @@ export type ComptaListResult = {
     totalRevenue: string;
     totalCost: string;
     totalMargin: string;
+    totalDebt: string;
     marginPct: string;
     salesCount: number;
     avgValue: string;
@@ -125,6 +127,7 @@ export async function listSalesGroupedByCustomer(params: {
       totalRevenue: true,
       totalCost: true,
       totalMargin: true,
+      remainingDue: true,
       orderId: true,
       customer: { select: { fullName: true } },
       _count: { select: { items: true } },
@@ -136,6 +139,7 @@ export async function listSalesGroupedByCustomer(params: {
   let totalRevenue = new Decimal(0);
   let totalCost = new Decimal(0);
   let totalMargin = new Decimal(0);
+  let totalDebt = new Decimal(0);
 
   for (const s of sales) {
     const resolvedName = s.customer?.fullName ?? s.customerName ?? "Anonyme";
@@ -148,6 +152,7 @@ export async function listSalesGroupedByCustomer(params: {
       totalRevenue: s.totalRevenue.toString(),
       totalCost: s.totalCost.toString(),
       totalMargin: s.totalMargin.toString(),
+      remainingDue: s.remainingDue.toString(),
       itemCount: s._count.items,
       orderId: s.orderId,
     };
@@ -155,6 +160,7 @@ export async function listSalesGroupedByCustomer(params: {
     totalRevenue = totalRevenue.plus(new Decimal(row.totalRevenue));
     totalCost = totalCost.plus(new Decimal(row.totalCost));
     totalMargin = totalMargin.plus(new Decimal(row.totalMargin));
+    totalDebt = totalDebt.plus(new Decimal(row.remainingDue));
 
     const existing = map.get(key);
     if (existing) {
@@ -191,6 +197,7 @@ export async function listSalesGroupedByCustomer(params: {
       totalRevenue: totalRevenue.toFixed(2),
       totalCost: totalCost.toFixed(2),
       totalMargin: totalMargin.toFixed(2),
+      totalDebt: totalDebt.toFixed(2),
       marginPct,
       salesCount,
       avgValue,
@@ -209,6 +216,7 @@ export async function getSaleById(saleId: string): Promise<SaleDetailRow | null>
       totalRevenue: true,
       totalCost: true,
       totalMargin: true,
+      remainingDue: true,
       orderId: true,
       notes: true,
       items: {
@@ -261,6 +269,7 @@ export async function getSaleById(saleId: string): Promise<SaleDetailRow | null>
     totalRevenue: sale.totalRevenue.toString(),
     totalCost: sale.totalCost.toString(),
     totalMargin: sale.totalMargin.toString(),
+    remainingDue: sale.remainingDue.toString(),
     itemCount: sale.items.length,
     orderId: sale.orderId,
     notes: sale.notes,
