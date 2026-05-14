@@ -253,7 +253,11 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
   };
 
   return (
-    <main id="main-content" className="flex-1 space-y-4 px-5 pb-4 pt-2">
+    <main
+      id="main-content"
+      className="flex-1 space-y-4 px-5 pt-2"
+      style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
+    >
       <CustomerSection
         customer={state.customer}
         customerName={state.customerName}

@@ -358,7 +358,11 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
         }
       />
 
-      <main id="main-content" className="flex-1 px-5 pb-32 pt-0">
+      <main
+        id="main-content"
+        className="flex-1 px-5 pt-0"
+        style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
+      >
         <form id="brand-form" onSubmit={onSubmit} className="space-y-7">
           {error ? (
             <div

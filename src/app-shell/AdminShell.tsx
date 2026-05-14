@@ -50,10 +50,7 @@ export function AdminShell({ children }: AdminShellProps) {
 
   return (
     <div className="admin-theme w-full min-h-[100dvh]">
-      <div
-        className="mx-auto flex flex-col w-full max-w-[var(--admin-app-max-width)] min-h-[100dvh]"
-        style={{ paddingBottom: "calc(var(--admin-tab-bar-height) + env(safe-area-inset-bottom, 0px))" }}
-      >
+      <div className="mx-auto flex flex-col w-full max-w-[var(--admin-app-max-width)] min-h-[100dvh]">
         <AppHeader
           onOpenCommandPalette={() => setPaletteOpen(true)}
           onOpenSearch={focusCatalogueSearch}

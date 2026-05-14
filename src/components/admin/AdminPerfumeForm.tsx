@@ -556,7 +556,11 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         }
       />
 
-      <main id="main-content" className="flex-1 px-5 pb-32 pt-0">
+      <main
+        id="main-content"
+        className="flex-1 px-5 pt-0"
+        style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
+      >
         <form id="perfume-form" onSubmit={onSubmit} className="space-y-7">
           {error ? (
             <div

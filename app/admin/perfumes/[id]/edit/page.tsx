@@ -25,7 +25,10 @@ export default async function EditPerfumePage({ params }: { params: Params }) {
   return (
     <>
       <AdminPerfumeEditPage params={Promise.resolve({ id })} />
-      <div className="px-5 pb-4 -mt-24">
+      <div
+        className="px-5"
+        style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
+      >
         <PerfumePricingPanel perfumeId={perfumeId} initial={pricings} />
       </div>
     </>
