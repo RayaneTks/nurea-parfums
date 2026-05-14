@@ -18,7 +18,7 @@ import type {
   OrderItemInput,
   UpdateOrderInput,
 } from "@/schemas/order";
-import type { PerfumePickerRow } from "@/lib/gestion/types";
+import type { PickerResult } from "@/features/sell";
 import type { SelectedCustomer } from "../../customers/CustomerCombobox";
 
 const DEFAULT_EXCHANGE = "277";
@@ -92,32 +92,58 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
     [state.items],
   );
 
-  const onAddItem = useCallback(async (p: PerfumePickerRow) => {
-    const pricing = await fetchPricing(p.id, 100);
-    setState((s) => ({
-      ...s,
-      items: [
-        ...s.items,
-        {
-          key: makeKey(),
-          perfume: p,
-          quantity: 1,
-          volumeMl: 100,
-          unitPrice: pricing?.defaultUnitPriceEur ?? "",
-          unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
-          exchangeRate: DEFAULT_EXCHANGE,
-          note: "",
-        },
-      ],
-    }));
+  const onAddItem = useCallback(async (result: PickerResult) => {
+    if (result.kind === "catalog") {
+      const p = result.perfume;
+      const pricing = await fetchPricing(p.id, 100);
+      setState((s) => ({
+        ...s,
+        items: [
+          ...s.items,
+          {
+            key: makeKey(),
+            perfumeId: p.id,
+            snapshot: {
+              name: p.name,
+              brandName: p.brand?.name ?? "—",
+              image: p.image ?? null,
+            },
+            quantity: 1,
+            volumeMl: 100,
+            unitPrice: pricing?.defaultUnitPriceEur ?? "",
+            unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
+            exchangeRate: DEFAULT_EXCHANGE,
+            note: "",
+          },
+        ],
+      }));
+    } else {
+      setState((s) => ({
+        ...s,
+        items: [
+          ...s.items,
+          {
+            key: makeKey(),
+            perfumeId: null,
+            snapshot: { name: result.name, brandName: result.brandName, image: null },
+            quantity: 1,
+            volumeMl: 100,
+            unitPrice: "",
+            unitCostDzd: "",
+            exchangeRate: DEFAULT_EXCHANGE,
+            note: "",
+          },
+        ],
+      }));
+    }
   }, []);
 
   const onPatchItem = useCallback(async (key: string, patch: Partial<OrderFormLine>) => {
-    // Si changement de volume, refetch pricing.
+    // Si changement de volume sur une ligne catalogue, refetch pricing.
     if (patch.volumeMl !== undefined) {
       const target = state.items.find((it) => it.key === key);
-      if (target && patch.volumeMl !== target.volumeMl) {
-        const pricing = await fetchPricing(target.perfume.id, patch.volumeMl);
+      if (target && target.perfumeId !== null && patch.volumeMl !== target.volumeMl) {
+        const pricing = await fetchPricing(target.perfumeId, patch.volumeMl);
         if (pricing) {
           patch = {
             ...patch,
@@ -158,7 +184,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
     }
     for (const it of state.items) {
       if (toNum(it.unitPrice) <= 0) {
-        setToast({ type: "error", message: `Prix manquant : ${it.perfume.name}.` });
+        setToast({ type: "error", message: `Prix manquant : ${it.snapshot.name}.` });
         return;
       }
     }
@@ -172,8 +198,8 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
     }
 
     const items: OrderItemInput[] = state.items.map((it) => ({
-      perfumeId: it.perfume.id,
-      perfumeSnapshot: undefined,
+      perfumeId: it.perfumeId,
+      perfumeSnapshot: it.perfumeId === null ? it.snapshot : undefined,
       quantity: it.quantity,
       volumeMl: it.volumeMl,
       unitPrice: it.unitPrice.replace(",", "."),

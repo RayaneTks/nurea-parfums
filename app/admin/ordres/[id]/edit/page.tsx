@@ -3,12 +3,11 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { OrderForm } from "@/components/admin/orders/OrderForm";
 import type { OrderFormLine } from "@/components/admin/orders/OrderForm/types";
-import type { PerfumePickerRow } from "@/lib/gestion/types";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Administration — Modifier Commande",
+  title: "Modifier commande — Admin",
   robots: { index: false, follow: false },
 };
 
@@ -46,12 +45,12 @@ export default async function EditOrderPage({ params }: { params: Params }) {
           unitCostDzd: true,
           exchangeRate: true,
           note: true,
+          perfumeSnapshot: true,
           perfume: {
             select: {
               id: true,
               name: true,
               image: true,
-              status: true,
               brand: { select: { id: true, name: true } },
             },
           },
@@ -61,28 +60,27 @@ export default async function EditOrderPage({ params }: { params: Params }) {
   });
   if (!order) notFound();
 
-  const items: OrderFormLine[] = order.items
-    .filter((it) => it.perfume !== null)
-    .map((it) => {
-      const perfume: PerfumePickerRow = {
-        id: it.perfume!.id,
-        name: it.perfume!.name,
-        image: it.perfume!.image,
-        status: it.perfume!.status,
-        brand: it.perfume!.brand,
-      };
-      const vol = isVolume(it.volumeMl) ? it.volumeMl : 100;
-      return {
-        key: `loaded-${it.id}`,
-        perfume,
-        quantity: it.quantity,
-        volumeMl: vol,
-        unitPrice: it.unitPrice.toString(),
-        unitCostDzd: it.unitCostDzd?.toString() ?? "",
-        exchangeRate: it.exchangeRate?.toString() ?? "277",
-        note: it.note ?? "",
-      };
-    });
+  const items: OrderFormLine[] = order.items.map((it) => {
+    const snap =
+      it.perfumeSnapshot && typeof it.perfumeSnapshot === "object"
+        ? (it.perfumeSnapshot as { name?: string; brandName?: string; image?: string })
+        : null;
+    return {
+      key: `loaded-${it.id}`,
+      perfumeId: it.perfumeId,
+      snapshot: {
+        name: it.perfume?.name ?? snap?.name ?? "Hors catalogue",
+        brandName: it.perfume?.brand.name ?? snap?.brandName ?? "—",
+        image: it.perfume?.image ?? snap?.image ?? null,
+      },
+      quantity: it.quantity,
+      volumeMl: isVolume(it.volumeMl) ? it.volumeMl : 100,
+      unitPrice: it.unitPrice.toString(),
+      unitCostDzd: it.unitCostDzd?.toString() ?? "",
+      exchangeRate: it.exchangeRate?.toString() ?? "277",
+      note: it.note ?? "",
+    };
+  });
 
   return (
     <OrderForm
@@ -90,7 +88,11 @@ export default async function EditOrderPage({ params }: { params: Params }) {
       orderId={order.id}
       initial={{
         customer: order.customer
-          ? { id: order.customer.id, fullName: order.customer.fullName, phoneE164: order.customer.phoneE164 }
+          ? {
+              id: order.customer.id,
+              fullName: order.customer.fullName,
+              phoneE164: order.customer.phoneE164,
+            }
           : null,
         customerName: order.customerName ?? "",
         deliveryAt: toDatetimeLocal(order.deliveryAt),

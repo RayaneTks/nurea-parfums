@@ -1,9 +1,16 @@
 import type { SelectedCustomer } from "../../customers/CustomerCombobox";
-import type { PerfumePickerRow } from "@/lib/gestion/types";
+
+export type OrderFormLineSnapshot = {
+  name: string;
+  brandName: string;
+  image: string | null;
+};
 
 export type OrderFormLine = {
   key: string;
-  perfume: PerfumePickerRow;
+  /** null = saisie libre (off-catalogue) — snapshot porte le nom/marque. */
+  perfumeId: number | null;
+  snapshot: OrderFormLineSnapshot;
   quantity: number;
   volumeMl: 30 | 50 | 100;
   unitPrice: string;
