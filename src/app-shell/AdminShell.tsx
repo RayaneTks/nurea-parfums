@@ -52,7 +52,7 @@ export function AdminShell({ children }: AdminShellProps) {
     <div className="admin-theme w-full min-h-[100dvh]">
       <div
         className="mx-auto flex flex-col w-full max-w-[var(--admin-app-max-width)] min-h-[100dvh]"
-        style={{ paddingBottom: "var(--admin-tab-bar-height)" }}
+        style={{ paddingBottom: "calc(var(--admin-tab-bar-height) + env(safe-area-inset-bottom, 0px))" }}
       >
         <AppHeader
           onOpenCommandPalette={() => setPaletteOpen(true)}

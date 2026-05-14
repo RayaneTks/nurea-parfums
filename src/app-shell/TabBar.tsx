@@ -56,13 +56,14 @@ export function TabBar() {
         backdropFilter: "saturate(180%) blur(20px)",
         WebkitBackdropFilter: "saturate(180%) blur(20px)",
         borderTop: "1px solid var(--admin-border)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        transform: "translate3d(0, 0, 0)",
       }}
     >
       <div
         className="flex items-stretch justify-around"
         style={{
           height: "var(--admin-tab-bar-height)",
-          paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
       >
         {TABS.map((tab) => {

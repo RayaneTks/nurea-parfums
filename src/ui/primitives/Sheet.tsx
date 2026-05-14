@@ -51,12 +51,12 @@ export function Sheet({
     >
       <Drawer.Portal>
         <Drawer.Overlay
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+          className="admin-theme fixed inset-0 bg-black/40 backdrop-blur-sm"
           style={{ zIndex: 70 }}
         />
         <Drawer.Content
           className={cn(
-            "fixed inset-x-0 bottom-0 mx-auto flex flex-col rounded-t-[24px] bg-[var(--admin-surface)] outline-none",
+            "admin-theme fixed inset-x-0 bottom-0 mx-auto flex flex-col rounded-t-[24px] bg-[var(--admin-surface)] outline-none",
             "max-w-[var(--admin-app-max-width)]",
             className,
           )}

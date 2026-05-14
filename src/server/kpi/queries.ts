@@ -72,54 +72,58 @@ export type TopPerfumeRow = {
   brand: string | null;
   quantity: number;
   revenue: string;
+  source: "catalog" | "manual";
 };
 
 export async function topPerfumes(range: PeriodRange, limit = 5): Promise<TopPerfumeRow[]> {
-  const rows = await prisma.saleItem.groupBy({
-    by: ["perfumeId"],
-    where: { sale: { soldAt: { gte: range.start, lt: range.end } } },
-    _sum: { quantity: true, lineRevenue: true },
-    orderBy: { _sum: { lineRevenue: "desc" } },
-    take: limit,
-  });
+  type Row = {
+    key: string;
+    perfume_id: number | null;
+    display_name: string | null;
+    display_brand: string | null;
+    quantity: bigint;
+    revenue: string | null;
+  };
+  const rows = await prisma.$queryRaw<Row[]>`
+    WITH grouped AS (
+      SELECT
+        CASE
+          WHEN si."perfumeId" IS NOT NULL THEN 'catalog:' || si."perfumeId"::text
+          ELSE 'manual:' || LOWER(TRIM(COALESCE(si."perfumeSnapshot"->>'name', '')))
+        END AS key,
+        si."perfumeId" AS perfume_id,
+        si."perfumeSnapshot"->>'name' AS snap_name,
+        si."perfumeSnapshot"->>'brandName' AS snap_brand,
+        si.quantity,
+        si."lineRevenue"
+      FROM "SaleItem" si
+      JOIN "Sale" s ON si."saleId" = s.id
+      WHERE s."soldAt" >= ${range.start} AND s."soldAt" < ${range.end}
+    )
+    SELECT
+      g.key AS key,
+      MAX(g.perfume_id) AS perfume_id,
+      COALESCE(p.name, MIN(g.snap_name)) AS display_name,
+      COALESCE(b.name, MIN(g.snap_brand)) AS display_brand,
+      SUM(g.quantity)::bigint AS quantity,
+      SUM(g."lineRevenue")::text AS revenue
+    FROM grouped g
+    LEFT JOIN "Perfume" p ON p.id = g.perfume_id
+    LEFT JOIN "Brand" b ON b.id = p."brandId"
+    GROUP BY g.key, p.name, b.name
+    HAVING SUM(g.quantity) > 0
+    ORDER BY SUM(g."lineRevenue") DESC NULLS LAST
+    LIMIT ${limit}
+  `;
 
-  if (rows.length === 0) return [];
-
-  // Load names for perfumes.
-  const ids = rows.map((r) => r.perfumeId).filter((id): id is number => id !== null);
-  const perfumes =
-    ids.length > 0
-      ? await prisma.perfume.findMany({
-          where: { id: { in: ids } },
-          select: { id: true, name: true, brand: { select: { name: true } } },
-        })
-      : [];
-  const byId = new Map(perfumes.map((p) => [p.id, p]));
-
-  // Fallback names for orphans via SaleItem.perfumeSnapshot (best-effort).
-  const snapshotNames = new Map<string, { name: string; brand: string | null }>();
-  if (rows.some((r) => r.perfumeId === null)) {
-    const orphan = await prisma.saleItem.findFirst({
-      where: { perfumeId: null, sale: { soldAt: { gte: range.start, lt: range.end } } },
-      select: { perfumeSnapshot: true },
-    });
-    if (orphan?.perfumeSnapshot && typeof orphan.perfumeSnapshot === "object") {
-      const snap = orphan.perfumeSnapshot as { name?: string; brandName?: string };
-      if (snap.name) snapshotNames.set("null", { name: snap.name, brand: snap.brandName ?? null });
-    }
-  }
-
-  return rows.map((r) => {
-    const perfume = r.perfumeId !== null ? byId.get(r.perfumeId) : undefined;
-    const fallback = r.perfumeId === null ? snapshotNames.get("null") : undefined;
-    return {
-      perfumeId: r.perfumeId,
-      name: perfume?.name ?? fallback?.name ?? "Hors catalogue",
-      brand: perfume?.brand.name ?? fallback?.brand ?? null,
-      quantity: r._sum.quantity ?? 0,
-      revenue: (r._sum.lineRevenue ?? new Decimal(0)).toString(),
-    };
-  });
+  return rows.map((r) => ({
+    perfumeId: r.perfume_id,
+    name: r.display_name?.trim() || "Sans nom",
+    brand: r.display_brand?.trim() || null,
+    quantity: Number(r.quantity ?? 0),
+    revenue: new Decimal(r.revenue ?? "0").toFixed(2),
+    source: r.perfume_id !== null ? "catalog" : "manual",
+  }));
 }
 
 export type TopBrandRow = {
