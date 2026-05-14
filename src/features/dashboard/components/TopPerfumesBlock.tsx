@@ -1,22 +1,21 @@
-import { Sparkles } from "lucide-react";
+import Link from "next/link";
+import { ChevronRight, Sparkles } from "lucide-react";
 import { Card } from "@/ui/primitives/Card";
 import { Money } from "@/ui/patterns/Money";
-import { startOfMonth, topPerfumes } from "@/server/kpi/queries";
+import { topPerfumes } from "@/server/kpi/queries";
 
 export async function TopPerfumesBlock() {
-  const now = new Date();
-  const range = { start: startOfMonth(now), end: new Date(now.getTime() + 1000) };
-  const rows = await topPerfumes(range, 5);
+  const rows = await topPerfumes(null, 5);
 
   if (rows.length === 0) {
     return (
       <Card padding={3}>
         <h2 className="mb-2 text-[14px] font-semibold text-[var(--admin-text)]">
-          Top parfums du mois
+          Top parfums
         </h2>
         <p className="py-2 text-[13px] text-[var(--admin-text-muted)]">
           <Sparkles size={12} className="mr-1 inline text-[var(--admin-accent)]" />
-          Pas encore de ventes ce mois.
+          Pas encore de ventes enregistrées.
         </p>
       </Card>
     );
@@ -26,9 +25,19 @@ export async function TopPerfumesBlock() {
 
   return (
     <Card padding={3}>
-      <h2 className="mb-3 text-[14px] font-semibold text-[var(--admin-text)]">
-        Top parfums du mois
-      </h2>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-[14px] font-semibold text-[var(--admin-text)]">
+          Top parfums
+        </h2>
+        <Link
+          href="/admin/stats/top-parfums"
+          prefetch
+          className="inline-flex h-9 items-center gap-0.5 rounded-full px-2 text-[12px] font-medium text-[var(--admin-accent)] tap-scale focus-visible:outline-none focus-visible:bg-[var(--admin-accent-bg)]"
+        >
+          Voir tout
+          <ChevronRight size={14} aria-hidden />
+        </Link>
+      </div>
       <ul className="space-y-2">
         {rows.map((r, i) => {
           const pct = (Number(r.revenue) / maxRev) * 100;
