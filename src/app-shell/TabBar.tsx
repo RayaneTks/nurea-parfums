@@ -40,7 +40,7 @@ const TABS: readonly Tab[] = [
     href: "/admin/compta",
     label: "Compta",
     icon: TrendingUp,
-    match: (p) => p.startsWith("/admin/compta"),
+    match: (p) => p.startsWith("/admin/compta") || p.startsWith("/admin/lots"),
   },
 ] as const;
 
