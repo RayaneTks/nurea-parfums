@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { NureaAccountingPage } from "@/components/admin/nurea/AccountingPage";
+import { ComptaPage } from "@/features/compta";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Administration — Compta",
+  title: "Compta — Admin",
   robots: { index: false, follow: false },
 };
 
-export default function ComptaPage() {
-  return <NureaAccountingPage />;
+type Params = { searchParams: Promise<{ period?: string; q?: string }> };
+
+export default function Page(props: Params) {
+  return <ComptaPage {...props} />;
 }
