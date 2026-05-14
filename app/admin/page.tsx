@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { DashboardLanding } from "@/components/admin/nurea/DashboardLanding";
+import { DashboardPage } from "@/features/dashboard";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Tableau de bord — Admin",
+  robots: { index: false, follow: false },
 };
 
-export default function AdminHomePage() {
-  // Auth enforced by middleware (/admin/* → /admin/login if no cookie).
-  return <DashboardLanding />;
+export default function Page() {
+  return <DashboardPage />;
 }
