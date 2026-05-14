@@ -3,10 +3,12 @@
 import { useCallback, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
-import { AdminButton } from "../../ui/AdminButton";
-import { AdminToast, type ToastType } from "../../ui/AdminToast";
-import { SectionCard } from "../../ui/SectionCard";
-import { StickyAction } from "../../shell/StickyAction";
+import { Button } from "@/ui/primitives/Button";
+import { Card } from "@/ui/primitives/Card";
+import { Stack } from "@/ui/primitives/Stack";
+import { StickyAction } from "@/ui/primitives/StickyAction";
+import { Toast, type ToastType } from "@/ui/primitives/Toast";
+import { Money } from "@/ui/patterns/Money";
 import { CustomerSection } from "./CustomerSection";
 import { ItemsSection } from "./ItemsSection";
 import { DepositSection } from "./DepositSection";
@@ -255,80 +257,85 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
   return (
     <main
       id="main-content"
-      className="flex-1 space-y-4 px-5 pt-2"
+      className="flex-1 px-4 pt-2"
       style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
     >
-      <CustomerSection
-        customer={state.customer}
-        customerName={state.customerName}
-        onCustomerChange={(c) => setState((s) => ({ ...s, customer: c }))}
-        onCustomerNameChange={(n) => setState((s) => ({ ...s, customerName: n }))}
-      />
-
-      <ItemsSection
-        items={state.items}
-        exchangeRateDefault={DEFAULT_EXCHANGE}
-        onAddItem={onAddItem}
-        onPatchItem={onPatchItem}
-        onRemoveItem={onRemoveItem}
-        onQuantityDelta={onQuantityDelta}
-      />
-
-      {mode === "create" && state.initialDeposit ? (
-        <DepositSection
-          on={state.initialDeposit.on}
-          amount={state.initialDeposit.amount}
-          method={state.initialDeposit.method}
-          onToggle={(on) =>
-            setState((s) => ({
-              ...s,
-              initialDeposit: s.initialDeposit ? { ...s.initialDeposit, on } : null,
-            }))
-          }
-          onAmountChange={(amount) =>
-            setState((s) => ({
-              ...s,
-              initialDeposit: s.initialDeposit ? { ...s.initialDeposit, amount } : null,
-            }))
-          }
-          onMethodChange={(method) =>
-            setState((s) => ({
-              ...s,
-              initialDeposit: s.initialDeposit ? { ...s.initialDeposit, method } : null,
-            }))
-          }
+      <Stack gap={3}>
+        <CustomerSection
+          customer={state.customer}
+          customerName={state.customerName}
+          onCustomerChange={(c) => setState((s) => ({ ...s, customer: c }))}
+          onCustomerNameChange={(n) => setState((s) => ({ ...s, customerName: n }))}
         />
-      ) : null}
 
-      <MetaSection
-        deliveryAt={state.deliveryAt}
-        notes={state.notes}
-        onDeliveryChange={(v) => setState((s) => ({ ...s, deliveryAt: v }))}
-        onNotesChange={(v) => setState((s) => ({ ...s, notes: v }))}
-      />
+        <ItemsSection
+          items={state.items}
+          exchangeRateDefault={DEFAULT_EXCHANGE}
+          onAddItem={onAddItem}
+          onPatchItem={onPatchItem}
+          onRemoveItem={onRemoveItem}
+          onQuantityDelta={onQuantityDelta}
+        />
 
-      <SectionCard>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-neutral-500">Total commande</span>
-          <span className="text-lg font-bold tabular-nums">{orderTotal.toFixed(2)} €</span>
-        </div>
-      </SectionCard>
+        {mode === "create" && state.initialDeposit ? (
+          <DepositSection
+            on={state.initialDeposit.on}
+            amount={state.initialDeposit.amount}
+            method={state.initialDeposit.method}
+            onToggle={(on) =>
+              setState((s) => ({
+                ...s,
+                initialDeposit: s.initialDeposit ? { ...s.initialDeposit, on } : null,
+              }))
+            }
+            onAmountChange={(amount) =>
+              setState((s) => ({
+                ...s,
+                initialDeposit: s.initialDeposit ? { ...s.initialDeposit, amount } : null,
+              }))
+            }
+            onMethodChange={(method) =>
+              setState((s) => ({
+                ...s,
+                initialDeposit: s.initialDeposit ? { ...s.initialDeposit, method } : null,
+              }))
+            }
+          />
+        ) : null}
+
+        <MetaSection
+          deliveryAt={state.deliveryAt}
+          notes={state.notes}
+          onDeliveryChange={(v) => setState((s) => ({ ...s, deliveryAt: v }))}
+          onNotesChange={(v) => setState((s) => ({ ...s, notes: v }))}
+        />
+
+        <Card padding={3} tone="alt">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[12px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+              Total commande
+            </span>
+            <Money value={orderTotal} bold className="text-[18px]" />
+          </div>
+        </Card>
+      </Stack>
 
       <StickyAction>
-        <AdminButton
+        <Button
           type="button"
           variant="primary"
+          size="lg"
+          fullWidth
           isLoading={pending}
           onClick={submit}
-          className="w-full"
+          leadingIcon={<CheckCircle2 size={16} />}
         >
-          <CheckCircle2 size={16} />
-          {mode === "create" ? " Créer la commande" : " Enregistrer"}
-        </AdminButton>
+          {mode === "create" ? "Créer la commande" : "Enregistrer"}
+        </Button>
       </StickyAction>
 
       {toast ? (
-        <AdminToast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
+        <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
       ) : null}
     </main>
   );
