@@ -1,3 +1,5 @@
+"use client";
+
 import type { ElementType, ReactNode, CSSProperties } from "react";
 import { space, type SpaceToken } from "@/design/tokens";
 import { cn } from "@/lib/utils";

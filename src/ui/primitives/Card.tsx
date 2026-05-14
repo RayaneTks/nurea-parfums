@@ -1,3 +1,5 @@
+"use client";
+
 import type { ReactNode, CSSProperties } from "react";
 import { radius, space } from "@/design/tokens";
 import { cn } from "@/lib/utils";
