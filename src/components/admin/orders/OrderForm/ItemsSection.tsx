@@ -1,24 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import dynamic from "next/dynamic";
-import { useCallback, useState } from "react";
-import { Minus, Plus, PlusCircle, Trash2 } from "lucide-react";
-import { SectionCard } from "../../ui/SectionCard";
-import { AdminInput } from "../../ui/AdminInput";
-import { AdminButton } from "../../ui/AdminButton";
+import { useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
+import { Card } from "@/ui/primitives/Card";
+import { Stack, HStack } from "@/ui/primitives/Stack";
+import { Stepper } from "@/ui/primitives/Stepper";
+import { Chip } from "@/ui/primitives/Chip";
+import { Input } from "@/ui/primitives/Input";
+import { Button } from "@/ui/primitives/Button";
+import { Money } from "@/ui/patterns/Money";
+import { PerfumePicker, type PickerResult } from "@/features/sell";
 import { VOLUMES, type OrderFormLine } from "./types";
-import type { PerfumePickerRow } from "@/lib/gestion/types";
-
-const PerfumePicker = dynamic(
-  () => import("../../gestion/PerfumePicker").then((m) => m.PerfumePicker),
-  { ssr: false },
-);
 
 type ItemsSectionProps = {
   items: OrderFormLine[];
   exchangeRateDefault: string;
-  onAddItem: (perfume: PerfumePickerRow) => Promise<void>;
+  onAddItem: (result: PickerResult) => Promise<void>;
   onPatchItem: (key: string, patch: Partial<OrderFormLine>) => Promise<void>;
   onRemoveItem: (key: string) => void;
   onQuantityDelta: (key: string, delta: number) => void;
@@ -29,52 +27,44 @@ function toNum(v: string | number): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-export function ItemsSection({
-  items,
-  onAddItem,
-  onPatchItem,
-  onRemoveItem,
-  onQuantityDelta,
-}: ItemsSectionProps) {
+export function ItemsSection({ items, onAddItem, onPatchItem, onRemoveItem }: ItemsSectionProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
-  const lineTotal = useCallback(
-    (it: OrderFormLine) => toNum(it.unitPrice) * it.quantity,
-    [],
-  );
 
   return (
     <>
-      <SectionCard>
+      <Card padding={3}>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-neutral-900">
+          <h2 className="text-[14px] font-semibold text-[var(--admin-text)]">
             Parfums {items.length > 0 ? `(${items.length})` : ""}
           </h2>
-          <AdminButton
+          <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
+            leadingIcon={<Plus size={14} />}
             onClick={() => setPickerOpen(true)}
           >
-            <PlusCircle size={14} /> Ajouter
-          </AdminButton>
+            Ajouter
+          </Button>
         </div>
 
         {items.length === 0 ? (
-          <p className="py-2 text-sm text-neutral-500">
-            Aucune ligne. Clique sur « Ajouter » pour choisir un parfum.
+          <p className="py-2 text-[13px] text-[var(--admin-text-muted)]">
+            Aucune ligne. Tape « Ajouter » pour choisir un parfum (catalogue ou saisie libre).
           </p>
         ) : (
-          <ul className="space-y-3">
+          <Stack gap={2}>
             {items.map((it) => (
-              <li
+              <div
                 key={it.key}
-                className="space-y-2 rounded-xl border border-neutral-200 bg-white p-3"
+                className="flex flex-col gap-2 rounded-[14px] bg-[var(--admin-surface-alt)] px-3 py-3"
+                style={{ border: "1px solid var(--admin-border)" }}
               >
-                <div className="flex items-start gap-3">
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
-                    {it.perfume.image ? (
+                <HStack gap={3} align="center">
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[10px] bg-[var(--admin-surface-muted)]">
+                    {it.snapshot.image ? (
                       <Image
-                        src={it.perfume.image}
+                        src={it.snapshot.image}
                         alt=""
                         fill
                         sizes="48px"
@@ -83,108 +73,94 @@ export function ItemsSection({
                     ) : null}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-neutral-900">
-                      {it.perfume.name}
+                    <p className="truncate text-[15px] font-semibold leading-tight text-[var(--admin-text)]">
+                      {it.snapshot.name}
+                      {it.perfumeId === null ? (
+                        <span className="ml-2 inline-flex items-center rounded-full bg-[var(--admin-warning-bg)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em] text-[var(--admin-warning)]">
+                          Libre
+                        </span>
+                      ) : null}
                     </p>
-                    <p className="truncate text-xs text-neutral-500">
-                      {it.perfume.brand?.name ?? "—"}
+                    <p className="truncate text-[12px] text-[var(--admin-text-subtle)] mt-0.5">
+                      {it.snapshot.brandName}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => onRemoveItem(it.key)}
-                    className="text-neutral-400 hover:text-red-600"
-                    aria-label="Retirer cette ligne"
+                    aria-label="Retirer"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--admin-danger)] tap-scale hover:bg-[var(--admin-danger-bg)]"
                   >
                     <Trash2 size={16} />
                   </button>
-                </div>
+                </HStack>
 
-                <div className="flex items-center gap-2">
-                  <span className="w-16 text-xs text-neutral-700">Volume</span>
+                <HStack gap={2} align="center">
+                  <span className="w-[64px] text-[12px] text-[var(--admin-text-muted)]">Volume</span>
                   <div className="flex gap-1.5">
                     {VOLUMES.map((v) => (
-                      <button
+                      <Chip
                         key={v}
-                        type="button"
+                        active={it.volumeMl === v}
                         onClick={() => void onPatchItem(it.key, { volumeMl: v })}
-                        className={
-                          it.volumeMl === v
-                            ? "rounded-lg border border-nurea-bordeaux bg-nurea-bordeaux/10 px-3 py-1.5 text-xs font-semibold text-nurea-bordeaux"
-                            : "rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-700"
-                        }
+                        ariaLabel={`${v} ml`}
                       >
                         {v} ml
-                      </button>
+                      </Chip>
                     ))}
                   </div>
-                </div>
+                </HStack>
 
-                <div className="flex items-center gap-2">
-                  <span className="w-16 text-xs text-neutral-700">Qté</span>
-                  <div className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-white">
-                    <button
-                      type="button"
-                      onClick={() => onQuantityDelta(it.key, -1)}
-                      className="inline-flex h-9 w-9 items-center justify-center text-neutral-600"
-                      aria-label="Diminuer"
-                    >
-                      <Minus size={14} />
-                    </button>
-                    <span className="min-w-[2ch] text-center text-sm font-medium tabular-nums">
-                      {it.quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => onQuantityDelta(it.key, 1)}
-                      className="inline-flex h-9 w-9 items-center justify-center text-neutral-600"
-                      aria-label="Augmenter"
-                    >
-                      <Plus size={14} />
-                    </button>
+                <HStack gap={2} align="center">
+                  <span className="w-[64px] text-[12px] text-[var(--admin-text-muted)]">Qté</span>
+                  <Stepper
+                    value={it.quantity}
+                    onChange={(n) => void onPatchItem(it.key, { quantity: n })}
+                  />
+                  <div className="ml-auto">
+                    <Money value={toNum(it.unitPrice) * it.quantity} bold />
                   </div>
-                  <span className="ml-auto text-sm font-semibold tabular-nums text-neutral-900">
-                    {lineTotal(it).toFixed(2)} €
-                  </span>
-                </div>
+                </HStack>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <AdminInput
-                    label="Prix € (unitaire)"
+                <div className="grid grid-cols-3 gap-2">
+                  <Input
+                    label="Prix €"
+                    numeric
                     inputMode="decimal"
                     value={it.unitPrice}
                     onChange={(e) => void onPatchItem(it.key, { unitPrice: e.target.value })}
                     placeholder="120"
                   />
-                  <AdminInput
+                  <Input
                     label="Coût DZD"
+                    numeric
                     inputMode="decimal"
                     value={it.unitCostDzd}
                     onChange={(e) => void onPatchItem(it.key, { unitCostDzd: e.target.value })}
                     placeholder="36000"
                   />
+                  <Input
+                    label="Taux"
+                    numeric
+                    inputMode="decimal"
+                    value={it.exchangeRate}
+                    onChange={(e) => void onPatchItem(it.key, { exchangeRate: e.target.value })}
+                    placeholder="277"
+                  />
                 </div>
-                <AdminInput
-                  label="Taux DZD→EUR"
-                  inputMode="decimal"
-                  value={it.exchangeRate}
-                  onChange={(e) => void onPatchItem(it.key, { exchangeRate: e.target.value })}
-                  placeholder="277"
-                />
-              </li>
+              </div>
             ))}
-          </ul>
+          </Stack>
         )}
-      </SectionCard>
+      </Card>
 
       <PerfumePicker
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
-        onSelect={(p) => {
-          void onAddItem(p);
-          setPickerOpen(false);
-        }}
-        excludedIds={[]}
+        onSelect={(result) => void onAddItem(result)}
+        excludedIds={items
+          .map((it) => it.perfumeId)
+          .filter((id): id is number => id !== null)}
       />
     </>
   );

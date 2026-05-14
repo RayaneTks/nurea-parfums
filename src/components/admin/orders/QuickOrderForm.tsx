@@ -12,16 +12,19 @@ import { AdminToast, type ToastType } from "../ui/AdminToast";
 import { StickyAction } from "../shell/StickyAction";
 import { SectionCard } from "../ui/SectionCard";
 import { createOrderAction } from "@/server/orders/actions";
-import type { PerfumePickerRow } from "@/lib/gestion/types";
 import type { CreateOrderInput, OrderItemInput } from "@/schemas/order";
+import type { PickerResult } from "@/features/sell";
 
 const PerfumePicker = dynamic(
-  () => import("../gestion/PerfumePicker").then((m) => m.PerfumePicker),
+  () => import("@/features/sell").then((m) => m.PerfumePicker),
   { ssr: false },
 );
 
+type LineSnapshot = { name: string; brandName: string; image: string | null };
+
 type LineState = {
-  perfume: PerfumePickerRow;
+  perfumeId: number | null;
+  snapshot: LineSnapshot;
   quantity: number;
   volumeMl: 30 | 50 | 100;
   unitPrice: string;
@@ -78,16 +81,34 @@ export function QuickOrderForm() {
   );
 
   const onSelectPerfume = useCallback(
-    async (p: PerfumePickerRow) => {
-      const pricing = await fetchPricing(p.id, 100);
-      setLine({
-        perfume: p,
-        quantity: 1,
-        volumeMl: 100,
-        unitPrice: pricing?.defaultUnitPriceEur ?? "",
-        unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
-        exchangeRate: exchangeRateDefault,
-      });
+    async (result: PickerResult) => {
+      if (result.kind === "catalog") {
+        const p = result.perfume;
+        const pricing = await fetchPricing(p.id, 100);
+        setLine({
+          perfumeId: p.id,
+          snapshot: {
+            name: p.name,
+            brandName: p.brand?.name ?? "—",
+            image: p.image ?? null,
+          },
+          quantity: 1,
+          volumeMl: 100,
+          unitPrice: pricing?.defaultUnitPriceEur ?? "",
+          unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
+          exchangeRate: exchangeRateDefault,
+        });
+      } else {
+        setLine({
+          perfumeId: null,
+          snapshot: { name: result.name, brandName: result.brandName, image: null },
+          quantity: 1,
+          volumeMl: 100,
+          unitPrice: "",
+          unitCostDzd: "",
+          exchangeRate: exchangeRateDefault,
+        });
+      }
       setPickerOpen(false);
     },
     [exchangeRateDefault],
@@ -96,13 +117,17 @@ export function QuickOrderForm() {
   const onChangeVolume = useCallback(
     async (v: 30 | 50 | 100) => {
       if (!line) return;
-      const pricing = await fetchPricing(line.perfume.id, v);
-      setLine({
-        ...line,
-        volumeMl: v,
-        unitPrice: pricing?.defaultUnitPriceEur ?? line.unitPrice,
-        unitCostDzd: pricing?.defaultUnitCostDzd ?? line.unitCostDzd,
-      });
+      if (line.perfumeId !== null) {
+        const pricing = await fetchPricing(line.perfumeId, v);
+        setLine({
+          ...line,
+          volumeMl: v,
+          unitPrice: pricing?.defaultUnitPriceEur ?? line.unitPrice,
+          unitCostDzd: pricing?.defaultUnitCostDzd ?? line.unitCostDzd,
+        });
+      } else {
+        setLine({ ...line, volumeMl: v });
+      }
     },
     [line],
   );
@@ -128,8 +153,8 @@ export function QuickOrderForm() {
 
     const items: OrderItemInput[] = [
       {
-        perfumeId: line.perfume.id,
-        perfumeSnapshot: undefined,
+        perfumeId: line.perfumeId,
+        perfumeSnapshot: line.perfumeId === null ? line.snapshot : undefined,
         quantity: line.quantity,
         volumeMl: line.volumeMl,
         unitPrice: line.unitPrice.replace(",", "."),
@@ -218,9 +243,9 @@ export function QuickOrderForm() {
           <div className="space-y-3">
             <div className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-2.5">
               <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
-                {line.perfume.image ? (
+                {line.snapshot.image ? (
                   <Image
-                    src={line.perfume.image}
+                    src={line.snapshot.image}
                     alt=""
                     fill
                     sizes="48px"
@@ -229,9 +254,16 @@ export function QuickOrderForm() {
                 ) : null}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{line.perfume.name}</p>
+                <p className="truncate text-sm font-medium">
+                  {line.snapshot.name}
+                  {line.perfumeId === null ? (
+                    <span className="ml-2 inline-flex items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em] text-amber-700">
+                      Libre
+                    </span>
+                  ) : null}
+                </p>
                 <p className="truncate text-xs text-neutral-500">
-                  {line.perfume.brand?.name ?? ""}
+                  {line.snapshot.brandName}
                 </p>
               </div>
             </div>
@@ -352,7 +384,7 @@ export function QuickOrderForm() {
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
         onSelect={(p) => void onSelectPerfume(p)}
-        excludedIds={line ? [line.perfume.id] : []}
+        excludedIds={line && line.perfumeId !== null ? [line.perfumeId] : []}
       />
 
       {toast ? (

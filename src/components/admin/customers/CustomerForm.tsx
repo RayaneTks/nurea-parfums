@@ -2,10 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AdminInput } from "../ui/AdminInput";
-import { AdminButton } from "../ui/AdminButton";
-import { AdminToast, type ToastType } from "../ui/AdminToast";
-import { StickyAction } from "../shell/StickyAction";
+import { Input } from "@/ui/primitives/Input";
+import { Textarea } from "@/ui/primitives/Textarea";
+import { Button } from "@/ui/primitives/Button";
+import { Stack } from "@/ui/primitives/Stack";
+import { Toast, type ToastType } from "@/ui/primitives/Toast";
+import { StickyAction } from "@/ui/primitives/StickyAction";
 import { createCustomerAction, updateCustomerAction } from "@/server/customers/actions";
 import type { CustomerCreate } from "@/schemas/customer";
 
@@ -62,8 +64,13 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
         setToast({ type: "error", message: result.error });
         return;
       }
-      setToast({ type: "success", message: mode === "create" ? "Client créé." : "Client mis à jour." });
-      router.push(redirectTo ?? `/admin/clients/${mode === "create" ? result.data.id : initial!.id}`);
+      setToast({
+        type: "success",
+        message: mode === "create" ? "Client créé." : "Client mis à jour.",
+      });
+      router.push(
+        redirectTo ?? `/admin/clients/${mode === "create" ? result.data.id : initial!.id}`,
+      );
       router.refresh();
     });
   };
@@ -71,69 +78,68 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
   return (
     <>
       <form
-        className="space-y-4"
         onSubmit={(e) => {
           e.preventDefault();
           submit();
         }}
       >
-        <AdminInput
-          label="Nom complet"
-          required
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          placeholder="Alice Dupont"
-          autoComplete="name"
-        />
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <AdminInput
-            label="Téléphone (E.164)"
-            value={phoneE164}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+33612345678"
-            inputMode="tel"
-            autoComplete="tel"
+        <Stack gap={3}>
+          <Input
+            label="Nom complet"
+            required
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Alice Dupont"
+            autoComplete="name"
           />
-          <AdminInput
-            label="WhatsApp (E.164)"
-            value={whatsappE164}
-            onChange={(e) => setWhatsapp(e.target.value)}
-            placeholder="+33612345678"
-            inputMode="tel"
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Input
+              label="Téléphone"
+              value={phoneE164}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+33612345678"
+              inputMode="tel"
+              autoComplete="tel"
+              hint="Format E.164"
+            />
+            <Input
+              label="WhatsApp"
+              value={whatsappE164}
+              onChange={(e) => setWhatsapp(e.target.value)}
+              placeholder="+33612345678"
+              inputMode="tel"
+            />
+          </div>
+          <Input
+            label="Snapchat"
+            value={snapchat}
+            onChange={(e) => setSnapchat(e.target.value)}
+            placeholder="username"
           />
-        </div>
-        <AdminInput
-          label="Snapchat"
-          value={snapchat}
-          onChange={(e) => setSnapchat(e.target.value)}
-          placeholder="username"
-        />
-        <AdminInput
-          label="Adresse"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder="Rue, ville, code postal"
-        />
-        <div>
-          <label className="mb-1 block text-xs font-medium text-neutral-700">Notes</label>
-          <textarea
+          <Input
+            label="Adresse"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder="Rue, ville, code postal"
+          />
+          <Textarea
+            label="Notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             placeholder="Préférences, allergies, contexte…"
-            className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-nurea-bordeaux/40"
           />
-        </div>
+        </Stack>
 
         <StickyAction>
-          <AdminButton type="submit" isLoading={pending} className="w-full">
+          <Button type="submit" variant="primary" size="lg" fullWidth isLoading={pending}>
             {mode === "create" ? "Créer le client" : "Enregistrer"}
-          </AdminButton>
+          </Button>
         </StickyAction>
       </form>
 
       {toast ? (
-        <AdminToast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
+        <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
       ) : null}
     </>
   );
