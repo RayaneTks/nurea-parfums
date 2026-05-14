@@ -5,6 +5,7 @@ import { Skeleton } from "@/ui/primitives/Skeleton";
 import { PageScaffold } from "@/ui/patterns/PageScaffold";
 import { KpiBlock } from "../components/KpiBlock";
 import { PipelineBlock } from "../components/PipelineBlock";
+import { ActiveBatchesBlock } from "../components/ActiveBatchesBlock";
 import { TopPerfumesBlock } from "../components/TopPerfumesBlock";
 import { QuickActionsBlock } from "../components/QuickActionsBlock";
 
@@ -35,6 +36,10 @@ export function DashboardPage() {
 
         <Suspense fallback={<Skeleton height={120} />}>
           <PipelineBlock />
+        </Suspense>
+
+        <Suspense fallback={<Skeleton height={140} />}>
+          <ActiveBatchesBlock />
         </Suspense>
 
         <Suspense fallback={<Skeleton height={200} />}>
