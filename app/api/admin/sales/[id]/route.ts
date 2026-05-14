@@ -6,25 +6,10 @@ import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { computeLineTotals, sumSaleTotals } from "@/lib/gestion/calculations";
 import { isValidVolumeMl, parseMoneyField } from "@/lib/gestion/orderLineValidation";
+import { getSaleById } from "@/server/sales/queries";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-
-const saleInclude = {
-  items: {
-    include: {
-      perfume: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          brand: { select: { id: true, name: true } },
-        },
-      },
-    },
-  },
-  order: { select: { id: true, customerName: true, orderedAt: true } },
-} as const;
 
 export async function GET(
   request: Request,
@@ -35,10 +20,7 @@ export async function GET(
     if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
-    const sale = await prisma.sale.findUnique({
-      where: { id },
-      include: saleInclude,
-    });
+    const sale = await getSaleById(id);
 
     if (!sale) {
       return NextResponse.json({ error: "Vente introuvable." }, { status: 404 });
@@ -62,6 +44,8 @@ type PatchSaleItemBody = {
 };
 
 type PatchSaleBody = {
+  customerId?: string | null;
+  customerName?: string | null;
   notes?: string | null;
   items?: PatchSaleItemBody[];
 };
@@ -87,11 +71,27 @@ export async function PATCH(
 
     const hasItems = Array.isArray(body.items) && body.items.length > 0;
     const hasNotes = "notes" in body;
-    if (!hasItems && !hasNotes) {
+    const hasCustomerName = "customerName" in body;
+    const hasCustomerId = "customerId" in body;
+    const hasCustomer = hasCustomerName || hasCustomerId;
+    if (!hasItems && !hasNotes && !hasCustomer) {
       return NextResponse.json(
-        { error: "Rien à mettre à jour (notes ou lignes requis)." },
+        { error: "Rien à mettre à jour." },
         { status: 400 },
       );
+    }
+
+    if (hasCustomerId && body.customerId) {
+      const customer = await prisma.customer.findUnique({
+        where: { id: body.customerId },
+        select: { id: true },
+      });
+      if (!customer) {
+        return NextResponse.json(
+          { error: "Client introuvable." },
+          { status: 400 },
+        );
+      }
     }
 
     const existing = await prisma.sale.findUnique({
@@ -124,12 +124,16 @@ export async function PATCH(
         }
 
         const upRaw = p.unitPrice === undefined ? item.unitPrice.toString() : p.unitPrice;
-        const coRaw = p.unitCost === undefined ? item.unitCost.toString() : p.unitCost;
         const upN = parseMoneyField(upRaw);
-        const coN = parseMoneyField(coRaw);
-        if (upN === null || coN === null) {
+        if (upN === null) {
           return NextResponse.json(
-            { error: "Prix ou coût invalide sur une ligne." },
+            { error: "Prix invalide sur une ligne." },
+            { status: 400 },
+          );
+        }
+        if (p.unitCost !== undefined && parseMoneyField(p.unitCost) === null) {
+          return NextResponse.json(
+            { error: "Coût invalide sur une ligne." },
             { status: 400 },
           );
         }
@@ -152,11 +156,20 @@ export async function PATCH(
     }
 
     const updated = await prisma.$transaction(async (tx) => {
-      if ("notes" in body) {
-        await tx.sale.update({
-          where: { id },
-          data: { notes: body.notes?.trim() || null },
-        });
+      if (hasNotes || hasCustomer) {
+        const saleData: Prisma.SaleUpdateInput = {};
+        if (hasNotes) saleData.notes = body.notes?.trim() || null;
+        if (hasCustomerId) {
+          if (body.customerId) {
+            saleData.customer = { connect: { id: body.customerId } };
+          } else {
+            saleData.customer = { disconnect: true };
+          }
+        }
+        if (hasCustomerName) {
+          saleData.customerName = body.customerName?.trim() || null;
+        }
+        await tx.sale.update({ where: { id }, data: saleData });
       }
 
       if (hasItems) {
@@ -168,9 +181,7 @@ export async function PATCH(
               : Math.max(1, Math.floor(Number(p.quantity)));
 
           const upRaw = p.unitPrice === undefined ? item.unitPrice.toString() : p.unitPrice;
-          const coRaw = p.unitCost === undefined ? item.unitCost.toString() : p.unitCost;
           const upN = parseMoneyField(upRaw)!;
-          const coN = parseMoneyField(coRaw)!;
 
           const volRaw =
             p.volumeMl === undefined
@@ -181,16 +192,25 @@ export async function PATCH(
               ? 100
               : volRaw;
 
+          const ucdRaw = p.unitCostDzd === undefined ? item.unitCostDzd : p.unitCostDzd;
+          const exRaw = p.exchangeRate === undefined ? item.exchangeRate : p.exchangeRate;
+          const ucdN = ucdRaw !== null && ucdRaw !== undefined ? Number(ucdRaw) : null;
+          const exN = exRaw !== null && exRaw !== undefined ? Number(exRaw) : null;
+
+          let coN: number;
+          if (p.unitCost !== undefined) {
+            coN = parseMoneyField(p.unitCost)!;
+          } else if (ucdN !== null && exN !== null && Number.isFinite(ucdN) && Number.isFinite(exN) && exN > 0) {
+            coN = ucdN / exN;
+          } else {
+            coN = parseMoneyField(item.unitCost.toString())!;
+          }
+
           const totals = computeLineTotals({
             quantity: q,
             unitPrice: upN,
             unitCost: coN,
           });
-
-          const ucdRaw = p.unitCostDzd === undefined ? item.unitCostDzd : p.unitCostDzd;
-          const exRaw = p.exchangeRate === undefined ? item.exchangeRate : p.exchangeRate;
-          const ucdN = ucdRaw !== null && ucdRaw !== undefined ? Number(ucdRaw) : null;
-          const exN = exRaw !== null && exRaw !== undefined ? Number(exRaw) : null;
 
           const snap = item.perfumeSnapshot;
           const baseObj =
@@ -236,14 +256,19 @@ export async function PATCH(
           },
         });
       }
-      return tx.sale.findUniqueOrThrow({ where: { id }, include: saleInclude });
+      return id;
     });
+
+    const refreshed = await getSaleById(updated);
+    if (!refreshed) {
+      return NextResponse.json({ error: "Vente introuvable." }, { status: 404 });
+    }
 
     await writeAudit(ctx.sub, "sale.update", "Sale", id, {
       linesPatched: hasItems ? (body.items?.length ?? 0) : 0,
     });
 
-    return NextResponse.json({ sale: updated });
+    return NextResponse.json({ sale: refreshed });
   } catch (error) {
     console.error("[api/admin/sales/[id]][PATCH]", error);
     return jsonFromPrismaGestionError(error, "Impossible de mettre à jour la vente.");

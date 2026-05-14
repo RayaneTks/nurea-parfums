@@ -20,10 +20,15 @@ type TicketSheetProps = {
 };
 
 async function fetchSale(id: string): Promise<SaleDetailRow | null> {
-  const r = await fetch(`/api/admin/sales/${id}`, { credentials: "include", cache: "no-store" });
-  if (!r.ok) return null;
-  const json = (await r.json()) as { sale?: SaleDetailRow };
-  return json.sale ?? null;
+  try {
+    const r = await fetch(`/api/admin/sales/${id}`, { credentials: "include", cache: "no-store" });
+    if (!r.ok) return null;
+    const json = (await r.json()) as { sale?: SaleDetailRow };
+    return json.sale ?? null;
+  } catch (err) {
+    console.error("[TicketSheet.fetchSale]", err);
+    return null;
+  }
 }
 
 export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheetProps) {
@@ -87,19 +92,24 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
   const saveCustomerName = useCallback(
     async (next: string) => {
       if (!sale) return;
-      const res = await fetch(`/api/admin/sales/${sale.id}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customerName: next }),
-      });
-      if (!res.ok) {
-        setToast({ type: "error", message: "Impossible de modifier le nom." });
-        return;
+      try {
+        const res = await fetch(`/api/admin/sales/${sale.id}`, {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ customerName: next }),
+        });
+        if (!res.ok) {
+          setToast({ type: "error", message: "Impossible de modifier le nom." });
+          return;
+        }
+        setSale((s) => (s ? { ...s, customerName: next } : s));
+        setToast({ type: "success", message: "Nom mis à jour." });
+        onSaved();
+      } catch (err) {
+        console.error("[TicketSheet.saveCustomerName]", err);
+        setToast({ type: "error", message: "Erreur réseau." });
       }
-      setSale((s) => (s ? { ...s, customerName: next } : s));
-      setToast({ type: "success", message: "Nom mis à jour." });
-      onSaved();
     },
     [sale, onSaved],
   );
@@ -108,20 +118,26 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
     if (!sale) return;
     setSaving(true);
     try {
-      const payload = {
-        customerId: ticket.draft.customerId,
-        customerName: ticket.draft.customerName,
-        notes: ticket.draft.notes || null,
-        items: ticket.draft.lines.map((l) => ({
-          perfumeId: l.perfumeId,
-          perfumeSnapshot: l.perfumeId === null ? l.snapshot : undefined,
+      const items = ticket.draft.lines
+        .filter((l) => l.key.startsWith("id:"))
+        .map((l) => ({
+          id: l.key.slice(3),
           quantity: l.quantity,
           volumeMl: l.volumeMl ?? 100,
           unitPrice: l.unitPrice.replace(",", "."),
-          unitCostDzd: l.unitCostDzd === "" ? "0" : l.unitCostDzd.replace(",", "."),
-          exchangeRate: l.exchangeRate === "" ? "0" : l.exchangeRate.replace(",", "."),
-        })),
+          unitCostDzd: l.unitCostDzd === "" ? null : l.unitCostDzd.replace(",", "."),
+          exchangeRate: l.exchangeRate === "" ? null : l.exchangeRate.replace(",", "."),
+        }));
+      const payload: Record<string, unknown> = {
+        notes: ticket.draft.notes || null,
+        items,
       };
+      if (ticket.draft.customerId !== sale.customerId) {
+        payload.customerId = ticket.draft.customerId;
+      }
+      if (ticket.draft.customerName !== (sale.customerName ?? "")) {
+        payload.customerName = ticket.draft.customerName;
+      }
       const res = await fetch(`/api/admin/sales/${sale.id}`, {
         method: "PATCH",
         credentials: "include",
@@ -137,12 +153,14 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
         setToast({ type: "error", message: msg });
         return;
       }
+      const json = (await res.json().catch(() => ({}))) as { sale?: SaleDetailRow };
+      if (json.sale) setSale(json.sale);
       setToast({ type: "success", message: "Vente mise à jour." });
       ticket.exitEdit();
       onSaved();
-      // Refetch
-      const refreshed = await fetchSale(sale.id);
-      if (refreshed) setSale(refreshed);
+    } catch (err) {
+      console.error("[TicketSheet.saveAll]", err);
+      setToast({ type: "error", message: "Erreur réseau." });
     } finally {
       setSaving(false);
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useReducer, useRef } from "react";
+import { useCallback, useMemo, useReducer } from "react";
 import type { SaleDetailRow } from "@/server/sales/queries";
 
 export type TicketDraftLine = {
@@ -154,11 +154,9 @@ function totalOf(lines: readonly TicketDraftLine[]): number {
 }
 
 export function useTicketEdit(sale: SaleDetailRow): UseTicketEdit {
-  const initialRef = useRef<TicketDraft>(saleToDraft(sale));
-  const [state, dispatch] = useReducer(reducer, {
-    mode: "view" as Mode,
-    draft: initialRef.current,
-    initial: initialRef.current,
+  const [state, dispatch] = useReducer(reducer, sale, (s): State => {
+    const draft = saleToDraft(s);
+    return { mode: "view", draft, initial: draft };
   });
 
   const isDirty = useMemo(

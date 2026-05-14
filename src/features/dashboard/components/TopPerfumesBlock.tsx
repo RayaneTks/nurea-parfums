@@ -33,12 +33,25 @@ export async function TopPerfumesBlock() {
         {rows.map((r, i) => {
           const pct = (Number(r.revenue) / maxRev) * 100;
           return (
-            <li key={`${r.perfumeId ?? "null"}-${i}`} className="space-y-1">
+            <li key={`${r.source}-${r.perfumeId ?? r.name}-${i}`} className="space-y-1">
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] font-medium leading-tight text-[var(--admin-text)]">
-                    {r.name}
-                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="truncate text-[14px] font-medium leading-tight text-[var(--admin-text)]">
+                      {r.name}
+                    </p>
+                    {r.source === "manual" ? (
+                      <span
+                        className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide"
+                        style={{
+                          background: "var(--admin-warning-bg)",
+                          color: "var(--admin-warning)",
+                        }}
+                      >
+                        Hors catalogue
+                      </span>
+                    ) : null}
+                  </div>
                   <p className="truncate text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
                     {r.brand ?? "—"} · {r.quantity} unité{r.quantity > 1 ? "s" : ""}
                   </p>
