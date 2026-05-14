@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { NureaOrdersPage } from "@/components/admin/nurea/OrdersPage";
+import { OrdersPage } from "@/features/orders";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Administration — Commandes",
+  title: "Commandes — Admin",
   robots: { index: false, follow: false },
 };
 
-export default function OrdersPage() {
-  return <NureaOrdersPage />;
+type Params = { searchParams: Promise<{ filter?: string }> };
+
+export default function Page(props: Params) {
+  return <OrdersPage {...props} />;
 }
