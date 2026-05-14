@@ -9,6 +9,7 @@ import { Skeleton } from "@/ui/primitives/Skeleton";
 import { TicketHeader } from "./TicketHeader";
 import { TicketTotals } from "./TicketTotals";
 import { TicketPayment } from "./TicketPayment";
+import { TicketBatchPicker } from "./TicketBatchPicker";
 import { TicketItemsList } from "./TicketItemsList";
 import { useTicketEdit } from "../hooks/useTicketEdit";
 import type { SaleDetailRow } from "@/server/sales/queries";
@@ -59,6 +60,9 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
     remainingDue: "0",
     itemCount: 0,
     orderId: null,
+    batchId: null,
+    batchName: null,
+    batch: null,
     notes: null,
     items: [],
   });
@@ -236,6 +240,30 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
               }}
             />
             <TicketTotals sale={sale} />
+            <TicketBatchPicker
+              saleId={sale.id}
+              current={sale.batch}
+              onAssigned={(next) => {
+                setSale((s) =>
+                  s
+                    ? {
+                        ...s,
+                        batch: next
+                          ? { id: next.id, name: next.name, status: "OPEN" }
+                          : null,
+                        batchId: next?.id ?? null,
+                        batchName: next?.name ?? null,
+                      }
+                    : s,
+                );
+                setToast({
+                  type: "success",
+                  message: next ? "Assigné au lot." : "Retiré du lot.",
+                });
+                onSaved();
+              }}
+              onError={(message) => setToast({ type: "error", message })}
+            />
             <TicketPayment
               total={Number(sale.totalRevenue)}
               remainingDue={ticket.draft.remainingDue}

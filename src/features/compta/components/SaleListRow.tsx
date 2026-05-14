@@ -32,6 +32,19 @@ export function SaleListRow({ sale, onOpen }: SaleListRowProps) {
               Reste {remaining.toFixed(0)} €
             </span>
           ) : null}
+          {sale.batchName ? (
+            <span
+              className="shrink-0 truncate rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+              style={{
+                background: "var(--admin-accent-bg)",
+                color: "var(--admin-accent)",
+                maxWidth: "120px",
+              }}
+              title={`Lot : ${sale.batchName}`}
+            >
+              {sale.batchName}
+            </span>
+          ) : null}
         </span>
       }
       secondary={

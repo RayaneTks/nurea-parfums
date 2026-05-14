@@ -48,6 +48,7 @@ type PatchSaleBody = {
   customerName?: string | null;
   notes?: string | null;
   remainingDue?: number | string | null;
+  batchId?: string | null;
   items?: PatchSaleItemBody[];
 };
 
@@ -76,7 +77,8 @@ export async function PATCH(
     const hasCustomerId = "customerId" in body;
     const hasCustomer = hasCustomerName || hasCustomerId;
     const hasRemainingDue = "remainingDue" in body;
-    if (!hasItems && !hasNotes && !hasCustomer && !hasRemainingDue) {
+    const hasBatch = "batchId" in body;
+    if (!hasItems && !hasNotes && !hasCustomer && !hasRemainingDue && !hasBatch) {
       return NextResponse.json(
         { error: "Rien à mettre à jour." },
         { status: 400 },
@@ -93,6 +95,16 @@ export async function PATCH(
           { error: "Client introuvable." },
           { status: 400 },
         );
+      }
+    }
+
+    if (hasBatch && body.batchId) {
+      const batch = await prisma.batch.findUnique({
+        where: { id: body.batchId },
+        select: { id: true },
+      });
+      if (!batch) {
+        return NextResponse.json({ error: "Lot introuvable." }, { status: 400 });
       }
     }
 
@@ -179,7 +191,7 @@ export async function PATCH(
     }
 
     const updated = await prisma.$transaction(async (tx) => {
-      if (hasNotes || hasCustomer || hasRemainingDue) {
+      if (hasNotes || hasCustomer || hasRemainingDue || hasBatch) {
         const saleData: Prisma.SaleUpdateInput = {};
         if (hasNotes) saleData.notes = body.notes?.trim() || null;
         if (hasCustomerId) {
@@ -194,6 +206,13 @@ export async function PATCH(
         }
         if (hasRemainingDue) {
           saleData.remainingDue = new Prisma.Decimal(remainingDueN);
+        }
+        if (hasBatch) {
+          if (body.batchId) {
+            saleData.batch = { connect: { id: body.batchId } };
+          } else {
+            saleData.batch = { disconnect: true };
+          }
         }
         await tx.sale.update({ where: { id }, data: saleData });
       }
