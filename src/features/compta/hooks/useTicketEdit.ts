@@ -20,6 +20,7 @@ export type TicketDraft = {
   customerId: string | null;
   customerName: string;
   notes: string;
+  remainingDue: string;
   lines: TicketDraftLine[];
 };
 
@@ -31,6 +32,7 @@ type Action =
   | { type: "SET_CUSTOMER"; customerId: string | null; customerName: string }
   | { type: "SET_CUSTOMER_NAME"; name: string }
   | { type: "SET_NOTES"; notes: string }
+  | { type: "SET_REMAINING_DUE"; remainingDue: string }
   | { type: "PATCH_LINE"; key: string; patch: Partial<TicketDraftLine> }
   | { type: "REMOVE_LINE"; key: string }
   | { type: "ADD_LINE"; line: TicketDraftLine }
@@ -62,6 +64,8 @@ function reducer(state: State, action: Action): State {
       return { ...state, draft: { ...state.draft, customerName: action.name } };
     case "SET_NOTES":
       return { ...state, draft: { ...state.draft, notes: action.notes } };
+    case "SET_REMAINING_DUE":
+      return { ...state, draft: { ...state.draft, remainingDue: action.remainingDue } };
     case "PATCH_LINE":
       return {
         ...state,
@@ -112,6 +116,7 @@ function saleToDraft(sale: SaleDetailRow): TicketDraft {
     customerId: sale.customerId,
     customerName: sale.customerName ?? "",
     notes: sale.notes ?? "",
+    remainingDue: sale.remainingDue ?? "0",
     lines: sale.items.map((it) => ({
       key: `id:${it.id}`,
       perfumeId: it.perfumeId,
@@ -138,6 +143,7 @@ export type UseTicketEdit = {
   setCustomer: (customerId: string | null, customerName: string) => void;
   setCustomerName: (name: string) => void;
   setNotes: (notes: string) => void;
+  setRemainingDue: (remainingDue: string) => void;
   patchLine: (key: string, patch: Partial<TicketDraftLine>) => void;
   quantityDelta: (key: string, delta: number) => void;
   removeLine: (key: string) => void;
@@ -180,6 +186,10 @@ export function useTicketEdit(sale: SaleDetailRow): UseTicketEdit {
     ),
     setCustomerName: useCallback((name) => dispatch({ type: "SET_CUSTOMER_NAME", name }), []),
     setNotes: useCallback((notes) => dispatch({ type: "SET_NOTES", notes }), []),
+    setRemainingDue: useCallback(
+      (remainingDue) => dispatch({ type: "SET_REMAINING_DUE", remainingDue }),
+      [],
+    ),
     patchLine: useCallback(
       (key, patch) => dispatch({ type: "PATCH_LINE", key, patch }),
       [],

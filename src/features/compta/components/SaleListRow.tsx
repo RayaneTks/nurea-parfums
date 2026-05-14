@@ -11,12 +11,27 @@ type SaleListRowProps = {
 };
 
 export function SaleListRow({ sale, onOpen }: SaleListRowProps) {
+  const remaining = Number(sale.remainingDue ?? "0");
+  const hasDebt = Number.isFinite(remaining) && remaining > 0;
+
   return (
     <ListRow
       onClick={() => onOpen(sale.id)}
       primary={
-        <span className="block text-[14px] font-medium text-[var(--admin-text)]">
+        <span className="flex items-center gap-1.5 text-[14px] font-medium text-[var(--admin-text)]">
           <RelativeTime date={sale.soldAt} />
+          {hasDebt ? (
+            <span
+              className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+              style={{
+                background: "var(--admin-warning-bg)",
+                color: "var(--admin-warning)",
+              }}
+              aria-label={`Reste à payer ${remaining.toFixed(0)} euros`}
+            >
+              Reste {remaining.toFixed(0)} €
+            </span>
+          ) : null}
         </span>
       }
       secondary={

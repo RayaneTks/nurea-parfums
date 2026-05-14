@@ -30,6 +30,7 @@ type CreateSaleBody = {
   customerName?: string | null;
   soldAt?: string | null;
   notes?: string | null;
+  remainingDue?: number | string | null;
   items?: SaleLineInputBody[];
 };
 
@@ -226,6 +227,24 @@ export async function POST(request: Request) {
     const customerName =
       body.customerName?.trim() || orderCustomerName || null;
 
+    const remainingDueRaw = body.remainingDue;
+    const remainingDueN =
+      remainingDueRaw === null || remainingDueRaw === undefined || remainingDueRaw === ""
+        ? 0
+        : Number(String(remainingDueRaw).replace(",", "."));
+    if (!Number.isFinite(remainingDueN) || remainingDueN < 0) {
+      return NextResponse.json(
+        { error: "Reste à payer invalide (doit être ≥ 0)." },
+        { status: 400 },
+      );
+    }
+    if (remainingDueN > Number(totals.totalRevenue)) {
+      return NextResponse.json(
+        { error: "Reste à payer ne peut pas dépasser le total de la vente." },
+        { status: 400 },
+      );
+    }
+
     const sale = await prisma.$transaction(async (tx) => {
       const created = await tx.sale.create({
         data: {
@@ -236,6 +255,7 @@ export async function POST(request: Request) {
           totalRevenue: totals.totalRevenue,
           totalCost: totals.totalCost,
           totalMargin: totals.totalMargin,
+          remainingDue: new Prisma.Decimal(remainingDueN),
           items: {
             create: normalizedLines.map((line) => {
               const perfume = line.perfumeId !== null ? perfumeById.get(line.perfumeId) : null;
