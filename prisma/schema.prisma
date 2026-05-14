@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -40,6 +40,11 @@ enum PaymentType {
   DEPOSIT
   BALANCE
   REFUND
+}
+
+enum BatchStatus {
+  OPEN
+  CLOSED
 }
 
 model Brand {
@@ -168,25 +173,25 @@ model Customer {
 // Prix/coûts saisis à chaque ligne, figés en snapshot à la création.
 
 model Order {
-  id             String      @id @default(cuid())
+  id            String               @id @default(cuid())
   /// FK vers Customer (P3). Nullable pour rétro-compat (commandes sans client lié).
-  customerId     String?
-  customer       Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerId    String?
+  customer      Customer?            @relation(fields: [customerId], references: [id], onDelete: SetNull)
   /// Dénormalisé : nom du client au moment de la commande (snapshot historique).
-  customerName   String?
-  orderedAt      DateTime    @default(now())
-  deliveryAt     DateTime?
-  status         OrderStatus @default(PENDING)
-  notes          String?
+  customerName  String?
+  orderedAt     DateTime             @default(now())
+  deliveryAt    DateTime?
+  status        OrderStatus          @default(PENDING)
+  notes         String?
   /// CACHE dénormalisé : true si depositPaidTotal > 0. Source de vérité = PaymentTransaction.
-  depositPaid    Boolean     @default(false)
+  depositPaid   Boolean              @default(false)
   /// CACHE dénormalisé : somme des DEPOSIT moins REFUND (€). Recalculé sur mutation paiement.
-  depositAmount  Decimal     @default(0) @db.Decimal(10, 2)
-  items          OrderItem[]
-  sale           Sale?
-  payments       PaymentTransaction[]
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  depositAmount Decimal              @default(0) @db.Decimal(10, 2)
+  items         OrderItem[]
+  sale          Sale?
+  payments      PaymentTransaction[]
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
 
   @@index([status])
   @@index([orderedAt])
@@ -197,22 +202,22 @@ model Order {
 }
 
 model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
+  id              String   @id @default(cuid())
+  orderId         String
   /// Nullable pour parfums hors-catalogue (one-shots). Si null, perfumeSnapshot obligatoire.
-  perfumeId Int?
-  quantity  Int     @default(1)
-  note      String?
+  perfumeId       Int?
+  quantity        Int      @default(1)
+  note            String?
   /// Flacon 30, 50 ou 100 ml
-  volumeMl  Int     @default(100)
+  volumeMl        Int      @default(100)
   /// Prix unitaire de vente (€) pour ce flacon
-  unitPrice Decimal @default(0) @db.Decimal(10, 2)
+  unitPrice       Decimal  @default(0) @db.Decimal(10, 2)
   /// Coût de revient unitaire (€) - Calculé via unitCostDzd / exchangeRate
-  unitCost  Decimal @default(0) @db.Decimal(10, 2)
+  unitCost        Decimal  @default(0) @db.Decimal(10, 2)
   /// Coût d'achat en DZD
-  unitCostDzd  Decimal? @db.Decimal(10, 2)
+  unitCostDzd     Decimal? @db.Decimal(10, 2)
   /// Taux de change (ex: 277)
-  exchangeRate Decimal? @db.Decimal(10, 2)
+  exchangeRate    Decimal? @db.Decimal(10, 2)
   /// Snapshot perfume si perfumeId null (off-catalog).
   perfumeSnapshot Json?
 
@@ -257,6 +262,10 @@ model Sale {
   /// FK vers Customer (P3). Nullable pour ventes orphelines historiques.
   customerId   String?
   customer     Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  /// FK optionnelle vers une commande groupée. Permet d'agréger les ventes
+  /// d'un même envoi physique (transport, douane, billet avion à imputer).
+  batchId      String?
+  batch        Batch?     @relation(fields: [batchId], references: [id], onDelete: SetNull)
   soldAt       DateTime   @default(now())
   totalRevenue Decimal    @db.Decimal(10, 2)
   totalCost    Decimal    @db.Decimal(10, 2)
@@ -273,6 +282,45 @@ model Sale {
 
   @@index([soldAt])
   @@index([customerId])
+  @@index([batchId])
+}
+
+/// Commande groupée (batch). Plusieurs ventes appartiennent à un même envoi
+/// physique (commande fournisseur, lot mensuel). Permet de suivre la marge
+/// réelle après dépenses logistiques (transport, billet d'avion, douane).
+model Batch {
+  id         String      @id @default(cuid())
+  /// Nom libre saisi par l'admin ("Commande de Mars", "Lot 2026-04").
+  name       String
+  /// Date prévue d'arrivée / livraison (info éditoriale).
+  expectedAt DateTime?
+  status     BatchStatus @default(OPEN)
+  notes      String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  sales    Sale[]
+  expenses BatchExpense[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+/// Dépense rattachée à un batch (transport, billet avion, douane, etc.).
+/// Soustraite de la marge brute du batch pour donner la marge nette.
+model BatchExpense {
+  id         String   @id @default(cuid())
+  batchId    String
+  batch      Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  /// Libellé court ("Billet avion", "Transporteur DHL", ...).
+  label      String
+  /// Montant en € (toujours positif).
+  amount     Decimal  @db.Decimal(10, 2)
+  occurredAt DateTime @default(now())
+  notes      String?
+  createdAt  DateTime @default(now())
+
+  @@index([batchId])
 }
 
 model SaleItem {

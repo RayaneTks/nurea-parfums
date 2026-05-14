@@ -12,6 +12,8 @@ export type SaleRowLite = {
   remainingDue: string;
   itemCount: number;
   orderId: string | null;
+  batchId: string | null;
+  batchName: string | null;
 };
 
 export type SaleItemSnapshot = {
@@ -22,6 +24,7 @@ export type SaleItemSnapshot = {
 
 export type SaleDetailRow = SaleRowLite & {
   notes: string | null;
+  batch: { id: string; name: string; status: "OPEN" | "CLOSED" } | null;
   items: Array<{
     id: string;
     perfumeId: number | null;
@@ -129,6 +132,8 @@ export async function listSalesGroupedByCustomer(params: {
       totalMargin: true,
       remainingDue: true,
       orderId: true,
+      batchId: true,
+      batch: { select: { name: true } },
       customer: { select: { fullName: true } },
       _count: { select: { items: true } },
     },
@@ -155,6 +160,8 @@ export async function listSalesGroupedByCustomer(params: {
       remainingDue: s.remainingDue.toString(),
       itemCount: s._count.items,
       orderId: s.orderId,
+      batchId: s.batchId,
+      batchName: s.batch?.name ?? null,
     };
 
     totalRevenue = totalRevenue.plus(new Decimal(row.totalRevenue));
@@ -218,6 +225,8 @@ export async function getSaleById(saleId: string): Promise<SaleDetailRow | null>
       totalMargin: true,
       remainingDue: true,
       orderId: true,
+      batchId: true,
+      batch: { select: { id: true, name: true, status: true } },
       notes: true,
       items: {
         orderBy: { id: "asc" },
@@ -272,6 +281,11 @@ export async function getSaleById(saleId: string): Promise<SaleDetailRow | null>
     remainingDue: sale.remainingDue.toString(),
     itemCount: sale.items.length,
     orderId: sale.orderId,
+    batchId: sale.batchId,
+    batchName: sale.batch?.name ?? null,
+    batch: sale.batch
+      ? { id: sale.batch.id, name: sale.batch.name, status: sale.batch.status }
+      : null,
     notes: sale.notes,
     items: sale.items.map((it) => {
       const fallback: SaleItemSnapshot = {
