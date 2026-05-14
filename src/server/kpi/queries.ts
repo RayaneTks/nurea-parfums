@@ -75,7 +75,10 @@ export type TopPerfumeRow = {
   source: "catalog" | "manual";
 };
 
-export async function topPerfumes(range: PeriodRange, limit = 5): Promise<TopPerfumeRow[]> {
+export async function topPerfumes(
+  range: PeriodRange | null,
+  limit = 5,
+): Promise<TopPerfumeRow[]> {
   type Row = {
     key: string;
     perfume_id: number | null;
@@ -84,37 +87,68 @@ export async function topPerfumes(range: PeriodRange, limit = 5): Promise<TopPer
     quantity: bigint;
     revenue: string | null;
   };
-  const rows = await prisma.$queryRaw<Row[]>`
-    WITH grouped AS (
-      SELECT
-        CASE
-          WHEN si."perfumeId" IS NOT NULL THEN 'catalog:' || si."perfumeId"::text
-          ELSE 'manual:' || LOWER(TRIM(COALESCE(si."perfumeSnapshot"->>'name', '')))
-        END AS key,
-        si."perfumeId" AS perfume_id,
-        si."perfumeSnapshot"->>'name' AS snap_name,
-        si."perfumeSnapshot"->>'brandName' AS snap_brand,
-        si.quantity,
-        si."lineRevenue"
-      FROM "SaleItem" si
-      JOIN "Sale" s ON si."saleId" = s.id
-      WHERE s."soldAt" >= ${range.start} AND s."soldAt" < ${range.end}
-    )
-    SELECT
-      g.key AS key,
-      MAX(g.perfume_id) AS perfume_id,
-      COALESCE(p.name, MIN(g.snap_name)) AS display_name,
-      COALESCE(b.name, MIN(g.snap_brand)) AS display_brand,
-      SUM(g.quantity)::bigint AS quantity,
-      SUM(g."lineRevenue")::text AS revenue
-    FROM grouped g
-    LEFT JOIN "Perfume" p ON p.id = g.perfume_id
-    LEFT JOIN "Brand" b ON b.id = p."brandId"
-    GROUP BY g.key, p.name, b.name
-    HAVING SUM(g.quantity) > 0
-    ORDER BY SUM(g."lineRevenue") DESC NULLS LAST
-    LIMIT ${limit}
-  `;
+  const rows = range
+    ? await prisma.$queryRaw<Row[]>`
+        WITH grouped AS (
+          SELECT
+            CASE
+              WHEN si."perfumeId" IS NOT NULL THEN 'catalog:' || si."perfumeId"::text
+              ELSE 'manual:' || LOWER(TRIM(COALESCE(si."perfumeSnapshot"->>'name', '')))
+            END AS key,
+            si."perfumeId" AS perfume_id,
+            si."perfumeSnapshot"->>'name' AS snap_name,
+            si."perfumeSnapshot"->>'brandName' AS snap_brand,
+            si.quantity,
+            si."lineRevenue"
+          FROM "SaleItem" si
+          JOIN "Sale" s ON si."saleId" = s.id
+          WHERE s."soldAt" >= ${range.start} AND s."soldAt" < ${range.end}
+        )
+        SELECT
+          g.key AS key,
+          MAX(g.perfume_id) AS perfume_id,
+          COALESCE(p.name, MIN(g.snap_name)) AS display_name,
+          COALESCE(b.name, MIN(g.snap_brand)) AS display_brand,
+          SUM(g.quantity)::bigint AS quantity,
+          SUM(g."lineRevenue")::text AS revenue
+        FROM grouped g
+        LEFT JOIN "Perfume" p ON p.id = g.perfume_id
+        LEFT JOIN "Brand" b ON b.id = p."brandId"
+        GROUP BY g.key, p.name, b.name
+        HAVING SUM(g.quantity) > 0
+        ORDER BY SUM(g."lineRevenue") DESC NULLS LAST
+        LIMIT ${limit}
+      `
+    : await prisma.$queryRaw<Row[]>`
+        WITH grouped AS (
+          SELECT
+            CASE
+              WHEN si."perfumeId" IS NOT NULL THEN 'catalog:' || si."perfumeId"::text
+              ELSE 'manual:' || LOWER(TRIM(COALESCE(si."perfumeSnapshot"->>'name', '')))
+            END AS key,
+            si."perfumeId" AS perfume_id,
+            si."perfumeSnapshot"->>'name' AS snap_name,
+            si."perfumeSnapshot"->>'brandName' AS snap_brand,
+            si.quantity,
+            si."lineRevenue"
+          FROM "SaleItem" si
+          JOIN "Sale" s ON si."saleId" = s.id
+        )
+        SELECT
+          g.key AS key,
+          MAX(g.perfume_id) AS perfume_id,
+          COALESCE(p.name, MIN(g.snap_name)) AS display_name,
+          COALESCE(b.name, MIN(g.snap_brand)) AS display_brand,
+          SUM(g.quantity)::bigint AS quantity,
+          SUM(g."lineRevenue")::text AS revenue
+        FROM grouped g
+        LEFT JOIN "Perfume" p ON p.id = g.perfume_id
+        LEFT JOIN "Brand" b ON b.id = p."brandId"
+        GROUP BY g.key, p.name, b.name
+        HAVING SUM(g.quantity) > 0
+        ORDER BY SUM(g."lineRevenue") DESC NULLS LAST
+        LIMIT ${limit}
+      `;
 
   return rows.map((r) => ({
     perfumeId: r.perfume_id,
