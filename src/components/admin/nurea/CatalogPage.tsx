@@ -719,7 +719,10 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
             ))}
           </div>
         ) : tab === "perfumes" ? (
-          <div className="min-h-[20rem] space-y-3 px-5 pb-24">
+          <div
+            className="min-h-[20rem] space-y-3 px-5"
+            style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
+          >
             {canEdit ? (
               <div className="mb-1 flex justify-end px-0">
                 <Link
@@ -816,7 +819,10 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
             })}
           </div>
         ) : tab === "brands" ? (
-          <div className="min-h-[20rem] space-y-3 px-5 pb-24">
+          <div
+            className="min-h-[20rem] space-y-3 px-5"
+            style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
+          >
             {filteredBrands.length === 0 ? (
               <p className="px-1 py-8 text-center text-sm text-admin-muted">
                 Aucun résultat. Ajuste la recherche ou le filtre.
@@ -854,7 +860,10 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
             })}
           </div>
         ) : (
-          <div className="min-h-[20rem] space-y-6 px-5 pb-24">
+          <div
+            className="min-h-[20rem] space-y-6 px-5"
+            style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
+          >
             <div className="rounded-3xl border border-nurea-bordeaux/10 bg-nurea-bordeaux/5 p-5">
               <div className="flex items-start gap-4">
                 <div className="rounded-full bg-nurea-bordeaux p-2 text-white">

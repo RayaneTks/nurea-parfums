@@ -22,7 +22,11 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
 
   if (mode === "quick") {
     return (
-      <main id="main-content" className="flex-1 space-y-4 px-5 pb-4 pt-2">
+      <main
+        id="main-content"
+        className="flex-1 space-y-4 px-5 pt-2"
+        style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
+      >
         <header>
           <h1 className="text-2xl font-bold leading-tight tracking-tight text-neutral-900">
             Commande rapide
