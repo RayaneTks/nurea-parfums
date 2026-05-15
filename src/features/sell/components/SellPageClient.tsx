@@ -262,6 +262,7 @@ export function SellPageClient() {
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Anonyme si vide"
                 autoComplete="off"
+                variant="elevated"
                 hint="Rattache une fiche existante via le sélecteur."
               />
             ) : null}
@@ -271,6 +272,7 @@ export function SellPageClient() {
               onChange={(e) => setCustomerContact(e.target.value)}
               placeholder="Téléphone, Snapchat, Instagram…"
               autoComplete="off"
+              variant="elevated"
             />
           </Stack>
         </Card>

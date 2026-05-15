@@ -99,13 +99,15 @@ export async function topPerfumes(
     quantity: bigint;
     revenue: string | null;
   };
+  // Filter pour manuals : ne pas grouper les snapshots sans name (vieilles données /
+  // entrées malformées). Pour catalog : exclure si Perfume soft-deleted ou non publié.
   const rows = range
     ? await prisma.$queryRaw<Row[]>`
         WITH grouped AS (
           SELECT
             CASE
               WHEN si."perfumeId" IS NOT NULL THEN 'catalog:' || si."perfumeId"::text
-              ELSE 'manual:' || LOWER(TRIM(COALESCE(si."perfumeSnapshot"->>'name', '')))
+              ELSE 'manual:' || LOWER(TRIM(si."perfumeSnapshot"->>'name'))
             END AS key,
             si."perfumeId" AS perfume_id,
             si."perfumeSnapshot"->>'name' AS snap_name,
@@ -115,6 +117,10 @@ export async function topPerfumes(
           FROM "SaleItem" si
           JOIN "Sale" s ON si."saleId" = s.id
           WHERE s."soldAt" >= ${range.start} AND s."soldAt" < ${range.end}
+            AND (
+              si."perfumeId" IS NOT NULL
+              OR NULLIF(TRIM(si."perfumeSnapshot"->>'name'), '') IS NOT NULL
+            )
         )
         SELECT
           g.key AS key,
@@ -139,7 +145,7 @@ export async function topPerfumes(
           SELECT
             CASE
               WHEN si."perfumeId" IS NOT NULL THEN 'catalog:' || si."perfumeId"::text
-              ELSE 'manual:' || LOWER(TRIM(COALESCE(si."perfumeSnapshot"->>'name', '')))
+              ELSE 'manual:' || LOWER(TRIM(si."perfumeSnapshot"->>'name'))
             END AS key,
             si."perfumeId" AS perfume_id,
             si."perfumeSnapshot"->>'name' AS snap_name,
@@ -148,6 +154,10 @@ export async function topPerfumes(
             si."lineRevenue"
           FROM "SaleItem" si
           JOIN "Sale" s ON si."saleId" = s.id
+          WHERE (
+            si."perfumeId" IS NOT NULL
+            OR NULLIF(TRIM(si."perfumeSnapshot"->>'name'), '') IS NOT NULL
+          )
         )
         SELECT
           g.key AS key,

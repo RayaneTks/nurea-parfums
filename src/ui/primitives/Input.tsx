@@ -1,6 +1,12 @@
 "use client";
 
-import { forwardRef, type InputHTMLAttributes, type ReactNode, useId } from "react";
+import {
+  forwardRef,
+  type FocusEvent,
+  type InputHTMLAttributes,
+  type ReactNode,
+  useId,
+} from "react";
 import { cn } from "@/lib/utils";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -13,18 +19,47 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   numeric?: boolean;
   /**
    * "default" — fond `--admin-surface` (à utiliser dans une page sur `--admin-bg`).
-   * "elevated" — fond `--admin-surface-alt` (à utiliser dans une Sheet/Card sur `--admin-surface`).
+   * "elevated" — fond `--admin-surface` plus contrasté (Card/Sheet sur `--admin-bg`).
    */
   variant?: "default" | "elevated";
+  /** Désactive le scrollIntoView au focus (utile dans listes virtualisées). */
+  disableAutoScroll?: boolean;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, hint, error, leadingIcon, trailingSlot, numeric, variant = "default", className, id, ...rest },
+  {
+    label,
+    hint,
+    error,
+    leadingIcon,
+    trailingSlot,
+    numeric,
+    variant = "default",
+    disableAutoScroll,
+    className,
+    id,
+    onFocus,
+    ...rest
+  },
   ref,
 ) {
   const autoId = useId();
   const inputId = id ?? autoId;
   const helpId = error ? `${inputId}-err` : hint ? `${inputId}-hint` : undefined;
+
+  const handleFocus = (e: FocusEvent<HTMLInputElement>) => {
+    onFocus?.(e);
+    if (disableAutoScroll || e.defaultPrevented) return;
+    const el = e.currentTarget;
+    // Délai pour laisser le clavier mobile s'ouvrir (≈300ms) avant scroll.
+    window.setTimeout(() => {
+      try {
+        el.scrollIntoView({ block: "center", behavior: "smooth" });
+      } catch {
+        /* IE/Safari old: ignore */
+      }
+    }, 320);
+  };
 
   return (
     <div className="w-full">
@@ -47,10 +82,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           id={inputId}
           aria-invalid={error ? true : undefined}
           aria-describedby={helpId}
+          onFocus={handleFocus}
           className={cn(
             "block w-full min-h-[44px] rounded-[12px]",
             variant === "elevated"
-              ? "bg-[var(--admin-surface-muted)] border border-[var(--admin-border-strong)]"
+              ? "bg-[var(--admin-surface)] border border-[var(--admin-border-strong)] shadow-[inset_0_0_0_1px_var(--admin-border)]"
               : "bg-[var(--admin-surface)] border border-[var(--admin-border-strong)]",
             "px-4 text-[16px] text-[var(--admin-text)] placeholder:text-[var(--admin-text-subtle)]",
             "transition-[border-color,box-shadow] duration-[var(--admin-duration-default)] ease-[var(--admin-easing-default)]",
