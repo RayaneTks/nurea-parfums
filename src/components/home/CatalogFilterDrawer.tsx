@@ -49,15 +49,19 @@ export function CatalogFilterDrawer({
 
   /* Swipe-to-close: écoute les gestes tactiles sur toute la zone en-tête + drag handle */
   const onTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY;
-    touchStartX.current = e.touches[0].clientX;
+    const t = e.touches[0];
+    if (!t) return;
+    touchStartY.current = t.clientY;
+    touchStartX.current = t.clientX;
   }, []);
 
   const onTouchEnd = useCallback(
     (e: React.TouchEvent) => {
       if (touchStartY.current === null || touchStartX.current === null) return;
-      const deltaY = e.changedTouches[0].clientY - touchStartY.current;
-      const deltaX = Math.abs(e.changedTouches[0].clientX - touchStartX.current);
+      const t = e.changedTouches[0];
+      if (!t) return;
+      const deltaY = t.clientY - touchStartY.current;
+      const deltaX = Math.abs(t.clientX - touchStartX.current);
       // Ferme si swipe vers le bas > 60px et plus vertical qu'horizontal
       if (deltaY > 60 && deltaY > deltaX) onClose();
       touchStartY.current = null;
