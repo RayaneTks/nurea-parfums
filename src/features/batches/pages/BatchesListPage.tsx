@@ -29,7 +29,7 @@ export async function BatchesListPage() {
           <EmptyState
             icon={Boxes}
             title="Aucun lot"
-            description="Regroupe tes ventes par commande (ex. « Commande de Mars »). Ajoute des dépenses (transport, billet d'avion) pour ajuster la marge nette."
+            description="Regroupe des ventes et ajoute des dépenses pour suivre la marge nette."
             action={
               <Link href="/admin/lots/new" prefetch>
                 <Button variant="primary" leadingIcon={<Plus size={16} />}>

@@ -542,7 +542,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         eyebrow={isNew ? "Création" : `Parfum · #${perfumeId}`}
         subtitle={
           isNew
-            ? "Renseigne la marque, le nom et une image. Tu pourras publier depuis cette fiche."
+            ? "Marque, nom, image. Publication depuis la fiche."
             : undefined
         }
         onBack={() => router.back()}
@@ -615,7 +615,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
             <SectionCard className="space-y-6 border-neutral-200/60 bg-white p-5 shadow-sm">
               <ImageUploadField
                 label="Image principale (dark)"
-                subtitle="Utilisée dans les deux thèmes si la variante claire est absente."
+                subtitle="Utilisée partout si la variante claire est absente."
                 value={image}
                 onChange={setImage}
                 onUploadDone={(url) => handleAutoSave({ image: url })}
@@ -626,7 +626,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               <div className="h-px bg-neutral-200/70" />
               <ImageUploadField
                 label="Image variante (light)"
-                subtitle="Optionnelle. Si présente, la principale devient exclusivement le visuel dark."
+                subtitle="Optionnelle. Force la principale en visuel dark."
                 value={imageLight}
                 onChange={setImageLight}
                 onUploadDone={(url) => handleAutoSave({ imageLight: url })}

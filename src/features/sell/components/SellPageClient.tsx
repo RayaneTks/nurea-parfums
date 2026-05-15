@@ -262,7 +262,7 @@ export function SellPageClient() {
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Anonyme si vide"
                 autoComplete="off"
-                hint="Utilise le sélecteur ci-dessus pour rattacher une fiche existante."
+                hint="Rattache une fiche existante via le sélecteur."
               />
             ) : null}
             <Input
