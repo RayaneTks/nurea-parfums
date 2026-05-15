@@ -9,7 +9,6 @@ import { Button } from "@/ui/primitives/Button";
 import { Stack } from "@/ui/primitives/Stack";
 import { Skeleton } from "@/ui/primitives/Skeleton";
 import { EmptyState } from "@/ui/primitives/EmptyState";
-import { Avatar } from "@/ui/primitives/Avatar";
 import { SegmentedControl } from "@/ui/primitives/SegmentedControl";
 import type { PerfumePickerRow } from "@/lib/gestion/types";
 
@@ -117,12 +116,28 @@ export function PerfumePicker({
     onClose();
   };
 
+  const footer =
+    mode === "manual" ? (
+      <Button
+        type="button"
+        variant="primary"
+        size="lg"
+        fullWidth
+        leadingIcon={<Plus size={16} />}
+        onClick={selectManual}
+        disabled={manualName.trim().length < 2}
+      >
+        Ajouter en saisie libre
+      </Button>
+    ) : undefined;
+
   return (
     <Sheet
       open={open}
       onOpenChange={(o) => (o ? null : onClose())}
       title="Choisir un parfum"
       maxVh={92}
+      footer={footer}
     >
       <Stack gap={3}>
         {allowManual ? (
@@ -189,8 +204,7 @@ export function PerfumePicker({
         ) : (
           <Stack gap={3}>
             <p className="text-[12px] text-[var(--admin-text-muted)]">
-              Pour un parfum non répertorié dans le catalogue. Le nom et la marque seront
-              gardés en snapshot sur la commande / vente.
+              Pour un parfum hors catalogue. Nom + marque gardés en snapshot.
             </p>
             <Input
               ref={manualNameRef}
@@ -207,20 +221,6 @@ export function PerfumePicker({
               placeholder="Creed"
               variant="elevated"
             />
-            <Button
-              type="button"
-              variant="primary"
-              size="lg"
-              fullWidth
-              leadingIcon={<Plus size={16} />}
-              onClick={selectManual}
-              disabled={manualName.trim().length < 2}
-            >
-              Ajouter en saisie libre
-            </Button>
-            <p className="text-center">
-              <Avatar name={manualName || "?"} size="sm" />
-            </p>
           </Stack>
         )}
       </Stack>
