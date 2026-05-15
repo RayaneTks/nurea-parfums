@@ -179,6 +179,8 @@ model Order {
   customer      Customer?            @relation(fields: [customerId], references: [id], onDelete: SetNull)
   /// Dénormalisé : nom du client au moment de la commande (snapshot historique).
   customerName  String?
+  /// Contact libre (téléphone, Snapchat, Instagram, …). Optionnel.
+  customerContact String?
   orderedAt     DateTime             @default(now())
   deliveryAt    DateTime?
   status        OrderStatus          @default(PENDING)
@@ -259,6 +261,9 @@ model Sale {
   orderId      String?    @unique
   /// Dénormalisé. Pour ventes directes, peut différer de customer.fullName.
   customerName String?
+  /// Contact libre saisi sur le ticket (téléphone, Snapchat, Instagram, …).
+  /// Utile pour ventes orphelines sans Customer lié.
+  customerContact String?
   /// FK vers Customer (P3). Nullable pour ventes orphelines historiques.
   customerId   String?
   customer     Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)

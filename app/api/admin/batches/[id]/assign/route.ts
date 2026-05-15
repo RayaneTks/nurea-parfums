@@ -8,10 +8,16 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 type AssignBody = {
-  saleIds?: string[];
-  /** Si true, détache les ventes (batchId=null) au lieu de les rattacher. */
-  detach?: boolean;
+  /** IDs de ventes à rattacher à ce lot. */
+  attach?: string[];
+  /** IDs de ventes à détacher (passe batchId à null). */
+  detach?: string[];
 };
+
+function sanitizeIds(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((v): v is string => typeof v === "string" && v.length > 0);
+}
 
 export async function POST(
   request: Request,
@@ -32,9 +38,11 @@ export async function POST(
       return NextResponse.json({ error: "JSON invalide." }, { status: 400 });
     }
 
-    const saleIds = Array.isArray(body.saleIds) ? body.saleIds.filter((s) => typeof s === "string") : [];
-    if (saleIds.length === 0) {
-      return NextResponse.json({ error: "Sélectionne au moins une vente." }, { status: 400 });
+    const attachIds = sanitizeIds(body.attach);
+    const detachIds = sanitizeIds(body.detach);
+
+    if (attachIds.length === 0 && detachIds.length === 0) {
+      return NextResponse.json({ error: "Aucune modification à appliquer." }, { status: 400 });
     }
 
     const batch = await prisma.batch.findUnique({ where: { id }, select: { id: true } });
@@ -42,18 +50,34 @@ export async function POST(
       return NextResponse.json({ error: "Lot introuvable." }, { status: 404 });
     }
 
-    const nextBatchId = body.detach ? null : id;
-    const result = await prisma.sale.updateMany({
-      where: { id: { in: saleIds } },
-      data: { batchId: nextBatchId },
+    const result = await prisma.$transaction(async (tx) => {
+      let attached = 0;
+      let detached = 0;
+      if (attachIds.length > 0) {
+        const r = await tx.sale.updateMany({
+          where: { id: { in: attachIds } },
+          data: { batchId: id },
+        });
+        attached = r.count;
+      }
+      if (detachIds.length > 0) {
+        const r = await tx.sale.updateMany({
+          where: { id: { in: detachIds }, batchId: id },
+          data: { batchId: null },
+        });
+        detached = r.count;
+      }
+      return { attached, detached };
     });
 
-    await writeAudit(ctx.sub, body.detach ? "batch.detach" : "batch.assign", "Batch", id, {
-      count: result.count,
-      saleIds,
+    await writeAudit(ctx.sub, "batch.sync", "Batch", id, {
+      attached: result.attached,
+      detached: result.detached,
+      attachIds,
+      detachIds,
     });
 
-    return NextResponse.json({ ok: true, count: result.count });
+    return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     console.error("[api/admin/batches/[id]/assign][POST]", error);
     return jsonFromPrismaGestionError(error, "Impossible d'assigner les ventes.");

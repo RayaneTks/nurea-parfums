@@ -17,7 +17,7 @@ type BatchGroupSectionProps = {
 
 export function BatchGroupSection({
   group,
-  defaultOpen = true,
+  defaultOpen = false,
   onOpenSale,
 }: BatchGroupSectionProps) {
   const [open, setOpen] = useState(defaultOpen);

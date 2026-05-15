@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   PackageOpen,
   PackageCheck,
+  Plus,
   Trash2,
   ChevronRight,
 } from "lucide-react";
@@ -17,6 +18,7 @@ import { Toast, type ToastType } from "@/ui/primitives/Toast";
 import { InlineNameEditor } from "@/ui/patterns/InlineNameEditor";
 import { Money } from "@/ui/patterns/Money";
 import { BatchExpensesSection } from "./BatchExpensesSection";
+import { BatchAssignSheet } from "./BatchAssignSheet";
 import type { BatchDetail } from "@/server/batches/queries";
 
 type BatchDetailClientProps = {
@@ -28,6 +30,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
   const [current, setCurrent] = useState<BatchDetail>(initial);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [pending, startTransition] = useTransition();
+  const [assignOpen, setAssignOpen] = useState(false);
 
   const isOpen = current.status === "OPEN";
 
@@ -231,15 +234,42 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
         />
 
         <Card padding={0}>
-          <div className="border-b border-[var(--admin-border)] px-3 py-2.5">
+          <div className="flex items-center justify-between gap-2 border-b border-[var(--admin-border)] px-3 py-2.5">
             <h2 className="text-[14px] font-semibold text-[var(--admin-text)]">
               Ventes ({current.sales.length})
             </h2>
+            {isOpen ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                leadingIcon={<Plus size={14} />}
+                onClick={() => setAssignOpen(true)}
+                disabled={pending}
+              >
+                Assigner
+              </Button>
+            ) : null}
           </div>
           {current.sales.length === 0 ? (
-            <p className="px-3 py-6 text-center text-[12px] text-[var(--admin-text-subtle)]">
-              Aucune vente rattachée. Assigne une vente depuis l&apos;onglet Compta.
-            </p>
+            <div className="px-3 py-6 text-center">
+              <p className="text-[12px] text-[var(--admin-text-subtle)]">
+                Aucune vente rattachée à ce lot.
+              </p>
+              {isOpen ? (
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="md"
+                  leadingIcon={<Plus size={15} />}
+                  onClick={() => setAssignOpen(true)}
+                  disabled={pending}
+                  className="mt-3"
+                >
+                  Assigner des ventes
+                </Button>
+              ) : null}
+            </div>
           ) : (
             <ul className="divide-y divide-[var(--admin-border)]">
               {current.sales.map((s) => (
@@ -310,6 +340,18 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
       {toast ? (
         <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
       ) : null}
+
+      <BatchAssignSheet
+        batchId={current.id}
+        open={assignOpen}
+        onOpenChange={setAssignOpen}
+        onSaved={() => {
+          void refresh();
+          router.refresh();
+          setToast({ type: "success", message: "Lot mis à jour." });
+        }}
+        onError={(message) => setToast({ type: "error", message })}
+      />
     </>
   );
 }
