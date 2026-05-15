@@ -22,59 +22,65 @@ export function daysAgo(n: number, from: Date = new Date()): Date {
   return d;
 }
 
+/**
+ * Cash-basis KPIs. Tout est "concret" :
+ *  - cashedRevenue = totalRevenue facturé − remainingDue (encaissé réel).
+ *  - outstandingRevenue = somme remainingDue (reste à encaisser).
+ *  - totalCost = coût d'achat (déjà sorti de trésorerie quand on a acheté le parfum).
+ *  - netMargin = cashedRevenue − totalCost. C'est l'argent concret en poche.
+ *  - marginPct calculé sur cashedRevenue.
+ *  - avgCashedValue = panier moyen basé sur l'encaissé.
+ */
 export type RevenueSummary = {
-  totalRevenue: string;
+  cashedRevenue: string;
+  outstandingRevenue: string;
   totalCost: string;
-  totalMargin: string;
+  netMargin: string;
   marginPct: string;
   count: number;
-  avgValue: string;
+  avgCashedValue: string;
 };
-
-const cachedRevenueSummary = unstable_cache(
-  async (start: Date, end: Date) =>
-    prisma.sale.aggregate({
-      where: { soldAt: { gte: start, lt: end } },
-      _sum: { totalRevenue: true, totalCost: true, totalMargin: true },
-      _count: true,
-    }),
-  ["kpi-revenue-summary"],
-  { tags: [tagFor.kpi(), tagFor.sales()], revalidate: 60 },
-);
 
 const cachedRevenueSummaryGlobal = unstable_cache(
   async () =>
     prisma.sale.aggregate({
-      _sum: { totalRevenue: true, totalCost: true, totalMargin: true },
+      _sum: {
+        totalRevenue: true,
+        totalCost: true,
+        remainingDue: true,
+      },
       _count: true,
     }),
-  ["kpi-revenue-summary-global"],
+  ["kpi-revenue-summary-cash-v2"],
   { tags: [tagFor.kpi(), tagFor.sales()], revalidate: 60 },
 );
 
-export async function revenueSummary(range: PeriodRange | null): Promise<RevenueSummary> {
-  const agg = range
-    ? await cachedRevenueSummary(range.start, range.end)
-    : await cachedRevenueSummaryGlobal();
+export async function revenueSummary(): Promise<RevenueSummary> {
+  const agg = await cachedRevenueSummaryGlobal();
 
   const totalRevenue = new Decimal((agg._sum.totalRevenue ?? 0).toString());
   const totalCost = new Decimal((agg._sum.totalCost ?? 0).toString());
-  const totalMargin = new Decimal((agg._sum.totalMargin ?? 0).toString());
+  const outstanding = new Decimal((agg._sum.remainingDue ?? 0).toString());
   const count = agg._count;
 
-  const marginPct = totalRevenue.greaterThan(0)
-    ? totalMargin.dividedBy(totalRevenue).times(100).toFixed(1)
+  const cashedRevenue = totalRevenue.minus(outstanding);
+  const netMargin = cashedRevenue.minus(totalCost);
+
+  const marginPct = cashedRevenue.greaterThan(0)
+    ? netMargin.dividedBy(cashedRevenue).times(100).toFixed(1)
     : "0.0";
 
-  const avgValue = count > 0 ? totalRevenue.dividedBy(count).toFixed(2) : "0.00";
+  const avgCashedValue =
+    count > 0 ? cashedRevenue.dividedBy(count).toFixed(2) : "0.00";
 
   return {
-    totalRevenue: totalRevenue.toFixed(2),
+    cashedRevenue: cashedRevenue.toFixed(2),
+    outstandingRevenue: outstanding.toFixed(2),
     totalCost: totalCost.toFixed(2),
-    totalMargin: totalMargin.toFixed(2),
+    netMargin: netMargin.toFixed(2),
     marginPct,
     count,
-    avgValue,
+    avgCashedValue,
   };
 }
 
