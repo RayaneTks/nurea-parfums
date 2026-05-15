@@ -33,6 +33,7 @@ type SaleLineInputBody = {
 
 type CreateSaleBody = {
   orderId?: string | null;
+  customerId?: string | null;
   customerName?: string | null;
   customerContact?: string | null;
   soldAt?: string | null;
@@ -254,6 +255,18 @@ export async function POST(request: Request) {
       body.customerName?.trim() || orderCustomerName || null;
     const customerContact = body.customerContact?.trim() || null;
 
+    let linkedCustomerId: string | null = null;
+    if (body.customerId) {
+      const found = await prisma.customer.findUnique({
+        where: { id: body.customerId },
+        select: { id: true },
+      });
+      if (!found) {
+        return NextResponse.json({ error: "Client introuvable." }, { status: 400 });
+      }
+      linkedCustomerId = found.id;
+    }
+
     const remainingDueRaw = body.remainingDue;
     const remainingDueN =
       remainingDueRaw === null || remainingDueRaw === undefined || remainingDueRaw === ""
@@ -276,6 +289,7 @@ export async function POST(request: Request) {
       const created = await tx.sale.create({
         data: {
           orderId: linkedOrderId,
+          customerId: linkedCustomerId,
           customerName,
           customerContact,
           soldAt,

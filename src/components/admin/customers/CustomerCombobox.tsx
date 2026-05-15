@@ -137,65 +137,77 @@ export function CustomerCombobox({
         }}
         disabled={disabled}
         className={cn(
-          "flex w-full items-center justify-between gap-2 rounded-xl border border-neutral-300 bg-white px-3 py-3 text-left text-sm tap-scale focus:outline-none focus-visible:ring-2 focus-visible:ring-nurea-bordeaux/35",
+          "flex w-full min-h-[44px] items-center justify-between gap-2 rounded-[12px] px-4 py-2.5 text-left text-[14px] tap-scale focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
+          "border border-[var(--admin-border-strong)] bg-[var(--admin-surface)]",
           disabled && "opacity-60",
         )}
         aria-haspopup="listbox"
         aria-expanded={open}
       >
         <span className="inline-flex min-w-0 items-center gap-2">
-          <UserRound size={16} className="shrink-0 text-neutral-500" aria-hidden />
-          <span className={cn("truncate", value ? "text-neutral-900" : "text-neutral-400")}>
+          <UserRound size={16} className="shrink-0 text-[var(--admin-text-subtle)]" aria-hidden />
+          <span
+            className={cn(
+              "truncate",
+              value ? "text-[var(--admin-text)]" : "text-[var(--admin-text-subtle)]",
+            )}
+          >
             {value ? value.fullName : placeholder}
           </span>
         </span>
-        <ChevronsUpDown size={16} className="shrink-0 text-neutral-400" aria-hidden />
+        <ChevronsUpDown size={16} className="shrink-0 text-[var(--admin-text-subtle)]" aria-hidden />
       </button>
 
       {open && !disabled ? (
-        <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-lg">
-          <div className="border-b border-neutral-200 p-2">
+        <div
+          className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-[12px] bg-[var(--admin-surface)] shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+          style={{ border: "1px solid var(--admin-border)" }}
+        >
+          <div className="p-2" style={{ borderBottom: "1px solid var(--admin-border)" }}>
             <input
               ref={inputRef}
               type="text"
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Nom ou téléphone…"
-              className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm outline-none focus:border-nurea-bordeaux/40"
+              className="w-full rounded-[10px] bg-[var(--admin-surface-muted)] px-3 py-2 text-[14px] text-[var(--admin-text)] placeholder:text-[var(--admin-text-subtle)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent-ring)]"
+              style={{ border: "1px solid var(--admin-border)" }}
               autoComplete="off"
             />
           </div>
           <ul className="max-h-64 overflow-y-auto py-1" role="listbox">
             {status === "loading" ? (
-              <li className="px-3 py-2 text-xs text-neutral-500">Recherche…</li>
+              <li className="px-3 py-2 text-[12px] text-[var(--admin-text-subtle)]">Recherche…</li>
             ) : null}
             {status === "idle" && rows.length === 0 && q.trim().length > 0 ? (
-              <li className="px-3 py-2 text-xs text-neutral-500">Aucun client trouvé.</li>
+              <li className="px-3 py-2 text-[12px] text-[var(--admin-text-subtle)]">Aucun client trouvé.</li>
             ) : null}
             {rows.map((r) => (
               <li key={r.id} role="option" aria-selected={value?.id === r.id}>
                 <button
                   type="button"
                   onClick={() => select({ id: r.id, fullName: r.fullName, phoneE164: r.phoneE164 })}
-                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-nurea-bordeaux/5"
+                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-[14px] tap-scale hover:bg-[var(--admin-surface-muted)]"
                 >
                   <span className="min-w-0">
-                    <span className="block truncate">{r.fullName}</span>
+                    <span className="block truncate text-[var(--admin-text)]">{r.fullName}</span>
                     {r.phoneE164 ? (
-                      <span className="block text-xs text-neutral-500">{r.phoneE164}</span>
+                      <span className="block text-[11px] text-[var(--admin-text-subtle)]">{r.phoneE164}</span>
                     ) : null}
                   </span>
-                  {value?.id === r.id ? <Check size={14} className="text-nurea-bordeaux" /> : null}
+                  {value?.id === r.id ? (
+                    <Check size={14} className="text-[var(--admin-accent)]" />
+                  ) : null}
                 </button>
               </li>
             ))}
             {canCreateInline ? (
-              <li className="border-t border-neutral-200">
+              <li style={{ borderTop: "1px solid var(--admin-border)" }}>
                 <button
                   type="button"
                   onClick={() => void createInline()}
                   disabled={status === "creating"}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-nurea-bordeaux hover:bg-nurea-bordeaux/5 disabled:opacity-50"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-[14px] text-[var(--admin-accent)] hover:bg-[var(--admin-accent-bg)] disabled:opacity-50"
                 >
                   <Plus size={14} />
                   <span>
@@ -206,7 +218,13 @@ export function CustomerCombobox({
             ) : null}
           </ul>
           {error ? (
-            <div className="border-t border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+            <div
+              className="px-3 py-2 text-[12px] text-[var(--admin-danger)]"
+              style={{
+                borderTop: "1px solid var(--admin-border)",
+                background: "var(--admin-danger-bg)",
+              }}
+            >
               {error}
             </div>
           ) : null}

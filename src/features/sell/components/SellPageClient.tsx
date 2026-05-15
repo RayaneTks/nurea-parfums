@@ -16,6 +16,7 @@ import { EmptyState } from "@/ui/primitives/EmptyState";
 import { Money } from "@/ui/patterns/Money";
 import { PerfumePicker, type PickerResult } from "./PerfumePicker";
 import { SellLineRow, type SellLine } from "./SellLineRow";
+import { CustomerCombobox, type SelectedCustomer } from "@/components/admin/customers/CustomerCombobox";
 
 function toNum(v: string): number {
   const n = Number(v.replace(",", "."));
@@ -53,6 +54,7 @@ export function SellPageClient() {
 
   const [bridge, setBridge] = useState<FromOrder | null>(null);
   const [bridgeLoading, setBridgeLoading] = useState<boolean>(!!fromOrderId);
+  const [customer, setCustomer] = useState<SelectedCustomer | null>(null);
   const [customerName, setCustomerName] = useState("");
   const [customerContact, setCustomerContact] = useState("");
   const [lines, setLines] = useState<SellLine[]>([]);
@@ -172,7 +174,8 @@ export function SellPageClient() {
     startTransition(async () => {
       const payload = {
         orderId: bridge?.id ?? null,
-        customerName: customerName.trim() || null,
+        customerId: customer?.id ?? null,
+        customerName: (customer?.fullName ?? customerName).trim() || null,
         customerContact: customerContact.trim() || null,
         items: lines.map((l) => ({
           perfumeId: l.perfumeId,
@@ -238,20 +241,36 @@ export function SellPageClient() {
 
         <Card padding={3}>
           <Stack gap={3}>
-            <Input
-              label="Nom du client"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="Anonyme si vide"
-              autoComplete="off"
-            />
+            <div>
+              <label className="mb-1.5 block text-[13px] font-medium text-[var(--admin-text-muted)]">
+                Client
+              </label>
+              <CustomerCombobox
+                value={customer}
+                onChange={(c) => {
+                  setCustomer(c);
+                  setCustomerName(c?.fullName ?? "");
+                  if (c?.phoneE164) setCustomerContact(c.phoneE164);
+                }}
+                placeholder="Rechercher ou créer…"
+              />
+            </div>
+            {!customer ? (
+              <Input
+                label="Nom (saisie libre)"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Anonyme si vide"
+                autoComplete="off"
+                hint="Utilise le sélecteur ci-dessus pour rattacher une fiche existante."
+              />
+            ) : null}
             <Input
               label="Contact (optionnel)"
               value={customerContact}
               onChange={(e) => setCustomerContact(e.target.value)}
               placeholder="Téléphone, Snapchat, Instagram…"
               autoComplete="off"
-              hint="Numéro ou pseudo, libre."
             />
           </Stack>
         </Card>
