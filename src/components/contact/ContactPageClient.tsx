@@ -1,15 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ContactSection } from "@/components/features/ContactSection";
 
-export const ContactPageClient = () => {
+interface ContactPageClientProps {
+  parfum?: string;
+  marque?: string;
+}
+
+export const ContactPageClient = ({ parfum = "", marque = "" }: ContactPageClientProps) => {
   return (
     <div className="nurea-vitrine-shell grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
       <Navbar />
-      <ContactSection />
+      <ContactSection parfum={parfum} marque={marque} />
       <Footer />
     </div>
   );

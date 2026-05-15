@@ -213,12 +213,12 @@ export const Navbar: FC<NavbarProps> = ({ onOpenBrowse: initialOnOpenBrowse }) =
 
           {/* Actions */}
           <div className="flex items-center gap-1 md:gap-2">
-            {/* Theme toggle — desktop only */}
+            {/* Theme toggle — visible on all breakpoints */}
             <button
               type="button"
               onClick={toggleTheme}
-              className="relative hidden h-11 w-11 items-center justify-center text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-text)] md:flex"
-              aria-label="Basculer le thème"
+              className="relative flex h-11 w-11 items-center justify-center text-[var(--nurea-text-muted)] transition-colors hover:text-[var(--nurea-text)] active:scale-95"
+              aria-label={mounted ? (isDark ? "Passer en mode clair" : "Passer en mode sombre") : "Basculer le thème"}
             >
               {mounted ? (
                 isDark ? (

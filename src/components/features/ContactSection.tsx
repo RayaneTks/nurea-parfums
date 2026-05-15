@@ -2,8 +2,7 @@
 
 import type { FC, FormEvent } from "react";
 import { useState } from "react";
-import { useTheme } from "next-themes";
-import { ArrowRight, Send } from "lucide-react";
+import { ArrowRight, Send, Sparkles } from "lucide-react";
 import { WhatsAppIcon, SnapchatIcon } from "@/components/ui/Icons";
 import { CONTACT } from "@/lib/data";
 import { buildContactMailto } from "@/lib/contactMailto";
@@ -19,24 +18,38 @@ interface ContactFormState {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 
-export const ContactSection: FC = () => {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme !== "light";
-
-  const [formState, setFormState] = useState<ContactFormState>({
+function buildInitialState(parfum: string, marque: string): ContactFormState {
+  const hasContext = parfum || marque;
+  if (!hasContext) {
+    return { name: "", email: "", subject: "", message: "" };
+  }
+  const label = [marque, parfum].filter(Boolean).join(" — ");
+  return {
     name: "",
     email: "",
-    subject: "",
-    message: "",
-  });
+    subject: `Commander — ${label}`,
+    message: `Bonjour,\nJe souhaite commander le parfum ${parfum}${marque ? ` de ${marque}` : ""}.\n\n`,
+  };
+}
+
+interface ContactSectionProps {
+  parfum?: string;
+  marque?: string;
+}
+
+export const ContactSection: FC<ContactSectionProps> = ({ parfum = "", marque = "" }) => {
+  const hasContext = Boolean(parfum || marque);
+  const contextLabel = [marque, parfum].filter(Boolean).join(" — ");
+
+  const [formState, setFormState] = useState<ContactFormState>(() =>
+    buildInitialState(parfum, marque)
+  );
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<keyof ContactFormState, string>>
   >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submitChannel, setSubmitChannel] = useState<"resend" | "mailto" | null>(
-    null
-  );
+  const [submitChannel, setSubmitChannel] = useState<"resend" | "mailto" | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
 
   const handleContactSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -47,7 +60,7 @@ export const ContactSection: FC = () => {
     if (!formState.name.trim()) nextErrors.name = "Indiquez votre nom.";
     if (!formState.email.trim()) nextErrors.email = "Indiquez votre e-mail.";
     else if (!EMAIL_RE.test(formState.email.trim())) {
-      nextErrors.email = "Format d’e-mail invalide.";
+      nextErrors.email = "Format d'e-mail invalide.";
     }
     if (!formState.subject.trim()) nextErrors.subject = "Indiquez un sujet.";
     if (!formState.message.trim()) {
@@ -80,14 +93,14 @@ export const ContactSection: FC = () => {
         });
         window.location.href = mailto;
         setSubmitChannel("mailto");
-        setFormState({ name: "", email: "", subject: "", message: "" });
+        setFormState(buildInitialState(parfum, marque));
         setFieldErrors({});
         setIsSubmitted(true);
         return;
       }
 
       setSubmitChannel("resend");
-      setFormState({ name: "", email: "", subject: "", message: "" });
+      setFormState(buildInitialState(parfum, marque));
       setFieldErrors({});
       setIsSubmitted(true);
     } catch {
@@ -162,7 +175,10 @@ export const ContactSection: FC = () => {
               <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
                 Courrier Électronique
               </p>
-              <a href={`mailto:${CONTACT.email}`} className="mt-1 block text-[15px] text-[var(--nurea-text)] hover:text-[var(--nurea-accent)]">
+              <a
+                href={`mailto:${CONTACT.email}`}
+                className="mt-1 block text-[15px] text-[var(--nurea-text)] hover:text-[var(--nurea-accent)]"
+              >
                 {CONTACT.email}
               </a>
             </div>
@@ -173,9 +189,28 @@ export const ContactSection: FC = () => {
               <h3 className="text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--nurea-text-muted)]">
                 Formulaire
               </h3>
-              <p className="mb-6 mt-1 font-serif text-[22px] text-[var(--nurea-text)]">
+              <p className="mb-5 mt-1 font-serif text-[22px] text-[var(--nurea-text)]">
                 Nous Contacter
               </p>
+
+              {/* Parfum pré-sélectionné — visible uniquement si URL params présents */}
+              {hasContext && !isSubmitted && (
+                <div className="mb-5 flex items-center gap-3 border border-[var(--nurea-border-hover)] bg-[var(--nurea-accent-subtle)] px-4 py-3">
+                  <Sparkles
+                    size={14}
+                    className="shrink-0 text-[var(--nurea-accent)]"
+                    aria-hidden="true"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[9px] uppercase tracking-[0.2em] text-[var(--nurea-accent)]">
+                      Parfum sélectionné
+                    </p>
+                    <p className="truncate font-serif text-[15px] text-[var(--nurea-text)]">
+                      {contextLabel}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {isSubmitted ? (
                 <div className="animate-fade-in-up py-10 text-center">
@@ -225,7 +260,10 @@ export const ContactSection: FC = () => {
                   />
 
                   <div>
-                    <label htmlFor="message" className="mb-1.5 block text-[12px] font-medium text-[var(--nurea-text-muted)]">
+                    <label
+                      htmlFor="message"
+                      className="mb-1.5 block text-[12px] font-medium text-[var(--nurea-text-muted)]"
+                    >
                       Votre Message
                     </label>
                     <textarea
@@ -233,21 +271,29 @@ export const ContactSection: FC = () => {
                       name="message"
                       rows={5}
                       value={formState.message}
-                      onChange={(e) => setFormState({ ...formState, message: e.target.value })}
+                      onChange={(e) =>
+                        setFormState({ ...formState, message: e.target.value })
+                      }
                       aria-invalid={Boolean(fieldErrors.message)}
                       aria-describedby={fieldErrors.message ? "message-error" : undefined}
                       className="block min-h-[128px] w-full resize-y border border-[var(--nurea-border)] bg-transparent px-3 py-3 text-[14px] text-[var(--nurea-text)] outline-none transition-colors focus:border-[var(--nurea-accent)]"
                     />
                     {fieldErrors.message ? (
-                      <p id="message-error" className="mt-1 text-[12px] text-[var(--nurea-accent)]" role="alert">
+                      <p
+                        id="message-error"
+                        className="mt-1 text-[12px] text-[var(--nurea-accent)]"
+                        role="alert"
+                      >
                         {fieldErrors.message}
                       </p>
                     ) : null}
                   </div>
 
-                  <p className="text-[12px] leading-relaxed text-[var(--nurea-text-muted)] italic">
-                    Précisez la marque et le nom du parfum pour une réponse plus précise.
-                  </p>
+                  {!hasContext && (
+                    <p className="text-[12px] leading-relaxed text-[var(--nurea-text-muted)] italic">
+                      Précisez la marque et le nom du parfum pour une réponse plus précise.
+                    </p>
+                  )}
 
                   {serverError ? (
                     <p className="text-[12px] text-[var(--nurea-accent)]" role="alert">
@@ -260,7 +306,12 @@ export const ContactSection: FC = () => {
                     disabled={isSubmitting}
                     className="btn-nurea btn-accent mt-2 w-full justify-center disabled:opacity-50"
                   >
-                    {isSubmitting ? "Transmission…" : (
+                    {isSubmitting ? (
+                      <span className="flex items-center gap-2">
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        Transmission…
+                      </span>
+                    ) : (
                       <>
                         Envoyer le message
                         <Send size={13} className="text-white" />
@@ -298,7 +349,10 @@ const FormField = ({
 
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-[12px] font-medium text-[var(--nurea-text-muted)]">
+      <label
+        htmlFor={id}
+        className="mb-1.5 block text-[12px] font-medium text-[var(--nurea-text-muted)]"
+      >
         {label}
       </label>
       <input
@@ -312,7 +366,11 @@ const FormField = ({
         className="block min-h-[48px] w-full border border-[var(--nurea-border)] bg-transparent px-3 py-2 text-[14px] text-[var(--nurea-text)] outline-none transition-colors focus:border-[var(--nurea-accent)]"
       />
       {error ? (
-        <p id={errId} className="mt-1 text-[12px] text-[var(--nurea-accent)]" role="alert">
+        <p
+          id={errId}
+          className="mt-1 text-[12px] text-[var(--nurea-accent)]"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
