@@ -16,6 +16,8 @@ type ConfirmDialogProps = {
   cancelLabel?: string;
   /** "danger" rouge (defaut) ou "primary" pour confirms non-destructifs. */
   tone?: "danger" | "primary";
+  /** Imbriquer dans une Sheet parente (utilise Drawer.NestedRoot). */
+  nested?: boolean;
   /** Handler async — la dialog reste ouverte pendant l'exécution. */
   onConfirm: () => Promise<void> | void;
 };
@@ -28,6 +30,7 @@ export function ConfirmDialog({
   confirmLabel = "Supprimer",
   cancelLabel = "Annuler",
   tone = "danger",
+  nested = false,
   onConfirm,
 }: ConfirmDialogProps) {
   const [busy, setBusy] = useState(false);
@@ -50,6 +53,7 @@ export function ConfirmDialog({
       description={description}
       dismissible={!busy}
       handle={false}
+      nested={nested}
       footer={
         <HStack gap={2}>
           <Button

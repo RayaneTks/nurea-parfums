@@ -334,6 +334,7 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
             : undefined
         }
         confirmLabel="Supprimer"
+        nested
         onConfirm={deleteSale}
       />
     </>

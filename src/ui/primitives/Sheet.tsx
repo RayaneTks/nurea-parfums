@@ -24,6 +24,8 @@ type SheetProps = {
   footer?: ReactNode;
   /** Désactive le swipe-to-dismiss (utile en mode edit avec dirty). */
   dismissible?: boolean;
+  /** Imbriquer dans une Sheet parente (utilise Drawer.NestedRoot de vaul). */
+  nested?: boolean;
   children: ReactNode;
   className?: string;
 };
@@ -39,20 +41,22 @@ export function Sheet({
   maxVh = 92,
   footer,
   dismissible = true,
+  nested = false,
   children,
   className,
 }: SheetProps) {
+  const Root = nested ? Drawer.NestedRoot : Drawer.Root;
   return (
-    <Drawer.Root
+    <Root
       open={open}
       onOpenChange={onOpenChange}
-      shouldScaleBackground
+      shouldScaleBackground={!nested}
       dismissible={dismissible}
     >
       <Drawer.Portal>
         <Drawer.Overlay
           className="admin-theme fixed inset-0 bg-black/40 backdrop-blur-sm"
-          style={{ zIndex: 70 }}
+          style={{ zIndex: nested ? 80 : 70 }}
         />
         <Drawer.Content
           className={cn(
@@ -60,7 +64,7 @@ export function Sheet({
             "max-w-[var(--admin-app-max-width)]",
             className,
           )}
-          style={{ maxHeight: `${maxVh}vh`, zIndex: 71 }}
+          style={{ maxHeight: `${maxVh}dvh`, zIndex: nested ? 81 : 71 }}
         >
           {handle ? <div className="admin-sheet-handle" /> : null}
 
@@ -119,6 +123,6 @@ export function Sheet({
           ) : null}
         </Drawer.Content>
       </Drawer.Portal>
-    </Drawer.Root>
+    </Root>
   );
 }
