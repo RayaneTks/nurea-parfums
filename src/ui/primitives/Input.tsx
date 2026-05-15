@@ -50,7 +50,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           className={cn(
             "block w-full min-h-[44px] rounded-[12px]",
             variant === "elevated"
-              ? "bg-[var(--admin-surface-alt)] border border-[var(--admin-border-strong)]"
+              ? "bg-[var(--admin-surface-muted)] border border-[var(--admin-border-strong)]"
               : "bg-[var(--admin-surface)] border border-[var(--admin-border-strong)]",
             "px-4 text-[16px] text-[var(--admin-text)] placeholder:text-[var(--admin-text-subtle)]",
             "transition-[border-color,box-shadow] duration-[var(--admin-duration-default)] ease-[var(--admin-easing-default)]",

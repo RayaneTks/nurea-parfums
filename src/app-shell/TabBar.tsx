@@ -50,7 +50,7 @@ export function TabBar() {
   return (
     <nav
       aria-label="Navigation principale"
-      className="fixed bottom-0 inset-x-0 mx-auto w-full max-w-[var(--admin-app-max-width)] z-[50]"
+      className="fixed bottom-0 left-0 right-0 z-[50]"
       style={{
         background: "color-mix(in srgb, var(--admin-surface) 92%, transparent)",
         backdropFilter: "saturate(180%) blur(20px)",
@@ -60,7 +60,7 @@ export function TabBar() {
       }}
     >
       <div
-        className="flex items-stretch justify-around"
+        className="mx-auto flex w-full max-w-[var(--admin-app-max-width)] items-stretch justify-around"
         style={{
           height: "var(--admin-tab-bar-height)",
         }}
