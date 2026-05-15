@@ -87,7 +87,12 @@ export function BatchGroupSection({
         >
           {group.sales.map((s) => (
             <li key={s.id}>
-              <SaleListRow sale={s} onOpen={onOpenSale} />
+              <SaleListRow
+                sale={s}
+                onOpen={onOpenSale}
+                showCustomer
+                hideContextTags
+              />
             </li>
           ))}
         </ul>

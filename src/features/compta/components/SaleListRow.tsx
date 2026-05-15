@@ -8,11 +8,25 @@ import type { SaleRowLite } from "@/server/sales/queries";
 type SaleListRowProps = {
   sale: SaleRowLite;
   onOpen: (saleId: string) => void;
+  /**
+   * Affiche le nom client en primary (à utiliser dans un groupe Lot
+   * où la date seule ne suffit pas à identifier la vente).
+   */
+  showCustomer?: boolean;
+  /** Masque le tag « Commande » + batchName (utile en contexte Lot ou Client). */
+  hideContextTags?: boolean;
 };
 
-export function SaleListRow({ sale, onOpen }: SaleListRowProps) {
+export function SaleListRow({
+  sale,
+  onOpen,
+  showCustomer = false,
+  hideContextTags = false,
+}: SaleListRowProps) {
   const remaining = Number(sale.remainingDue ?? "0");
   const hasDebt = Number.isFinite(remaining) && remaining > 0;
+
+  const customer = sale.customerName?.trim() || "Anonyme";
 
   return (
     <ListRow
@@ -24,7 +38,11 @@ export function SaleListRow({ sale, onOpen }: SaleListRowProps) {
       }
       primary={
         <span className="flex items-center gap-1.5 text-[14px] font-medium text-[var(--admin-text)]">
-          <RelativeTime date={sale.soldAt} />
+          {showCustomer ? (
+            <span className="truncate">{customer}</span>
+          ) : (
+            <RelativeTime date={sale.soldAt} />
+          )}
           {hasDebt ? (
             <span
               className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
@@ -37,7 +55,7 @@ export function SaleListRow({ sale, onOpen }: SaleListRowProps) {
               Reste {remaining.toFixed(0)} €
             </span>
           ) : null}
-          {sale.batchName ? (
+          {!hideContextTags && sale.batchName ? (
             <span
               className="shrink-0 truncate rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
               style={{
@@ -54,8 +72,17 @@ export function SaleListRow({ sale, onOpen }: SaleListRowProps) {
       }
       secondary={
         <span className="text-[12px] text-[var(--admin-text-subtle)]">
-          {sale.itemCount} article{sale.itemCount > 1 ? "s" : ""}
-          {sale.orderId ? " · commande" : ""}
+          {showCustomer ? (
+            <>
+              <RelativeTime date={sale.soldAt} /> · {sale.itemCount} article
+              {sale.itemCount > 1 ? "s" : ""}
+            </>
+          ) : (
+            <>
+              {sale.itemCount} article{sale.itemCount > 1 ? "s" : ""}
+              {!hideContextTags && sale.orderId ? " · commande" : ""}
+            </>
+          )}
         </span>
       }
       trailing={
@@ -75,7 +102,7 @@ export function SaleListRow({ sale, onOpen }: SaleListRowProps) {
         </div>
       }
       chevron
-      ariaLabel={`Vente du ${sale.soldAt}`}
+      ariaLabel={`Vente ${customer} du ${sale.soldAt}`}
     />
   );
 }
