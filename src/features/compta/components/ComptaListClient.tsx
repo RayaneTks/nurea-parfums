@@ -51,6 +51,21 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
     setData(initial);
   }, [initial]);
 
+  // Auto-open ticket via deep link `?sale=<id>` (utile depuis /admin/lots/[id]).
+  useEffect(() => {
+    const saleParam = searchParams.get("sale");
+    if (!saleParam) return;
+    setOpenSaleId(saleParam);
+    setSheetOpen(true);
+    // Nettoie l'URL pour ne pas rouvrir la sheet à chaque navigation arrière.
+    const params = new URLSearchParams(searchParams);
+    params.delete("sale");
+    router.replace(`/admin/compta${params.toString() ? `?${params.toString()}` : ""}`, {
+      scroll: false,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const refresh = useMemo(
     () => async () => {
       setRefreshing(true);

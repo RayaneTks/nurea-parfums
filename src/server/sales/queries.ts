@@ -310,24 +310,30 @@ export async function getSaleById(saleId: string): Promise<SaleDetailRow | null>
   if (!sale) return null;
 
   function toSnap(raw: unknown, fallback: SaleItemSnapshot): SaleItemSnapshot {
-    if (raw && typeof raw === "object") {
+    try {
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) return fallback;
       const o = raw as Record<string, unknown>;
       let brandName: string | null = fallback.brandName;
-      if (typeof o.brandName === "string") {
-        brandName = o.brandName;
-      } else if (typeof o.brand === "string") {
-        brandName = o.brand;
-      } else if (o.brand && typeof o.brand === "object") {
-        const b = o.brand as Record<string, unknown>;
+      const rawBrand = o.brandName ?? o.brand;
+      if (typeof rawBrand === "string") {
+        brandName = rawBrand;
+      } else if (rawBrand && typeof rawBrand === "object" && !Array.isArray(rawBrand)) {
+        const b = rawBrand as Record<string, unknown>;
         if (typeof b.name === "string") brandName = b.name;
       }
-      return {
-        name: typeof o.name === "string" ? o.name : fallback.name,
-        brandName,
-        image: typeof o.image === "string" ? o.image : fallback.image ?? null,
-      };
+      const name =
+        typeof o.name === "string" && o.name.trim().length > 0
+          ? o.name
+          : fallback.name;
+      const image =
+        typeof o.image === "string" && o.image.length > 0
+          ? o.image
+          : fallback.image ?? null;
+      return { name, brandName, image };
+    } catch (err) {
+      console.error("[toSnap] malformed snapshot", { err, raw });
+      return fallback;
     }
-    return fallback;
   }
 
   return {
