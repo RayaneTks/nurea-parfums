@@ -95,6 +95,7 @@ model PerfumePricing {
   volumeMl            Int
   defaultUnitPriceEur Decimal  @db.Decimal(10, 2)
   defaultUnitCostDzd  Decimal? @db.Decimal(10, 2)
+  defaultExchangeRate Decimal? @db.Decimal(8, 4)
   updatedAt           DateTime @updatedAt
 
   perfume Perfume @relation(fields: [perfumeId], references: [id], onDelete: Cascade)

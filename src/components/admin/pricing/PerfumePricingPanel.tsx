@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { Check, Trash2 } from "lucide-react";
-import { SectionCard } from "../ui/SectionCard";
-import { AdminInput } from "../ui/AdminInput";
-import { AdminButton } from "../ui/AdminButton";
-import { AdminToast, type ToastType } from "../ui/AdminToast";
+import { Card } from "@/ui/primitives/Card";
+import { Input } from "@/ui/primitives/Input";
+import { Button } from "@/ui/primitives/Button";
+import { Stack, HStack } from "@/ui/primitives/Stack";
+import { Toast, type ToastType } from "@/ui/primitives/Toast";
 import {
   deletePerfumePricingAction,
   upsertPerfumePricingAction,
@@ -22,6 +23,7 @@ const VOLUMES = [30, 50, 100] as const;
 type Draft = {
   unitPriceEur: string;
   unitCostDzd: string;
+  exchangeRate: string;
 };
 
 function rowKey(v: number): string {
@@ -29,18 +31,22 @@ function rowKey(v: number): string {
 }
 
 function emptyDraft(): Draft {
-  return { unitPriceEur: "", unitCostDzd: "" };
+  return { unitPriceEur: "", unitCostDzd: "", exchangeRate: "" };
+}
+
+function draftFromRow(row: PerfumePricingRow | undefined): Draft {
+  return {
+    unitPriceEur: row?.defaultUnitPriceEur ?? "",
+    unitCostDzd: row?.defaultUnitCostDzd ?? "",
+    exchangeRate: row?.defaultExchangeRate ?? "",
+  };
 }
 
 export function PerfumePricingPanel({ perfumeId, initial }: PerfumePricingPanelProps) {
   const [drafts, setDrafts] = useState<Record<string, Draft>>(() => {
     const init: Record<string, Draft> = {};
     for (const v of VOLUMES) {
-      const found = initial.find((r) => r.volumeMl === v);
-      init[rowKey(v)] = {
-        unitPriceEur: found?.defaultUnitPriceEur ?? "",
-        unitCostDzd: found?.defaultUnitCostDzd ?? "",
-      };
+      init[rowKey(v)] = draftFromRow(initial.find((r) => r.volumeMl === v));
     }
     return init;
   });
@@ -50,14 +56,9 @@ export function PerfumePricingPanel({ perfumeId, initial }: PerfumePricingPanelP
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
 
   useEffect(() => {
-    // Re-sync si la prop change après revalidate.
     const next: Record<string, Draft> = {};
     for (const v of VOLUMES) {
-      const found = initial.find((r) => r.volumeMl === v);
-      next[rowKey(v)] = {
-        unitPriceEur: found?.defaultUnitPriceEur ?? "",
-        unitCostDzd: found?.defaultUnitCostDzd ?? "",
-      };
+      next[rowKey(v)] = draftFromRow(initial.find((r) => r.volumeMl === v));
     }
     setDrafts(next);
   }, [initial]);
@@ -83,6 +84,7 @@ export function PerfumePricingPanel({ perfumeId, initial }: PerfumePricingPanelP
           volumeMl: v,
           defaultUnitPriceEur: d.unitPriceEur,
           defaultUnitCostDzd: d.unitCostDzd === "" ? null : d.unitCostDzd,
+          defaultExchangeRate: d.exchangeRate === "" ? null : d.exchangeRate,
         });
         setSavingVolume(null);
         if (!result.ok) {
@@ -105,7 +107,7 @@ export function PerfumePricingPanel({ perfumeId, initial }: PerfumePricingPanelP
           setToast({ type: "error", message: result.error });
           return;
         }
-        updateDraft(v, { unitPriceEur: "", unitCostDzd: "" });
+        updateDraft(v, { unitPriceEur: "", unitCostDzd: "", exchangeRate: "" });
         setToast({ type: "success", message: `Prix ${v}ml supprimé.` });
       });
     },
@@ -114,72 +116,106 @@ export function PerfumePricingPanel({ perfumeId, initial }: PerfumePricingPanelP
 
   return (
     <>
-      <SectionCard>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-neutral-900">Prix par défaut</h2>
-          <span className="text-xs text-neutral-500">Pré-remplit les commandes.</span>
-        </div>
-        <div className="space-y-3">
+      <Card padding={3}>
+        <HStack justify="between" align="center" className="mb-3">
+          <h2 className="text-[14px] font-semibold text-[var(--admin-text)]">
+            Prix par défaut
+          </h2>
+          <span className="text-[12px] text-[var(--admin-text-subtle)]">
+            Pré-remplit les commandes.
+          </span>
+        </HStack>
+
+        <Stack gap={3}>
           {VOLUMES.map((v) => {
             const d = drafts[rowKey(v)] ?? emptyDraft();
-            const has = initial.some((r) => r.volumeMl === v);
+            const existing = initial.find((r) => r.volumeMl === v);
+            const has = existing !== undefined;
             const dirty =
-              (has && initial.find((r) => r.volumeMl === v)?.defaultUnitPriceEur !== d.unitPriceEur) ||
-              (has && (initial.find((r) => r.volumeMl === v)?.defaultUnitCostDzd ?? "") !== d.unitCostDzd) ||
+              (has &&
+                (existing.defaultUnitPriceEur !== d.unitPriceEur ||
+                  (existing.defaultUnitCostDzd ?? "") !== d.unitCostDzd ||
+                  (existing.defaultExchangeRate ?? "") !== d.exchangeRate)) ||
               (!has && d.unitPriceEur !== "");
 
             return (
-              <div key={v} className="rounded-xl border border-neutral-200 bg-white p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium text-neutral-900">{v} ml</span>
+              <div
+                key={v}
+                className="rounded-[14px] p-3"
+                style={{
+                  background: "var(--admin-surface-alt)",
+                  border: "1px solid var(--admin-border)",
+                }}
+              >
+                <HStack justify="between" align="center" className="mb-2">
+                  <span className="text-[14px] font-semibold text-[var(--admin-text)]">
+                    {v} ml
+                  </span>
                   {has ? (
                     <button
                       type="button"
                       onClick={() => remove(v)}
                       disabled={pending && deletingVolume === v}
-                      className="inline-flex items-center gap-1 text-xs text-red-600 hover:underline disabled:opacity-50"
+                      className="inline-flex items-center gap-1 text-[12px] text-[var(--admin-danger)] tap-scale hover:underline disabled:opacity-50"
                       aria-label={`Supprimer prix ${v}ml`}
                     >
                       <Trash2 size={12} /> Retirer
                     </button>
                   ) : null}
-                </div>
+                </HStack>
+
                 <div className="grid grid-cols-2 gap-2">
-                  <AdminInput
+                  <Input
                     label="Prix € (TTC)"
                     inputMode="decimal"
+                    numeric
                     value={d.unitPriceEur}
                     onChange={(e) => updateDraft(v, { unitPriceEur: e.target.value })}
                     placeholder="120"
                   />
-                  <AdminInput
+                  <Input
                     label="Coût DZD (opt.)"
                     inputMode="decimal"
+                    numeric
                     value={d.unitCostDzd}
                     onChange={(e) => updateDraft(v, { unitCostDzd: e.target.value })}
                     placeholder="36000"
                   />
                 </div>
+                <div className="mt-2">
+                  <Input
+                    label="Taux de change EUR→DZD (opt.)"
+                    inputMode="decimal"
+                    numeric
+                    value={d.exchangeRate}
+                    onChange={(e) => updateDraft(v, { exchangeRate: e.target.value })}
+                    placeholder="277"
+                    hint="Sert au calcul coût converti. Vide → 277 par défaut."
+                  />
+                </div>
+
                 {dirty ? (
-                  <div className="mt-2 flex justify-end">
-                    <AdminButton
+                  <div className="mt-3 flex justify-end">
+                    <Button
                       type="button"
                       variant="primary"
                       size="sm"
                       onClick={() => save(v)}
                       isLoading={pending && savingVolume === v}
+                      leadingIcon={<Check size={14} />}
                     >
-                      <Check size={14} /> Enregistrer
-                    </AdminButton>
+                      Enregistrer
+                    </Button>
                   </div>
                 ) : null}
               </div>
             );
           })}
-        </div>
-      </SectionCard>
+        </Stack>
+      </Card>
+
       {toast ? (
-        <AdminToast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
+        <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
       ) : null}
     </>
   );

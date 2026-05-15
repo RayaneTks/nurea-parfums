@@ -47,10 +47,13 @@ function toNum(v: string | number): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-async function fetchPricing(perfumeId: number, volumeMl: number): Promise<{
+type PricingPayload = {
   defaultUnitPriceEur: string;
   defaultUnitCostDzd: string | null;
-} | null> {
+  defaultExchangeRate: string | null;
+};
+
+async function fetchPricing(perfumeId: number, volumeMl: number): Promise<PricingPayload | null> {
   const r = await fetch(`/api/admin/perfumes/${perfumeId}/pricing?volumeMl=${volumeMl}`, {
     credentials: "include",
     cache: "no-store",
@@ -64,7 +67,7 @@ async function fetchPricing(perfumeId: number, volumeMl: number): Promise<{
     typeof (json as { row: unknown }).row === "object" &&
     (json as { row: unknown }).row !== null
   ) {
-    return (json as { row: { defaultUnitPriceEur: string; defaultUnitCostDzd: string | null } }).row;
+    return (json as { row: PricingPayload }).row;
   }
   return null;
 }
@@ -104,7 +107,7 @@ export function QuickOrderForm() {
           volumeMl: 100,
           unitPrice: pricing?.defaultUnitPriceEur ?? "",
           unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
-          exchangeRate: exchangeRateDefault,
+          exchangeRate: pricing?.defaultExchangeRate ?? exchangeRateDefault,
         });
       } else {
         setLine({
@@ -132,6 +135,7 @@ export function QuickOrderForm() {
           volumeMl: v,
           unitPrice: pricing?.defaultUnitPriceEur ?? line.unitPrice,
           unitCostDzd: pricing?.defaultUnitCostDzd ?? line.unitCostDzd,
+          exchangeRate: pricing?.defaultExchangeRate ?? line.exchangeRate,
         });
       } else {
         setLine({ ...line, volumeMl: v });
