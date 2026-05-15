@@ -57,7 +57,15 @@ export function SaleListRow({ sale, onOpen }: SaleListRowProps) {
         <div className="text-right">
           <Money value={sale.totalRevenue} bold />
           <div className="text-[11px] mt-0.5">
-            <Money value={sale.totalMargin} compact signed tone="success" />
+            {hasDebt ? (
+              <Money
+                value={-Math.abs(Number(sale.totalMargin))}
+                compact
+                tone="danger"
+              />
+            ) : (
+              <Money value={sale.totalMargin} compact signed tone="success" />
+            )}
           </div>
         </div>
       }

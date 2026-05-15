@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { Sheet } from "@/ui/primitives/Sheet";
 import { Input } from "@/ui/primitives/Input";
@@ -48,6 +48,8 @@ export function PerfumePicker({
   const [query, setQuery] = useState("");
   const [manualName, setManualName] = useState("");
   const [manualBrand, setManualBrand] = useState("");
+  const catalogSearchRef = useRef<HTMLInputElement>(null);
+  const manualNameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -82,6 +84,17 @@ export function PerfumePicker({
       setManualBrand("");
     }
   }, [open]);
+
+  // Focus délayé après animation Sheet (vaul ~260ms) pour éviter race condition
+  // qui rendait le champ "invisible" sur mobile (clavier ouvert, focus volé).
+  useEffect(() => {
+    if (!open) return;
+    const target = mode === "catalog" ? catalogSearchRef : manualNameRef;
+    const t = window.setTimeout(() => {
+      target.current?.focus();
+    }, 280);
+    return () => window.clearTimeout(t);
+  }, [open, mode]);
 
   const q = query.trim().toLowerCase();
   const filtered = perfumes.filter((p) => {
@@ -119,13 +132,14 @@ export function PerfumePicker({
         {mode === "catalog" ? (
           <>
             <Input
+              ref={catalogSearchRef}
               type="search"
               inputMode="search"
               placeholder="Rechercher dans le catalogue…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               leadingIcon={<Search size={16} />}
-              autoFocus
+              variant="elevated"
             />
             {loading ? (
               <Stack gap={2}>
@@ -179,17 +193,19 @@ export function PerfumePicker({
               gardés en snapshot sur la commande / vente.
             </p>
             <Input
+              ref={manualNameRef}
               label="Nom du parfum"
               value={manualName}
               onChange={(e) => setManualName(e.target.value)}
               placeholder="Aventus"
-              autoFocus
+              variant="elevated"
             />
             <Input
               label="Marque"
               value={manualBrand}
               onChange={(e) => setManualBrand(e.target.value)}
               placeholder="Creed"
+              variant="elevated"
             />
             <Button
               type="button"

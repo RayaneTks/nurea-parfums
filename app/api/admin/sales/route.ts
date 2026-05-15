@@ -17,6 +17,12 @@ export const runtime = "nodejs";
 
 type SaleLineInputBody = {
   perfumeId?: number | null;
+  /** Snapshot manuel envoyé par le client pour les lignes "saisie libre" (perfumeId === null). */
+  perfumeSnapshot?: {
+    name?: string;
+    brandName?: string;
+    image?: string | null;
+  } | null;
   quantity?: number;
   unitPrice?: number | string;
   unitCost?: number | string;
@@ -96,6 +102,8 @@ export async function POST(request: Request) {
 
     const normalizedLines: {
       perfumeId: number | null;
+      manualName: string | null;
+      manualBrand: string | null;
       volumeMl: number;
       quantity: number;
       unitPrice: Prisma.Decimal;
@@ -167,8 +175,25 @@ export async function POST(request: Request) {
       const ucdN = ucdRaw ? Number(ucdRaw) : null;
       const exN = exRaw ? Number(exRaw) : null;
 
+      let manualName: string | null = null;
+      let manualBrand: string | null = null;
+      if (perfumeId === null) {
+        const snap = raw.perfumeSnapshot;
+        const name = snap?.name?.trim();
+        if (!name || name.length < 2) {
+          return NextResponse.json(
+            { error: "Nom du parfum requis (≥ 2 caractères) pour une saisie libre." },
+            { status: 400 },
+          );
+        }
+        manualName = name;
+        manualBrand = snap?.brandName?.trim() || "Hors catalogue";
+      }
+
       normalizedLines.push({
         perfumeId: perfumeId ?? null,
+        manualName,
+        manualBrand,
         volumeMl: vol,
         unitCostDzd: ucdN !== null && Number.isFinite(ucdN) ? new Prisma.Decimal(ucdN) : null,
         exchangeRate: exN !== null && Number.isFinite(exN) ? new Prisma.Decimal(exN) : null,
@@ -263,17 +288,15 @@ export async function POST(request: Request) {
                 ? {
                     perfumeId: perfume.id,
                     name: perfume.name,
+                    brandName: perfume.brand?.name ?? null,
                     image: perfume.image,
-                    brand: perfume.brand
-                      ? { id: perfume.brand.id, name: perfume.brand.name }
-                      : null,
                     volumeMl: line.volumeMl,
                   }
                 : {
                     perfumeId: null,
-                    name: "Vente libre",
+                    name: line.manualName ?? "Sans nom",
+                    brandName: line.manualBrand ?? "Hors catalogue",
                     image: null,
-                    brand: null,
                     volumeMl: line.volumeMl,
                   };
               return {

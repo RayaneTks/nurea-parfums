@@ -114,6 +114,9 @@ export async function topPerfumes(
         FROM grouped g
         LEFT JOIN "Perfume" p ON p.id = g.perfume_id
         LEFT JOIN "Brand" b ON b.id = p."brandId"
+        WHERE
+          g.perfume_id IS NULL
+          OR (p.id IS NOT NULL AND p.status = 'PUBLISHED' AND p."isPrivate" = false)
         GROUP BY g.key, p.name, b.name
         HAVING SUM(g.quantity) > 0
         ORDER BY SUM(g."lineRevenue") DESC NULLS LAST
@@ -144,6 +147,9 @@ export async function topPerfumes(
         FROM grouped g
         LEFT JOIN "Perfume" p ON p.id = g.perfume_id
         LEFT JOIN "Brand" b ON b.id = p."brandId"
+        WHERE
+          g.perfume_id IS NULL
+          OR (p.id IS NOT NULL AND p.status = 'PUBLISHED' AND p."isPrivate" = false)
         GROUP BY g.key, p.name, b.name
         HAVING SUM(g.quantity) > 0
         ORDER BY SUM(g."lineRevenue") DESC NULLS LAST

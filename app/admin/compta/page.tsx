@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-type Params = { searchParams: Promise<{ period?: string; q?: string }> };
+type Params = { searchParams: Promise<{ q?: string }> };
 
 export default function Page(props: Params) {
   return <ComptaPage {...props} />;
