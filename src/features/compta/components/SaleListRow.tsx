@@ -17,6 +17,11 @@ export function SaleListRow({ sale, onOpen }: SaleListRowProps) {
   return (
     <ListRow
       onClick={() => onOpen(sale.id)}
+      className={
+        hasDebt
+          ? "bg-[color-mix(in_srgb,var(--admin-danger-bg)_60%,transparent)]"
+          : undefined
+      }
       primary={
         <span className="flex items-center gap-1.5 text-[14px] font-medium text-[var(--admin-text)]">
           <RelativeTime date={sale.soldAt} />

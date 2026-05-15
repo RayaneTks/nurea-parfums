@@ -42,8 +42,20 @@ const cachedRevenueSummary = unstable_cache(
   { tags: [tagFor.kpi(), tagFor.sales()], revalidate: 60 },
 );
 
-export async function revenueSummary(range: PeriodRange): Promise<RevenueSummary> {
-  const agg = await cachedRevenueSummary(range.start, range.end);
+const cachedRevenueSummaryGlobal = unstable_cache(
+  async () =>
+    prisma.sale.aggregate({
+      _sum: { totalRevenue: true, totalCost: true, totalMargin: true },
+      _count: true,
+    }),
+  ["kpi-revenue-summary-global"],
+  { tags: [tagFor.kpi(), tagFor.sales()], revalidate: 60 },
+);
+
+export async function revenueSummary(range: PeriodRange | null): Promise<RevenueSummary> {
+  const agg = range
+    ? await cachedRevenueSummary(range.start, range.end)
+    : await cachedRevenueSummaryGlobal();
 
   const totalRevenue = new Decimal((agg._sum.totalRevenue ?? 0).toString());
   const totalCost = new Decimal((agg._sum.totalCost ?? 0).toString());

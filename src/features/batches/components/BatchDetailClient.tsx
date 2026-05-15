@@ -197,7 +197,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
           </Card>
           <Card padding={3} tone="surface">
             <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-              Marge brute
+              Marge
             </p>
             <p className="mt-1 text-[18px] font-bold leading-none">
               <Money value={current.grossMargin} compact tone="success" />

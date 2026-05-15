@@ -51,13 +51,13 @@ export async function TopPerfumesBlock() {
                     </p>
                     {r.source === "manual" ? (
                       <span
-                        className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide"
+                        className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.01em]"
                         style={{
                           background: "var(--admin-warning-bg)",
                           color: "var(--admin-warning)",
                         }}
                       >
-                        Hors catalogue
+                        Saisie libre
                       </span>
                     ) : null}
                   </div>
