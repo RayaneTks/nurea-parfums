@@ -29,6 +29,7 @@ function makeKey(): string {
 type FromOrder = {
   id: string;
   customerName: string | null;
+  customerContact: string | null;
   items: Array<{
     perfumeId: number | null;
     quantity: number;
@@ -53,6 +54,7 @@ export function SellPageClient() {
   const [bridge, setBridge] = useState<FromOrder | null>(null);
   const [bridgeLoading, setBridgeLoading] = useState<boolean>(!!fromOrderId);
   const [customerName, setCustomerName] = useState("");
+  const [customerContact, setCustomerContact] = useState("");
   const [lines, setLines] = useState<SellLine[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [submitting, startTransition] = useTransition();
@@ -71,6 +73,7 @@ export function SellPageClient() {
       .then((order) => {
         setBridge(order);
         setCustomerName(order.customerName ?? "");
+        setCustomerContact(order.customerContact ?? "");
         setLines(
           order.items.map((it) => {
             const snap =
@@ -170,6 +173,7 @@ export function SellPageClient() {
       const payload = {
         orderId: bridge?.id ?? null,
         customerName: customerName.trim() || null,
+        customerContact: customerContact.trim() || null,
         items: lines.map((l) => ({
           perfumeId: l.perfumeId,
           perfumeSnapshot: l.perfumeId === null ? l.snapshot : undefined,
@@ -233,13 +237,23 @@ export function SellPageClient() {
         ) : null}
 
         <Card padding={3}>
-          <Input
-            label="Nom du client"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            placeholder="Anonyme si vide"
-            autoComplete="off"
-          />
+          <Stack gap={3}>
+            <Input
+              label="Nom du client"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              placeholder="Anonyme si vide"
+              autoComplete="off"
+            />
+            <Input
+              label="Contact (optionnel)"
+              value={customerContact}
+              onChange={(e) => setCustomerContact(e.target.value)}
+              placeholder="Téléphone, Snapchat, Instagram…"
+              autoComplete="off"
+              hint="Numéro ou pseudo, libre."
+            />
+          </Stack>
         </Card>
 
         {bridgeLoading ? (

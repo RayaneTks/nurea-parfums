@@ -8,6 +8,7 @@ function dec(v: Prisma.Decimal | null | undefined): Prisma.Decimal {
 type OrderWithItems = {
   id: string;
   customerName: string | null;
+  customerContact?: string | null;
   orderedAt: Date;
   deliveryAt: Date | null;
   status: "PENDING" | "READY" | "DELIVERED" | "CANCELLED";
@@ -47,6 +48,7 @@ export function serializeOrder(order: OrderWithItems) {
   return {
     id: order.id,
     customerName: order.customerName,
+    customerContact: order.customerContact ?? null,
     orderedAt: order.orderedAt.toISOString(),
     deliveryAt: order.deliveryAt ? order.deliveryAt.toISOString() : null,
     status: order.status,

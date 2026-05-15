@@ -42,6 +42,7 @@ type OrderItemInput = {
 
 type CreateOrderBody = {
   customerName?: string | null;
+  customerContact?: string | null;
   deliveryAt?: string | null;
   status?: OrderStatus;
   notes?: string | null;
@@ -238,9 +239,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Date de livraison invalide." }, { status: 400 });
     }
 
+    const customerContact = body.customerContact?.trim() || null;
+
     const order = await prisma.order.create({
       data: {
         customerName,
+        customerContact,
         deliveryAt,
         status,
         notes: body.notes?.trim() || null,

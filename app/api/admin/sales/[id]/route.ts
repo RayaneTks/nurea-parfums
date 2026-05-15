@@ -46,6 +46,7 @@ type PatchSaleItemBody = {
 type PatchSaleBody = {
   customerId?: string | null;
   customerName?: string | null;
+  customerContact?: string | null;
   notes?: string | null;
   remainingDue?: number | string | null;
   batchId?: string | null;
@@ -74,8 +75,9 @@ export async function PATCH(
     const hasItems = Array.isArray(body.items) && body.items.length > 0;
     const hasNotes = "notes" in body;
     const hasCustomerName = "customerName" in body;
+    const hasCustomerContact = "customerContact" in body;
     const hasCustomerId = "customerId" in body;
-    const hasCustomer = hasCustomerName || hasCustomerId;
+    const hasCustomer = hasCustomerName || hasCustomerId || hasCustomerContact;
     const hasRemainingDue = "remainingDue" in body;
     const hasBatch = "batchId" in body;
     if (!hasItems && !hasNotes && !hasCustomer && !hasRemainingDue && !hasBatch) {
@@ -203,6 +205,9 @@ export async function PATCH(
         }
         if (hasCustomerName) {
           saleData.customerName = body.customerName?.trim() || null;
+        }
+        if (hasCustomerContact) {
+          saleData.customerContact = body.customerContact?.trim() || null;
         }
         if (hasRemainingDue) {
           saleData.remainingDue = new Prisma.Decimal(remainingDueN);

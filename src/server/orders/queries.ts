@@ -6,6 +6,7 @@ export type OrderListRow = {
   id: string;
   customerId: string | null;
   customerName: string;
+  customerContact: string | null;
   orderedAt: string;
   deliveryAt: string | null;
   status: OrderStatus;
@@ -94,6 +95,7 @@ export async function listOrders(filter: OrdersFilter = "all"): Promise<OrdersLi
       id: true,
       customerId: true,
       customerName: true,
+      customerContact: true,
       orderedAt: true,
       deliveryAt: true,
       status: true,
@@ -113,6 +115,7 @@ export async function listOrders(filter: OrdersFilter = "all"): Promise<OrdersLi
       id: o.id,
       customerId: o.customerId,
       customerName: o.customer?.fullName ?? o.customerName ?? "Anonyme",
+      customerContact: o.customerContact ?? null,
       orderedAt: o.orderedAt.toISOString(),
       deliveryAt: o.deliveryAt?.toISOString() ?? null,
       status: o.status,
@@ -190,6 +193,7 @@ export async function getOrderForDetail(orderId: string): Promise<OrderDetailRow
       id: true,
       customerId: true,
       customerName: true,
+      customerContact: true,
       orderedAt: true,
       deliveryAt: true,
       status: true,
@@ -227,6 +231,7 @@ export async function getOrderForDetail(orderId: string): Promise<OrderDetailRow
     id: o.id,
     customerId: o.customerId,
     customerName: o.customer?.fullName ?? o.customerName ?? "Anonyme",
+    customerContact: o.customerContact ?? null,
     orderedAt: o.orderedAt.toISOString(),
     deliveryAt: o.deliveryAt?.toISOString() ?? null,
     status: o.status,

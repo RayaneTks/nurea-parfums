@@ -43,6 +43,7 @@ type OrderItemInput = {
 
 type UpdateOrderBody = {
   customerName?: string | null;
+  customerContact?: string | null;
   deliveryAt?: string | null;
   status?: OrderStatus;
   notes?: string | null;
@@ -120,6 +121,10 @@ export async function PATCH(
 
     if ("customerName" in body) {
       data.customerName = body.customerName?.trim() || null;
+    }
+
+    if ("customerContact" in body) {
+      data.customerContact = body.customerContact?.trim() || null;
     }
 
     if ("notes" in body) {

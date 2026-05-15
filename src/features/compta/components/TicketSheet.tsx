@@ -53,6 +53,7 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
     id: "",
     customerId: null,
     customerName: "",
+    customerContact: null,
     soldAt: new Date().toISOString(),
     totalRevenue: "0",
     totalCost: "0",
@@ -72,6 +73,7 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
       ticket.reset({
         customerId: sale.customerId,
         customerName: sale.customerName ?? "",
+        customerContact: sale.customerContact ?? "",
         notes: sale.notes ?? "",
         remainingDue: sale.remainingDue ?? "0",
         lines: sale.items.map((it) => ({
@@ -144,6 +146,9 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
       }
       if (ticket.draft.customerName !== (sale.customerName ?? "")) {
         payload.customerName = ticket.draft.customerName;
+      }
+      if (ticket.draft.customerContact !== (sale.customerContact ?? "")) {
+        payload.customerContact = ticket.draft.customerContact;
       }
       if (ticket.draft.remainingDue !== (sale.remainingDue ?? "0")) {
         payload.remainingDue = ticket.draft.remainingDue.replace(",", ".");
@@ -228,7 +233,7 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
           <Stack gap={3}>
             <TicketHeader
               customerName={ticket.draft.customerName}
-              customerId={ticket.draft.customerId}
+              customerContact={ticket.draft.customerContact}
               soldAt={sale.soldAt}
               orderId={sale.orderId}
               mode={ticket.mode}
@@ -238,6 +243,7 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
                   await saveCustomerName(next);
                 }
               }}
+              onCustomerContactChange={ticket.setCustomerContact}
             />
             <TicketTotals sale={sale} />
             <TicketBatchPicker

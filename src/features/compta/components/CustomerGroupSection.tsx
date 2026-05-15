@@ -17,7 +17,7 @@ type CustomerGroupSectionProps = {
 
 export function CustomerGroupSection({
   group,
-  defaultOpen = true,
+  defaultOpen = false,
   onOpenSale,
 }: CustomerGroupSectionProps) {
   const [open, setOpen] = useState(defaultOpen);

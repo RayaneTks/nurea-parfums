@@ -34,6 +34,7 @@ type SaleLineInputBody = {
 type CreateSaleBody = {
   orderId?: string | null;
   customerName?: string | null;
+  customerContact?: string | null;
   soldAt?: string | null;
   notes?: string | null;
   remainingDue?: number | string | null;
@@ -251,6 +252,7 @@ export async function POST(request: Request) {
 
     const customerName =
       body.customerName?.trim() || orderCustomerName || null;
+    const customerContact = body.customerContact?.trim() || null;
 
     const remainingDueRaw = body.remainingDue;
     const remainingDueN =
@@ -275,6 +277,7 @@ export async function POST(request: Request) {
         data: {
           orderId: linkedOrderId,
           customerName,
+          customerContact,
           soldAt,
           notes: body.notes?.trim() || null,
           totalRevenue: totals.totalRevenue,

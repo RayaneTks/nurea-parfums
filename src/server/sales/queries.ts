@@ -4,6 +4,7 @@ import Decimal from "decimal.js-light";
 export type SaleRowLite = {
   id: string;
   customerName: string | null;
+  customerContact: string | null;
   customerId: string | null;
   soldAt: string;
   totalRevenue: string;
@@ -144,6 +145,7 @@ export async function listSalesGroupedByCustomer(params: {
       id: true,
       customerId: true,
       customerName: true,
+      customerContact: true,
       soldAt: true,
       totalRevenue: true,
       totalCost: true,
@@ -169,6 +171,7 @@ export async function listSalesGroupedByCustomer(params: {
     const row: SaleRowLite = {
       id: s.id,
       customerName: resolvedName,
+      customerContact: s.customerContact ?? null,
       customerId: s.customerId,
       soldAt: s.soldAt.toISOString(),
       totalRevenue: s.totalRevenue.toString(),
@@ -271,6 +274,7 @@ export async function getSaleById(saleId: string): Promise<SaleDetailRow | null>
       id: true,
       customerId: true,
       customerName: true,
+      customerContact: true,
       soldAt: true,
       totalRevenue: true,
       totalCost: true,
@@ -330,6 +334,7 @@ export async function getSaleById(saleId: string): Promise<SaleDetailRow | null>
     id: sale.id,
     customerId: sale.customerId,
     customerName: sale.customer?.fullName ?? sale.customerName ?? "Anonyme",
+    customerContact: sale.customerContact ?? null,
     soldAt: sale.soldAt.toISOString(),
     totalRevenue: sale.totalRevenue.toString(),
     totalCost: sale.totalCost.toString(),
