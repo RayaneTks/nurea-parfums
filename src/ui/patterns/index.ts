@@ -4,3 +4,4 @@ export { Money } from "./Money";
 export { DateLabel } from "./DateLabel";
 export { RelativeTime } from "./RelativeTime";
 export { InlineNameEditor } from "./InlineNameEditor";
+export { ImagePreview } from "./ImagePreview";
