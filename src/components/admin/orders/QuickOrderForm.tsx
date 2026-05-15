@@ -4,13 +4,17 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState, useTransition } from "react";
-import { CheckCircle2, Minus, PlusCircle, Trash2 } from "lucide-react";
+import { CheckCircle2, PlusCircle, Trash2 } from "lucide-react";
 import { CustomerCombobox, type SelectedCustomer } from "../customers/CustomerCombobox";
-import { AdminInput } from "../ui/AdminInput";
-import { AdminButton } from "../ui/AdminButton";
-import { AdminToast, type ToastType } from "../ui/AdminToast";
-import { StickyAction } from "../shell/StickyAction";
-import { SectionCard } from "../ui/SectionCard";
+import { Card } from "@/ui/primitives/Card";
+import { Input } from "@/ui/primitives/Input";
+import { Button } from "@/ui/primitives/Button";
+import { Stack, HStack } from "@/ui/primitives/Stack";
+import { Toast, type ToastType } from "@/ui/primitives/Toast";
+import { StickyAction } from "@/ui/primitives/StickyAction";
+import { SegmentedControl } from "@/ui/primitives/SegmentedControl";
+import { Stepper } from "@/ui/primitives/Stepper";
+import { Money } from "@/ui/patterns/Money";
 import { createOrderAction } from "@/server/orders/actions";
 import type { CreateOrderInput, OrderItemInput } from "@/schemas/order";
 import type { PickerResult } from "@/features/sell";
@@ -32,7 +36,11 @@ type LineState = {
   exchangeRate: string;
 };
 
-const VOLUMES = [30, 50, 100] as const;
+const VOLUME_OPTIONS = [
+  { value: "30", label: "30 ml" },
+  { value: "50", label: "50 ml" },
+  { value: "100", label: "100 ml" },
+] as const;
 
 function toNum(v: string | number): number {
   const n = Number(String(v).replace(",", ".").trim());
@@ -71,7 +79,7 @@ export function QuickOrderForm() {
   const [line, setLine] = useState<LineState | null>(null);
   const [depositOn, setDepositOn] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
-  const [exchangeRateDefault, setExchangeRateDefault] = useState("277");
+  const [exchangeRateDefault] = useState("277");
 
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
 
@@ -192,192 +200,202 @@ export function QuickOrderForm() {
 
   return (
     <>
-      <SectionCard>
-        <h2 className="mb-3 text-sm font-semibold text-neutral-900">Client</h2>
-        <CustomerCombobox
-          value={customer}
-          onChange={(c) => {
-            setCustomer(c);
-            if (c) setCustomerName(c.fullName);
-          }}
-          placeholder="Choisir ou créer un client…"
-        />
-        {customer === null ? (
-          <div className="mt-2">
-            <AdminInput
-              label="Ou nom seul (sans fiche)"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="Prénom Nom"
-              autoComplete="off"
-            />
-          </div>
-        ) : null}
-      </SectionCard>
+      <Stack gap={3}>
+        <Card padding={3}>
+          <Stack gap={3}>
+            <div>
+              <label className="mb-1.5 block text-[13px] font-medium text-[var(--admin-text-muted)]">
+                Client
+              </label>
+              <CustomerCombobox
+                value={customer}
+                onChange={(c) => {
+                  setCustomer(c);
+                  if (c) setCustomerName(c.fullName);
+                }}
+                placeholder="Choisir ou créer un client…"
+              />
+            </div>
+            {customer === null ? (
+              <Input
+                label="Ou nom seul (sans fiche)"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Prénom Nom"
+                autoComplete="off"
+              />
+            ) : null}
+          </Stack>
+        </Card>
 
-      <SectionCard>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-neutral-900">Parfum</h2>
-          {line ? (
-            <button
+        <Card padding={3}>
+          <HStack justify="between" align="center" className="mb-3">
+            <h2 className="text-[13px] font-semibold text-[var(--admin-text)]">Parfum</h2>
+            {line ? (
+              <button
+                type="button"
+                onClick={() => setLine(null)}
+                className="inline-flex items-center gap-1 text-[12px] text-[var(--admin-danger)] tap-scale"
+                aria-label="Retirer le parfum"
+              >
+                <Trash2 size={12} /> Retirer
+              </button>
+            ) : null}
+          </HStack>
+
+          {!line ? (
+            <Button
               type="button"
-              onClick={() => setLine(null)}
-              className="inline-flex items-center gap-1 text-xs text-red-600"
-              aria-label="Retirer le parfum"
+              variant="secondary"
+              size="md"
+              fullWidth
+              leadingIcon={<PlusCircle size={16} />}
+              onClick={() => setPickerOpen(true)}
             >
-              <Trash2 size={12} /> Retirer
-            </button>
-          ) : null}
-        </div>
-
-        {!line ? (
-          <AdminButton
-            type="button"
-            variant="outline"
-            onClick={() => setPickerOpen(true)}
-            className="w-full"
-          >
-            <PlusCircle size={16} /> Choisir un parfum
-          </AdminButton>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-2.5">
-              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
-                {line.snapshot.image ? (
-                  <Image
-                    src={line.snapshot.image}
-                    alt=""
-                    fill
-                    sizes="48px"
-                    className="object-cover"
-                  />
-                ) : null}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">
-                  {line.snapshot.name}
-                  {line.perfumeId === null ? (
-                    <span className="ml-2 inline-flex items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em] text-amber-700">
-                      Libre
-                    </span>
+              Choisir un parfum
+            </Button>
+          ) : (
+            <Stack gap={3}>
+              <div
+                className="flex items-center gap-3 rounded-[12px] p-2.5"
+                style={{
+                  background: "var(--admin-surface-alt)",
+                  border: "1px solid var(--admin-border)",
+                }}
+              >
+                <div
+                  className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[10px]"
+                  style={{ background: "var(--admin-surface-muted)" }}
+                >
+                  {line.snapshot.image ? (
+                    <Image
+                      src={line.snapshot.image}
+                      alt=""
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                    />
                   ) : null}
-                </p>
-                <p className="truncate text-xs text-neutral-500">
-                  {line.snapshot.brandName}
-                </p>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[14px] font-medium text-[var(--admin-text)]">
+                    {line.snapshot.name}
+                    {line.perfumeId === null ? (
+                      <span
+                        className="ml-2 inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.04em]"
+                        style={{
+                          background: "var(--admin-accent-bg)",
+                          color: "var(--admin-accent)",
+                        }}
+                      >
+                        Saisie libre
+                      </span>
+                    ) : null}
+                  </p>
+                  <p className="truncate text-[12px] text-[var(--admin-text-subtle)]">
+                    {line.snapshot.brandName}
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <span className="w-20 text-xs font-medium text-neutral-700">Volume</span>
-              <div className="flex gap-1.5">
-                {VOLUMES.map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => void onChangeVolume(v)}
-                    className={
-                      line.volumeMl === v
-                        ? "rounded-lg border border-nurea-bordeaux bg-nurea-bordeaux/10 px-3 py-1.5 text-xs font-semibold text-nurea-bordeaux"
-                        : "rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-700"
-                    }
-                  >
-                    {v} ml
-                  </button>
-                ))}
+              <div>
+                <label className="mb-1.5 block text-[13px] font-medium text-[var(--admin-text-muted)]">
+                  Volume
+                </label>
+                <SegmentedControl
+                  options={VOLUME_OPTIONS}
+                  value={String(line.volumeMl) as "30" | "50" | "100"}
+                  onChange={(v) => void onChangeVolume(Number(v) as 30 | 50 | 100)}
+                  ariaLabel="Volume en ml"
+                />
               </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <span className="w-20 text-xs font-medium text-neutral-700">Quantité</span>
-              <div className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-white">
-                <button
-                  type="button"
-                  onClick={() => setLine({ ...line, quantity: Math.max(1, line.quantity - 1) })}
-                  className="inline-flex h-9 w-9 items-center justify-center text-neutral-600"
-                  aria-label="Diminuer"
-                >
-                  <Minus size={14} />
-                </button>
-                <span className="min-w-[2ch] text-center text-sm font-medium tabular-nums">
-                  {line.quantity}
+              <HStack justify="between" align="center">
+                <span className="text-[13px] font-medium text-[var(--admin-text-muted)]">
+                  Quantité
                 </span>
-                <button
-                  type="button"
-                  onClick={() => setLine({ ...line, quantity: line.quantity + 1 })}
-                  className="inline-flex h-9 w-9 items-center justify-center text-neutral-600"
-                  aria-label="Augmenter"
-                >
-                  <PlusCircle size={14} />
-                </button>
+                <Stepper
+                  value={line.quantity}
+                  onChange={(q) => setLine({ ...line, quantity: q })}
+                  min={1}
+                  ariaLabel="Quantité"
+                />
+              </HStack>
+
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  label="Prix unitaire €"
+                  inputMode="decimal"
+                  variant="elevated"
+                  value={line.unitPrice}
+                  onChange={(e) => setLine({ ...line, unitPrice: e.target.value })}
+                  placeholder="120"
+                />
+                <Input
+                  label="Coût DZD (opt.)"
+                  inputMode="decimal"
+                  variant="elevated"
+                  value={line.unitCostDzd}
+                  onChange={(e) => setLine({ ...line, unitCostDzd: e.target.value })}
+                  placeholder="36000"
+                />
               </div>
-            </div>
+            </Stack>
+          )}
+        </Card>
 
-            <div className="grid grid-cols-2 gap-2">
-              <AdminInput
-                label="Prix unitaire €"
-                inputMode="decimal"
-                value={line.unitPrice}
-                onChange={(e) => setLine({ ...line, unitPrice: e.target.value })}
-                placeholder="120"
-              />
-              <AdminInput
-                label="Coût DZD (opt.)"
-                inputMode="decimal"
-                value={line.unitCostDzd}
-                onChange={(e) => setLine({ ...line, unitCostDzd: e.target.value })}
-                placeholder="36000"
-              />
-            </div>
-          </div>
-        )}
-      </SectionCard>
-
-      <SectionCard>
-        <label className="flex items-start gap-3">
-          <input
-            type="checkbox"
-            checked={depositOn}
-            onChange={(e) => setDepositOn(e.target.checked)}
-            className="mt-1 h-4 w-4 accent-nurea-bordeaux"
-          />
-          <span className="flex-1">
-            <span className="block text-sm font-medium text-neutral-900">Acompte encaissé</span>
-            <span className="block text-xs text-neutral-500">
-              Active la transition automatique vers « À traiter ».
-            </span>
-          </span>
-        </label>
-        {depositOn ? (
-          <div className="mt-3">
-            <AdminInput
-              label="Montant acompte €"
-              inputMode="decimal"
-              value={depositAmount}
-              onChange={(e) => setDepositAmount(e.target.value)}
-              placeholder="50"
+        <Card padding={3}>
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={depositOn}
+              onChange={(e) => setDepositOn(e.target.checked)}
+              className="mt-1 h-4 w-4"
+              style={{ accentColor: "var(--admin-accent)" }}
             />
-          </div>
-        ) : null}
-      </SectionCard>
+            <span className="flex-1">
+              <span className="block text-[14px] font-medium text-[var(--admin-text)]">
+                Acompte encaissé
+              </span>
+              <span className="block text-[12px] text-[var(--admin-text-subtle)]">
+                Active la transition automatique vers « À traiter ».
+              </span>
+            </span>
+          </label>
+          {depositOn ? (
+            <div className="mt-3">
+              <Input
+                label="Montant acompte €"
+                inputMode="decimal"
+                variant="elevated"
+                value={depositAmount}
+                onChange={(e) => setDepositAmount(e.target.value)}
+                placeholder="50"
+              />
+            </div>
+          ) : null}
+        </Card>
 
-      <SectionCard>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-neutral-500">Total commande</span>
-          <span className="text-lg font-bold tabular-nums">{total.toFixed(2)} €</span>
-        </div>
-      </SectionCard>
+        <Card padding={3}>
+          <HStack justify="between" align="center">
+            <span className="text-[12px] text-[var(--admin-text-subtle)]">Total commande</span>
+            <Money value={total} bold className="text-[18px]" />
+          </HStack>
+        </Card>
+      </Stack>
 
       <StickyAction>
-        <AdminButton
+        <Button
           type="button"
           variant="primary"
+          size="lg"
+          fullWidth
           isLoading={pending}
           onClick={submit}
-          className="w-full"
+          leadingIcon={<CheckCircle2 size={16} />}
         >
-          <CheckCircle2 size={16} /> Créer la commande
-        </AdminButton>
+          Créer la commande
+        </Button>
       </StickyAction>
 
       <PerfumePicker
@@ -388,7 +406,7 @@ export function QuickOrderForm() {
       />
 
       {toast ? (
-        <AdminToast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
+        <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
       ) : null}
     </>
   );

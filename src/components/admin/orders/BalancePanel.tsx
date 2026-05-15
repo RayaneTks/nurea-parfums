@@ -2,11 +2,13 @@
 
 import { useCallback, useState, useTransition } from "react";
 import { CheckCircle2, Clock, CreditCard, MinusCircle, Plus, RotateCcw } from "lucide-react";
-import { SectionCard } from "../ui/SectionCard";
-import { AdminButton } from "../ui/AdminButton";
-import { AdminInput } from "../ui/AdminInput";
-import { AdminToast, type ToastType } from "../ui/AdminToast";
-import { BottomSheet } from "../shell/BottomSheet";
+import { Card } from "@/ui/primitives/Card";
+import { Button } from "@/ui/primitives/Button";
+import { Input } from "@/ui/primitives/Input";
+import { Stack, HStack } from "@/ui/primitives/Stack";
+import { Toast, type ToastType } from "@/ui/primitives/Toast";
+import { Sheet } from "@/ui/primitives/Sheet";
+import { Money } from "@/ui/patterns/Money";
 import { recordPaymentAction, voidPaymentAction } from "@/server/orders/paymentActions";
 import type { OrderBalance, PaymentRow } from "@/server/orders/payments";
 import type { PaymentTypeValue } from "@/schemas/payment";
@@ -23,10 +25,24 @@ const TYPE_LABEL: Record<PaymentTypeValue, string> = {
   REFUND: "Remboursement",
 };
 
-const TYPE_TONE: Record<PaymentTypeValue, string> = {
-  DEPOSIT: "bg-amber-50 text-amber-800 border-amber-200",
-  BALANCE: "bg-emerald-50 text-emerald-800 border-emerald-200",
-  REFUND: "bg-red-50 text-red-800 border-red-200",
+type TypeToneStyle = { bg: string; fg: string; border: string };
+
+const TYPE_TONE: Record<PaymentTypeValue, TypeToneStyle> = {
+  DEPOSIT: {
+    bg: "color-mix(in srgb, var(--admin-warning, #B07A2A) 12%, transparent)",
+    fg: "var(--admin-warning, #8A5A1A)",
+    border: "color-mix(in srgb, var(--admin-warning, #B07A2A) 35%, transparent)",
+  },
+  BALANCE: {
+    bg: "var(--admin-success-bg)",
+    fg: "var(--admin-success)",
+    border: "color-mix(in srgb, var(--admin-success) 35%, transparent)",
+  },
+  REFUND: {
+    bg: "var(--admin-danger-bg)",
+    fg: "var(--admin-danger)",
+    border: "color-mix(in srgb, var(--admin-danger) 35%, transparent)",
+  },
 };
 
 export function BalancePanel({ orderId, initialBalance, initialPayments }: BalancePanelProps) {
@@ -104,112 +120,149 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
   const dueNum = Number(balance.due);
   const totalPaidNum = Number(balance.totalPaid);
   const totalNum = Number(balance.total);
+  const hasDue = dueNum > 0.005;
 
   return (
     <>
-      <SectionCard>
-        <h2 className="mb-3 text-sm font-semibold text-neutral-900">Acomptes & solde</h2>
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-lg bg-neutral-50 p-2">
-            <p className="text-[10px] uppercase tracking-wider text-neutral-500">Total</p>
-            <p className="mt-0.5 text-sm font-semibold tabular-nums">{totalNum.toFixed(2)} €</p>
-          </div>
-          <div className="rounded-lg bg-emerald-50 p-2">
-            <p className="text-[10px] uppercase tracking-wider text-emerald-700">Payé</p>
-            <p className="mt-0.5 text-sm font-semibold tabular-nums text-emerald-800">
-              {totalPaidNum.toFixed(2)} €
+      <Card padding={3}>
+        <h2 className="mb-3 text-[13px] font-semibold text-[var(--admin-text)]">
+          Acomptes & solde
+        </h2>
+
+        <div className="grid grid-cols-3 gap-2">
+          <Card padding={2} tone="muted" elevated={false} borderless>
+            <p className="text-[10px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+              Total
+            </p>
+            <p className="mt-0.5">
+              <Money value={totalNum} bold className="text-[14px]" />
+            </p>
+          </Card>
+          <div
+            className="rounded-[14px] p-2"
+            style={{ background: "var(--admin-success-bg)" }}
+          >
+            <p
+              className="text-[10px] font-medium uppercase tracking-[0.04em]"
+              style={{ color: "var(--admin-success)" }}
+            >
+              Payé
+            </p>
+            <p className="mt-0.5">
+              <Money value={totalPaidNum} bold tone="success" className="text-[14px]" />
             </p>
           </div>
           <div
-            className={
-              dueNum > 0.005
-                ? "rounded-lg bg-amber-50 p-2"
-                : "rounded-lg bg-neutral-50 p-2"
-            }
+            className="rounded-[14px] p-2"
+            style={{
+              background: hasDue
+                ? "var(--admin-danger-bg)"
+                : "var(--admin-surface-muted)",
+            }}
           >
             <p
-              className={
-                dueNum > 0.005
-                  ? "text-[10px] uppercase tracking-wider text-amber-700"
-                  : "text-[10px] uppercase tracking-wider text-neutral-500"
-              }
+              className="text-[10px] font-medium uppercase tracking-[0.04em]"
+              style={{
+                color: hasDue ? "var(--admin-danger)" : "var(--admin-text-subtle)",
+              }}
             >
               Dû
             </p>
-            <p
-              className={
-                dueNum > 0.005
-                  ? "mt-0.5 text-sm font-semibold tabular-nums text-amber-800"
-                  : "mt-0.5 text-sm font-semibold tabular-nums"
-              }
-            >
-              {dueNum.toFixed(2)} €
+            <p className="mt-0.5">
+              <Money
+                value={dueNum}
+                bold
+                tone={hasDue ? "danger" : "muted"}
+                className="text-[14px]"
+              />
             </p>
           </div>
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <AdminButton type="button" variant="primary" size="sm" onClick={() => openSheet("DEPOSIT")}>
-            <Plus size={14} /> Acompte
-          </AdminButton>
-          <AdminButton type="button" variant="outline" size="sm" onClick={() => openSheet("BALANCE")}>
-            <CreditCard size={14} /> Solde
-          </AdminButton>
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            leadingIcon={<Plus size={14} />}
+            onClick={() => openSheet("DEPOSIT")}
+          >
+            Acompte
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            leadingIcon={<CreditCard size={14} />}
+            onClick={() => openSheet("BALANCE")}
+          >
+            Solde
+          </Button>
         </div>
 
         {payments.length > 0 ? (
           <div className="mt-4">
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+            <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--admin-text-muted)]">
               Historique
             </h3>
-            <ul className="space-y-1.5">
-              {payments.map((p) => (
-                <li
-                  key={p.id}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
-                >
-                  <span className="inline-flex min-w-0 items-center gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${TYPE_TONE[p.type]}`}
-                    >
-                      {p.type === "DEPOSIT" ? <Clock size={10} /> : null}
-                      {p.type === "BALANCE" ? <CheckCircle2 size={10} /> : null}
-                      {p.type === "REFUND" ? <MinusCircle size={10} /> : null}
-                      {TYPE_LABEL[p.type]}
-                    </span>
-                    <span className="truncate text-neutral-600">
-                      {new Date(p.paidAt).toLocaleDateString("fr-FR", {
-                        day: "2-digit",
-                        month: "short",
-                      })}
-                      {p.method ? ` · ${p.method}` : ""}
-                    </span>
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <span className="text-sm font-semibold tabular-nums">
-                      {Number(p.amount).toFixed(2)} €
-                    </span>
-                    {p.type !== "REFUND" ? (
-                      <button
-                        type="button"
-                        onClick={() => voidPayment(p.id)}
-                        disabled={pending}
-                        className="rounded p-1 text-neutral-400 hover:text-red-600 disabled:opacity-50"
-                        aria-label="Annuler ce paiement (crée un REFUND)"
-                        title="Annuler (crée REFUND)"
+            <Stack gap={2} as="ul">
+              {payments.map((p) => {
+                const tone = TYPE_TONE[p.type];
+                return (
+                  <li
+                    key={p.id}
+                    className="flex items-center justify-between gap-2 rounded-[12px] px-3 py-2"
+                    style={{
+                      background: "var(--admin-surface-alt)",
+                      border: "1px solid var(--admin-border)",
+                    }}
+                  >
+                    <span className="inline-flex min-w-0 items-center gap-2">
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                        style={{
+                          background: tone.bg,
+                          color: tone.fg,
+                          border: `1px solid ${tone.border}`,
+                        }}
                       >
-                        <RotateCcw size={12} />
-                      </button>
-                    ) : null}
-                  </span>
-                </li>
-              ))}
-            </ul>
+                        {p.type === "DEPOSIT" ? <Clock size={10} /> : null}
+                        {p.type === "BALANCE" ? <CheckCircle2 size={10} /> : null}
+                        {p.type === "REFUND" ? <MinusCircle size={10} /> : null}
+                        {TYPE_LABEL[p.type]}
+                      </span>
+                      <span className="truncate text-[12px] text-[var(--admin-text-muted)]">
+                        {new Date(p.paidAt).toLocaleDateString("fr-FR", {
+                          day: "2-digit",
+                          month: "short",
+                        })}
+                        {p.method ? ` · ${p.method}` : ""}
+                      </span>
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Money value={p.amount} bold className="text-[14px]" />
+                      {p.type !== "REFUND" ? (
+                        <button
+                          type="button"
+                          onClick={() => voidPayment(p.id)}
+                          disabled={pending}
+                          className="rounded-full p-1.5 text-[var(--admin-text-subtle)] tap-scale hover:bg-[var(--admin-danger-bg)] hover:text-[var(--admin-danger)] disabled:opacity-50"
+                          aria-label="Annuler ce paiement (crée un REFUND)"
+                          title="Annuler (crée REFUND)"
+                        >
+                          <RotateCcw size={12} />
+                        </button>
+                      ) : null}
+                    </span>
+                  </li>
+                );
+              })}
+            </Stack>
           </div>
         ) : null}
-      </SectionCard>
+      </Card>
 
-      <BottomSheet
+      <Sheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         title={sheetType === "DEPOSIT" ? "Enregistrer un acompte" : "Enregistrer le solde"}
@@ -218,42 +271,48 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
             ? "Premier acompte → passe automatiquement en « à traiter »."
             : `Reste dû : ${dueNum.toFixed(2)} €.`
         }
+        footer={
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            fullWidth
+            isLoading={pending}
+            onClick={submit}
+          >
+            Enregistrer
+          </Button>
+        }
       >
-        <div className="space-y-3">
-          <AdminInput
+        <Stack gap={3}>
+          <Input
             label="Montant €"
             inputMode="decimal"
+            variant="elevated"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="50"
             autoFocus
           />
-          <AdminInput
+          <Input
             label="Méthode (opt.)"
+            variant="elevated"
             value={method}
             onChange={(e) => setMethod(e.target.value)}
             placeholder="cash, virement, snap-pay…"
           />
-          <AdminInput
+          <Input
             label="Note (opt.)"
+            variant="elevated"
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder=""
           />
-          <AdminButton
-            type="button"
-            variant="primary"
-            isLoading={pending}
-            onClick={submit}
-            className="w-full"
-          >
-            Enregistrer
-          </AdminButton>
-        </div>
-      </BottomSheet>
+        </Stack>
+      </Sheet>
 
       {toast ? (
-        <AdminToast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
+        <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
       ) : null}
     </>
   );
