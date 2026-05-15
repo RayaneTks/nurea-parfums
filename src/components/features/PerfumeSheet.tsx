@@ -155,13 +155,8 @@ function SheetContent({ perfume, onClose }: PerfumeSheetProps) {
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        {/* Drag handle */}
-        <div className="flex w-full justify-center pb-1 pt-3 shrink-0 select-none" aria-hidden="true">
-          <div className="h-1 w-12 rounded-full bg-white/20" />
-        </div>
-
-        {/* Image */}
-        <div className="relative shrink-0 w-full overflow-hidden" style={{ height: "48dvh" }}>
+        {/* Image — démarre immédiatement, drag handle en overlay */}
+        <div className="relative shrink-0 w-full overflow-hidden" style={{ height: "52dvh" }}>
           <Image
             src={imageSrc}
             alt={`${perfume.brand} — ${perfume.name}`}
@@ -172,6 +167,11 @@ function SheetContent({ perfume, onClose }: PerfumeSheetProps) {
             blurDataURL={blurUrl}
             priority
           />
+
+          {/* Drag handle — overlay sur l'image, pas de bande de fond visible */}
+          <div className="absolute inset-x-0 top-3 z-20 flex justify-center select-none pointer-events-none" aria-hidden="true">
+            <div className="h-1 w-12 rounded-full bg-white/40 shadow-sm" />
+          </div>
 
           {/* Tags */}
           {perfume.tags && (
