@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Trash2 } from "lucide-react";
 import { Sheet } from "@/ui/primitives/Sheet";
 import { Button } from "@/ui/primitives/Button";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
 import { Skeleton } from "@/ui/primitives/Skeleton";
+import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
 import { TicketHeader } from "./TicketHeader";
 import { TicketTotals } from "./TicketTotals";
 import { TicketPayment } from "./TicketPayment";
@@ -38,6 +40,7 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     if (!open || !saleId) return;
@@ -181,6 +184,27 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
     }
   }, [sale, ticket, onSaved]);
 
+  const deleteSale = useCallback(async () => {
+    if (!sale) return;
+    const res = await fetch(`/api/admin/sales/${sale.id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const msg =
+        (err && typeof err === "object" && "error" in err && typeof err.error === "string"
+          ? err.error
+          : null) ?? "Suppression échouée.";
+      setToast({ type: "error", message: msg });
+      return;
+    }
+    setConfirmDelete(false);
+    setToast({ type: "success", message: "Vente supprimée." });
+    onSaved();
+    onOpenChange(false);
+  }, [sale, onSaved, onOpenChange]);
+
   const tryClose = useCallback(() => {
     if (ticket.mode === "edit" && ticket.isDirty) {
       const ok = window.confirm("Modifications non enregistrées. Fermer quand même ?");
@@ -192,9 +216,20 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
 
   const footer =
     ticket.mode === "view" ? (
-      <Button variant="primary" size="lg" fullWidth onClick={() => ticket.enterEdit()}>
-        Modifier
-      </Button>
+      <HStack gap={2}>
+        <Button
+          variant="ghost"
+          size="lg"
+          onClick={() => setConfirmDelete(true)}
+          aria-label="Supprimer la vente"
+          leadingIcon={<Trash2 size={16} />}
+        >
+          Supprimer
+        </Button>
+        <Button variant="primary" size="lg" fullWidth onClick={() => ticket.enterEdit()}>
+          Modifier
+        </Button>
+      </HStack>
     ) : (
       <HStack gap={2}>
         <Button variant="ghost" size="lg" fullWidth onClick={() => ticket.exitEdit()}>
@@ -289,6 +324,18 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
       {toast ? (
         <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
       ) : null}
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title="Supprimer cette vente ?"
+        description={
+          sale
+            ? `${sale.customerName ?? "Vente"} · ${sale.itemCount} article${sale.itemCount > 1 ? "s" : ""}`
+            : undefined
+        }
+        confirmLabel="Supprimer"
+        onConfirm={deleteSale}
+      />
     </>
   );
 }
