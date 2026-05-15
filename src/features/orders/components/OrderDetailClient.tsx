@@ -2,10 +2,13 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { Stack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
+import { Button } from "@/ui/primitives/Button";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
+import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
 import { OrderDetailHeader } from "./OrderDetailHeader";
 import { OrderSummaryCard } from "./OrderSummaryCard";
 import { OrderItemsList } from "./OrderItemsList";
@@ -19,9 +22,30 @@ type OrderDetailClientProps = {
 };
 
 export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps) {
+  const router = useRouter();
   const [current, setCurrent] = useState(order);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [_pending, startTransition] = useTransition();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const deleteOrder = async () => {
+    const res = await fetch(`/api/admin/orders/${order.id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const msg =
+        (err && typeof err === "object" && "error" in err && typeof err.error === "string"
+          ? err.error
+          : null) ?? "Suppression échouée.";
+      setToast({ type: "error", message: msg });
+      return;
+    }
+    setConfirmDelete(false);
+    router.push("/admin/ordres");
+    router.refresh();
+  };
 
   const handleCustomerNameSave = async (next: string) => {
     const res = await fetch(`/api/admin/orders/${order.id}`, {
@@ -74,11 +98,31 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
         </div>
 
         <OrderActionsBar order={current} />
+
+        {!current.hasSale ? (
+          <Button
+            variant="ghost"
+            size="md"
+            fullWidth
+            leadingIcon={<Trash2 size={14} />}
+            onClick={() => setConfirmDelete(true)}
+          >
+            Supprimer la commande
+          </Button>
+        ) : null}
       </Stack>
 
       {toast ? (
         <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
       ) : null}
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title="Supprimer cette commande ?"
+        description={current.customerName ?? undefined}
+        confirmLabel="Supprimer"
+        onConfirm={deleteOrder}
+      />
     </>
   );
 }
