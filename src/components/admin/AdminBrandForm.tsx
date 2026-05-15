@@ -436,7 +436,7 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
               <div className="h-px bg-neutral-200/70" />
               <ImageUploadField
                 label="Image light (variante)"
-                subtitle="Optionnelle. Si présente, la principale devient le visuel dark."
+                subtitle="Optionnelle. Force la principale en visuel dark."
                 value={imageLight}
                 onChange={setImageLight}
                 onUploadDone={(url) => handleAutoSave({ imageLight: url })}

@@ -190,7 +190,7 @@ export function PerfumePricingPanel({ perfumeId, initial }: PerfumePricingPanelP
                     value={d.exchangeRate}
                     onChange={(e) => updateDraft(v, { exchangeRate: e.target.value })}
                     placeholder="277"
-                    hint="Sert au calcul coût converti. Vide → 277 par défaut."
+                    hint="Convertit le coût DZD. Vide = 277."
                   />
                 </div>
 
