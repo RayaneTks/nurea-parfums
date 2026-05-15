@@ -52,9 +52,24 @@ export type CustomerGroup = {
   sales: SaleRowLite[];
 };
 
+export type BatchGroup = {
+  batchKey: string;
+  batchId: string;
+  batchName: string;
+  batchStatus: "OPEN" | "CLOSED";
+  salesCount: number;
+  totalRevenue: string;
+  totalMargin: string;
+  lastSoldAt: string;
+  sales: SaleRowLite[];
+};
+
 export type Period = "week" | "month" | "all";
 
 export type ComptaListResult = {
+  batchGroups: BatchGroup[];
+  customerGroups: CustomerGroup[];
+  /** @deprecated use customerGroups (retained for back-compat) */
   groups: CustomerGroup[];
   summary: {
     totalRevenue: string;
@@ -93,16 +108,19 @@ function groupCustomerKey(customerId: string | null, customerName: string | null
 }
 
 /**
- * Liste les ventes groupées par client, triées par dernière vente desc dans chaque
- * groupe et par "groupe le plus récent" en outer order.
+ * Liste les ventes groupées en deux sections :
+ *   1) `batchGroups` — ventes appartenant à un lot, groupées par lot (ordre : OPEN d'abord, puis CLOSED, plus récents en tête)
+ *   2) `customerGroups` — ventes sans lot, groupées par client (plus récent en tête)
  *
+ * `period` est conservé pour back-compat (defaut "all" = pas de filtre temporel).
  * `q` filtre par nom client (case-insensitive, substring).
  */
 export async function listSalesGroupedByCustomer(params: {
-  period: Period;
+  period?: Period;
   q?: string;
 }): Promise<ComptaListResult> {
-  const since = periodStart(params.period);
+  const period: Period = params.period ?? "all";
+  const since = periodStart(period);
   const where = {
     ...(since ? { soldAt: { gte: since } } : {}),
     ...(params.q && params.q.trim().length > 0
@@ -133,14 +151,14 @@ export async function listSalesGroupedByCustomer(params: {
       remainingDue: true,
       orderId: true,
       batchId: true,
-      batch: { select: { name: true } },
+      batch: { select: { name: true, status: true } },
       customer: { select: { fullName: true } },
       _count: { select: { items: true } },
     },
   });
 
-  // Group by customer key.
-  const map = new Map<string, CustomerGroup>();
+  const customerMap = new Map<string, CustomerGroup>();
+  const batchMap = new Map<string, BatchGroup>();
   let totalRevenue = new Decimal(0);
   let totalCost = new Decimal(0);
   let totalMargin = new Decimal(0);
@@ -148,7 +166,6 @@ export async function listSalesGroupedByCustomer(params: {
 
   for (const s of sales) {
     const resolvedName = s.customer?.fullName ?? s.customerName ?? "Anonyme";
-    const key = groupCustomerKey(s.customerId, resolvedName);
     const row: SaleRowLite = {
       id: s.id,
       customerName: resolvedName,
@@ -169,7 +186,32 @@ export async function listSalesGroupedByCustomer(params: {
     totalMargin = totalMargin.plus(new Decimal(row.totalMargin));
     totalDebt = totalDebt.plus(new Decimal(row.remainingDue));
 
-    const existing = map.get(key);
+    if (s.batchId && s.batch) {
+      const existing = batchMap.get(s.batchId);
+      if (existing) {
+        existing.sales.push(row);
+        existing.salesCount += 1;
+        existing.totalRevenue = new Decimal(existing.totalRevenue).plus(row.totalRevenue).toFixed(2);
+        existing.totalMargin = new Decimal(existing.totalMargin).plus(row.totalMargin).toFixed(2);
+        if (row.soldAt > existing.lastSoldAt) existing.lastSoldAt = row.soldAt;
+      } else {
+        batchMap.set(s.batchId, {
+          batchKey: s.batchId,
+          batchId: s.batchId,
+          batchName: s.batch.name,
+          batchStatus: s.batch.status,
+          salesCount: 1,
+          totalRevenue: row.totalRevenue,
+          totalMargin: row.totalMargin,
+          lastSoldAt: row.soldAt,
+          sales: [row],
+        });
+      }
+      continue;
+    }
+
+    const key = groupCustomerKey(s.customerId, resolvedName);
+    const existing = customerMap.get(key);
     if (existing) {
       existing.sales.push(row);
       existing.salesCount += 1;
@@ -177,7 +219,7 @@ export async function listSalesGroupedByCustomer(params: {
       existing.totalMargin = new Decimal(existing.totalMargin).plus(row.totalMargin).toFixed(2);
       if (row.soldAt > existing.lastSoldAt) existing.lastSoldAt = row.soldAt;
     } else {
-      map.set(key, {
+      customerMap.set(key, {
         customerKey: key,
         customerId: s.customerId,
         customerName: resolvedName,
@@ -190,7 +232,15 @@ export async function listSalesGroupedByCustomer(params: {
     }
   }
 
-  const groups = [...map.values()].sort((a, b) => (a.lastSoldAt < b.lastSoldAt ? 1 : -1));
+  // OPEN batches first, then CLOSED ; dans chaque sous-groupe, plus récent d'abord
+  const batchGroups = [...batchMap.values()].sort((a, b) => {
+    if (a.batchStatus !== b.batchStatus) return a.batchStatus === "OPEN" ? -1 : 1;
+    return a.lastSoldAt < b.lastSoldAt ? 1 : -1;
+  });
+
+  const customerGroups = [...customerMap.values()].sort((a, b) =>
+    a.lastSoldAt < b.lastSoldAt ? 1 : -1,
+  );
 
   const salesCount = sales.length;
   const marginPct = totalRevenue.greaterThan(0)
@@ -199,7 +249,9 @@ export async function listSalesGroupedByCustomer(params: {
   const avgValue = salesCount > 0 ? totalRevenue.dividedBy(salesCount).toFixed(2) : "0.00";
 
   return {
-    groups,
+    batchGroups,
+    customerGroups,
+    groups: customerGroups,
     summary: {
       totalRevenue: totalRevenue.toFixed(2),
       totalCost: totalCost.toFixed(2),
@@ -256,14 +308,18 @@ export async function getSaleById(saleId: string): Promise<SaleDetailRow | null>
   function toSnap(raw: unknown, fallback: SaleItemSnapshot): SaleItemSnapshot {
     if (raw && typeof raw === "object") {
       const o = raw as Record<string, unknown>;
+      let brandName: string | null = fallback.brandName;
+      if (typeof o.brandName === "string") {
+        brandName = o.brandName;
+      } else if (typeof o.brand === "string") {
+        brandName = o.brand;
+      } else if (o.brand && typeof o.brand === "object") {
+        const b = o.brand as Record<string, unknown>;
+        if (typeof b.name === "string") brandName = b.name;
+      }
       return {
         name: typeof o.name === "string" ? o.name : fallback.name,
-        brandName:
-          typeof o.brandName === "string"
-            ? o.brandName
-            : typeof o.brand === "string"
-              ? o.brand
-              : fallback.brandName,
+        brandName,
         image: typeof o.image === "string" ? o.image : fallback.image ?? null,
       };
     }

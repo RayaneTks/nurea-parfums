@@ -11,10 +11,15 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   trailingSlot?: ReactNode;
   /** Numeric tabular alignment (montants). */
   numeric?: boolean;
+  /**
+   * "default" — fond `--admin-surface` (à utiliser dans une page sur `--admin-bg`).
+   * "elevated" — fond `--admin-surface-alt` (à utiliser dans une Sheet/Card sur `--admin-surface`).
+   */
+  variant?: "default" | "elevated";
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, hint, error, leadingIcon, trailingSlot, numeric, className, id, ...rest },
+  { label, hint, error, leadingIcon, trailingSlot, numeric, variant = "default", className, id, ...rest },
   ref,
 ) {
   const autoId = useId();
@@ -44,7 +49,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           aria-describedby={helpId}
           className={cn(
             "block w-full min-h-[44px] rounded-[12px]",
-            "bg-[var(--admin-surface)] border border-[var(--admin-border-strong)]",
+            variant === "elevated"
+              ? "bg-[var(--admin-surface-alt)] border border-[var(--admin-border-strong)]"
+              : "bg-[var(--admin-surface)] border border-[var(--admin-border-strong)]",
             "px-4 text-[16px] text-[var(--admin-text)] placeholder:text-[var(--admin-text-subtle)]",
             "transition-[border-color,box-shadow] duration-[var(--admin-duration-default)] ease-[var(--admin-easing-default)]",
             "focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
