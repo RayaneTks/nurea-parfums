@@ -5,6 +5,7 @@ export type PerfumePricingRow = {
   volumeMl: number;
   defaultUnitPriceEur: string;
   defaultUnitCostDzd: string | null;
+  defaultExchangeRate: string | null;
 };
 
 export async function listPricingsForPerfume(perfumeId: number): Promise<PerfumePricingRow[]> {
@@ -17,6 +18,7 @@ export async function listPricingsForPerfume(perfumeId: number): Promise<Perfume
     volumeMl: r.volumeMl,
     defaultUnitPriceEur: r.defaultUnitPriceEur.toString(),
     defaultUnitCostDzd: r.defaultUnitCostDzd?.toString() ?? null,
+    defaultExchangeRate: r.defaultExchangeRate?.toString() ?? null,
   }));
 }
 
@@ -33,6 +35,7 @@ export async function lookupPricing(
     volumeMl: r.volumeMl,
     defaultUnitPriceEur: r.defaultUnitPriceEur.toString(),
     defaultUnitCostDzd: r.defaultUnitCostDzd?.toString() ?? null,
+    defaultExchangeRate: r.defaultExchangeRate?.toString() ?? null,
   };
 }
 
@@ -55,6 +58,7 @@ export async function batchLookupPricings(
       volumeMl: r.volumeMl,
       defaultUnitPriceEur: r.defaultUnitPriceEur.toString(),
       defaultUnitCostDzd: r.defaultUnitCostDzd?.toString() ?? null,
+      defaultExchangeRate: r.defaultExchangeRate?.toString() ?? null,
     });
   }
   return map;

@@ -48,10 +48,13 @@ function makeKey(): string {
   return `line-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
-async function fetchPricing(perfumeId: number, volumeMl: number): Promise<{
+type PricingPayload = {
   defaultUnitPriceEur: string;
   defaultUnitCostDzd: string | null;
-} | null> {
+  defaultExchangeRate: string | null;
+};
+
+async function fetchPricing(perfumeId: number, volumeMl: number): Promise<PricingPayload | null> {
   try {
     const r = await fetch(`/api/admin/perfumes/${perfumeId}/pricing?volumeMl=${volumeMl}`, {
       credentials: "include",
@@ -66,7 +69,7 @@ async function fetchPricing(perfumeId: number, volumeMl: number): Promise<{
       typeof (json as { row: unknown }).row === "object" &&
       (json as { row: unknown }).row !== null
     ) {
-      return (json as { row: { defaultUnitPriceEur: string; defaultUnitCostDzd: string | null } }).row;
+      return (json as { row: PricingPayload }).row;
     }
     return null;
   } catch {
@@ -114,7 +117,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
             volumeMl: 100,
             unitPrice: pricing?.defaultUnitPriceEur ?? "",
             unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
-            exchangeRate: DEFAULT_EXCHANGE,
+            exchangeRate: pricing?.defaultExchangeRate ?? DEFAULT_EXCHANGE,
             note: "",
           },
         ],
@@ -151,6 +154,9 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
             ...patch,
             unitPrice: pricing.defaultUnitPriceEur,
             unitCostDzd: pricing.defaultUnitCostDzd ?? "",
+            ...(pricing.defaultExchangeRate
+              ? { exchangeRate: pricing.defaultExchangeRate }
+              : {}),
           };
         }
       }
