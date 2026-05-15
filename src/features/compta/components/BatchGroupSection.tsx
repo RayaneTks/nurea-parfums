@@ -60,7 +60,18 @@ export function BatchGroupSection({
           </div>
           <p className="mt-0.5 text-[12px] text-[var(--admin-text-subtle)] tabular-nums">
             {group.salesCount} vente{group.salesCount > 1 ? "s" : ""} ·{" "}
-            <Money value={group.totalRevenue} compact />
+            <Money value={group.cashedRevenue} compact />
+            {Number(group.outstandingRevenue) > 0 ? (
+              <span
+                className="ml-1.5 inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                style={{
+                  background: "var(--admin-warning-bg)",
+                  color: "var(--admin-warning)",
+                }}
+              >
+                Reste {Number(group.outstandingRevenue).toFixed(0)} €
+              </span>
+            ) : null}
           </p>
         </div>
         <Link

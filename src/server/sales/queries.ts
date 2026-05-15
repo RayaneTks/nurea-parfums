@@ -42,13 +42,19 @@ export type SaleDetailRow = SaleRowLite & {
   }>;
 };
 
+/**
+ * Groupes cash-basis. `cashedRevenue` = somme encaissée du groupe (totalRevenue − remainingDue).
+ * `outstandingRevenue` = reste à encaisser cumulé.
+ * `netMargin` = encaissé − coût d'achat (les coûts sont sunk, peu importe paiement client).
+ */
 export type CustomerGroup = {
-  customerKey: string;            // customerId si présent, sinon "anon:" + customerName, sinon "anon:no-name"
+  customerKey: string;
   customerId: string | null;
   customerName: string;
   salesCount: number;
-  totalRevenue: string;
-  totalMargin: string;
+  cashedRevenue: string;
+  outstandingRevenue: string;
+  netMargin: string;
   lastSoldAt: string;
   sales: SaleRowLite[];
 };
@@ -59,27 +65,36 @@ export type BatchGroup = {
   batchName: string;
   batchStatus: "OPEN" | "CLOSED";
   salesCount: number;
-  totalRevenue: string;
-  totalMargin: string;
+  cashedRevenue: string;
+  outstandingRevenue: string;
+  netMargin: string;
   lastSoldAt: string;
   sales: SaleRowLite[];
 };
 
 export type Period = "week" | "month" | "all";
 
+/**
+ * Summary global cash-basis. Toutes les valeurs sont "concrètes" :
+ *  - cashedRevenue : encaissé réel (ventes facturées moins reste à payer).
+ *  - outstandingRevenue : argent attendu, pas encore reçu. Affiché en badge si > 0.
+ *  - totalCost : coût d'achat (déjà sorti de trésorerie).
+ *  - netMargin : cashedRevenue − totalCost. Argent concret en poche.
+ *  - avgCashedValue : panier moyen basé encaissé.
+ */
 export type ComptaListResult = {
   batchGroups: BatchGroup[];
   customerGroups: CustomerGroup[];
   /** @deprecated use customerGroups (retained for back-compat) */
   groups: CustomerGroup[];
   summary: {
-    totalRevenue: string;
+    cashedRevenue: string;
+    outstandingRevenue: string;
     totalCost: string;
-    totalMargin: string;
-    totalDebt: string;
+    netMargin: string;
     marginPct: string;
     salesCount: number;
-    avgValue: string;
+    avgCashedValue: string;
   };
 };
 
@@ -161,10 +176,9 @@ export async function listSalesGroupedByCustomer(params: {
 
   const customerMap = new Map<string, CustomerGroup>();
   const batchMap = new Map<string, BatchGroup>();
-  let totalRevenue = new Decimal(0);
+  let totalRevenueBilled = new Decimal(0);
   let totalCost = new Decimal(0);
-  let totalMargin = new Decimal(0);
-  let totalDebt = new Decimal(0);
+  let totalOutstanding = new Decimal(0);
 
   for (const s of sales) {
     const resolvedName = s.customer?.fullName ?? s.customerName ?? "Anonyme";
@@ -184,18 +198,24 @@ export async function listSalesGroupedByCustomer(params: {
       batchName: s.batch?.name ?? null,
     };
 
-    totalRevenue = totalRevenue.plus(new Decimal(row.totalRevenue));
-    totalCost = totalCost.plus(new Decimal(row.totalCost));
-    totalMargin = totalMargin.plus(new Decimal(row.totalMargin));
-    totalDebt = totalDebt.plus(new Decimal(row.remainingDue));
+    const saleRev = new Decimal(row.totalRevenue);
+    const saleCost = new Decimal(row.totalCost);
+    const saleDue = new Decimal(row.remainingDue);
+    const saleCashed = saleRev.minus(saleDue);
+    const saleNet = saleCashed.minus(saleCost);
+
+    totalRevenueBilled = totalRevenueBilled.plus(saleRev);
+    totalCost = totalCost.plus(saleCost);
+    totalOutstanding = totalOutstanding.plus(saleDue);
 
     if (s.batchId && s.batch) {
       const existing = batchMap.get(s.batchId);
       if (existing) {
         existing.sales.push(row);
         existing.salesCount += 1;
-        existing.totalRevenue = new Decimal(existing.totalRevenue).plus(row.totalRevenue).toFixed(2);
-        existing.totalMargin = new Decimal(existing.totalMargin).plus(row.totalMargin).toFixed(2);
+        existing.cashedRevenue = new Decimal(existing.cashedRevenue).plus(saleCashed).toFixed(2);
+        existing.outstandingRevenue = new Decimal(existing.outstandingRevenue).plus(saleDue).toFixed(2);
+        existing.netMargin = new Decimal(existing.netMargin).plus(saleNet).toFixed(2);
         if (row.soldAt > existing.lastSoldAt) existing.lastSoldAt = row.soldAt;
       } else {
         batchMap.set(s.batchId, {
@@ -204,8 +224,9 @@ export async function listSalesGroupedByCustomer(params: {
           batchName: s.batch.name,
           batchStatus: s.batch.status,
           salesCount: 1,
-          totalRevenue: row.totalRevenue,
-          totalMargin: row.totalMargin,
+          cashedRevenue: saleCashed.toFixed(2),
+          outstandingRevenue: saleDue.toFixed(2),
+          netMargin: saleNet.toFixed(2),
           lastSoldAt: row.soldAt,
           sales: [row],
         });
@@ -218,8 +239,9 @@ export async function listSalesGroupedByCustomer(params: {
     if (existing) {
       existing.sales.push(row);
       existing.salesCount += 1;
-      existing.totalRevenue = new Decimal(existing.totalRevenue).plus(row.totalRevenue).toFixed(2);
-      existing.totalMargin = new Decimal(existing.totalMargin).plus(row.totalMargin).toFixed(2);
+      existing.cashedRevenue = new Decimal(existing.cashedRevenue).plus(saleCashed).toFixed(2);
+      existing.outstandingRevenue = new Decimal(existing.outstandingRevenue).plus(saleDue).toFixed(2);
+      existing.netMargin = new Decimal(existing.netMargin).plus(saleNet).toFixed(2);
       if (row.soldAt > existing.lastSoldAt) existing.lastSoldAt = row.soldAt;
     } else {
       customerMap.set(key, {
@@ -227,8 +249,9 @@ export async function listSalesGroupedByCustomer(params: {
         customerId: s.customerId,
         customerName: resolvedName,
         salesCount: 1,
-        totalRevenue: row.totalRevenue,
-        totalMargin: row.totalMargin,
+        cashedRevenue: saleCashed.toFixed(2),
+        outstandingRevenue: saleDue.toFixed(2),
+        netMargin: saleNet.toFixed(2),
         lastSoldAt: row.soldAt,
         sales: [row],
       });
@@ -246,23 +269,26 @@ export async function listSalesGroupedByCustomer(params: {
   );
 
   const salesCount = sales.length;
-  const marginPct = totalRevenue.greaterThan(0)
-    ? totalMargin.dividedBy(totalRevenue).times(100).toFixed(1)
+  const cashedRevenue = totalRevenueBilled.minus(totalOutstanding);
+  const netMargin = cashedRevenue.minus(totalCost);
+  const marginPct = cashedRevenue.greaterThan(0)
+    ? netMargin.dividedBy(cashedRevenue).times(100).toFixed(1)
     : "0.0";
-  const avgValue = salesCount > 0 ? totalRevenue.dividedBy(salesCount).toFixed(2) : "0.00";
+  const avgCashedValue =
+    salesCount > 0 ? cashedRevenue.dividedBy(salesCount).toFixed(2) : "0.00";
 
   return {
     batchGroups,
     customerGroups,
     groups: customerGroups,
     summary: {
-      totalRevenue: totalRevenue.toFixed(2),
+      cashedRevenue: cashedRevenue.toFixed(2),
+      outstandingRevenue: totalOutstanding.toFixed(2),
       totalCost: totalCost.toFixed(2),
-      totalMargin: totalMargin.toFixed(2),
-      totalDebt: totalDebt.toFixed(2),
+      netMargin: netMargin.toFixed(2),
       marginPct,
       salesCount,
-      avgValue,
+      avgCashedValue,
     },
   };
 }

@@ -27,38 +27,53 @@ export async function ActiveBatchesBlock() {
         </Link>
       </div>
       <ul className="divide-y divide-[var(--admin-border)]">
-        {open.map((b) => (
-          <li key={b.id}>
-            <Link
-              href={`/admin/lots/${b.id}`}
-              prefetch
-              className="flex items-center gap-3 px-3 py-3 tap-scale hover:bg-[var(--admin-surface-muted)]"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[14px] font-medium text-[var(--admin-text)]">
-                  {b.name}
-                </p>
-                <p className="text-[11px] text-[var(--admin-text-subtle)]">
-                  {b.salesCount} vente{b.salesCount > 1 ? "s" : ""} ·{" "}
-                  <Money value={b.totalRevenue} compact /> CA
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-[13px] font-bold leading-none">
-                  <Money value={b.netMargin} compact tone="success" />
-                </p>
-                <p className="mt-0.5 text-[10px] tabular-nums text-[var(--admin-text-subtle)]">
-                  {b.marginPct}% net
-                </p>
-              </div>
-              <ChevronRight
-                size={14}
-                className="shrink-0 text-[var(--admin-text-subtle)]"
-                aria-hidden
-              />
-            </Link>
-          </li>
-        ))}
+        {open.map((b) => {
+          const outstanding = Number(b.outstandingRevenue);
+          const hasOutstanding = Number.isFinite(outstanding) && outstanding > 0;
+          return (
+            <li key={b.id}>
+              <Link
+                href={`/admin/lots/${b.id}`}
+                prefetch
+                className="flex items-center gap-3 px-3 py-3 tap-scale hover:bg-[var(--admin-surface-muted)]"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[14px] font-medium text-[var(--admin-text)]">
+                    {b.name}
+                  </p>
+                  <p className="text-[11px] text-[var(--admin-text-subtle)]">
+                    {b.salesCount} vente{b.salesCount > 1 ? "s" : ""} ·{" "}
+                    <Money value={b.cashedRevenue} compact /> encaissé
+                    {hasOutstanding ? (
+                      <span
+                        className="ml-1.5 inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                        style={{
+                          background: "var(--admin-warning-bg)",
+                          color: "var(--admin-warning)",
+                        }}
+                      >
+                        Reste {outstanding.toFixed(0)} €
+                      </span>
+                    ) : null}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[13px] font-bold leading-none">
+                    <Money value={b.netMargin} compact tone="success" />
+                  </p>
+                  <p className="mt-0.5 text-[10px] tabular-nums text-[var(--admin-text-subtle)]">
+                    {b.marginPct}% net
+                  </p>
+                </div>
+                <ChevronRight
+                  size={14}
+                  className="shrink-0 text-[var(--admin-text-subtle)]"
+                  aria-hidden
+                />
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </Card>
   );

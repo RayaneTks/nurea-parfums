@@ -3,6 +3,17 @@ import Decimal from "decimal.js-light";
 
 export type BatchStatus = "OPEN" | "CLOSED";
 
+/**
+ * KPIs cash-basis. On affiche que du concret :
+ *  - cashedRevenue : encaissé réel (totalRevenue − remainingDue par vente).
+ *  - outstandingRevenue : reste à encaisser (somme remainingDue). Affiché en badge si > 0.
+ *  - totalCost : coût des parfums (déjà payé, peu importe encaissement client).
+ *  - expenses : dépenses opérationnelles du lot.
+ *  - netMargin : cashedRevenue − totalCost − expenses (marge nette concrète).
+ *  - marginPct : netMargin / cashedRevenue × 100.
+ *
+ * `totalRevenue` (facturé) reste exposé pour audit / debug mais l'UI doit utiliser cashedRevenue.
+ */
 export type BatchRowLite = {
   id: string;
   name: string;
@@ -12,8 +23,9 @@ export type BatchRowLite = {
   createdAt: string;
   salesCount: number;
   totalRevenue: string;
+  cashedRevenue: string;
+  outstandingRevenue: string;
   totalCost: string;
-  grossMargin: string;
   expenses: string;
   netMargin: string;
   marginPct: string;
@@ -32,7 +44,9 @@ export type BatchSaleRow = {
   customerName: string;
   soldAt: string;
   totalRevenue: string;
-  totalMargin: string;
+  cashedRevenue: string;
+  remainingDue: string;
+  netMargin: string;
   itemCount: number;
 };
 
@@ -43,20 +57,23 @@ export type BatchDetail = BatchRowLite & {
 
 function computeKpis(opts: {
   totalRevenue: Decimal;
+  outstanding: Decimal;
   totalCost: Decimal;
   expenses: Decimal;
 }): {
-  grossMargin: string;
+  cashedRevenue: string;
+  outstandingRevenue: string;
   netMargin: string;
   marginPct: string;
 } {
-  const gross = opts.totalRevenue.minus(opts.totalCost);
-  const net = gross.minus(opts.expenses);
-  const pct = opts.totalRevenue.greaterThan(0)
-    ? net.dividedBy(opts.totalRevenue).times(100).toFixed(1)
+  const cashed = opts.totalRevenue.minus(opts.outstanding);
+  const net = cashed.minus(opts.totalCost).minus(opts.expenses);
+  const pct = cashed.greaterThan(0)
+    ? net.dividedBy(cashed).times(100).toFixed(1)
     : "0.0";
   return {
-    grossMargin: gross.toFixed(2),
+    cashedRevenue: cashed.toFixed(2),
+    outstandingRevenue: opts.outstanding.toFixed(2),
     netMargin: net.toFixed(2),
     marginPct: pct,
   };
@@ -76,6 +93,7 @@ export async function listBatches(): Promise<BatchRowLite[]> {
         select: {
           totalRevenue: true,
           totalCost: true,
+          remainingDue: true,
         },
       },
       expenses: {
@@ -94,11 +112,20 @@ export async function listBatches(): Promise<BatchRowLite[]> {
       (acc, s) => acc.plus(new Decimal(s.totalCost.toString())),
       new Decimal(0),
     );
+    const outstanding = b.sales.reduce(
+      (acc, s) => acc.plus(new Decimal(s.remainingDue.toString())),
+      new Decimal(0),
+    );
     const exp = b.expenses.reduce(
       (acc, e) => acc.plus(new Decimal(e.amount.toString())),
       new Decimal(0),
     );
-    const kpis = computeKpis({ totalRevenue: rev, totalCost: cost, expenses: exp });
+    const kpis = computeKpis({
+      totalRevenue: rev,
+      outstanding,
+      totalCost: cost,
+      expenses: exp,
+    });
     return {
       id: b.id,
       name: b.name,
@@ -108,9 +135,10 @@ export async function listBatches(): Promise<BatchRowLite[]> {
       createdAt: b.createdAt.toISOString(),
       salesCount: b._count.sales,
       totalRevenue: rev.toFixed(2),
+      cashedRevenue: kpis.cashedRevenue,
+      outstandingRevenue: kpis.outstandingRevenue,
       totalCost: cost.toFixed(2),
       expenses: exp.toFixed(2),
-      grossMargin: kpis.grossMargin,
       netMargin: kpis.netMargin,
       marginPct: kpis.marginPct,
     };
@@ -136,7 +164,7 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
           soldAt: true,
           totalRevenue: true,
           totalCost: true,
-          totalMargin: true,
+          remainingDue: true,
           _count: { select: { items: true } },
         },
       },
@@ -162,11 +190,20 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
     (acc, s) => acc.plus(new Decimal(s.totalCost.toString())),
     new Decimal(0),
   );
+  const outstanding = b.sales.reduce(
+    (acc, s) => acc.plus(new Decimal(s.remainingDue.toString())),
+    new Decimal(0),
+  );
   const exp = b.expenses.reduce(
     (acc, e) => acc.plus(new Decimal(e.amount.toString())),
     new Decimal(0),
   );
-  const kpis = computeKpis({ totalRevenue: rev, totalCost: cost, expenses: exp });
+  const kpis = computeKpis({
+    totalRevenue: rev,
+    outstanding,
+    totalCost: cost,
+    expenses: exp,
+  });
 
   return {
     id: b.id,
@@ -177,19 +214,28 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
     createdAt: b.createdAt.toISOString(),
     salesCount: b.sales.length,
     totalRevenue: rev.toFixed(2),
+    cashedRevenue: kpis.cashedRevenue,
+    outstandingRevenue: kpis.outstandingRevenue,
     totalCost: cost.toFixed(2),
     expenses: exp.toFixed(2),
-    grossMargin: kpis.grossMargin,
     netMargin: kpis.netMargin,
     marginPct: kpis.marginPct,
-    sales: b.sales.map((s) => ({
-      id: s.id,
-      customerName: s.customer?.fullName ?? s.customerName ?? "Anonyme",
-      soldAt: s.soldAt.toISOString(),
-      totalRevenue: s.totalRevenue.toString(),
-      totalMargin: s.totalMargin.toString(),
-      itemCount: s._count.items,
-    })),
+    sales: b.sales.map((s) => {
+      const saleRev = new Decimal(s.totalRevenue.toString());
+      const saleCost = new Decimal(s.totalCost.toString());
+      const saleDue = new Decimal(s.remainingDue.toString());
+      const saleCashed = saleRev.minus(saleDue);
+      return {
+        id: s.id,
+        customerName: s.customer?.fullName ?? s.customerName ?? "Anonyme",
+        soldAt: s.soldAt.toISOString(),
+        totalRevenue: saleRev.toFixed(2),
+        cashedRevenue: saleCashed.toFixed(2),
+        remainingDue: saleDue.toFixed(2),
+        netMargin: saleCashed.minus(saleCost).toFixed(2),
+        itemCount: s._count.items,
+      };
+    }),
     expensesList: b.expenses.map((e) => ({
       id: e.id,
       label: e.label,

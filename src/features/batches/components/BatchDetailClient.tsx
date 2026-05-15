@@ -189,26 +189,10 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
         <div className="grid grid-cols-2 gap-2">
           <Card padding={3} tone="surface">
             <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-              CA
+              Encaissé
             </p>
             <p className="mt-1 text-[18px] font-bold leading-none">
-              <Money value={current.totalRevenue} compact />
-            </p>
-          </Card>
-          <Card padding={3} tone="surface">
-            <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-              Marge
-            </p>
-            <p className="mt-1 text-[18px] font-bold leading-none">
-              <Money value={current.grossMargin} compact tone="success" />
-            </p>
-          </Card>
-          <Card padding={3} tone="surface">
-            <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-              Dépenses
-            </p>
-            <p className="mt-1 text-[18px] font-bold leading-none">
-              <Money value={current.expenses} compact tone="danger" />
+              <Money value={current.cashedRevenue} compact />
             </p>
           </Card>
           <Card padding={3} tone="alt">
@@ -222,6 +206,36 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
               {current.marginPct}%
             </p>
           </Card>
+          <Card padding={3} tone="surface">
+            <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+              Dépenses
+            </p>
+            <p className="mt-1 text-[18px] font-bold leading-none">
+              <Money value={current.expenses} compact tone="danger" />
+            </p>
+          </Card>
+          {Number(current.outstandingRevenue) > 0 ? (
+            <Card padding={3} tone="surface">
+              <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+                Reste à encaisser
+              </p>
+              <p
+                className="mt-1 text-[18px] font-bold leading-none tnum"
+                style={{ color: "var(--admin-warning)" }}
+              >
+                {Number(current.outstandingRevenue).toFixed(0)} €
+              </p>
+            </Card>
+          ) : (
+            <Card padding={3} tone="surface">
+              <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+                Coût achats
+              </p>
+              <p className="mt-1 text-[18px] font-bold leading-none">
+                <Money value={current.totalCost} compact />
+              </p>
+            </Card>
+          )}
         </div>
 
         <BatchExpensesSection
@@ -272,40 +286,57 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
             </div>
           ) : (
             <ul className="divide-y divide-[var(--admin-border)]">
-              {current.sales.map((s) => (
-                <li key={s.id}>
-                  <Link
-                    href={`/admin/compta?sale=${s.id}`}
-                    prefetch={false}
-                    className="flex items-center gap-3 px-3 py-3 tap-scale hover:bg-[var(--admin-surface-muted)]"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[14px] font-medium text-[var(--admin-text)]">
-                        {s.customerName}
-                      </p>
-                      <p className="text-[11px] text-[var(--admin-text-subtle)]">
-                        {new Date(s.soldAt).toLocaleDateString("fr-FR", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}{" "}
-                        · {s.itemCount} article{s.itemCount > 1 ? "s" : ""}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <Money value={s.totalRevenue} bold className="text-[14px]" />
-                      <p className="mt-0.5 text-[11px]">
-                        <Money value={s.totalMargin} compact tone="success" />
-                      </p>
-                    </div>
-                    <ChevronRight
-                      size={14}
-                      className="shrink-0 text-[var(--admin-text-subtle)]"
-                      aria-hidden
-                    />
-                  </Link>
-                </li>
-              ))}
+              {current.sales.map((s) => {
+                const due = Number(s.remainingDue);
+                const hasDue = Number.isFinite(due) && due > 0;
+                return (
+                  <li key={s.id}>
+                    <Link
+                      href={`/admin/compta?sale=${s.id}`}
+                      prefetch={false}
+                      className="flex items-center gap-3 px-3 py-3 tap-scale hover:bg-[var(--admin-surface-muted)]"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <p className="truncate text-[14px] font-medium text-[var(--admin-text)]">
+                            {s.customerName}
+                          </p>
+                          {hasDue ? (
+                            <span
+                              className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                              style={{
+                                background: "var(--admin-warning-bg)",
+                                color: "var(--admin-warning)",
+                              }}
+                            >
+                              Reste {due.toFixed(0)} €
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="text-[11px] text-[var(--admin-text-subtle)]">
+                          {new Date(s.soldAt).toLocaleDateString("fr-FR", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}{" "}
+                          · {s.itemCount} article{s.itemCount > 1 ? "s" : ""}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <Money value={s.cashedRevenue} bold className="text-[14px]" />
+                        <p className="mt-0.5 text-[11px]">
+                          <Money value={s.netMargin} compact tone="success" />
+                        </p>
+                      </div>
+                      <ChevronRight
+                        size={14}
+                        className="shrink-0 text-[var(--admin-text-subtle)]"
+                        aria-hidden
+                      />
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </Card>
