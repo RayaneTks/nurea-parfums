@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { X, Check } from "lucide-react";
 import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
 
@@ -27,8 +27,11 @@ export function CatalogFilterDrawer({
   const [draftBrands, setDraftBrands] = useState<Set<string>>(
     new Set(selectedBrandSlugs)
   );
-
   const [isRendered, setIsRendered] = useState(false);
+  const dragHandleRef = useRef<HTMLDivElement>(null);
+  const touchStartY = useRef<number | null>(null);
+  const touchStartX = useRef<number | null>(null);
+
   useEffect(() => setIsRendered(true), []);
 
   useEffect(() => {
@@ -44,6 +47,25 @@ export function CatalogFilterDrawer({
 
   const draftResultCount = getResultCount(draftBrands);
 
+  /* Swipe-to-close: écoute les gestes tactiles sur toute la zone en-tête + drag handle */
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const onTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (touchStartY.current === null || touchStartX.current === null) return;
+      const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+      const deltaX = Math.abs(e.changedTouches[0].clientX - touchStartX.current);
+      // Ferme si swipe vers le bas > 60px et plus vertical qu'horizontal
+      if (deltaY > 60 && deltaY > deltaX) onClose();
+      touchStartY.current = null;
+      touchStartX.current = null;
+    },
+    [onClose]
+  );
+
   const grouped = useMemo(() => {
     const map: Record<string, CatalogBrowseBrand[]> = {};
     const sorted = [...brands].sort((a, b) => a.name.localeCompare(b.name));
@@ -56,7 +78,7 @@ export function CatalogFilterDrawer({
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
   }, [brands]);
 
-  /* Prevent scroll when open */
+  /* Prevent body scroll when open */
   useEffect(() => {
     if (open && typeof document !== "undefined") {
       document.body.style.overflow = "hidden";
@@ -80,37 +102,63 @@ export function CatalogFilterDrawer({
 
       {/* Drawer / Bottom Sheet */}
       <aside
+        aria-modal="true"
+        aria-label="Filtrer par marques"
+        role="dialog"
         className={`fixed z-[120] flex flex-col bg-[var(--nurea-surface)] shadow-2xl transition-all duration-500 ease-out-expo overscroll-none
-          /* Mobile: Bottom Sheet */
-          bottom-0 left-0 right-0 h-[85vh] h-[85dvh] rounded-t-[32px] md:rounded-t-none
+          bottom-0 left-0 right-0 rounded-t-[28px] md:rounded-t-none
+          h-[78dvh] md:h-full
           ${open ? "translate-y-0" : "translate-y-full"}
-          /* Desktop: Sidebar Drawer */
-          md:right-0 md:left-auto md:top-0 md:h-full md:w-full md:max-w-[400px]
-          md:${open ? "translate-x-0 translate-y-0" : "translate-x-full translate-y-0"}
+          md:right-0 md:left-auto md:top-0 md:w-full md:max-w-[400px]
+          md:translate-y-0
+          ${open ? "md:translate-x-0" : "md:translate-x-full"}
         `}
+        {...(!open ? { inert: true as unknown as boolean } : {})}
       >
-        {/* Mobile Drag Handle */}
-        <div className="flex w-full justify-center pt-3 pb-1 md:hidden shrink-0">
-          <div className="h-1.5 w-12 rounded-full bg-[var(--nurea-border-hover)]" />
+        {/* Drag handle — zone swipeable étendue pour plus de facilité */}
+        <div
+          ref={dragHandleRef}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          className="flex w-full cursor-grab flex-col items-center pb-1 pt-3 md:hidden shrink-0 select-none"
+          aria-hidden="true"
+        >
+          <div className="h-1.5 w-14 rounded-full bg-[var(--nurea-border-hover)] transition-colors active:bg-[var(--nurea-accent)]/40" />
+          <span className="mt-1.5 text-[9px] uppercase tracking-[0.2em] text-[var(--nurea-text-subtle)] opacity-60">
+            Glisser pour fermer
+          </span>
         </div>
 
-        <div className="relative flex items-center justify-between border-b border-[var(--nurea-border)]/50 px-6 py-5 z-[50] shrink-0">  
-          <h2 className="font-serif text-xl tracking-tight text-[var(--nurea-text)]">
-            Filtrer par Marques
-          </h2>
+        {/* Header */}
+        <div
+          className="relative flex items-center justify-between border-b border-[var(--nurea-border)]/50 px-6 py-4 z-[50] shrink-0"
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
+          <div>
+            <h2 className="font-serif text-xl tracking-tight text-[var(--nurea-text)]">
+              Filtrer par Marques
+            </h2>
+            {draftBrands.size > 0 && (
+              <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-[var(--nurea-accent)]">
+                {draftBrands.size} sélectionnée{draftBrands.size > 1 ? "s" : ""}
+              </p>
+            )}
+          </div>
           <button
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               onClose();
             }}
-            aria-label="Fermer"
+            aria-label="Fermer les filtres"
             className="flex h-12 w-12 items-center justify-center rounded-full transition-all hover:bg-[var(--nurea-surface-hover)] active:bg-[var(--nurea-surface-hover)] text-[var(--nurea-text-muted)] active:scale-90 touch-manipulation"
           >
-            <X size={24} strokeWidth={1.5} />
+            <X size={22} strokeWidth={1.5} />
           </button>
         </div>
 
+        {/* Brands list */}
         <div className="flex-1 overflow-y-auto custom-scrollbar overscroll-contain">
           {grouped.length === 0 ? (
             <div className="px-6 py-12 text-center">
@@ -155,10 +203,22 @@ export function CatalogFilterDrawer({
                             }
                             className="sr-only"
                           />
-                          <span className={`flex-1 text-[15px] tracking-wide transition-colors duration-300 ${checked ? "text-[var(--nurea-text)] font-semibold" : "text-[var(--nurea-text-muted)] group-hover:text-[var(--nurea-text)]"}`}>
+                          <span
+                            className={`flex-1 text-[15px] tracking-wide transition-colors duration-300 ${
+                              checked
+                                ? "text-[var(--nurea-text)] font-semibold"
+                                : "text-[var(--nurea-text-muted)] group-hover:text-[var(--nurea-text)]"
+                            }`}
+                          >
                             {b.name}
                           </span>
-                          <span className={`shrink-0 font-mono text-[10px] font-bold tracking-wider transition-colors duration-300 ${checked ? "text-[var(--nurea-accent)]" : "text-[var(--nurea-text-subtle)] opacity-80"}`}>  
+                          <span
+                            className={`shrink-0 font-mono text-[10px] font-bold tracking-wider transition-colors duration-300 ${
+                              checked
+                                ? "text-[var(--nurea-accent)]"
+                                : "text-[var(--nurea-text-subtle)] opacity-80"
+                            }`}
+                          >
                             {b.assortment === "COMPLETE" ? "TOUT" : b.publishedCount}
                           </span>
                         </label>
@@ -171,10 +231,13 @@ export function CatalogFilterDrawer({
           )}
         </div>
 
-        <div className="shrink-0 border-t border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:bg-[var(--nurea-surface)]">
-          <div className="mb-4 flex items-center justify-between px-1">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-[var(--nurea-text-muted)]">   
-              {draftBrands.size} marque{draftBrands.size > 1 ? "s" : ""} sélectionnée{draftBrands.size > 1 ? "s" : ""}
+        {/* Footer */}
+        <div className="shrink-0 border-t border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+          <div className="mb-3 flex items-center justify-between px-1">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-[var(--nurea-text-muted)]">
+              {draftBrands.size > 0
+                ? `${draftBrands.size} marque${draftBrands.size > 1 ? "s" : ""} sélectionnée${draftBrands.size > 1 ? "s" : ""}`
+                : "Toutes les marques"}
             </span>
             {draftBrands.size > 0 && (
               <button
@@ -190,7 +253,7 @@ export function CatalogFilterDrawer({
           </div>
           <button
             onClick={() => onApply(draftBrands)}
-            className="btn-nurea w-full justify-center bg-[var(--nurea-accent)] text-white hover:bg-[var(--nurea-accent-hover)] border-none h-14 rounded-2xl text-base font-bold shadow-xl shadow-[var(--nurea-accent-subtle)]/20 active:scale-95 transition-transform" 
+            className="btn-nurea w-full justify-center bg-[var(--nurea-accent)] text-white hover:bg-[var(--nurea-accent-hover)] border-none h-14 rounded-2xl text-base font-bold shadow-xl shadow-[var(--nurea-accent-subtle)]/20 active:scale-95 transition-transform"
           >
             Afficher les résultats
             {draftResultCount >= 0 && (

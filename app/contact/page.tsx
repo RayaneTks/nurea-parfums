@@ -17,7 +17,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ContactPage() {
+interface ContactPageProps {
+  searchParams: Promise<{ parfum?: string; marque?: string }>;
+}
+
+export default async function ContactPage({ searchParams }: ContactPageProps) {
+  const params = await searchParams;
+  const parfum = params.parfum ?? "";
+  const marque = params.marque ?? "";
+
   return (
     <>
       <BreadcrumbJsonLd
@@ -26,7 +34,7 @@ export default function ContactPage() {
           { name: "Contact", path: "/contact" },
         ]}
       />
-      <ContactPageClient />
+      <ContactPageClient parfum={parfum} marque={marque} />
     </>
   );
 }
