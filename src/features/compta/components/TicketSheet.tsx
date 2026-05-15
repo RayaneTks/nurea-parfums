@@ -218,11 +218,12 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
     ticket.mode === "view" ? (
       <HStack gap={2}>
         <Button
-          variant="ghost"
+          variant="secondary"
           size="lg"
           onClick={() => setConfirmDelete(true)}
           aria-label="Supprimer la vente"
           leadingIcon={<Trash2 size={16} />}
+          className="text-[var(--admin-danger)] border-[var(--admin-danger)] hover:bg-[var(--admin-danger-bg)]"
         >
           Supprimer
         </Button>
