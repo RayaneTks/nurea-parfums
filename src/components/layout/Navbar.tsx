@@ -165,9 +165,9 @@ export const Navbar: FC<NavbarProps> = ({ onOpenBrowse: initialOnOpenBrowse }) =
               <Image
                 src={logoSrc}
                 alt="Nuréa Parfums"
-                width={122} // (26 * 4.69)
+                width={122}
                 height={26}
-                className="h-[22px] w-auto md:h-[26px]"
+                className="h-[30px] w-auto md:h-[36px]"
                 priority
               />
             ) : (
