@@ -128,8 +128,19 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
 
   const saveAll = useCallback(async () => {
     if (!sale) return;
+
+    // Lignes avec prix manquant (nouveaux items non configurés)
+    const missingPrice = ticket.draft.lines.find(
+      (l) => l.key.startsWith("new:") && !l.unitPrice.trim(),
+    );
+    if (missingPrice) {
+      setToast({ type: "error", message: "Prix manquant sur une nouvelle ligne." });
+      return;
+    }
+
     setSaving(true);
     try {
+      // Items existants à mettre à jour
       const items = ticket.draft.lines
         .filter((l) => l.key.startsWith("id:"))
         .map((l) => ({
@@ -140,9 +151,35 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
           unitCostDzd: l.unitCostDzd === "" ? null : l.unitCostDzd.replace(",", "."),
           exchangeRate: l.exchangeRate === "" ? null : l.exchangeRate.replace(",", "."),
         }));
+
+      // Items existants supprimés du draft
+      const draftExistingIds = new Set(items.map((i) => i.id));
+      const removeItemIds = sale.items
+        .map((it) => it.id)
+        .filter((id) => !draftExistingIds.has(id));
+
+      // Nouveaux items à créer
+      const newItems = ticket.draft.lines
+        .filter((l) => l.key.startsWith("new:"))
+        .map((l) => ({
+          perfumeId: l.perfumeId,
+          snapshot: {
+            name: l.snapshot.name,
+            brandName: l.snapshot.brandName ?? "Hors catalogue",
+            image: l.snapshot.image ?? null,
+          },
+          quantity: l.quantity,
+          volumeMl: l.volumeMl ?? 100,
+          unitPrice: l.unitPrice.replace(",", "."),
+          unitCostDzd: l.unitCostDzd === "" ? null : l.unitCostDzd.replace(",", "."),
+          exchangeRate: l.exchangeRate === "" ? "277" : l.exchangeRate.replace(",", "."),
+        }));
+
       const payload: Record<string, unknown> = {
         notes: ticket.draft.notes || null,
         items,
+        ...(newItems.length > 0 ? { newItems } : {}),
+        ...(removeItemIds.length > 0 ? { removeItemIds } : {}),
       };
       if (ticket.draft.customerId !== sale.customerId) {
         payload.customerId = ticket.draft.customerId;
@@ -318,6 +355,7 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
               onPatch={ticket.patchLine}
               onQuantityDelta={ticket.quantityDelta}
               onRemove={ticket.removeLine}
+              onAdd={ticket.addLine}
             />
           </Stack>
         )}

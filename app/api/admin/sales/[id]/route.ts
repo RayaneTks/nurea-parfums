@@ -43,6 +43,16 @@ type PatchSaleItemBody = {
   volumeMl?: number;
 };
 
+type NewSaleItemBody = {
+  perfumeId: number | null;
+  snapshot: { name: string; brandName: string | null; image?: string | null };
+  quantity: number;
+  volumeMl?: number | null;
+  unitPrice: number | string;
+  unitCostDzd?: number | string | null;
+  exchangeRate?: number | string | null;
+};
+
 type PatchSaleBody = {
   customerId?: string | null;
   customerName?: string | null;
@@ -51,6 +61,8 @@ type PatchSaleBody = {
   remainingDue?: number | string | null;
   batchId?: string | null;
   items?: PatchSaleItemBody[];
+  newItems?: NewSaleItemBody[];
+  removeItemIds?: string[];
 };
 
 export async function PATCH(
@@ -73,6 +85,8 @@ export async function PATCH(
     }
 
     const hasItems = Array.isArray(body.items) && body.items.length > 0;
+    const hasNewItems = Array.isArray(body.newItems) && body.newItems.length > 0;
+    const hasRemoveIds = Array.isArray(body.removeItemIds) && body.removeItemIds.length > 0;
     const hasNotes = "notes" in body;
     const hasCustomerName = "customerName" in body;
     const hasCustomerContact = "customerContact" in body;
@@ -80,7 +94,7 @@ export async function PATCH(
     const hasCustomer = hasCustomerName || hasCustomerId || hasCustomerContact;
     const hasRemainingDue = "remainingDue" in body;
     const hasBatch = "batchId" in body;
-    if (!hasItems && !hasNotes && !hasCustomer && !hasRemainingDue && !hasBatch) {
+    if (!hasItems && !hasNewItems && !hasRemoveIds && !hasNotes && !hasCustomer && !hasRemainingDue && !hasBatch) {
       return NextResponse.json(
         { error: "Rien à mettre à jour." },
         { status: 400 },
@@ -222,6 +236,12 @@ export async function PATCH(
         await tx.sale.update({ where: { id }, data: saleData });
       }
 
+      if (hasRemoveIds) {
+        await tx.saleItem.deleteMany({
+          where: { id: { in: body.removeItemIds! }, saleId: id },
+        });
+      }
+
       if (hasItems) {
         for (const p of body.items!) {
           const item = byId.get(p.id)!;
@@ -288,7 +308,61 @@ export async function PATCH(
             },
           });
         }
+      }
 
+      if (hasNewItems) {
+        for (const n of body.newItems!) {
+          const upN = parseMoneyField(n.unitPrice)!;
+          const volIn =
+            n.volumeMl === 30 || n.volumeMl === 50 || n.volumeMl === 100
+              ? n.volumeMl
+              : 100;
+          const ucdN =
+            n.unitCostDzd !== null && n.unitCostDzd !== undefined && n.unitCostDzd !== ""
+              ? Number(n.unitCostDzd)
+              : null;
+          const exN =
+            n.exchangeRate !== null && n.exchangeRate !== undefined && n.exchangeRate !== ""
+              ? Number(n.exchangeRate)
+              : null;
+          const coN =
+            ucdN !== null && exN !== null && Number.isFinite(ucdN) && Number.isFinite(exN) && exN > 0
+              ? ucdN / exN
+              : 0;
+
+          const totals = computeLineTotals({
+            quantity: n.quantity,
+            unitPrice: upN,
+            unitCost: coN,
+          });
+
+          const snap: Prisma.InputJsonValue = {
+            name: n.snapshot.name,
+            brandName: n.snapshot.brandName ?? null,
+            image: n.snapshot.image ?? null,
+            volumeMl: volIn,
+          };
+
+          await tx.saleItem.create({
+            data: {
+              saleId: id,
+              perfumeId: n.perfumeId,
+              quantity: n.quantity,
+              volumeMl: volIn,
+              unitPrice: totals.unitPrice,
+              unitCost: totals.unitCost,
+              unitCostDzd: ucdN !== null && Number.isFinite(ucdN) ? new Prisma.Decimal(ucdN) : null,
+              exchangeRate: exN !== null && Number.isFinite(exN) ? new Prisma.Decimal(exN) : null,
+              lineRevenue: totals.lineRevenue,
+              lineCost: totals.lineCost,
+              lineMargin: totals.lineMargin,
+              perfumeSnapshot: snap,
+            },
+          });
+        }
+      }
+
+      if (hasItems || hasNewItems || hasRemoveIds) {
         const allItems = await tx.saleItem.findMany({ where: { saleId: id } });
         const t = sumSaleTotals(
           allItems.map((i) => ({
