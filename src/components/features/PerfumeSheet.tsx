@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
-import { X, ArrowRight, FileText } from "lucide-react";
+import { X, ArrowRight, FileText, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
 import type { Perfume } from "@/lib/data";
 import { getPerfumeImage, CONTACT } from "@/lib/data";
@@ -86,9 +86,10 @@ interface PerfumeSheetProps {
 }
 
 function SheetContent({ perfume, onClose }: PerfumeSheetProps) {
-  const { resolvedTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme !== "light";
   const imageSrc = getPerfumeImage(perfume, isDark ? "dark" : "light");
+  const toggleTheme = () => setTheme(isDark ? "light" : "dark");
   const blurUrl = perfume.blurDataURL ?? NUREA_IMAGE_BLUR_DATA_URL;
   const isGammeComplete = perfume.category === "Gammes Complètes";
 
@@ -158,11 +159,12 @@ function SheetContent({ perfume, onClose }: PerfumeSheetProps) {
         {/* Image — démarre immédiatement, drag handle en overlay */}
         <div className="relative shrink-0 w-full overflow-hidden" style={{ height: "52dvh" }}>
           <Image
+            key={imageSrc}
             src={imageSrc}
             alt={`${perfume.brand} — ${perfume.name}`}
             fill
             sizes="100vw"
-            className="object-cover"
+            className="object-cover animate-fade-in-up"
             placeholder="blur"
             blurDataURL={blurUrl}
             priority
@@ -187,14 +189,27 @@ function SheetContent({ perfume, onClose }: PerfumeSheetProps) {
             </div>
           )}
 
-          {/* Close */}
-          <button
-            onClick={close}
-            aria-label="Fermer"
-            className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm text-white active:scale-90 transition-transform touch-manipulation"
-          >
-            <X size={18} strokeWidth={2} />
-          </button>
+          {/* Actions overlay : theme toggle + close */}
+          <div className="absolute right-4 top-4 z-20 flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              aria-label={isDark ? "Passer en mode clair" : "Passer en mode sombre"}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm text-white active:scale-90 transition-all duration-300 touch-manipulation"
+            >
+              {isDark ? (
+                <Sun size={15} strokeWidth={2} />
+              ) : (
+                <Moon size={15} strokeWidth={2} />
+              )}
+            </button>
+            <button
+              onClick={close}
+              aria-label="Fermer"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm text-white active:scale-90 transition-transform touch-manipulation"
+            >
+              <X size={18} strokeWidth={2} />
+            </button>
+          </div>
 
           {/* Bottom gradient + name */}
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[var(--nurea-bg)] via-[var(--nurea-bg)]/60 to-transparent px-5 pb-4 pt-16">
