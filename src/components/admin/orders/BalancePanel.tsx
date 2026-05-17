@@ -293,6 +293,7 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
             onChange={(e) => setAmount(e.target.value)}
             placeholder="50"
             autoFocus
+            enterKeyHint="next"
           />
           <Input
             label="Méthode (opt.)"
@@ -300,6 +301,7 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
             value={method}
             onChange={(e) => setMethod(e.target.value)}
             placeholder="cash, virement, snap-pay…"
+            enterKeyHint="next"
           />
           <Input
             label="Note (opt.)"
@@ -307,6 +309,7 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder=""
+            enterKeyHint="done"
           />
         </Stack>
       </Sheet>

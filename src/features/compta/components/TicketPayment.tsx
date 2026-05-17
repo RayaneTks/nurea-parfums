@@ -96,6 +96,7 @@ export function TicketPayment({ total, remainingDue, mode, onChange }: TicketPay
           placeholder="0"
           numeric
           aria-label="Reste à payer en euros"
+          enterKeyHint="done"
           error={isOver ? "Reste > total" : undefined}
           hint={!isOver ? `Payé: ${paid.toFixed(2)} €` : undefined}
         />

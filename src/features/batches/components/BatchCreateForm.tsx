@@ -66,12 +66,14 @@ export function BatchCreateForm() {
               placeholder="ex. Commande de Mars"
               autoFocus
               maxLength={120}
+              enterKeyHint="next"
             />
             <Input
               label="Date prévue (opt.)"
               type="date"
               value={expectedAt}
               onChange={(e) => setExpectedAt(e.target.value)}
+              enterKeyHint="next"
             />
             <Textarea
               label="Notes (opt.)"
@@ -79,6 +81,7 @@ export function BatchCreateForm() {
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="Précisions internes (fournisseur, transport, etc.)"
+              enterKeyHint="done"
             />
           </Stack>
         </Card>

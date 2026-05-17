@@ -4,16 +4,36 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Trash2 } from "lucide-react";
-import { Stack } from "@/ui/primitives/Stack";
+import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
 import { Button } from "@/ui/primitives/Button";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
+import { Money } from "@/ui/patterns/Money";
 import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
 import { OrderDetailHeader } from "./OrderDetailHeader";
 import { OrderSummaryCard } from "./OrderSummaryCard";
 import { OrderItemsList } from "./OrderItemsList";
 import { OrderActionsBar } from "./OrderActionsBar";
 import type { OrderDetailRow } from "@/server/orders/queries";
+
+function computeMargin(items: OrderDetailRow["items"]): { cost: number; margin: number; marginPct: number } {
+  let revenue = 0;
+  let cost = 0;
+  for (const it of items) {
+    const price = Number(it.unitPrice);
+    if (Number.isFinite(price)) revenue += price * it.quantity;
+    if (it.unitCostDzd !== null && it.exchangeRate !== null) {
+      const dzd = Number(it.unitCostDzd);
+      const rate = Number(it.exchangeRate);
+      if (Number.isFinite(dzd) && Number.isFinite(rate) && rate > 0) {
+        cost += (dzd / rate) * it.quantity;
+      }
+    }
+  }
+  const margin = revenue - cost;
+  const marginPct = revenue > 0 ? (margin / revenue) * 100 : 0;
+  return { cost, margin, marginPct };
+}
 
 type OrderDetailClientProps = {
   order: OrderDetailRow;
@@ -76,6 +96,31 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
 
         <OrderDetailHeader order={current} onCustomerNameSave={handleCustomerNameSave} />
         <OrderSummaryCard order={current} />
+
+        {(() => {
+          const { cost, margin, marginPct } = computeMargin(current.items);
+          if (cost <= 0) return null;
+          return (
+            <Card padding={3} tone="alt">
+              <HStack justify="between" align="center">
+                <div>
+                  <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+                    Marge estimée
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-[var(--admin-text-subtle)] tabular-nums">
+                    Coût : <Money value={cost} compact />
+                  </p>
+                </div>
+                <div className="text-right">
+                  <Money value={margin} bold tone="success" className="text-[18px]" />
+                  <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
+                    {marginPct.toFixed(0)}%
+                  </p>
+                </div>
+              </HStack>
+            </Card>
+          );
+        })()}
 
         {balanceSlot}
 

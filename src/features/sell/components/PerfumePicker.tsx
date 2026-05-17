@@ -140,7 +140,6 @@ export function PerfumePicker({
       footer={footer}
     >
       <>
-        {/* Sticky header: tabs + search — reste visible quand le clavier est ouvert */}
         <div
           className="sticky top-0 z-10 -mx-4 bg-[var(--admin-surface)] px-4 pb-3"
           style={{ borderBottom: "1px solid var(--admin-border)" }}
@@ -154,6 +153,7 @@ export function PerfumePicker({
                 ref={catalogSearchRef}
                 type="search"
                 inputMode="search"
+                enterKeyHint="search"
                 placeholder="Rechercher dans le catalogue…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -164,7 +164,6 @@ export function PerfumePicker({
           ) : null}
         </div>
 
-        {/* Corps scrollable */}
         <div className="pt-3">
           {mode === "catalog" ? (
             loading ? (
@@ -232,7 +231,12 @@ export function PerfumePicker({
                 placeholder="Creed"
                 variant="elevated"
                 enterKeyHint="done"
-                onKeyDown={(e) => { if (e.key === "Enter") selectManual(); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    selectManual();
+                  }
+                }}
               />
             </Stack>
           )}

@@ -22,6 +22,7 @@ export function MetaSection({ deliveryAt, notes, onDeliveryChange, onNotesChange
           type="datetime-local"
           value={deliveryAt}
           onChange={(e) => onDeliveryChange(e.target.value)}
+          enterKeyHint="next"
         />
         <Textarea
           label="Notes (opt.)"
@@ -29,6 +30,7 @@ export function MetaSection({ deliveryAt, notes, onDeliveryChange, onNotesChange
           onChange={(e) => onNotesChange(e.target.value)}
           rows={3}
           placeholder="Précisions internes (allergies, contraintes, etc.)"
+          enterKeyHint="done"
         />
       </Stack>
     </Card>

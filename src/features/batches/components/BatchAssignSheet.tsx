@@ -155,7 +155,6 @@ export function BatchAssignSheet({
       }
     >
       <>
-        {/* Sticky search — reste visible quand le clavier est ouvert */}
         {totalAvailable > 0 ? (
           <div
             className="sticky top-0 z-10 -mx-4 bg-[var(--admin-surface)] px-4 pb-3"
@@ -164,6 +163,7 @@ export function BatchAssignSheet({
             <Input
               type="search"
               inputMode="search"
+              enterKeyHint="search"
               placeholder="Rechercher un client…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -173,7 +173,7 @@ export function BatchAssignSheet({
           </div>
         ) : null}
 
-        <div className="pt-3">
+        <Stack gap={3} className="pt-3">
         {loading ? (
           <Stack gap={2}>
             {[0, 1, 2, 3].map((i) => (
@@ -246,7 +246,7 @@ export function BatchAssignSheet({
             })}
           </ul>
         )}
-        </div>
+        </Stack>
       </>
     </Sheet>
   );

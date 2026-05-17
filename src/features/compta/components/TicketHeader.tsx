@@ -62,6 +62,7 @@ export function TicketHeader({
             leadingIcon={<Phone size={14} />}
             variant="elevated"
             autoComplete="off"
+            enterKeyHint="done"
           />
         ) : customerContact ? (
           <p className="inline-flex items-center gap-1.5 text-[13px] text-[var(--admin-text-muted)]">
