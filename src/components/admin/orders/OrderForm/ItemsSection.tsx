@@ -130,6 +130,7 @@ export function ItemsSection({ items, onAddItem, onPatchItem, onRemoveItem }: It
                     value={it.unitPrice}
                     onChange={(e) => void onPatchItem(it.key, { unitPrice: e.target.value })}
                     placeholder="120"
+                    enterKeyHint="next"
                   />
                   <Input
                     label="Coût DZD"
@@ -138,6 +139,7 @@ export function ItemsSection({ items, onAddItem, onPatchItem, onRemoveItem }: It
                     value={it.unitCostDzd}
                     onChange={(e) => void onPatchItem(it.key, { unitCostDzd: e.target.value })}
                     placeholder="36000"
+                    enterKeyHint="next"
                   />
                   <Input
                     label="Taux"
@@ -146,6 +148,7 @@ export function ItemsSection({ items, onAddItem, onPatchItem, onRemoveItem }: It
                     value={it.exchangeRate}
                     onChange={(e) => void onPatchItem(it.key, { exchangeRate: e.target.value })}
                     placeholder="277"
+                    enterKeyHint="done"
                   />
                 </div>
               </div>

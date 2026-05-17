@@ -227,6 +227,7 @@ export function QuickOrderForm() {
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Prénom Nom"
                 autoComplete="off"
+                enterKeyHint="done"
               />
             ) : null}
           </Stack>
@@ -326,7 +327,7 @@ export function QuickOrderForm() {
                 />
               </HStack>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <Input
                   label="Prix unitaire €"
                   inputMode="decimal"
@@ -334,14 +335,25 @@ export function QuickOrderForm() {
                   value={line.unitPrice}
                   onChange={(e) => setLine({ ...line, unitPrice: e.target.value })}
                   placeholder="120"
+                  enterKeyHint="next"
                 />
                 <Input
-                  label="Coût DZD (opt.)"
+                  label="Coût DZD"
                   inputMode="decimal"
                   variant="elevated"
                   value={line.unitCostDzd}
                   onChange={(e) => setLine({ ...line, unitCostDzd: e.target.value })}
                   placeholder="36000"
+                  enterKeyHint="next"
+                />
+                <Input
+                  label="Taux"
+                  inputMode="decimal"
+                  variant="elevated"
+                  value={line.exchangeRate}
+                  onChange={(e) => setLine({ ...line, exchangeRate: e.target.value })}
+                  placeholder="277"
+                  enterKeyHint="done"
                 />
               </div>
             </Stack>
@@ -375,6 +387,7 @@ export function QuickOrderForm() {
                 value={depositAmount}
                 onChange={(e) => setDepositAmount(e.target.value)}
                 placeholder="50"
+                enterKeyHint="done"
               />
             </div>
           ) : null}
