@@ -163,7 +163,8 @@ export function CustomerCombobox({
           className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-[12px] bg-[var(--admin-surface)] shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
           style={{ border: "1px solid var(--admin-border)" }}
         >
-          <div className="p-2" style={{ borderBottom: "1px solid var(--admin-border)" }}>
+          {/* Search + create — always visible at top even with keyboard open */}
+          <div className="space-y-1.5 p-2">
             <input
               ref={inputRef}
               type="text"
@@ -174,49 +175,54 @@ export function CustomerCombobox({
               style={{ border: "1px solid var(--admin-border)" }}
               autoComplete="off"
             />
-          </div>
-          <ul className="max-h-64 overflow-y-auto py-1" role="listbox">
-            {status === "loading" ? (
-              <li className="px-3 py-2 text-[12px] text-[var(--admin-text-subtle)]">Recherche…</li>
-            ) : null}
-            {status === "idle" && rows.length === 0 && q.trim().length > 0 ? (
-              <li className="px-3 py-2 text-[12px] text-[var(--admin-text-subtle)]">Aucun client trouvé.</li>
-            ) : null}
-            {rows.map((r) => (
-              <li key={r.id} role="option" aria-selected={value?.id === r.id}>
-                <button
-                  type="button"
-                  onClick={() => select({ id: r.id, fullName: r.fullName, phoneE164: r.phoneE164 })}
-                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-[14px] tap-scale hover:bg-[var(--admin-surface-muted)]"
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate text-[var(--admin-text)]">{r.fullName}</span>
-                    {r.phoneE164 ? (
-                      <span className="block text-[11px] text-[var(--admin-text-subtle)]">{r.phoneE164}</span>
-                    ) : null}
-                  </span>
-                  {value?.id === r.id ? (
-                    <Check size={14} className="text-[var(--admin-accent)]" />
-                  ) : null}
-                </button>
-              </li>
-            ))}
             {canCreateInline ? (
-              <li style={{ borderTop: "1px solid var(--admin-border)" }}>
-                <button
-                  type="button"
-                  onClick={() => void createInline()}
-                  disabled={status === "creating"}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-[14px] text-[var(--admin-accent)] hover:bg-[var(--admin-accent-bg)] disabled:opacity-50"
-                >
-                  <Plus size={14} />
-                  <span>
-                    {status === "creating" ? "Création…" : `Créer « ${q.trim()} »`}
-                  </span>
-                </button>
-              </li>
+              <button
+                type="button"
+                onClick={() => void createInline()}
+                disabled={status === "creating"}
+                className="flex w-full items-center gap-2 rounded-[10px] px-3 py-2 text-left text-[13px] font-medium text-[var(--admin-accent)] bg-[var(--admin-accent-bg)] disabled:opacity-50 tap-scale"
+              >
+                <Plus size={13} />
+                {status === "creating" ? "Création…" : `Créer « ${q.trim()} »`}
+              </button>
             ) : null}
-          </ul>
+          </div>
+
+          {/* Results list */}
+          {(status === "loading" || rows.length > 0 || (status === "idle" && q.trim().length > 0 && !canCreateInline)) ? (
+            <ul
+              className="max-h-48 overflow-y-auto py-1"
+              style={{ borderTop: "1px solid var(--admin-border)" }}
+              role="listbox"
+            >
+              {status === "loading" ? (
+                <li className="px-3 py-2 text-[12px] text-[var(--admin-text-subtle)]">Recherche…</li>
+              ) : null}
+              {status === "idle" && rows.length === 0 && q.trim().length > 0 && !canCreateInline ? (
+                <li className="px-3 py-2 text-[12px] text-[var(--admin-text-subtle)]">Aucun client trouvé.</li>
+              ) : null}
+              {rows.map((r) => (
+                <li key={r.id} role="option" aria-selected={value?.id === r.id}>
+                  <button
+                    type="button"
+                    onClick={() => select({ id: r.id, fullName: r.fullName, phoneE164: r.phoneE164 })}
+                    className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-[14px] tap-scale hover:bg-[var(--admin-surface-muted)]"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-[var(--admin-text)]">{r.fullName}</span>
+                      {r.phoneE164 ? (
+                        <span className="block text-[11px] text-[var(--admin-text-subtle)]">{r.phoneE164}</span>
+                      ) : null}
+                    </span>
+                    {value?.id === r.id ? (
+                      <Check size={14} className="text-[var(--admin-accent)]" />
+                    ) : null}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
           {error ? (
             <div
               className="px-3 py-2 text-[12px] text-[var(--admin-danger)]"
