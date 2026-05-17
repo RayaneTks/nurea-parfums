@@ -139,24 +139,35 @@ export function PerfumePicker({
       maxVh={92}
       footer={footer}
     >
-      <Stack gap={3}>
-        {allowManual ? (
-          <SegmentedControl options={MODE_OPTIONS} value={mode} onChange={setMode} />
-        ) : null}
+      <>
+        {/* Sticky header: tabs + search — reste visible quand le clavier est ouvert */}
+        <div
+          className="sticky top-0 z-10 -mx-4 bg-[var(--admin-surface)] px-4 pb-3"
+          style={{ borderBottom: "1px solid var(--admin-border)" }}
+        >
+          {allowManual ? (
+            <SegmentedControl options={MODE_OPTIONS} value={mode} onChange={setMode} />
+          ) : null}
+          {mode === "catalog" ? (
+            <div className={allowManual ? "mt-3" : ""}>
+              <Input
+                ref={catalogSearchRef}
+                type="search"
+                inputMode="search"
+                placeholder="Rechercher dans le catalogue…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                leadingIcon={<Search size={16} />}
+                variant="elevated"
+              />
+            </div>
+          ) : null}
+        </div>
 
-        {mode === "catalog" ? (
-          <>
-            <Input
-              ref={catalogSearchRef}
-              type="search"
-              inputMode="search"
-              placeholder="Rechercher dans le catalogue…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              leadingIcon={<Search size={16} />}
-              variant="elevated"
-            />
-            {loading ? (
+        {/* Corps scrollable */}
+        <div className="pt-3">
+          {mode === "catalog" ? (
+            loading ? (
               <Stack gap={2}>
                 {[0, 1, 2, 3].map((i) => (
                   <Skeleton key={i} height={56} />
@@ -199,31 +210,34 @@ export function PerfumePicker({
                   </li>
                 ))}
               </ul>
-            )}
-          </>
-        ) : (
-          <Stack gap={3}>
-            <p className="text-[12px] text-[var(--admin-text-muted)]">
-              Pour un parfum hors catalogue. Nom + marque gardés en snapshot.
-            </p>
-            <Input
-              ref={manualNameRef}
-              label="Nom du parfum"
-              value={manualName}
-              onChange={(e) => setManualName(e.target.value)}
-              placeholder="Aventus"
-              variant="elevated"
-            />
-            <Input
-              label="Marque"
-              value={manualBrand}
-              onChange={(e) => setManualBrand(e.target.value)}
-              placeholder="Creed"
-              variant="elevated"
-            />
-          </Stack>
-        )}
-      </Stack>
+            )
+          ) : (
+            <Stack gap={3}>
+              <p className="text-[12px] text-[var(--admin-text-muted)]">
+                Pour un parfum hors catalogue. Nom + marque gardés en snapshot.
+              </p>
+              <Input
+                ref={manualNameRef}
+                label="Nom du parfum"
+                value={manualName}
+                onChange={(e) => setManualName(e.target.value)}
+                placeholder="Aventus"
+                variant="elevated"
+                enterKeyHint="next"
+              />
+              <Input
+                label="Marque"
+                value={manualBrand}
+                onChange={(e) => setManualBrand(e.target.value)}
+                placeholder="Creed"
+                variant="elevated"
+                enterKeyHint="done"
+                onKeyDown={(e) => { if (e.key === "Enter") selectManual(); }}
+              />
+            </Stack>
+          )}
+        </div>
+      </>
     </Sheet>
   );
 }
