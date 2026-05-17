@@ -28,7 +28,7 @@ export function StickyAction({ children, background = true, className }: StickyA
         className,
       )}
       style={{
-        paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))",
+        paddingBottom: "0.75rem",
       }}
     >
       {children}

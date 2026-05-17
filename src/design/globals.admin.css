@@ -39,7 +39,7 @@
   --admin-app-max-width: 430px;
   --admin-tab-bar-height: 64px;
   --admin-header-height: 56px;
-  --admin-scroll-bottom-pad: calc(var(--admin-tab-bar-height) + env(safe-area-inset-bottom, 0px) + 16px);
+  --admin-scroll-bottom-pad: 24px;
 
   /* Motion */
   --admin-duration-fast: 100ms;
@@ -57,8 +57,17 @@
 
   color: var(--admin-text);
   background: var(--admin-bg);
-  min-height: 100dvh;
-  min-height: 100svh;
+}
+
+/* iOS PWA — fixer le viewport pour éviter le saut de page au focus clavier */
+html.admin-route-root {
+  overflow: hidden;
+  height: 100%;
+}
+
+body.admin-route {
+  overflow: hidden;
+  height: 100%;
 }
 
 /* Tabular numerals utility (montants, dates) */
