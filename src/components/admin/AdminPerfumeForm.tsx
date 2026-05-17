@@ -279,8 +279,27 @@ function BrandCombobox({
       />
 
       {open ? (
-        <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-72 overflow-y-auto rounded-xl border border-admin-border bg-admin-surface shadow-[0_20px_40px_rgba(0,0,0,0.5)] custom-scrollbar">
-          <div className="p-1.5">
+        <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-xl border border-admin-border bg-admin-surface shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
+          {/* Bouton créer — toujours en haut pour rester visible quand le clavier est ouvert */}
+          {query.trim().length >= 2 && !exactMatch ? (
+            <div className="p-1.5" style={{ borderBottom: filtered.length > 0 ? "1px solid var(--admin-border, #e5e7eb)" : undefined }}>
+              <button
+                type="button"
+                onClick={createBrand}
+                disabled={creating}
+                className="flex w-full items-center gap-3 px-3 py-3 text-left text-[13px] font-medium text-admin-accent bg-admin-accent-subtle rounded-xl border border-admin-border-hover [@media(hover:hover)]:hover:bg-admin-accent [@media(hover:hover)]:hover:text-admin-bg transition-colors tap-scale"
+              >
+                {creating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : (
+                  <Plus className="h-4 w-4 shrink-0" aria-hidden />
+                )}
+                <span className="flex-1">Ajouter la marque « {query.trim()} »</span>
+              </button>
+            </div>
+          ) : null}
+
+          <div className="max-h-56 overflow-y-auto custom-scrollbar p-1.5">
             {filtered.length > 0
               ? filtered.map((b) => (
                   <button
@@ -310,22 +329,6 @@ function BrandCombobox({
                     Commence à taper pour filtrer…
                   </div>
                 ) : null}
-
-            {query.trim().length >= 2 && !exactMatch ? (
-              <button
-                type="button"
-                onClick={createBrand}
-                disabled={creating}
-                className="mt-1 flex w-full items-center gap-3 px-3 py-3 text-left text-[13px] font-medium text-admin-accent bg-admin-accent-subtle rounded-xl border border-admin-border-hover [@media(hover:hover)]:hover:bg-admin-accent [@media(hover:hover)]:hover:text-admin-bg transition-colors tap-scale"
-              >
-                {creating ? (
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                ) : (
-                  <Plus className="h-4 w-4 shrink-0" aria-hidden />
-                )}
-                <span className="flex-1">Ajouter la marque « {query.trim()} »</span>
-              </button>
-            ) : null}
           </div>
         </div>
       ) : null}
