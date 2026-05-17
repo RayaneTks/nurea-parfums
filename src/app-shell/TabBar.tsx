@@ -51,21 +51,17 @@ export function TabBar() {
     <nav
       aria-label="Navigation principale"
       data-tabbar
-      className="fixed bottom-0 left-0 right-0 z-[50]"
+      className="shrink-0"
       style={{
         background: "color-mix(in srgb, var(--admin-surface) 92%, transparent)",
         backdropFilter: "saturate(180%) blur(20px)",
         WebkitBackdropFilter: "saturate(180%) blur(20px)",
         borderTop: "1px solid var(--admin-border)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        // Isole le nav de la transform `scale()` que vaul applique sur <body>
-        // quand une Sheet ouvre (shouldScaleBackground). Sans ça le nav rétrécit.
-        transform: "translateZ(0)",
-        willChange: "transform",
       }}
     >
       <div
-        className="mx-auto flex w-full max-w-[var(--admin-app-max-width)] items-stretch justify-around"
+        className="flex w-full items-stretch justify-around"
         style={{
           height: "var(--admin-tab-bar-height)",
         }}

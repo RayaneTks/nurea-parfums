@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/ui/primitives/Button";
 import { Card } from "@/ui/primitives/Card";
-import { Stack } from "@/ui/primitives/Stack";
+import { Stack, HStack } from "@/ui/primitives/Stack";
 import { StickyAction } from "@/ui/primitives/StickyAction";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
 import { Money } from "@/ui/patterns/Money";
@@ -91,11 +91,21 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
     initialDeposit: mode === "create" ? { on: false, amount: "", method: "" } : null,
   }));
 
-  const orderTotal = useMemo(
-    () =>
-      state.items.reduce((sum, it) => sum + toNum(it.unitPrice) * it.quantity, 0),
-    [state.items],
-  );
+  const orderTotals = useMemo(() => {
+    let revenue = 0;
+    let cost = 0;
+    for (const it of state.items) {
+      const price = toNum(it.unitPrice);
+      revenue += price * it.quantity;
+      const dzd = toNum(it.unitCostDzd);
+      const rate = toNum(it.exchangeRate);
+      const unitCost = dzd > 0 && rate > 0 ? dzd / rate : 0;
+      cost += unitCost * it.quantity;
+    }
+    const margin = revenue - cost;
+    const marginPct = revenue > 0 ? (margin / revenue) * 100 : 0;
+    return { revenue, cost, margin, marginPct };
+  }, [state.items]);
 
   const onAddItem = useCallback(async (result: PickerResult) => {
     if (result.kind === "catalog") {
@@ -317,12 +327,29 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
         />
 
         <Card padding={3} tone="alt">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[12px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-              Total commande
-            </span>
-            <Money value={orderTotal} bold className="text-[18px]" />
-          </div>
+          <HStack justify="between" align="end">
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+                Total commande
+              </p>
+              <p className="mt-1">
+                <Money value={orderTotals.revenue} bold className="text-[18px]" />
+              </p>
+            </div>
+            {orderTotals.cost > 0 ? (
+              <div className="text-right">
+                <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+                  Marge
+                </p>
+                <p className="mt-1">
+                  <Money value={orderTotals.margin} bold tone="success" />
+                </p>
+                <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
+                  {orderTotals.marginPct.toFixed(0)}%
+                </p>
+              </div>
+            ) : null}
+          </HStack>
         </Card>
       </Stack>
 

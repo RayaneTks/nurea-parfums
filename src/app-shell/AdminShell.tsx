@@ -49,17 +49,28 @@ export function AdminShell({ children }: AdminShellProps) {
   };
 
   return (
-    <div className="admin-theme w-full min-h-[100dvh]">
-      <div className="mx-auto flex flex-col w-full max-w-[var(--admin-app-max-width)] min-h-[100dvh]">
+    <div
+      className="admin-theme w-full"
+      style={{ height: "100dvh", overflow: "hidden" }}
+    >
+      <div
+        className="mx-auto flex flex-col w-full max-w-[var(--admin-app-max-width)]"
+        style={{ height: "100%", overflow: "hidden" }}
+      >
         <AppHeader
           onOpenCommandPalette={() => setPaletteOpen(true)}
           onOpenSearch={focusCatalogueSearch}
         />
         <PwaInstallHint />
-        {children}
+        <div
+          className="flex-1 min-h-0 overflow-y-auto"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {children}
+        </div>
+        <TabBar />
       </div>
       <AdminLoadingProgress />
-      <TabBar />
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
     </div>
   );
