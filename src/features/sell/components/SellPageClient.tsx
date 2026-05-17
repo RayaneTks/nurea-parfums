@@ -264,6 +264,7 @@ export function SellPageClient() {
                 autoComplete="off"
                 variant="elevated"
                 hint="Rattache une fiche existante via le sélecteur."
+                enterKeyHint="next"
               />
             ) : null}
             <Input
@@ -273,6 +274,7 @@ export function SellPageClient() {
               placeholder="Téléphone, Snapchat, Instagram…"
               autoComplete="off"
               variant="elevated"
+              enterKeyHint="done"
             />
           </Stack>
         </Card>

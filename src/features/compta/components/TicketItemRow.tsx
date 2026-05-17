@@ -109,6 +109,7 @@ export function TicketItemRow({
               value={line.unitPrice}
               onChange={(e) => onPatch(line.key, { unitPrice: e.target.value })}
               placeholder="120"
+              enterKeyHint="next"
             />
             <Input
               label="Coût DZD"
@@ -117,6 +118,7 @@ export function TicketItemRow({
               value={line.unitCostDzd}
               onChange={(e) => onPatch(line.key, { unitCostDzd: e.target.value })}
               placeholder="36000"
+              enterKeyHint="next"
             />
             <Input
               label="Taux"
@@ -125,6 +127,7 @@ export function TicketItemRow({
               value={line.exchangeRate}
               onChange={(e) => onPatch(line.key, { exchangeRate: e.target.value })}
               placeholder="277"
+              enterKeyHint="done"
             />
           </div>
         </Stack>

@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronsUpDown, Plus, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Sheet } from "@/ui/primitives/Sheet";
+import { Button } from "@/ui/primitives/Button";
 import type { CustomerSearchRow } from "@/server/customers/queries";
 import { createCustomerAction } from "@/server/customers/actions";
 
@@ -51,13 +53,12 @@ export function CustomerCombobox({
   allowInlineCreate = true,
   disabled = false,
 }: CustomerComboboxProps) {
-  const id = useId();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [rows, setRows] = useState<CustomerSearchRow[]>([]);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -80,23 +81,24 @@ export function CustomerCombobox({
     };
   }, [q, open]);
 
+  // Réinitialise l'état et focus l'input après l'animation d'ouverture de la Sheet
   useEffect(() => {
-    if (!open) return;
-    const onDocClick = (e: MouseEvent) => {
-      const el = document.getElementById(`combo-${id}`);
-      if (el && !el.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [open, id]);
+    if (!open) {
+      setQ("");
+      setRows([]);
+      setStatus("idle");
+      setError(null);
+      return;
+    }
+    const t = window.setTimeout(() => searchRef.current?.focus(), 280);
+    return () => window.clearTimeout(t);
+  }, [open]);
 
   const exactMatch = rows.find((r) => r.fullName.toLowerCase() === q.trim().toLowerCase());
   const canCreateInline = allowInlineCreate && q.trim().length >= 2 && !exactMatch;
 
   const select = (c: SelectedCustomer) => {
     onChange(c);
-    setQ("");
-    setRows([]);
     setOpen(false);
   };
 
@@ -124,118 +126,125 @@ export function CustomerCombobox({
     } finally {
       setStatus("idle");
     }
-  }, [q]);
+  }, [q]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const footer = canCreateInline ? (
+    <Button
+      type="button"
+      variant="primary"
+      size="lg"
+      fullWidth
+      leadingIcon={<Plus size={16} />}
+      onClick={() => void createInline()}
+      disabled={status === "creating"}
+    >
+      {status === "creating" ? "Création…" : `Créer « ${q.trim()} »`}
+    </Button>
+  ) : undefined;
 
   return (
-    <div id={`combo-${id}`} className="relative">
+    <>
+      {/* Trigger */}
       <button
         type="button"
-        onClick={() => {
-          if (disabled) return;
-          setOpen(true);
-          requestAnimationFrame(() => inputRef.current?.focus());
-        }}
+        onClick={() => { if (!disabled) setOpen(true); }}
         disabled={disabled}
         className={cn(
           "flex w-full min-h-[44px] items-center justify-between gap-2 rounded-[12px] px-4 py-2.5 text-left text-[14px] tap-scale focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
           "border border-[var(--admin-border-strong)] bg-[var(--admin-surface)]",
           disabled && "opacity-60",
         )}
-        aria-haspopup="listbox"
+        aria-haspopup="dialog"
         aria-expanded={open}
       >
         <span className="inline-flex min-w-0 items-center gap-2">
           <UserRound size={16} className="shrink-0 text-[var(--admin-text-subtle)]" aria-hidden />
-          <span
-            className={cn(
-              "truncate",
-              value ? "text-[var(--admin-text)]" : "text-[var(--admin-text-subtle)]",
-            )}
-          >
+          <span className={cn("truncate", value ? "text-[var(--admin-text)]" : "text-[var(--admin-text-subtle)]")}>
             {value ? value.fullName : placeholder}
           </span>
         </span>
         <ChevronsUpDown size={16} className="shrink-0 text-[var(--admin-text-subtle)]" aria-hidden />
       </button>
 
-      {open && !disabled ? (
-        <div
-          className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-[12px] bg-[var(--admin-surface)] shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
-          style={{ border: "1px solid var(--admin-border)" }}
-        >
-          {/* Search + create — always visible at top even with keyboard open */}
-          <div className="space-y-1.5 p-2">
+      {/* Sheet picker — même pattern que PerfumePicker, pas de dropdown absolu */}
+      <Sheet open={open} onOpenChange={setOpen} title="Client" footer={footer}>
+        <>
+          {/* Input sticky en haut — visible même avec le clavier ouvert */}
+          <div
+            className="sticky top-0 z-10 -mx-4 bg-[var(--admin-surface)] px-4 pb-3"
+            style={{ borderBottom: "1px solid var(--admin-border)" }}
+          >
             <input
-              ref={inputRef}
-              type="text"
+              ref={searchRef}
+              type="search"
+              inputMode="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Nom ou téléphone…"
-              className="w-full rounded-[10px] bg-[var(--admin-surface-muted)] px-3 py-2 text-[14px] text-[var(--admin-text)] placeholder:text-[var(--admin-text-subtle)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent-ring)]"
+              className="w-full rounded-[10px] bg-[var(--admin-surface-muted)] px-3 py-2.5 text-[14px] text-[var(--admin-text)] placeholder:text-[var(--admin-text-subtle)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent-ring)]"
               style={{ border: "1px solid var(--admin-border)" }}
               autoComplete="off"
+              enterKeyHint="search"
             />
-            {canCreateInline ? (
-              <button
-                type="button"
-                onClick={() => void createInline()}
-                disabled={status === "creating"}
-                className="flex w-full items-center gap-2 rounded-[10px] px-3 py-2 text-left text-[13px] font-medium text-[var(--admin-accent)] bg-[var(--admin-accent-bg)] disabled:opacity-50 tap-scale"
-              >
-                <Plus size={13} />
-                {status === "creating" ? "Création…" : `Créer « ${q.trim()} »`}
-              </button>
-            ) : null}
           </div>
 
-          {/* Results list */}
-          {(status === "loading" || rows.length > 0 || (status === "idle" && q.trim().length > 0 && !canCreateInline)) ? (
-            <ul
-              className="max-h-48 overflow-y-auto py-1"
-              style={{ borderTop: "1px solid var(--admin-border)" }}
-              role="listbox"
-            >
-              {status === "loading" ? (
-                <li className="px-3 py-2 text-[12px] text-[var(--admin-text-subtle)]">Recherche…</li>
-              ) : null}
-              {status === "idle" && rows.length === 0 && q.trim().length > 0 && !canCreateInline ? (
-                <li className="px-3 py-2 text-[12px] text-[var(--admin-text-subtle)]">Aucun client trouvé.</li>
-              ) : null}
-              {rows.map((r) => (
-                <li key={r.id} role="option" aria-selected={value?.id === r.id}>
-                  <button
-                    type="button"
-                    onClick={() => select({ id: r.id, fullName: r.fullName, phoneE164: r.phoneE164 })}
-                    className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-[14px] tap-scale hover:bg-[var(--admin-surface-muted)]"
-                  >
-                    <span className="min-w-0">
-                      <span className="block truncate text-[var(--admin-text)]">{r.fullName}</span>
-                      {r.phoneE164 ? (
-                        <span className="block text-[11px] text-[var(--admin-text-subtle)]">{r.phoneE164}</span>
-                      ) : null}
-                    </span>
-                    {value?.id === r.id ? (
-                      <Check size={14} className="text-[var(--admin-accent)]" />
-                    ) : null}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
+          {/* Résultats scrollables */}
+          <div className="space-y-1.5 pt-3">
+            {status === "loading" ? (
+              <p className="px-1 py-2 text-[13px] text-[var(--admin-text-subtle)]">Recherche…</p>
+            ) : null}
 
-          {error ? (
-            <div
-              className="px-3 py-2 text-[12px] text-[var(--admin-danger)]"
-              style={{
-                borderTop: "1px solid var(--admin-border)",
-                background: "var(--admin-danger-bg)",
-              }}
-            >
-              {error}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
+            {status === "idle" && q.trim().length === 0 ? (
+              <p className="px-1 py-2 text-[13px] text-[var(--admin-text-subtle)]">
+                Commence à taper pour rechercher…
+              </p>
+            ) : null}
+
+            {status === "idle" && q.trim().length > 0 && rows.length === 0 ? (
+              <p className="px-1 py-2 text-[13px] text-[var(--admin-text-subtle)]">
+                {canCreateInline
+                  ? "Aucun client trouvé · utilise « Créer » en bas."
+                  : "Aucun client trouvé."}
+              </p>
+            ) : null}
+
+            {rows.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => select({ id: r.id, fullName: r.fullName, phoneE164: r.phoneE164 })}
+                className="flex w-full items-center justify-between gap-2 rounded-[12px] bg-[var(--admin-surface)] px-3 py-2.5 text-left tap-scale active:bg-[var(--admin-surface-muted)]"
+                style={{
+                  border: `1px solid ${value?.id === r.id ? "var(--admin-accent)" : "var(--admin-border)"}`,
+                }}
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[14px] font-medium text-[var(--admin-text)]">
+                    {r.fullName}
+                  </span>
+                  {r.phoneE164 ? (
+                    <span className="block text-[11px] text-[var(--admin-text-subtle)]">
+                      {r.phoneE164}
+                    </span>
+                  ) : null}
+                </span>
+                {value?.id === r.id ? (
+                  <Check size={14} className="shrink-0 text-[var(--admin-accent)]" />
+                ) : null}
+              </button>
+            ))}
+
+            {error ? (
+              <div
+                className="rounded-[10px] px-3 py-2 text-[12px] text-[var(--admin-danger)]"
+                style={{ background: "var(--admin-danger-bg)" }}
+              >
+                {error}
+              </div>
+            ) : null}
+          </div>
+        </>
+      </Sheet>
+    </>
   );
 }
