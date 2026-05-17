@@ -58,12 +58,14 @@ export function DepositSection({
             value={amount}
             onChange={(e) => onAmountChange(e.target.value)}
             placeholder="50"
+            enterKeyHint="next"
           />
           <Input
             label="Méthode (opt.)"
             value={method}
             onChange={(e) => onMethodChange(e.target.value)}
             placeholder="cash, virement…"
+            enterKeyHint="done"
           />
         </div>
       ) : null}

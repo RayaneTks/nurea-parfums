@@ -180,6 +180,7 @@ export function BatchExpensesSection({
             onChange={(e) => setLabel(e.target.value)}
             placeholder="ex. Billet d'avion"
             autoFocus
+            enterKeyHint="next"
           />
           <Input
             label="Montant (€)"
@@ -191,6 +192,7 @@ export function BatchExpensesSection({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0,00"
+            enterKeyHint="done"
           />
           <div className="flex gap-2 pt-1">
             <Button

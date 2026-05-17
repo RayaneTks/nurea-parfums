@@ -164,33 +164,33 @@ export function PerfumePricingPanel({ perfumeId, initial }: PerfumePricingPanelP
                   ) : null}
                 </HStack>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <Input
-                    label="Prix € (TTC)"
+                    label="Prix €"
                     inputMode="decimal"
                     numeric
                     value={d.unitPriceEur}
                     onChange={(e) => updateDraft(v, { unitPriceEur: e.target.value })}
                     placeholder="120"
+                    enterKeyHint="next"
                   />
                   <Input
-                    label="Coût DZD (opt.)"
+                    label="Coût DZD"
                     inputMode="decimal"
                     numeric
                     value={d.unitCostDzd}
                     onChange={(e) => updateDraft(v, { unitCostDzd: e.target.value })}
                     placeholder="36000"
+                    enterKeyHint="next"
                   />
-                </div>
-                <div className="mt-2">
                   <Input
-                    label="Taux de change EUR→DZD (opt.)"
+                    label="Taux"
                     inputMode="decimal"
                     numeric
                     value={d.exchangeRate}
                     onChange={(e) => updateDraft(v, { exchangeRate: e.target.value })}
                     placeholder="277"
-                    hint="Convertit le coût DZD. Vide = 277."
+                    enterKeyHint="done"
                   />
                 </div>
 

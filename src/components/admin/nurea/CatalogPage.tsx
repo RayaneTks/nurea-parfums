@@ -593,6 +593,8 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
             <input
               id="admin-nurea-search"
               type="search"
+              inputMode="search"
+              enterKeyHint="search"
               placeholder={
                 tab === "brands"
                   ? "Rechercher une marque…"

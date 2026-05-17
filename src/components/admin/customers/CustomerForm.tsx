@@ -91,6 +91,7 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
             onChange={(e) => setFullName(e.target.value)}
             placeholder="Alice Dupont"
             autoComplete="name"
+            enterKeyHint="next"
           />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Input
@@ -101,6 +102,7 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
               inputMode="tel"
               autoComplete="tel"
               hint="Format E.164"
+              enterKeyHint="next"
             />
             <Input
               label="WhatsApp"
@@ -108,6 +110,7 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
               onChange={(e) => setWhatsapp(e.target.value)}
               placeholder="+33612345678"
               inputMode="tel"
+              enterKeyHint="next"
             />
           </div>
           <Input
@@ -115,12 +118,14 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
             value={snapchat}
             onChange={(e) => setSnapchat(e.target.value)}
             placeholder="username"
+            enterKeyHint="next"
           />
           <Input
             label="Adresse"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder="Rue, ville, code postal"
+            enterKeyHint="next"
           />
           <Textarea
             label="Notes"
@@ -128,6 +133,7 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             placeholder="Préférences, allergies, contexte…"
+            enterKeyHint="done"
           />
         </Stack>
 
