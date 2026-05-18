@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Plus, Receipt } from "lucide-react";
@@ -45,6 +45,26 @@ type FromOrder = {
 
 function isVol(v: number | null): v is 30 | 50 | 100 {
   return v === 30 || v === 50 || v === 100;
+}
+
+type PricingPayload = {
+  defaultUnitPriceEur: string;
+  defaultUnitCostDzd: string | null;
+  defaultExchangeRate: string | null;
+};
+
+async function fetchPricing(perfumeId: number, volumeMl: number): Promise<PricingPayload | null> {
+  try {
+    const r = await fetch(`/api/admin/perfumes/${perfumeId}/pricing?volumeMl=${volumeMl}`, {
+      credentials: "include",
+      cache: "no-store",
+    });
+    if (!r.ok) return null;
+    const json = (await r.json()) as { row?: PricingPayload };
+    return json.row ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export function SellPageClient() {
@@ -119,8 +139,9 @@ export function SellPageClient() {
     return { revenue, cost, margin, marginPct };
   }, [lines]);
 
-  const handlePickerSelect = (result: PickerResult) => {
+  const handlePickerSelect = useCallback(async (result: PickerResult) => {
     if (result.kind === "catalog") {
+      const pricing = await fetchPricing(result.perfume.id, 100);
       setLines((prev) => [
         ...prev,
         {
@@ -133,9 +154,9 @@ export function SellPageClient() {
           },
           quantity: 1,
           volumeMl: 100,
-          unitPrice: "",
-          unitCostDzd: "",
-          exchangeRate: "277",
+          unitPrice: pricing?.defaultUnitPriceEur ?? "",
+          unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
+          exchangeRate: pricing?.defaultExchangeRate ?? "277",
         },
       ]);
     } else {
@@ -153,12 +174,39 @@ export function SellPageClient() {
         },
       ]);
     }
-  };
+  }, []);
 
-  const patchLine = (key: string, patch: Partial<SellLine>) =>
+  const patchLine = useCallback((key: string, patch: Partial<SellLine>) => {
+    if (patch.volumeMl !== undefined) {
+      const target = lines.find((l) => l.key === key);
+      if (target?.perfumeId !== null && target?.perfumeId !== undefined && patch.volumeMl !== target.volumeMl) {
+        void fetchPricing(target.perfumeId, patch.volumeMl).then((pricing) => {
+          setLines((prev) =>
+            prev.map((l) =>
+              l.key === key
+                ? {
+                    ...l,
+                    ...patch,
+                    ...(pricing
+                      ? {
+                          unitPrice: pricing.defaultUnitPriceEur,
+                          unitCostDzd: pricing.defaultUnitCostDzd ?? l.unitCostDzd,
+                          exchangeRate: pricing.defaultExchangeRate ?? l.exchangeRate,
+                        }
+                      : {}),
+                  }
+                : l,
+            ),
+          );
+        });
+        return;
+      }
+    }
     setLines((prev) => prev.map((l) => (l.key === key ? { ...l, ...patch } : l)));
-  const removeLine = (key: string) =>
-    setLines((prev) => prev.filter((l) => l.key !== key));
+  }, [lines]);
+
+  const removeLine = useCallback((key: string) =>
+    setLines((prev) => prev.filter((l) => l.key !== key)), []);
 
   const submit = () => {
     if (lines.length === 0) {
@@ -325,17 +373,19 @@ export function SellPageClient() {
                 <Money value={totals.revenue} bold className="text-[22px]" />
               </p>
             </div>
-            <div className="text-right">
-              <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-                Marge
-              </p>
-              <p className="mt-1">
-                <Money value={totals.margin} bold tone="success" />
-              </p>
-              <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
-                {totals.marginPct.toFixed(0)}%
-              </p>
-            </div>
+            {totals.cost > 0 ? (
+              <div className="text-right">
+                <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+                  Marge
+                </p>
+                <p className="mt-1">
+                  <Money value={totals.margin} bold tone="success" />
+                </p>
+                <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
+                  {totals.marginPct.toFixed(0)}%
+                </p>
+              </div>
+            ) : null}
           </HStack>
         </Card>
 
@@ -357,7 +407,7 @@ export function SellPageClient() {
       <PerfumePicker
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
-        onSelect={handlePickerSelect}
+        onSelect={(result) => void handlePickerSelect(result)}
         excludedIds={lines.map((l) => l.perfumeId).filter((id): id is number => id !== null)}
       />
 

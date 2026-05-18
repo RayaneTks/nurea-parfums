@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ClipboardList, PlusCircle, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, ClipboardList, PlusCircle, ShoppingBag, TrendingUp } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Card } from "@/ui/primitives/Card";
 
@@ -7,12 +7,17 @@ const ACTIONS: Array<{ href: string; label: string; description?: string; icon: 
   {
     href: "/admin/ordres/new?mode=quick",
     label: "Commande rapide",
-    description: "1 écran, 30 secondes",
+    description: "Client + parfum en 30 sec",
     icon: PlusCircle,
   },
-  { href: "/admin/ordres", label: "Commandes du jour", icon: ClipboardList },
-  { href: "/admin/clients", label: "Clients", icon: Users },
-  { href: "/admin/compta", label: "Compta", icon: TrendingUp },
+  {
+    href: "/admin/vendre",
+    label: "Vendre directe",
+    description: "Sans commande préalable",
+    icon: ShoppingBag,
+  },
+  { href: "/admin/ordres", label: "Commandes", description: "Voir toutes les commandes", icon: ClipboardList },
+  { href: "/admin/compta", label: "Compta", description: "Historique & marge des ventes", icon: TrendingUp },
 ];
 
 export function QuickActionsBlock() {
