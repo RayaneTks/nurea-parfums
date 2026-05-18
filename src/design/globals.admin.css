@@ -115,6 +115,7 @@ body.admin-route {
    Priorité inline style > stylesheet, mais on ajoute aussi ici en filet. */
 html.admin-keyboard-open [data-vaul-drawer][data-vaul-drawer-direction="bottom"] {
   bottom: var(--admin-keyboard-h, 0px) !important;
+  max-height: var(--admin-vh, 100dvh) !important;
 }
 
 /* Modal (admin/ui/Modal.tsx) : items-end centre sur layout viewport (derrière
