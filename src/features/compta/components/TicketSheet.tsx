@@ -41,6 +41,7 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmUnsaved, setConfirmUnsaved] = useState(false);
 
   useEffect(() => {
     if (!open || !saleId) return;
@@ -244,9 +245,8 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
 
   const tryClose = useCallback(() => {
     if (ticket.mode === "edit" && ticket.isDirty) {
-      const ok = window.confirm("Modifications non enregistrées. Fermer quand même ?");
-      if (!ok) return;
-      ticket.exitEdit();
+      setConfirmUnsaved(true);
+      return;
     }
     onOpenChange(false);
   }, [ticket, onOpenChange]);
@@ -291,7 +291,13 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
       <Sheet
         open={open}
         onOpenChange={(o) => (o ? onOpenChange(true) : tryClose())}
-        title={loading || !sale ? "Vente" : ticket.draft.customerName || "Vente"}
+        title={
+          loading || !sale
+            ? "Vente"
+            : ticket.mode === "edit"
+              ? `Modifier · ${ticket.draft.customerName || "Vente"}`
+              : ticket.draft.customerName || "Vente"
+        }
         description={loading || !sale ? "Chargement…" : undefined}
         footer={sale ? footer : undefined}
         dismissible={ticket.mode === "view" || !ticket.isDirty}
@@ -375,6 +381,19 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
         confirmLabel="Supprimer"
         nested
         onConfirm={deleteSale}
+      />
+      <ConfirmDialog
+        open={confirmUnsaved}
+        onOpenChange={setConfirmUnsaved}
+        title="Modifications non enregistrées"
+        description="Fermer sans sauvegarder les changements ?"
+        confirmLabel="Fermer quand même"
+        nested
+        onConfirm={() => {
+          setConfirmUnsaved(false);
+          ticket.exitEdit();
+          onOpenChange(false);
+        }}
       />
     </>
   );

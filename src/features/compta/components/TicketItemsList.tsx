@@ -7,6 +7,26 @@ import { TicketItemRow } from "./TicketItemRow";
 import { PerfumePicker, type PickerResult } from "@/features/sell/components/PerfumePicker";
 import type { TicketDraftLine } from "../hooks/useTicketEdit";
 
+type PricingPayload = {
+  defaultUnitPriceEur: string;
+  defaultUnitCostDzd: string | null;
+  defaultExchangeRate: string | null;
+};
+
+async function fetchPricing(perfumeId: number, volumeMl: number): Promise<PricingPayload | null> {
+  try {
+    const r = await fetch(`/api/admin/perfumes/${perfumeId}/pricing?volumeMl=${volumeMl}`, {
+      credentials: "include",
+      cache: "no-store",
+    });
+    if (!r.ok) return null;
+    const json = (await r.json()) as { row?: PricingPayload };
+    return json.row ?? null;
+  } catch {
+    return null;
+  }
+}
+
 type TicketItemsListProps = {
   lines: TicketDraftLine[];
   mode: "view" | "edit";
@@ -26,9 +46,10 @@ export function TicketItemsList({
 }: TicketItemsListProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  const handlePick = (result: PickerResult) => {
+  const handlePick = async (result: PickerResult) => {
     const key = `new:${Date.now()}`;
     if (result.kind === "catalog") {
+      const pricing = await fetchPricing(result.perfume.id, 100);
       onAdd({
         key,
         perfumeId: result.perfume.id,
@@ -39,9 +60,9 @@ export function TicketItemsList({
         },
         quantity: 1,
         volumeMl: 100,
-        unitPrice: "",
-        unitCostDzd: "",
-        exchangeRate: "277",
+        unitPrice: pricing?.defaultUnitPriceEur ?? "",
+        unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
+        exchangeRate: pricing?.defaultExchangeRate ?? "277",
       });
     } else {
       onAdd({
@@ -91,7 +112,7 @@ export function TicketItemsList({
       <PerfumePicker
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
-        onSelect={handlePick}
+        onSelect={(result) => void handlePick(result)}
         allowManual
       />
     </>

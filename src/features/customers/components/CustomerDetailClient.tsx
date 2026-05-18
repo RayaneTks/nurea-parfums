@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2 } from "lucide-react";
+import { MessageCircle, Pencil, Phone, Trash2 } from "lucide-react";
 import { Stack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
 import { Button } from "@/ui/primitives/Button";
@@ -69,6 +69,54 @@ export function CustomerDetailClient({ customer, orders }: CustomerDetailClientP
       <Stack gap={4}>
         <CustomerHeader customer={current} onNameSave={handleNameSave} />
         <CustomerKpiRow customer={current} />
+
+        {(current.phoneE164 ?? current.whatsappE164 ?? current.snapchat) ? (
+          <div className="flex flex-wrap gap-2">
+            {current.phoneE164 ? (
+              <a
+                href={`tel:${current.phoneE164}`}
+                className="inline-flex items-center gap-2 rounded-[12px] px-4 py-2.5 text-[14px] font-medium tap-scale"
+                style={{
+                  background: "var(--admin-success-bg)",
+                  color: "var(--admin-success)",
+                  border: "1px solid color-mix(in srgb, var(--admin-success) 25%, transparent)",
+                }}
+              >
+                <Phone size={15} aria-hidden /> Appeler
+              </a>
+            ) : null}
+            {current.whatsappE164 ? (
+              <a
+                href={`https://wa.me/${current.whatsappE164.replace(/^\+/, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-[12px] px-4 py-2.5 text-[14px] font-medium tap-scale"
+                style={{
+                  background: "var(--admin-success-bg)",
+                  color: "var(--admin-success)",
+                  border: "1px solid color-mix(in srgb, var(--admin-success) 25%, transparent)",
+                }}
+              >
+                <MessageCircle size={15} aria-hidden /> WhatsApp
+              </a>
+            ) : null}
+            {current.snapchat ? (
+              <a
+                href={`https://www.snapchat.com/add/${current.snapchat}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-[12px] px-4 py-2.5 text-[14px] font-medium tap-scale"
+                style={{
+                  background: "var(--admin-warning-bg)",
+                  color: "var(--admin-warning)",
+                  border: "1px solid color-mix(in srgb, var(--admin-warning) 25%, transparent)",
+                }}
+              >
+                <span className="text-[13px] leading-none font-bold">👻</span> Snap
+              </a>
+            ) : null}
+          </div>
+        ) : null}
 
         {current.notes ? (
           <Card padding={3}>
