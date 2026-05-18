@@ -11,7 +11,7 @@ interface ContactPageClientProps {
 
 export const ContactPageClient = ({ parfum = "", marque = "" }: ContactPageClientProps) => {
   return (
-    <div className="nurea-vitrine-shell grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
+    <div className="nurea-vitrine-shell grain flex flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
       <Navbar />
       <ContactSection parfum={parfum} marque={marque} />
       <Footer />

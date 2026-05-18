@@ -526,6 +526,52 @@ input[type="search"]::-webkit-search-results-decoration {
   padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
 }
 
+/* ═══════════════════════════════════════════════════════════
+   VIEWPORT MOBILE — clavier-aware (visualViewport)
+   PublicViewportSync écrit --nurea-vh et --nurea-keyboard-h.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --nurea-vh: 100dvh;
+  --nurea-keyboard-h: 0px;
+}
+
+/* Shell vitrine : utilise la hauteur visible réelle.
+   Sur mobile, cela empêche les CTAs / footers de finir cachés sous
+   la barre d'adresse iOS ou sous le clavier quand un champ a le focus. */
+.nurea-vitrine-shell {
+  min-height: 100svh;
+  min-height: var(--nurea-vh, 100dvh);
+}
+
+/* Champ focusé : laisse de la place sous le champ pour que le clavier ne
+   recouvre pas le bouton « Envoyer » ou les CTAs avoisinants. */
+.nurea-form-input {
+  scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 5rem);
+  scroll-margin-bottom: calc(var(--nurea-keyboard-h, 0px) + 6rem);
+}
+
+/* Quand le clavier mobile est ouvert : on masque les éléments fixes en bas
+   (FAB, etc.) car le clavier les pousse au-dessus du viewport visible. */
+html.nurea-keyboard-open .nurea-hide-on-keyboard {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(20px) !important;
+}
+
+/* Sticky headers : se masquent automatiquement quand le clavier est ouvert
+   pour libérer la place et éviter qu'ils ne recouvrent le champ focusé. */
+html.nurea-keyboard-open .nurea-sticky-hide-on-keyboard {
+  transform: translateY(-200%) !important;
+  pointer-events: none !important;
+}
+
+/* Form scroll : momentum iOS sur tout conteneur de formulaire. */
+.nurea-form-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

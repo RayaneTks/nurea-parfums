@@ -496,7 +496,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
 
         <div
           className={`sticky z-30 -mx-4 mb-4 min-w-0 overflow-x-clip border-b border-[var(--nurea-border)] bg-[var(--nurea-bg)] px-4 pt-4 pb-3 transition-transform duration-500 ease-out-expo [top:calc(env(safe-area-inset-top,0px)+3.5rem)] md:mx-0 md:mb-3 md:px-0 md:top-[calc(env(safe-area-inset-top,0px)+4.25rem)] ${
-          isHeaderVisible ? "translate-y-0" : "-translate-y-[calc(100%+env(safe-area-inset-top,0px)+4.25rem)]"  
+          isHeaderVisible ? "translate-y-0" : "-translate-y-[calc(100%+env(safe-area-inset-top,0px)+4.25rem)]"
         }`}>
           <ScrollReveal className="mb-0" delay={80}>
             <div className="relative mb-3 flex items-center">
@@ -516,12 +516,22 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
                 type="search"
                 name="q"
                 autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
                 enterKeyHint="search"
                 inputMode="search"
                 placeholder="Rechercher une marque, un parfum..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full min-h-[48px] border-b border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)]/50 py-3 pl-10 pr-11 text-base leading-snug text-[var(--nurea-text)] transition-colors duration-300 placeholder:text-[var(--nurea-text-subtle)] focus:border-[var(--nurea-accent)] focus:bg-[var(--nurea-surface)] focus:outline-none touch-manipulation md:min-h-[52px] md:text-[15px] rounded-t-sm"
+                onFocus={(e) => {
+                  /* iOS / Android : scroll explicite après l'ouverture du clavier,
+                     sinon l'input peut rester sous le clavier ou sous l'header. */
+                  const el = e.currentTarget;
+                  window.setTimeout(() => {
+                    el.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }, 250);
+                }}
+                className="nurea-form-input w-full min-h-[48px] border-b border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)]/50 py-3 pl-10 pr-11 text-base leading-snug text-[var(--nurea-text)] transition-colors duration-300 placeholder:text-[var(--nurea-text-subtle)] focus:border-[var(--nurea-accent)] focus:bg-[var(--nurea-surface)] focus:outline-none touch-manipulation md:min-h-[52px] md:text-[15px] rounded-t-sm"
               />
               {searchTerm.trim() !== "" && (
                 <button
@@ -771,7 +781,7 @@ export const CatalogSection = ({ catalogPerfumes, browseBrands }: CatalogSection
       </main>
 
       {/* Scroll to Top FAB */}
-      <div className={`fixed bottom-[calc(20px+env(safe-area-inset-bottom,0px))] right-4 z-[90] transition-all duration-500 md:hidden ${showScrollTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"}`}>
+      <div className={`nurea-hide-on-keyboard fixed bottom-[calc(20px+env(safe-area-inset-bottom,0px))] right-4 z-[90] transition-all duration-500 md:hidden ${showScrollTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"}`}>
         <button
           onClick={scrollToTop}
           className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--nurea-accent)] text-white shadow-2xl active-scale tap-highlight-transparent"

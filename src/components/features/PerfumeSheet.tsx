@@ -152,12 +152,21 @@ function SheetContent({ perfume, onClose }: PerfumeSheetProps) {
         className={`relative flex flex-col overflow-hidden rounded-t-[28px] bg-[var(--nurea-bg)] shadow-2xl transition-transform duration-500 ease-out-expo
           ${visible ? "translate-y-0" : "translate-y-full"}
         `}
-        style={{ maxHeight: "93dvh" }}
+        style={{
+          maxHeight:
+            "calc(var(--nurea-vh, 100dvh) - env(safe-area-inset-top, 0px) - 7%)",
+        }}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
         {/* Image — démarre immédiatement, drag handle en overlay */}
-        <div className="relative shrink-0 w-full overflow-hidden" style={{ height: "52dvh" }}>
+        <div
+          className="relative shrink-0 w-full overflow-hidden"
+          style={{
+            height:
+              "min(52dvh, calc(var(--nurea-vh, 100dvh) - env(safe-area-inset-top, 0px) - 320px))",
+          }}
+        >
           <Image
             key={imageSrc}
             src={imageSrc}
@@ -223,7 +232,7 @@ function SheetContent({ perfume, onClose }: PerfumeSheetProps) {
         </div>
 
         {/* CTAs */}
-        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4">
+        <div className="flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4">
           {isGammeComplete && perfume.classics ? (
             <GammeClassicsList perfume={perfume} />
           ) : (
