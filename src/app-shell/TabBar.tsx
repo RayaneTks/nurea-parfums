@@ -45,12 +45,15 @@ const TABS: readonly Tab[] = [
 ] as const;
 
 /**
- * Bottom tab bar — fixed en bas de l'écran (pas dans le flow du shell).
+ * Bottom tab bar — rendue en `flex-shrink-0` à la fin du flex column du
+ * shell admin. Le scroll content (`flex-1 overflow-y-auto`) au-dessus se
+ * comprime / s'étend selon la hauteur disponible, et la TabBar reste
+ * naturellement collée au bas du viewport visible (sync via --admin-vh
+ * pour gérer le clavier iOS).
  *
- * - position: fixed → reste collée au bas du viewport visible.
- * - Centrée dans la frame mobile (max-width 430px).
- * - Masquée (translateY 100%) quand le clavier iOS est ouvert
- *   (détecté via --admin-keyboard-open mis par ViewportSync).
+ * NB : on n'utilise PAS `position: fixed` ici — combiné à certains
+ * contextes de containment iOS PWA, ça pouvait faire apparaître la
+ * navbar tout en haut. Le flex layout reste la solution la plus stable.
  */
 export function TabBar() {
   const pathname = usePathname() ?? "";
@@ -59,23 +62,13 @@ export function TabBar() {
     <nav
       aria-label="Navigation principale"
       data-tabbar
-      className="admin-theme"
+      className="shrink-0"
       style={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 50,
-        maxWidth: "var(--admin-app-max-width)",
-        marginInline: "auto",
         background: "color-mix(in srgb, var(--admin-surface) 92%, transparent)",
         backdropFilter: "saturate(180%) blur(20px)",
         WebkitBackdropFilter: "saturate(180%) blur(20px)",
         borderTop: "1px solid var(--admin-border)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        transform: "translateY(calc(var(--admin-keyboard-open, 0) * 110%))",
-        transition: "transform 180ms cubic-bezier(0.32, 0.72, 0, 1)",
-        willChange: "transform",
       }}
     >
       <div

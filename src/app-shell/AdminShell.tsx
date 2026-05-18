@@ -76,16 +76,12 @@ export function AdminShell({ children }: AdminShellProps) {
           <PwaInstallHint />
           <div
             className="flex-1 min-h-0 overflow-y-auto"
-            style={{
-              WebkitOverflowScrolling: "touch",
-              paddingBottom:
-                "calc(var(--admin-tab-bar-height) + env(safe-area-inset-bottom, 0px))",
-            }}
+            style={{ WebkitOverflowScrolling: "touch" }}
           >
             {children}
           </div>
+          <TabBar />
         </div>
-        <TabBar />
         <AdminLoadingProgress />
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
       </div>
