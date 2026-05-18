@@ -33,7 +33,7 @@ export function BottomSheet({
   maxVh = 88,
 }: BottomSheetProps) {
   return (
-    <Drawer.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground>
+    <Drawer.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground repositionInputs={false}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" />
         <Drawer.Content

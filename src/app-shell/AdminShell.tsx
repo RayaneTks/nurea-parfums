@@ -16,9 +16,12 @@ type AdminShellProps = {
 /**
  * Layout shell admin — utilisé par app/admin/layout.tsx.
  *
- * - Frame mobile 430px max sur desktop (PWA iOS).
- * - Header sticky + TabBar bottom + Command palette + Loading progress + PWA hint.
- * - Login page : bypass shell complet.
+ * Pattern PWA standard restauré (ancien prod):
+ * - min-h-[100dvh] sur outer + inner (page coule naturellement)
+ * - TabBar `fixed bottom-0` (toujours visible)
+ * - Body scroll natif → iOS gère le scroll-into-view du focused input
+ *   automatiquement quand le clavier overlay
+ * - PAS de scroll container nesté (qui casse le comportement iOS natif)
  */
 export function AdminShell({ children }: AdminShellProps) {
   const pathname = usePathname() ?? "";
@@ -38,14 +41,8 @@ export function AdminShell({ children }: AdminShellProps) {
     return (
       <>
         <ViewportSync />
-        <div
-          className="admin-theme w-full"
-          style={{ height: "100dvh" }}
-        >
-          <div
-            className="mx-auto w-full max-w-[var(--admin-app-max-width)]"
-            style={{ height: "100dvh" }}
-          >
+        <div className="admin-theme w-full min-h-[100dvh]">
+          <div className="mx-auto w-full max-w-[var(--admin-app-max-width)] min-h-[100dvh]">
             {children}
           </div>
         </div>
@@ -61,28 +58,23 @@ export function AdminShell({ children }: AdminShellProps) {
   return (
     <>
       <ViewportSync />
-      <div
-        className="admin-theme w-full"
-        style={{ height: "100dvh", overflow: "hidden" }}
-      >
+      <div className="admin-theme w-full min-h-[100dvh]">
         <div
-          className="mx-auto flex flex-col w-full max-w-[var(--admin-app-max-width)]"
-          style={{ height: "100%", overflow: "hidden" }}
+          className="mx-auto flex flex-col w-full max-w-[var(--admin-app-max-width)] min-h-[100dvh]"
+          style={{
+            paddingBottom:
+              "calc(var(--admin-tab-bar-height) + env(safe-area-inset-bottom, 0px))",
+          }}
         >
           <AppHeader
             onOpenCommandPalette={() => setPaletteOpen(true)}
             onOpenSearch={focusCatalogueSearch}
           />
           <PwaInstallHint />
-          <div
-            className="flex-1 min-h-0 overflow-y-auto"
-            style={{ WebkitOverflowScrolling: "touch" }}
-          >
-            {children}
-          </div>
-          <TabBar />
+          {children}
         </div>
         <AdminLoadingProgress />
+        <TabBar />
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
       </div>
     </>

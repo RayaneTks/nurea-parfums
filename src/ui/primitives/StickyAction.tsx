@@ -21,13 +21,18 @@ export function StickyAction({ children, background = true, className }: StickyA
   return (
     <div
       className={cn(
-        "sticky bottom-0 left-0 right-0 z-20 -mx-4 px-4 pt-3",
+        "sticky left-0 right-0 z-20 -mx-4 px-4 pt-3",
         background
           ? "border-t border-[var(--admin-border)] bg-[var(--admin-surface)]/95 backdrop-blur-md"
           : null,
         className,
       )}
       style={{
+        /* Sticky juste au-dessus de la TabBar fixed (qui occupe le bas avec
+           tab-bar-height + safe-area-inset-bottom). Le bouton reste visible
+           au-dessus de la nav. */
+        bottom:
+          "calc(var(--admin-tab-bar-height) + env(safe-area-inset-bottom, 0px))",
         paddingBottom: "0.75rem",
       }}
     >

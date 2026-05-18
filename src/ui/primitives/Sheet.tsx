@@ -52,6 +52,7 @@ export function Sheet({
       onOpenChange={onOpenChange}
       shouldScaleBackground={!nested}
       dismissible={dismissible}
+      repositionInputs={false}
     >
       <Drawer.Portal>
         <Drawer.Overlay

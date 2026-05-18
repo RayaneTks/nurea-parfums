@@ -51,13 +51,14 @@ export function TabBar() {
     <nav
       aria-label="Navigation principale"
       data-tabbar
-      className="shrink-0"
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[var(--admin-app-max-width)] z-[50]"
       style={{
         background: "color-mix(in srgb, var(--admin-surface) 92%, transparent)",
         backdropFilter: "saturate(180%) blur(20px)",
         WebkitBackdropFilter: "saturate(180%) blur(20px)",
         borderTop: "1px solid var(--admin-border)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        transform: "translate3d(0, 0, 0)",
       }}
     >
       <div

@@ -59,15 +59,18 @@
   background: var(--admin-bg);
 }
 
-/* iOS PWA — fixer le viewport pour éviter le saut de page au focus clavier */
+/* iOS PWA — body scroll natif requis pour que le clavier overlay sans
+   décaler la page. iOS gère automatiquement le scroll-into-view du focused
+   input quand le body est scrollable et que html/body ne sont PAS
+   overflow:hidden. C'est la norme UI/UX d'apps natives. */
 html.admin-route-root {
-  overflow: hidden;
   height: 100%;
 }
 
 body.admin-route {
-  overflow: hidden;
-  height: 100%;
+  min-height: 100%;
+  /* overscroll-behavior empêche le pull-to-refresh / rebond Safari sur PWA */
+  overscroll-behavior-y: none;
 }
 
 /* Tabular numerals utility (montants, dates) */
@@ -125,12 +128,13 @@ html.admin-keyboard-open .admin-modal-overlay {
   padding-bottom: var(--admin-keyboard-h, 0px);
 }
 
-/* Formulaires admin : scroll margin pour que le champ focusé reste visible
-   au-dessus du clavier quand le shell se compresse. */
+/* Formulaires admin : scroll-margin pour scrollIntoView. Garde le champ
+   focusé au-dessus du clavier ET sous le header sticky. */
 .admin-theme input:focus,
 .admin-theme textarea:focus,
 .admin-theme select:focus {
   scroll-margin-bottom: calc(var(--admin-keyboard-h, 0px) + 1rem);
+  scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 64px);
 }
 
 /* Safe-area wrappers */

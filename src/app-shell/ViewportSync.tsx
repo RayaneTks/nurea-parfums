@@ -3,16 +3,14 @@
 import { useEffect } from "react";
 
 /**
- * Synchronise `--admin-vh`, `--admin-keyboard-h` et `--admin-vv-offset`
- * avec la hauteur réelle visible (visualViewport).
+ * Synchronise `--admin-vh`, `--admin-keyboard-h` et `--admin-vv-offset` avec
+ * `visualViewport` (hauteur réelle visible quand le clavier overlay).
  *
- * iOS Safari / PWA standalone ne met PAS à jour `100dvh` quand le clavier
- * s'ouvre : le shell reste à la hauteur plein écran et le clavier recouvre
- * les inputs. visualViewport est la seule source de vérité.
- *
- * `--admin-keyboard-h` = hauteur estimée du clavier (layout viewport height
- *  minus visual viewport height). Utilisé pour lever les sheets / modals
- *  au-dessus du clavier (`bottom: var(--admin-keyboard-h, 0px)`).
+ * Centre AUTOMATIQUEMENT l'input focused dans la zone visible :
+ * - iOS PWA standalone ne scroll PAS toujours l'input dans la vue
+ * - On force un `scrollIntoView({block: "center"})` après que le clavier soit
+ *   stable (~280ms) sur tout focus d'input/textarea/select
+ * - Ignoré pour les inputs DANS un vaul drawer (gestion propre du drawer)
  */
 export function ViewportSync() {
   useEffect(() => {
@@ -46,6 +44,41 @@ export function ViewportSync() {
       window.addEventListener("orientationchange", apply);
     }
 
+    /* Centre l'input focused dans la zone visible.
+       Norme iOS native : le clavier overlay, l'input reste centré-haut visible. */
+    let focusTimer: ReturnType<typeof setTimeout> | null = null;
+    const onFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const tag = target.tagName;
+      if (tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT") return;
+      /* Évite les inputs dans un drawer vaul — le drawer gère son scroll. */
+      if (target.closest("[data-vaul-drawer]")) return;
+      /* Évite les checkbox / radio / bouton-style inputs */
+      const inputType = (target as HTMLInputElement).type;
+      if (inputType === "checkbox" || inputType === "radio" || inputType === "button" || inputType === "submit") return;
+
+      if (focusTimer) clearTimeout(focusTimer);
+      focusTimer = setTimeout(() => {
+        if (document.activeElement !== target) return;
+        /* Centre l'input dans la ZONE VISIBLE (au-dessus du clavier).
+           scrollIntoView({block:"center"}) centre dans le layout viewport
+           qui inclut la zone clavier → input mal placé. On calcule
+           manuellement depuis visualViewport. */
+        const rect = target.getBoundingClientRect();
+        const visualVp = window.visualViewport;
+        const visibleH = visualVp ? visualVp.height : window.innerHeight;
+        const visibleTop = visualVp ? visualVp.offsetTop : 0;
+        const visibleCenterY = visibleTop + visibleH / 2;
+        const elementCenterY = rect.top + rect.height / 2;
+        const delta = elementCenterY - visibleCenterY;
+        if (Math.abs(delta) > 4) {
+          window.scrollBy({ top: delta, behavior: "smooth" });
+        }
+      }, 320);
+    };
+    document.addEventListener("focusin", onFocusIn);
+
     return () => {
       if (vv) {
         vv.removeEventListener("resize", apply);
@@ -54,6 +87,8 @@ export function ViewportSync() {
         window.removeEventListener("resize", apply);
         window.removeEventListener("orientationchange", apply);
       }
+      document.removeEventListener("focusin", onFocusIn);
+      if (focusTimer) clearTimeout(focusTimer);
       root.style.removeProperty("--admin-vh");
       root.style.removeProperty("--admin-vv-offset");
       root.style.removeProperty("--admin-keyboard-h");
