@@ -40,11 +40,11 @@ export function AdminShell({ children }: AdminShellProps) {
         <ViewportSync />
         <div
           className="admin-theme w-full"
-          style={{ height: "var(--admin-vh, 100dvh)" }}
+          style={{ height: "100dvh" }}
         >
           <div
             className="mx-auto w-full max-w-[var(--admin-app-max-width)]"
-            style={{ height: "var(--admin-vh, 100dvh)" }}
+            style={{ height: "100dvh" }}
           >
             {children}
           </div>
@@ -63,7 +63,7 @@ export function AdminShell({ children }: AdminShellProps) {
       <ViewportSync />
       <div
         className="admin-theme w-full"
-        style={{ height: "var(--admin-vh, 100dvh)", overflow: "hidden" }}
+        style={{ height: "100dvh", overflow: "hidden" }}
       >
         <div
           className="mx-auto flex flex-col w-full max-w-[var(--admin-app-max-width)]"
