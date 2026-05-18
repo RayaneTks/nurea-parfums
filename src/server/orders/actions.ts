@@ -9,6 +9,7 @@ import { tagFor } from "@/lib/admin/cache-tags";
 import { createOrderInputSchema, updateOrderInputSchema } from "@/schemas/order";
 import type { CreateOrderInput, UpdateOrderInput } from "@/schemas/order";
 import type { ActionResult } from "@/server/customers/actions";
+import type { OrderStatus } from "@prisma/client";
 
 function lineUnitCostEur(unitCostDzd: string | null, exchangeRate: string | null): string {
   if (!unitCostDzd || !exchangeRate) return "0";
@@ -234,5 +235,77 @@ export async function cancelOrderAction(orderId: string): Promise<ActionResult<{
     return { ok: true, data: { id: orderId } };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Annulation impossible." };
+  }
+}
+
+const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  PENDING: ["READY", "DELIVERED", "CANCELLED"],
+  READY: ["PENDING", "DELIVERED", "CANCELLED"],
+  DELIVERED: ["READY", "PENDING"],
+  CANCELLED: ["PENDING", "READY"],
+};
+
+/**
+ * Change le statut d'une commande sans dépendre du paiement.
+ *
+ * Permet à l'admin de skipper l'étape acompte (PENDING → READY sans
+ * paiement enregistré), de rétrograder (READY → PENDING), de marquer
+ * livrée directement, d'annuler ou de réactiver une commande annulée.
+ *
+ * Garde-fous :
+ *   - matrice ALLOWED_TRANSITIONS pour empêcher les sauts incohérents.
+ *   - DELIVERED → autre statut interdit si une Sale est déjà rattachée
+ *     (on ne peut pas dé-livrer ce qui a déjà été encaissé).
+ */
+export async function transitionOrderStatusAction(
+  orderId: string,
+  nextStatus: OrderStatus,
+): Promise<ActionResult<{ id: string; status: OrderStatus }>> {
+  try {
+    const current = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, status: true, sale: { select: { id: true } } },
+    });
+    if (!current) {
+      return { ok: false, error: "Commande introuvable." };
+    }
+    if (current.status === nextStatus) {
+      return { ok: true, data: { id: current.id, status: current.status } };
+    }
+    const allowed = ALLOWED_TRANSITIONS[current.status] ?? [];
+    if (!allowed.includes(nextStatus)) {
+      return {
+        ok: false,
+        error: `Transition ${current.status} → ${nextStatus} non autorisée.`,
+      };
+    }
+    if (current.status === "DELIVERED" && current.sale) {
+      return {
+        ok: false,
+        error: "Cette commande a une vente enregistrée ; impossible de la dé-livrer.",
+      };
+    }
+
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { status: nextStatus },
+    });
+
+    await writeAudit(undefined, "order.transition", "Order", orderId, {
+      from: current.status,
+      to: nextStatus,
+    });
+    revalidatePath("/admin/ordres");
+    revalidatePath(`/admin/ordres/${orderId}`);
+    revalidatePath("/admin");
+    revalidateTag(tagFor.orders(), "default");
+    revalidateTag(tagFor.order(orderId), "default");
+    revalidateTag(tagFor.pipeline(), "default");
+    return { ok: true, data: { id: orderId, status: nextStatus } };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Changement de statut impossible.",
+    };
   }
 }
