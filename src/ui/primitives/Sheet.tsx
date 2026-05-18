@@ -120,7 +120,7 @@ export function Sheet({
 
           <div
             className={cn(
-              "admin-scroll-area flex-1 overflow-y-auto overscroll-contain px-4",
+              "flex-1 overflow-y-auto overscroll-contain px-4",
               footer ? "pt-3 pb-3" : "py-4",
             )}
             style={{

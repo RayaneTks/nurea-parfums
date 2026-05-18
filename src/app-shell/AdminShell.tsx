@@ -7,7 +7,6 @@ import { TabBar } from "./TabBar";
 import { CommandPalette } from "./CommandPalette";
 import { AdminLoadingProgress } from "./AdminLoadingProgress";
 import { PwaInstallHint } from "./PwaInstallHint";
-import { ViewportSync } from "./ViewportSync";
 
 type AdminShellProps = {
   children: ReactNode;
@@ -36,14 +35,11 @@ export function AdminShell({ children }: AdminShellProps) {
 
   if (isLogin) {
     return (
-      <>
-        <ViewportSync />
-        <div className="admin-theme admin-shell-frame w-full">
-          <div className="mx-auto h-full w-full max-w-[var(--admin-app-max-width)]">
-            {children}
-          </div>
+      <div className="admin-theme w-full min-h-[100dvh]">
+        <div className="mx-auto w-full max-w-[var(--admin-app-max-width)] min-h-[100dvh]">
+          {children}
         </div>
-      </>
+      </div>
     );
   }
 
@@ -53,32 +49,29 @@ export function AdminShell({ children }: AdminShellProps) {
   };
 
   return (
-    <>
-      <ViewportSync />
+    <div
+      className="admin-theme w-full"
+      style={{ height: "100dvh", overflow: "hidden" }}
+    >
       <div
-        className="admin-theme admin-shell-frame w-full"
-        style={{ overflow: "hidden" }}
+        className="mx-auto flex flex-col w-full max-w-[var(--admin-app-max-width)]"
+        style={{ height: "100%", overflow: "hidden" }}
       >
+        <AppHeader
+          onOpenCommandPalette={() => setPaletteOpen(true)}
+          onOpenSearch={focusCatalogueSearch}
+        />
+        <PwaInstallHint />
         <div
-          className="mx-auto flex h-full flex-col w-full max-w-[var(--admin-app-max-width)]"
-          style={{ overflow: "hidden" }}
+          className="flex-1 min-h-0 overflow-y-auto"
+          style={{ WebkitOverflowScrolling: "touch" }}
         >
-          <AppHeader
-            onOpenCommandPalette={() => setPaletteOpen(true)}
-            onOpenSearch={focusCatalogueSearch}
-          />
-          <PwaInstallHint />
-          <div
-            className="admin-scroll-area flex-1 min-h-0 overflow-y-auto"
-            style={{ WebkitOverflowScrolling: "touch" }}
-          >
-            {children}
-          </div>
-          <TabBar />
+          {children}
         </div>
-        <AdminLoadingProgress />
-        <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+        <TabBar />
       </div>
-    </>
+      <AdminLoadingProgress />
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+    </div>
   );
 }

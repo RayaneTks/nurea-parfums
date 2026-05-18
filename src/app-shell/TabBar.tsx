@@ -44,17 +44,6 @@ const TABS: readonly Tab[] = [
   },
 ] as const;
 
-/**
- * Bottom tab bar — rendue en `flex-shrink-0` à la fin du flex column du
- * shell admin. Le scroll content (`flex-1 overflow-y-auto`) au-dessus se
- * comprime / s'étend selon la hauteur disponible, et la TabBar reste
- * naturellement collée au bas du viewport visible (sync via --admin-vh
- * pour gérer le clavier iOS).
- *
- * NB : on n'utilise PAS `position: fixed` ici — combiné à certains
- * contextes de containment iOS PWA, ça pouvait faire apparaître la
- * navbar tout en haut. Le flex layout reste la solution la plus stable.
- */
 export function TabBar() {
   const pathname = usePathname() ?? "";
 
@@ -64,9 +53,9 @@ export function TabBar() {
       data-tabbar
       className="shrink-0"
       style={{
-        /* Fond 100% opaque — la safe-area du home indicator iOS se confond
-           avec la nav et donne l'impression d'aller jusqu'au bord. */
-        background: "var(--admin-surface)",
+        background: "color-mix(in srgb, var(--admin-surface) 92%, transparent)",
+        backdropFilter: "saturate(180%) blur(20px)",
+        WebkitBackdropFilter: "saturate(180%) blur(20px)",
         borderTop: "1px solid var(--admin-border)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
       }}
