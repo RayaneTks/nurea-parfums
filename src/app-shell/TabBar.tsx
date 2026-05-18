@@ -64,9 +64,9 @@ export function TabBar() {
       data-tabbar
       className="shrink-0"
       style={{
-        background: "color-mix(in srgb, var(--admin-surface) 92%, transparent)",
-        backdropFilter: "saturate(180%) blur(20px)",
-        WebkitBackdropFilter: "saturate(180%) blur(20px)",
+        /* Fond 100% opaque — la safe-area du home indicator iOS se confond
+           avec la nav et donne l'impression d'aller jusqu'au bord. */
+        background: "var(--admin-surface)",
         borderTop: "1px solid var(--admin-border)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
       }}

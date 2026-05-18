@@ -21,6 +21,13 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
+  /*
+   * Dit à iOS (Safari 16.4+) de RÉDIMENSIONNER le viewport quand le
+   * clavier s'ouvre (au lieu de juste l'overlayer). 100dvh devient
+   * donc la hauteur visible au-dessus du clavier — la TabBar et les
+   * sheets vaul restent visibles, l'input focusé n'est plus caché.
+   */
+  interactiveWidget: "resizes-content",
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
