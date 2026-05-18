@@ -101,6 +101,37 @@ body.admin-route {
   font-size: 16px; /* prevent iOS zoom */
 }
 
+/* ═══════════════════════════════════════════════════════════
+   CLAVIER MOBILE — sheets et modals keyboard-aware
+   ViewportSync expose --admin-keyboard-h (hauteur du clavier).
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --admin-keyboard-h: 0px;
+}
+
+/* Vaul Drawer (Sheet/BottomSheet) : forcer bottom au-dessus du clavier.
+   [data-vaul-drawer] = attribut injecté par vaul sur Drawer.Content.
+   Priorité inline style > stylesheet, mais on ajoute aussi ici en filet. */
+html.admin-keyboard-open [data-vaul-drawer][data-vaul-drawer-direction="bottom"] {
+  bottom: var(--admin-keyboard-h, 0px) !important;
+}
+
+/* Modal (admin/ui/Modal.tsx) : items-end centre sur layout viewport (derrière
+   le clavier). On pousse vers le haut via padding-bottom déjà géré via style
+   prop dans le composant. Cette règle est un filet de sécurité. */
+html.admin-keyboard-open .admin-modal-overlay {
+  padding-bottom: var(--admin-keyboard-h, 0px);
+}
+
+/* Formulaires admin : scroll margin pour que le champ focusé reste visible
+   au-dessus du clavier quand le shell se compresse. */
+.admin-theme input:focus,
+.admin-theme textarea:focus,
+.admin-theme select:focus {
+  scroll-margin-bottom: calc(var(--admin-keyboard-h, 0px) + 1rem);
+}
+
 /* Safe-area wrappers */
 .admin-safe-top {
   padding-top: env(safe-area-inset-top, 0px);

@@ -38,10 +38,13 @@ export function BottomSheet({
         <Drawer.Overlay className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" />
         <Drawer.Content
           className={cn(
-            "fixed inset-x-0 bottom-0 z-[71] mx-auto flex max-w-[430px] flex-col rounded-t-2xl bg-white outline-none",
+            "fixed inset-x-0 z-[71] mx-auto flex max-w-[430px] flex-col rounded-t-2xl bg-white outline-none",
             className,
           )}
-          style={{ maxHeight: `${maxVh}vh` }}
+          style={{
+            bottom: "var(--admin-keyboard-h, 0px)",
+            maxHeight: `${maxVh}dvh`,
+          }}
         >
           <div className="mx-auto mt-2 h-1.5 w-10 shrink-0 rounded-full bg-neutral-300" aria-hidden />
           {title ? (

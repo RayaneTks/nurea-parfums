@@ -500,7 +500,7 @@ export function AdminBrandForm({ brandId }: { brandId?: string }) {
         </form>
       </main>
 
-      <div className="pointer-events-auto fixed bottom-[calc(5.5rem+max(16px,env(safe-area-inset-bottom,16px)))] left-1/2 z-[55] w-full max-w-[430px] -translate-x-1/2 px-5">
+      <div className="pointer-events-auto fixed left-1/2 z-[55] w-full max-w-[430px] -translate-x-1/2 px-5" style={{ bottom: "calc(var(--admin-keyboard-h, 0px) + 5.5rem + max(16px, env(safe-area-inset-bottom, 16px)))" }}>
         <AdminButton
           type="submit"
           form="brand-form"

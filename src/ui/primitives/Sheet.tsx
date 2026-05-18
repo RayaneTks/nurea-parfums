@@ -60,11 +60,15 @@ export function Sheet({
         />
         <Drawer.Content
           className={cn(
-            "admin-theme fixed inset-x-0 bottom-0 mx-auto flex flex-col rounded-t-[24px] bg-[var(--admin-surface)] outline-none",
+            "admin-theme fixed inset-x-0 mx-auto flex flex-col rounded-t-[24px] bg-[var(--admin-surface)] outline-none",
             "max-w-[var(--admin-app-max-width)]",
             className,
           )}
           style={{
+            /* bottom: var(--admin-keyboard-h) lève la sheet AU-DESSUS du clavier.
+               En iOS PWA, fixed bottom:0 = bas du layout viewport (DERRIÈRE le clavier).
+               ViewportSync calcule la hauteur du clavier en temps réel. */
+            bottom: "var(--admin-keyboard-h, 0px)",
             maxHeight: `calc(var(--admin-vh, 100dvh) * ${maxVh / 100})`,
             zIndex: nested ? 81 : 71,
           }}

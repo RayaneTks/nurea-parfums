@@ -116,13 +116,19 @@ export function Modal({
     <div
       aria-hidden={!open}
       className={cn(
-        "fixed inset-0 z-[150] max-h-dvh min-h-0 w-full min-w-0 max-w-full overflow-x-clip admin-theme",
+        "admin-modal-overlay fixed inset-0 z-[150] max-h-dvh min-h-0 w-full min-w-0 max-w-full overflow-x-clip admin-theme",
         "flex items-end justify-center sm:items-center sm:p-4",
         "touch-pan-y overscroll-y-contain bg-[var(--admin-overlay)] backdrop-blur-sm",
         isClosing
           ? "animate-out fade-out duration-200"
           : "animate-in fade-in duration-200",
       )}
+      style={{
+        /* Laisse de l'espace sous le modal pour le clavier iOS.
+           items-end sans ce padding aligne le modal AU BAS du layout viewport
+           (derrière le clavier), le rendant invisible. */
+        paddingBottom: "var(--admin-keyboard-h, 0px)",
+      }}
       onClick={dismissible && !isClosing ? onClose : undefined}
     >
       <div
