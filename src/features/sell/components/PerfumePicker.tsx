@@ -10,13 +10,18 @@ import { Stack } from "@/ui/primitives/Stack";
 import { Skeleton } from "@/ui/primitives/Skeleton";
 import { EmptyState } from "@/ui/primitives/EmptyState";
 import { SegmentedControl } from "@/ui/primitives/SegmentedControl";
+import { BrandPicker, type SelectedBrand } from "@/components/admin/brands/BrandPicker";
 import type { PerfumePickerRow } from "@/lib/gestion/types";
-
-let pickerCache: PerfumePickerRow[] | null = null;
 
 export type PickerResult =
   | { kind: "catalog"; perfume: PerfumePickerRow }
-  | { kind: "manual"; name: string; brandName: string };
+  | {
+      kind: "manual";
+      name: string;
+      brandName: string;
+      /** ID de la marque catalogue choisie (créée à la volée si nécessaire). */
+      brandId: string | null;
+    };
 
 type PerfumePickerProps = {
   open: boolean;
@@ -34,6 +39,16 @@ const MODE_OPTIONS = [
   { value: "manual" as const, label: "Saisie libre" },
 ];
 
+async function fetchCatalogue(): Promise<PerfumePickerRow[]> {
+  const r = await fetch("/api/admin/catalogue?mode=picker", {
+    credentials: "include",
+    cache: "no-store",
+  });
+  if (!r.ok) return [];
+  const json = (await r.json()) as { perfumes?: PerfumePickerRow[] };
+  return json.perfumes ?? [];
+}
+
 export function PerfumePicker({
   open,
   onClose,
@@ -46,41 +61,41 @@ export function PerfumePicker({
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
   const [manualName, setManualName] = useState("");
-  const [manualBrand, setManualBrand] = useState("");
+  const [manualBrand, setManualBrand] = useState<SelectedBrand | null>(null);
   const catalogSearchRef = useRef<HTMLInputElement>(null);
   const manualNameRef = useRef<HTMLInputElement>(null);
 
+  // Fetch frais à chaque ouverture (pas de cache module-level :
+  // l'ancien `pickerCache` rendait les nouveaux parfums invisibles).
   useEffect(() => {
     if (!open) return;
-    if (pickerCache) {
-      setPerfumes(pickerCache);
-      return;
-    }
+    let cancelled = false;
     setLoading(true);
-    fetch("/api/admin/catalogue?mode=picker", {
-      credentials: "include",
-      cache: "no-store",
-    })
-      .then(async (r) => {
-        if (!r.ok) throw new Error("Catalogue indisponible.");
-        return (await r.json()) as { perfumes: PerfumePickerRow[] };
+    void fetchCatalogue()
+      .then((rows) => {
+        if (cancelled) return;
+        setPerfumes(rows);
       })
-      .then((data) => {
-        const next = data.perfumes ?? [];
-        pickerCache = next;
-        setPerfumes(next);
+      .catch(() => {
+        if (cancelled) return;
+        setPerfumes([]);
       })
-      .catch(() => setPerfumes([]))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [open]);
 
-  // Reset mode + draft on open / close.
+  // Reset mode + draft on close.
   useEffect(() => {
     if (!open) {
       setMode("catalog");
       setQuery("");
       setManualName("");
-      setManualBrand("");
+      setManualBrand(null);
     }
   }, [open]);
 
@@ -88,6 +103,7 @@ export function PerfumePicker({
   // qui rendait le champ "invisible" sur mobile (clavier ouvert, focus volé).
   useEffect(() => {
     if (!open) return;
+    if (mode !== "catalog" && mode !== "manual") return;
     const target = mode === "catalog" ? catalogSearchRef : manualNameRef;
     const t = window.setTimeout(() => {
       target.current?.focus();
@@ -108,11 +124,17 @@ export function PerfumePicker({
     onClose();
   };
 
+  const canSubmitManual = manualBrand !== null && manualName.trim().length >= 2;
+
   const selectManual = () => {
     const name = manualName.trim();
-    const brand = manualBrand.trim() || "Hors catalogue";
-    if (name.length < 2) return;
-    onSelect({ kind: "manual", name, brandName: brand });
+    if (!manualBrand || name.length < 2) return;
+    onSelect({
+      kind: "manual",
+      name,
+      brandName: manualBrand.name,
+      brandId: manualBrand.id,
+    });
     onClose();
   };
 
@@ -125,7 +147,7 @@ export function PerfumePicker({
         fullWidth
         leadingIcon={<Plus size={16} />}
         onClick={selectManual}
-        disabled={manualName.trim().length < 2}
+        disabled={!canSubmitManual}
       >
         Ajouter en saisie libre
       </Button>
@@ -163,26 +185,30 @@ export function PerfumePicker({
             </div>
           ) : (
             <Stack gap={2} className="mt-3">
+              <div>
+                <label className="mb-1.5 block text-[13px] font-medium text-[var(--admin-text-muted)]">
+                  Marque
+                </label>
+                <BrandPicker
+                  value={manualBrand}
+                  onChange={setManualBrand}
+                  placeholder="Choisir ou créer une marque…"
+                  nested
+                />
+              </div>
               <Input
                 ref={manualNameRef}
-                label="Nom du parfum"
+                label="Nom / référence du parfum"
                 value={manualName}
                 onChange={(e) => setManualName(e.target.value)}
-                placeholder="Aventus"
-                variant="elevated"
-                enterKeyHint="next"
-              />
-              <Input
-                label="Marque"
-                value={manualBrand}
-                onChange={(e) => setManualBrand(e.target.value)}
-                placeholder="Creed"
+                placeholder="Aventus, Royal Oud, n°5…"
                 variant="elevated"
                 enterKeyHint="done"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    selectManual();
+                    if (canSubmitManual) selectManual();
+                    else e.currentTarget.blur();
                   }
                 }}
               />
@@ -204,7 +230,7 @@ export function PerfumePicker({
                 title="Aucun parfum"
                 description={
                   q.length > 0
-                    ? "Essaie un autre nom ou crée en saisie libre."
+                    ? "Essaie un autre nom ou bascule sur « Saisie libre »."
                     : "Aucun parfum disponible."
                 }
               />
@@ -238,7 +264,8 @@ export function PerfumePicker({
             )
           ) : (
             <p className="text-[12px] text-[var(--admin-text-muted)]">
-              Pour un parfum hors catalogue. Nom + marque gardés en snapshot.
+              Pour un parfum hors catalogue : choisis la marque (créée à la volée
+              si besoin) et écris la référence. Nom + marque gardés en snapshot.
             </p>
           )}
         </div>

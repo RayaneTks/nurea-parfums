@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, StickyNote, Trash2 } from "lucide-react";
 import { Card } from "@/ui/primitives/Card";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Stepper } from "@/ui/primitives/Stepper";
 import { Chip } from "@/ui/primitives/Chip";
 import { Input } from "@/ui/primitives/Input";
+import { Textarea } from "@/ui/primitives/Textarea";
 import { Button } from "@/ui/primitives/Button";
 import { Money } from "@/ui/patterns/Money";
 import { PerfumePicker, type PickerResult } from "@/features/sell";
@@ -29,6 +30,11 @@ function toNum(v: string | number): number {
 
 export function ItemsSection({ items, onAddItem, onPatchItem, onRemoveItem }: ItemsSectionProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [openNotes, setOpenNotes] = useState<Record<string, boolean>>({});
+
+  const toggleNote = (key: string) => {
+    setOpenNotes((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
   return (
     <>
@@ -151,6 +157,25 @@ export function ItemsSection({ items, onAddItem, onPatchItem, onRemoveItem }: It
                     enterKeyHint="done"
                   />
                 </div>
+
+                {openNotes[it.key] || it.note.length > 0 ? (
+                  <Textarea
+                    label="Note"
+                    value={it.note}
+                    onChange={(e) => void onPatchItem(it.key, { note: e.target.value })}
+                    placeholder="Précision livraison, parfum 50ml préféré, etc."
+                    rows={2}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => toggleNote(it.key)}
+                    className="inline-flex items-center gap-1.5 self-start rounded-full bg-[var(--admin-surface-muted)] px-2.5 py-1 text-[12px] font-medium text-[var(--admin-text-muted)] tap-scale hover:text-[var(--admin-text)]"
+                  >
+                    <StickyNote size={12} aria-hidden />
+                    Ajouter une note
+                  </button>
+                )}
               </div>
             ))}
           </Stack>

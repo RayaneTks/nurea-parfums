@@ -32,6 +32,7 @@ export default async function EditOrderPage({ params }: { params: Params }) {
       id: true,
       customerId: true,
       customerName: true,
+      customerContact: true,
       deliveryAt: true,
       notes: true,
       customer: { select: { id: true, fullName: true, phoneE164: true } },
@@ -63,7 +64,12 @@ export default async function EditOrderPage({ params }: { params: Params }) {
   const items: OrderFormLine[] = order.items.map((it) => {
     const snap =
       it.perfumeSnapshot && typeof it.perfumeSnapshot === "object"
-        ? (it.perfumeSnapshot as { name?: string; brandName?: string; image?: string })
+        ? (it.perfumeSnapshot as {
+            name?: string;
+            brandName?: string;
+            brandId?: string | null;
+            image?: string | null;
+          })
         : null;
     return {
       key: `loaded-${it.id}`,
@@ -71,6 +77,7 @@ export default async function EditOrderPage({ params }: { params: Params }) {
       snapshot: {
         name: it.perfume?.name ?? snap?.name ?? "Hors catalogue",
         brandName: it.perfume?.brand.name ?? snap?.brandName ?? "—",
+        brandId: it.perfume?.brand.id ?? snap?.brandId ?? null,
         image: it.perfume?.image ?? snap?.image ?? null,
       },
       quantity: it.quantity,
@@ -95,6 +102,7 @@ export default async function EditOrderPage({ params }: { params: Params }) {
             }
           : null,
         customerName: order.customerName ?? "",
+        customerContact: order.customerContact ?? "",
         deliveryAt: toDatetimeLocal(order.deliveryAt),
         notes: order.notes ?? "",
         items,

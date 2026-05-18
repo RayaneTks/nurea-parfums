@@ -21,6 +21,8 @@ type SaleLineInputBody = {
   perfumeSnapshot?: {
     name?: string;
     brandName?: string;
+    /** ID marque catalogue choisie via picker, même pour parfum hors catalogue. */
+    brandId?: string | null;
     image?: string | null;
   } | null;
   quantity?: number;
@@ -29,6 +31,8 @@ type SaleLineInputBody = {
   unitCostDzd?: number | string | null;
   exchangeRate?: number | string | null;
   volumeMl?: number;
+  /** Note libre par ligne (préservée si bridge Order → Sale). */
+  note?: string | null;
 };
 
 type CreateSaleBody = {
@@ -106,6 +110,7 @@ export async function POST(request: Request) {
       perfumeId: number | null;
       manualName: string | null;
       manualBrand: string | null;
+      manualBrandId: string | null;
       volumeMl: number;
       quantity: number;
       unitPrice: Prisma.Decimal;
@@ -115,6 +120,7 @@ export async function POST(request: Request) {
       lineRevenue: Prisma.Decimal;
       lineCost: Prisma.Decimal;
       lineMargin: Prisma.Decimal;
+      note: string | null;
     }[] = [];
 
     for (const raw of rawItems) {
@@ -179,6 +185,7 @@ export async function POST(request: Request) {
 
       let manualName: string | null = null;
       let manualBrand: string | null = null;
+      let manualBrandId: string | null = null;
       if (perfumeId === null) {
         const snap = raw.perfumeSnapshot;
         const name = snap?.name?.trim();
@@ -190,16 +197,21 @@ export async function POST(request: Request) {
         }
         manualName = name;
         manualBrand = snap?.brandName?.trim() || "Hors catalogue";
+        manualBrandId = snap?.brandId?.trim() || null;
       }
+
+      const noteVal = typeof raw.note === "string" ? raw.note.trim() : "";
 
       normalizedLines.push({
         perfumeId: perfumeId ?? null,
         manualName,
         manualBrand,
+        manualBrandId,
         volumeMl: vol,
         unitCostDzd: ucdN !== null && Number.isFinite(ucdN) ? new Prisma.Decimal(ucdN) : null,
         exchangeRate: exN !== null && Number.isFinite(exN) ? new Prisma.Decimal(exN) : null,
         ...totals,
+        note: noteVal.length > 0 ? noteVal : null,
       });
     }
 
@@ -306,6 +318,7 @@ export async function POST(request: Request) {
                     perfumeId: perfume.id,
                     name: perfume.name,
                     brandName: perfume.brand?.name ?? null,
+                    brandId: perfume.brand?.id ?? null,
                     image: perfume.image,
                     volumeMl: line.volumeMl,
                   }
@@ -313,6 +326,7 @@ export async function POST(request: Request) {
                     perfumeId: null,
                     name: line.manualName ?? "Sans nom",
                     brandName: line.manualBrand ?? "Hors catalogue",
+                    brandId: line.manualBrandId,
                     image: null,
                     volumeMl: line.volumeMl,
                   };
@@ -327,6 +341,7 @@ export async function POST(request: Request) {
                 exchangeRate: line.exchangeRate,
                 lineRevenue: line.lineRevenue,
                 lineCost: line.lineCost,
+                note: line.note,
                 lineMargin: line.lineMargin,
               };
             }),

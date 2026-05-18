@@ -38,7 +38,8 @@ type FromOrder = {
     unitPrice: string;
     unitCostDzd: string | null;
     exchangeRate: string | null;
-    perfume: { id: number; name: string; image: string; brand: { name: string } } | null;
+    note: string | null;
+    perfume: { id: number; name: string; image: string; brand: { id: string; name: string } } | null;
     perfumeSnapshot?: unknown;
   }>;
 };
@@ -100,7 +101,12 @@ export function SellPageClient() {
           order.items.map((it) => {
             const snap =
               it.perfumeSnapshot && typeof it.perfumeSnapshot === "object"
-                ? (it.perfumeSnapshot as { name?: string; brandName?: string; image?: string })
+                ? (it.perfumeSnapshot as {
+                    name?: string;
+                    brandName?: string;
+                    brandId?: string | null;
+                    image?: string | null;
+                  })
                 : null;
             return {
               key: makeKey(),
@@ -108,6 +114,7 @@ export function SellPageClient() {
               snapshot: {
                 name: it.perfume?.name ?? snap?.name ?? "Hors catalogue",
                 brandName: it.perfume?.brand.name ?? snap?.brandName ?? "—",
+                brandId: snap?.brandId ?? null,
                 image: it.perfume?.image ?? snap?.image ?? null,
               },
               quantity: it.quantity,
@@ -115,6 +122,7 @@ export function SellPageClient() {
               unitPrice: it.unitPrice,
               unitCostDzd: it.unitCostDzd ?? "",
               exchangeRate: it.exchangeRate ?? "277",
+              note: it.note ?? "",
             };
           }),
         );
@@ -150,6 +158,7 @@ export function SellPageClient() {
           snapshot: {
             name: result.perfume.name,
             brandName: result.perfume.brand?.name ?? "—",
+            brandId: result.perfume.brand?.id ?? null,
             image: result.perfume.image ?? null,
           },
           quantity: 1,
@@ -157,6 +166,7 @@ export function SellPageClient() {
           unitPrice: pricing?.defaultUnitPriceEur ?? "",
           unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
           exchangeRate: pricing?.defaultExchangeRate ?? "277",
+          note: "",
         },
       ]);
     } else {
@@ -165,12 +175,18 @@ export function SellPageClient() {
         {
           key: makeKey(),
           perfumeId: null,
-          snapshot: { name: result.name, brandName: result.brandName, image: null },
+          snapshot: {
+            name: result.name,
+            brandName: result.brandName,
+            brandId: result.brandId,
+            image: null,
+          },
           quantity: 1,
           volumeMl: 100,
           unitPrice: "",
           unitCostDzd: "",
           exchangeRate: "277",
+          note: "",
         },
       ]);
     }
@@ -227,12 +243,21 @@ export function SellPageClient() {
         customerContact: customerContact.trim() || null,
         items: lines.map((l) => ({
           perfumeId: l.perfumeId,
-          perfumeSnapshot: l.perfumeId === null ? l.snapshot : undefined,
+          perfumeSnapshot:
+            l.perfumeId === null
+              ? {
+                  name: l.snapshot.name,
+                  brandName: l.snapshot.brandName,
+                  brandId: l.snapshot.brandId,
+                  image: l.snapshot.image,
+                }
+              : undefined,
           quantity: l.quantity,
           volumeMl: l.volumeMl,
           unitPrice: l.unitPrice.replace(",", "."),
           unitCostDzd: l.unitCostDzd === "" ? "0" : l.unitCostDzd.replace(",", "."),
           exchangeRate: l.exchangeRate === "" ? "0" : l.exchangeRate.replace(",", "."),
+          note: l.note.trim() === "" ? null : l.note.trim(),
         })),
       };
       const r = await fetch("/api/admin/sales", {

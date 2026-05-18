@@ -8,15 +8,19 @@ import { CustomerCombobox, type SelectedCustomer } from "../../customers/Custome
 type CustomerSectionProps = {
   customer: SelectedCustomer | null;
   customerName: string;
+  customerContact: string;
   onCustomerChange: (c: SelectedCustomer | null) => void;
   onCustomerNameChange: (n: string) => void;
+  onCustomerContactChange: (c: string) => void;
 };
 
 export function CustomerSection({
   customer,
   customerName,
+  customerContact,
   onCustomerChange,
   onCustomerNameChange,
+  onCustomerContactChange,
 }: CustomerSectionProps) {
   return (
     <Card padding={3}>
@@ -37,9 +41,18 @@ export function CustomerSection({
             onChange={(e) => onCustomerNameChange(e.target.value)}
             placeholder="Prénom Nom"
             autoComplete="off"
-            enterKeyHint="done"
+            enterKeyHint="next"
           />
         ) : null}
+        <Input
+          label="Contact (téléphone, Snap, Insta…)"
+          value={customerContact}
+          onChange={(e) => onCustomerContactChange(e.target.value)}
+          placeholder="+33 6 12 34 56 78 / @snap…"
+          autoComplete="off"
+          enterKeyHint="done"
+          hint="Optionnel. Conservé sur la commande et reporté sur la vente."
+        />
       </Stack>
     </Card>
   );

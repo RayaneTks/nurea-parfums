@@ -4,10 +4,11 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState, useTransition } from "react";
-import { CheckCircle2, Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, ChevronDown, Plus, StickyNote, Trash2 } from "lucide-react";
 import { CustomerCombobox, type SelectedCustomer } from "../customers/CustomerCombobox";
 import { Card } from "@/ui/primitives/Card";
 import { Input } from "@/ui/primitives/Input";
+import { Textarea } from "@/ui/primitives/Textarea";
 import { Button } from "@/ui/primitives/Button";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
@@ -27,12 +28,13 @@ const PerfumePicker = dynamic(
 type LineState = {
   key: string;
   perfumeId: number | null;
-  snapshot: { name: string; brandName: string; image: string | null };
+  snapshot: { name: string; brandName: string; brandId: string | null; image: string | null };
   quantity: number;
   volumeMl: 30 | 50 | 100;
   unitPrice: string;
   unitCostDzd: string;
   exchangeRate: string;
+  note: string;
 };
 
 const VOLUMES = [30, 50, 100] as const;
@@ -77,13 +79,24 @@ export function QuickOrderForm() {
 
   const [customer, setCustomer] = useState<SelectedCustomer | null>(null);
   const [customerName, setCustomerName] = useState("");
+  const [customerContact, setCustomerContact] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [lines, setLines] = useState<LineState[]>([]);
   const [depositOn, setDepositOn] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
   const [exchangeRateDefault] = useState("277");
+  const [openNotes, setOpenNotes] = useState<Record<string, boolean>>({});
+
+  // Section repliable "Plus d'options" : livraison + notes globales.
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const [deliveryAt, setDeliveryAt] = useState("");
+  const [notes, setNotes] = useState("");
 
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
+
+  const toggleNote = (key: string) => {
+    setOpenNotes((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
   const totals = useMemo(() => {
     let revenue = 0;
@@ -115,6 +128,7 @@ export function QuickOrderForm() {
             snapshot: {
               name: p.name,
               brandName: p.brand?.name ?? "—",
+              brandId: p.brand?.id ?? null,
               image: p.image ?? null,
             },
             quantity: 1,
@@ -122,6 +136,7 @@ export function QuickOrderForm() {
             unitPrice: pricing?.defaultUnitPriceEur ?? "",
             unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
             exchangeRate: pricing?.defaultExchangeRate ?? exchangeRateDefault,
+            note: "",
           },
         ]);
       } else {
@@ -130,12 +145,18 @@ export function QuickOrderForm() {
           {
             key: makeKey(),
             perfumeId: null,
-            snapshot: { name: result.name, brandName: result.brandName, image: null },
+            snapshot: {
+              name: result.name,
+              brandName: result.brandName,
+              brandId: result.brandId,
+              image: null,
+            },
             quantity: 1,
             volumeMl: 100,
             unitPrice: "",
             unitCostDzd: "",
             exchangeRate: exchangeRateDefault,
+            note: "",
           },
         ]);
       }
@@ -200,20 +221,29 @@ export function QuickOrderForm() {
 
     const items: OrderItemInput[] = lines.map((l) => ({
       perfumeId: l.perfumeId,
-      perfumeSnapshot: l.perfumeId === null ? l.snapshot : undefined,
+      perfumeSnapshot:
+        l.perfumeId === null
+          ? {
+              name: l.snapshot.name,
+              brandName: l.snapshot.brandName,
+              brandId: l.snapshot.brandId,
+              image: l.snapshot.image,
+            }
+          : undefined,
       quantity: l.quantity,
       volumeMl: l.volumeMl,
       unitPrice: l.unitPrice.replace(",", "."),
       unitCostDzd: l.unitCostDzd === "" ? "0" : l.unitCostDzd.replace(",", "."),
       exchangeRate: l.exchangeRate === "" ? "0" : l.exchangeRate.replace(",", "."),
-      note: null,
+      note: l.note.trim() === "" ? null : l.note.trim(),
     }));
 
     const payload: CreateOrderInput = {
       customerId: customer?.id ?? null,
       customerName: name,
-      deliveryAt: null,
-      notes: null,
+      customerContact: customerContact.trim() === "" ? null : customerContact.trim(),
+      deliveryAt: deliveryAt ? new Date(deliveryAt) : null,
+      notes: notes.trim() === "" ? null : notes.trim(),
       items,
       initialDeposit: depositOn
         ? { amount: depositAmount.replace(",", "."), method: null }
@@ -233,7 +263,17 @@ export function QuickOrderForm() {
       router.push(`/admin/ordres/${result.data.id}`);
       router.refresh();
     });
-  }, [customer, customerName, depositAmount, depositOn, lines, router]);
+  }, [
+    customer,
+    customerName,
+    customerContact,
+    deliveryAt,
+    notes,
+    depositAmount,
+    depositOn,
+    lines,
+    router,
+  ]);
 
   return (
     <>
@@ -260,9 +300,17 @@ export function QuickOrderForm() {
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Prénom Nom"
                 autoComplete="off"
-                enterKeyHint="done"
+                enterKeyHint="next"
               />
             ) : null}
+            <Input
+              label="Contact (téléphone, Snap, Insta…)"
+              value={customerContact}
+              onChange={(e) => setCustomerContact(e.target.value)}
+              placeholder="+33 6 12 34 56 78 / @snap…"
+              autoComplete="off"
+              enterKeyHint="done"
+            />
           </Stack>
         </Card>
 
@@ -284,7 +332,7 @@ export function QuickOrderForm() {
 
           {lines.length === 0 ? (
             <p className="py-2 text-[13px] text-[var(--admin-text-muted)]">
-              Aucun parfum. Tape « Ajouter » pour choisir.
+              Aucun parfum. Tape « Ajouter » pour choisir (catalogue ou saisie libre).
             </p>
           ) : (
             <Stack gap={2}>
@@ -386,6 +434,25 @@ export function QuickOrderForm() {
                       enterKeyHint="done"
                     />
                   </div>
+
+                  {openNotes[line.key] || line.note.length > 0 ? (
+                    <Textarea
+                      label="Note"
+                      value={line.note}
+                      onChange={(e) => patchLine(line.key, { note: e.target.value })}
+                      placeholder="Précision livraison, parfum 50ml préféré, etc."
+                      rows={2}
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => toggleNote(line.key)}
+                      className="inline-flex items-center gap-1.5 self-start rounded-full bg-[var(--admin-surface-muted)] px-2.5 py-1 text-[12px] font-medium text-[var(--admin-text-muted)] tap-scale hover:text-[var(--admin-text)]"
+                    >
+                      <StickyNote size={12} aria-hidden />
+                      Ajouter une note
+                    </button>
+                  )}
                 </div>
               ))}
             </Stack>
@@ -421,6 +488,45 @@ export function QuickOrderForm() {
                 placeholder="50"
                 enterKeyHint="done"
               />
+            </div>
+          ) : null}
+        </Card>
+
+        <Card padding={0}>
+          <button
+            type="button"
+            onClick={() => setOptionsOpen((v) => !v)}
+            aria-expanded={optionsOpen}
+            className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left tap-scale rounded-[14px]"
+          >
+            <span className="text-[14px] font-medium text-[var(--admin-text)]">
+              Plus d'options
+            </span>
+            <ChevronDown
+              size={18}
+              className="text-[var(--admin-text-subtle)] transition-transform duration-[var(--admin-duration-default)]"
+              style={{ transform: optionsOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+              aria-hidden
+            />
+          </button>
+          {optionsOpen ? (
+            <div className="px-4 pb-4">
+              <Stack gap={2}>
+                <Input
+                  type="datetime-local"
+                  label="Livraison prévue"
+                  value={deliveryAt}
+                  onChange={(e) => setDeliveryAt(e.target.value)}
+                  enterKeyHint="done"
+                />
+                <Textarea
+                  label="Note interne sur la commande"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Ex. retirer en main propre, à livrer après le 25…"
+                  rows={3}
+                />
+              </Stack>
             </div>
           ) : null}
         </Card>

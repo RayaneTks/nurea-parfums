@@ -33,6 +33,7 @@ type OrderFormProps = {
   initial?: {
     customer: SelectedCustomer | null;
     customerName: string;
+    customerContact: string;
     deliveryAt: string;
     notes: string;
     items: OrderFormLine[];
@@ -85,6 +86,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
   const [state, setState] = useState<OrderFormState>(() => ({
     customer: initial?.customer ?? null,
     customerName: initial?.customerName ?? "",
+    customerContact: initial?.customerContact ?? "",
     deliveryAt: initial?.deliveryAt ?? "",
     notes: initial?.notes ?? "",
     items: initial?.items ?? [],
@@ -121,6 +123,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
             snapshot: {
               name: p.name,
               brandName: p.brand?.name ?? "—",
+              brandId: p.brand?.id ?? null,
               image: p.image ?? null,
             },
             quantity: 1,
@@ -140,7 +143,12 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
           {
             key: makeKey(),
             perfumeId: null,
-            snapshot: { name: result.name, brandName: result.brandName, image: null },
+            snapshot: {
+              name: result.name,
+              brandName: result.brandName,
+              brandId: result.brandId,
+              image: null,
+            },
             quantity: 1,
             volumeMl: 100,
             unitPrice: "",
@@ -217,7 +225,15 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
 
     const items: OrderItemInput[] = state.items.map((it) => ({
       perfumeId: it.perfumeId,
-      perfumeSnapshot: it.perfumeId === null ? it.snapshot : undefined,
+      perfumeSnapshot:
+        it.perfumeId === null
+          ? {
+              name: it.snapshot.name,
+              brandName: it.snapshot.brandName,
+              brandId: it.snapshot.brandId,
+              image: it.snapshot.image,
+            }
+          : undefined,
       quantity: it.quantity,
       volumeMl: it.volumeMl,
       unitPrice: it.unitPrice.replace(",", "."),
@@ -226,11 +242,14 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
       note: it.note.trim() === "" ? null : it.note,
     }));
 
+    const customerContact = state.customerContact.trim() === "" ? null : state.customerContact.trim();
+
     startTransition(async () => {
       if (mode === "create") {
         const payload: CreateOrderInput = {
           customerId: state.customer?.id ?? null,
           customerName: name,
+          customerContact,
           deliveryAt: state.deliveryAt ? new Date(state.deliveryAt) : null,
           notes: state.notes.trim() === "" ? null : state.notes,
           items,
@@ -254,6 +273,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
         const payload: UpdateOrderInput = {
           customerId: state.customer?.id ?? null,
           customerName: name,
+          customerContact,
           deliveryAt: state.deliveryAt ? new Date(state.deliveryAt) : null,
           notes: state.notes.trim() === "" ? null : state.notes,
           items,
@@ -280,8 +300,10 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
         <CustomerSection
           customer={state.customer}
           customerName={state.customerName}
+          customerContact={state.customerContact}
           onCustomerChange={(c) => setState((s) => ({ ...s, customer: c }))}
           onCustomerNameChange={(n) => setState((s) => ({ ...s, customerName: n }))}
+          onCustomerContactChange={(c) => setState((s) => ({ ...s, customerContact: c }))}
         />
 
         <ItemsSection

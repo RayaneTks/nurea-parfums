@@ -51,6 +51,7 @@ export async function createOrderAction(
         data: {
           customerId: data.customerId ?? null,
           customerName: data.customerName,
+          customerContact: data.customerContact ?? null,
           deliveryAt: data.deliveryAt ?? null,
           notes: data.notes ?? null,
           status: initialStatus,
@@ -156,6 +157,8 @@ export async function updateOrderAction(
         data: {
           customerId: data.customerId === undefined ? undefined : data.customerId ?? null,
           customerName: data.customerName,
+          customerContact:
+            data.customerContact === undefined ? undefined : data.customerContact ?? null,
           deliveryAt: data.deliveryAt === undefined ? undefined : data.deliveryAt ?? null,
           notes: data.notes === undefined ? undefined : data.notes ?? null,
           status: data.status,

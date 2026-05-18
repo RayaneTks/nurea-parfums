@@ -1,24 +1,35 @@
 "use client";
 
 import Image from "next/image";
-import { Trash2 } from "lucide-react";
+import { useState } from "react";
+import { StickyNote, Trash2 } from "lucide-react";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Stepper } from "@/ui/primitives/Stepper";
 import { Chip } from "@/ui/primitives/Chip";
 import { Input } from "@/ui/primitives/Input";
+import { Textarea } from "@/ui/primitives/Textarea";
 import { Money } from "@/ui/patterns/Money";
 
 const VOLUMES = [30, 50, 100] as const;
 
+export type SellLineSnapshot = {
+  name: string;
+  brandName: string;
+  /** ID de la marque catalogue (si choisie via picker, même pour parfum hors catalogue). */
+  brandId: string | null;
+  image: string | null;
+};
+
 export type SellLine = {
   key: string;
   perfumeId: number | null;
-  snapshot: { name: string; brandName: string; image: string | null };
+  snapshot: SellLineSnapshot;
   quantity: number;
   volumeMl: 30 | 50 | 100;
   unitPrice: string;
   unitCostDzd: string;
   exchangeRate: string;
+  note: string;
 };
 
 function lineTotal(unitPrice: string, qty: number): number {
@@ -33,9 +44,10 @@ type SellLineRowProps = {
 };
 
 export function SellLineRow({ line, onPatch, onRemove }: SellLineRowProps) {
+  const [noteOpen, setNoteOpen] = useState(false);
   return (
     <div
-      className="flex flex-col gap-2 rounded-[14px] bg-[var(--admin-surface)] px-3 py-3"
+      className="flex flex-col gap-2 rounded-[14px] bg-[var(--admin-surface-alt)] px-3 py-3"
       style={{ border: "1px solid var(--admin-border)" }}
     >
       <HStack gap={3} align="center">
@@ -122,6 +134,24 @@ export function SellLineRow({ line, onPatch, onRemove }: SellLineRowProps) {
             enterKeyHint="done"
           />
         </div>
+        {noteOpen || line.note.length > 0 ? (
+          <Textarea
+            label="Note"
+            value={line.note}
+            onChange={(e) => onPatch(line.key, { note: e.target.value })}
+            placeholder="Précision sur la ligne…"
+            rows={2}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setNoteOpen(true)}
+            className="inline-flex items-center gap-1.5 self-start rounded-full bg-[var(--admin-surface-muted)] px-2.5 py-1 text-[12px] font-medium text-[var(--admin-text-muted)] tap-scale hover:text-[var(--admin-text)]"
+          >
+            <StickyNote size={12} aria-hidden />
+            Ajouter une note
+          </button>
+        )}
       </Stack>
     </div>
   );

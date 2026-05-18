@@ -26,6 +26,9 @@ export const orderItemInputSchema = z.object({
     .object({
       name: z.string().min(1),
       brandName: z.string().min(1),
+      /// ID de la marque catalogue liée (si la marque a été choisie via le picker
+      /// même pour un parfum hors catalogue). Permet stats par marque.
+      brandId: z.string().min(1).nullable().optional(),
       image: z.string().nullable().optional(),
     })
     .nullable()
@@ -44,6 +47,9 @@ export const orderItemInputSchema = z.object({
 const createOrderBaseSchema = z.object({
   customerId: z.string().min(1).nullable().optional(),
   customerName: z.string().trim().min(2, "Nom du client requis.").max(120),
+  /// Contact libre du client (téléphone, Snapchat, Instagram, …).
+  /// Symétrie avec Sale.customerContact pour ne pas perdre l'info au bridge Order → Sale.
+  customerContact: z.string().trim().max(160).nullable().optional(),
   deliveryAt: z.coerce.date().nullable().optional(),
   notes: z.string().trim().max(2000).nullable().optional(),
   items: z.array(orderItemInputSchema).min(1, "Ajoute au moins une ligne."),

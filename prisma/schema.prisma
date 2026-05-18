@@ -343,6 +343,9 @@ model SaleItem {
   lineRevenue     Decimal  @db.Decimal(10, 2)
   lineCost        Decimal  @db.Decimal(10, 2)
   lineMargin      Decimal  @db.Decimal(10, 2)
+  /// Note libre par ligne (symétrie avec OrderItem.note). Préservée
+  /// lors du bridge Order → Sale et lors de l'édition de ticket.
+  note            String?
   sale            Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
   perfume         Perfume? @relation(fields: [perfumeId], references: [id], onDelete: SetNull)
 
