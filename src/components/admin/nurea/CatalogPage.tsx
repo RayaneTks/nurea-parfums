@@ -602,6 +602,12 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
               }
               value={search}
               onChange={(e) => onSearchFieldChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  e.currentTarget.blur();
+                }
+              }}
               className="w-full rounded-2xl border border-neutral-200 bg-white py-3 pl-10 pr-4 text-sm shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-nurea-bordeaux/30"
             />
           </div>

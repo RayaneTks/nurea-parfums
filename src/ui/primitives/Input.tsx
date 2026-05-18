@@ -4,6 +4,7 @@ import {
   forwardRef,
   type FocusEvent,
   type InputHTMLAttributes,
+  type KeyboardEvent,
   type ReactNode,
   useId,
 } from "react";
@@ -39,6 +40,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     className,
     id,
     onFocus,
+    onKeyDown,
+    enterKeyHint,
+    type,
     ...rest
   },
   ref,
@@ -61,6 +65,37 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     }, 320);
   };
 
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    onKeyDown?.(e);
+    if (e.defaultPrevented) return;
+    if (e.key !== "Enter") return;
+    // `textarea` n'arrive jamais ici (composant Input dédié <input>),
+    // donc on peut intercepter Enter sans risque.
+    const hint = enterKeyHint;
+    if (hint === "next") {
+      e.preventDefault();
+      const form = e.currentTarget.form;
+      if (form) {
+        const focusables = Array.from(
+          form.querySelectorAll<HTMLElement>(
+            "input:not([disabled]):not([type=hidden]), textarea:not([disabled]), select:not([disabled])",
+          ),
+        );
+        const idx = focusables.indexOf(e.currentTarget);
+        const next = idx >= 0 ? focusables[idx + 1] : undefined;
+        if (next) {
+          next.focus();
+          return;
+        }
+      }
+      e.currentTarget.blur();
+      return;
+    }
+    // "done", "search", "send", "go", "enter" ou non précisé : ferme le clavier.
+    e.preventDefault();
+    e.currentTarget.blur();
+  };
+
   return (
     <div className="w-full">
       {label ? (
@@ -80,9 +115,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         <input
           ref={ref}
           id={inputId}
+          type={type}
+          enterKeyHint={enterKeyHint}
           aria-invalid={error ? true : undefined}
           aria-describedby={helpId}
           onFocus={handleFocus}
+          onKeyDown={handleKeyDown}
           className={cn(
             "block w-full min-h-[44px] rounded-[12px]",
             variant === "elevated"

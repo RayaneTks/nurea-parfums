@@ -193,6 +193,12 @@ export function CustomerCombobox({
                 enterKeyHint="search"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.currentTarget.blur();
+                  }
+                }}
                 placeholder={placeholder}
                 autoComplete="off"
                 className="w-full rounded-[10px] bg-[var(--admin-surface-muted)] pl-9 pr-3 py-2.5 text-[14px] text-[var(--admin-text)] placeholder:text-[var(--admin-text-subtle)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent-ring)]"

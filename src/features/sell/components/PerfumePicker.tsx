@@ -161,7 +161,33 @@ export function PerfumePicker({
                 variant="elevated"
               />
             </div>
-          ) : null}
+          ) : (
+            <Stack gap={2} className="mt-3">
+              <Input
+                ref={manualNameRef}
+                label="Nom du parfum"
+                value={manualName}
+                onChange={(e) => setManualName(e.target.value)}
+                placeholder="Aventus"
+                variant="elevated"
+                enterKeyHint="next"
+              />
+              <Input
+                label="Marque"
+                value={manualBrand}
+                onChange={(e) => setManualBrand(e.target.value)}
+                placeholder="Creed"
+                variant="elevated"
+                enterKeyHint="done"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    selectManual();
+                  }
+                }}
+              />
+            </Stack>
+          )}
         </div>
 
         <div className="pt-3">
@@ -211,34 +237,9 @@ export function PerfumePicker({
               </ul>
             )
           ) : (
-            <Stack gap={3}>
-              <p className="text-[12px] text-[var(--admin-text-muted)]">
-                Pour un parfum hors catalogue. Nom + marque gardés en snapshot.
-              </p>
-              <Input
-                ref={manualNameRef}
-                label="Nom du parfum"
-                value={manualName}
-                onChange={(e) => setManualName(e.target.value)}
-                placeholder="Aventus"
-                variant="elevated"
-                enterKeyHint="next"
-              />
-              <Input
-                label="Marque"
-                value={manualBrand}
-                onChange={(e) => setManualBrand(e.target.value)}
-                placeholder="Creed"
-                variant="elevated"
-                enterKeyHint="done"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    selectManual();
-                  }
-                }}
-              />
-            </Stack>
+            <p className="text-[12px] text-[var(--admin-text-muted)]">
+              Pour un parfum hors catalogue. Nom + marque gardés en snapshot.
+            </p>
           )}
         </div>
       </>

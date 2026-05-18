@@ -64,7 +64,10 @@ export function Sheet({
             "max-w-[var(--admin-app-max-width)]",
             className,
           )}
-          style={{ maxHeight: `${maxVh}dvh`, zIndex: nested ? 81 : 71 }}
+          style={{
+            maxHeight: `calc(var(--admin-vh, 100dvh) * ${maxVh / 100})`,
+            zIndex: nested ? 81 : 71,
+          }}
         >
           {handle ? <div className="admin-sheet-handle" /> : null}
 
