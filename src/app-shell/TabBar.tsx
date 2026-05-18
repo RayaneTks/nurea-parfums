@@ -44,6 +44,14 @@ const TABS: readonly Tab[] = [
   },
 ] as const;
 
+/**
+ * Bottom tab bar — fixed en bas de l'écran (pas dans le flow du shell).
+ *
+ * - position: fixed → reste collée au bas du viewport visible.
+ * - Centrée dans la frame mobile (max-width 430px).
+ * - Masquée (translateY 100%) quand le clavier iOS est ouvert
+ *   (détecté via --admin-keyboard-open mis par ViewportSync).
+ */
 export function TabBar() {
   const pathname = usePathname() ?? "";
 
@@ -51,13 +59,23 @@ export function TabBar() {
     <nav
       aria-label="Navigation principale"
       data-tabbar
-      className="shrink-0"
+      className="admin-theme"
       style={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        maxWidth: "var(--admin-app-max-width)",
+        marginInline: "auto",
         background: "color-mix(in srgb, var(--admin-surface) 92%, transparent)",
         backdropFilter: "saturate(180%) blur(20px)",
         WebkitBackdropFilter: "saturate(180%) blur(20px)",
         borderTop: "1px solid var(--admin-border)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        transform: "translateY(calc(var(--admin-keyboard-open, 0) * 110%))",
+        transition: "transform 180ms cubic-bezier(0.32, 0.72, 0, 1)",
+        willChange: "transform",
       }}
     >
       <div

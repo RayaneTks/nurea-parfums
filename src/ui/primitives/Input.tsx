@@ -23,7 +23,10 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
    * "elevated" — fond `--admin-surface` plus contrasté (Card/Sheet sur `--admin-bg`).
    */
   variant?: "default" | "elevated";
-  /** Désactive le scrollIntoView au focus (utile dans listes virtualisées). */
+  /**
+   * Conservé pour rétrocompat — n'a plus d'effet : le scroll au focus est
+   * désormais géré nativement par iOS via `scroll-margin` global.
+   */
   disableAutoScroll?: boolean;
 }
 
@@ -36,7 +39,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     trailingSlot,
     numeric,
     variant = "default",
-    disableAutoScroll,
+    disableAutoScroll: _disableAutoScroll,
     className,
     id,
     onFocus,
@@ -53,16 +56,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 
   const handleFocus = (e: FocusEvent<HTMLInputElement>) => {
     onFocus?.(e);
-    if (disableAutoScroll || e.defaultPrevented) return;
-    const el = e.currentTarget;
-    // Délai pour laisser le clavier mobile s'ouvrir (≈300ms) avant scroll.
-    window.setTimeout(() => {
-      try {
-        el.scrollIntoView({ block: "center", behavior: "smooth" });
-      } catch {
-        /* IE/Safari old: ignore */
-      }
-    }, 320);
+    // iOS gère nativement le scroll au focus si `scroll-margin-{top,bottom}`
+    // sont définis sur l'input (cf. globals.admin.css). Pas besoin de forcer
+    // un second scrollIntoView qui crée un effet de double remontée.
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {

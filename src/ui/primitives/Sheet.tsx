@@ -22,7 +22,7 @@ type SheetProps = {
   maxVh?: number;
   /** Footer sticky (CTA principal). */
   footer?: ReactNode;
-  /** Désactive le swipe-to-dismiss (utile en mode edit avec dirty). */
+  /** Désactive complètement le swipe-to-dismiss (default true = swipe via handle). */
   dismissible?: boolean;
   /** Imbriquer dans une Sheet parente (utilise Drawer.NestedRoot de vaul). */
   nested?: boolean;
@@ -30,6 +30,17 @@ type SheetProps = {
   className?: string;
 };
 
+/**
+ * Bottom sheet iOS-style (vaul).
+ *
+ * Le swipe-to-dismiss est restreint à la drag-handle UNIQUEMENT (`handleOnly`).
+ * Conséquence : un scroll vertical dans le contenu de la sheet ne provoque
+ * jamais sa fermeture involontaire, même quand on est en haut du scroll.
+ * La sheet se ferme via :
+ *   - drag de la handle vers le bas
+ *   - bouton × dans le header
+ *   - tap sur l'overlay (vaul gère par défaut)
+ */
 export function Sheet({
   open,
   onOpenChange,
@@ -52,6 +63,7 @@ export function Sheet({
       onOpenChange={onOpenChange}
       shouldScaleBackground={!nested}
       dismissible={dismissible}
+      handleOnly
     >
       <Drawer.Portal>
         <Drawer.Overlay
@@ -69,7 +81,9 @@ export function Sheet({
             zIndex: nested ? 81 : 71,
           }}
         >
-          {handle ? <div className="admin-sheet-handle" /> : null}
+          {handle ? (
+            <Drawer.Handle className="admin-sheet-handle !mt-1.5" />
+          ) : null}
 
           {title || closeButton || trailing ? (
             <div
@@ -107,7 +121,10 @@ export function Sheet({
               "flex-1 overflow-y-auto overscroll-contain px-4",
               footer ? "pt-3 pb-3" : "py-4",
             )}
-            style={{ paddingBottom: footer ? undefined : "calc(1rem + env(safe-area-inset-bottom, 0px))" }}
+            style={{
+              paddingBottom: footer ? undefined : "calc(1rem + env(safe-area-inset-bottom, 0px))",
+              WebkitOverflowScrolling: "touch",
+            }}
           >
             {children}
           </div>

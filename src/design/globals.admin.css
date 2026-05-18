@@ -99,6 +99,11 @@ body.admin-route {
 .admin-theme textarea,
 .admin-theme select {
   font-size: 16px; /* prevent iOS zoom */
+  /* iOS gère un auto-scrollIntoView au focus ; ces marges donnent un
+     espace correct sous le header sticky et au-dessus du clavier, et
+     évitent de devoir forcer un second scrollIntoView en JS. */
+  scroll-margin-top: calc(var(--admin-header-height, 56px) + 24px);
+  scroll-margin-bottom: 24px;
 }
 
 /* Safe-area wrappers */
