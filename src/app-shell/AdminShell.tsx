@@ -38,14 +38,8 @@ export function AdminShell({ children }: AdminShellProps) {
     return (
       <>
         <ViewportSync />
-        <div
-          className="admin-theme w-full"
-          style={{ height: "var(--admin-vh, 100dvh)" }}
-        >
-          <div
-            className="mx-auto w-full max-w-[var(--admin-app-max-width)]"
-            style={{ height: "var(--admin-vh, 100dvh)" }}
-          >
+        <div className="admin-theme admin-shell-frame w-full">
+          <div className="mx-auto h-full w-full max-w-[var(--admin-app-max-width)]">
             {children}
           </div>
         </div>
@@ -62,12 +56,12 @@ export function AdminShell({ children }: AdminShellProps) {
     <>
       <ViewportSync />
       <div
-        className="admin-theme w-full"
-        style={{ height: "var(--admin-vh, 100dvh)", overflow: "hidden" }}
+        className="admin-theme admin-shell-frame w-full"
+        style={{ overflow: "hidden" }}
       >
         <div
-          className="mx-auto flex flex-col w-full max-w-[var(--admin-app-max-width)]"
-          style={{ height: "100%", overflow: "hidden" }}
+          className="mx-auto flex h-full flex-col w-full max-w-[var(--admin-app-max-width)]"
+          style={{ overflow: "hidden" }}
         >
           <AppHeader
             onOpenCommandPalette={() => setPaletteOpen(true)}
@@ -75,7 +69,7 @@ export function AdminShell({ children }: AdminShellProps) {
           />
           <PwaInstallHint />
           <div
-            className="flex-1 min-h-0 overflow-y-auto"
+            className="admin-scroll-area flex-1 min-h-0 overflow-y-auto"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
             {children}

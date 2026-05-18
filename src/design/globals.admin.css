@@ -70,6 +70,23 @@ body.admin-route {
   height: 100%;
 }
 
+/*
+ * Frame plein écran du shell admin.
+ *
+ * Important : on n'utilise PAS `visualViewport.height` pour fixer la
+ * hauteur du shell. Sur iOS PWA, le clavier overlaye le viewport
+ * (il ne le rétrécit pas), donc on garde le shell à 100dvh ; iOS
+ * scrolle nativement l'input focusé dans la zone visible (cf.
+ * `scroll-margin-*` plus bas), et la TabBar reste collée en bas
+ * de l'écran physique.
+ *
+ * Fallback `100vh` pour iOS < 16 qui ne supporte pas `dvh`.
+ */
+.admin-shell-frame {
+  height: 100vh;
+  height: 100dvh;
+}
+
 /* Tabular numerals utility (montants, dates) */
 .tnum {
   font-feature-settings: "tnum" 1, "lnum" 1;
@@ -94,16 +111,26 @@ body.admin-route {
   }
 }
 
-/* iOS PWA — éviter zoom au focus input */
+/* iOS PWA — éviter zoom au focus input + auto-scroll natif confortable */
 .admin-theme input,
 .admin-theme textarea,
 .admin-theme select {
   font-size: 16px; /* prevent iOS zoom */
-  /* iOS gère un auto-scrollIntoView au focus ; ces marges donnent un
-     espace correct sous le header sticky et au-dessus du clavier, et
-     évitent de devoir forcer un second scrollIntoView en JS. */
+  /*
+   * iOS scrolle automatiquement l'input focusé dans la zone visible
+   * (au-dessus du clavier). `scroll-margin-*` lui dit de garder un
+   * espace de marge autour pour que l'input ne soit pas collé au bord.
+   * Bottom plus large pour laisser le label / la ligne précédente
+   * encore visibles au-dessus du clavier.
+   */
   scroll-margin-top: calc(var(--admin-header-height, 56px) + 24px);
-  scroll-margin-bottom: 24px;
+  scroll-margin-bottom: 96px;
+}
+
+/* Padding du scroll container pour qu'iOS respecte un buffer au focus input. */
+.admin-scroll-area {
+  scroll-padding-top: calc(var(--admin-header-height, 56px) + 24px);
+  scroll-padding-bottom: 96px;
 }
 
 /* Safe-area wrappers */

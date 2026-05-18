@@ -3,18 +3,20 @@
 import { useEffect } from "react";
 
 /**
- * Synchronise `--admin-vh` avec la hauteur réelle visible (visualViewport).
+ * Détecte uniquement l'ouverture du clavier iOS via `visualViewport`
+ * et expose `--admin-keyboard-open` (0 ou 1).
  *
- * iOS Safari (et PWA standalone) ne met PAS à jour `100dvh` de façon fiable
- * quand le clavier s'ouvre — le shell reste à la hauteur écran complet et le
- * clavier recouvre les inputs. visualViewport est la seule source de vérité.
+ * Décision iOS PWA : on NE rétrécit PAS le shell quand le clavier
+ * s'ouvre. Le clavier overlaye le viewport (iOS Safari/PWA standard),
+ * et iOS scrolle nativement l'input focusé dans la zone visible grâce
+ * aux `scroll-margin-{top,bottom}` posés globalement sur input/textarea
+ * dans `globals.admin.css`. Les sheets vaul gèrent leur repositionnement
+ * via `repositionInputs={true}` (défaut).
  *
- * Effet : `--admin-vh` reflète l'espace réellement visible, et l'AdminShell
- * l'utilise pour sa hauteur racine. Quand le clavier monte, tout le shell
- * (incluant StickyAction) se compresse au-dessus du clavier.
- *
- * Expose aussi `--admin-keyboard-open` (0 ou 1) : la TabBar et les autres
- * composants concernés le lisent pour se masquer pendant la saisie clavier.
+ * Ancienne version : on synchronisait `--admin-vh` avec
+ * `visualViewport.height`. Mauvaise idée — ça rétrécissait le shell
+ * et la sheet en plein milieu de l'animation clavier, masquant le
+ * contenu et laissant une bande vide en bas de l'écran.
  */
 const KEYBOARD_OPEN_THRESHOLD_PX = 150;
 
@@ -26,12 +28,6 @@ export function ViewportSync() {
       const vv = window.visualViewport;
       const visibleHeight = vv ? vv.height : window.innerHeight;
       const layoutHeight = window.innerHeight;
-      root.style.setProperty("--admin-vh", `${Math.round(visibleHeight)}px`);
-      const offsetTop = vv ? vv.offsetTop : 0;
-      root.style.setProperty("--admin-vv-offset", `${Math.round(offsetTop)}px`);
-
-      // Clavier considéré ouvert si l'écart entre layout viewport et visual
-      // viewport dépasse le seuil. Évalue à 0 ou 1 pour usage via calc() en CSS.
       const keyboardOpen = layoutHeight - visibleHeight > KEYBOARD_OPEN_THRESHOLD_PX ? 1 : 0;
       root.style.setProperty("--admin-keyboard-open", String(keyboardOpen));
     };
@@ -55,8 +51,6 @@ export function ViewportSync() {
         window.removeEventListener("resize", apply);
         window.removeEventListener("orientationchange", apply);
       }
-      root.style.removeProperty("--admin-vh");
-      root.style.removeProperty("--admin-vv-offset");
       root.style.removeProperty("--admin-keyboard-open");
     };
   }, []);

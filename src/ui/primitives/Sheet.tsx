@@ -77,7 +77,9 @@ export function Sheet({
             className,
           )}
           style={{
-            maxHeight: `calc(var(--admin-vh, 100dvh) * ${maxVh / 100})`,
+            // 100dvh fixe (le clavier iOS overlaye le viewport, vaul
+            // reposition la sheet via repositionInputs={true} par défaut).
+            maxHeight: `calc(100dvh * ${maxVh / 100})`,
             zIndex: nested ? 81 : 71,
           }}
         >
@@ -118,7 +120,7 @@ export function Sheet({
 
           <div
             className={cn(
-              "flex-1 overflow-y-auto overscroll-contain px-4",
+              "admin-scroll-area flex-1 overflow-y-auto overscroll-contain px-4",
               footer ? "pt-3 pb-3" : "py-4",
             )}
             style={{
