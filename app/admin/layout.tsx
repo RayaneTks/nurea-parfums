@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "@/design/globals.admin.css";
 import { AdminShell } from "@/app-shell";
 import { SITE_NAME } from "@/lib/site";
+import { ToastProvider } from "@/ui/providers/ToastProvider";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -23,5 +24,9 @@ export const viewport: Viewport = {
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <AdminShell>{children}</AdminShell>;
+  return (
+    <ToastProvider>
+      <AdminShell>{children}</AdminShell>
+    </ToastProvider>
+  );
 }

@@ -500,7 +500,7 @@ export function QuickOrderForm() {
             className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left tap-scale rounded-[14px]"
           >
             <span className="text-[14px] font-medium text-[var(--admin-text)]">
-              Plus d'options
+              Plus d&apos;options
             </span>
             <ChevronDown
               size={18}
