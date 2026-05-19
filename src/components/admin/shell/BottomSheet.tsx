@@ -1,6 +1,5 @@
 "use client";
 
-import { Drawer } from "vaul";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -11,17 +10,13 @@ type BottomSheetProps = {
   description?: string;
   children: ReactNode;
   className?: string;
-  /** Hauteur max en vh (defaut 88). */
+  /** Ignoré — la modale est toujours en 100dvh CSS-only. */
   maxVh?: number;
 };
 
 /**
- * iOS-style bottom sheet avec swipe-to-dismiss (Vaul).
- *
- * - safe-area-inset-bottom respecté.
- * - Drag handle visible.
- * - Title accessible (aria-labelledby).
- * - 44px hitbox sur close button.
+ * Modale full-viewport CSS-only — sans vaul, sans listener visualViewport.
+ * position:fixed inset:0 height:100dvh, intérieur en flex column scrollable.
  */
 export function BottomSheet({
   open,
@@ -30,42 +25,64 @@ export function BottomSheet({
   description,
   children,
   className,
-  maxVh = 88,
 }: BottomSheetProps) {
+  if (!open) return null;
+
   return (
-    <Drawer.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground repositionInputs={false}>
-      <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" />
-        <Drawer.Content
-          className={cn(
-            "fixed inset-x-0 z-[71] mx-auto flex max-w-[430px] flex-col rounded-t-2xl bg-white outline-none",
-            className,
-          )}
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: "100dvh",
+        maxHeight: "100dvh",
+        width: "100%",
+        zIndex: 70,
+      }}
+    >
+      <div
+        aria-hidden
+        onClick={() => onOpenChange(false)}
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+      />
+      <div
+        className={cn(
+          "mx-auto flex w-full max-w-[var(--admin-app-max-width)] flex-col bg-white",
+          className,
+        )}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: "100dvh",
+          maxHeight: "100dvh",
+        }}
+      >
+        {title ? (
+          <div
+            className="shrink-0 border-b border-neutral-200/70 px-5 pb-3 pt-3"
+            style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top, 0px))" }}
+          >
+            <h2 className="text-base font-semibold text-neutral-900">{title}</h2>
+            {description ? (
+              <p className="mt-0.5 text-xs text-neutral-500">{description}</p>
+            ) : null}
+          </div>
+        ) : null}
+        <div
+          className="flex-1 min-h-0 overflow-y-auto px-5 py-4"
           style={{
-            bottom: "var(--admin-keyboard-h, 0px)",
-            maxHeight: `${maxVh}dvh`,
+            WebkitOverflowScrolling: "touch",
+            paddingBottom: "calc(1rem + env(safe-area-inset-bottom, 0px))",
           }}
         >
-          <div className="mx-auto mt-2 h-1.5 w-10 shrink-0 rounded-full bg-neutral-300" aria-hidden />
-          {title ? (
-            <div className="border-b border-neutral-200/70 px-5 pb-3 pt-3">
-              <Drawer.Title className="text-base font-semibold text-neutral-900">
-                {title}
-              </Drawer.Title>
-              {description ? (
-                <Drawer.Description className="mt-0.5 text-xs text-neutral-500">
-                  {description}
-                </Drawer.Description>
-              ) : null}
-            </div>
-          ) : null}
-          <div
-            className="flex-1 overflow-y-auto px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]"
-          >
-            {children}
-          </div>
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+          {children}
+        </div>
+      </div>
+    </div>
   );
 }

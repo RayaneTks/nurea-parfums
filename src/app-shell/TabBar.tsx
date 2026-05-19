@@ -51,17 +51,13 @@ export function TabBar() {
     <nav
       aria-label="Navigation principale"
       data-tabbar
-      className="fixed bottom-0 left-1/2 w-full max-w-[var(--admin-app-max-width)] z-[50]"
+      className="shrink-0"
       style={{
         background: "color-mix(in srgb, var(--admin-surface) 92%, transparent)",
         backdropFilter: "saturate(180%) blur(20px)",
         WebkitBackdropFilter: "saturate(180%) blur(20px)",
         borderTop: "1px solid var(--admin-border)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        /* translateX(-50%) recentre + translateZ(0) promote GPU layer
-           (combiné dans le même transform pour éviter d'écraser la classe
-           Tailwind -translate-x-1/2). */
-        transform: "translate3d(-50%, 0, 0)",
       }}
     >
       <div

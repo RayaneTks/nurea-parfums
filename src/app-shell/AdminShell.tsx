@@ -14,14 +14,21 @@ type AdminShellProps = {
 };
 
 /**
- * Layout shell admin — utilisé par app/admin/layout.tsx.
+ * Layout shell admin — CSS-only stable, pas de listener visualViewport.
  *
- * Pattern PWA standard restauré (ancien prod):
- * - min-h-[100dvh] sur outer + inner (page coule naturellement)
- * - TabBar `fixed bottom-0` (toujours visible)
- * - Body scroll natif → iOS gère le scroll-into-view du focused input
- *   automatiquement quand le clavier overlay
- * - PAS de scroll container nesté (qui casse le comportement iOS natif)
+ * Pattern :
+ * - Outer : position:fixed inset:0 height:100dvh overflow:hidden
+ *   → la page entière est pinée au viewport, body ne scrolle JAMAIS
+ * - Inner column : flex flex-col h-full
+ * - AppHeader : shrink-0 (top)
+ * - Main content : flex-1 min-h-0 overflow-y-auto (seul cet espace scrolle)
+ * - TabBar : shrink-0 (bottom, dans le flux, donc toujours visible)
+ *
+ * Quand le clavier iOS overlay :
+ * - Le shell reste à 100dvh (CSS, ne bouge pas)
+ * - Le clavier couvre le bas — c'est le comportement natif attendu
+ * - Le focus handler (ViewportSync) glisse l'input dans la vue avec
+ *   scrollIntoView({block:'nearest'}) après 80ms
  */
 export function AdminShell({ children }: AdminShellProps) {
   const pathname = usePathname() ?? "";
@@ -41,8 +48,20 @@ export function AdminShell({ children }: AdminShellProps) {
     return (
       <>
         <ViewportSync />
-        <div className="admin-theme w-full min-h-[100dvh]">
-          <div className="mx-auto w-full max-w-[var(--admin-app-max-width)] min-h-[100dvh]">
+        <div
+          className="admin-theme w-full"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: "100dvh",
+            maxHeight: "100dvh",
+            overflow: "hidden",
+          }}
+        >
+          <div className="mx-auto h-full w-full max-w-[var(--admin-app-max-width)] overflow-y-auto">
             {children}
           </div>
         </div>
@@ -58,23 +77,34 @@ export function AdminShell({ children }: AdminShellProps) {
   return (
     <>
       <ViewportSync />
-      <div className="admin-theme w-full min-h-[100dvh]">
-        <div
-          className="mx-auto flex flex-col w-full max-w-[var(--admin-app-max-width)] min-h-[100dvh]"
-          style={{
-            paddingBottom:
-              "calc(var(--admin-tab-bar-height) + env(safe-area-inset-bottom, 0px))",
-          }}
-        >
+      <div
+        className="admin-theme w-full"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: "100dvh",
+          maxHeight: "100dvh",
+          overflow: "hidden",
+        }}
+      >
+        <div className="mx-auto flex h-full w-full max-w-[var(--admin-app-max-width)] flex-col">
           <AppHeader
             onOpenCommandPalette={() => setPaletteOpen(true)}
             onOpenSearch={focusCatalogueSearch}
           />
           <PwaInstallHint />
-          {children}
+          <main
+            className="flex-1 min-h-0 overflow-y-auto"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            {children}
+          </main>
+          <TabBar />
         </div>
         <AdminLoadingProgress />
-        <TabBar />
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
       </div>
     </>

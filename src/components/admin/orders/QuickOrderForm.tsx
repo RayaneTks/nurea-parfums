@@ -3,7 +3,7 @@
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
 import { ArrowLeft, CheckCircle2, Plus, Trash2 } from "lucide-react";
 import { CustomerCombobox, type SelectedCustomer } from "../customers/CustomerCombobox";
 import { Card } from "@/ui/primitives/Card";
@@ -74,8 +74,6 @@ export function QuickOrderForm() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
   const [customer, setCustomer] = useState<SelectedCustomer | null>(null);
   const [customerName, setCustomerName] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -85,52 +83,6 @@ export function QuickOrderForm() {
   const [exchangeRateDefault] = useState("277");
 
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
-
-  /* Listener visualViewport — force la hauteur du conteneur à la hauteur
-     réelle visible (au-dessus du clavier iOS). Sans ça, le layout fixed
-     reste à 100dvh et le contenu disparaît derrière le clavier. */
-  useEffect(() => {
-    const apply = () => {
-      if (!containerRef.current) return;
-      const vh = window.visualViewport?.height ?? window.innerHeight;
-      const offsetTop = window.visualViewport?.offsetTop ?? 0;
-      containerRef.current.style.height = `${vh}px`;
-      containerRef.current.style.top = `${offsetTop}px`;
-    };
-    apply();
-    const vv = window.visualViewport;
-    if (vv) {
-      vv.addEventListener("resize", apply);
-      vv.addEventListener("scroll", apply);
-    } else {
-      window.addEventListener("resize", apply);
-      window.addEventListener("orientationchange", apply);
-    }
-    return () => {
-      if (vv) {
-        vv.removeEventListener("resize", apply);
-        vv.removeEventListener("scroll", apply);
-      } else {
-        window.removeEventListener("resize", apply);
-        window.removeEventListener("orientationchange", apply);
-      }
-    };
-  }, []);
-
-  /* Bloque le scroll global du body — seul le conteneur du formulaire
-     scrolle. Préserve l'état précédent pour le restaurer au démontage. */
-  useEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-    const prevHtml = html.style.overflow;
-    const prevBody = body.style.overflow;
-    html.style.overflow = "hidden";
-    body.style.overflow = "hidden";
-    return () => {
-      html.style.overflow = prevHtml;
-      body.style.overflow = prevBody;
-    };
-  }, []);
 
   const totals = useMemo(() => {
     let revenue = 0;
@@ -284,14 +236,20 @@ export function QuickOrderForm() {
 
   return (
     <div
-      ref={containerRef}
-      className="fixed left-1/2 z-40 flex w-full max-w-[var(--admin-app-max-width)] flex-col bg-[var(--admin-bg)]"
       style={{
+        position: "fixed",
         top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         height: "100dvh",
-        transform: "translate3d(-50%, 0, 0)",
+        maxHeight: "100dvh",
+        width: "100%",
+        overflow: "hidden",
+        zIndex: 45,
       }}
     >
+      <div className="mx-auto flex h-full w-full max-w-[var(--admin-app-max-width)] flex-col bg-[var(--admin-bg)]">
       <header
         className="shrink-0 border-b border-[var(--admin-border)] px-5 pb-3 pt-2"
         style={{
@@ -321,10 +279,12 @@ export function QuickOrderForm() {
         </div>
       </header>
 
-      {/* Zone scrollable du formulaire — overflow-y:auto, seul le formulaire
-          scrolle. visualViewport gère la hauteur du parent dynamiquement. */}
+      {/* Zone scrollable — flex:1 overflow-y:auto, seul cet espace scrolle.
+          Pas de listener visualViewport : le clavier iOS overlay simplement
+          le bas. Le focus handler (ViewportSync) gère la mise en vue
+          minimale avec scrollIntoView({block:'nearest'}). */}
       <div
-        className="flex-1 overflow-y-auto overscroll-contain px-5 py-4"
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-4"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         <Stack gap={3}>
@@ -543,8 +503,7 @@ export function QuickOrderForm() {
         </Stack>
       </div>
 
-      {/* CTA collé en bas du conteneur fixed (= juste au-dessus du clavier
-          quand celui-ci est ouvert, car le conteneur a height = visualVp.h). */}
+      {/* CTA collé en bas du conteneur fixed — toujours visible. */}
       <div
         className="shrink-0 border-t border-[var(--admin-border)] bg-[var(--admin-surface)] px-5 pt-3"
         style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0.75rem))" }}
@@ -560,6 +519,7 @@ export function QuickOrderForm() {
         >
           Créer la commande
         </Button>
+      </div>
       </div>
 
       <PerfumePicker

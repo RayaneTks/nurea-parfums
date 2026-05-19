@@ -59,18 +59,15 @@
   background: var(--admin-bg);
 }
 
-/* iOS PWA — body scroll natif requis pour que le clavier overlay sans
-   décaler la page. iOS gère automatiquement le scroll-into-view du focused
-   input quand le body est scrollable et que html/body ne sont PAS
-   overflow:hidden. C'est la norme UI/UX d'apps natives. */
-html.admin-route-root {
-  height: 100%;
-}
-
+/* iOS PWA — page entière en position:fixed (AdminShell). html/body figés
+   pour empêcher tout décalage natif du body au focus clavier. Seul le
+   conteneur scroll interne du shell gère le défilement. */
+html.admin-route-root,
 body.admin-route {
-  min-height: 100%;
-  /* overscroll-behavior empêche le pull-to-refresh / rebond Safari sur PWA */
-  overscroll-behavior-y: none;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 /* Tabular numerals utility (montants, dates) */
@@ -105,35 +102,15 @@ body.admin-route {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   CLAVIER MOBILE — sheets et modals keyboard-aware
-   ViewportSync expose --admin-keyboard-h (hauteur du clavier).
+   CLAVIER iOS — gestion 100 % CSS, pas de listener visualViewport.
    ═══════════════════════════════════════════════════════════ */
 
-:root {
-  --admin-keyboard-h: 0px;
-}
-
-/* Vaul Drawer (Sheet/BottomSheet) : forcer bottom au-dessus du clavier.
-   [data-vaul-drawer] = attribut injecté par vaul sur Drawer.Content.
-   Priorité inline style > stylesheet, mais on ajoute aussi ici en filet. */
-html.admin-keyboard-open [data-vaul-drawer][data-vaul-drawer-direction="bottom"] {
-  bottom: var(--admin-keyboard-h, 0px) !important;
-  max-height: var(--admin-vh, 100dvh) !important;
-}
-
-/* Modal (admin/ui/Modal.tsx) : items-end centre sur layout viewport (derrière
-   le clavier). On pousse vers le haut via padding-bottom déjà géré via style
-   prop dans le composant. Cette règle est un filet de sécurité. */
-html.admin-keyboard-open .admin-modal-overlay {
-  padding-bottom: var(--admin-keyboard-h, 0px);
-}
-
-/* Formulaires admin : scroll-margin pour scrollIntoView. Garde le champ
-   focusé au-dessus du clavier ET sous le header sticky. */
+/* Scroll-margin pour scrollIntoView({block:'nearest'}). Le champ focusé
+   reste sous le header sticky et garde un peu d'air en bas. */
 .admin-theme input:focus,
 .admin-theme textarea:focus,
 .admin-theme select:focus {
-  scroll-margin-bottom: calc(var(--admin-keyboard-h, 0px) + 1rem);
+  scroll-margin-bottom: 1rem;
   scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 64px);
 }
 

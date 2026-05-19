@@ -561,14 +561,12 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
       <main
         id="main-content"
-        className="flex flex-1 flex-col px-5 pt-0"
-        style={{ minHeight: "100dvh" }}
+        className="flex min-h-full flex-col px-5 pt-0"
       >
         <form
           id="perfume-form"
           onSubmit={onSubmit}
           className="flex flex-1 flex-col space-y-7"
-          style={{ minHeight: "100dvh" }}
         >
           {error ? (
             <div
