@@ -17,7 +17,7 @@ const TABS: readonly Tab[] = [
   { href: "/admin", label: "Tableau", icon: Home, match: (p) => p === "/admin" },
   {
     href: "/admin/catalogue",
-    label: "Produits",
+    label: "Catalogue",
     icon: Package,
     match: (p) =>
       p.startsWith("/admin/catalogue") ||
