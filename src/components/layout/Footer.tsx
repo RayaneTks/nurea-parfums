@@ -22,7 +22,7 @@ export const Footer: FC = () => {
   const isDark = resolvedTheme !== "light";
 
   return (
-    <footer className="relative border-t border-[var(--nurea-border)] bg-[var(--nurea-bg)] pt-16 pb-8 md:pt-24">
+    <footer className="relative border-t border-[var(--nurea-border)] bg-[var(--nurea-bg)] pt-16 pb-[max(2rem,calc(env(safe-area-inset-bottom,0px)+1rem))] md:pt-24 md:pb-8">
       <div className="mx-auto max-w-[1200px] px-4 md:px-10">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           
@@ -52,7 +52,7 @@ export const Footer: FC = () => {
                 href={CONTACT.snapchat}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--nurea-border)] text-[var(--nurea-text-muted)] transition-all hover:border-[var(--nurea-snapchat)] hover:text-[var(--nurea-snapchat)] active:scale-95"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--nurea-border)] text-[var(--nurea-text-muted)] transition-all hover:border-[var(--nurea-snapchat)] hover:text-[var(--nurea-snapchat)] active:scale-95 touch-manipulation"
                 aria-label="Snapchat"
               >
                 <SnapchatIcon className="h-[18px] w-[18px]" />
@@ -61,7 +61,7 @@ export const Footer: FC = () => {
                 href={CONTACT.whatsapp}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--nurea-border)] text-[var(--nurea-text-muted)] transition-all hover:border-[var(--nurea-accent)] hover:text-[var(--nurea-accent)] active:scale-95"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--nurea-border)] text-[var(--nurea-text-muted)] transition-all hover:border-[var(--nurea-accent)] hover:text-[var(--nurea-accent)] active:scale-95 touch-manipulation"
                 aria-label="WhatsApp"
               >
                 <WhatsAppIcon className="h-[18px] w-[18px]" />

@@ -137,7 +137,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenBrowse: initialOnOpenBrowse }) =
             {!isHome ? (
               <button
                 type="button"
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--nurea-surface)] border border-[var(--nurea-border)] text-[var(--nurea-text)] active-scale transition-all shadow-sm"
+                className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--nurea-surface)] border border-[var(--nurea-border)] text-[var(--nurea-text)] active-scale transition-all shadow-sm touch-manipulation"
                 onClick={() => router.back()}
                 aria-label="Retour"
               >
@@ -269,11 +269,12 @@ export const Navbar: FC<NavbarProps> = ({ onOpenBrowse: initialOnOpenBrowse }) =
               <div
                 ref={menuPanelRef}
                 onKeyDown={handleMenuKeyDown}
-                className={`fixed inset-0 z-[61] flex flex-col bg-[var(--nurea-bg)] pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] transition-all duration-500 ease-out-expo md:hidden ${
+                className={`fixed inset-x-0 top-0 z-[61] flex flex-col bg-[var(--nurea-bg)] pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] overflow-y-auto overscroll-contain transition-all duration-500 ease-out-expo md:hidden ${
                   menuOpen
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 -translate-y-full pointer-events-none"
                 }`}
+                style={{ height: "var(--nurea-vh, 100dvh)" }}
                 role="dialog"
                 aria-modal="true"
                 aria-label="Menu principal"
@@ -281,7 +282,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenBrowse: initialOnOpenBrowse }) =
                 {...(!menuOpen ? { inert: true as unknown as boolean } : {})}
               >
                 {/* Header */}
-                <div className="flex min-h-[58px] items-center justify-between px-5">
+                <div className="flex min-h-[58px] shrink-0 items-center justify-between px-5">
                   <span className="text-[12px] font-medium uppercase tracking-[0.35em] text-[var(--nurea-text-muted)]">
                     Menu
                   </span>
@@ -307,7 +308,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenBrowse: initialOnOpenBrowse }) =
                 </div>
 
                 {/* Links */}
-                <nav className="flex flex-col items-center justify-center flex-1 gap-10">
+                <nav className="flex flex-col items-center justify-center flex-1 gap-8 px-5 py-6 sm:gap-10">
                   <Link
                     href="/"
                     onClick={closeMenu}
@@ -356,7 +357,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenBrowse: initialOnOpenBrowse }) =
                 </nav>
 
                 {/* Footer */}
-                <div className="flex items-center justify-center px-5 py-5 border-t border-[var(--nurea-border)]">
+                <div className="flex shrink-0 items-center justify-center px-5 py-5 border-t border-[var(--nurea-border)]">
                   <Image
                     src={isDark ? "/branding/monogram/np-free-cuivre.webp" : "/branding/monogram/np-free-bordeaux.webp"}
                     alt=""

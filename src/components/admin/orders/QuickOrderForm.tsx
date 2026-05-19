@@ -4,14 +4,13 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState, useTransition } from "react";
-import { CheckCircle2, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Plus, Trash2 } from "lucide-react";
 import { CustomerCombobox, type SelectedCustomer } from "../customers/CustomerCombobox";
 import { Card } from "@/ui/primitives/Card";
 import { Input } from "@/ui/primitives/Input";
 import { Button } from "@/ui/primitives/Button";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
-import { StickyAction } from "@/ui/primitives/StickyAction";
 import { Chip } from "@/ui/primitives/Chip";
 import { Stepper } from "@/ui/primitives/Stepper";
 import { Money } from "@/ui/patterns/Money";
@@ -236,9 +235,60 @@ export function QuickOrderForm() {
   }, [customer, customerName, depositAmount, depositOn, lines, router]);
 
   return (
-    <>
-      <Stack gap={3}>
-        <Card padding={3}>
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: "100dvh",
+        maxHeight: "100dvh",
+        width: "100%",
+        overflow: "hidden",
+        zIndex: 45,
+      }}
+    >
+      <div className="mx-auto flex h-full w-full max-w-[var(--admin-app-max-width)] flex-col bg-[var(--admin-bg)]">
+      <header
+        className="shrink-0 border-b border-[var(--admin-border)] px-5 pb-3 pt-2"
+        style={{
+          background: "color-mix(in srgb, var(--admin-bg) 80%, transparent)",
+          backdropFilter: "saturate(180%) blur(20px)",
+          WebkitBackdropFilter: "saturate(180%) blur(20px)",
+          paddingTop: "calc(0.5rem + env(safe-area-inset-top, 0px))",
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            aria-label="Retour"
+            className="-ml-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-[var(--admin-text-muted)] tap-scale hover:bg-[var(--admin-surface-muted)]"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-[18px] font-bold leading-tight tracking-tight text-[var(--admin-text)]">
+              Commande rapide
+            </h1>
+            <p className="mt-0.5 truncate text-[12px] text-[var(--admin-text-muted)]">
+              Client + parfums + acompte (optionnel). 30 secondes.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      {/* Zone scrollable — flex:1 overflow-y:auto, seul cet espace scrolle.
+          Pas de listener visualViewport : le clavier iOS overlay simplement
+          le bas. Le focus handler (ViewportSync) gère la mise en vue
+          minimale avec scrollIntoView({block:'nearest'}). */}
+      <div
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-4"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        <Stack gap={3}>
+          <Card padding={3}>
           <Stack gap={3}>
             <div>
               <label className="mb-1.5 block text-[13px] font-medium text-[var(--admin-text-muted)]">
@@ -450,9 +500,14 @@ export function QuickOrderForm() {
             ) : null}
           </HStack>
         </Card>
-      </Stack>
+        </Stack>
+      </div>
 
-      <StickyAction>
+      {/* CTA collé en bas du conteneur fixed — toujours visible. */}
+      <div
+        className="shrink-0 border-t border-[var(--admin-border)] bg-[var(--admin-surface)] px-5 pt-3"
+        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0.75rem))" }}
+      >
         <Button
           type="button"
           variant="primary"
@@ -464,7 +519,8 @@ export function QuickOrderForm() {
         >
           Créer la commande
         </Button>
-      </StickyAction>
+      </div>
+      </div>
 
       <PerfumePicker
         open={pickerOpen}
@@ -476,6 +532,6 @@ export function QuickOrderForm() {
       {toast ? (
         <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
       ) : null}
-    </>
+    </div>
   );
 }

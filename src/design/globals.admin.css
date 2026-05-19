@@ -59,15 +59,15 @@
   background: var(--admin-bg);
 }
 
-/* iOS PWA — fixer le viewport pour éviter le saut de page au focus clavier */
-html.admin-route-root {
-  overflow: hidden;
-  height: 100%;
-}
-
+/* iOS PWA — page entière en position:fixed (AdminShell). html/body figés
+   pour empêcher tout décalage natif du body au focus clavier. Seul le
+   conteneur scroll interne du shell gère le défilement. */
+html.admin-route-root,
 body.admin-route {
-  overflow: hidden;
   height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 /* Tabular numerals utility (montants, dates) */
@@ -99,6 +99,26 @@ body.admin-route {
 .admin-theme textarea,
 .admin-theme select {
   font-size: 16px; /* prevent iOS zoom */
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CLAVIER iOS — gestion 100 % CSS, pas de listener visualViewport.
+   ═══════════════════════════════════════════════════════════ */
+
+/* Scroll-margin pour scrollIntoView({block:'nearest'}). Le champ focusé
+   reste sous le header sticky et garde un peu d'air en bas. */
+.admin-theme input:focus,
+.admin-theme textarea:focus,
+.admin-theme select:focus {
+  scroll-margin-bottom: 1rem;
+  scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 64px);
+}
+
+/* Scroll-padding sur le conteneur interne scrollable du shell — empêche
+   les titres / le top du formulaire d'apparaître collés au header. */
+.admin-theme main[data-shell-scroll],
+.admin-theme main.shell-scroll-area {
+  scroll-padding-top: 1rem;
 }
 
 /* Safe-area wrappers */

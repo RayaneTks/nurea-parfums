@@ -109,9 +109,15 @@ export function CatalogFilterDrawer({
         aria-modal="true"
         aria-label="Filtrer par marques"
         role="dialog"
+        style={{
+          /* Hauteur réelle visible : laisse 12% au-dessus pour le geste de fermeture,
+             retire le safe-area-inset-top pour ne pas dépasser sous l'encoche. */
+          maxHeight:
+            "calc(var(--nurea-vh, 100dvh) - env(safe-area-inset-top, 0px) - 12%)",
+        }}
         className={`fixed z-[120] flex flex-col bg-[var(--nurea-surface)] shadow-2xl transition-all duration-500 ease-out-expo overscroll-none
           bottom-0 left-0 right-0 rounded-t-[28px] md:rounded-t-none
-          h-[78dvh] md:h-full
+          h-[78dvh] md:h-full md:max-h-none
           ${open ? "translate-y-0" : "translate-y-full"}
           md:right-0 md:left-auto md:top-0 md:w-full md:max-w-[400px]
           md:translate-y-0
@@ -163,7 +169,7 @@ export function CatalogFilterDrawer({
         </div>
 
         {/* Brands list */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar overscroll-contain">
+        <div className="flex-1 overflow-y-auto custom-scrollbar overscroll-contain [-webkit-overflow-scrolling:touch]">
           {grouped.length === 0 ? (
             <div className="px-6 py-12 text-center">
               <p className="text-sm text-[var(--nurea-text-muted)]">

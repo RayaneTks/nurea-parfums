@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { PublicViewportSync } from "@/components/layout/PublicViewportSync";
 import { RootJsonLd } from "@/components/seo/JsonLd";
 import {
   DEFAULT_DESCRIPTION,
@@ -124,6 +125,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           Aller au contenu principal
         </a>
         <RootJsonLd />
+        <PublicViewportSync />
         <div className="nurea-viewport-top-shield" aria-hidden />
         <ThemeProvider>{children}</ThemeProvider>
       </body>

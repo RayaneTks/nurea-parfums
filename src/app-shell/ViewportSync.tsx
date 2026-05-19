@@ -3,50 +3,42 @@
 import { useEffect } from "react";
 
 /**
- * Synchronise `--admin-vh` avec la hauteur réelle visible (visualViewport).
+ * Focus handler natif iOS — pas de listener visualViewport ni de manipulation
+ * dynamique des hauteurs/top (qui causent un double décalage en PWA iOS).
  *
- * iOS Safari (et PWA standalone) ne met PAS à jour `100dvh` de façon fiable
- * quand le clavier s'ouvre — le shell reste à la hauteur écran complet et le
- * clavier recouvre les inputs. visualViewport est la seule source de vérité.
+ * Tout est géré par CSS stable (100dvh, position:fixed, overflow). Seul ce
+ * focus handler ajuste légèrement le scroll pour que l'input reste visible.
  *
- * Effet : `--admin-vh` reflète l'espace réellement visible, et l'AdminShell
- * l'utilise pour sa hauteur racine. Quand le clavier monte, tout le shell
- * (incluant TabBar et StickyAction) se compresse au-dessus du clavier.
+ * - `block: 'nearest'` : iOS scroll le minimum nécessaire (pas de remontée
+ *   excessive du composant comme avec 'center').
+ * - 80ms : iOS a juste commencé à monter le clavier, on glisse l'input dans
+ *   la vue sans entrer en conflit avec l'animation.
  */
 export function ViewportSync() {
   useEffect(() => {
-    const root = document.documentElement;
+    const onFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const tag = target.tagName;
+      if (tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT") return;
+      const inputType = (target as HTMLInputElement).type;
+      if (
+        inputType === "checkbox" ||
+        inputType === "radio" ||
+        inputType === "button" ||
+        inputType === "submit" ||
+        inputType === "file"
+      )
+        return;
 
-    const apply = () => {
-      const vv = window.visualViewport;
-      const h = vv ? vv.height : window.innerHeight;
-      root.style.setProperty("--admin-vh", `${Math.round(h)}px`);
-      const offsetTop = vv ? vv.offsetTop : 0;
-      root.style.setProperty("--admin-vv-offset", `${Math.round(offsetTop)}px`);
+      setTimeout(() => {
+        if (document.activeElement !== target) return;
+        target.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }, 80);
     };
 
-    apply();
-
-    const vv = window.visualViewport;
-    if (vv) {
-      vv.addEventListener("resize", apply);
-      vv.addEventListener("scroll", apply);
-    } else {
-      window.addEventListener("resize", apply);
-      window.addEventListener("orientationchange", apply);
-    }
-
-    return () => {
-      if (vv) {
-        vv.removeEventListener("resize", apply);
-        vv.removeEventListener("scroll", apply);
-      } else {
-        window.removeEventListener("resize", apply);
-        window.removeEventListener("orientationchange", apply);
-      }
-      root.style.removeProperty("--admin-vh");
-      root.style.removeProperty("--admin-vv-offset");
-    };
+    document.addEventListener("focusin", onFocusIn);
+    return () => document.removeEventListener("focusin", onFocusIn);
   }, []);
 
   return null;

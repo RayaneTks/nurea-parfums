@@ -28,7 +28,10 @@ export function StickyAction({ children, background = true, className }: StickyA
         className,
       )}
       style={{
-        paddingBottom: "0.75rem",
+        /* sticky bottom-0 dans le scroll container interne du shell admin
+           (main.flex-1.overflow-y-auto) → reste au-dessus de la TabBar
+           (qui est shrink-0 sous le scroll container). */
+        paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))",
       }}
     >
       {children}

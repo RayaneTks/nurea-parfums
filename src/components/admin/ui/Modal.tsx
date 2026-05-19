@@ -116,13 +116,20 @@ export function Modal({
     <div
       aria-hidden={!open}
       className={cn(
-        "fixed inset-0 z-[150] max-h-dvh min-h-0 w-full min-w-0 max-w-full overflow-x-clip admin-theme",
-        "flex items-end justify-center sm:items-center sm:p-4",
-        "touch-pan-y overscroll-y-contain bg-[var(--admin-overlay)] backdrop-blur-sm",
+        "fixed inset-0 z-[150] w-full overflow-hidden admin-theme",
+        "flex items-stretch justify-center sm:items-center sm:p-4",
+        "bg-[var(--admin-overlay)] backdrop-blur-sm",
         isClosing
           ? "animate-out fade-out duration-200"
           : "animate-in fade-in duration-200",
       )}
+      style={{
+        /* CSS-only — pas de variables JS. La modale fait toujours la taille
+           du viewport disponible. Le clavier iOS overlay simplement le bas
+           et le contenu interne scrolle. */
+        height: "100dvh",
+        maxHeight: "100dvh",
+      }}
       onClick={dismissible && !isClosing ? onClose : undefined}
     >
       <div
@@ -133,15 +140,19 @@ export function Modal({
         aria-describedby={description ? descId : undefined}
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          "relative w-full min-w-0 max-w-full rounded-t-3xl sm:rounded-3xl",
+          "relative w-full min-w-0 max-w-full sm:rounded-3xl",
           "bg-admin-surface border border-admin-border",
           "shadow-admin-xl",
-          "flex max-h-[min(92dvh,calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)))] flex-col",
+          "flex flex-col",
           isClosing
-            ? "animate-out slide-out-to-bottom-full sm:zoom-out-95 sm:slide-out-to-bottom-0 duration-200 ease-out-expo"
-            : "animate-in slide-in-from-bottom-full sm:zoom-in-95 sm:slide-in-from-bottom-0 duration-300 ease-out-expo",
+            ? "animate-out fade-out duration-200 sm:zoom-out-95"
+            : "animate-in fade-in duration-300 sm:zoom-in-95",
           sizes[size],
         )}
+        style={{
+          height: "100dvh",
+          maxHeight: "100dvh",
+        }}
       >
         <div className="relative flex items-start justify-between gap-3 px-5 pt-5 pb-4">
           <div

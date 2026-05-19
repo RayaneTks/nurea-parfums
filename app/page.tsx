@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 function HomeFallback() {
   return (
     <div
-      className="nurea-vitrine-shell grain min-h-screen bg-[var(--nurea-bg)] p-10 pt-32"
+      className="nurea-vitrine-shell grain bg-[var(--nurea-bg)] p-10 pt-32"
       aria-busy="true"
     >
       <CatalogSkeleton />
@@ -52,7 +52,7 @@ export default async function HomePage() {
   return (
     <div
       id="main-content"
-      className="nurea-vitrine-shell grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]"
+      className="nurea-vitrine-shell grain flex flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]"
     >
       <Navbar />
       

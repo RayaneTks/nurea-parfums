@@ -561,10 +561,13 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
 
       <main
         id="main-content"
-        className="flex-1 px-5 pt-0"
-        style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
+        className="flex min-h-full flex-col px-5 pt-0"
       >
-        <form id="perfume-form" onSubmit={onSubmit} className="space-y-7">
+        <form
+          id="perfume-form"
+          onSubmit={onSubmit}
+          className="flex flex-1 flex-col space-y-7"
+        >
           {error ? (
             <div
               ref={errorRef}
@@ -689,22 +692,27 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
               </AdminButton>
             </div>
           ) : null}
+
+          {/* Bouton CTA dans le flux naturel — mt-auto le pousse en bas
+              du flex container quand le contenu est court. Plus de fixed
+              qui se superpose aux inputs au focus clavier. */}
+          <div
+            className="mt-auto pt-6"
+            style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom, 1rem))" }}
+          >
+            <AdminButton
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="w-full shadow-md"
+              isLoading={saving}
+              disabled={readOnly || !brandId || !name || !image}
+            >
+              {isNew ? "Créer le parfum" : "Enregistrer"}
+            </AdminButton>
+          </div>
         </form>
       </main>
-
-      <div className="pointer-events-auto fixed bottom-[calc(5.5rem+max(16px,env(safe-area-inset-bottom,16px)))] left-1/2 z-[55] w-full max-w-[430px] -translate-x-1/2 px-5">
-        <AdminButton
-          type="submit"
-          form="perfume-form"
-          variant="primary"
-          size="lg"
-          className="w-full shadow-md"
-          isLoading={saving}
-          disabled={readOnly || !brandId || !name || !image}
-        >
-          {isNew ? "Créer le parfum" : "Enregistrer"}
-        </AdminButton>
-      </div>
 
       <ConfirmDialog
         open={deleteConfirm}

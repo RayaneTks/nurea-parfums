@@ -1,7 +1,7 @@
 "use client";
 
-import type { FC, FormEvent } from "react";
-import { useState } from "react";
+import type { FC, FormEvent, FocusEvent as ReactFocusEvent } from "react";
+import { useCallback, useState } from "react";
 import { ArrowRight, Send, Sparkles } from "lucide-react";
 import { WhatsAppIcon, SnapchatIcon } from "@/components/ui/Icons";
 import { CONTACT } from "@/lib/data";
@@ -111,6 +111,18 @@ export const ContactSection: FC<ContactSectionProps> = ({ parfum = "", marque = 
       setIsSubmitting(false);
     }
   };
+
+  const handleFieldFocus = useCallback(
+    (e: ReactFocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      /* Quand le clavier mobile monte, iOS Safari ne scrolle pas toujours
+         le champ focusé dans la zone visible : on l'aide explicitement. */
+      const el = e.currentTarget;
+      window.setTimeout(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 250);
+    },
+    []
+  );
 
   return (
     <main id="main-content" className="relative w-full overflow-x-clip">
@@ -227,25 +239,34 @@ export const ContactSection: FC<ContactSectionProps> = ({ parfum = "", marque = 
                   </p>
                 </div>
               ) : (
-                <form onSubmit={handleContactSubmit} className="space-y-4" noValidate>
+                <form
+                  onSubmit={handleContactSubmit}
+                  className="nurea-form-scroll space-y-4 [touch-action:manipulation]"
+                  noValidate
+                >
                   <div className="grid gap-4 sm:grid-cols-2">
                     <FormField
                       id="name"
                       name="name"
                       label="Votre Nom"
                       type="text"
+                      autoComplete="name"
                       value={formState.name}
                       error={fieldErrors.name}
                       onChange={(v) => setFormState({ ...formState, name: v })}
+                      onFocus={handleFieldFocus}
                     />
                     <FormField
                       id="email"
                       name="email"
                       label="Votre E-mail"
                       type="email"
+                      autoComplete="email"
+                      inputMode="email"
                       value={formState.email}
                       error={fieldErrors.email}
                       onChange={(v) => setFormState({ ...formState, email: v })}
+                      onFocus={handleFieldFocus}
                     />
                   </div>
 
@@ -254,9 +275,11 @@ export const ContactSection: FC<ContactSectionProps> = ({ parfum = "", marque = 
                     name="subject"
                     label="Sujet"
                     type="text"
+                    autoComplete="off"
                     value={formState.subject}
                     error={fieldErrors.subject}
                     onChange={(v) => setFormState({ ...formState, subject: v })}
+                    onFocus={handleFieldFocus}
                   />
 
                   <div>
@@ -274,9 +297,10 @@ export const ContactSection: FC<ContactSectionProps> = ({ parfum = "", marque = 
                       onChange={(e) =>
                         setFormState({ ...formState, message: e.target.value })
                       }
+                      onFocus={handleFieldFocus}
                       aria-invalid={Boolean(fieldErrors.message)}
                       aria-describedby={fieldErrors.message ? "message-error" : undefined}
-                      className="block min-h-[128px] w-full resize-y border border-[var(--nurea-border)] bg-transparent px-3 py-3 text-[14px] text-[var(--nurea-text)] outline-none transition-colors focus:border-[var(--nurea-accent)]"
+                      className="nurea-form-input block min-h-[128px] w-full resize-y border border-[var(--nurea-border)] bg-transparent px-3 py-3 text-[14px] text-[var(--nurea-text)] outline-none transition-colors focus:border-[var(--nurea-accent)]"
                     />
                     {fieldErrors.message ? (
                       <p
@@ -336,6 +360,9 @@ const FormField = ({
   value,
   error,
   onChange,
+  onFocus,
+  autoComplete,
+  inputMode,
 }: {
   id: string;
   name: string;
@@ -344,6 +371,9 @@ const FormField = ({
   value: string;
   error?: string;
   onChange: (v: string) => void;
+  onFocus?: (e: ReactFocusEvent<HTMLInputElement>) => void;
+  autoComplete?: string;
+  inputMode?: "text" | "email" | "tel" | "url" | "search" | "numeric" | "decimal";
 }) => {
   const errId = `${id}-error`;
 
@@ -361,9 +391,15 @@ const FormField = ({
         name={name}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={onFocus}
+        autoComplete={autoComplete}
+        inputMode={inputMode}
+        autoCapitalize={type === "email" ? "off" : undefined}
+        autoCorrect={type === "email" ? "off" : undefined}
+        spellCheck={type === "email" ? false : undefined}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? errId : undefined}
-        className="block min-h-[48px] w-full border border-[var(--nurea-border)] bg-transparent px-3 py-2 text-[14px] text-[var(--nurea-text)] outline-none transition-colors focus:border-[var(--nurea-accent)]"
+        className="nurea-form-input block min-h-[48px] w-full border border-[var(--nurea-border)] bg-transparent px-3 py-2 text-[14px] text-[var(--nurea-text)] outline-none transition-colors focus:border-[var(--nurea-accent)]"
       />
       {error ? (
         <p

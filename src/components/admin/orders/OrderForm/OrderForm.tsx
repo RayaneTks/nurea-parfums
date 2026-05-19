@@ -273,7 +273,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
   return (
     <main
       id="main-content"
-      className="flex-1 px-4 pt-2"
+      className="flex-1 px-4 pt-4"
       style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
     >
       <Stack gap={3}>
