@@ -10,7 +10,7 @@ export default function MockupPage() {
     <iframe
       title="Mockup interne"
       src="/mockup/palettes.html"
-      style={{ width: "100vw", height: "100vh", border: "none" }}
+      style={{ width: "100vw", height: "100dvh", border: "none" }}
     />
   );
 }

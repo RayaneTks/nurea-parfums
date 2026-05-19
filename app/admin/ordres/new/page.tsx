@@ -21,23 +21,11 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
   const { mode } = await searchParams;
 
   if (mode === "quick") {
-    return (
-      <main
-        id="main-content"
-        className="flex-1 space-y-4 px-5 pt-2"
-        style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
-      >
-        <header>
-          <h1 className="text-2xl font-bold leading-tight tracking-tight text-neutral-900">
-            Commande rapide
-          </h1>
-          <p className="mt-0.5 text-sm text-neutral-500">
-            Client + 1 parfum + acompte (optionnel). 30 secondes.
-          </p>
-        </header>
-        <QuickOrderForm />
-      </main>
-    );
+    /* QuickOrderForm est self-contained (fixed + visualViewport-aware) :
+       il gère son propre header/scroll/CTA. Pas de <main> wrapper qui
+       interférerait avec la hauteur du conteneur parent forcée à
+       window.visualViewport.height (directive UX clavier iOS). */
+    return <QuickOrderForm />;
   }
 
   return <OrderForm mode="create" />;

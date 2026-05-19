@@ -61,20 +61,11 @@ export function ViewportSync() {
       if (focusTimer) clearTimeout(focusTimer);
       focusTimer = setTimeout(() => {
         if (document.activeElement !== target) return;
-        /* Centre l'input dans la ZONE VISIBLE (au-dessus du clavier).
-           scrollIntoView({block:"center"}) centre dans le layout viewport
-           qui inclut la zone clavier → input mal placé. On calcule
-           manuellement depuis visualViewport. */
-        const rect = target.getBoundingClientRect();
-        const visualVp = window.visualViewport;
-        const visibleH = visualVp ? visualVp.height : window.innerHeight;
-        const visibleTop = visualVp ? visualVp.offsetTop : 0;
-        const visibleCenterY = visibleTop + visibleH / 2;
-        const elementCenterY = rect.top + rect.height / 2;
-        const delta = elementCenterY - visibleCenterY;
-        if (Math.abs(delta) > 4) {
-          window.scrollBy({ top: delta, behavior: "smooth" });
-        }
+        /* Centre l'input actif dans l'espace visible restant.
+           scroll-margin-top/bottom (globals.admin.css) compensent header
+           sticky + clavier pour que "center" soit réellement la zone
+           visible et non le layout viewport complet. */
+        target.scrollIntoView({ block: "center", behavior: "smooth" });
       }, 320);
     };
     document.addEventListener("focusin", onFocusIn);

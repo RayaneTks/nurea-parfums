@@ -3,15 +3,14 @@
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState, useTransition } from "react";
-import { CheckCircle2, Plus, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { ArrowLeft, CheckCircle2, Plus, Trash2 } from "lucide-react";
 import { CustomerCombobox, type SelectedCustomer } from "../customers/CustomerCombobox";
 import { Card } from "@/ui/primitives/Card";
 import { Input } from "@/ui/primitives/Input";
 import { Button } from "@/ui/primitives/Button";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
-import { StickyAction } from "@/ui/primitives/StickyAction";
 import { Chip } from "@/ui/primitives/Chip";
 import { Stepper } from "@/ui/primitives/Stepper";
 import { Money } from "@/ui/patterns/Money";
@@ -75,6 +74,8 @@ export function QuickOrderForm() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
   const [customer, setCustomer] = useState<SelectedCustomer | null>(null);
   const [customerName, setCustomerName] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -84,6 +85,52 @@ export function QuickOrderForm() {
   const [exchangeRateDefault] = useState("277");
 
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
+
+  /* Listener visualViewport — force la hauteur du conteneur à la hauteur
+     réelle visible (au-dessus du clavier iOS). Sans ça, le layout fixed
+     reste à 100dvh et le contenu disparaît derrière le clavier. */
+  useEffect(() => {
+    const apply = () => {
+      if (!containerRef.current) return;
+      const vh = window.visualViewport?.height ?? window.innerHeight;
+      const offsetTop = window.visualViewport?.offsetTop ?? 0;
+      containerRef.current.style.height = `${vh}px`;
+      containerRef.current.style.top = `${offsetTop}px`;
+    };
+    apply();
+    const vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener("resize", apply);
+      vv.addEventListener("scroll", apply);
+    } else {
+      window.addEventListener("resize", apply);
+      window.addEventListener("orientationchange", apply);
+    }
+    return () => {
+      if (vv) {
+        vv.removeEventListener("resize", apply);
+        vv.removeEventListener("scroll", apply);
+      } else {
+        window.removeEventListener("resize", apply);
+        window.removeEventListener("orientationchange", apply);
+      }
+    };
+  }, []);
+
+  /* Bloque le scroll global du body — seul le conteneur du formulaire
+     scrolle. Préserve l'état précédent pour le restaurer au démontage. */
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overflow;
+    const prevBody = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prevHtml;
+      body.style.overflow = prevBody;
+    };
+  }, []);
 
   const totals = useMemo(() => {
     let revenue = 0;
@@ -236,9 +283,52 @@ export function QuickOrderForm() {
   }, [customer, customerName, depositAmount, depositOn, lines, router]);
 
   return (
-    <>
-      <Stack gap={3}>
-        <Card padding={3}>
+    <div
+      ref={containerRef}
+      className="fixed left-1/2 z-40 flex w-full max-w-[var(--admin-app-max-width)] flex-col bg-[var(--admin-bg)]"
+      style={{
+        top: 0,
+        height: "100dvh",
+        transform: "translate3d(-50%, 0, 0)",
+      }}
+    >
+      <header
+        className="shrink-0 border-b border-[var(--admin-border)] px-5 pb-3 pt-2"
+        style={{
+          background: "color-mix(in srgb, var(--admin-bg) 80%, transparent)",
+          backdropFilter: "saturate(180%) blur(20px)",
+          WebkitBackdropFilter: "saturate(180%) blur(20px)",
+          paddingTop: "calc(0.5rem + env(safe-area-inset-top, 0px))",
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            aria-label="Retour"
+            className="-ml-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-[var(--admin-text-muted)] tap-scale hover:bg-[var(--admin-surface-muted)]"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-[18px] font-bold leading-tight tracking-tight text-[var(--admin-text)]">
+              Commande rapide
+            </h1>
+            <p className="mt-0.5 truncate text-[12px] text-[var(--admin-text-muted)]">
+              Client + parfums + acompte (optionnel). 30 secondes.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      {/* Zone scrollable du formulaire — overflow-y:auto, seul le formulaire
+          scrolle. visualViewport gère la hauteur du parent dynamiquement. */}
+      <div
+        className="flex-1 overflow-y-auto overscroll-contain px-5 py-4"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        <Stack gap={3}>
+          <Card padding={3}>
           <Stack gap={3}>
             <div>
               <label className="mb-1.5 block text-[13px] font-medium text-[var(--admin-text-muted)]">
@@ -450,9 +540,15 @@ export function QuickOrderForm() {
             ) : null}
           </HStack>
         </Card>
-      </Stack>
+        </Stack>
+      </div>
 
-      <StickyAction>
+      {/* CTA collé en bas du conteneur fixed (= juste au-dessus du clavier
+          quand celui-ci est ouvert, car le conteneur a height = visualVp.h). */}
+      <div
+        className="shrink-0 border-t border-[var(--admin-border)] bg-[var(--admin-surface)] px-5 pt-3"
+        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0.75rem))" }}
+      >
         <Button
           type="button"
           variant="primary"
@@ -464,7 +560,7 @@ export function QuickOrderForm() {
         >
           Créer la commande
         </Button>
-      </StickyAction>
+      </div>
 
       <PerfumePicker
         open={pickerOpen}
@@ -476,6 +572,6 @@ export function QuickOrderForm() {
       {toast ? (
         <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
       ) : null}
-    </>
+    </div>
   );
 }
