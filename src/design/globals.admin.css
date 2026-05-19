@@ -114,6 +114,13 @@ body.admin-route {
   scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 64px);
 }
 
+/* Scroll-padding sur le conteneur interne scrollable du shell — empêche
+   les titres / le top du formulaire d'apparaître collés au header. */
+.admin-theme main[data-shell-scroll],
+.admin-theme main.shell-scroll-area {
+  scroll-padding-top: 1rem;
+}
+
 /* Safe-area wrappers */
 .admin-safe-top {
   padding-top: env(safe-area-inset-top, 0px);

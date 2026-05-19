@@ -97,8 +97,18 @@ export function AdminShell({ children }: AdminShellProps) {
           />
           <PwaInstallHint />
           <main
+            data-shell-scroll
             className="flex-1 min-h-0 overflow-y-auto"
-            style={{ WebkitOverflowScrolling: "touch" }}
+            style={{
+              WebkitOverflowScrolling: "touch",
+              /* Padding-top de compensation pour que le top du contenu
+                 (titres de formulaires, etc.) ne soit pas collé au header
+                 sticky. Le header reste au-dessus en flex-column donc
+                 il n'écrase pas le contenu, mais ce padding garantit un
+                 espace visuel propre. */
+              paddingTop: "0.5rem",
+              scrollPaddingTop: "1rem",
+            }}
           >
             {children}
           </main>

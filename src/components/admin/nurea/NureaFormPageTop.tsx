@@ -29,7 +29,7 @@ export function NureaFormPageTop({
   className,
 }: NureaFormPageTopProps) {
   return (
-    <div className={cn("px-5 pt-1 pb-3", className)}>
+    <div className={cn("px-5 pt-4 pb-3", className)}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-start gap-2">
           <button
