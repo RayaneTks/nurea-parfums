@@ -194,11 +194,16 @@ body.admin-route .nurea-viewport-top-shield {
 }
 
 .admin-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: var(--admin-z-tab-bar);
   background: color-mix(in srgb, var(--admin-surface) 92%, transparent);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-top: 1px solid var(--admin-border);
+  /* Safe area : fond du nav s'étend sous le home indicator */
   padding-bottom: var(--admin-safe-area-bottom);
   padding-left: var(--admin-safe-area-left);
   padding-right: var(--admin-safe-area-right);
@@ -218,10 +223,6 @@ body.admin-route .nurea-viewport-top-shield {
 }
 
 .admin-tab-bar__item {
-  padding-bottom: 2px;
-}
-
-.admin-tab-bar__item {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -234,21 +235,6 @@ body.admin-route .nurea-viewport-top-shield {
 
 .admin-safe-bottom {
   padding-bottom: var(--admin-safe-area-bottom);
-}
-
-/* PWA standalone iOS — filet si env(safe-area-inset-bottom) retourne 0 */
-@media all and (display-mode: standalone) {
-  .admin-theme {
-    --admin-safe-area-bottom: max(
-      constant(safe-area-inset-bottom),
-      env(safe-area-inset-bottom, 0px),
-      34px
-    );
-    --admin-tab-bar-total-height: calc(
-      var(--admin-tab-bar-height) + var(--admin-safe-area-bottom)
-    );
-    --admin-scroll-bottom-pad: calc(var(--admin-tab-bar-total-height) + 16px);
-  }
 }
 
 /* ─── Typo utilitaires ──────────────────────────────────────────────────── */

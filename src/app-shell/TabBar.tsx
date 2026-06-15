@@ -119,9 +119,9 @@ export function TabBar() {
     <nav
       aria-label="Navigation principale"
       data-tabbar
-      className="admin-tab-bar absolute inset-x-0 bottom-0 z-[var(--admin-z-tab-bar)]"
+      className="admin-tab-bar"
     >
-      <div className="admin-tab-bar__inner mx-auto flex w-full max-w-[var(--admin-app-max-width)] items-stretch justify-around">
+      <div className="admin-tab-bar__inner mx-auto flex w-full max-w-[var(--admin-app-max-width)] items-center justify-around">
         {TABS.map((tab) => {
           const active = tab.match(pathname);
           const Icon = tab.icon;
@@ -132,7 +132,7 @@ export function TabBar() {
               prefetch
               aria-current={active ? "page" : undefined}
               className={cn(
-                "admin-tab-bar__item relative flex min-h-[var(--admin-touch-min)] min-w-0 flex-1 select-none flex-col items-center justify-end gap-0.5 px-0.5 pt-1",
+                "admin-tab-bar__item relative flex min-h-[var(--admin-touch-min)] min-w-0 flex-1 select-none flex-col items-center justify-center gap-0.5 px-0.5",
                 "transition-colors duration-[var(--admin-duration-default)] ease-[var(--admin-easing-default)]",
                 "tap-scale focus-visible:outline-none focus-visible:bg-[var(--admin-surface-muted)]",
                 active ? "text-[var(--admin-accent)]" : "text-[var(--admin-text-muted)]",
@@ -174,7 +174,7 @@ export function TabBar() {
             aria-label="Plus d'options"
             onClick={() => setMoreOpen((open) => !open)}
             className={cn(
-              "admin-tab-bar__item relative z-[calc(var(--admin-z-tab-bar-menu)+1)] flex min-h-[var(--admin-touch-min)] w-full select-none flex-col items-center justify-end gap-0.5 px-0.5 pt-1",
+              "admin-tab-bar__item relative z-[calc(var(--admin-z-tab-bar-menu)+1)] flex min-h-[var(--admin-touch-min)] w-full select-none flex-col items-center justify-center gap-0.5 px-0.5",
               "transition-colors duration-[var(--admin-duration-default)] ease-[var(--admin-easing-default)]",
               "tap-scale focus-visible:outline-none focus-visible:bg-[var(--admin-surface-muted)]",
               moreActive || moreOpen
