@@ -7,6 +7,8 @@ import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { serializeOrder } from "@/lib/gestion/orderJson";
 import { purgeOrderIfEphemeral } from "@/lib/gestion/orderPurge";
 import { isValidVolumeMl, parseOptionalMoneyToZero } from "@/lib/gestion/orderLineValidation";
+import { canTransition } from "@/domain/order-status";
+import Decimal from "decimal.js-light";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -109,6 +111,8 @@ export async function PATCH(
         status: true,
         depositPaid: true,
         depositAmount: true,
+        items: { select: { unitPrice: true, quantity: true } },
+        payments: { select: { type: true, amount: true } },
       },
     });
     if (!existing) {
@@ -167,6 +171,32 @@ export async function PATCH(
           },
           { status: 400 },
         );
+      }
+      if (body.status !== existing.status) {
+        const orderTotal = existing.items.reduce(
+          (acc, it) => acc.plus(new Decimal(it.unitPrice.toString()).times(it.quantity)),
+          new Decimal(0),
+        );
+        let deposit = new Decimal(0);
+        let balance = new Decimal(0);
+        let refund = new Decimal(0);
+        for (const p of existing.payments) {
+          const amt = new Decimal(p.amount.toString());
+          if (p.type === "DEPOSIT") deposit = deposit.plus(amt);
+          else if (p.type === "BALANCE") balance = balance.plus(amt);
+          else if (p.type === "REFUND") refund = refund.plus(amt);
+        }
+        const depositPaidTotal = deposit.minus(refund).toNumber();
+        const guard = canTransition(existing.status, body.status, {
+          depositPaidTotal,
+          balancePaidTotal: balance.toNumber(),
+          orderTotal: orderTotal.toNumber(),
+          hasSale,
+          itemCount: existing.items.length,
+        });
+        if (!guard.ok) {
+          return NextResponse.json({ error: guard.reason }, { status: 400 });
+        }
       }
       data.status = body.status;
     }

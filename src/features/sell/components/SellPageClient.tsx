@@ -18,6 +18,7 @@ import { PageScaffold } from "@/ui/patterns/PageScaffold";
 import { Money } from "@/ui/patterns/Money";
 import { PerfumePicker, type PickerResult } from "./PerfumePicker";
 import { SellLineRow, type SellLine } from "./SellLineRow";
+import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
 import { CustomerCombobox, type SelectedCustomer } from "@/components/admin/customers/CustomerCombobox";
 
 function toNum(v: string): number {
@@ -63,6 +64,7 @@ export function SellPageClient() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [submitting, startTransition] = useTransition();
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
+  const [confirmSale, setConfirmSale] = useState(false);
 
   // Charge order si bridge.
   useEffect(() => {
@@ -172,7 +174,19 @@ export function SellPageClient() {
         setToast({ type: "error", message: `Prix manquant : ${l.snapshot.name}` });
         return;
       }
+      if (l.perfumeId === null && l.snapshot.name.trim().length < 2) {
+        setToast({ type: "error", message: "Nom requis pour une ligne hors catalogue." });
+        return;
+      }
     }
+    if (bridge) {
+      setConfirmSale(true);
+      return;
+    }
+    void postSale();
+  };
+
+  const postSale = () => {
     startTransition(async () => {
       const payload = {
         orderId: bridge?.id ?? null,
@@ -201,6 +215,7 @@ export function SellPageClient() {
         return;
       }
       setToast({ type: "success", message: "Vente enregistrée." });
+      setConfirmSale(false);
       router.push("/admin/compta");
       router.refresh();
     });
@@ -379,6 +394,20 @@ export function SellPageClient() {
       {toast ? (
         <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
       ) : null}
+
+      <ConfirmDialog
+        open={confirmSale}
+        onOpenChange={setConfirmSale}
+        title="Finaliser la vente ?"
+        description={
+          bridge
+            ? `La commande de ${bridge.customerName ?? "client"} passera en livrée.`
+            : undefined
+        }
+        confirmLabel="Encaisser"
+        tone="primary"
+        onConfirm={() => postSale()}
+      />
     </PageScaffold>
   );
 }
