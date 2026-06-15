@@ -7,7 +7,7 @@ type ComptaKpiRowProps = {
 };
 
 export function ComptaKpiRow({ summary }: ComptaKpiRowProps) {
-  const debt = Number(summary.totalDebt ?? "0");
+  const debt = Number(summary.outstandingRevenue ?? "0");
   const hasDebt = Number.isFinite(debt) && debt > 0;
 
   return (
@@ -18,7 +18,7 @@ export function ComptaKpiRow({ summary }: ComptaKpiRowProps) {
             CA
           </p>
           <p className="mt-1 text-[16px] sm:text-[18px] font-bold leading-none">
-            <Money value={summary.totalRevenue} compact />
+            <Money value={summary.cashedRevenue} compact />
           </p>
         </Card>
         <Card padding={3} tone="surface">
@@ -26,7 +26,7 @@ export function ComptaKpiRow({ summary }: ComptaKpiRowProps) {
             Marge
           </p>
           <p className="mt-1 text-[16px] sm:text-[18px] font-bold leading-none">
-            <Money value={summary.totalMargin} compact tone="success" />
+            <Money value={summary.netMargin} compact tone="success" />
           </p>
           <p className="mt-0.5 text-[10px] sm:text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
             {summary.marginPct}%
@@ -37,7 +37,7 @@ export function ComptaKpiRow({ summary }: ComptaKpiRowProps) {
             Panier
           </p>
           <p className="mt-1 text-[16px] sm:text-[18px] font-bold leading-none">
-            <Money value={summary.avgValue} compact />
+            <Money value={summary.avgCashedValue} compact />
           </p>
           <p className="mt-0.5 text-[10px] sm:text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
             {summary.salesCount} ventes
