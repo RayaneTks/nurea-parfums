@@ -14,7 +14,9 @@ import { OrderDetailHeader } from "./OrderDetailHeader";
 import { OrderSummaryCard } from "./OrderSummaryCard";
 import { OrderItemsList } from "./OrderItemsList";
 import { OrderActionsBar } from "./OrderActionsBar";
+import { OrderStatusControl } from "./OrderStatusControl";
 import type { OrderDetailRow } from "@/server/orders/queries";
+import type { OrderStatus } from "@prisma/client";
 
 function computeMargin(items: OrderDetailRow["items"]): { cost: number; margin: number; marginPct: number } {
   let revenue = 0;
@@ -95,6 +97,16 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
         </Link>
 
         <OrderDetailHeader order={current} onCustomerNameSave={handleCustomerNameSave} />
+        <OrderStatusControl
+          order={current}
+          onStatusChange={(status: OrderStatus) => {
+            startTransition(() => {
+              setCurrent({ ...current, status });
+              setToast({ type: "success", message: "Statut mis à jour." });
+            });
+          }}
+          onError={(message) => setToast({ type: "error", message })}
+        />
         <OrderSummaryCard order={current} />
 
         {(() => {

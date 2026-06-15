@@ -16,9 +16,13 @@ import {
   StarOff,
   RefreshCw,
 } from "lucide-react";
+import { AdminButton } from "../ui/AdminButton";
+import { AdminListItemSkeleton } from "../ui/AdminLoadingPrimitives";
 import { AdminToast, type ToastType } from "../ui/AdminToast";
+import { AdminWindowedList } from "../ui/AdminWindowedList";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
-import { FAB } from "../ui/FAB";
+import { EmptyState } from "../ui/EmptyState";
+import { FAB } from "@/ui/primitives/FAB";
 import { SectionCard } from "../ui/SectionCard";
 import { cn } from "@/lib/utils";
 import type {
@@ -296,7 +300,9 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
         perfumes: nextPerfumes,
       };
     } catch (e) {
-      setLoadErr(e instanceof Error ? e.message : "Erreur de chargement");
+      setLoadErr(
+        e instanceof Error ? e.message : "Le catalogue n'a pas pu être chargé. Réessaie.",
+      );
     } finally {
       if (!background) {
         setIsLoading(false);
@@ -530,7 +536,7 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
       <main
         id="main-content"
         className={cn(
-          "admin-tab-panel-fade min-w-0 flex-1 overscroll-y-contain",
+          "admin-tab-panel-fade min-w-0 flex-1 overflow-x-hidden overscroll-y-contain",
           isTabTransitioning ? "opacity-0" : "opacity-100",
         )}
       >
@@ -538,7 +544,7 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
           initial={reduceMotion ? false : { opacity: 0, y: 10 }}
           animate={reduceMotion ? false : { opacity: 1, y: 0 }}
           transition={reduceMotion ? { duration: 0 } : { duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
-          className="px-5 pt-2"
+          className="min-w-0 px-5 pt-2"
         >
           <div className="mb-3 flex items-start justify-between gap-2">
             <div className="min-w-0 pr-1">
@@ -551,7 +557,7 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
               type="button"
               onClick={() => void handleRefreshCatalog()}
               disabled={isLoading || isRefreshingCatalog}
-              className="ios-transition inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-neutral-200/80 bg-white p-0 text-neutral-600 shadow-sm tap-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nurea-bordeaux/30 focus-visible:ring-offset-2 focus-visible:ring-offset-ios-bg disabled:opacity-50"
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-admin-border bg-admin-surface p-0 text-admin-muted shadow-admin-sm tap-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent-ring focus-visible:ring-offset-2 focus-visible:ring-offset-admin-bg disabled:opacity-50"
               aria-label="Actualiser le catalogue"
             >
               <RefreshCw
@@ -560,7 +566,11 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
             </button>
           </div>
 
-          <div className="mb-6 flex gap-1 rounded-2xl bg-neutral-200/50 p-1">
+          <div
+            role="tablist"
+            aria-label="Sections du catalogue"
+            className="mb-6 flex min-w-0 gap-1 rounded-2xl bg-admin-surface-muted p-1"
+          >
             {(
               [
                 { id: "perfumes" as const, label: "Parfums" },
@@ -570,14 +580,18 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
             ).map((t) => (
               <button
                 key={t.id}
+                id={`catalog-tab-${t.id}`}
                 type="button"
+                role="tab"
+                aria-selected={tab === t.id}
+                aria-controls={`catalog-panel-${t.id}`}
                 onClick={() => handleTabChange(t.id)}
                 className={cn(
-                  "ios-transition min-h-11 flex-1 rounded-xl py-1.5 text-[13px] font-semibold leading-tight",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nurea-bordeaux/30 focus-visible:ring-inset",
+                  "tap-scale min-h-11 min-w-0 flex-1 rounded-xl py-1.5 text-[13px] font-semibold leading-tight",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent-ring focus-visible:ring-inset",
                   tab === t.id
-                    ? "bg-white text-neutral-900 shadow-sm"
-                    : "text-neutral-600 [@media(hover:hover)]:hover:text-neutral-800",
+                    ? "bg-admin-surface text-admin-text shadow-admin-sm"
+                    : "text-admin-muted [@media(hover:hover)]:hover:text-admin-text",
                 )}
               >
                 {t.label}
@@ -587,28 +601,25 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
 
           <div className="relative mb-3">
             <Search
-              className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-500"
+              className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-admin-subtle"
               aria-hidden
             />
             <input
               id="admin-nurea-search"
               type="search"
-              inputMode="search"
-              enterKeyHint="search"
               placeholder={
                 tab === "brands"
                   ? "Rechercher une marque…"
                   : "Rechercher un parfum ou une marque…"
               }
+              aria-label={
+                tab === "brands"
+                  ? "Rechercher une marque"
+                  : "Rechercher un parfum ou une marque"
+              }
               value={search}
               onChange={(e) => onSearchFieldChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  e.currentTarget.blur();
-                }
-              }}
-              className="w-full rounded-2xl border border-neutral-200 bg-white py-3 pl-10 pr-4 text-sm shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-nurea-bordeaux/30"
+              className="w-full min-w-0 rounded-2xl border border-admin-border bg-admin-surface py-3 pl-10 pr-4 text-sm text-admin-text shadow-admin-sm placeholder:text-admin-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent-ring"
             />
           </div>
 
@@ -623,7 +634,7 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
               }
             >
               {tab === "brands" ? (
-                <div className="flex snap-x snap-mandatory gap-1 overflow-x-auto rounded-2xl bg-neutral-200/50 p-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:snap-none [&::-webkit-scrollbar]:hidden">
+                <div className="flex min-w-0 snap-x snap-mandatory gap-1 overflow-x-auto rounded-2xl bg-admin-surface-muted p-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:snap-none [&::-webkit-scrollbar]:hidden">
                   {(
                     [
                       { id: "all" as const, label: "Tout", n: brandListCounts.all },
@@ -644,15 +655,15 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
                           replaceCatalogueUrl({ nextBf: opt.id });
                         }}
                         className={cn(
-                          "ios-transition shrink-0 snap-start min-w-[4.9rem] sm:min-w-0 sm:flex-1 min-h-11 rounded-xl py-1.5 text-center text-[11px] sm:text-[12px] font-semibold leading-tight",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nurea-bordeaux/30 focus-visible:ring-inset",
+                          "tap-scale shrink-0 snap-start min-w-[4.9rem] sm:min-w-0 sm:flex-1 min-h-11 rounded-xl py-1.5 text-center text-[11px] sm:text-[12px] font-semibold leading-tight",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent-ring focus-visible:ring-inset",
                           active
-                            ? "bg-white text-neutral-900 shadow-sm"
-                            : "text-neutral-600 [@media(hover:hover)]:hover:text-neutral-800",
+                            ? "bg-admin-surface text-admin-text shadow-admin-sm"
+                            : "text-admin-muted [@media(hover:hover)]:hover:text-admin-text",
                         )}
                       >
                         {opt.label}
-                        <span className="ml-0.5 tabular-nums text-[10px] sm:text-[11px] font-medium text-neutral-700/90">
+                        <span className="ml-0.5 tabular-nums text-[10px] sm:text-[11px] font-medium text-admin-subtle">
                           ({opt.n})
                         </span>
                       </button>
@@ -660,7 +671,7 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
                   })}
                 </div>
               ) : (
-                <div className="flex gap-1 rounded-2xl bg-neutral-200/50 p-1">
+                <div className="flex min-w-0 gap-1 rounded-2xl bg-admin-surface-muted p-1">
                   {(
                     [
                       { id: "all" as VisFilter, label: "Tous", n: perfumeVisCounts.all },
@@ -678,15 +689,15 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
                           replaceCatalogueUrl({ nextPf: opt.id });
                         }}
                         className={cn(
-                          "ios-transition flex-1 min-h-11 rounded-xl py-1.5 text-center text-[12px] font-semibold leading-tight",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nurea-bordeaux/30 focus-visible:ring-inset",
+                          "tap-scale min-h-11 min-w-0 flex-1 rounded-xl py-1.5 text-center text-[12px] font-semibold leading-tight",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent-ring focus-visible:ring-inset",
                           active
-                            ? "bg-white text-neutral-900 shadow-sm"
-                            : "text-neutral-600 [@media(hover:hover)]:hover:text-neutral-800",
+                            ? "bg-admin-surface text-admin-text shadow-admin-sm"
+                            : "text-admin-muted [@media(hover:hover)]:hover:text-admin-text",
                         )}
                       >
                         {opt.label}
-                        <span className="ml-0.5 tabular-nums text-[11px] font-medium text-neutral-700/90">
+                        <span className="ml-0.5 tabular-nums text-[11px] font-medium text-admin-subtle">
                           ({opt.n})
                         </span>
                       </button>
@@ -700,42 +711,49 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
 
         {loadErr ? (
           <div className="px-5 pb-4">
-            <SectionCard className="flex items-start gap-3 border-rose-200/80 bg-rose-50/90 p-4">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" aria-hidden />
-              <div className="flex-1">
-                <p className="text-[13px] font-medium text-rose-800">Erreur de chargement</p>
-                <p className="mt-0.5 text-[12px] text-neutral-600">{loadErr}</p>
-                <button
+            <SectionCard className="flex items-start gap-3 border-[var(--admin-danger-border)] bg-[var(--admin-danger-subtle)] p-4">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-admin-danger" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-semibold text-admin-text">
+                  Impossible d&apos;afficher le catalogue
+                </p>
+                <p className="mt-0.5 text-[12px] text-admin-muted">{loadErr}</p>
+                <AdminButton
                   type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="mt-3"
                   onClick={() => void refresh()}
-                  className="mt-3 inline-flex min-h-11 items-center justify-center rounded-xl px-3 text-[12px] font-semibold uppercase tracking-wider text-nurea-bordeaux focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nurea-bordeaux/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   Réessayer
-                </button>
+                </AdminButton>
               </div>
             </SectionCard>
           </div>
         ) : null}
 
         {isLoading ? (
-          <div className="min-h-[20rem] space-y-3 px-5 pb-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="admin-skeleton h-[72px] rounded-xl border border-neutral-200/80"
-              />
+          <div
+            className="min-h-[20rem] space-y-3 px-5 pb-4"
+            aria-busy="true"
+            aria-label="Chargement du catalogue"
+          >
+            {Array.from({ length: 5 }, (_, i) => (
+              <AdminListItemSkeleton key={i} className="h-[72px]" />
             ))}
           </div>
         ) : tab === "perfumes" ? (
           <div
-            className="min-h-[20rem] space-y-3 px-5"
-            style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
+            id="catalog-panel-perfumes"
+            role="tabpanel"
+            aria-labelledby="catalog-tab-perfumes"
+            className="admin-page-bottom-pad min-h-[20rem] min-w-0 px-5"
           >
             {canEdit ? (
               <div className="mb-1 flex justify-end px-0">
                 <Link
                   href="/admin/perfumes/new"
-                  className="rounded-full bg-nurea-bordeaux/10 p-1.5 text-nurea-bordeaux"
+                  className="tap-scale inline-flex h-11 w-11 items-center justify-center rounded-full bg-admin-accent-subtle text-admin-accent"
                   aria-label="Nouveau parfum"
                 >
                   <Plus size={18} />
@@ -743,168 +761,193 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
               </div>
             ) : null}
             {filteredPerfumes.length === 0 ? (
-              <p className="px-1 py-8 text-center text-sm text-admin-muted">
-                Aucun résultat. Ajuste la recherche ou le filtre.
-              </p>
-            ) : null}
-            {filteredPerfumes.map((per) => {
-              const pending = pendingStatusIds.has(per.id);
-              const pub = per.status === "PUBLISHED";
-              return (
-                <div
-                  key={per.id}
-                  className="ios-shadow flex items-center gap-4 rounded-2xl border border-neutral-200/60 bg-white p-3 shadow-sm"
-                >
-                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-neutral-100 bg-neutral-100">
-                    {per.image ? (
-                      <Image
-                        loader={nureaAdminThumbLoader}
-                        src={per.image}
-                        alt={`Visuel ${per.name}`}
-                        width={56}
-                        height={56}
-                        sizes="56px"
-                        quality={60}
-                        fetchPriority="low"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xl font-bold text-neutral-300">
-                        {per.name[0]}
+              <EmptyState
+                className="py-10"
+                title="Aucun parfum"
+                description="Ajuste la recherche ou le filtre de visibilité."
+              />
+            ) : (
+              <AdminWindowedList
+                items={filteredPerfumes}
+                itemKey={(per) => per.id}
+                estimateSize={80}
+                gap={12}
+                aria-label="Liste des parfums"
+                renderItem={(per) => {
+                  const pending = pendingStatusIds.has(per.id);
+                  const pub = per.status === "PUBLISHED";
+                  return (
+                    <div className="admin-card-press flex min-w-0 items-center gap-3 rounded-2xl border border-admin-border bg-admin-surface p-3 shadow-admin-sm sm:gap-4">
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-admin-border bg-admin-surface-muted">
+                        {per.image ? (
+                          <Image
+                            loader={nureaAdminThumbLoader}
+                            src={per.image}
+                            alt={`Visuel ${per.name}`}
+                            width={56}
+                            height={56}
+                            sizes="56px"
+                            quality={60}
+                            fetchPriority="low"
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-xl font-bold text-admin-subtle">
+                            {per.name[0]}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-sm font-semibold">{per.name}</h3>
-                    <p className="mt-0.5 min-w-0 truncate text-[11px] font-medium text-neutral-600">
-                      <button
-                        type="button"
-                        onClick={() => goToBrandInCatalog(per.brand.name)}
-                        className="min-w-0 max-w-full truncate text-left text-nurea-bordeaux outline-none transition-colors focus-visible:ring-2 focus-visible:ring-nurea-bordeaux/30 [@media(hover:hover)]:underline"
-                      >
-                        {per.brand.name}
-                      </button>
-                    </p>
-                    <div className="mt-1 flex items-center gap-1.5">
-                      <div
-                        className={cn(
-                          "h-1.5 w-1.5 rounded-full",
-                          pub ? "bg-green-500" : "bg-neutral-300",
-                        )}
-                      />
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-600">
-                        {pub ? "Visible" : "Masqué"}
-                      </span>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="truncate text-sm font-semibold text-admin-text">{per.name}</h3>
+                        <p className="mt-0.5 min-w-0 truncate text-[11px] font-medium text-admin-muted">
+                          <button
+                            type="button"
+                            onClick={() => goToBrandInCatalog(per.brand.name)}
+                            className="tap-scale min-w-0 max-w-full truncate text-left text-admin-accent outline-none focus-visible:ring-2 focus-visible:ring-admin-accent-ring [@media(hover:hover)]:underline"
+                          >
+                            {per.brand.name}
+                          </button>
+                        </p>
+                        <div className="mt-1 flex items-center gap-1.5">
+                          <div
+                            className={cn(
+                              "h-1.5 w-1.5 rounded-full",
+                              pub ? "bg-admin-success" : "bg-admin-subtle",
+                            )}
+                          />
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-admin-muted">
+                            {pub ? "Visible" : "Masqué"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <Link
+                          href={`/admin/perfumes/${per.id}/edit`}
+                          className="tap-scale flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl bg-admin-surface-muted text-admin-muted [@media(hover:hover)]:hover:text-admin-text"
+                          aria-label="Fiche parfum"
+                        >
+                          <LayoutGrid size={18} />
+                        </Link>
+                        {canEdit ? (
+                          <button
+                            type="button"
+                            disabled={pending}
+                            onClick={() => void toggleVisibility(per.id, per.status)}
+                            className={cn(
+                              "tap-scale flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl",
+                              pub
+                                ? "bg-admin-accent-subtle text-admin-accent"
+                                : "bg-admin-surface-muted text-admin-subtle",
+                            )}
+                            aria-label={pub ? "Masquer" : "Publier"}
+                          >
+                            {pending ? <span className="text-[10px]">…</span> : <Eye size={18} />}
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Link
-                      href={`/admin/perfumes/${per.id}/edit`}
-                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-neutral-50 text-neutral-600 hover:text-neutral-900"
-                      aria-label="Fiche parfum"
-                    >
-                      <LayoutGrid size={18} />
-                    </Link>
-                    {canEdit ? (
-                      <button
-                        type="button"
-                        disabled={pending}
-                        onClick={() => void toggleVisibility(per.id, per.status)}
-                        className={cn(
-                          "ios-transition min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl",
-                          pub
-                            ? "bg-nurea-bordeaux/5 text-nurea-bordeaux"
-                            : "bg-neutral-50 text-neutral-300",
-                        )}
-                        aria-label={pub ? "Masquer" : "Publier"}
-                      >
-                        {pending ? <span className="text-[10px]">…</span> : <Eye size={18} />}
-                      </button>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                }}
+              />
+            )}
           </div>
         ) : tab === "brands" ? (
           <div
-            className="min-h-[20rem] space-y-3 px-5"
-            style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
+            id="catalog-panel-brands"
+            role="tabpanel"
+            aria-labelledby="catalog-tab-brands"
+            className="admin-page-bottom-pad min-h-[20rem] min-w-0 px-5"
           >
             {filteredBrands.length === 0 ? (
-              <p className="px-1 py-8 text-center text-sm text-admin-muted">
-                Aucun résultat. Ajuste la recherche ou le filtre.
-              </p>
-            ) : null}
-            {filteredBrands.map((brand) => {
-              const isComplete = brand.catalogMode === "COMPLETE";
-              const ariaLine = isComplete
-                ? "Gamme complète, tout le catalogue de la marque est proposé"
-                : `${brand._count.perfumes} parfum${brand._count.perfumes !== 1 ? "s" : ""} en sélection`;
-              return (
-                <Link
-                  key={brand.id}
-                  href={`/admin/brands/${brand.id}/edit`}
-                  aria-label={`${brand.name} — ${ariaLine}`}
-                  className="ios-shadow flex items-center gap-4 rounded-3xl border border-neutral-200/60 bg-white p-4 shadow-sm"
-                >
-                  <BrandListThumb name={brand.name} imageLight={brand.imageLight} image={brand.image} />
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-bold text-neutral-900">{brand.name}</h3>
-                    {isComplete ? (
-                      <p className="mt-1 text-[11px] leading-snug text-neutral-600">
-                        <span className="font-semibold text-nurea-bordeaux">Gamme complète</span>
-                        <span> — tout le catalogue de la marque est proposé.</span>
-                      </p>
-                    ) : (
-                      <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-neutral-600">
-                        {brand._count.perfumes} parfum{brand._count.perfumes !== 1 ? "s" : ""} en sélection
-                      </p>
-                    )}
-                  </div>
-                  <ChevronRight className="shrink-0 text-neutral-300" size={20} />
-                </Link>
-              );
-            })}
+              <EmptyState
+                className="py-10"
+                title="Aucune marque"
+                description="Ajuste la recherche ou le filtre de mode catalogue."
+              />
+            ) : (
+              <AdminWindowedList
+                items={filteredBrands}
+                itemKey={(brand) => brand.id}
+                estimateSize={88}
+                gap={12}
+                aria-label="Liste des marques"
+                renderItem={(brand) => {
+                  const isComplete = brand.catalogMode === "COMPLETE";
+                  const ariaLine = isComplete
+                    ? "Gamme complète, tout le catalogue de la marque est proposé"
+                    : `${brand._count.perfumes} parfum${brand._count.perfumes !== 1 ? "s" : ""} en sélection`;
+                  return (
+                    <Link
+                      href={`/admin/brands/${brand.id}/edit`}
+                      aria-label={`${brand.name} — ${ariaLine}`}
+                      className="admin-card-press flex min-w-0 items-center gap-3 rounded-2xl border border-admin-border bg-admin-surface p-4 shadow-admin-sm sm:gap-4"
+                    >
+                      <BrandListThumb
+                        name={brand.name}
+                        imageLight={brand.imageLight}
+                        image={brand.image}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <h3 className="truncate text-sm font-bold text-admin-text">{brand.name}</h3>
+                        {isComplete ? (
+                          <p className="mt-1 text-[11px] leading-snug text-admin-muted">
+                            <span className="font-semibold text-admin-accent">Gamme complète</span>
+                            <span> — tout le catalogue de la marque est proposé.</span>
+                          </p>
+                        ) : (
+                          <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-admin-muted">
+                            {brand._count.perfumes} parfum
+                            {brand._count.perfumes !== 1 ? "s" : ""} en sélection
+                          </p>
+                        )}
+                      </div>
+                      <ChevronRight className="shrink-0 text-admin-subtle" size={20} />
+                    </Link>
+                  );
+                }}
+              />
+            )}
           </div>
         ) : (
           <div
-            className="min-h-[20rem] space-y-6 px-5"
-            style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
+            id="catalog-panel-featured"
+            role="tabpanel"
+            aria-labelledby="catalog-tab-featured"
+            className="admin-page-bottom-pad min-h-[20rem] min-w-0 space-y-6 px-5"
           >
-            <div className="rounded-3xl border border-nurea-bordeaux/10 bg-nurea-bordeaux/5 p-5">
+            <div className="rounded-2xl border border-admin-accent-subtle bg-admin-accent-subtle p-5">
               <div className="flex items-start gap-4">
-                <div className="rounded-full bg-nurea-bordeaux p-2 text-white">
+                <div className="rounded-full bg-admin-accent p-2 text-white">
                   <Star size={16} />
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-nurea-bordeaux">Mise en avant sur l&apos;accueil</h4>
-                  <p className="mt-1 text-xs leading-relaxed text-nurea-bordeaux/80">
+                <div className="min-w-0">
+                  <h4 className="text-sm font-bold text-admin-accent">Mise en avant sur l&apos;accueil</h4>
+                  <p className="mt-1 text-xs leading-relaxed text-admin-muted">
                     Jusqu&apos;à 2 produits recommandés. Sélection gérée côté boutique.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="ios-shadow rounded-[32px] border border-neutral-100 bg-white p-4">
+            <div className="rounded-2xl border border-admin-border bg-admin-surface p-4 shadow-admin-sm">
               <div className="mb-4 flex items-center gap-3 px-2">
-                <Star className="fill-nurea-bordeaux text-nurea-bordeaux" size={16} />
-                <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-600">
+                <Star className="fill-admin-accent text-admin-accent" size={16} />
+                <h3 className="text-xs font-bold uppercase tracking-widest text-admin-muted">
                   En avant ({featuredCount}/2)
                 </h3>
               </div>
               <div className="space-y-2">
                 {featuredOnes.length === 0 ? (
-                  <div className="rounded-2xl border-2 border-dashed border-neutral-100 py-6 text-center">
-                    <p className="text-xs text-admin-muted">Rien en avant — choisis jusqu’à 2 parfums.</p>
+                  <div className="rounded-2xl border-2 border-dashed border-admin-border py-6 text-center">
+                    <p className="text-xs text-admin-muted">Rien en avant — choisis jusqu&apos;à 2 parfums.</p>
                   </div>
                 ) : (
                   featuredOnes.map((per) => (
                     <div
                       key={per.id}
-                      className="flex items-center gap-3 rounded-xl border border-neutral-100 bg-neutral-50 p-2"
+                      className="flex min-w-0 items-center gap-3 rounded-xl border border-admin-border bg-admin-surface-muted p-2"
                     >
-                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-neutral-100 bg-white">
+                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-admin-border bg-admin-surface">
                         {per.image ? (
                           <Image
                             loader={nureaAdminThumbLoader}
@@ -918,20 +961,20 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
                             className="h-full w-full object-cover"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs font-bold text-neutral-200">
+                          <div className="flex h-full w-full items-center justify-center text-xs font-bold text-admin-subtle">
                             {per.name[0]}
                           </div>
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h4 className="truncate text-xs font-bold">{per.name}</h4>
+                        <h4 className="truncate text-xs font-bold text-admin-text">{per.name}</h4>
                       </div>
                       {canEdit ? (
                         <button
                           type="button"
                           disabled={pendingFeaturedIds.has(per.id)}
                           onClick={() => void toggleFeatured(per.id, true)}
-                          className="p-2 text-nurea-bordeaux"
+                          className="tap-scale flex h-11 w-11 items-center justify-center text-admin-accent"
                           aria-label="Retirer de la sélection"
                         >
                           <StarOff size={18} />
@@ -943,22 +986,24 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
               </div>
             </div>
 
-            <div>
+            <div className="min-w-0">
               <div className="mb-3 px-2">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-neutral-600">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-admin-muted">
                   Ajouter à la sélection
                 </h3>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid min-w-0 grid-cols-2 gap-3">
                 {othersForFeatured.map((per) => (
                   <button
                     key={per.id}
                     type="button"
                     disabled={!canEdit || featuredOnes.length >= 2 || pendingFeaturedIds.has(per.id)}
                     onClick={() => void toggleFeatured(per.id, false)}
-                    className="ios-shadow flex flex-col items-center rounded-3xl border border-neutral-100 bg-white p-4 text-center active:scale-95"
+                    aria-label={`Ajouter ${per.name}`}
+                    className="tap-scale flex min-w-0 flex-col items-center rounded-2xl border border-admin-border bg-admin-surface p-4 text-center shadow-admin-sm"
+                    style={{ contentVisibility: "auto", containIntrinsicSize: "auto 140px" }}
                   >
-                    <div className="relative mb-3 h-12 w-12 overflow-hidden rounded-xl border border-neutral-100 bg-neutral-50">
+                    <div className="relative mb-3 h-12 w-12 overflow-hidden rounded-xl border border-admin-border bg-admin-surface-muted">
                       {per.image ? (
                         <Image
                           loader={nureaAdminThumbLoader}
@@ -972,13 +1017,13 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-sm font-bold text-neutral-200">
+                        <div className="flex h-full w-full items-center justify-center text-sm font-bold text-admin-subtle">
                           {per.name[0]}
                         </div>
                       )}
                     </div>
-                    <h4 className="line-clamp-1 text-[11px] font-bold">{per.name}</h4>
-                    <div className="mt-2 p-1.5 text-neutral-300 hover:text-nurea-bordeaux">
+                    <h4 className="line-clamp-1 w-full text-[11px] font-bold text-admin-text">{per.name}</h4>
+                    <div className="mt-2 p-1.5 text-admin-subtle [@media(hover:hover)]:hover:text-admin-accent">
                       <Star size={16} />
                     </div>
                   </button>
@@ -993,7 +1038,7 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
         <FAB
           href={fabHref}
           icon={Plus}
-          label={tab === "perfumes" ? "Ajouter un parfum" : "Ajouter une marque"}
+          ariaLabel={tab === "perfumes" ? "Ajouter un parfum" : "Ajouter une marque"}
         />
       ) : null}
 

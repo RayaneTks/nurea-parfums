@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -106,16 +107,19 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const headerList = await headers();
+  const isAdminRoute = headerList.get("x-nurea-admin-route") === "1";
+
   return (
     <html
       lang="fr"
-      className="dark transition-colors duration-300 ease-out"
+      className={`dark transition-colors duration-300 ease-out${isAdminRoute ? " admin-route-root" : ""}`}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <body
-        className={`${serif.variable} ${sans.variable} font-sans antialiased transition-colors duration-300 ease-out`}
+        className={`${serif.variable} ${sans.variable} font-sans antialiased transition-colors duration-300 ease-out${isAdminRoute ? " admin-route" : ""}`}
       >
         <a
           href="#main-content"

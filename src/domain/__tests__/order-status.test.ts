@@ -56,6 +56,17 @@ describe("OrderStatus.canTransition", () => {
     expect(canTransition("CANCELLED", "DELIVERED", base).ok).toBe(false);
   });
 
+  it("READY → DELIVERED needs at least one item", () => {
+    expect(
+      canTransition("READY", "DELIVERED", {
+        ...base,
+        depositPaidTotal: 50,
+        balancePaidTotal: 50,
+        itemCount: 0,
+      }).ok,
+    ).toBe(false);
+  });
+
   it("same status rejects", () => {
     expect(canTransition("PENDING", "PENDING", base).ok).toBe(false);
   });

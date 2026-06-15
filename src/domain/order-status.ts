@@ -29,6 +29,7 @@ export type TransitionContext = {
   balancePaidTotal: number; // sum BALANCE
   orderTotal: number;
   hasSale: boolean;
+  itemCount?: number;
 };
 
 export type TransitionResult =
@@ -55,6 +56,9 @@ export function canTransition(
 
     case "READY":
       if (to === "DELIVERED") {
+        if ((ctx.itemCount ?? 1) < 1) {
+          return { ok: false, reason: "Ajoute au moins un article avant la livraison." };
+        }
         const due = ctx.orderTotal - ctx.depositPaidTotal - ctx.balancePaidTotal;
         if (due > 0.005) {
           return { ok: false, reason: `Solde dû ${due.toFixed(2)} € — encaisse avant livraison.` };

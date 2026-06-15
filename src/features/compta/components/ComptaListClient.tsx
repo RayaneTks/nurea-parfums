@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Receipt } from "lucide-react";
-import { Stack } from "@/ui/primitives/Stack";
+import { AlertCircle, Receipt } from "lucide-react";import { Stack } from "@/ui/primitives/Stack";
 import { EmptyState } from "@/ui/primitives/EmptyState";
 import { Skeleton, SkeletonList } from "@/ui/primitives/Skeleton";
 import { ComptaHeader } from "./ComptaHeader";
 import { ComptaKpiRow } from "./ComptaKpiRow";
+import { ComptaTrendChart } from "./ComptaTrendChart";
 import { CustomerGroupSection } from "./CustomerGroupSection";
 import { BatchGroupSection } from "./BatchGroupSection";
 import { TicketSheet } from "./TicketSheet";
@@ -28,6 +28,7 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
   const [openSaleId, setOpenSaleId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
@@ -69,6 +70,7 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
   const refresh = useMemo(
     () => async () => {
       setRefreshing(true);
+      setFetchError(null);
       try {
         const params = new URLSearchParams();
         if (query.trim()) params.set("q", query.trim());
@@ -76,15 +78,27 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
           credentials: "include",
           cache: "no-store",
         });
-        if (r.ok) {
-          const next = (await r.json()) as ComptaListResult;
-          setData(next);
+        if (!r.ok) {
+          setFetchError("Impossible de charger la compta. Réessaie.");
+          return;
         }
+        const next = (await r.json()) as ComptaListResult;
+        setData(next);
+      } catch {
+        setFetchError("Réseau indisponible. Vérifie ta connexion.");
       } finally {
         setRefreshing(false);
       }
     },
     [query],
+  );
+
+  const chartSales = useMemo(
+    () => [
+      ...data.batchGroups.flatMap((g) => g.sales),
+      ...data.customerGroups.flatMap((g) => g.sales),
+    ],
+    [data],
   );
 
   const handleOpenSale = (saleId: string) => {
@@ -102,21 +116,42 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
         <ComptaHeader query={query} onQueryChange={setQuery} />
         <ComptaKpiRow summary={data.summary} />
 
-        {!hasAny ? (
+        {fetchError ? (
+          <EmptyState
+            icon={AlertCircle}
+            title="Chargement échoué"
+            description={fetchError}
+            action={
+              <button
+                type="button"
+                onClick={() => void refresh()}
+                className="text-[13px] font-medium text-[var(--admin-accent)] tap-scale"
+              >
+                Réessayer
+              </button>
+            }
+          />
+        ) : null}
+
+        {!fetchError && query.trim().length === 0 && data.summary.salesCount > 0 ? (
+          <ComptaTrendChart sales={chartSales} />
+        ) : null}
+
+        {!fetchError && !hasAny ? (
           showLoadingState ? (
             <SkeletonList count={4} />
           ) : (
             <EmptyState
               icon={Receipt}
-              title="Aucune vente"
+              title={query.trim().length > 0 ? "Aucun résultat" : "Aucune vente"}
               description={
                 query.trim().length > 0
-                  ? `Rien ne correspond à « ${query.trim()} ».`
-                  : "Pas encore de ventes enregistrées."
+                  ? `Rien ne correspond à « ${query.trim()} ». Essaie un autre nom.`
+                  : "Enregistre une vente depuis Vendre pour commencer le suivi."
               }
             />
           )
-        ) : (
+        ) : !fetchError && hasAny ? (
           <Stack gap={3}>
             {showLoadingState ? <Skeleton height={2} /> : null}
 
@@ -152,7 +187,7 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
               </Stack>
             ) : null}
           </Stack>
-        )}
+        ) : null}
       </Stack>
 
       <TicketSheet

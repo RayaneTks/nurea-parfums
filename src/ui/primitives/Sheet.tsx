@@ -104,10 +104,14 @@ export function Sheet({
 
           <div
             className={cn(
-              "flex-1 overflow-y-auto overscroll-contain px-4",
-              footer ? "pt-3 pb-3" : "py-4",
+              "flex-1 overflow-y-auto overscroll-contain px-4 [-webkit-overflow-scrolling:touch]",
+              footer ? "pt-3" : "py-4",
             )}
-            style={{ paddingBottom: footer ? undefined : "calc(1rem + env(safe-area-inset-bottom, 0px))" }}
+            style={{
+              paddingBottom: footer
+                ? "calc(0.75rem + var(--admin-keyboard-inset, 0px))"
+                : "calc(1rem + env(safe-area-inset-bottom, 0px) + var(--admin-keyboard-inset, 0px))",
+            }}
           >
             {children}
           </div>
@@ -117,7 +121,8 @@ export function Sheet({
               className="px-4 pt-3"
               style={{
                 borderTop: "1px solid var(--admin-border)",
-                paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))",
+                paddingBottom: "var(--admin-sticky-cta-pad)",
+                marginBottom: "var(--admin-keyboard-inset, 0px)",
                 background: "var(--admin-surface)",
               }}
             >
