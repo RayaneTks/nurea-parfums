@@ -15,7 +15,7 @@ export function AppHeader({ onOpenCommandPalette, onOpenSearch }: AppHeaderProps
     <header
       className={cn(
         "sticky top-0 z-[var(--admin-z-app-header)] flex w-full shrink-0 items-center justify-between px-4",
-        "admin-safe-top min-h-[calc(var(--admin-header-height)+env(safe-area-inset-top,0px))] py-2",
+        "min-h-[var(--admin-header-height)] py-2",
         "admin-header-blur border-b border-[var(--admin-border)]",
       )}
     >

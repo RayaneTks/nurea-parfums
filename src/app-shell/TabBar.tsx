@@ -121,7 +121,6 @@ export function TabBar() {
       data-tabbar
       className="admin-tab-bar"
     >
-      <div className="admin-tab-bar__inner mx-auto flex w-full max-w-[430px] items-center justify-around">
         {TABS.map((tab) => {
           const active = tab.match(pathname);
           const Icon = tab.icon;
@@ -251,7 +250,6 @@ export function TabBar() {
             </div>
           ) : null}
         </div>
-      </div>
     </nav>
   );
 }
