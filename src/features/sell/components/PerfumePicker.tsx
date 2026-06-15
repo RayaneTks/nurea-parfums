@@ -136,7 +136,7 @@ export function PerfumePicker({
       open={open}
       onOpenChange={(o) => (o ? null : onClose())}
       title="Choisir un parfum"
-      maxVh={92}
+      maxVh={90}
       footer={footer}
     >
       <Stack gap={3}>
@@ -168,8 +168,8 @@ export function PerfumePicker({
                 title="Aucun parfum"
                 description={
                   q.length > 0
-                    ? "Essaie un autre nom ou crée en saisie libre."
-                    : "Aucun parfum disponible."
+                    ? "Essaie un autre nom ou passe en saisie libre."
+                    : "Le catalogue est vide pour l'instant."
                 }
               />
             ) : (

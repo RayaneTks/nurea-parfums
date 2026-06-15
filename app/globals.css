@@ -1,16 +1,16 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ═══════════════════════════════════════════════════════════
-   NURÉA PARFUMS — Design System v2 « Nuit Bordeaux »
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   NURÃ‰A PARFUMS â€” Design System v2 Â« Nuit Bordeaux Â»
    Dark-first, mobile-first, editorial haute couture
-   ═══════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 @layer base {
-  /* ─── Dark mode (default) ─────────────────────────────── */
+  /* â”€â”€â”€ Dark mode (default) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   :root {
-    /* Échelle typo (référence design system — adoption progressive dans les composants) */
+    /* Ã‰chelle typo (rÃ©fÃ©rence design system â€” adoption progressive dans les composants) */
     --nurea-text-caption: 0.625rem;
     --nurea-text-label: 0.6875rem;
     --nurea-text-body-sm: 0.8125rem;
@@ -37,7 +37,7 @@
     --nurea-overlay: rgba(10, 5, 8, 0.94);
     --nurea-overlay-light: rgba(10, 5, 8, 0.75);
 
-    /* Sémantique : admin / gestion */
+    /* SÃ©mantique : admin / gestion */
     --nurea-success: #7FB291;
     --nurea-success-subtle: rgba(127, 178, 145, 0.12);
     --nurea-success-border: rgba(127, 178, 145, 0.28);
@@ -53,7 +53,7 @@
     color-scheme: dark;
   }
 
-  /* ─── Light mode ──────────────────────────────────────── */
+  /* â”€â”€â”€ Light mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .light {
     --nurea-bg: #FAF6F2;
     --nurea-surface: #FFFFFF;
@@ -73,7 +73,7 @@
     --nurea-overlay: rgba(248, 244, 240, 0.94);
     --nurea-overlay-light: rgba(250, 246, 242, 0.96);
 
-    /* Sémantique : admin / gestion */
+    /* SÃ©mantique : admin / gestion */
     --nurea-success: #3E7554;
     --nurea-success-subtle: rgba(62, 117, 84, 0.10);
     --nurea-success-border: rgba(62, 117, 84, 0.32);
@@ -110,13 +110,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    /* Même teinte que le body : évite tout flash / contenu visible au rebond de scroll */
+    /* MÃªme teinte que le body : Ã©vite tout flash / contenu visible au rebond de scroll */
     background-color: var(--nurea-bg);
-  }
-
-  html.admin-route-root {
-    scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 6.5rem);
-    background-color: #f7f4f1;
   }
 
   body {
@@ -129,12 +124,12 @@
     max-width: 100%;
     min-height: 100svh;
     overscroll-behavior-x: none;
-    /* Limite le « rubber band » qui révèle le contenu au-dessus du header sur mobile */
+    /* Limite le Â« rubber band Â» qui rÃ©vÃ¨le le contenu au-dessus du header sur mobile */
     overscroll-behavior-y: none;
   }
 
   /**
-   * Colonnes de la grille / split éditorial : sans min-width, le contenu peut forcer
+   * Colonnes de la grille / split Ã©ditorial : sans min-width, le contenu peut forcer
    * un scroll horizontal (images, mots longs).
    */
   .editorial-split > * {
@@ -142,7 +137,7 @@
   }
 
   /**
-   * Shell pages vitrine : empêche le débordement sur l’axe X (full-bleed, -mx, flex).
+   * Shell pages vitrine : empÃªche le dÃ©bordement sur lâ€™axe X (full-bleed, -mx, flex).
    */
   .nurea-vitrine-shell {
     width: 100%;
@@ -157,11 +152,11 @@
   }
 }
 
-/* ─── Scrollbar masquee ─────────────────────────────────── */
+/* â”€â”€â”€ Scrollbar masquee â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ─── Scrollbar custom ──────────────────────────────────── */
+/* â”€â”€â”€ Scrollbar custom â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: var(--nurea-border) transparent;
@@ -177,9 +172,9 @@
   border-radius: 4px;
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    SCROLL REVEAL SYSTEM
-   ═══════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 .scroll-reveal {
   opacity: 0;
@@ -233,9 +228,9 @@
   transform: scale(1);
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    HERO ANIMATIONS
-   ═══════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 @keyframes heroFadeIn {
   from { opacity: 0; transform: translateY(24px); }
@@ -258,9 +253,9 @@
 .hero-stagger > *:nth-child(4) { animation: heroFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.75s both; }
 .hero-stagger > *:nth-child(5) { animation: heroFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.95s both; }
 
-/* ═══════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    CARD SYSTEM
-   ═══════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 .card-hover {
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
@@ -288,9 +283,9 @@
               backdrop-filter 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    EDITORIAL SPLIT LAYOUT
-   ═══════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 .editorial-split {
   display: grid;
@@ -306,9 +301,9 @@
   .editorial-split.reverse > *:last-child { order: 1; }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   CATALOGUE GRID — Mobile 2-col, tablet 2-col, desktop 3-col
-   ═══════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CATALOGUE GRID â€” Mobile 2-col, tablet 2-col, desktop 3-col
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 .catalogue-grid {
   display: grid;
@@ -334,15 +329,15 @@
   }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   GRAIN OVERLAY — subtle film texture
-   ═══════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   GRAIN OVERLAY â€” subtle film texture
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 .grain::after {
   content: '';
   position: fixed;
   inset: 0;
-  /* Sous le header / overlays (z-50+) : le grain ne doit pas couvrir l’UI */
+  /* Sous le header / overlays (z-50+) : le grain ne doit pas couvrir lâ€™UI */
   z-index: 25;
   pointer-events: none;
   opacity: 0.02;
@@ -358,7 +353,7 @@
   }
 }
 
-/* Aligné sur la hauteur réelle du header (Navbar) — pas de bande qui dépasse sous la barre */
+/* AlignÃ© sur la hauteur rÃ©elle du header (Navbar) â€” pas de bande qui dÃ©passe sous la barre */
 .nurea-viewport-top-shield {
   position: fixed;
   top: 0;
@@ -376,9 +371,9 @@
   }
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    UTILITY ANIMATIONS
-   ═══════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
@@ -440,9 +435,9 @@
 .stagger-grid > *:nth-child(29) { animation-delay: 1.16s; }
 .stagger-grid > *:nth-child(30) { animation-delay: 1.20s; }
 
-/* ═══════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    CTA BUTTONS
-   ═══════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 .btn-nurea {
   display: inline-flex;
@@ -484,17 +479,17 @@
   border-color: var(--nurea-accent-hover);
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    OVERLAY & BACKDROP
-   ═══════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 .overlay-enter {
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    FOCUS & ACCESSIBILITY
-   ═══════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 *:focus-visible {
   outline: 2px solid var(--nurea-accent);
@@ -561,322 +556,5 @@ input[type="search"]::-webkit-search-results-decoration {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   NURÉA ADMIN — "Bordeaux de jour"
-   Light Apple-like · palette warm + signature bordeaux/cuivre
-   Tokens SCOPÉS à l'admin, isolés des tokens --nurea-* publics
-   ═══════════════════════════════════════════════════════════ */
 
-.admin-theme {
-  /* Fond proche iOS (maquette nuréa-admin) */
-  --admin-bg: #f2f2f7;
-  --admin-ios-bordeaux: #7b0b1d;
-  --admin-surface: #fffefc;
-  --admin-surface-muted: #EFEAE4;
-  --admin-surface-hover: #E9E2DA;
-  --admin-text: #171114;
-  --admin-text-muted: #55484E;
-  --admin-text-subtle: #665860;
-  /* Bordures type iOS : trait fin (clair / sombre prêt pour thème futur) */
-  --admin-border-hairline: rgba(0, 0, 0, 0.055);
-  --admin-border-hairline-dark: rgba(255, 255, 255, 0.1);
-  --admin-border: color-mix(in srgb, var(--admin-text) 9%, transparent);
-  --admin-border-hover: color-mix(in srgb, var(--admin-text) 16%, transparent);
-  --admin-accent: #7b0b1d;
-  --admin-accent-hover: #8f1428;
-  --admin-accent-subtle: rgba(127, 48, 56, 0.12);
-  --admin-accent-ring: rgba(127, 48, 56, 0.3);
-  --admin-cuivre: #B4895E;
-  --admin-cuivre-subtle: rgba(180, 137, 94, 0.12);
-  --admin-success: #2F7A50;
-  --admin-success-subtle: rgba(47, 122, 80, 0.10);
-  --admin-success-border: rgba(47, 122, 80, 0.22);
-  --admin-warning: #A0662E;
-  --admin-warning-subtle: rgba(160, 102, 46, 0.10);
-  --admin-warning-border: rgba(160, 102, 46, 0.22);
-  --admin-danger: #B03A3E;
-  --admin-danger-subtle: rgba(176, 58, 62, 0.08);
-  --admin-danger-border: rgba(176, 58, 62, 0.24);
-  --admin-info: #3E5A7A;
-  --admin-info-subtle: rgba(62, 90, 122, 0.08);
-  --admin-info-border: rgba(62, 90, 122, 0.22);
-  --admin-overlay: rgba(26, 18, 21, 0.38);
-  --admin-shadow-sm: 0 1px 2px rgba(26, 18, 21, 0.04), 0 1px 3px rgba(139, 58, 58, 0.03);
-  --admin-shadow-md: 0 4px 12px rgba(26, 18, 21, 0.06), 0 2px 4px rgba(139, 58, 58, 0.04);
-  --admin-shadow-lg: 0 12px 32px rgba(26, 18, 21, 0.08), 0 4px 8px rgba(139, 58, 58, 0.05);
-  --admin-shadow-xl: 0 24px 60px rgba(26, 18, 21, 0.12), 0 8px 16px rgba(139, 58, 58, 0.06);
-  color-scheme: light;
-  /* Viewport dynamique : évite les sauts quand la barre d’adresse iOS apparaît / disparaît */
-  min-height: 100dvh;
-}
-
-html.admin-route-root,
-body.admin-route {
-  min-height: 100dvh;
-  min-height: -webkit-fill-available;
-}
-
-body.admin-route {
-  background-color: var(--admin-bg);
-  color-scheme: light;
-  overflow-x: hidden;
-  overflow-x: clip;
-  overscroll-behavior-x: none;
-}
-
-body.admin-route .nurea-viewport-top-shield {
-  display: none;
-}
-
-.admin-mobile-shell {
-  width: 100%;
-  min-height: 100dvh;
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 430px;
-  background-color: var(--admin-bg);
-  color: var(--admin-text);
-  position: relative;
-  overflow-x: clip;
-  padding-bottom: calc(max(16px, env(safe-area-inset-bottom, 16px)) + 5.5rem);
-  font-family: var(--font-sans), system-ui, sans-serif;
-}
-
-@media (min-width: 768px) {
-  .admin-mobile-shell {
-    border-left: 1px solid var(--admin-border);
-    border-right: 1px solid var(--admin-border);
-    box-shadow: 0 0 0 1px color-mix(in oklab, var(--admin-border) 55%, transparent);
-  }
-}
-
-.admin-header-blur {
-  background-color: color-mix(in oklab, var(--admin-bg) 78%, transparent);
-  backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-}
-
-/**
- * Barre d’onglets : collée au bas du viewport (PWA / Safari iOS).
- * Ne pas utiliser bottom: env(safe-area-inset) ici : cela décale toute la barre
- * vers le haut et la fait flotter ; le padding-bottom suffit pour l’indicateur d’accueil.
- */
-.admin-bottom-nav {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 60;
-  box-sizing: border-box;
-  width: 100%;
-  isolation: isolate;
-  background-color: color-mix(in oklab, var(--admin-surface) 97%, transparent);
-  backdrop-filter: blur(10px) saturate(130%);
-  -webkit-backdrop-filter: blur(10px) saturate(130%);
-  border-top: 1px solid var(--admin-border);
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
-  box-shadow: 0 -1px 0 0 rgba(255, 255, 255, 0.6) inset;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.admin-bottom-nav__inner {
-  margin-left: auto;
-  margin-right: auto;
-  display: flex;
-  max-width: 430px;
-  width: 100%;
-  min-height: 4rem;
-  align-items: flex-start;
-  justify-content: space-around;
-  gap: 0;
-  /* pt-2 + espace pour l’indicateur d’accueil iOS (une seule fois) */
-  padding: 0.5rem 0 calc(12px + env(safe-area-inset-bottom, 0px));
-}
-
-@media (min-width: 768px) {
-  .admin-bottom-nav {
-    border-left: 1px solid var(--admin-border);
-    border-right: 1px solid var(--admin-border);
-  }
-}
-
-/* Override sélection dans la zone admin pour rester dans la palette claire */
-.admin-theme ::selection {
-  background: var(--admin-accent-subtle);
-  color: var(--admin-text);
-}
-
-/* Override focus visible : ring bordeaux doux au lieu du Nuréa accent rose */
-.admin-theme *:focus-visible {
-  outline: 2px solid var(--admin-accent);
-  outline-offset: 2px;
-}
-
-/* Affordance pointeur cohérente (PWA / tactile + desktop) */
-body.admin-route .admin-theme button:not(:disabled),
-body.admin-route .admin-theme a[href] {
-  cursor: pointer;
-}
-body.admin-route .admin-theme button:disabled {
-  cursor: not-allowed;
-}
-
-/* Réduit le bruit moteur sur les actions « pression » (tap-scale) */
-@media (prefers-reduced-motion: reduce) {
-  .tap-scale,
-  .tap-scale:active,
-  .admin-card-press,
-  .admin-card-press:active {
-    transform: none;
-    transition: none;
-  }
-}
-
-/* Utilitaires mobile tactiles admin — pression type iOS (~100ms) */
-.tap-scale {
-  transition: transform 0.1s cubic-bezier(0.16, 1, 0.3, 1);
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-.tap-scale:active {
-  transform: scale(0.97);
-}
-
-/* Cartes / lignes cliquables : même feedback pression */
-.admin-card-press {
-  transition: transform 0.1s cubic-bezier(0.16, 1, 0.3, 1);
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-.admin-card-press:active {
-  transform: scale(0.97);
-}
-
-/* Navigation admin : pas de sélection accidentelle au tap rapide */
-.admin-nav-no-select {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.admin-nav-cell {
-  min-height: 4rem;
-}
-
-.admin-nav-item {
-  contain: paint;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Retour bref après changement d’onglet (ombre uniquement, pas de déplacement de layout) */
-.admin-nav-arrival {
-  animation: adminNavArrivalPulse 0.45s cubic-bezier(0.16, 1, 0.3, 1) 1;
-}
-
-@keyframes adminNavArrivalPulse {
-  0% {
-    box-shadow: 0 0 0 0 color-mix(in oklab, var(--admin-accent) 38%, transparent);
-  }
-  100% {
-    box-shadow: 0 0 0 0 transparent;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .admin-nav-arrival {
-    animation: none;
-  }
-}
-
-/* Barre fine sous l’en-tête admin : navigation inter-route en cours (feedback immédiat) */
-.admin-nav-route-progress {
-  position: relative;
-  height: 2px;
-  width: 100%;
-  flex-shrink: 0;
-  overflow: hidden;
-  background: color-mix(in oklab, #7b0b1d 12%, transparent);
-}
-.admin-nav-route-progress__bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 38%;
-  border-radius: 1px;
-  background: #7b0b1d;
-  opacity: 0.9;
-  animation: adminNavRouteIndeterminate 0.9s ease-in-out infinite;
-}
-
-@keyframes adminNavRouteIndeterminate {
-  0% {
-    transform: translateX(-30%);
-  }
-  100% {
-    transform: translateX(280%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .admin-nav-route-progress__bar {
-    animation: none;
-    left: 0;
-    width: 100%;
-    opacity: 0.5;
-  }
-}
-
-/* Ombre type iOS (maquette admin) */
-.admin-ios-shadow {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-}
-
-.admin-ios-transition,
-.ios-transition {
-  transition: all 0.3s ease-in-out;
-}
-
-/* Transitions d’onglets catalogue admin */
-.admin-tab-panel-fade {
-  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.admin-skeleton {
-  background: color-mix(in oklab, var(--admin-surface) 72%, var(--admin-surface-muted));
-  animation: adminSkeletonPulse 1.35s ease-in-out infinite;
-}
-
-@keyframes adminSkeletonPulse {
-  0%, 100% { opacity: 0.72; }
-  50% { opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .admin-skeleton {
-    animation: none;
-    opacity: 0.88;
-  }
-}
-
-/* Lift doux au hover pour cards interactives (souris seulement) */
-@media (hover: hover) and (pointer: fine) {
-  .admin-lift {
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .admin-lift:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--admin-shadow-md);
-  }
-
-  .admin-button-micro:hover {
-    transform: translateY(-1px) scale(1.01);
-  }
-
-  .admin-input-micro:hover {
-    border-color: var(--admin-border-hover);
-    box-shadow: var(--admin-shadow-md);
-  }
-
-}
+/* Admin PWA : tokens et shell -> src/design/globals.admin.css (import admin layout) */

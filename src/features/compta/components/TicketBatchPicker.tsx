@@ -128,7 +128,7 @@ export function TicketBatchPicker({
               Aucun lot ouvert.{" "}
               <Link
                 href="/admin/lots/new"
-                className="text-[var(--admin-accent)] underline"
+                className="font-medium text-[var(--admin-accent)] underline"
               >
                 Créer un lot
               </Link>

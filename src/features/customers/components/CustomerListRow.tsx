@@ -23,8 +23,10 @@ export function CustomerListRow({ customer }: CustomerListRowProps) {
       }
       secondary={
         <span className="text-[12px] text-[var(--admin-text-subtle)]">
-          {customer.phoneE164 ?? customer.snapchat ?? "—"}
-          {customer.ordersCount > 0 ? ` · ${customer.ordersCount} cmd.` : ""}
+          {customer.phoneE164 ?? customer.snapchat ?? "Pas de contact"}
+          {customer.ordersCount > 0
+            ? ` · ${customer.ordersCount} commande${customer.ordersCount > 1 ? "s" : ""}`
+            : ""}
         </span>
       }
       trailing={

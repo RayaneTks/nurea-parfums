@@ -1,33 +1,77 @@
 /**
- * CSS variables admin — alignées sur src/design/tokens.ts.
- *
- * NE PAS éditer sans synchroniser tokens.ts. Cette feuille existe pour les utilités
- * Tailwind via `var(...)` et pour les composants legacy en transition.
+ * Nuréa Admin — feuille dédiée PWA iOS (app/admin/layout.tsx).
+ * Source CSS alignée sur src/design/tokens.ts.
+ * Les utilitaires admin partagés vivent ici ; app/globals.css ne duplique plus les tokens.
  */
 
+/* ─── Route admin (html/body) ───────────────────────────────────────── */
+
+html.admin-route-root {
+  --admin-bg: #f2f2f7;
+  scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 6.5rem);
+  background-color: var(--admin-bg);
+  height: 100%;
+  overflow: hidden;
+}
+
+html.admin-route-root,
+body.admin-route {
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+}
+
+body.admin-route {
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--admin-bg, #f2f2f7);
+  color-scheme: light;
+  overflow-x: clip;
+  overscroll-behavior: none;
+}
+
+body.admin-route .nurea-viewport-top-shield {
+  display: none;
+}
+
+/* ─── Thème admin (tokens) ────────────────────────────────────────────── */
+
 .admin-theme {
-  /* Couleurs */
-  --admin-bg: #F2F2F7;
-  --admin-surface: #FFFFFF;
-  --admin-surface-alt: #F9F8F6;
-  --admin-surface-muted: #EFEAE4;
+  /* Couleurs — tokens.ts */
+  --admin-bg: #f2f2f7;
+  --admin-surface: #ffffff;
+  --admin-surface-alt: #f9f8f6;
+  --admin-surface-muted: #efeae4;
+  --admin-surface-hover: #e9e2da;
   --admin-border: rgba(0, 0, 0, 0.08);
   --admin-border-strong: rgba(0, 0, 0, 0.14);
+  --admin-border-hover: color-mix(in srgb, var(--admin-text) 16%, transparent);
   --admin-text: #111114;
-  --admin-text-muted: #5F5862;
-  --admin-text-subtle: #8A828E;
-  --admin-accent: #7B0B1D;
-  --admin-accent-hover: #8F1428;
+  --admin-text-muted: #5f5862;
+  --admin-text-subtle: #8a828e;
+  --admin-accent: #7b0b1d;
+  --admin-accent-hover: #8f1428;
   --admin-accent-bg: rgba(123, 11, 29, 0.08);
-  --admin-accent-ring: rgba(123, 11, 29, 0.30);
-  --admin-success: #1E7D45;
-  --admin-success-bg: rgba(30, 125, 69, 0.10);
-  --admin-warning: #A35B12;
-  --admin-warning-bg: rgba(163, 91, 18, 0.10);
-  --admin-danger: #B72938;
-  --admin-danger-bg: rgba(183, 41, 56, 0.10);
-  --admin-info: #3E5A7A;
-  --admin-info-bg: rgba(62, 90, 122, 0.10);
+  --admin-accent-subtle: rgba(123, 11, 29, 0.12);
+  --admin-accent-ring: rgba(123, 11, 29, 0.3);
+  --admin-cuivre: #b4895e;
+  --admin-cuivre-subtle: rgba(180, 137, 94, 0.12);
+  --admin-success: #1e7d45;
+  --admin-success-bg: rgba(30, 125, 69, 0.1);
+  --admin-success-subtle: rgba(47, 122, 80, 0.1);
+  --admin-success-border: rgba(47, 122, 80, 0.22);
+  --admin-warning: #a35b12;
+  --admin-warning-bg: rgba(163, 91, 18, 0.1);
+  --admin-warning-subtle: rgba(160, 102, 46, 0.1);
+  --admin-warning-border: rgba(160, 102, 46, 0.22);
+  --admin-danger: #b72938;
+  --admin-danger-bg: rgba(183, 41, 56, 0.1);
+  --admin-danger-subtle: rgba(176, 58, 62, 0.08);
+  --admin-danger-border: rgba(176, 58, 62, 0.24);
+  --admin-info: #3e5a7a;
+  --admin-info-bg: rgba(62, 90, 122, 0.1);
+  --admin-info-subtle: rgba(62, 90, 122, 0.08);
+  --admin-info-border: rgba(62, 90, 122, 0.22);
+  --admin-overlay: rgba(26, 18, 21, 0.38);
 
   /* Shadows */
   --admin-shadow-sm: 0 1px 2px rgba(26, 18, 21, 0.04), 0 1px 3px rgba(139, 58, 58, 0.03);
@@ -39,7 +83,26 @@
   --admin-app-max-width: 430px;
   --admin-tab-bar-height: 64px;
   --admin-header-height: 56px;
-  --admin-scroll-bottom-pad: calc(var(--admin-tab-bar-height) + env(safe-area-inset-bottom, 0px) + 16px);
+  --admin-touch-min: 44px;
+  --admin-keyboard-inset: 0px;
+  --admin-scroll-bottom-pad: calc(
+    var(--admin-tab-bar-height) + env(safe-area-inset-bottom, 0px) + 16px
+  );
+  --admin-sticky-cta-pad: calc(
+    0.75rem + env(safe-area-inset-bottom, 0px) + var(--admin-keyboard-inset, 0px)
+  );
+
+  /* Z-index (tokens.ts) — tab bar sous vaul sheets (70+) */
+  --admin-z-app-header: 40;
+  --admin-z-tab-bar: 50;
+  --admin-z-tab-bar-menu: 52;
+  --admin-z-fab: 55;
+  --admin-z-sheet-backdrop: 70;
+  --admin-z-sheet: 71;
+  --admin-z-modal-backdrop: 80;
+  --admin-z-modal: 81;
+  --admin-z-command-palette: 90;
+  --admin-z-toast: 95;
 
   /* Motion */
   --admin-duration-fast: 100ms;
@@ -48,51 +111,108 @@
   --admin-easing-default: cubic-bezier(0.16, 1, 0.3, 1);
   --admin-easing-sheet: cubic-bezier(0.32, 0.72, 0, 1);
 
-  /* Font */
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
-               "Segoe UI", system-ui, -apple-system-body, sans-serif;
+    "Segoe UI", system-ui, -apple-system-body, sans-serif;
   font-feature-settings: "ss01", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
   color: var(--admin-text);
   background: var(--admin-bg);
-  min-height: 100dvh;
-  min-height: 100svh;
+  color-scheme: light;
 }
 
-/* Tabular numerals utility (montants, dates) */
-.tnum {
-  font-feature-settings: "tnum" 1, "lnum" 1;
-  font-variant-numeric: tabular-nums lining-nums;
+/* ─── Shell scroll (iOS PWA) ──────────────────────────────────────────── */
+
+.admin-shell-scroll {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Touch feedback */
-.tap-scale {
-  transition: transform var(--admin-duration-fast) var(--admin-easing-default);
+.admin-page-bottom-pad {
+  padding-bottom: var(--admin-scroll-bottom-pad);
 }
 
-.tap-scale:active {
-  transform: scale(0.97);
+.admin-form-scroll-pad {
+  padding-bottom: calc(
+    var(--admin-scroll-bottom-pad) + var(--admin-keyboard-inset, 0px)
+  );
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .tap-scale {
-    transition: none;
+.admin-sticky-cta-spacer {
+  height: calc(3.25rem + env(safe-area-inset-bottom, 0px));
+  flex-shrink: 0;
+}
+
+/* ─── Header / tab bar ──────────────────────────────────────────────────── */
+
+.admin-header-blur {
+  background-color: color-mix(in srgb, var(--admin-bg) 80%, transparent);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+.admin-tab-bar-menu-scrim {
+  background: rgba(26, 18, 21, 0.18);
+  animation: admin-fade-in var(--admin-duration-default) var(--admin-easing-default) both;
+}
+
+.admin-tab-bar-menu {
+  transform-origin: bottom right;
+  animation: admin-menu-pop var(--admin-duration-default) var(--admin-easing-default) both;
+}
+
+@keyframes admin-fade-in {
+  from {
+    opacity: 0;
   }
-  .tap-scale:active {
-    transform: none;
+  to {
+    opacity: 1;
   }
 }
 
-/* iOS PWA — éviter zoom au focus input */
-.admin-theme input,
-.admin-theme textarea,
-.admin-theme select {
-  font-size: 16px; /* prevent iOS zoom */
+@keyframes admin-menu-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-/* Safe-area wrappers */
+.admin-tab-bar {
+  z-index: var(--admin-z-tab-bar);
+  background: color-mix(in srgb, var(--admin-surface) 92%, transparent);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-top: 1px solid var(--admin-border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  /* Isole le nav de la transform scale() que vaul applique sur <body> */
+  transform: translateZ(0);
+  will-change: transform;
+  isolation: isolate;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.admin-tab-bar__inner {
+  height: var(--admin-tab-bar-height);
+}
+
+.admin-tab-bar__item {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ─── Safe area ─────────────────────────────────────────────────────────── */
+
 .admin-safe-top {
   padding-top: env(safe-area-inset-top, 0px);
 }
@@ -101,7 +221,76 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Sheet drag handle */
+/* ─── Typo utilitaires ──────────────────────────────────────────────────── */
+
+.tnum {
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* ─── Touch feedback (Emil: scale 0.97, ~100ms) ─────────────────────────── */
+
+.tap-scale {
+  transition: transform var(--admin-duration-fast) var(--admin-easing-default);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.tap-scale:active {
+  transform: scale(0.97);
+}
+
+.admin-card-press {
+  transition: transform var(--admin-duration-fast) var(--admin-easing-default);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.admin-card-press:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap-scale,
+  .tap-scale:active,
+  .admin-card-press,
+  .admin-card-press:active {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* ─── iOS PWA inputs ────────────────────────────────────────────────────── */
+
+.admin-theme input,
+.admin-theme textarea,
+.admin-theme select {
+  font-size: 16px;
+}
+
+/* ─── Focus / sélection admin ───────────────────────────────────────────── */
+
+.admin-theme ::selection {
+  background: var(--admin-accent-subtle);
+  color: var(--admin-text);
+}
+
+.admin-theme *:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+
+body.admin-route .admin-theme button:not(:disabled),
+body.admin-route .admin-theme a[href] {
+  cursor: pointer;
+}
+
+body.admin-route .admin-theme button:disabled {
+  cursor: not-allowed;
+}
+
+/* ─── Sheet handle ──────────────────────────────────────────────────────── */
+
 .admin-sheet-handle {
   width: 36px;
   height: 5px;
@@ -110,17 +299,25 @@
   margin: 6px auto 0;
 }
 
-/* Skeleton pulse */
+/* ─── Skeleton ──────────────────────────────────────────────────────────── */
+
 @keyframes admin-skeleton-pulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .admin-skeleton {
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     var(--admin-surface-muted) 0%,
     var(--admin-surface-alt) 50%,
-    var(--admin-surface-muted) 100%);
+    var(--admin-surface-muted) 100%
+  );
   background-size: 200% 100%;
   animation: admin-skeleton-pulse 1.6s ease-in-out infinite;
 }
@@ -128,5 +325,109 @@
 @media (prefers-reduced-motion: reduce) {
   .admin-skeleton {
     animation: none;
+  }
+}
+
+/* ─── Cartes interactives (legacy admin components) ─────────────────────── */
+
+@media (hover: hover) and (pointer: fine) {
+  .admin-lift {
+    transition:
+      transform 0.2s var(--admin-easing-default),
+      box-shadow 0.2s var(--admin-easing-default);
+  }
+
+  .admin-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--admin-shadow-md);
+  }
+}
+
+.admin-ios-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.admin-ios-transition,
+.ios-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+.admin-tab-panel-fade {
+  transition: opacity 0.2s var(--admin-easing-default);
+}
+
+.admin-nav-no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.admin-nav-arrival {
+  animation: admin-nav-arrival-pulse 0.45s var(--admin-easing-default) 1;
+}
+
+@keyframes admin-nav-arrival-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--admin-accent) 38%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-nav-arrival {
+    animation: none;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .admin-button-micro:hover {
+    transform: translateY(-1px) scale(1.01);
+  }
+
+  .admin-input-micro:hover {
+    border-color: var(--admin-border-hover);
+    box-shadow: var(--admin-shadow-md);
+  }
+}
+
+/* ─── Progress bar navigation ───────────────────────────────────────────── */
+
+.admin-nav-route-progress {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--admin-accent) 12%, transparent);
+}
+
+.admin-nav-route-progress__bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 38%;
+  border-radius: 1px;
+  background: var(--admin-accent);
+  opacity: 0.9;
+  animation: admin-nav-route-indeterminate 0.9s ease-in-out infinite;
+}
+
+@keyframes admin-nav-route-indeterminate {
+  0% {
+    transform: translateX(-30%);
+  }
+  100% {
+    transform: translateX(280%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-nav-route-progress__bar {
+    animation: none;
+    left: 0;
+    width: 100%;
+    opacity: 0.5;
   }
 }

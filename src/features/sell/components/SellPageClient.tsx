@@ -10,9 +10,11 @@ import { Input } from "@/ui/primitives/Input";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
 import { Badge } from "@/ui/primitives/Badge";
+import { Skeleton } from "@/ui/primitives/Skeleton";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
 import { StickyAction } from "@/ui/primitives/StickyAction";
 import { EmptyState } from "@/ui/primitives/EmptyState";
+import { PageScaffold } from "@/ui/patterns/PageScaffold";
 import { Money } from "@/ui/patterns/Money";
 import { PerfumePicker, type PickerResult } from "./PerfumePicker";
 import { SellLineRow, type SellLine } from "./SellLineRow";
@@ -205,7 +207,7 @@ export function SellPageClient() {
   };
 
   return (
-    <>
+    <PageScaffold padding={4} formScroll ariaLabel={bridge ? "Encaisser" : "Vendre"}>
       <Stack gap={4}>
         <Link
           href={bridge ? `/admin/ordres/${bridge.id}` : "/admin/ordres"}
@@ -233,7 +235,7 @@ export function SellPageClient() {
                 </span>
               </span>
               <Badge tone="accent" size="sm">
-                Bridge
+                Depuis commande
               </Badge>
             </div>
           </Card>
@@ -270,7 +272,7 @@ export function SellPageClient() {
               label="Contact (optionnel)"
               value={customerContact}
               onChange={(e) => setCustomerContact(e.target.value)}
-              placeholder="Téléphone, Snapchat, Instagram…"
+              placeholder="Téléphone, Snapchat, WhatsApp…"
               autoComplete="off"
               variant="elevated"
             />
@@ -278,16 +280,26 @@ export function SellPageClient() {
         </Card>
 
         {bridgeLoading ? (
-          <Card padding={4}>
-            <p className="text-center text-[14px] text-[var(--admin-text-muted)]">
-              Chargement…
-            </p>
-          </Card>
+          <Stack gap={2} aria-busy aria-label="Chargement de la commande">
+            <Skeleton height={88} />
+            <Skeleton height={88} />
+          </Stack>
         ) : lines.length === 0 ? (
           <EmptyState
             icon={Plus}
             title="Aucun parfum"
             description="Ajoute au moins un parfum pour calculer le ticket."
+            action={
+              <Button
+                type="button"
+                variant="primary"
+                size="md"
+                leadingIcon={<Plus size={16} />}
+                onClick={() => setPickerOpen(true)}
+              >
+                Choisir un parfum
+              </Button>
+            }
           />
         ) : (
           <Stack gap={2}>
@@ -302,16 +314,18 @@ export function SellPageClient() {
           </Stack>
         )}
 
-        <Button
-          type="button"
-          variant="secondary"
-          size="md"
-          fullWidth
-          leadingIcon={<Plus size={16} />}
-          onClick={() => setPickerOpen(true)}
-        >
-          Ajouter un parfum
-        </Button>
+        {!bridgeLoading ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            fullWidth
+            leadingIcon={<Plus size={16} />}
+            onClick={() => setPickerOpen(true)}
+          >
+            Ajouter un parfum
+          </Button>
+        ) : null}
 
         <Card padding={3}>
           <HStack justify="between" align="end">
@@ -337,20 +351,23 @@ export function SellPageClient() {
           </HStack>
         </Card>
 
-        <StickyAction>
-          <Button
-            type="button"
-            variant="primary"
-            size="lg"
-            fullWidth
-            isLoading={submitting}
-            onClick={submit}
-            leadingIcon={<CheckCircle2 size={16} />}
-          >
-            Enregistrer la vente
-          </Button>
-        </StickyAction>
+        <div className="admin-sticky-cta-spacer" aria-hidden />
       </Stack>
+
+      <StickyAction>
+        <Button
+          type="button"
+          variant="primary"
+          size="lg"
+          fullWidth
+          isLoading={submitting}
+          disabled={bridgeLoading || lines.length === 0}
+          onClick={submit}
+          leadingIcon={<CheckCircle2 size={16} />}
+        >
+          Enregistrer la vente
+        </Button>
+      </StickyAction>
 
       <PerfumePicker
         open={pickerOpen}
@@ -362,6 +379,6 @@ export function SellPageClient() {
       {toast ? (
         <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
       ) : null}
-    </>
+    </PageScaffold>
   );
 }

@@ -66,7 +66,7 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
       }
       setToast({
         type: "success",
-        message: mode === "create" ? "Client créé." : "Client mis à jour.",
+        message: mode === "create" ? "Client créé." : "Fiche enregistrée.",
       });
       router.push(
         redirectTo ?? `/admin/clients/${mode === "create" ? result.data.id : initial!.id}`,
@@ -78,12 +78,13 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
   return (
     <>
       <form
+        className="flex flex-col"
         onSubmit={(e) => {
           e.preventDefault();
           submit();
         }}
       >
-        <Stack gap={3}>
+        <Stack gap={3} className="pb-2">
           <Input
             label="Nom complet"
             required
@@ -91,6 +92,7 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
             onChange={(e) => setFullName(e.target.value)}
             placeholder="Alice Dupont"
             autoComplete="name"
+            enterKeyHint="next"
           />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Input
@@ -100,7 +102,8 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
               placeholder="+33612345678"
               inputMode="tel"
               autoComplete="tel"
-              hint="Format E.164"
+              hint="Format international (+33…)"
+              enterKeyHint="next"
             />
             <Input
               label="WhatsApp"
@@ -108,19 +111,24 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
               onChange={(e) => setWhatsapp(e.target.value)}
               placeholder="+33612345678"
               inputMode="tel"
+              enterKeyHint="next"
             />
           </div>
           <Input
             label="Snapchat"
             value={snapchat}
             onChange={(e) => setSnapchat(e.target.value)}
-            placeholder="username"
+            placeholder="pseudo"
+            autoCapitalize="none"
+            enterKeyHint="next"
           />
           <Input
             label="Adresse"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder="Rue, ville, code postal"
+            autoComplete="street-address"
+            enterKeyHint="next"
           />
           <Textarea
             label="Notes"
@@ -128,8 +136,11 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             placeholder="Préférences, allergies, contexte…"
+            enterKeyHint="done"
           />
         </Stack>
+
+        <div aria-hidden className="admin-sticky-cta-spacer" />
 
         <StickyAction>
           <Button type="submit" variant="primary" size="lg" fullWidth isLoading={pending}>

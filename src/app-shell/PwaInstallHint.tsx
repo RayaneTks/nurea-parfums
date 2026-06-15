@@ -8,11 +8,19 @@ const STORAGE_KEY = "nurea-pwa-hint-dismissed-v1";
 
 function isStandalone(): boolean {
   if (typeof window === "undefined") return false;
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    // @ts-expect-error iOS Safari property
-    window.navigator.standalone === true
-  );
+
+  const nav = window.navigator as Navigator & { standalone?: boolean };
+  if (nav.standalone === true) return true;
+
+  const displayModes = ["standalone", "fullscreen", "minimal-ui"] as const;
+  if (displayModes.some((mode) => window.matchMedia(`(display-mode: ${mode})`).matches)) {
+    return true;
+  }
+
+  // Android Trusted Web Activity / Chrome custom tab handoff
+  if (document.referrer.startsWith("android-app://")) return true;
+
+  return false;
 }
 
 function isIOSSafari(): boolean {
@@ -67,14 +75,14 @@ export function PwaInstallHint() {
           Installer Nuréa Admin
         </p>
         <p className="mt-0.5 text-[12px] text-[var(--admin-text-muted)]">
-          Appuie sur Partager puis « Sur l'écran d'accueil ».
+          {`Appuie sur Partager puis « Sur l'écran d'accueil ».`}
         </p>
       </div>
       <button
         type="button"
         onClick={dismiss}
         aria-label="Masquer"
-        className="-mr-1 shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--admin-text-subtle)] tap-scale"
+        className="-mr-1 shrink-0 inline-flex min-h-[var(--admin-touch-min)] min-w-[var(--admin-touch-min)] items-center justify-center rounded-full text-[var(--admin-text-subtle)] tap-scale"
       >
         <X size={14} />
       </button>

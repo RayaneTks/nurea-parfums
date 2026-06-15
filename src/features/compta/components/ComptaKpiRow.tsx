@@ -11,35 +11,35 @@ export function ComptaKpiRow({ summary }: ComptaKpiRowProps) {
   const hasDebt = Number.isFinite(debt) && debt > 0;
 
   return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-3 gap-2">
+    <div className="space-y-2 min-w-0">
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
         <Card padding={3} tone="surface">
-          <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+          <p className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
             CA
           </p>
-          <p className="mt-1 text-[18px] font-bold leading-none">
+          <p className="mt-1 text-[16px] sm:text-[18px] font-bold leading-none">
             <Money value={summary.totalRevenue} compact />
           </p>
         </Card>
         <Card padding={3} tone="surface">
-          <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+          <p className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
             Marge
           </p>
-          <p className="mt-1 text-[18px] font-bold leading-none">
+          <p className="mt-1 text-[16px] sm:text-[18px] font-bold leading-none">
             <Money value={summary.totalMargin} compact tone="success" />
           </p>
-          <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
+          <p className="mt-0.5 text-[10px] sm:text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
             {summary.marginPct}%
           </p>
         </Card>
         <Card padding={3} tone="surface">
-          <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+          <p className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
             Panier
           </p>
-          <p className="mt-1 text-[18px] font-bold leading-none">
+          <p className="mt-1 text-[16px] sm:text-[18px] font-bold leading-none">
             <Money value={summary.avgValue} compact />
           </p>
-          <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
+          <p className="mt-0.5 text-[10px] sm:text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
             {summary.salesCount} ventes
           </p>
         </Card>

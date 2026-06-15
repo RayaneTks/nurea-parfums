@@ -1,21 +1,37 @@
 "use client";
 
-import { forwardRef, type TextareaHTMLAttributes, useId } from "react";
+import { forwardRef, type FocusEvent, type TextareaHTMLAttributes, useId } from "react";
 import { cn } from "@/lib/utils";
 
 interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   hint?: string;
   error?: string;
+  /** Désactive le scrollIntoView au focus (utile dans listes virtualisées). */
+  disableAutoScroll?: boolean;
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
-  { label, hint, error, className, id, rows = 3, ...rest },
+  { label, hint, error, disableAutoScroll, className, id, rows = 3, onFocus, ...rest },
   ref,
 ) {
   const autoId = useId();
   const taId = id ?? autoId;
   const helpId = error ? `${taId}-err` : hint ? `${taId}-hint` : undefined;
+
+  const handleFocus = (e: FocusEvent<HTMLTextAreaElement>) => {
+    onFocus?.(e);
+    if (disableAutoScroll || e.defaultPrevented) return;
+    const el = e.currentTarget;
+    window.setTimeout(() => {
+      try {
+        el.scrollIntoView({ block: "center", behavior: "smooth" });
+      } catch {
+        /* ignore */
+      }
+    }, 320);
+  };
+
   return (
     <div className="w-full">
       {label ? (
@@ -32,6 +48,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
         rows={rows}
         aria-invalid={error ? true : undefined}
         aria-describedby={helpId}
+        onFocus={handleFocus}
         className={cn(
           "block w-full rounded-[12px]",
           "bg-[var(--admin-surface)] border border-[var(--admin-border-strong)]",
