@@ -10,10 +10,12 @@ import {
   Plus,
   Trash2,
   ChevronRight,
+  ShoppingBag,
 } from "lucide-react";
 import { Stack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
 import { Button } from "@/ui/primitives/Button";
+import { EmptyState } from "@/ui/primitives/EmptyState";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
 import { InlineNameEditor } from "@/ui/patterns/InlineNameEditor";
 import { Money } from "@/ui/patterns/Money";
@@ -266,24 +268,26 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
             ) : null}
           </div>
           {current.sales.length === 0 ? (
-            <div className="px-3 py-6 text-center">
-              <p className="text-[12px] text-[var(--admin-text-subtle)]">
-                Aucune vente rattachée à ce lot.
-              </p>
-              {isOpen ? (
-                <Button
-                  type="button"
-                  variant="primary"
-                  size="md"
-                  leadingIcon={<Plus size={15} />}
-                  onClick={() => setAssignOpen(true)}
-                  disabled={pending}
-                  className="mt-3"
-                >
-                  Assigner des ventes
-                </Button>
-              ) : null}
-            </div>
+            <EmptyState
+              icon={ShoppingBag}
+              title="Aucune vente"
+              description="Assigne des ventes pour suivre la marge de ce lot."
+              className="py-6"
+              action={
+                isOpen ? (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="md"
+                    leadingIcon={<Plus size={15} />}
+                    onClick={() => setAssignOpen(true)}
+                    disabled={pending}
+                  >
+                    Assigner des ventes
+                  </Button>
+                ) : undefined
+              }
+            />
           ) : (
             <ul className="divide-y divide-[var(--admin-border)]">
               {current.sales.map((s) => {

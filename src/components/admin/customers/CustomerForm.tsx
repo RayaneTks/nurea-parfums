@@ -66,7 +66,7 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
       }
       setToast({
         type: "success",
-        message: mode === "create" ? "Client créé." : "Client mis à jour.",
+        message: mode === "create" ? "Client créé." : "Fiche enregistrée.",
       });
       router.push(
         redirectTo ?? `/admin/clients/${mode === "create" ? result.data.id : initial!.id}`,
@@ -78,12 +78,13 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
   return (
     <>
       <form
+        className="flex flex-col"
         onSubmit={(e) => {
           e.preventDefault();
           submit();
         }}
       >
-        <Stack gap={3}>
+        <Stack gap={3} className="pb-2">
           <Input
             label="Nom complet"
             required
@@ -101,7 +102,7 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
               placeholder="+33612345678"
               inputMode="tel"
               autoComplete="tel"
-              hint="Format E.164"
+              hint="Format international (+33…)"
               enterKeyHint="next"
             />
             <Input
@@ -117,7 +118,8 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
             label="Snapchat"
             value={snapchat}
             onChange={(e) => setSnapchat(e.target.value)}
-            placeholder="username"
+            placeholder="pseudo"
+            autoCapitalize="none"
             enterKeyHint="next"
           />
           <Input
@@ -125,6 +127,7 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder="Rue, ville, code postal"
+            autoComplete="street-address"
             enterKeyHint="next"
           />
           <Textarea
@@ -136,6 +139,8 @@ export function CustomerForm({ mode, initial, redirectTo }: CustomerFormProps) {
             enterKeyHint="done"
           />
         </Stack>
+
+        <div aria-hidden className="admin-sticky-cta-spacer" />
 
         <StickyAction>
           <Button type="submit" variant="primary" size="lg" fullWidth isLoading={pending}>

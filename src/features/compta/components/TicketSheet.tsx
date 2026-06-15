@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, AlertCircle } from "lucide-react";
 import { Sheet } from "@/ui/primitives/Sheet";
 import { Button } from "@/ui/primitives/Button";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
 import { Skeleton } from "@/ui/primitives/Skeleton";
+import { EmptyState } from "@/ui/primitives/EmptyState";
 import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
 import { TicketHeader } from "./TicketHeader";
 import { TicketTotals } from "./TicketTotals";
@@ -38,16 +39,18 @@ async function fetchSale(id: string): Promise<SaleDetailRow | null> {
 export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheetProps) {
   const [sale, setSale] = useState<SaleDetailRow | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [confirmUnsaved, setConfirmUnsaved] = useState(false);
 
   useEffect(() => {
     if (!open || !saleId) return;
     setLoading(true);
+    setLoadError(null);
     void fetchSale(saleId).then((s) => {
       setSale(s);
+      if (!s) setLoadError("Vente introuvable ou accès refusé.");
       setLoading(false);
     });
   }, [saleId, open]);
@@ -129,19 +132,8 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
 
   const saveAll = useCallback(async () => {
     if (!sale) return;
-
-    // Lignes avec prix manquant (nouveaux items non configurés)
-    const missingPrice = ticket.draft.lines.find(
-      (l) => l.key.startsWith("new:") && !l.unitPrice.trim(),
-    );
-    if (missingPrice) {
-      setToast({ type: "error", message: "Prix manquant sur une nouvelle ligne." });
-      return;
-    }
-
     setSaving(true);
     try {
-      // Items existants à mettre à jour
       const items = ticket.draft.lines
         .filter((l) => l.key.startsWith("id:"))
         .map((l) => ({
@@ -152,35 +144,9 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
           unitCostDzd: l.unitCostDzd === "" ? null : l.unitCostDzd.replace(",", "."),
           exchangeRate: l.exchangeRate === "" ? null : l.exchangeRate.replace(",", "."),
         }));
-
-      // Items existants supprimés du draft
-      const draftExistingIds = new Set(items.map((i) => i.id));
-      const removeItemIds = sale.items
-        .map((it) => it.id)
-        .filter((id) => !draftExistingIds.has(id));
-
-      // Nouveaux items à créer
-      const newItems = ticket.draft.lines
-        .filter((l) => l.key.startsWith("new:"))
-        .map((l) => ({
-          perfumeId: l.perfumeId,
-          snapshot: {
-            name: l.snapshot.name,
-            brandName: l.snapshot.brandName ?? "Hors catalogue",
-            image: l.snapshot.image ?? null,
-          },
-          quantity: l.quantity,
-          volumeMl: l.volumeMl ?? 100,
-          unitPrice: l.unitPrice.replace(",", "."),
-          unitCostDzd: l.unitCostDzd === "" ? null : l.unitCostDzd.replace(",", "."),
-          exchangeRate: l.exchangeRate === "" ? "277" : l.exchangeRate.replace(",", "."),
-        }));
-
       const payload: Record<string, unknown> = {
         notes: ticket.draft.notes || null,
         items,
-        ...(newItems.length > 0 ? { newItems } : {}),
-        ...(removeItemIds.length > 0 ? { removeItemIds } : {}),
       };
       if (ticket.draft.customerId !== sale.customerId) {
         payload.customerId = ticket.draft.customerId;
@@ -245,8 +211,9 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
 
   const tryClose = useCallback(() => {
     if (ticket.mode === "edit" && ticket.isDirty) {
-      setConfirmUnsaved(true);
-      return;
+      const ok = window.confirm("Modifications non enregistrées. Fermer quand même ?");
+      if (!ok) return;
+      ticket.exitEdit();
     }
     onOpenChange(false);
   }, [ticket, onOpenChange]);
@@ -291,23 +258,28 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
       <Sheet
         open={open}
         onOpenChange={(o) => (o ? onOpenChange(true) : tryClose())}
-        title={
-          loading || !sale
-            ? "Vente"
-            : ticket.mode === "edit"
-              ? `Modifier · ${ticket.draft.customerName || "Vente"}`
-              : ticket.draft.customerName || "Vente"
-        }
-        description={loading || !sale ? "Chargement…" : undefined}
+        title={loading || !sale ? "Vente" : ticket.draft.customerName || "Vente"}
+        description={loading ? "Chargement…" : loadError ?? undefined}
         footer={sale ? footer : undefined}
         dismissible={ticket.mode === "view" || !ticket.isDirty}
       >
-        {loading || !sale ? (
+        {loading ? (
           <Stack gap={3}>
             <Skeleton height={56} />
             <Skeleton height={72} />
             <Skeleton height={72} />
           </Stack>
+        ) : loadError || !sale ? (
+          <EmptyState
+            icon={AlertCircle}
+            title="Vente inaccessible"
+            description={loadError ?? "Impossible d'afficher ce ticket."}
+            action={
+              <Button variant="secondary" size="md" onClick={() => onOpenChange(false)}>
+                Fermer
+              </Button>
+            }
+          />
         ) : (
           <Stack gap={3}>
             <TicketHeader
@@ -361,7 +333,6 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
               onPatch={ticket.patchLine}
               onQuantityDelta={ticket.quantityDelta}
               onRemove={ticket.removeLine}
-              onAdd={ticket.addLine}
             />
           </Stack>
         )}
@@ -381,19 +352,6 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
         confirmLabel="Supprimer"
         nested
         onConfirm={deleteSale}
-      />
-      <ConfirmDialog
-        open={confirmUnsaved}
-        onOpenChange={setConfirmUnsaved}
-        title="Modifications non enregistrées"
-        description="Fermer sans sauvegarder les changements ?"
-        confirmLabel="Fermer quand même"
-        nested
-        onConfirm={() => {
-          setConfirmUnsaved(false);
-          ticket.exitEdit();
-          onOpenChange(false);
-        }}
       />
     </>
   );

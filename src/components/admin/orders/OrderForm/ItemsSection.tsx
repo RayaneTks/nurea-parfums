@@ -2,13 +2,14 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Package, Plus, Trash2 } from "lucide-react";
 import { Card } from "@/ui/primitives/Card";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Stepper } from "@/ui/primitives/Stepper";
 import { Chip } from "@/ui/primitives/Chip";
 import { Input } from "@/ui/primitives/Input";
 import { Button } from "@/ui/primitives/Button";
+import { EmptyState } from "@/ui/primitives/EmptyState";
 import { Money } from "@/ui/patterns/Money";
 import { PerfumePicker, type PickerResult } from "@/features/sell";
 import { VOLUMES, type OrderFormLine } from "./types";
@@ -49,9 +50,23 @@ export function ItemsSection({ items, onAddItem, onPatchItem, onRemoveItem }: It
         </div>
 
         {items.length === 0 ? (
-          <p className="py-2 text-[13px] text-[var(--admin-text-muted)]">
-            Aucune ligne. Tape « Ajouter » pour choisir un parfum (catalogue ou saisie libre).
-          </p>
+          <EmptyState
+            icon={Package}
+            title="Aucun parfum"
+            description="Ajoute au moins un parfum au catalogue ou en saisie libre."
+            action={
+              <Button
+                type="button"
+                variant="secondary"
+                size="md"
+                leadingIcon={<Plus size={16} />}
+                onClick={() => setPickerOpen(true)}
+              >
+                Choisir un parfum
+              </Button>
+            }
+            className="py-6"
+          />
         ) : (
           <Stack gap={2}>
             {items.map((it) => (

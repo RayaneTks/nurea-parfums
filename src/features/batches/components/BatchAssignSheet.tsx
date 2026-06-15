@@ -63,7 +63,7 @@ export function BatchAssignSheet({
         setInitialSelected(initial);
       })
       .catch(() => {
-        onError("Chargement des ventes impossible.");
+        onError("Impossible de charger les ventes. Réessaie.");
         setCandidates([]);
         setSelected(new Set());
         setInitialSelected(new Set());
@@ -133,9 +133,10 @@ export function BatchAssignSheet({
       description={
         totalAvailable > 0
           ? `${selectedCount} sélectionnée${selectedCount > 1 ? "s" : ""} / ${totalAvailable}`
-          : undefined
+          : loading
+            ? "Chargement…"
+            : undefined
       }
-      maxVh={92}
       footer={
         <Button
           type="button"
@@ -187,7 +188,7 @@ export function BatchAssignSheet({
             description={
               q.length > 0
                 ? "Essaie un autre nom de client."
-                : "Toutes les ventes sont déjà rattachées à un autre lot."
+                : "Crée une vente ou détache des ventes d'un autre lot."
             }
           />
         ) : (

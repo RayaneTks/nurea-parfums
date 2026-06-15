@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function AdminLoginPage() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center px-5 py-10">
+    <div className="flex h-full items-center justify-center px-5 py-10">
       <Suspense
         fallback={
           <div className="text-[13px] text-admin-subtle">Chargement…</div>
