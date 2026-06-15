@@ -28,8 +28,8 @@ export function AdminShell({ children }: AdminShellProps) {
 
   if (isLogin) {
     return (
-      <div className="admin-theme flex min-h-[100dvh] min-h-[100svh] w-full">
-        <div className="mx-auto flex min-h-[100dvh] min-h-[100svh] w-full max-w-[var(--admin-app-max-width)]">
+      <div className="admin-theme flex h-full w-full">
+        <div className="mx-auto flex h-full w-full max-w-[var(--admin-app-max-width)]">
           {children}
         </div>
       </div>
@@ -43,15 +43,15 @@ export function AdminShell({ children }: AdminShellProps) {
 
   return (
     <div className="admin-theme admin-app-container">
+      <PwaInstallHint />
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
         <AppHeader
           onOpenCommandPalette={() => setPaletteOpen(true)}
           onOpenSearch={focusCatalogueSearch}
         />
-        <PwaInstallHint />
         <div
           id="admin-scroll-root"
-          className="admin-shell-scroll flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain"
+          className="admin-shell-scroll min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]"
         >
           {children}
         </div>

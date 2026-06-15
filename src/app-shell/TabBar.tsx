@@ -119,7 +119,7 @@ export function TabBar() {
     <nav
       aria-label="Navigation principale"
       data-tabbar
-      className="admin-tab-bar"
+      className="admin-nav-blur safe-area-bottom fixed bottom-0 left-0 right-0 z-[100] mx-auto flex h-[88px] max-w-[430px] items-start justify-between px-1 pt-2"
     >
         {TABS.map((tab) => {
           const active = tab.match(pathname);
@@ -131,9 +131,9 @@ export function TabBar() {
               prefetch
               aria-current={active ? "page" : undefined}
               className={cn(
-                "admin-tab-bar__item relative flex min-h-[var(--admin-touch-min)] min-w-0 flex-1 select-none flex-col items-center justify-center gap-0.5 px-0.5",
+                "admin-tab-bar__item relative flex min-h-[44px] min-w-0 flex-1 select-none flex-col items-center justify-center gap-1 rounded-xl px-0.5",
                 "transition-colors duration-[var(--admin-duration-default)] ease-[var(--admin-easing-default)]",
-                "tap-scale focus-visible:outline-none focus-visible:bg-[var(--admin-surface-muted)]",
+                "tap-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--admin-accent-ring)]",
                 active ? "text-[var(--admin-accent)]" : "text-[var(--admin-text-muted)]",
               )}
             >
@@ -173,9 +173,9 @@ export function TabBar() {
             aria-label="Plus d'options"
             onClick={() => setMoreOpen((open) => !open)}
             className={cn(
-              "admin-tab-bar__item relative z-[calc(var(--admin-z-tab-bar-menu)+1)] flex min-h-[var(--admin-touch-min)] w-full select-none flex-col items-center justify-center gap-0.5 px-0.5",
+              "admin-tab-bar__item relative z-[calc(var(--admin-z-tab-bar-menu)+1)] flex min-h-[44px] w-full select-none flex-col items-center justify-center gap-1 rounded-xl px-0.5",
               "transition-colors duration-[var(--admin-duration-default)] ease-[var(--admin-easing-default)]",
-              "tap-scale focus-visible:outline-none focus-visible:bg-[var(--admin-surface-muted)]",
+              "tap-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--admin-accent-ring)]",
               moreActive || moreOpen
                 ? "text-[var(--admin-accent)]"
                 : "text-[var(--admin-text-muted)]",
