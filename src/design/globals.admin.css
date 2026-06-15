@@ -9,29 +9,29 @@
 html.admin-route-root {
   --admin-bg: #f2f2f7;
   scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 6.5rem);
-  background-color: var(--admin-bg);
-  height: 100%;
-  overflow: hidden;
 }
 
+/* Pattern encore1dessert : h-full partout, pas de 100dvh/svh (casse fixed bottom sur iOS PWA). */
 html.admin-route-root,
 body.admin-route {
-  min-height: 100dvh;
-  min-height: 100svh;
-  min-height: -webkit-fill-available;
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-x: hidden;
+  background-color: var(--admin-bg, #f2f2f7);
+  color: var(--admin-text, #111114);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 body.admin-route {
-  height: 100dvh;
-  height: 100svh;
-  overflow: hidden;
-  background-color: var(--admin-bg, #f2f2f7);
   color-scheme: light;
-  overflow-x: clip;
   overscroll-behavior: none;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
 }
 
 body.admin-route .nurea-viewport-top-shield {
@@ -92,10 +92,9 @@ body.admin-route .nurea-viewport-top-shield {
   --admin-touch-min: 44px;
   --admin-keyboard-inset: 0px;
   --admin-safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --admin-tab-bar-total-height: calc(
-    var(--admin-tab-bar-shell-height) + env(safe-area-inset-bottom, 0px)
-  );
-  --admin-scroll-bottom-pad: calc(var(--admin-tab-bar-total-height) + 2.5rem);
+  /* Safe-area est DANS les 88px (padding-bottom + border-box), pas en plus. */
+  --admin-tab-bar-total-height: var(--admin-tab-bar-shell-height);
+  --admin-scroll-bottom-pad: calc(var(--admin-tab-bar-shell-height) + 2rem);
   --admin-sticky-cta-pad: calc(
     0.75rem + var(--admin-safe-area-bottom) + var(--admin-keyboard-inset, 0px)
   );
@@ -139,9 +138,13 @@ body.admin-route .nurea-viewport-top-shield {
   max-width: min(430px, 100%);
   margin-left: auto;
   margin-right: auto;
+  flex: 1 1 auto;
+  align-self: stretch;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  overflow-x: hidden;
   padding-top: env(safe-area-inset-top, 0px);
   background: var(--admin-bg);
 }
@@ -149,9 +152,6 @@ body.admin-route .nurea-viewport-top-shield {
 /* ─── Shell scroll (iOS PWA) ──────────────────────────────────────────── */
 
 .admin-shell-scroll {
-  flex: 1 1 0%;
-  min-height: 0;
-  overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
   scroll-padding-bottom: var(--admin-scroll-bottom-pad);
@@ -178,6 +178,19 @@ body.admin-route .nurea-viewport-top-shield {
   background-color: color-mix(in srgb, var(--admin-bg) 80%, transparent);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+/* Nav blur — même pattern que encore1dessert .nav-blur */
+.admin-nav-blur {
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-top: 1px solid var(--admin-border);
+  box-shadow: 0 -4px 24px rgba(26, 18, 21, 0.04);
+  background-color: color-mix(in srgb, var(--admin-surface) 88%, var(--admin-bg));
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .admin-tab-bar-menu-scrim {
@@ -210,37 +223,11 @@ body.admin-route .nurea-viewport-top-shield {
   }
 }
 
-.admin-tab-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: var(--admin-z-tab-bar);
-  width: 100%;
-  max-width: min(430px, 100%);
-  margin-left: auto;
-  margin-right: auto;
-  height: var(--admin-tab-bar-shell-height);
-  padding-top: 0.5rem;
-  padding-left: 0.25rem;
-  padding-right: 0.25rem;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  box-sizing: border-box;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-around;
-  background-color: color-mix(in srgb, var(--admin-surface) 88%, var(--admin-bg));
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-top: 1px solid var(--admin-border);
-  box-shadow: 0 -4px 24px rgba(26, 18, 21, 0.04);
-  user-select: none;
-  -webkit-user-select: none;
-}
-
 .admin-tab-bar__item {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* ─── Safe area ─────────────────────────────────────────────────────────── */

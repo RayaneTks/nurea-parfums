@@ -45,7 +45,7 @@ export function Toast({ type = "success", message, duration = 3000, onClose }: T
         "motion-safe:animate-in motion-safe:slide-in-from-bottom-4",
       )}
       style={{
-        bottom: "calc(var(--admin-tab-bar-height) + env(safe-area-inset-bottom, 0px) + 16px)",
+        bottom: "calc(var(--admin-tab-bar-height) + 16px)",
         background: "var(--admin-surface)",
         border: `1px solid ${s.border}`,
       }}

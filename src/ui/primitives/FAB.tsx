@@ -21,7 +21,7 @@ export function FAB({ icon: Icon, ariaLabel, href, onClick, className }: FABProp
     className,
   );
   const style = {
-    bottom: "calc(var(--admin-tab-bar-height) + env(safe-area-inset-bottom, 0px) + 16px)",
+    bottom: "calc(var(--admin-tab-bar-height) + 16px)",
   } as const;
 
   if (href) {
