@@ -17,11 +17,13 @@ html.admin-route-root {
 html.admin-route-root,
 body.admin-route {
   min-height: 100dvh;
+  min-height: 100svh;
   min-height: -webkit-fill-available;
 }
 
 body.admin-route {
   height: 100dvh;
+  height: 100svh;
   overflow: hidden;
   background-color: var(--admin-bg, #f2f2f7);
   color-scheme: light;
@@ -86,14 +88,23 @@ body.admin-route .nurea-viewport-top-shield {
   --admin-touch-min: 44px;
   --admin-keyboard-inset: 0px;
   /* iOS 11.0–11.2 : constant() ; iOS 11.2+ : env() */
-  --admin-safe-area-bottom: constant(safe-area-inset-bottom);
-  --admin-safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --admin-safe-area-left: constant(safe-area-inset-left);
-  --admin-safe-area-left: env(safe-area-inset-left, 0px);
-  --admin-safe-area-right: constant(safe-area-inset-right);
-  --admin-safe-area-right: env(safe-area-inset-right, 0px);
+  --admin-safe-area-bottom-env: max(
+    constant(safe-area-inset-bottom, 0px),
+    env(safe-area-inset-bottom, 0px)
+  );
+  --admin-safe-area-bottom: var(--admin-safe-area-bottom-env);
+  --admin-safe-area-left: max(
+    constant(safe-area-inset-left, 0px),
+    env(safe-area-inset-left, 0px)
+  );
+  --admin-safe-area-right: max(
+    constant(safe-area-inset-right, 0px),
+    env(safe-area-inset-right, 0px)
+  );
+  /* Zone home indicator — fallback 34px appliqué en PWA standalone (voir @media) */
+  --admin-tab-bar-safe-bottom: var(--admin-safe-area-bottom-env);
   --admin-tab-bar-total-height: calc(
-    var(--admin-tab-bar-height) + var(--admin-safe-area-bottom)
+    var(--admin-tab-bar-height) + var(--admin-tab-bar-safe-bottom)
   );
   --admin-scroll-bottom-pad: calc(var(--admin-tab-bar-total-height) + 16px);
   --admin-sticky-cta-pad: calc(
@@ -138,6 +149,7 @@ body.admin-route .nurea-viewport-top-shield {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
+  scroll-padding-bottom: var(--admin-scroll-bottom-pad);
 }
 
 .admin-page-bottom-pad {
@@ -198,13 +210,20 @@ body.admin-route .nurea-viewport-top-shield {
   bottom: 0;
   left: 0;
   right: 0;
+  width: 100%;
   z-index: var(--admin-z-tab-bar);
-  background: color-mix(in srgb, var(--admin-surface) 92%, transparent);
+  /* Fond opaque : le padding-bottom safe-area hérite la même couleur */
+  background-color: var(--admin-surface);
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--admin-surface) 88%, var(--admin-bg)) 0%,
+    var(--admin-surface) 100%
+  );
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-top: 1px solid var(--admin-border);
-  /* Safe area : fond du nav s'étend sous le home indicator */
-  padding-bottom: var(--admin-safe-area-bottom);
+  /* Safe area : fond du nav s'étend sous le home indicator (pas bottom: env()) */
+  padding-bottom: max(var(--admin-tab-bar-safe-bottom), 0px);
   padding-left: var(--admin-safe-area-left);
   padding-right: var(--admin-safe-area-right);
   /* Isole le nav de la transform scale() que vaul applique sur <body> */
@@ -235,6 +254,29 @@ body.admin-route .nurea-viewport-top-shield {
 
 .admin-safe-bottom {
   padding-bottom: var(--admin-safe-area-bottom);
+}
+
+/* PWA standalone iOS — env(safe-area-inset-bottom) retourne souvent 0 */
+@media (display-mode: standalone) {
+  .admin-theme {
+    --admin-tab-bar-safe-bottom: max(var(--admin-safe-area-bottom-env), 34px);
+    --admin-tab-bar-total-height: calc(
+      var(--admin-tab-bar-height) + var(--admin-tab-bar-safe-bottom)
+    );
+    --admin-scroll-bottom-pad: calc(var(--admin-tab-bar-total-height) + 16px);
+  }
+}
+
+@supports (padding: max(0px)) {
+  @media (display-mode: standalone) {
+    .admin-tab-bar {
+      padding-bottom: max(
+        constant(safe-area-inset-bottom, 0px),
+        env(safe-area-inset-bottom, 0px),
+        34px
+      );
+    }
+  }
 }
 
 /* ─── Typo utilitaires ──────────────────────────────────────────────────── */

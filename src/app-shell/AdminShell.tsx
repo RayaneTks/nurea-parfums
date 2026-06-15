@@ -28,8 +28,8 @@ export function AdminShell({ children }: AdminShellProps) {
 
   if (isLogin) {
     return (
-      <div className="admin-theme w-full min-h-[100dvh]">
-        <div className="mx-auto w-full max-w-[var(--admin-app-max-width)] min-h-[100dvh]">
+      <div className="admin-theme flex min-h-[100dvh] min-h-[100svh] w-full">
+        <div className="mx-auto flex min-h-[100dvh] min-h-[100svh] w-full max-w-[var(--admin-app-max-width)]">
           {children}
         </div>
       </div>
@@ -42,8 +42,8 @@ export function AdminShell({ children }: AdminShellProps) {
   };
 
   return (
-    <div className="admin-theme relative w-full h-[100dvh] overflow-hidden">
-      <div className="relative mx-auto flex h-full w-full max-w-[var(--admin-app-max-width)] flex-col">
+    <div className="admin-theme relative flex h-[100dvh] h-[100svh] min-h-[100dvh] min-h-[100svh] w-full flex-col overflow-hidden">
+      <div className="relative mx-auto flex min-h-0 w-full max-w-[var(--admin-app-max-width)] flex-1 flex-col">
         <AppHeader
           onOpenCommandPalette={() => setPaletteOpen(true)}
           onOpenSearch={focusCatalogueSearch}

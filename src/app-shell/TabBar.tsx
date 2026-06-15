@@ -121,7 +121,7 @@ export function TabBar() {
       data-tabbar
       className="admin-tab-bar"
     >
-      <div className="admin-tab-bar__inner mx-auto flex w-full max-w-[var(--admin-app-max-width)] items-center justify-around">
+      <div className="admin-tab-bar__inner mx-auto flex w-full max-w-[430px] items-center justify-around">
         {TABS.map((tab) => {
           const active = tab.match(pathname);
           const Icon = tab.icon;
@@ -191,7 +191,7 @@ export function TabBar() {
             <MoreHorizontal size={22} strokeWidth={moreActive || moreOpen ? 2.4 : 2} aria-hidden />
             <span
               className={cn(
-                "text-[10px] leading-none tracking-[0.01em]",
+                "max-w-full truncate text-[10px] leading-none tracking-[0.01em]",
                 moreActive || moreOpen ? "font-bold" : "font-medium",
               )}
             >
