@@ -55,8 +55,8 @@ export function AdminShell({ children }: AdminShellProps) {
         >
           {children}
         </div>
-        <TabBar />
       </div>
+      <TabBar />
       <AdminLoadingProgress />
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
     </div>
