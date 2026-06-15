@@ -7,6 +7,7 @@ import { Stack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
 import { Input } from "@/ui/primitives/Input";
 import { Button } from "@/ui/primitives/Button";
+import { EmptyState } from "@/ui/primitives/EmptyState";
 import { Money } from "@/ui/patterns/Money";
 import type { BatchExpenseRow } from "@/server/batches/queries";
 
@@ -122,12 +123,25 @@ export function BatchExpensesSection({
       </div>
 
       {expenses.length === 0 && !adding ? (
-        <div className="flex flex-col items-center gap-2 rounded-[12px] bg-[var(--admin-surface-muted)] px-4 py-6 text-center">
-          <Receipt size={20} className="text-[var(--admin-text-subtle)]" />
-          <p className="text-[12px] text-[var(--admin-text-subtle)]">
-            Aucune dépense pour ce lot.
-          </p>
-        </div>
+        <EmptyState
+          icon={Receipt}
+          title="Aucune dépense"
+          description="Ajoute transport, billet ou frais pour calculer la marge nette."
+          className="py-5"
+          action={
+            canEdit ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                leadingIcon={<Plus size={14} />}
+                onClick={() => setAdding(true)}
+              >
+                Ajouter une dépense
+              </Button>
+            ) : undefined
+          }
+        />
       ) : (
         <Stack gap={2}>
           {expenses.map((e) => (

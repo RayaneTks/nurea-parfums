@@ -37,6 +37,7 @@ export function CustomerSection({
             onChange={(e) => onCustomerNameChange(e.target.value)}
             placeholder="Prénom Nom"
             autoComplete="off"
+            variant="elevated"
           />
         ) : null}
       </Stack>

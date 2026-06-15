@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, AlertCircle } from "lucide-react";
 import { Sheet } from "@/ui/primitives/Sheet";
 import { Button } from "@/ui/primitives/Button";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
 import { Skeleton } from "@/ui/primitives/Skeleton";
+import { EmptyState } from "@/ui/primitives/EmptyState";
 import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
 import { TicketHeader } from "./TicketHeader";
 import { TicketTotals } from "./TicketTotals";
@@ -38,6 +39,7 @@ async function fetchSale(id: string): Promise<SaleDetailRow | null> {
 export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheetProps) {
   const [sale, setSale] = useState<SaleDetailRow | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -45,8 +47,10 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
   useEffect(() => {
     if (!open || !saleId) return;
     setLoading(true);
+    setLoadError(null);
     void fetchSale(saleId).then((s) => {
       setSale(s);
+      if (!s) setLoadError("Vente introuvable ou accès refusé.");
       setLoading(false);
     });
   }, [saleId, open]);
@@ -255,16 +259,27 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
         open={open}
         onOpenChange={(o) => (o ? onOpenChange(true) : tryClose())}
         title={loading || !sale ? "Vente" : ticket.draft.customerName || "Vente"}
-        description={loading || !sale ? "Chargement…" : undefined}
+        description={loading ? "Chargement…" : loadError ?? undefined}
         footer={sale ? footer : undefined}
         dismissible={ticket.mode === "view" || !ticket.isDirty}
       >
-        {loading || !sale ? (
+        {loading ? (
           <Stack gap={3}>
             <Skeleton height={56} />
             <Skeleton height={72} />
             <Skeleton height={72} />
           </Stack>
+        ) : loadError || !sale ? (
+          <EmptyState
+            icon={AlertCircle}
+            title="Vente inaccessible"
+            description={loadError ?? "Impossible d'afficher ce ticket."}
+            action={
+              <Button variant="secondary" size="md" onClick={() => onOpenChange(false)}>
+                Fermer
+              </Button>
+            }
+          />
         ) : (
           <Stack gap={3}>
             <TicketHeader

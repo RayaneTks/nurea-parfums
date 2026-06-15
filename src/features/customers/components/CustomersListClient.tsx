@@ -70,25 +70,25 @@ export function CustomersListClient({ initial, initialQuery, nextCursor }: Custo
         <header>
           <Heading level={1}>Clients</Heading>
           <p className="mt-0.5 text-[13px] text-[var(--admin-text-muted)] tabular-nums">
-            {initial.length} client{initial.length > 1 ? "s" : ""}
-            {query.trim() ? ` pour « ${query.trim()} »` : ""}
+            {initial.length} fiche{initial.length > 1 ? "s" : ""}
+            {query.trim() ? ` · « ${query.trim()} »` : ""}
           </p>
         </header>
 
         <SearchField
           value={query}
           onChange={setQuery}
-          placeholder="Nom, téléphone, snap…"
+          placeholder="Nom, téléphone, Snap…"
         />
 
         {initial.length === 0 ? (
           <EmptyState
             icon={Users}
-            title="Aucun client"
+            title={query.trim() ? "Aucun résultat" : "Aucun client"}
             description={
               query.trim()
-                ? "Aucun résultat pour cette recherche."
-                : "Crée ton premier client pour commencer."
+                ? "Essaie un autre nom ou numéro."
+                : "Ajoute une fiche pour retrouver tes clients plus vite."
             }
           />
         ) : (

@@ -11,7 +11,7 @@ type BottomSheetProps = {
   description?: string;
   children: ReactNode;
   className?: string;
-  /** Hauteur max en vh (defaut 88). */
+  /** Hauteur max en dvh (defaut 88). */
   maxVh?: number;
 };
 
@@ -41,7 +41,7 @@ export function BottomSheet({
             "fixed inset-x-0 bottom-0 z-[71] mx-auto flex max-w-[430px] flex-col rounded-t-2xl bg-white outline-none",
             className,
           )}
-          style={{ maxHeight: `${maxVh}vh` }}
+          style={{ maxHeight: `${maxVh}dvh` }}
         >
           <div className="mx-auto mt-2 h-1.5 w-10 shrink-0 rounded-full bg-neutral-300" aria-hidden />
           {title ? (

@@ -8,6 +8,7 @@ import { Card } from "@/ui/primitives/Card";
 import { Stack } from "@/ui/primitives/Stack";
 import { StickyAction } from "@/ui/primitives/StickyAction";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
+import { PageScaffold } from "@/ui/patterns/PageScaffold";
 import { Money } from "@/ui/patterns/Money";
 import { CustomerSection } from "./CustomerSection";
 import { ItemsSection } from "./ItemsSection";
@@ -261,10 +262,10 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
   };
 
   return (
-    <main
-      id="main-content"
-      className="flex-1 px-4 pt-2"
-      style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
+    <PageScaffold
+      padding={4}
+      formScroll
+      ariaLabel={mode === "create" ? "Nouvelle commande" : "Modifier commande"}
     >
       <Stack gap={3}>
         <CustomerSection
@@ -324,6 +325,8 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
             <Money value={orderTotal} bold className="text-[18px]" />
           </div>
         </Card>
+
+        <div className="admin-sticky-cta-spacer" aria-hidden />
       </Stack>
 
       <StickyAction>
@@ -343,6 +346,6 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
       {toast ? (
         <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
       ) : null}
-    </main>
+    </PageScaffold>
   );
 }

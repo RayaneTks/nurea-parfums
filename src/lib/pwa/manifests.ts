@@ -4,9 +4,17 @@ import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_SHORT_NAME, SITE_URL } from "@/lib
 const publicTheme = "#0A0508";
 const adminTheme = "#7B0B1D";
 
-const icons: MetadataRoute.Manifest["icons"] = [
+const shopIcons: MetadataRoute.Manifest["icons"] = [
   { src: "/apple-touch-icon.png", sizes: "180x180", type: "image/png", purpose: "any" },
   { src: "/branding/monogram/np-circle-bordeaux.png", sizes: "512x512", type: "image/png", purpose: "any" },
+];
+
+/** Icônes admin : monogramme bordeaux + entrée maskable pour Android adaptive icon. */
+const adminIcons: MetadataRoute.Manifest["icons"] = [
+  { src: "/apple-touch-icon.png", sizes: "180x180", type: "image/png", purpose: "any" },
+  { src: "/branding/monogram/np-circle-bordeaux.png", sizes: "192x192", type: "image/png", purpose: "any" },
+  { src: "/branding/monogram/np-circle-bordeaux.png", sizes: "512x512", type: "image/png", purpose: "any" },
+  { src: "/branding/monogram/np-circle-bordeaux.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
 ];
 
 export function getShopWebManifest(): MetadataRoute.Manifest {
@@ -24,7 +32,7 @@ export function getShopWebManifest(): MetadataRoute.Manifest {
     categories: ["shopping", "lifestyle"],
     lang: "fr",
     dir: "ltr",
-    icons,
+    icons: shopIcons,
   };
 }
 
@@ -35,7 +43,7 @@ export function getAdminWebManifest(): MetadataRoute.Manifest {
     short_name: "Nuréa Gestion",
     description: "Espace d’administration : commandes, catalogue, comptabilité et vente.",
     start_url: "/admin",
-    scope: "/",
+    scope: "/admin",
     display: "standalone",
     orientation: "portrait-primary",
     background_color: adminTheme,
@@ -43,6 +51,6 @@ export function getAdminWebManifest(): MetadataRoute.Manifest {
     categories: ["business", "productivity"],
     lang: "fr",
     dir: "ltr",
-    icons,
+    icons: adminIcons,
   };
 }
