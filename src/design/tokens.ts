@@ -133,9 +133,8 @@ export const layout = {
   appMaxWidth: "430px",
   /** Hauteur de la tab bar (sans safe-area). */
   tabBarHeight: "64px",
-  /** Padding scroll-bottom pour ne pas masquer derrière la tab bar. */
-  scrollBottomPad:
-    "calc(64px + max(constant(safe-area-inset-bottom), env(safe-area-inset-bottom, 0px)) + 16px)",
+  /** Padding scroll-bottom — aligné sur --admin-scroll-bottom-pad (CSS). */
+  scrollBottomPad: "var(--admin-scroll-bottom-pad)",
   /** Hauteur header sticky. */
   headerHeight: "56px",
 } as const;
