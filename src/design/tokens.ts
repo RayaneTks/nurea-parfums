@@ -131,8 +131,8 @@ export const shadow = {
 export const layout = {
   /** Largeur max app PWA iOS (iPhone 14 Pro Max width). */
   appMaxWidth: "430px",
-  /** Hauteur de la tab bar (sans safe-area). */
-  tabBarHeight: "64px",
+  /** Hauteur shell tab bar (hors safe-area), alignée sur pattern PWA encore1dessert. */
+  tabBarHeight: "88px",
   /** Padding scroll-bottom — aligné sur --admin-scroll-bottom-pad (CSS). */
   scrollBottomPad: "var(--admin-scroll-bottom-pad)",
   /** Hauteur header sticky. */

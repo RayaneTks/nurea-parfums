@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: `${SITE_NAME} — Gestion`,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     startupImage: [],
   },
   icons: {
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   },
   other: {
     "mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-status-bar-style": "default",
   },
 };
 

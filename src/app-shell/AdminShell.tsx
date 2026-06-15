@@ -42,8 +42,8 @@ export function AdminShell({ children }: AdminShellProps) {
   };
 
   return (
-    <div className="admin-theme relative flex h-[100dvh] h-[100svh] min-h-[100dvh] min-h-[100svh] w-full flex-col overflow-hidden">
-      <div className="relative mx-auto flex min-h-0 w-full max-w-[var(--admin-app-max-width)] flex-1 flex-col">
+    <div className="admin-theme admin-app-container">
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
         <AppHeader
           onOpenCommandPalette={() => setPaletteOpen(true)}
           onOpenSearch={focusCatalogueSearch}

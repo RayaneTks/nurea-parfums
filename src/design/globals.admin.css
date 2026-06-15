@@ -29,6 +29,9 @@ body.admin-route {
   color-scheme: light;
   overflow-x: clip;
   overscroll-behavior: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 body.admin-route .nurea-viewport-top-shield {
@@ -81,32 +84,18 @@ body.admin-route .nurea-viewport-top-shield {
   --admin-shadow-lg: 0 12px 32px rgba(26, 18, 21, 0.08), 0 4px 8px rgba(139, 58, 58, 0.05);
   --admin-shadow-xl: 0 24px 60px rgba(26, 18, 21, 0.12), 0 8px 16px rgba(139, 58, 58, 0.06);
 
-  /* Layout */
+  /* Layout — shell tab bar aligné sur encore1dessert (h-[88px] + safe-area-bottom) */
   --admin-app-max-width: 430px;
-  --admin-tab-bar-height: 64px;
+  --admin-tab-bar-shell-height: 88px;
+  --admin-tab-bar-height: var(--admin-tab-bar-shell-height);
   --admin-header-height: 56px;
   --admin-touch-min: 44px;
   --admin-keyboard-inset: 0px;
-  /* iOS 11.0–11.2 : constant() ; iOS 11.2+ : env() */
-  --admin-safe-area-bottom-env: max(
-    constant(safe-area-inset-bottom, 0px),
-    env(safe-area-inset-bottom, 0px)
-  );
-  --admin-safe-area-bottom: var(--admin-safe-area-bottom-env);
-  --admin-safe-area-left: max(
-    constant(safe-area-inset-left, 0px),
-    env(safe-area-inset-left, 0px)
-  );
-  --admin-safe-area-right: max(
-    constant(safe-area-inset-right, 0px),
-    env(safe-area-inset-right, 0px)
-  );
-  /* Zone home indicator — fallback 34px appliqué en PWA standalone (voir @media) */
-  --admin-tab-bar-safe-bottom: var(--admin-safe-area-bottom-env);
+  --admin-safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --admin-tab-bar-total-height: calc(
-    var(--admin-tab-bar-height) + var(--admin-tab-bar-safe-bottom)
+    var(--admin-tab-bar-shell-height) + env(safe-area-inset-bottom, 0px)
   );
-  --admin-scroll-bottom-pad: calc(var(--admin-tab-bar-total-height) + 16px);
+  --admin-scroll-bottom-pad: calc(var(--admin-tab-bar-total-height) + 2.5rem);
   --admin-sticky-cta-pad: calc(
     0.75rem + var(--admin-safe-area-bottom) + var(--admin-keyboard-inset, 0px)
   );
@@ -139,6 +128,22 @@ body.admin-route .nurea-viewport-top-shield {
   color: var(--admin-text);
   background: var(--admin-bg);
   color-scheme: light;
+}
+
+/* ─── Shell app (pattern encore1dessert .app-container) ───────────────── */
+
+.admin-app-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: min(430px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: var(--admin-bg);
 }
 
 /* ─── Shell scroll (iOS PWA) ──────────────────────────────────────────── */
@@ -210,35 +215,27 @@ body.admin-route .nurea-viewport-top-shield {
   bottom: 0;
   left: 0;
   right: 0;
-  width: 100%;
   z-index: var(--admin-z-tab-bar);
-  /* Fond opaque : le padding-bottom safe-area hérite la même couleur */
-  background-color: var(--admin-surface);
-  background-image: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--admin-surface) 88%, var(--admin-bg)) 0%,
-    var(--admin-surface) 100%
-  );
+  width: 100%;
+  max-width: min(430px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  height: var(--admin-tab-bar-shell-height);
+  padding-top: 0.5rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
+  background-color: color-mix(in srgb, var(--admin-surface) 88%, var(--admin-bg));
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-top: 1px solid var(--admin-border);
-  /* Safe area : fond du nav s'étend sous le home indicator (pas bottom: env()) */
-  padding-bottom: max(var(--admin-tab-bar-safe-bottom), 0px);
-  padding-left: var(--admin-safe-area-left);
-  padding-right: var(--admin-safe-area-right);
-  /* Isole le nav de la transform scale() que vaul applique sur <body> */
-  transform: translateZ(0);
-  will-change: transform;
-  isolation: isolate;
+  box-shadow: 0 -4px 24px rgba(26, 18, 21, 0.04);
   user-select: none;
   -webkit-user-select: none;
-  box-sizing: border-box;
-}
-
-.admin-tab-bar__inner {
-  min-height: var(--admin-tab-bar-height);
-  height: var(--admin-tab-bar-height);
-  box-sizing: border-box;
 }
 
 .admin-tab-bar__item {
@@ -253,30 +250,7 @@ body.admin-route .nurea-viewport-top-shield {
 }
 
 .admin-safe-bottom {
-  padding-bottom: var(--admin-safe-area-bottom);
-}
-
-/* PWA standalone iOS — env(safe-area-inset-bottom) retourne souvent 0 */
-@media (display-mode: standalone) {
-  .admin-theme {
-    --admin-tab-bar-safe-bottom: max(var(--admin-safe-area-bottom-env), 34px);
-    --admin-tab-bar-total-height: calc(
-      var(--admin-tab-bar-height) + var(--admin-tab-bar-safe-bottom)
-    );
-    --admin-scroll-bottom-pad: calc(var(--admin-tab-bar-total-height) + 16px);
-  }
-}
-
-@supports (padding: max(0px)) {
-  @media (display-mode: standalone) {
-    .admin-tab-bar {
-      padding-bottom: max(
-        constant(safe-area-inset-bottom, 0px),
-        env(safe-area-inset-bottom, 0px),
-        34px
-      );
-    }
-  }
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ─── Typo utilitaires ──────────────────────────────────────────────────── */
