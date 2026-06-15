@@ -85,11 +85,19 @@ body.admin-route .nurea-viewport-top-shield {
   --admin-header-height: 56px;
   --admin-touch-min: 44px;
   --admin-keyboard-inset: 0px;
-  --admin-scroll-bottom-pad: calc(
-    var(--admin-tab-bar-height) + env(safe-area-inset-bottom, 0px) + 16px
+  /* iOS 11.0–11.2 : constant() ; iOS 11.2+ : env() */
+  --admin-safe-area-bottom: constant(safe-area-inset-bottom);
+  --admin-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --admin-safe-area-left: constant(safe-area-inset-left);
+  --admin-safe-area-left: env(safe-area-inset-left, 0px);
+  --admin-safe-area-right: constant(safe-area-inset-right);
+  --admin-safe-area-right: env(safe-area-inset-right, 0px);
+  --admin-tab-bar-total-height: calc(
+    var(--admin-tab-bar-height) + var(--admin-safe-area-bottom)
   );
+  --admin-scroll-bottom-pad: calc(var(--admin-tab-bar-total-height) + 16px);
   --admin-sticky-cta-pad: calc(
-    0.75rem + env(safe-area-inset-bottom, 0px) + var(--admin-keyboard-inset, 0px)
+    0.75rem + var(--admin-safe-area-bottom) + var(--admin-keyboard-inset, 0px)
   );
 
   /* Z-index (tokens.ts) — tab bar sous vaul sheets (70+) */
@@ -143,7 +151,7 @@ body.admin-route .nurea-viewport-top-shield {
 }
 
 .admin-sticky-cta-spacer {
-  height: calc(3.25rem + env(safe-area-inset-bottom, 0px));
+  height: calc(3.25rem + var(--admin-safe-area-bottom));
   flex-shrink: 0;
 }
 
@@ -191,19 +199,26 @@ body.admin-route .nurea-viewport-top-shield {
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-top: 1px solid var(--admin-border);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: var(--admin-safe-area-bottom);
+  padding-left: var(--admin-safe-area-left);
+  padding-right: var(--admin-safe-area-right);
   /* Isole le nav de la transform scale() que vaul applique sur <body> */
   transform: translateZ(0);
   will-change: transform;
   isolation: isolate;
   user-select: none;
   -webkit-user-select: none;
+  box-sizing: border-box;
 }
 
 .admin-tab-bar__inner {
+  min-height: var(--admin-tab-bar-height);
   height: var(--admin-tab-bar-height);
+  box-sizing: border-box;
+}
+
+.admin-tab-bar__item {
+  padding-bottom: 2px;
 }
 
 .admin-tab-bar__item {
@@ -218,7 +233,22 @@ body.admin-route .nurea-viewport-top-shield {
 }
 
 .admin-safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: var(--admin-safe-area-bottom);
+}
+
+/* PWA standalone iOS — filet si env(safe-area-inset-bottom) retourne 0 */
+@media all and (display-mode: standalone) {
+  .admin-theme {
+    --admin-safe-area-bottom: max(
+      constant(safe-area-inset-bottom),
+      env(safe-area-inset-bottom, 0px),
+      34px
+    );
+    --admin-tab-bar-total-height: calc(
+      var(--admin-tab-bar-height) + var(--admin-safe-area-bottom)
+    );
+    --admin-scroll-bottom-pad: calc(var(--admin-tab-bar-total-height) + 16px);
+  }
 }
 
 /* ─── Typo utilitaires ──────────────────────────────────────────────────── */

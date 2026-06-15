@@ -42,8 +42,8 @@ export function AdminShell({ children }: AdminShellProps) {
   };
 
   return (
-    <div className="admin-theme w-full h-[100dvh] overflow-hidden">
-      <div className="mx-auto flex h-full w-full max-w-[var(--admin-app-max-width)] flex-col">
+    <div className="admin-theme relative w-full h-[100dvh] overflow-hidden">
+      <div className="relative mx-auto flex h-full w-full max-w-[var(--admin-app-max-width)] flex-col">
         <AppHeader
           onOpenCommandPalette={() => setPaletteOpen(true)}
           onOpenSearch={focusCatalogueSearch}
@@ -55,9 +55,9 @@ export function AdminShell({ children }: AdminShellProps) {
         >
           {children}
         </div>
+        <TabBar />
       </div>
       <AdminLoadingProgress />
-      <TabBar />
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
     </div>
   );

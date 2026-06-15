@@ -134,7 +134,8 @@ export const layout = {
   /** Hauteur de la tab bar (sans safe-area). */
   tabBarHeight: "64px",
   /** Padding scroll-bottom pour ne pas masquer derrière la tab bar. */
-  scrollBottomPad: "calc(64px + env(safe-area-inset-bottom, 0px) + 16px)",
+  scrollBottomPad:
+    "calc(64px + max(constant(safe-area-inset-bottom), env(safe-area-inset-bottom, 0px)) + 16px)",
   /** Hauteur header sticky. */
   headerHeight: "56px",
 } as const;
