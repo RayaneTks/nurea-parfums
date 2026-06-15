@@ -333,6 +333,7 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
               onPatch={ticket.patchLine}
               onQuantityDelta={ticket.quantityDelta}
               onRemove={ticket.removeLine}
+              onAdd={ticket.addLine}
             />
           </Stack>
         )}
