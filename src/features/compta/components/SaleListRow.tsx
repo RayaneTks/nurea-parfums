@@ -96,7 +96,7 @@ export function SaleListRow({
                 tone="danger"
               />
             ) : (
-              <Money value={sale.totalMargin} compact signed tone="success" />
+              <Money value={sale.totalMargin} compact signed tone="auto" />
             )}
           </div>
         </div>

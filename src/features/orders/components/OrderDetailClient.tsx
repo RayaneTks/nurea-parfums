@@ -124,7 +124,7 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
                   </p>
                 </div>
                 <div className="text-right">
-                  <Money value={margin} bold tone="success" className="text-[18px]" />
+                  <Money value={margin} bold tone="auto" className="text-[18px]" />
                   <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
                     {marginPct.toFixed(0)}%
                   </p>

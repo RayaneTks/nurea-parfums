@@ -39,7 +39,7 @@ export function TicketTotals({ sale }: TicketTotalsProps) {
           {hasDebt ? (
             <Money value={-Math.abs(margin)} bold tone="danger" />
           ) : (
-            <Money value={sale.totalMargin} bold tone="success" />
+            <Money value={sale.totalMargin} bold tone="auto" />
           )}
         </p>
         <p

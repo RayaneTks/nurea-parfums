@@ -17,7 +17,7 @@ export async function KpiBlock() {
       />
       <KpiTile
         label="Marge nette"
-        value={<Money value={global.netMargin} compact tone="success" />}
+        value={<Money value={global.netMargin} compact tone="auto" />}
         hint={`${global.marginPct} %`}
       />
       <KpiTile

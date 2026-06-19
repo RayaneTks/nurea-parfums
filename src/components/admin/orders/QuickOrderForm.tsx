@@ -441,7 +441,7 @@ export function QuickOrderForm() {
                   Marge
                 </p>
                 <p className="mt-1">
-                  <Money value={totals.margin} bold tone="success" />
+                  <Money value={totals.margin} bold tone="auto" />
                 </p>
                 <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
                   {totals.marginPct.toFixed(0)}%
