@@ -80,7 +80,7 @@ export function BatchListRow({ batch }: BatchListRowProps) {
                   Marge nette
                 </p>
                 <p className="mt-0.5 text-[14px] font-bold leading-none">
-                  <Money value={batch.netMargin} compact tone="success" />
+                  <Money value={batch.netMargin} compact tone="auto" />
                 </p>
               </div>
               <div>

@@ -59,7 +59,7 @@ export async function ActiveBatchesBlock() {
                 </div>
                 <div className="text-right">
                   <p className="text-[13px] font-bold leading-none">
-                    <Money value={b.netMargin} compact tone="success" />
+                    <Money value={b.netMargin} compact tone="auto" />
                   </p>
                   <p className="mt-0.5 text-[10px] tabular-nums text-[var(--admin-text-subtle)]">
                     {b.marginPct}% net

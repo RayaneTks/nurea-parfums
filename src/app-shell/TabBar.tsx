@@ -119,7 +119,7 @@ export function TabBar() {
     <nav
       aria-label="Navigation principale"
       data-tabbar
-      className="admin-nav-blur safe-area-bottom fixed bottom-0 left-0 right-0 z-[100] mx-auto flex h-[88px] max-w-[430px] items-start justify-between px-1 pt-2"
+      className="admin-nav-blur safe-area-bottom fixed bottom-0 left-0 right-0 z-[var(--admin-z-tab-bar)] mx-auto flex h-[88px] max-w-[430px] items-start justify-between px-1 pt-2"
     >
         {TABS.map((tab) => {
           const active = tab.match(pathname);

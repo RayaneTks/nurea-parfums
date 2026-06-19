@@ -26,7 +26,7 @@ export function ComptaKpiRow({ summary }: ComptaKpiRowProps) {
             Marge
           </p>
           <p className="mt-1 text-[16px] sm:text-[18px] font-bold leading-none">
-            <Money value={summary.netMargin} compact tone="success" />
+            <Money value={summary.netMargin} compact tone="auto" />
           </p>
           <p className="mt-0.5 text-[10px] sm:text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
             {summary.marginPct}%

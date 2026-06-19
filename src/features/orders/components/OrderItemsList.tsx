@@ -62,7 +62,7 @@ export function OrderItemsList({ items }: OrderItemsListProps) {
                 </div>
                 {margin > 0 ? (
                   <div className="mt-0.5 text-[11px]">
-                    <Money value={margin} compact tone="success" />
+                    <Money value={margin} compact tone="auto" />
                   </div>
                 ) : null}
               </div>

@@ -202,7 +202,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
               Marge nette
             </p>
             <p className="mt-1 text-[18px] font-bold leading-none">
-              <Money value={current.netMargin} compact tone="success" />
+              <Money value={current.netMargin} compact tone="auto" />
             </p>
             <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
               {current.marginPct}%
@@ -329,7 +329,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
                       <div className="text-right">
                         <Money value={s.cashedRevenue} bold className="text-[14px]" />
                         <p className="mt-0.5 text-[11px]">
-                          <Money value={s.netMargin} compact tone="success" />
+                          <Money value={s.netMargin} compact tone="auto" />
                         </p>
                       </div>
                       <ChevronRight

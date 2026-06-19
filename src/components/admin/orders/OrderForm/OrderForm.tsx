@@ -343,7 +343,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
                   Marge
                 </p>
                 <p className="mt-1">
-                  <Money value={orderTotals.margin} bold tone="success" />
+                  <Money value={orderTotals.margin} bold tone="auto" />
                 </p>
                 <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
                   {orderTotals.marginPct.toFixed(0)}%

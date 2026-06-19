@@ -238,7 +238,7 @@ export function BatchAssignSheet({
                     <div className="text-right">
                       <Money value={c.totalRevenue} bold className="text-[13px]" />
                       <p className="mt-0.5 text-[11px]">
-                        <Money value={c.totalMargin} compact tone="success" />
+                        <Money value={c.totalMargin} compact tone="auto" />
                       </p>
                     </div>
                   </button>
