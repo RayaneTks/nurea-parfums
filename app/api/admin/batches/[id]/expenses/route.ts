@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
+import { tagFor } from "@/lib/admin/cache-tags";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -77,6 +79,9 @@ export async function POST(
       expenseId: expense.id,
       amount: amountN,
     });
+
+    revalidateTag(tagFor.batches(), "default");
+    revalidateTag(tagFor.kpi(), "default");
 
     return NextResponse.json({ expense });
   } catch (error) {

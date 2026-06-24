@@ -91,6 +91,7 @@ export type ComptaListResult = {
     cashedRevenue: string;
     outstandingRevenue: string;
     totalCost: string;
+    totalExpenses: string;
     netMargin: string;
     marginPct: string;
     salesCount: number;
@@ -268,9 +269,16 @@ export async function listSalesGroupedByCustomer(params: {
     a.lastSoldAt < b.lastSoldAt ? 1 : -1,
   );
 
+  // Dépenses réalisées (BatchExpense) sur la même période, déduites de la marge.
+  const expenseAgg = await prisma.batchExpense.aggregate({
+    _sum: { amount: true },
+    ...(since ? { where: { occurredAt: { gte: since } } } : {}),
+  });
+  const totalExpenses = new Decimal((expenseAgg._sum.amount ?? 0).toString());
+
   const salesCount = sales.length;
   const cashedRevenue = totalRevenueBilled.minus(totalOutstanding);
-  const netMargin = cashedRevenue.minus(totalCost);
+  const netMargin = cashedRevenue.minus(totalCost).minus(totalExpenses);
   const marginPct = cashedRevenue.greaterThan(0)
     ? netMargin.dividedBy(cashedRevenue).times(100).toFixed(1)
     : "0.0";
@@ -285,6 +293,7 @@ export async function listSalesGroupedByCustomer(params: {
       cashedRevenue: cashedRevenue.toFixed(2),
       outstandingRevenue: totalOutstanding.toFixed(2),
       totalCost: totalCost.toFixed(2),
+      totalExpenses: totalExpenses.toFixed(2),
       netMargin: netMargin.toFixed(2),
       marginPct,
       salesCount,

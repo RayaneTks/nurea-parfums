@@ -6,6 +6,8 @@ export async function KpiBlock() {
   const global = await revenueSummary();
   const outstanding = Number(global.outstandingRevenue);
   const hasOutstanding = Number.isFinite(outstanding) && outstanding > 0;
+  const expenses = Number(global.totalExpenses);
+  const hasExpenses = Number.isFinite(expenses) && expenses > 0;
 
   return (
     <div className="grid grid-cols-2 gap-2">
@@ -18,7 +20,7 @@ export async function KpiBlock() {
       <KpiTile
         label="Marge nette"
         value={<Money value={global.netMargin} compact tone="auto" />}
-        hint={`${global.marginPct} %`}
+        hint={hasExpenses ? `${global.marginPct} % · net dépenses` : `${global.marginPct} %`}
       />
       <KpiTile
         label="Panier moyen"
@@ -30,6 +32,12 @@ export async function KpiBlock() {
           label="Reste à encaisser"
           value={<Money value={global.outstandingRevenue} compact tone="danger" />}
           hint="dû par clients"
+        />
+      ) : hasExpenses ? (
+        <KpiTile
+          label="Dépenses"
+          value={<Money value={global.totalExpenses} compact tone="danger" />}
+          hint="déduites de la marge"
         />
       ) : (
         <KpiTile

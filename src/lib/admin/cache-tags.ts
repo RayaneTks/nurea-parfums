@@ -21,6 +21,7 @@ export const tagFor = {
   pricing: (perfumeId: number) => `admin:pricing:${perfumeId}`,
   kpi: () => "admin:kpi",
   pipeline: () => "admin:pipeline",
+  batches: () => "admin:batches",
 } as const;
 
 export type AdminCacheTag = ReturnType<(typeof tagFor)[keyof typeof tagFor]>;
