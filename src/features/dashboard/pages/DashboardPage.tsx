@@ -1,9 +1,12 @@
 import { Suspense } from "react";
+import Link from "next/link";
+import { AlertTriangle } from "lucide-react";
 import { Stack } from "@/ui/primitives/Stack";
 import { Heading } from "@/ui/primitives/Heading";
 import { Skeleton } from "@/ui/primitives/Skeleton";
 import { Card } from "@/ui/primitives/Card";
 import { PageScaffold } from "@/ui/patterns/PageScaffold";
+import { treasurySummary } from "@/server/treasury/queries";
 import { KpiBlock } from "../components/KpiBlock";
 import { KpiSkeletonGrid } from "../components/KpiSkeletonGrid";
 import { PipelineBlock } from "../components/PipelineBlock";
@@ -45,6 +48,30 @@ function ListBlockFallback({ label }: { label: string }) {
   );
 }
 
+async function UnattributedBanner() {
+  const { unattributed } = await treasurySummary();
+  const amount = Number(unattributed);
+  if (!Number.isFinite(amount) || amount <= 0.005) return null;
+  return (
+    <Link
+      href="/admin/compta"
+      prefetch
+      className="block rounded-[14px] border border-[var(--admin-danger-border)] bg-[var(--admin-danger-bg)] p-3 tap-scale"
+    >
+      <span className="flex items-center justify-between gap-2">
+        <span className="flex items-center gap-2 text-[14px] font-semibold text-[var(--admin-danger)]">
+          <AlertTriangle size={16} />
+          {amount.toFixed(2)} € non attribué
+        </span>
+        <span className="text-[13px] font-semibold text-[var(--admin-danger)]">Répartir →</span>
+      </span>
+      <span className="mt-1 block text-[12px] text-[var(--admin-text-muted)]">
+        De l&apos;argent encaissé/dépensé n&apos;est pas affecté à une poche.
+      </span>
+    </Link>
+  );
+}
+
 export function DashboardPage() {
   return (
     <PageScaffold padding={4} ariaLabel="Tableau de bord">
@@ -55,6 +82,10 @@ export function DashboardPage() {
             Vue d&apos;ensemble — ⌘K pour aller plus vite.
           </p>
         </header>
+
+        <Suspense fallback={null}>
+          <UnattributedBanner />
+        </Suspense>
 
         <Suspense fallback={<KpiSkeletonGrid />}>
           <KpiBlock />
