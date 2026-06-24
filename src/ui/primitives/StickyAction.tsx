@@ -20,6 +20,7 @@ type StickyActionProps = {
 export function StickyAction({ children, background = true, className }: StickyActionProps) {
   return (
     <div
+      data-sticky-action
       className={cn(
         "sticky bottom-0 left-0 right-0 z-20 -mx-4 px-4 pt-3",
         background
