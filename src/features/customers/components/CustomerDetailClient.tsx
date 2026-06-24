@@ -13,6 +13,7 @@ import { CustomerHeader } from "./CustomerHeader";
 import { CustomerKpiRow } from "./CustomerKpiRow";
 import { CustomerOrdersHistory } from "./CustomerOrdersHistory";
 import { updateCustomerAction } from "@/server/customers/actions";
+import { useUndo } from "@/app-shell/UndoProvider";
 import type { CustomerDetail } from "@/server/customers/queries";
 import type { OrderStatus } from "@prisma/client";
 
@@ -28,28 +29,38 @@ type CustomerDetailClientProps = {
 
 export function CustomerDetailClient({ customer, orders }: CustomerDetailClientProps) {
   const router = useRouter();
+  const { scheduleDelete } = useUndo();
   const [current, setCurrent] = useState(customer);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [_pending, startTransition] = useTransition();
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const deleteCustomer = async () => {
-    const res = await fetch(`/api/admin/customers/${current.id}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      const msg =
-        (err && typeof err === "object" && "error" in err && typeof err.error === "string"
-          ? err.error
-          : null) ?? "Suppression échouée.";
-      setToast({ type: "error", message: msg });
-      return;
-    }
+    // Suppression différée : retour liste immédiat + filet « Annuler » 5 s (shell).
     setConfirmDelete(false);
+    const id = current.id;
     router.push("/admin/clients");
-    router.refresh();
+    scheduleDelete({
+      message: "Client supprimé",
+      errorMessage: "Suppression échouée.",
+      onUndo: () => router.refresh(),
+      onCommit: async () => {
+        const res = await fetch(`/api/admin/customers/${id}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          const msg =
+            (err && typeof err === "object" && "error" in err && typeof err.error === "string"
+              ? err.error
+              : null) ?? "Suppression échouée.";
+          router.refresh();
+          throw new Error(msg);
+        }
+        router.refresh();
+      },
+    });
   };
 
   const handleNameSave = async (next: string) => {

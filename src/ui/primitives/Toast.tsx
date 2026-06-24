@@ -11,6 +11,9 @@ type ToastProps = {
   message: string;
   duration?: number;
   onClose: () => void;
+  /** Bouton d'action optionnel (ex. « Annuler »). */
+  actionLabel?: string;
+  onAction?: () => void;
 };
 
 const iconByType = {
@@ -25,7 +28,14 @@ const styleByType: Record<ToastType, { bg: string; fg: string; border: string }>
   info: { bg: "var(--admin-info-bg)", fg: "var(--admin-info)", border: "var(--admin-info)" },
 };
 
-export function Toast({ type = "success", message, duration = 3000, onClose }: ToastProps) {
+export function Toast({
+  type = "success",
+  message,
+  duration = 3000,
+  onClose,
+  actionLabel,
+  onAction,
+}: ToastProps) {
   useEffect(() => {
     if (duration <= 0) return;
     const t = setTimeout(onClose, duration);
@@ -54,6 +64,15 @@ export function Toast({ type = "success", message, duration = 3000, onClose }: T
         {iconByType[type]}
       </span>
       <p className="flex-1 text-[14px] leading-snug text-[var(--admin-text)]">{message}</p>
+      {actionLabel && onAction ? (
+        <button
+          type="button"
+          onClick={onAction}
+          className="shrink-0 self-center rounded-lg px-2 py-1 text-[14px] font-semibold text-[var(--admin-accent)] tap-scale hover:bg-[var(--admin-accent-bg)]"
+        >
+          {actionLabel}
+        </button>
+      ) : null}
       <button
         type="button"
         onClick={onClose}
