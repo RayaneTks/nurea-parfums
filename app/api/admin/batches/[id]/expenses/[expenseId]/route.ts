@@ -5,6 +5,7 @@ import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { tagFor } from "@/lib/admin/cache-tags";
+import { reverseMovementsFor } from "@/server/treasury/movements";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -29,9 +30,11 @@ export async function DELETE(
     }
 
     await prisma.batchExpense.delete({ where: { id: expenseId } });
+    await reverseMovementsFor("BatchExpense", expenseId);
     await writeAudit(ctx.sub, "batch.expense.delete", "Batch", id, { expenseId });
     revalidateTag(tagFor.batches(), "default");
     revalidateTag(tagFor.kpi(), "default");
+    revalidateTag(tagFor.treasury(), "default");
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[api/admin/batches/[id]/expenses/[expenseId]][DELETE]", error);

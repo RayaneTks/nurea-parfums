@@ -7,6 +7,9 @@ import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { computeLineTotals, sumSaleTotals } from "@/lib/gestion/calculations";
 import { isValidVolumeMl, parseMoneyField } from "@/lib/gestion/orderLineValidation";
 import { getSaleById } from "@/server/sales/queries";
+import { reverseMovementsFor } from "@/server/treasury/movements";
+import { revalidateTag } from "next/cache";
+import { tagFor } from "@/lib/admin/cache-tags";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -423,9 +426,11 @@ export async function DELETE(
     }
 
     await prisma.sale.delete({ where: { id } });
+    await reverseMovementsFor("Sale", id);
     await writeAudit(ctx.sub, "sale.delete", "Sale", id, {
       orderId: existing.orderId,
     });
+    revalidateTag(tagFor.treasury(), "default");
 
     return NextResponse.json({ ok: true });
   } catch (error) {

@@ -11,6 +11,9 @@ import {
 } from "@/lib/gestion/calculations";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { isValidVolumeMl } from "@/lib/gestion/orderLineValidation";
+import { recordMovement } from "@/server/treasury/movements";
+import { revalidateTag } from "next/cache";
+import { tagFor } from "@/lib/admin/cache-tags";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -40,6 +43,8 @@ type CreateSaleBody = {
   notes?: string | null;
   remainingDue?: number | string | null;
   items?: SaleLineInputBody[];
+  /** Répartition de l'encaissé par poche (ex. 20€ espèces + 30€ Revolut). */
+  payments?: { pocketId?: string | null; amount?: number | string }[];
 };
 
 const saleInclude = {
@@ -345,12 +350,50 @@ export async function POST(request: Request) {
       return created;
     });
 
+    // Trésorerie : l'encaissé (totalRevenue − remainingDue) entre dans une/des poche(s).
+    const cashed = Number(totals.totalRevenue) - remainingDueN;
+    if (cashed > 0.005) {
+      const splits = Array.isArray(body.payments) ? body.payments : [];
+      let attributed = 0;
+      for (const p of splits) {
+        const amt = Number(String(p.amount ?? "").replace(",", "."));
+        if (!Number.isFinite(amt) || amt <= 0) continue;
+        attributed += amt;
+        await recordMovement({
+          pocketId: p.pocketId ?? null,
+          amount: amt,
+          kind: "SALE_IN",
+          label: "Vente",
+          refType: "Sale",
+          refId: sale.id,
+          occurredAt: soldAt,
+          createdById: ctx.sub,
+        });
+      }
+      // Reste non réparti → « Non attribué » (conservation : tout l'encaissé est tracé).
+      const remainder = cashed - attributed;
+      if (remainder > 0.005) {
+        await recordMovement({
+          pocketId: null,
+          amount: remainder,
+          kind: "SALE_IN",
+          label: "Vente (non attribué)",
+          refType: "Sale",
+          refId: sale.id,
+          occurredAt: soldAt,
+          createdById: ctx.sub,
+        });
+      }
+    }
+
     await writeAudit(ctx.sub, "sale.create", "Sale", sale.id, {
       itemCount: normalizedLines.length,
       orderId: linkedOrderId,
       totalRevenue: totals.totalRevenue.toString(),
       totalMargin: totals.totalMargin.toString(),
     });
+
+    revalidateTag(tagFor.treasury(), "default");
 
     return NextResponse.json({ sale });
   } catch (error) {

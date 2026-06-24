@@ -20,6 +20,8 @@ import { PerfumePicker, type PickerResult } from "./PerfumePicker";
 import { SellLineRow, type SellLine } from "./SellLineRow";
 import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
 import { CustomerCombobox, type SelectedCustomer } from "@/components/admin/customers/CustomerCombobox";
+import { PocketSplit, type SplitRow } from "@/features/treasury/components/PocketSplit";
+import { usePockets } from "@/features/treasury/usePockets";
 
 function toNum(v: string): number {
   const n = Number(v.replace(",", "."));
@@ -85,6 +87,8 @@ export function SellPageClient() {
   const [submitting, startTransition] = useTransition();
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [confirmSale, setConfirmSale] = useState(false);
+  const [splitRows, setSplitRows] = useState<SplitRow[]>([]);
+  const { pockets } = usePockets(true);
 
   // Charge order si bridge.
   useEffect(() => {
@@ -250,6 +254,7 @@ export function SellPageClient() {
           unitCostDzd: l.unitCostDzd === "" ? "0" : l.unitCostDzd.replace(",", "."),
           exchangeRate: l.exchangeRate === "" ? "0" : l.exchangeRate.replace(",", "."),
         })),
+        payments: splitRows,
       };
       const r = await fetch("/api/admin/sales", {
         method: "POST",
@@ -417,6 +422,15 @@ export function SellPageClient() {
             ) : null}
           </HStack>
         </Card>
+
+        {lines.length > 0 && pockets.length > 0 && totals.revenue > 0 ? (
+          <Card padding={3}>
+            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--admin-text-muted)]">
+              Encaissement par poche
+            </p>
+            <PocketSplit pockets={pockets} total={totals.revenue} onChange={setSplitRows} />
+          </Card>
+        ) : null}
 
         <div className="admin-sticky-cta-spacer" aria-hidden />
       </Stack>

@@ -6,6 +6,7 @@ import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { tagFor } from "@/lib/admin/cache-tags";
+import { recordMovement } from "@/server/treasury/movements";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -15,6 +16,8 @@ type AddExpenseBody = {
   amount?: number | string;
   occurredAt?: string | null;
   notes?: string | null;
+  /** Poche d'où sort l'argent. null/absent → « Non attribué ». */
+  pocketId?: string | null;
 };
 
 export async function POST(
@@ -75,6 +78,18 @@ export async function POST(
       },
     });
 
+    // Mouvement de trésorerie : l'argent sort d'une poche (ou « Non attribué »).
+    await recordMovement({
+      pocketId: body.pocketId ?? null,
+      amount: amountN,
+      kind: "EXPENSE_OUT",
+      label,
+      refType: "BatchExpense",
+      refId: expense.id,
+      occurredAt,
+      createdById: ctx.sub,
+    });
+
     await writeAudit(ctx.sub, "batch.expense.add", "Batch", id, {
       expenseId: expense.id,
       amount: amountN,
@@ -82,6 +97,7 @@ export async function POST(
 
     revalidateTag(tagFor.batches(), "default");
     revalidateTag(tagFor.kpi(), "default");
+    revalidateTag(tagFor.treasury(), "default");
 
     return NextResponse.json({ expense });
   } catch (error) {
