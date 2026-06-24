@@ -22,10 +22,13 @@ type StickyActionProps = {
 export function StickyAction({ children, className, background = true }: StickyActionProps) {
   return (
     <div
+      // `bottom` suit l'inset clavier iOS pour que le CTA reste au-dessus du clavier.
+      // z-20 reste sous la tab bar (--admin-z-tab-bar = 50) ; le padding scroll du shell dégage la hauteur.
+      style={{ bottom: "var(--admin-keyboard-inset, 0px)" }}
       className={cn(
-        "sticky bottom-0 left-0 right-0 z-20 -mx-5 px-5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] pt-3",
+        "sticky left-0 right-0 z-20 -mx-5 px-5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] pt-3",
         background
-          ? "border-t border-neutral-200/70 bg-white/95 backdrop-blur-md"
+          ? "border-t border-[var(--admin-border)] bg-[var(--admin-surface)]/95 backdrop-blur-md"
           : null,
         className,
       )}

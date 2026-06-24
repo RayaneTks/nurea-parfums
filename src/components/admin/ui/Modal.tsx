@@ -115,8 +115,10 @@ export function Modal({
   return (
     <div
       aria-hidden={!open}
+      // paddingBottom suit l'inset clavier iOS : le sheet (items-end) remonte au-dessus du clavier.
+      style={{ paddingBottom: "var(--admin-keyboard-inset, 0px)" }}
       className={cn(
-        "fixed inset-0 z-[150] max-h-dvh min-h-0 w-full min-w-0 max-w-full overflow-x-clip admin-theme",
+        "fixed inset-0 z-[var(--admin-z-modal)] max-h-dvh min-h-0 w-full min-w-0 max-w-full overflow-x-clip admin-theme",
         "flex items-end justify-center sm:items-center sm:p-4",
         "touch-pan-y overscroll-y-contain bg-[var(--admin-overlay)] backdrop-blur-sm",
         isClosing
@@ -136,7 +138,7 @@ export function Modal({
           "relative w-full min-w-0 max-w-full rounded-t-3xl sm:rounded-3xl",
           "bg-admin-surface border border-admin-border",
           "shadow-admin-xl",
-          "flex max-h-[min(92dvh,calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)))] flex-col",
+          "flex max-h-[min(92dvh,calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-var(--admin-keyboard-inset,0px)))] flex-col",
           isClosing
             ? "animate-out slide-out-to-bottom-full sm:zoom-out-95 sm:slide-out-to-bottom-0 duration-200 ease-out-expo"
             : "animate-in slide-in-from-bottom-full sm:zoom-in-95 sm:slide-in-from-bottom-0 duration-300 ease-out-expo",
