@@ -90,7 +90,11 @@ body.admin-route .nurea-viewport-top-shield {
   --admin-tab-bar-height: var(--admin-tab-bar-shell-height);
   --admin-header-height: 56px;
   --admin-touch-min: 44px;
-  --admin-keyboard-inset: 0px;
+  /* --admin-keyboard-inset : volontairement NON déclaré ici. La valeur runtime
+     est posée sur <html> par useAdminKeyboardInset et hérite dans .admin-theme.
+     La redéclarer ici (même à 0px) masquerait la valeur du hook pour tous les
+     descendants → CTA/sheets passeraient sous le clavier iOS. Fallback 0px géré
+     côté composants via var(--admin-keyboard-inset, 0px). */
   --admin-safe-area-bottom: env(safe-area-inset-bottom, 0px);
   /* Safe-area est DANS les 88px (padding-bottom + border-box), pas en plus. */
   --admin-tab-bar-total-height: var(--admin-tab-bar-shell-height);
