@@ -10,11 +10,15 @@ import { Button } from "@/ui/primitives/Button";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
 import { Money } from "@/ui/patterns/Money";
 import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
+import { cn } from "@/lib/utils";
+import { useUndo } from "@/app-shell/UndoProvider";
 import { OrderDetailHeader } from "./OrderDetailHeader";
 import { OrderSummaryCard } from "./OrderSummaryCard";
-import { OrderItemsList } from "./OrderItemsList";
+import { OrderItemsFulfillment } from "./OrderItemsFulfillment";
 import { OrderActionsBar } from "./OrderActionsBar";
 import { OrderStatusControl } from "./OrderStatusControl";
+import { Truck } from "lucide-react";
+import { deriveFulfillment, remainingToDeliver, type Fulfillment } from "@/domain/order-status";
 import type { OrderDetailRow } from "@/server/orders/queries";
 import type { OrderStatus } from "@prisma/client";
 
@@ -45,28 +49,64 @@ type OrderDetailClientProps = {
 
 export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps) {
   const router = useRouter();
+  const { scheduleDelete } = useUndo();
   const [current, setCurrent] = useState(order);
+  const [fulfillment, setFulfillment] = useState<Fulfillment>(() =>
+    deriveFulfillment(order.items),
+  );
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
-  const [_pending, startTransition] = useTransition();
+  const [pending, startTransition] = useTransition();
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const deleteOrder = async () => {
-    const res = await fetch(`/api/admin/orders/${order.id}`, {
-      method: "DELETE",
-      credentials: "include",
+  const canDeliver = current.status === "READY" && !current.hasSale;
+  const remaining = remainingToDeliver(current.items);
+  const deliveredUnits = current.items.reduce((acc, it) => acc + it.deliveredQuantity, 0);
+  const totalUnits = current.items.reduce((acc, it) => acc + it.quantity, 0);
+
+  const markDelivered = () => {
+    startTransition(async () => {
+      const res = await fetch(`/api/admin/orders/${order.id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "DELIVERED" }),
+      });
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({}))) as { error?: string };
+        setToast({ type: "error", message: err.error ?? "Impossible de marquer livrée." });
+        return;
+      }
+      setCurrent({ ...current, status: "DELIVERED" });
+      setToast({ type: "success", message: "Commande livrée." });
+      router.refresh();
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      const msg =
-        (err && typeof err === "object" && "error" in err && typeof err.error === "string"
-          ? err.error
-          : null) ?? "Suppression échouée.";
-      setToast({ type: "error", message: msg });
-      return;
-    }
+  };
+
+  const deleteOrder = async () => {
+    // Suppression différée : retour liste immédiat + filet « Annuler » 5 s (shell).
     setConfirmDelete(false);
     router.push("/admin/ordres");
-    router.refresh();
+    scheduleDelete({
+      message: "Commande supprimée",
+      errorMessage: "Suppression échouée.",
+      onUndo: () => router.refresh(),
+      onCommit: async () => {
+        const res = await fetch(`/api/admin/orders/${order.id}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          const msg =
+            (err && typeof err === "object" && "error" in err && typeof err.error === "string"
+              ? err.error
+              : null) ?? "Suppression échouée.";
+          router.refresh();
+          throw new Error(msg);
+        }
+        router.refresh();
+      },
+    });
   };
 
   const handleCustomerNameSave = async (next: string) => {
@@ -148,10 +188,51 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
         ) : null}
 
         <div>
-          <h3 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--admin-text-muted)]">
-            Articles ({current.items.length})
-          </h3>
-          <OrderItemsList items={current.items} />
+          <div className="mb-2 flex items-center justify-between px-1">
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--admin-text-muted)]">
+              Articles ({current.items.length})
+            </h3>
+            {totalUnits > 0 && current.status !== "CANCELLED" ? (
+              <span
+                className={cn(
+                  "text-[11px] font-semibold tabular-nums",
+                  fulfillment === "full"
+                    ? "text-[var(--admin-success)]"
+                    : fulfillment === "partial"
+                      ? "text-[var(--admin-warning)]"
+                      : "text-[var(--admin-text-subtle)]",
+                )}
+              >
+                Livré {deliveredUnits}/{totalUnits}
+                {remaining > 0 && fulfillment !== "none"
+                  ? ` · reste ${remaining} article${remaining > 1 ? "s" : ""}`
+                  : ""}
+              </span>
+            ) : null}
+          </div>
+          <OrderItemsFulfillment
+            orderId={current.id}
+            items={current.items}
+            editable={canDeliver}
+            onFulfillmentChange={(next, items) => {
+              setFulfillment(next);
+              setCurrent((c) => ({ ...c, items }));
+            }}
+            onError={(message) => setToast({ type: "error", message })}
+          />
+          {canDeliver && fulfillment === "full" ? (
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              className="mt-3"
+              disabled={pending}
+              leadingIcon={<Truck size={16} />}
+              onClick={markDelivered}
+            >
+              Tout est livré — marquer livrée
+            </Button>
+          ) : null}
         </div>
 
         <OrderActionsBar order={current} />

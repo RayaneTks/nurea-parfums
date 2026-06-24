@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import Decimal from "decimal.js-light";
 import type { OrderStatus } from "@prisma/client";
+import { deriveFulfillment, type Fulfillment } from "@/domain/order-status";
 
 export type OrderListRow = {
   id: string;
@@ -15,6 +16,8 @@ export type OrderListRow = {
   depositPaid: string;
   due: string;
   hasSale: boolean;
+  /** Avancement livraison dérivé des lignes (none/partial/full). */
+  fulfillment: Fulfillment;
 };
 
 export type OrderDetailRow = OrderListRow & {
@@ -23,6 +26,7 @@ export type OrderDetailRow = OrderListRow & {
     id: string;
     perfumeId: number | null;
     quantity: number;
+    deliveredQuantity: number;
     volumeMl: number;
     unitPrice: string;
     unitCostDzd: string | null;
@@ -99,7 +103,7 @@ export async function listOrders(filter: OrdersFilter = "all"): Promise<OrdersLi
       orderedAt: true,
       deliveryAt: true,
       status: true,
-      items: { select: { unitPrice: true, quantity: true } },
+      items: { select: { unitPrice: true, quantity: true, deliveredQuantity: true } },
       payments: { select: { type: true, amount: true } },
       sale: { select: { id: true } },
       customer: { select: { fullName: true } },
@@ -124,6 +128,7 @@ export async function listOrders(filter: OrdersFilter = "all"): Promise<OrdersLi
       depositPaid: deposit.minus(refund).toFixed(2),
       due: due.toFixed(2),
       hasSale: o.sale !== null,
+      fulfillment: deriveFulfillment(o.items),
     };
   });
 
@@ -204,6 +209,7 @@ export async function getOrderForDetail(orderId: string): Promise<OrderDetailRow
           id: true,
           perfumeId: true,
           quantity: true,
+          deliveredQuantity: true,
           volumeMl: true,
           unitPrice: true,
           unitCostDzd: true,
@@ -240,6 +246,7 @@ export async function getOrderForDetail(orderId: string): Promise<OrderDetailRow
     depositPaid: deposit.minus(refund).toFixed(2),
     due: due.toFixed(2),
     hasSale: o.sale !== null,
+    fulfillment: deriveFulfillment(o.items),
     notes: o.notes,
     items: o.items.map((it) => {
       const snap = it.perfumeSnapshot;
@@ -258,6 +265,7 @@ export async function getOrderForDetail(orderId: string): Promise<OrderDetailRow
         id: it.id,
         perfumeId: it.perfumeId,
         quantity: it.quantity,
+        deliveredQuantity: it.deliveredQuantity,
         volumeMl: it.volumeMl,
         unitPrice: it.unitPrice.toString(),
         unitCostDzd: it.unitCostDzd?.toString() ?? null,

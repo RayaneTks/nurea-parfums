@@ -210,6 +210,8 @@ model OrderItem {
   /// Nullable pour parfums hors-catalogue (one-shots). Si null, perfumeSnapshot obligatoire.
   perfumeId       Int?
   quantity        Int      @default(1)
+  /// Quantité déjà livrée pour cette ligne (0..quantity). Suivi livraison partielle.
+  deliveredQuantity Int    @default(0)
   note            String?
   /// Flacon 30, 50 ou 100 ml
   volumeMl        Int      @default(100)

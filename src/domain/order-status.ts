@@ -93,6 +93,41 @@ export function canTransition(
   }
 }
 
+/**
+ * Avancement de la livraison d'une commande, dérivé des quantités livrées par ligne.
+ *
+ * - `none`    : rien livré (toutes les lignes à 0).
+ * - `partial` : au moins une ligne livrée mais pas tout.
+ * - `full`    : chaque ligne entièrement livrée (deliveredQuantity >= quantity).
+ *
+ * Indépendant du `OrderStatus` (qui reste order-level) : une commande `READY`
+ * peut être `partial` tant que tout n'est pas livré.
+ */
+export type Fulfillment = "none" | "partial" | "full";
+
+type FulfillmentLine = { quantity: number; deliveredQuantity: number };
+
+export function deriveFulfillment(items: readonly FulfillmentLine[]): Fulfillment {
+  if (items.length === 0) return "none";
+  let anyDelivered = false;
+  let allDelivered = true;
+  for (const it of items) {
+    const delivered = Math.max(0, Math.min(it.deliveredQuantity, it.quantity));
+    if (delivered > 0) anyDelivered = true;
+    if (delivered < it.quantity) allDelivered = false;
+  }
+  if (allDelivered) return "full";
+  return anyDelivered ? "partial" : "none";
+}
+
+/** Nombre de lignes pas encore entièrement livrées (pour « Reste à livrer : N article(s) »). */
+export function remainingToDeliver(items: readonly FulfillmentLine[]): number {
+  return items.reduce((acc, it) => {
+    const delivered = Math.max(0, Math.min(it.deliveredQuantity, it.quantity));
+    return acc + (delivered < it.quantity ? 1 : 0);
+  }, 0);
+}
+
 export function statusLabel(s: OrderStatus): string {
   switch (s) {
     case "PENDING": return "En attente";
