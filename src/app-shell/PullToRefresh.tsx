@@ -36,6 +36,8 @@ export function PullToRefresh({ scrollRef }: PullToRefreshProps) {
   return (
     <div
       aria-hidden
+      data-ptr-indicator
+      data-ptr-ready={ready ? "true" : "false"}
       className="pointer-events-none absolute inset-x-0 z-[var(--admin-z-app-header)] flex justify-center"
       style={{
         top: "var(--admin-header-height)",
