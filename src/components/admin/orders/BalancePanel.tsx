@@ -10,6 +10,8 @@ import { Toast, type ToastType } from "@/ui/primitives/Toast";
 import { Sheet } from "@/ui/primitives/Sheet";
 import { Money } from "@/ui/patterns/Money";
 import { recordPaymentAction, voidPaymentAction } from "@/server/orders/paymentActions";
+import { PocketSelector } from "@/features/treasury/components/PocketSelector";
+import { usePockets } from "@/features/treasury/usePockets";
 import type { OrderBalance, PaymentRow } from "@/server/orders/payments";
 import type { PaymentTypeValue } from "@/schemas/payment";
 
@@ -53,6 +55,8 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("");
   const [note, setNote] = useState("");
+  const [pocketId, setPocketId] = useState<string | null>(null);
+  const { pockets } = usePockets(sheetOpen);
   const [pending, startTransition] = useTransition();
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
 
@@ -94,12 +98,14 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
         amount: amount.replace(",", "."),
         method: method.trim() || null,
         note: note.trim() || null,
+        pocketId,
       });
       if (!result.ok) {
         setToast({ type: "error", message: result.error });
         return;
       }
       setToast({ type: "success", message: "Paiement enregistré." });
+      setPocketId(null);
       setSheetOpen(false);
       await refreshFromServer();
     });
@@ -295,6 +301,17 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
             autoFocus
             enterKeyHint="next"
           />
+          {pockets.length > 0 ? (
+            <div>
+              <p className="mb-1.5 text-[13px] font-medium text-[var(--admin-text-muted)]">
+                Reçu dans (poche)
+              </p>
+              <PocketSelector pockets={pockets} value={pocketId} onChange={setPocketId} />
+              <p className="mt-1 text-[11px] text-[var(--admin-text-subtle)]">
+                Sans choix → « Non attribué », à répartir plus tard.
+              </p>
+            </div>
+          ) : null}
           <Input
             label="Méthode (opt.)"
             variant="elevated"

@@ -9,6 +9,8 @@ import { Input } from "@/ui/primitives/Input";
 import { Button } from "@/ui/primitives/Button";
 import { EmptyState } from "@/ui/primitives/EmptyState";
 import { Money } from "@/ui/patterns/Money";
+import { PocketSelector } from "@/features/treasury/components/PocketSelector";
+import { usePockets } from "@/features/treasury/usePockets";
 import type { BatchExpenseRow } from "@/server/batches/queries";
 
 type BatchExpensesSectionProps = {
@@ -38,7 +40,9 @@ export function BatchExpensesSection({
   const [adding, setAdding] = useState(false);
   const [label, setLabel] = useState("");
   const [amount, setAmount] = useState("");
+  const [pocketId, setPocketId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const { pockets } = usePockets(adding);
 
   const submit = () => {
     const lbl = label.trim();
@@ -57,7 +61,7 @@ export function BatchExpensesSection({
           method: "POST",
           credentials: "include",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ label: lbl, amount: amt.toFixed(2) }),
+          body: JSON.stringify({ label: lbl, amount: amt.toFixed(2), pocketId }),
         });
         if (!r.ok) {
           const j = (await r.json().catch(() => ({}))) as { error?: string };
@@ -66,6 +70,7 @@ export function BatchExpensesSection({
         }
         setLabel("");
         setAmount("");
+        setPocketId(null);
         setAdding(false);
         onChange();
         router.refresh();
@@ -208,6 +213,17 @@ export function BatchExpensesSection({
             placeholder="0,00"
             enterKeyHint="done"
           />
+          {pockets.length > 0 ? (
+            <div>
+              <p className="mb-1.5 text-[13px] font-medium text-[var(--admin-text-muted)]">
+                Payé depuis (poche)
+              </p>
+              <PocketSelector pockets={pockets} value={pocketId} onChange={setPocketId} />
+              <p className="mt-1 text-[11px] text-[var(--admin-text-subtle)]">
+                Sans choix → « Non attribué », à répartir plus tard.
+              </p>
+            </div>
+          ) : null}
           <div className="flex gap-2 pt-1">
             <Button
               type="button"

@@ -10,6 +10,7 @@ import { paymentCreateSchema, paymentVoidSchema } from "@/schemas/payment";
 import type { ActionResult } from "@/server/customers/actions";
 import { computeOrderBalance } from "./payments";
 import { canTransition } from "@/domain/order-status";
+import { recordMovement, reverseMovementsFor } from "@/server/treasury/movements";
 import type { OrderStatus } from "@prisma/client";
 
 async function refreshOrderCache(orderId: string): Promise<void> {
@@ -33,7 +34,7 @@ export async function recordPaymentAction(
     const first = parsed.error.issues[0];
     return { ok: false, error: first?.message ?? "Saisie invalide." };
   }
-  const { orderId, type, amount, paidAt, method, note } = parsed.data;
+  const { orderId, type, amount, paidAt, method, note, pocketId } = parsed.data;
   const numAmount = Number(amount);
   if (numAmount <= 0) {
     return { ok: false, error: "Montant doit être > 0." };
@@ -62,6 +63,17 @@ export async function recordPaymentAction(
     });
 
     await refreshOrderCache(orderId);
+
+    // Mouvement de trésorerie : l'argent entre (acompte/solde) ou sort (refund) d'une poche.
+    await recordMovement({
+      pocketId: pocketId ?? null,
+      amount,
+      kind: type === "DEPOSIT" ? "DEPOSIT_IN" : type === "BALANCE" ? "BALANCE_IN" : "REFUND_OUT",
+      label: type === "DEPOSIT" ? "Acompte" : type === "BALANCE" ? "Solde" : "Remboursement",
+      refType: "PaymentTransaction",
+      refId: payment.id,
+      occurredAt: paidAt ?? new Date(),
+    });
 
     // Auto-transition PENDING → READY au 1er DEPOSIT positif.
     let nextStatus: OrderStatus = order.status;
@@ -93,6 +105,7 @@ export async function recordPaymentAction(
     revalidateTag(tagFor.orders(), "default");
     revalidateTag(tagFor.order(orderId), "default");
     revalidateTag(tagFor.pipeline(), "default");
+    revalidateTag(tagFor.treasury(), "default");
     return { ok: true, data: { id: payment.id, orderStatus: nextStatus } };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Enregistrement impossible." };
@@ -127,11 +140,15 @@ export async function voidPaymentAction(input: unknown): Promise<ActionResult<{ 
       });
     });
 
+    // Annule aussi le mouvement de trésorerie du paiement (l'argent ressort de la poche).
+    await reverseMovementsFor("PaymentTransaction", paymentId);
+
     await refreshOrderCache(payment.orderId);
     await writeAudit(undefined, "order.payment.void", "Order", payment.orderId, {
       voidedPaymentId: paymentId,
     });
     revalidatePath(`/admin/ordres/${payment.orderId}`);
+    revalidateTag(tagFor.treasury(), "default");
     return { ok: true, data: { id: paymentId } };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Annulation impossible." };

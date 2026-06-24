@@ -16,6 +16,8 @@ export const paymentCreateSchema = z.object({
   paidAt: z.coerce.date().optional(),
   method: z.string().trim().max(50).nullable().optional(),
   note: z.string().trim().max(500).nullable().optional(),
+  /** Poche qui reçoit (acompte/solde) ou rend (refund) l'argent. null → « Non attribué ». */
+  pocketId: z.string().min(1).nullable().optional(),
 });
 
 export const paymentVoidSchema = z.object({
