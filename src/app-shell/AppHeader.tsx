@@ -2,15 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Command as CommandIcon, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type AppHeaderProps = {
   onOpenCommandPalette: () => void;
-  onOpenSearch?: () => void;
 };
 
-export function AppHeader({ onOpenCommandPalette, onOpenSearch }: AppHeaderProps) {
+export function AppHeader({ onOpenCommandPalette }: AppHeaderProps) {
   return (
     <header
       className={cn(
@@ -35,26 +34,15 @@ export function AppHeader({ onOpenCommandPalette, onOpenSearch }: AppHeaderProps
         />
       </Link>
 
-      <div className="flex items-center gap-1">
-        <button
-          type="button"
-          onClick={onOpenCommandPalette}
-          aria-label="Palette de commandes"
-          className="inline-flex h-11 w-11 min-h-[var(--admin-touch-min)] min-w-[var(--admin-touch-min)] items-center justify-center rounded-full text-[var(--admin-text-muted)] tap-scale hover:bg-[var(--admin-surface-muted)]"
-        >
-          <CommandIcon size={20} aria-hidden />
-        </button>
-        {onOpenSearch ? (
-          <button
-            type="button"
-            onClick={onOpenSearch}
-            aria-label="Rechercher"
-            className="inline-flex h-11 w-11 min-h-[var(--admin-touch-min)] min-w-[var(--admin-touch-min)] items-center justify-center rounded-full text-[var(--admin-accent)] tap-scale hover:bg-[var(--admin-accent-bg)]"
-          >
-            <Search size={20} strokeWidth={2.2} aria-hidden />
-          </button>
-        ) : null}
-      </div>
+      <button
+        type="button"
+        onClick={onOpenCommandPalette}
+        aria-label="Rechercher"
+        className="inline-flex h-11 min-h-[var(--admin-touch-min)] items-center gap-2 rounded-full bg-[var(--admin-surface-muted)] pl-3 pr-4 text-[var(--admin-text-muted)] tap-scale hover:bg-[var(--admin-accent-bg)] hover:text-[var(--admin-accent)]"
+      >
+        <Search size={18} strokeWidth={2.2} aria-hidden />
+        <span className="text-[13px] font-medium">Rechercher</span>
+      </button>
     </header>
   );
 }
