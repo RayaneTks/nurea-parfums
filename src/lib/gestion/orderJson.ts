@@ -22,6 +22,7 @@ type OrderWithItems = {
     orderId: string;
     perfumeId: number | null;
     quantity: number;
+    deliveredQuantity?: number;
     note: string | null;
     volumeMl: number | null;
     unitPrice: Prisma.Decimal | null;
@@ -63,6 +64,7 @@ export function serializeOrder(order: OrderWithItems) {
       orderId: it.orderId,
       perfumeId: it.perfumeId,
       quantity: it.quantity,
+      deliveredQuantity: it.deliveredQuantity ?? 0,
       note: it.note,
       volumeMl: it.volumeMl ?? 100,
       unitPrice: dec(it.unitPrice).toString(),

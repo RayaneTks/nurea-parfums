@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { canTransition, type TransitionContext } from "../order-status";
+import {
+  canTransition,
+  deriveFulfillment,
+  remainingToDeliver,
+  type TransitionContext,
+} from "../order-status";
 
 const base: TransitionContext = {
   depositPaidTotal: 0,
@@ -69,5 +74,50 @@ describe("OrderStatus.canTransition", () => {
 
   it("same status rejects", () => {
     expect(canTransition("PENDING", "PENDING", base).ok).toBe(false);
+  });
+});
+
+describe("deriveFulfillment", () => {
+  it("none when nothing delivered", () => {
+    expect(deriveFulfillment([{ quantity: 2, deliveredQuantity: 0 }])).toBe("none");
+  });
+
+  it("partial when some but not all delivered", () => {
+    expect(deriveFulfillment([{ quantity: 2, deliveredQuantity: 1 }])).toBe("partial");
+    expect(
+      deriveFulfillment([
+        { quantity: 1, deliveredQuantity: 1 },
+        { quantity: 1, deliveredQuantity: 0 },
+      ]),
+    ).toBe("partial");
+  });
+
+  it("full when every line fully delivered", () => {
+    expect(
+      deriveFulfillment([
+        { quantity: 2, deliveredQuantity: 2 },
+        { quantity: 1, deliveredQuantity: 1 },
+      ]),
+    ).toBe("full");
+  });
+
+  it("clamps over-delivery to full", () => {
+    expect(deriveFulfillment([{ quantity: 1, deliveredQuantity: 5 }])).toBe("full");
+  });
+
+  it("empty order is none", () => {
+    expect(deriveFulfillment([])).toBe("none");
+  });
+});
+
+describe("remainingToDeliver", () => {
+  it("counts lines not fully delivered", () => {
+    expect(
+      remainingToDeliver([
+        { quantity: 2, deliveredQuantity: 2 },
+        { quantity: 2, deliveredQuantity: 1 },
+        { quantity: 1, deliveredQuantity: 0 },
+      ]),
+    ).toBe(2);
   });
 });

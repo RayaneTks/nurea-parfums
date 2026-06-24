@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar } from "@/ui/primitives/Avatar";
+import { Badge } from "@/ui/primitives/Badge";
 import { ListRow } from "@/ui/primitives/ListRow";
 import { Money } from "@/ui/patterns/Money";
 import { RelativeTime } from "@/ui/patterns/RelativeTime";
@@ -46,7 +47,14 @@ export function OrderListItem({ order }: OrderListItemProps) {
       trailing={
         <div className="flex flex-col items-end gap-1">
           <Money value={order.total} bold />
-          <OrderStatusBadge status={order.status} />
+          <div className="flex items-center gap-1">
+            {order.fulfillment === "partial" && order.status !== "DELIVERED" ? (
+              <Badge tone="warning" size="sm">
+                Partiel
+              </Badge>
+            ) : null}
+            <OrderStatusBadge status={order.status} />
+          </div>
         </div>
       }
       chevron
