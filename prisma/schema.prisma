@@ -351,3 +351,65 @@ model SaleItem {
   @@index([saleId])
   @@index([perfumeId])
 }
+
+/// Trésorerie — « poche » où se trouve l'argent (espèces, Revolut, avance fournisseur…).
+/// Solde = openingBalance + Σ(movements.amount). Une poche système « Non attribué »
+/// (isSystem) recueille tout mouvement saisi sans poche, à répartir ensuite.
+enum PocketKind {
+  CASH
+  BANK
+  SUPPLIER
+  OTHER
+  UNASSIGNED
+}
+
+model Pocket {
+  id             String         @id @default(cuid())
+  name           String
+  kind           PocketKind     @default(OTHER)
+  /// Montant réel à la création (point de départ). 0 par défaut.
+  openingBalance Decimal        @default(0) @db.Decimal(10, 2)
+  archived       Boolean        @default(false)
+  /// true pour la poche système « Non attribué » (non supprimable, unique).
+  isSystem       Boolean        @default(false)
+  sortOrder      Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  movements      CashMovement[]
+
+  @@index([archived])
+}
+
+enum CashMovementKind {
+  OPENING
+  SALE_IN
+  DEPOSIT_IN
+  BALANCE_IN
+  REFUND_OUT
+  EXPENSE_OUT
+  SUPPLIER_OUT
+  TRANSFER
+  ADJUSTMENT
+}
+
+/// Mouvement d'argent affectant une poche. amount signé : + entrée, − sortie.
+model CashMovement {
+  id              String           @id @default(cuid())
+  pocketId        String
+  pocket          Pocket           @relation(fields: [pocketId], references: [id], onDelete: Cascade)
+  amount          Decimal          @db.Decimal(10, 2)
+  kind            CashMovementKind
+  occurredAt      DateTime         @default(now())
+  label           String?
+  /// Lien souple vers l'origine pour réversibilité (Sale, PaymentTransaction, BatchExpense, Manual).
+  refType         String?
+  refId           String?
+  /// Regroupe les 2 lignes d'un transfert entre poches.
+  transferGroupId String?
+  createdById     String?
+  createdAt       DateTime         @default(now())
+
+  @@index([pocketId])
+  @@index([refType, refId])
+  @@index([transferGroupId])
+}
