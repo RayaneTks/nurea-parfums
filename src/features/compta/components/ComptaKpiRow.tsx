@@ -9,6 +9,8 @@ type ComptaKpiRowProps = {
 export function ComptaKpiRow({ summary }: ComptaKpiRowProps) {
   const debt = Number(summary.outstandingRevenue ?? "0");
   const hasDebt = Number.isFinite(debt) && debt > 0;
+  const expenses = Number(summary.totalExpenses ?? "0");
+  const hasExpenses = Number.isFinite(expenses) && expenses > 0;
 
   return (
     <div className="space-y-2 min-w-0">
@@ -29,7 +31,7 @@ export function ComptaKpiRow({ summary }: ComptaKpiRowProps) {
             <Money value={summary.netMargin} compact tone="auto" />
           </p>
           <p className="mt-0.5 text-[10px] sm:text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
-            {summary.marginPct}%
+            {summary.marginPct}%{hasExpenses ? " · net dépenses" : ""}
           </p>
         </Card>
         <Card padding={3} tone="surface">
@@ -44,6 +46,21 @@ export function ComptaKpiRow({ summary }: ComptaKpiRowProps) {
           </p>
         </Card>
       </div>
+      {hasExpenses ? (
+        <Card padding={3} tone="alt">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[12px] font-medium text-[var(--admin-text)]">
+              Dépenses déduites
+            </p>
+            <span
+              className="tnum whitespace-nowrap text-[16px] font-bold"
+              style={{ color: "var(--admin-danger)" }}
+            >
+              −{expenses.toFixed(0)} €
+            </span>
+          </div>
+        </Card>
+      ) : null}
       {hasDebt ? (
         <Card padding={3} tone="alt">
           <div className="flex items-center justify-between gap-2">

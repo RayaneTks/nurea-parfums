@@ -27,7 +27,8 @@ export function daysAgo(n: number, from: Date = new Date()): Date {
  *  - cashedRevenue = totalRevenue facturé − remainingDue (encaissé réel).
  *  - outstandingRevenue = somme remainingDue (reste à encaisser).
  *  - totalCost = coût d'achat (déjà sorti de trésorerie quand on a acheté le parfum).
- *  - netMargin = cashedRevenue − totalCost. C'est l'argent concret en poche.
+ *  - totalExpenses = dépenses réalisées (BatchExpense : transport, douane, billet…).
+ *  - netMargin = cashedRevenue − totalCost − totalExpenses. Argent concret restant.
  *  - marginPct calculé sur cashedRevenue.
  *  - avgCashedValue = panier moyen basé sur l'encaissé.
  */
@@ -35,6 +36,7 @@ export type RevenueSummary = {
   cashedRevenue: string;
   outstandingRevenue: string;
   totalCost: string;
+  totalExpenses: string;
   netMargin: string;
   marginPct: string;
   count: number;
@@ -42,29 +44,42 @@ export type RevenueSummary = {
 };
 
 const cachedRevenueSummaryGlobal = unstable_cache(
-  async () =>
-    prisma.sale.aggregate({
-      _sum: {
-        totalRevenue: true,
-        totalCost: true,
-        remainingDue: true,
-      },
-      _count: true,
-    }),
-  ["kpi-revenue-summary-cash-v2"],
-  { tags: [tagFor.kpi(), tagFor.sales()], revalidate: 60 },
+  async () => {
+    const [sales, expenses] = await Promise.all([
+      prisma.sale.aggregate({
+        _sum: {
+          totalRevenue: true,
+          totalCost: true,
+          remainingDue: true,
+        },
+        _count: true,
+      }),
+      prisma.batchExpense.aggregate({ _sum: { amount: true } }),
+    ]);
+    return {
+      totalRevenue: (sales._sum.totalRevenue ?? 0).toString(),
+      totalCost: (sales._sum.totalCost ?? 0).toString(),
+      remainingDue: (sales._sum.remainingDue ?? 0).toString(),
+      count: sales._count,
+      expenses: (expenses._sum.amount ?? 0).toString(),
+    };
+  },
+  ["kpi-revenue-summary-cash-v3"],
+  { tags: [tagFor.kpi(), tagFor.sales(), tagFor.batches()], revalidate: 60 },
 );
 
 export async function revenueSummary(): Promise<RevenueSummary> {
   const agg = await cachedRevenueSummaryGlobal();
 
-  const totalRevenue = new Decimal((agg._sum.totalRevenue ?? 0).toString());
-  const totalCost = new Decimal((agg._sum.totalCost ?? 0).toString());
-  const outstanding = new Decimal((agg._sum.remainingDue ?? 0).toString());
-  const count = agg._count;
+  const totalRevenue = new Decimal(agg.totalRevenue);
+  const totalCost = new Decimal(agg.totalCost);
+  const outstanding = new Decimal(agg.remainingDue);
+  const totalExpenses = new Decimal(agg.expenses);
+  const count = agg.count;
 
   const cashedRevenue = totalRevenue.minus(outstanding);
-  const netMargin = cashedRevenue.minus(totalCost);
+  // Marge réelle : on déduit le coût d'achat ET les dépenses réalisées.
+  const netMargin = cashedRevenue.minus(totalCost).minus(totalExpenses);
 
   const marginPct = cashedRevenue.greaterThan(0)
     ? netMargin.dividedBy(cashedRevenue).times(100).toFixed(1)
@@ -77,6 +92,7 @@ export async function revenueSummary(): Promise<RevenueSummary> {
     cashedRevenue: cashedRevenue.toFixed(2),
     outstandingRevenue: outstanding.toFixed(2),
     totalCost: totalCost.toFixed(2),
+    totalExpenses: totalExpenses.toFixed(2),
     netMargin: netMargin.toFixed(2),
     marginPct,
     count,
