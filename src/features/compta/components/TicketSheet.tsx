@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Trash2, AlertCircle } from "lucide-react";
 import { Sheet } from "@/ui/primitives/Sheet";
+import { ShareButton } from "@/ui/patterns/ShareButton";
+import { buildSaleShareText } from "@/lib/share";
 import { Button } from "@/ui/primitives/Button";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
@@ -297,6 +299,26 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
               onCustomerContactChange={ticket.setCustomerContact}
             />
             <TicketTotals sale={sale} />
+            {ticket.mode === "view" ? (
+              <ShareButton
+                fullWidth
+                label="Partager le reçu au client"
+                title="Reçu de vente"
+                text={buildSaleShareText({
+                  customerName: ticket.draft.customerName,
+                  soldAt: sale.soldAt,
+                  total: sale.totalRevenue,
+                  items: sale.items.map((it) => ({
+                    name: it.snapshot.name,
+                    brandName: it.snapshot.brandName,
+                    quantity: it.quantity,
+                    volumeMl: it.volumeMl ?? 100,
+                    unitPrice: it.unitPrice,
+                  })),
+                })}
+                onFeedback={(message, type) => setToast({ type, message })}
+              />
+            ) : null}
             <TicketBatchPicker
               saleId={sale.id}
               current={sale.batch}

@@ -12,6 +12,8 @@ import { Money } from "@/ui/patterns/Money";
 import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import { useUndo } from "@/app-shell/UndoProvider";
+import { ShareButton } from "@/ui/patterns/ShareButton";
+import { buildOrderShareText } from "@/lib/share";
 import { OrderDetailHeader } from "./OrderDetailHeader";
 import { OrderSummaryCard } from "./OrderSummaryCard";
 import { OrderItemsFulfillment } from "./OrderItemsFulfillment";
@@ -236,6 +238,28 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
         </div>
 
         <OrderActionsBar order={current} />
+
+        <ShareButton
+          fullWidth
+          label="Partager le récap au client"
+          title="Récap commande"
+          text={buildOrderShareText({
+            customerName: current.customerName,
+            total: current.total,
+            depositPaid: current.depositPaid,
+            due: current.due,
+            deliveryAt: current.deliveryAt,
+            items: current.items.map((it) => ({
+              name: it.snapshot.name,
+              brandName: it.snapshot.brandName,
+              quantity: it.quantity,
+              volumeMl: it.volumeMl,
+              unitPrice: it.unitPrice,
+              isGift: it.isGift,
+            })),
+          })}
+          onFeedback={(message, type) => setToast({ type, message })}
+        />
 
         {!current.hasSale ? (
           <Button
