@@ -38,6 +38,7 @@ type OrderItemInput = {
   unitCost?: number | string;
   unitCostDzd?: number | string | null;
   exchangeRate?: number | string | null;
+  isGift?: boolean;
 };
 
 type CreateOrderBody = {
@@ -140,6 +141,7 @@ export async function POST(request: Request) {
       quantity: number;
       note: string | null;
       volumeMl: number;
+      isGift: boolean;
       unitPrice: Prisma.Decimal;
       unitCost: Prisma.Decimal;
       unitCostDzd: Prisma.Decimal | null;
@@ -194,6 +196,7 @@ export async function POST(request: Request) {
         quantity: Math.floor(quantity),
         note: raw.note?.trim() || null,
         volumeMl: vol,
+        isGift: Boolean(raw.isGift),
         unitPrice: new Prisma.Decimal(up),
         unitCost: new Prisma.Decimal(uc),
         unitCostDzd: ucd !== null ? new Prisma.Decimal(ucd) : null,

@@ -219,6 +219,8 @@ model OrderItem {
   unitPrice       Decimal  @default(0) @db.Decimal(10, 2)
   /// Coût de revient unitaire (€) - Calculé via unitCostDzd / exchangeRate
   unitCost        Decimal  @default(0) @db.Decimal(10, 2)
+  /// Don : parfum offert (prix 0 autorisé, coût de revient compté en perte).
+  isGift          Boolean  @default(false)
   /// Coût d'achat en DZD
   unitCostDzd     Decimal? @db.Decimal(10, 2)
   /// Taux de change (ex: 277)
@@ -340,6 +342,8 @@ model SaleItem {
   volumeMl        Int?
   unitPrice       Decimal  @db.Decimal(10, 2)
   unitCost        Decimal  @db.Decimal(10, 2)
+  /// Don : parfum offert (prix 0, coût compté en perte).
+  isGift          Boolean  @default(false)
   unitCostDzd     Decimal? @db.Decimal(10, 2)
   exchangeRate    Decimal? @db.Decimal(10, 2)
   lineRevenue     Decimal  @db.Decimal(10, 2)

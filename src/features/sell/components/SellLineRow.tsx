@@ -1,12 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { Trash2 } from "lucide-react";
+import { Gift, Trash2 } from "lucide-react";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Stepper } from "@/ui/primitives/Stepper";
 import { Chip } from "@/ui/primitives/Chip";
 import { Input } from "@/ui/primitives/Input";
 import { Money } from "@/ui/patterns/Money";
+import { cn } from "@/lib/utils";
 
 const VOLUMES = [30, 50, 100] as const;
 
@@ -19,6 +20,8 @@ export type SellLine = {
   unitPrice: string;
   unitCostDzd: string;
   exchangeRate: string;
+  /** Don : parfum offert (prix 0, coût compté). */
+  isGift?: boolean;
 };
 
 function lineTotal(unitPrice: string, qty: number): number {
@@ -89,8 +92,27 @@ export function SellLineRow({ line, onPatch, onRemove }: SellLineRowProps) {
             value={line.quantity}
             onChange={(n) => onPatch(line.key, { quantity: n })}
           />
+          <button
+            type="button"
+            aria-pressed={!!line.isGift}
+            onClick={() =>
+              onPatch(line.key, line.isGift ? { isGift: false } : { isGift: true, unitPrice: "0" })
+            }
+            className={cn(
+              "inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium tap-scale",
+              line.isGift
+                ? "border-[var(--admin-accent)] bg-[var(--admin-accent-bg)] text-[var(--admin-accent)]"
+                : "border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-muted)]",
+            )}
+          >
+            <Gift size={14} /> Don
+          </button>
           <div className="ml-auto">
-            <Money value={lineTotal(line.unitPrice, line.quantity)} bold />
+            {line.isGift ? (
+              <span className="text-[14px] font-bold text-[var(--admin-accent)]">Offert</span>
+            ) : (
+              <Money value={lineTotal(line.unitPrice, line.quantity)} bold />
+            )}
           </div>
         </HStack>
         <div className="grid grid-cols-3 gap-2">
@@ -98,7 +120,8 @@ export function SellLineRow({ line, onPatch, onRemove }: SellLineRowProps) {
             label="Prix €"
             numeric
             inputMode="decimal"
-            value={line.unitPrice}
+            value={line.isGift ? "0" : line.unitPrice}
+            disabled={line.isGift}
             onChange={(e) => onPatch(line.key, { unitPrice: e.target.value })}
             placeholder="120"
             enterKeyHint="next"

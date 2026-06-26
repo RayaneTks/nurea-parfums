@@ -17,6 +17,8 @@ export type OrderFormLine = {
   unitCostDzd: string;
   exchangeRate: string;
   note: string;
+  /** Don : parfum offert (prix 0, coût compté). */
+  isGift?: boolean;
 };
 
 export type OrderFormState = {

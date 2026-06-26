@@ -32,6 +32,7 @@ type SaleLineInputBody = {
   unitCostDzd?: number | string | null;
   exchangeRate?: number | string | null;
   volumeMl?: number;
+  isGift?: boolean;
 };
 
 type CreateSaleBody = {
@@ -112,6 +113,7 @@ export async function POST(request: Request) {
       manualName: string | null;
       manualBrand: string | null;
       volumeMl: number;
+      isGift: boolean;
       quantity: number;
       unitPrice: Prisma.Decimal;
       unitCost: Prisma.Decimal;
@@ -202,6 +204,7 @@ export async function POST(request: Request) {
         manualName,
         manualBrand,
         volumeMl: vol,
+        isGift: Boolean(raw.isGift),
         unitCostDzd: ucdN !== null && Number.isFinite(ucdN) ? new Prisma.Decimal(ucdN) : null,
         exchangeRate: exN !== null && Number.isFinite(exN) ? new Prisma.Decimal(exN) : null,
         ...totals,
@@ -326,6 +329,7 @@ export async function POST(request: Request) {
                 perfumeSnapshot: snapshot,
                 quantity: line.quantity,
                 volumeMl: line.volumeMl,
+                isGift: line.isGift,
                 unitPrice: line.unitPrice,
                 unitCost: line.unitCost,
                 unitCostDzd: line.unitCostDzd,

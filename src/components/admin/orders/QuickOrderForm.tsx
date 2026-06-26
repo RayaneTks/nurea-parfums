@@ -4,7 +4,8 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState, useTransition } from "react";
-import { CheckCircle2, Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, Gift, Plus, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { CustomerCombobox, type SelectedCustomer } from "../customers/CustomerCombobox";
 import { Card } from "@/ui/primitives/Card";
 import { Input } from "@/ui/primitives/Input";
@@ -33,6 +34,7 @@ type LineState = {
   unitPrice: string;
   unitCostDzd: string;
   exchangeRate: string;
+  isGift?: boolean;
 };
 
 const VOLUMES = [30, 50, 100] as const;
@@ -188,7 +190,7 @@ export function QuickOrderForm() {
       return;
     }
     for (const l of lines) {
-      if (toNum(l.unitPrice) <= 0) {
+      if (!l.isGift && toNum(l.unitPrice) <= 0) {
         setToast({ type: "error", message: `Prix manquant : ${l.snapshot.name}` });
         return;
       }
@@ -203,7 +205,8 @@ export function QuickOrderForm() {
       perfumeSnapshot: l.perfumeId === null ? l.snapshot : undefined,
       quantity: l.quantity,
       volumeMl: l.volumeMl,
-      unitPrice: l.unitPrice.replace(",", "."),
+      isGift: !!l.isGift,
+      unitPrice: l.isGift ? "0" : l.unitPrice.replace(",", "."),
       unitCostDzd: l.unitCostDzd === "" ? "0" : l.unitCostDzd.replace(",", "."),
       exchangeRate: l.exchangeRate === "" ? "0" : l.exchangeRate.replace(",", "."),
       note: null,
@@ -352,8 +355,30 @@ export function QuickOrderForm() {
                       onChange={(q) => patchLine(line.key, { quantity: q })}
                       min={1}
                     />
+                    <button
+                      type="button"
+                      aria-pressed={!!line.isGift}
+                      onClick={() =>
+                        patchLine(
+                          line.key,
+                          line.isGift ? { isGift: false } : { isGift: true, unitPrice: "0" },
+                        )
+                      }
+                      className={cn(
+                        "inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium tap-scale",
+                        line.isGift
+                          ? "border-[var(--admin-accent)] bg-[var(--admin-accent-bg)] text-[var(--admin-accent)]"
+                          : "border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-muted)]",
+                      )}
+                    >
+                      <Gift size={14} /> Don
+                    </button>
                     <div className="ml-auto">
-                      <Money value={toNum(line.unitPrice) * line.quantity} bold />
+                      {line.isGift ? (
+                        <span className="text-[14px] font-bold text-[var(--admin-accent)]">Offert</span>
+                      ) : (
+                        <Money value={toNum(line.unitPrice) * line.quantity} bold />
+                      )}
                     </div>
                   </HStack>
 
@@ -362,7 +387,8 @@ export function QuickOrderForm() {
                       label="Prix €"
                       numeric
                       inputMode="decimal"
-                      value={line.unitPrice}
+                      value={line.isGift ? "0" : line.unitPrice}
+                      disabled={line.isGift}
                       onChange={(e) => patchLine(line.key, { unitPrice: e.target.value })}
                       placeholder="120"
                       enterKeyHint="next"
