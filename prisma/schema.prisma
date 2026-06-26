@@ -73,6 +73,8 @@ model Perfume {
   isFeatured Boolean           @default(false)
   /// Parfum privé : utilisable dans commandes/ventes mais exclu du catalogue public.
   isPrivate  Boolean           @default(false)
+  /// Stock disponible (nombre d'unités, tous volumes confondus). Décrémenté à la vente.
+  stock      Int               @default(0)
   status     PublicationStatus @default(PUBLISHED)
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt

@@ -70,6 +70,7 @@ export async function PUT(request: Request, { params }: RouteCtx) {
     image?: string;
     imageLight?: string | null;
     status?: string;
+    stock?: number;
   };
   let body: PerfumePatchBody;
   try {
@@ -131,6 +132,9 @@ export async function PUT(request: Request, { params }: RouteCtx) {
         imageLight:
           body.imageLight === undefined ? existing.imageLight : body.imageLight?.trim() || null,
         status,
+        ...(typeof body.stock === "number" && Number.isFinite(body.stock)
+          ? { stock: Math.max(0, Math.floor(body.stock)) }
+          : {}),
       },
       include: {
         brand: true,

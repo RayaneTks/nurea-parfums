@@ -251,6 +251,7 @@ async function loadAdminCatalogueFromDb(): Promise<{
         imageLight: true,
         isFeatured: true,
         status: true,
+        stock: true,
         brand: {
           select: {
             id: true,
@@ -269,7 +270,7 @@ async function loadAdminCatalogueFromDb(): Promise<{
 
 const getAdminCatalogueCached = unstable_cache(
   loadAdminCatalogueFromDb,
-  ["admin-catalogue-snapshot-v1"],
+  ["admin-catalogue-snapshot-v2"],
   { tags: [ADMIN_CATALOGUE_CACHE_TAG] },
 );
 
