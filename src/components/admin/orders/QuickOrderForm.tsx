@@ -4,8 +4,8 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState, useTransition } from "react";
-import { CheckCircle2, Gift, Plus, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { CheckCircle2, Plus, Trash2 } from "lucide-react";
+import { GiftToggle } from "@/ui/patterns/GiftToggle";
 import { CustomerCombobox, type SelectedCustomer } from "../customers/CustomerCombobox";
 import { Card } from "@/ui/primitives/Card";
 import { Input } from "@/ui/primitives/Input";
@@ -355,24 +355,15 @@ export function QuickOrderForm() {
                       onChange={(q) => patchLine(line.key, { quantity: q })}
                       min={1}
                     />
-                    <button
-                      type="button"
-                      aria-pressed={!!line.isGift}
-                      onClick={() =>
+                    <GiftToggle
+                      active={!!line.isGift}
+                      onToggle={() =>
                         patchLine(
                           line.key,
                           line.isGift ? { isGift: false } : { isGift: true, unitPrice: "0" },
                         )
                       }
-                      className={cn(
-                        "inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium tap-scale",
-                        line.isGift
-                          ? "border-[var(--admin-accent)] bg-[var(--admin-accent-bg)] text-[var(--admin-accent)]"
-                          : "border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-muted)]",
-                      )}
-                    >
-                      <Gift size={14} /> Don
-                    </button>
+                    />
                     <div className="ml-auto">
                       {line.isGift ? (
                         <span className="text-[14px] font-bold text-[var(--admin-accent)]">Offert</span>
