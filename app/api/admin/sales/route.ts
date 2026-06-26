@@ -14,6 +14,7 @@ import { isValidVolumeMl } from "@/lib/gestion/orderLineValidation";
 import { recordMovement } from "@/server/treasury/movements";
 import { revalidateTag } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
+import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -351,6 +352,16 @@ export async function POST(request: Request) {
         });
       }
 
+      // Décrément du stock pour les lignes catalogue.
+      for (const line of normalizedLines) {
+        if (line.perfumeId !== null) {
+          await tx.perfume.update({
+            where: { id: line.perfumeId },
+            data: { stock: { decrement: line.quantity } },
+          });
+        }
+      }
+
       return created;
     });
 
@@ -398,6 +409,8 @@ export async function POST(request: Request) {
     });
 
     revalidateTag(tagFor.treasury(), "default");
+    revalidateTag(tagFor.perfumes(), "default");
+    revalidateAdminCatalogue();
 
     return NextResponse.json({ sale });
   } catch (error) {

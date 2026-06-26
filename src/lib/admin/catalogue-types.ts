@@ -20,6 +20,7 @@ export type AdminPerfumeRow = {
   name: string;
   status: string;
   isFeatured?: boolean;
+  stock?: number;
   brand: {
     id: string;
     name: string;

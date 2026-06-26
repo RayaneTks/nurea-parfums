@@ -10,6 +10,7 @@ import { getSaleById } from "@/server/sales/queries";
 import { reverseMovementsFor } from "@/server/treasury/movements";
 import { revalidateTag } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
+import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -419,7 +420,11 @@ export async function DELETE(
 
     const existing = await prisma.sale.findUnique({
       where: { id },
-      select: { id: true, orderId: true },
+      select: {
+        id: true,
+        orderId: true,
+        items: { select: { perfumeId: true, quantity: true } },
+      },
     });
     if (!existing) {
       return NextResponse.json({ error: "Vente introuvable." }, { status: 404 });
@@ -427,10 +432,21 @@ export async function DELETE(
 
     await prisma.sale.delete({ where: { id } });
     await reverseMovementsFor("Sale", id);
+    // Restitue le stock des lignes catalogue.
+    for (const it of existing.items) {
+      if (it.perfumeId !== null) {
+        await prisma.perfume.update({
+          where: { id: it.perfumeId },
+          data: { stock: { increment: it.quantity } },
+        });
+      }
+    }
     await writeAudit(ctx.sub, "sale.delete", "Sale", id, {
       orderId: existing.orderId,
     });
     revalidateTag(tagFor.treasury(), "default");
+    revalidateTag(tagFor.perfumes(), "default");
+    revalidateAdminCatalogue();
 
     return NextResponse.json({ ok: true });
   } catch (error) {

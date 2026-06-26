@@ -7,6 +7,9 @@ import { Skeleton } from "@/ui/primitives/Skeleton";
 import { Card } from "@/ui/primitives/Card";
 import { PageScaffold } from "@/ui/patterns/PageScaffold";
 import { treasurySummary } from "@/server/treasury/queries";
+import { prisma } from "@/lib/db/prisma";
+import { LOW_STOCK_THRESHOLD } from "@/domain/stock";
+import { Package } from "lucide-react";
 import { KpiBlock } from "../components/KpiBlock";
 import { KpiSkeletonGrid } from "../components/KpiSkeletonGrid";
 import { PipelineBlock } from "../components/PipelineBlock";
@@ -72,6 +75,34 @@ async function UnattributedBanner() {
   );
 }
 
+async function LowStockBanner() {
+  const [out, low] = await Promise.all([
+    prisma.perfume.count({ where: { isPrivate: false, stock: { lte: 0 } } }),
+    prisma.perfume.count({
+      where: { isPrivate: false, stock: { gt: 0, lte: LOW_STOCK_THRESHOLD } },
+    }),
+  ]);
+  if (out + low === 0) return null;
+  const parts: string[] = [];
+  if (out > 0) parts.push(`${out} en rupture`);
+  if (low > 0) parts.push(`${low} bas`);
+  return (
+    <Link
+      href="/admin/catalogue"
+      prefetch
+      className="block rounded-[14px] border border-[var(--admin-warning-border)] bg-[var(--admin-warning-bg)] p-3 tap-scale"
+    >
+      <span className="flex items-center justify-between gap-2">
+        <span className="flex items-center gap-2 text-[14px] font-semibold text-[var(--admin-warning)]">
+          <Package size={16} />
+          Stock : {parts.join(" · ")}
+        </span>
+        <span className="text-[13px] font-semibold text-[var(--admin-warning)]">Voir →</span>
+      </span>
+    </Link>
+  );
+}
+
 export function DashboardPage() {
   return (
     <PageScaffold padding={4} ariaLabel="Tableau de bord">
@@ -85,6 +116,10 @@ export function DashboardPage() {
 
         <Suspense fallback={null}>
           <UnattributedBanner />
+        </Suspense>
+
+        <Suspense fallback={null}>
+          <LowStockBanner />
         </Suspense>
 
         <Suspense fallback={<KpiSkeletonGrid />}>

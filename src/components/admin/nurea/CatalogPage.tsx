@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
+import { stockStatus } from "@/domain/stock";
 import {
   AlertCircle,
   Plus,
@@ -818,6 +819,25 @@ export function NureaCatalogPage({ initialData }: NureaCatalogPageProps) {
                           <span className="text-[10px] font-bold uppercase tracking-widest text-admin-muted">
                             {pub ? "Visible" : "Masqué"}
                           </span>
+                          {typeof per.stock === "number" ? (
+                            (() => {
+                              const st = stockStatus(per.stock);
+                              return (
+                                <span
+                                  className={cn(
+                                    "ml-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide",
+                                    st === "out"
+                                      ? "bg-[var(--admin-danger-bg)] text-[var(--admin-danger)]"
+                                      : st === "low"
+                                        ? "bg-[var(--admin-warning-bg)] text-[var(--admin-warning)]"
+                                        : "bg-admin-surface-muted text-admin-muted",
+                                  )}
+                                >
+                                  {st === "out" ? "Rupture" : `Stock ${per.stock}`}
+                                </span>
+                              );
+                            })()
+                          ) : null}
                         </div>
                       </div>
                       <div className="flex shrink-0 items-center gap-1">

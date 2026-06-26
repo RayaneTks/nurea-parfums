@@ -54,6 +54,7 @@ export async function POST(request: Request) {
       image?: string;
       imageLight?: string | null;
       status?: PublicationStatus;
+      stock?: number;
       allowCompleteOverride?: boolean;
     };
     let body: PerfumeCreateBody;
@@ -126,6 +127,10 @@ export async function POST(request: Request) {
         image,
         imageLight: body.imageLight?.trim() || null,
         status,
+        stock:
+          typeof body.stock === "number" && Number.isFinite(body.stock)
+            ? Math.max(0, Math.floor(body.stock))
+            : 0,
       },
       include: {
         brand: true,

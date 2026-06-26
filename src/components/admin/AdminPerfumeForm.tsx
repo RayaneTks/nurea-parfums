@@ -28,6 +28,7 @@ type PerfumePayload = {
   image: string;
   imageLight: string | null;
   status: string;
+  stock?: number;
   brand: { name: string };
 };
 
@@ -352,6 +353,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
   const [image, setImage] = useState("");
   const [imageLight, setImageLight] = useState("");
   const [status, setStatus] = useState("PUBLISHED");
+  const [stock, setStock] = useState("0");
 
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -394,6 +396,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
           setImage(p.image);
           setImageLight(p.imageLight ?? "");
           setStatus(p.status);
+          setStock(String(p.stock ?? 0));
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : "Erreur");
@@ -461,6 +464,7 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
         image,
         imageLight: imageLight.trim() || null,
         status: isLockedByBrandMode || isLockedByBrandVisibility ? "DRAFT" : status,
+        stock: Math.max(0, Math.floor(Number(stock) || 0)),
         allowCompleteOverride,
       };
 
@@ -609,6 +613,17 @@ export function AdminPerfumeForm({ perfumeId }: { perfumeId?: string }) {
                 required
                 placeholder="Ex : Baccarat Rouge 540"
                 onClear={!readOnly && name.length > 0 ? () => setName("") : undefined}
+              />
+
+              <AdminInput
+                label="Stock (unités)"
+                type="number"
+                inputMode="numeric"
+                min="0"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                disabled={readOnly}
+                hint="Décrémenté automatiquement à chaque vente."
               />
             </SectionCard>
           </section>
