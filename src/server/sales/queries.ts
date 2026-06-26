@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import Decimal from "decimal.js-light";
+import { confirmedOrdersFinancials, type OrderComptaRow } from "@/server/orders/financials";
 
 export type SaleRowLite = {
   id: string;
@@ -87,6 +88,8 @@ export type ComptaListResult = {
   customerGroups: CustomerGroup[];
   /** @deprecated use customerGroups (retained for back-compat) */
   groups: CustomerGroup[];
+  /** Commandes confirmées (READY/DELIVERED) non finalisées en vente — section dédiée. */
+  orderRows: OrderComptaRow[];
   summary: {
     cashedRevenue: string;
     outstandingRevenue: string;
@@ -95,6 +98,7 @@ export type ComptaListResult = {
     netMargin: string;
     marginPct: string;
     salesCount: number;
+    confirmedOrdersCount: number;
     avgCashedValue: string;
   };
 };
@@ -276,27 +280,40 @@ export async function listSalesGroupedByCustomer(params: {
   });
   const totalExpenses = new Decimal((expenseAgg._sum.amount ?? 0).toString());
 
+  // Commandes confirmées (À traiter / Livrées) non finalisées en vente : encaissé réel.
+  const orders = await confirmedOrdersFinancials(since);
+  const ordersCashed = new Decimal(orders.totals.cashed);
+  const ordersCost = new Decimal(orders.totals.cost);
+  const ordersDue = new Decimal(orders.totals.due);
+
   const salesCount = sales.length;
-  const cashedRevenue = totalRevenueBilled.minus(totalOutstanding);
-  const netMargin = cashedRevenue.minus(totalCost).minus(totalExpenses);
+  // CA = encaissé ventes + encaissé commandes confirmées.
+  const cashedRevenue = totalRevenueBilled.minus(totalOutstanding).plus(ordersCashed);
+  const grandCost = totalCost.plus(ordersCost);
+  const outstanding = totalOutstanding.plus(ordersDue);
+  const netMargin = cashedRevenue.minus(grandCost).minus(totalExpenses);
   const marginPct = cashedRevenue.greaterThan(0)
     ? netMargin.dividedBy(cashedRevenue).times(100).toFixed(1)
     : "0.0";
   const avgCashedValue =
-    salesCount > 0 ? cashedRevenue.dividedBy(salesCount).toFixed(2) : "0.00";
+    salesCount > 0
+      ? totalRevenueBilled.minus(totalOutstanding).dividedBy(salesCount).toFixed(2)
+      : "0.00";
 
   return {
     batchGroups,
     customerGroups,
     groups: customerGroups,
+    orderRows: orders.rows,
     summary: {
       cashedRevenue: cashedRevenue.toFixed(2),
-      outstandingRevenue: totalOutstanding.toFixed(2),
-      totalCost: totalCost.toFixed(2),
+      outstandingRevenue: outstanding.toFixed(2),
+      totalCost: grandCost.toFixed(2),
       totalExpenses: totalExpenses.toFixed(2),
       netMargin: netMargin.toFixed(2),
       marginPct,
       salesCount,
+      confirmedOrdersCount: orders.totals.count,
       avgCashedValue,
     },
   };

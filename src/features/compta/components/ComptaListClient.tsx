@@ -2,14 +2,19 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertCircle, Receipt } from "lucide-react";import { Stack } from "@/ui/primitives/Stack";
+import Link from "next/link";
+import { AlertCircle, Receipt } from "lucide-react";
+import { Stack, HStack } from "@/ui/primitives/Stack";
+import { Card } from "@/ui/primitives/Card";
 import { EmptyState } from "@/ui/primitives/EmptyState";
 import { Skeleton, SkeletonList } from "@/ui/primitives/Skeleton";
+import { Money } from "@/ui/patterns/Money";
 import { ComptaHeader } from "./ComptaHeader";
 import { ComptaKpiRow } from "./ComptaKpiRow";
 import { ComptaTrendChart } from "./ComptaTrendChart";
 import { CustomerGroupSection } from "./CustomerGroupSection";
 import { BatchGroupSection } from "./BatchGroupSection";
+import { OrderStatusBadge } from "@/features/orders/components/OrderStatusBadge";
 import { TicketSheet } from "./TicketSheet";
 import type { ComptaListResult } from "@/server/sales/queries";
 
@@ -107,8 +112,11 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
   };
 
   const showLoadingState = pending || refreshing;
+  const orderRows = data.orderRows ?? [];
   const hasAny =
-    data.batchGroups.length > 0 || data.customerGroups.length > 0;
+    data.batchGroups.length > 0 ||
+    data.customerGroups.length > 0 ||
+    orderRows.length > 0;
 
   return (
     <>
@@ -154,6 +162,50 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
         ) : !fetchError && hasAny ? (
           <Stack gap={3}>
             {showLoadingState ? <Skeleton height={2} /> : null}
+
+            {orderRows.length > 0 ? (
+              <Stack gap={2}>
+                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--admin-text-subtle)]">
+                  Commandes en cours ({orderRows.length})
+                </p>
+                <Card padding={0}>
+                  <ul className="divide-y px-3" style={{ borderColor: "var(--admin-border)" }}>
+                    {orderRows.map((o) => {
+                      const due = Number(o.due);
+                      return (
+                        <li key={o.id}>
+                          <Link
+                            href={`/admin/ordres/${o.id}`}
+                            prefetch
+                            className="flex items-center justify-between gap-3 py-3 tap-scale"
+                          >
+                            <span className="min-w-0">
+                              <span className="block truncate text-[15px] font-semibold text-[var(--admin-text)]">
+                                {o.customerName}
+                              </span>
+                              <span className="mt-0.5 flex items-center gap-1.5">
+                                <OrderStatusBadge status={o.status} />
+                                {due > 0.005 ? (
+                                  <span className="text-[12px] font-medium text-[var(--admin-warning)] tabular-nums">
+                                    · <Money value={o.due} compact /> dû
+                                  </span>
+                                ) : null}
+                              </span>
+                            </span>
+                            <span className="shrink-0 text-right">
+                              <Money value={o.cashed} bold />
+                              <span className="mt-0.5 block text-[11px] text-[var(--admin-text-subtle)]">
+                                encaissé
+                              </span>
+                            </span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </Card>
+              </Stack>
+            ) : null}
 
             {data.batchGroups.length > 0 ? (
               <Stack gap={2}>
