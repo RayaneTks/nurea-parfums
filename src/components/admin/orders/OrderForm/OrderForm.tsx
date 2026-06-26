@@ -202,7 +202,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
       return;
     }
     for (const it of state.items) {
-      if (toNum(it.unitPrice) <= 0) {
+      if (!it.isGift && toNum(it.unitPrice) <= 0) {
         setToast({ type: "error", message: `Prix manquant : ${it.snapshot.name}.` });
         return;
       }
@@ -221,7 +221,8 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
       perfumeSnapshot: it.perfumeId === null ? it.snapshot : undefined,
       quantity: it.quantity,
       volumeMl: it.volumeMl,
-      unitPrice: it.unitPrice.replace(",", "."),
+      isGift: !!it.isGift,
+      unitPrice: it.isGift ? "0" : it.unitPrice.replace(",", "."),
       unitCostDzd: it.unitCostDzd === "" ? "0" : it.unitCostDzd.replace(",", "."),
       exchangeRate: it.exchangeRate === "" ? "0" : it.exchangeRate.replace(",", "."),
       note: it.note.trim() === "" ? null : it.note,

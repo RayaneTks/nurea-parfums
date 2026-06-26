@@ -27,6 +27,7 @@ export type OrderDetailRow = OrderListRow & {
     perfumeId: number | null;
     quantity: number;
     deliveredQuantity: number;
+    isGift: boolean;
     volumeMl: number;
     unitPrice: string;
     unitCostDzd: string | null;
@@ -210,6 +211,7 @@ export async function getOrderForDetail(orderId: string): Promise<OrderDetailRow
           perfumeId: true,
           quantity: true,
           deliveredQuantity: true,
+          isGift: true,
           volumeMl: true,
           unitPrice: true,
           unitCostDzd: true,
@@ -266,6 +268,7 @@ export async function getOrderForDetail(orderId: string): Promise<OrderDetailRow
         perfumeId: it.perfumeId,
         quantity: it.quantity,
         deliveredQuantity: it.deliveredQuantity,
+        isGift: it.isGift,
         volumeMl: it.volumeMl,
         unitPrice: it.unitPrice.toString(),
         unitCostDzd: it.unitCostDzd?.toString() ?? null,

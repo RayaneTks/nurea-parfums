@@ -65,6 +65,7 @@ export async function createOrderAction(
                   : undefined,
               quantity: it.quantity,
               volumeMl: it.volumeMl,
+              isGift: it.isGift ?? false,
               unitPrice: new Decimal(it.unitPrice).toFixed(2),
               unitCost: lineUnitCostEur(it.unitCostDzd, it.exchangeRate),
               unitCostDzd:
@@ -173,6 +174,7 @@ export async function updateOrderAction(
               it.perfumeId === null && it.perfumeSnapshot ? (it.perfumeSnapshot as object) : undefined,
             quantity: it.quantity,
             volumeMl: it.volumeMl,
+            isGift: it.isGift ?? false,
             unitPrice: new Decimal(it.unitPrice).toFixed(2),
             unitCost: lineUnitCostEur(it.unitCostDzd, it.exchangeRate),
             unitCostDzd:

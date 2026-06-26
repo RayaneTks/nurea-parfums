@@ -103,6 +103,11 @@ export function OrderItemsFulfillment({
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[15px] font-semibold leading-tight text-[var(--admin-text)]">
                     {it.snapshot.name}
+                    {it.isGift ? (
+                      <span className="ml-2 inline-flex items-center rounded-full bg-[var(--admin-accent-bg)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em] text-[var(--admin-accent)]">
+                        Don
+                      </span>
+                    ) : null}
                   </p>
                   <p className="mt-0.5 truncate text-[12px] tabular-nums text-[var(--admin-text-subtle)]">
                     {it.snapshot.brandName ?? "—"} · ×{it.quantity} · {it.volumeMl}&nbsp;ml

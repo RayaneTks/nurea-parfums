@@ -36,6 +36,8 @@ export const orderItemInputSchema = z.object({
   unitCostDzd: moneyOptional,
   exchangeRate: moneyOptional,
   note: z.string().trim().max(500).nullable().optional(),
+  /// Don : parfum offert (prix 0, coût compté en perte).
+  isGift: z.boolean().optional().default(false),
 }).refine(
   (item) => item.perfumeId !== null || (item.perfumeSnapshot && item.perfumeSnapshot.name.length > 0),
   { message: "Parfum requis (ID catalogue ou snapshot off-catalog).", path: ["perfumeId"] },

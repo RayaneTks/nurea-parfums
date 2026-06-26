@@ -222,7 +222,7 @@ export function SellPageClient() {
       return;
     }
     for (const l of lines) {
-      if (toNum(l.unitPrice) <= 0) {
+      if (!l.isGift && toNum(l.unitPrice) <= 0) {
         setToast({ type: "error", message: `Prix manquant : ${l.snapshot.name}` });
         return;
       }
@@ -250,7 +250,8 @@ export function SellPageClient() {
           perfumeSnapshot: l.perfumeId === null ? l.snapshot : undefined,
           quantity: l.quantity,
           volumeMl: l.volumeMl,
-          unitPrice: l.unitPrice.replace(",", "."),
+          isGift: !!l.isGift,
+          unitPrice: l.isGift ? "0" : l.unitPrice.replace(",", "."),
           unitCostDzd: l.unitCostDzd === "" ? "0" : l.unitCostDzd.replace(",", "."),
           exchangeRate: l.exchangeRate === "" ? "0" : l.exchangeRate.replace(",", "."),
         })),
