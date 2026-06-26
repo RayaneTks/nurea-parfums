@@ -16,6 +16,7 @@ import { PipelineBlock } from "../components/PipelineBlock";
 import { ActiveBatchesBlock } from "../components/ActiveBatchesBlock";
 import { TopPerfumesBlock } from "../components/TopPerfumesBlock";
 import { QuickActionsBlock } from "../components/QuickActionsBlock";
+import { PilotageBlock } from "../components/PilotageBlock";
 
 function PipelineFallback() {
   return (
@@ -124,6 +125,10 @@ export function DashboardPage() {
 
         <Suspense fallback={<KpiSkeletonGrid />}>
           <KpiBlock />
+        </Suspense>
+
+        <Suspense fallback={null}>
+          <PilotageBlock />
         </Suspense>
 
         <QuickActionsBlock />
