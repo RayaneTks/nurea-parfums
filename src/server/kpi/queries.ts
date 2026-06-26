@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import Decimal from "decimal.js-light";
 import { unstable_cache } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
+import { confirmedOrdersFinancials } from "@/server/orders/financials";
 
 export type PeriodRange = { start: Date; end: Date };
 
@@ -45,7 +46,7 @@ export type RevenueSummary = {
 
 const cachedRevenueSummaryGlobal = unstable_cache(
   async () => {
-    const [sales, expenses] = await Promise.all([
+    const [sales, expenses, orders] = await Promise.all([
       prisma.sale.aggregate({
         _sum: {
           totalRevenue: true,
@@ -55,6 +56,7 @@ const cachedRevenueSummaryGlobal = unstable_cache(
         _count: true,
       }),
       prisma.batchExpense.aggregate({ _sum: { amount: true } }),
+      confirmedOrdersFinancials(null),
     ]);
     return {
       totalRevenue: (sales._sum.totalRevenue ?? 0).toString(),
@@ -62,31 +64,40 @@ const cachedRevenueSummaryGlobal = unstable_cache(
       remainingDue: (sales._sum.remainingDue ?? 0).toString(),
       count: sales._count,
       expenses: (expenses._sum.amount ?? 0).toString(),
+      ordersCashed: orders.totals.cashed,
+      ordersCost: orders.totals.cost,
+      ordersDue: orders.totals.due,
     };
   },
-  ["kpi-revenue-summary-cash-v3"],
-  { tags: [tagFor.kpi(), tagFor.sales(), tagFor.batches()], revalidate: 60 },
+  ["kpi-revenue-summary-cash-v4"],
+  {
+    tags: [tagFor.kpi(), tagFor.sales(), tagFor.batches(), tagFor.orders()],
+    revalidate: 60,
+  },
 );
 
 export async function revenueSummary(): Promise<RevenueSummary> {
   const agg = await cachedRevenueSummaryGlobal();
 
-  const totalRevenue = new Decimal(agg.totalRevenue);
-  const totalCost = new Decimal(agg.totalCost);
-  const outstanding = new Decimal(agg.remainingDue);
+  const salesRevenue = new Decimal(agg.totalRevenue);
+  const salesOutstanding = new Decimal(agg.remainingDue);
   const totalExpenses = new Decimal(agg.expenses);
   const count = agg.count;
 
-  const cashedRevenue = totalRevenue.minus(outstanding);
-  // Marge réelle : on déduit le coût d'achat ET les dépenses réalisées.
+  // Inclut les commandes confirmées (encaissé réel) pour rester cohérent avec la compta.
+  const salesCashed = salesRevenue.minus(salesOutstanding);
+  const cashedRevenue = salesCashed.plus(new Decimal(agg.ordersCashed));
+  const totalCost = new Decimal(agg.totalCost).plus(new Decimal(agg.ordersCost));
+  const outstanding = salesOutstanding.plus(new Decimal(agg.ordersDue));
+  // Marge réelle : encaissé − coût d'achat − dépenses réalisées.
   const netMargin = cashedRevenue.minus(totalCost).minus(totalExpenses);
 
   const marginPct = cashedRevenue.greaterThan(0)
     ? netMargin.dividedBy(cashedRevenue).times(100).toFixed(1)
     : "0.0";
 
-  const avgCashedValue =
-    count > 0 ? cashedRevenue.dividedBy(count).toFixed(2) : "0.00";
+  // Panier moyen = par vente ponctuelle (les commandes ne sont pas des "tickets").
+  const avgCashedValue = count > 0 ? salesCashed.dividedBy(count).toFixed(2) : "0.00";
 
   return {
     cashedRevenue: cashedRevenue.toFixed(2),
