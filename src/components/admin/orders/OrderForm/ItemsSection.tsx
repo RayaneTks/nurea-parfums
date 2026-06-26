@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { Gift, Package, Plus, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Package, Plus, Trash2 } from "lucide-react";
+import { GiftToggle } from "@/ui/patterns/GiftToggle";
 import { Card } from "@/ui/primitives/Card";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Stepper } from "@/ui/primitives/Stepper";
@@ -133,24 +133,15 @@ export function ItemsSection({ items, onAddItem, onPatchItem, onRemoveItem }: It
                     value={it.quantity}
                     onChange={(n) => void onPatchItem(it.key, { quantity: n })}
                   />
-                  <button
-                    type="button"
-                    aria-pressed={!!it.isGift}
-                    onClick={() =>
+                  <GiftToggle
+                    active={!!it.isGift}
+                    onToggle={() =>
                       void onPatchItem(
                         it.key,
                         it.isGift ? { isGift: false } : { isGift: true, unitPrice: "0" },
                       )
                     }
-                    className={cn(
-                      "inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium tap-scale",
-                      it.isGift
-                        ? "border-[var(--admin-accent)] bg-[var(--admin-accent-bg)] text-[var(--admin-accent)]"
-                        : "border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-muted)]",
-                    )}
-                  >
-                    <Gift size={14} /> Don
-                  </button>
+                  />
                   <div className="ml-auto">
                     {it.isGift ? (
                       <span className="text-[14px] font-bold text-[var(--admin-accent)]">Offert</span>
