@@ -433,23 +433,27 @@ export function SellPageClient() {
           </Card>
         ) : null}
 
-        <div className="admin-sticky-cta-spacer" aria-hidden />
+        {lines.length > 0 ? <div className="admin-sticky-cta-spacer" aria-hidden /> : null}
       </Stack>
 
-      <StickyAction>
-        <Button
-          type="button"
-          variant="primary"
-          size="lg"
-          fullWidth
-          isLoading={submitting}
-          disabled={bridgeLoading || lines.length === 0}
-          onClick={submit}
-          leadingIcon={<CheckCircle2 size={16} />}
-        >
-          Enregistrer la vente
-        </Button>
-      </StickyAction>
+      {/* CTA masqué tant qu'aucune ligne : « Choisir un parfum » de l'état vide suffit
+          (évite un bouton désactivé qui recouvre l'état vide). */}
+      {lines.length > 0 || bridge ? (
+        <StickyAction>
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            fullWidth
+            isLoading={submitting}
+            disabled={bridgeLoading || lines.length === 0}
+            onClick={submit}
+            leadingIcon={<CheckCircle2 size={16} />}
+          >
+            Enregistrer la vente
+          </Button>
+        </StickyAction>
+      ) : null}
 
       <PerfumePicker
         open={pickerOpen}

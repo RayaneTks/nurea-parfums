@@ -49,7 +49,7 @@ export function AdminShell({ children }: AdminShellProps) {
         <div
           ref={scrollRef}
           id="admin-scroll-root"
-          className="admin-shell-scroll min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]"
+          className="admin-shell-scroll flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]"
         >
           {children}
         </div>
