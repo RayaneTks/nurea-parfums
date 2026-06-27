@@ -16,6 +16,7 @@ import { DepositSection } from "./DepositSection";
 import { MetaSection } from "./MetaSection";
 import type { OrderFormLine, OrderFormState } from "./types";
 import { createOrderAction, updateOrderAction } from "@/server/orders/actions";
+import { useLastExchangeRate } from "@/hooks/useLastExchangeRate";
 import type {
   CreateOrderInput,
   OrderItemInput,
@@ -23,8 +24,6 @@ import type {
 } from "@/schemas/order";
 import type { PickerResult } from "@/features/sell";
 import type { SelectedCustomer } from "../../customers/CustomerCombobox";
-
-const DEFAULT_EXCHANGE = "277";
 
 type Mode = "create" | "edit";
 
@@ -82,6 +81,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
+  const { rate: lastRate, remember: rememberRate } = useLastExchangeRate();
 
   const [state, setState] = useState<OrderFormState>(() => ({
     customer: initial?.customer ?? null,
@@ -128,7 +128,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
             volumeMl: 100,
             unitPrice: pricing?.defaultUnitPriceEur ?? "",
             unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
-            exchangeRate: pricing?.defaultExchangeRate ?? DEFAULT_EXCHANGE,
+            exchangeRate: pricing?.defaultExchangeRate ?? lastRate,
             note: "",
           },
         ],
@@ -146,13 +146,13 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
             volumeMl: 100,
             unitPrice: "",
             unitCostDzd: "",
-            exchangeRate: DEFAULT_EXCHANGE,
+            exchangeRate: lastRate,
             note: "",
           },
         ],
       }));
     }
-  }, []);
+  }, [lastRate]);
 
   const onPatchItem = useCallback(async (key: string, patch: Partial<OrderFormLine>) => {
     // Si changement de volume sur une ligne catalogue, refetch pricing.
@@ -249,6 +249,10 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
           return;
         }
         setToast({ type: "success", message: "Commande créée." });
+        {
+          const r = state.items.find((l) => Number(l.exchangeRate) > 0)?.exchangeRate;
+          if (r) rememberRate(r);
+        }
         router.push(`/admin/ordres/${result.data.id}`);
         router.refresh();
       } else {
@@ -288,7 +292,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
 
         <ItemsSection
           items={state.items}
-          exchangeRateDefault={DEFAULT_EXCHANGE}
+          exchangeRateDefault={lastRate}
           onAddItem={onAddItem}
           onPatchItem={onPatchItem}
           onRemoveItem={onRemoveItem}
