@@ -31,6 +31,7 @@ export async function PilotageBlock() {
           label="Bénéfice net (mois)"
           value={<Money value={monthNet} compact tone="auto" />}
           hint={`encaissé ${new Decimal(monthCashed).toFixed(0)} €`}
+          href="/admin/compta"
         />
         <KpiTile
           label="Prévision trésorerie"
@@ -40,6 +41,7 @@ export async function PilotageBlock() {
               ? `dont ${outstanding.toFixed(0)} € à encaisser`
               : "tout encaissé"
           }
+          href="/admin/compta"
         />
       </div>
     </div>
