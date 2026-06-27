@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Copy, Trash2 } from "lucide-react";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
 import { Button } from "@/ui/primitives/Button";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useUndo } from "@/app-shell/UndoProvider";
 import { ShareButton } from "@/ui/patterns/ShareButton";
 import { buildOrderShareText } from "@/lib/share";
+import { duplicateOrderAction } from "@/server/orders/actions";
 import { OrderDetailHeader } from "./OrderDetailHeader";
 import { OrderSummaryCard } from "./OrderSummaryCard";
 import { OrderItemsFulfillment } from "./OrderItemsFulfillment";
@@ -64,6 +65,18 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
   const remaining = remainingToDeliver(current.items);
   const deliveredUnits = current.items.reduce((acc, it) => acc + it.deliveredQuantity, 0);
   const totalUnits = current.items.reduce((acc, it) => acc + it.quantity, 0);
+
+  const duplicate = () => {
+    startTransition(async () => {
+      const res = await duplicateOrderAction(order.id);
+      if (!res.ok) {
+        setToast({ type: "error", message: res.error });
+        return;
+      }
+      router.push(`/admin/ordres/${res.data.id}`);
+      router.refresh();
+    });
+  };
 
   const markDelivered = () => {
     startTransition(async () => {
@@ -260,6 +273,17 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
           })}
           onFeedback={(message, type) => setToast({ type, message })}
         />
+
+        <Button
+          variant="secondary"
+          size="md"
+          fullWidth
+          disabled={pending}
+          leadingIcon={<Copy size={14} />}
+          onClick={duplicate}
+        >
+          Dupliquer (réassort)
+        </Button>
 
         {!current.hasSale ? (
           <Button
