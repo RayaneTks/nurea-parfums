@@ -16,34 +16,40 @@ export async function KpiBlock() {
         value={<Money value={global.cashedRevenue} compact />}
         hint={`${global.count} vente${global.count > 1 ? "s" : ""}`}
         tone="accent"
+        href="/admin/compta"
       />
       <KpiTile
         label="Marge nette"
         value={<Money value={global.netMargin} compact tone="auto" />}
         hint={hasExpenses ? `${global.marginPct} % · net dépenses` : `${global.marginPct} %`}
+        href="/admin/compta"
       />
       <KpiTile
         label="Panier moyen"
         value={<Money value={global.avgCashedValue} compact />}
         hint="encaissé / vente"
+        href="/admin/compta"
       />
       {hasOutstanding ? (
         <KpiTile
           label="Reste à encaisser"
           value={<Money value={global.outstandingRevenue} compact tone="danger" />}
           hint="dû par clients"
+          href="/admin/ordres"
         />
       ) : hasExpenses ? (
         <KpiTile
           label="Dépenses"
           value={<Money value={global.totalExpenses} compact tone="danger" />}
           hint="déduites de la marge"
+          href="/admin/lots"
         />
       ) : (
         <KpiTile
           label="Coût achats"
           value={<Money value={global.totalCost} compact />}
           hint="cumulés"
+          href="/admin/compta"
         />
       )}
     </div>
