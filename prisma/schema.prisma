@@ -192,6 +192,9 @@ model Order {
   depositPaid   Boolean              @default(false)
   /// CACHE dénormalisé : somme des DEPOSIT moins REFUND (€). Recalculé sur mutation paiement.
   depositAmount Decimal              @default(0) @db.Decimal(10, 2)
+  /// Lot fournisseur rattaché (optionnel). Permet de grouper commandes + ventes d'un même envoi.
+  batchId       String?
+  batch         Batch?               @relation(fields: [batchId], references: [id], onDelete: SetNull)
   items         OrderItem[]
   sale          Sale?
   payments      PaymentTransaction[]
@@ -204,6 +207,7 @@ model Order {
   @@index([depositPaid])
   @@index([status, deliveryAt])
   @@index([customerId])
+  @@index([batchId])
 }
 
 model OrderItem {
@@ -312,6 +316,7 @@ model Batch {
   updatedAt  DateTime    @updatedAt
 
   sales    Sale[]
+  orders   Order[]
   expenses BatchExpense[]
 
   @@index([status])

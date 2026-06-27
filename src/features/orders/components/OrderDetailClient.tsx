@@ -15,6 +15,7 @@ import { useUndo } from "@/app-shell/UndoProvider";
 import { ShareButton } from "@/ui/patterns/ShareButton";
 import { buildOrderShareText } from "@/lib/share";
 import { duplicateOrderAction } from "@/server/orders/actions";
+import { BatchPicker } from "@/features/compta/components/BatchPicker";
 import { OrderDetailHeader } from "./OrderDetailHeader";
 import { OrderSummaryCard } from "./OrderSummaryCard";
 import { OrderItemsFulfillment } from "./OrderItemsFulfillment";
@@ -190,6 +191,18 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
         })()}
 
         {balanceSlot}
+
+        {current.status !== "PENDING" && current.status !== "CANCELLED" ? (
+          <BatchPicker
+            endpoint={`/api/admin/orders/${current.id}`}
+            current={current.batchId ? { id: current.batchId, name: current.batchName ?? "Lot" } : null}
+            onAssigned={(next) => {
+              setCurrent((c) => ({ ...c, batchId: next?.id ?? null, batchName: next?.name ?? null }));
+              setToast({ type: "success", message: next ? "Commande assignée au lot." : "Retirée du lot." });
+            }}
+            onError={(message) => setToast({ type: "error", message })}
+          />
+        ) : null}
 
         {current.notes ? (
           <Card padding={3}>

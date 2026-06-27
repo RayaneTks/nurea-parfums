@@ -22,6 +22,8 @@ export type OrderListRow = {
 
 export type OrderDetailRow = OrderListRow & {
   notes: string | null;
+  batchId: string | null;
+  batchName: string | null;
   items: Array<{
     id: string;
     perfumeId: number | null;
@@ -226,6 +228,8 @@ export async function getOrderForDetail(orderId: string): Promise<OrderDetailRow
       payments: { select: { type: true, amount: true } },
       sale: { select: { id: true } },
       customer: { select: { fullName: true } },
+      batchId: true,
+      batch: { select: { name: true } },
     },
   });
   if (!o) return null;
@@ -250,6 +254,8 @@ export async function getOrderForDetail(orderId: string): Promise<OrderDetailRow
     hasSale: o.sale !== null,
     fulfillment: deriveFulfillment(o.items),
     notes: o.notes,
+    batchId: o.batchId,
+    batchName: o.batch?.name ?? null,
     items: o.items.map((it) => {
       const snap = it.perfumeSnapshot;
       const snapshot = {
