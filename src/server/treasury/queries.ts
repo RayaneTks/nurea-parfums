@@ -1,7 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
 import Decimal from "decimal.js-light";
-import { unstable_cache } from "next/cache";
-import { tagFor } from "@/lib/admin/cache-tags";
 import type { PocketKind, CashMovementKind } from "@prisma/client";
 
 export type PocketWithBalance = {
@@ -33,8 +31,9 @@ export type MovementRow = {
   occurredAt: string;
 };
 
-const cachedTreasury = unstable_cache(
-  async (): Promise<TreasurySummary> => {
+// Pas de cache : données financières à faible trafic qui doivent rester
+// fraîches immédiatement après chaque mouvement (vente, dépense, transfert…).
+export async function treasurySummary(): Promise<TreasurySummary> {
     const [pockets, sums] = await Promise.all([
       prisma.pocket.findMany({
         where: { archived: false },
@@ -78,13 +77,6 @@ const cachedTreasury = unstable_cache(
       unattributed: unattributed.toFixed(2),
       pockets: rows,
     };
-  },
-  ["treasury-summary-v1"],
-  { tags: [tagFor.treasury()], revalidate: 30 },
-);
-
-export function treasurySummary(): Promise<TreasurySummary> {
-  return cachedTreasury();
 }
 
 /** Soldes des poches actives (sans le wrapper résumé). */
