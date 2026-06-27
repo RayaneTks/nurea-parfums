@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState, useTransition } from "react";
 import { CheckCircle2, Plus, Trash2 } from "lucide-react";
 import { GiftToggle } from "@/ui/patterns/GiftToggle";
+import { useLastExchangeRate } from "@/hooks/useLastExchangeRate";
 import { CustomerCombobox, type SelectedCustomer } from "../customers/CustomerCombobox";
 import { Card } from "@/ui/primitives/Card";
 import { Input } from "@/ui/primitives/Input";
@@ -83,7 +84,7 @@ export function QuickOrderForm() {
   const [lines, setLines] = useState<LineState[]>([]);
   const [depositOn, setDepositOn] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
-  const [exchangeRateDefault] = useState("277");
+  const { rate: exchangeRateDefault, remember: rememberRate } = useLastExchangeRate();
 
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
 
@@ -233,10 +234,12 @@ export function QuickOrderForm() {
         type: "success",
         message: result.data.status === "READY" ? "Commande créée et à traiter." : "Commande créée.",
       });
+      const usedRate = lines.find((l) => Number(l.exchangeRate) > 0)?.exchangeRate;
+      if (usedRate) rememberRate(usedRate);
       router.push(`/admin/ordres/${result.data.id}`);
       router.refresh();
     });
-  }, [customer, customerName, depositAmount, depositOn, lines, router]);
+  }, [customer, customerName, depositAmount, depositOn, lines, router, rememberRate]);
 
   return (
     <>

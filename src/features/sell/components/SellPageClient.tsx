@@ -22,6 +22,7 @@ import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
 import { CustomerCombobox, type SelectedCustomer } from "@/components/admin/customers/CustomerCombobox";
 import { PocketSplit, type SplitRow } from "@/features/treasury/components/PocketSplit";
 import { usePockets } from "@/features/treasury/usePockets";
+import { useLastExchangeRate } from "@/hooks/useLastExchangeRate";
 
 function toNum(v: string): number {
   const n = Number(v.replace(",", "."));
@@ -90,6 +91,7 @@ export function SellPageClient() {
   const [splitRows, setSplitRows] = useState<SplitRow[]>([]);
   const [cashReceived, setCashReceived] = useState("");
   const { pockets } = usePockets(true);
+  const { rate: lastRate, remember: rememberRate } = useLastExchangeRate();
 
   // Charge order si bridge.
   useEffect(() => {
@@ -165,7 +167,7 @@ export function SellPageClient() {
           volumeMl: 100,
           unitPrice: pricing?.defaultUnitPriceEur ?? "",
           unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
-          exchangeRate: pricing?.defaultExchangeRate ?? "277",
+          exchangeRate: pricing?.defaultExchangeRate ?? lastRate,
         },
       ]);
     } else {
@@ -179,11 +181,11 @@ export function SellPageClient() {
           volumeMl: 100,
           unitPrice: "",
           unitCostDzd: "",
-          exchangeRate: "277",
+          exchangeRate: lastRate,
         },
       ]);
     }
-  }, []);
+  }, [lastRate]);
 
   const patchLine = useCallback((key: string, patch: Partial<SellLine>) => {
     if (patch.volumeMl !== undefined) {
@@ -270,6 +272,8 @@ export function SellPageClient() {
         return;
       }
       setToast({ type: "success", message: "Vente enregistrée." });
+      const usedRate = lines.find((l) => Number(l.exchangeRate) > 0)?.exchangeRate;
+      if (usedRate) rememberRate(usedRate);
       setConfirmSale(false);
       router.push("/admin/compta");
       router.refresh();
