@@ -235,3 +235,66 @@ export async function cancelOrderAction(orderId: string): Promise<ActionResult<{
     return { ok: false, error: e instanceof Error ? e.message : "Annulation impossible." };
   }
 }
+
+/**
+ * Réassort : duplique une commande existante en une nouvelle commande PENDING
+ * (mêmes articles + client, sans paiements ni livraison). Réutilise createOrderAction.
+ */
+export async function duplicateOrderAction(
+  orderId: string,
+): Promise<ActionResult<{ id: string; status: "PENDING" | "READY" }>> {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: {
+      customerId: true,
+      customerName: true,
+      customer: { select: { fullName: true } },
+      items: {
+        select: {
+          perfumeId: true,
+          perfumeSnapshot: true,
+          quantity: true,
+          volumeMl: true,
+          unitPrice: true,
+          unitCostDzd: true,
+          exchangeRate: true,
+          isGift: true,
+          note: true,
+        },
+      },
+    },
+  });
+  if (!order) return { ok: false, error: "Commande introuvable." };
+  if (order.items.length === 0) return { ok: false, error: "Commande sans article." };
+
+  const items = order.items.map((it) => {
+    const snap = it.perfumeSnapshot as { name?: string; brandName?: string; image?: string } | null;
+    return {
+      perfumeId: it.perfumeId,
+      perfumeSnapshot:
+        it.perfumeId === null && snap
+          ? {
+              name: snap.name ?? "Hors catalogue",
+              brandName: snap.brandName ?? "Hors catalogue",
+              image: snap.image ?? null,
+            }
+          : null,
+      quantity: it.quantity,
+      volumeMl: it.volumeMl as 30 | 50 | 100,
+      unitPrice: it.unitPrice.toString(),
+      unitCostDzd: it.unitCostDzd?.toString() ?? "0",
+      exchangeRate: it.exchangeRate?.toString() ?? "0",
+      isGift: it.isGift,
+      note: it.note,
+    };
+  });
+
+  return createOrderAction({
+    customerId: order.customerId,
+    customerName: order.customer?.fullName ?? order.customerName ?? "Client",
+    deliveryAt: null,
+    notes: null,
+    items,
+    initialDeposit: null,
+  });
+}
