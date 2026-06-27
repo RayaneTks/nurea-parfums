@@ -21,6 +21,7 @@ import {
   assignUnattributedAction,
   adjustmentAction,
   supplierPaymentAction,
+  backfillTreasuryAction,
 } from "@/server/treasury/actions";
 
 type TreasuryPanelProps = {
@@ -119,6 +120,18 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
     setPending(false);
     res.ok ? done("Ajustement enregistré.") : fail(res.error);
   };
+  const submitBackfill = async () => {
+    setPending(true);
+    const res = await backfillTreasuryAction();
+    setPending(false);
+    res.ok
+      ? done(
+          res.data.created > 0
+            ? `${res.data.created} mouvement(s) importé(s) dans « Non attribué ».`
+            : "Historique déjà à jour.",
+        )
+      : fail(res.error);
+  };
   const submitSupplier = async () => {
     setPending(true);
     const res = await supplierPaymentAction({ pocketId: fromId, amount, label });
@@ -137,6 +150,14 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
           <p className="mt-1 text-[28px] font-bold leading-none">
             <Money value={total} />
           </p>
+          <button
+            type="button"
+            onClick={submitBackfill}
+            disabled={pending}
+            className="mt-2 text-[12px] font-medium text-[var(--admin-accent)] tap-scale disabled:opacity-50"
+          >
+            Importer l&apos;historique (ventes, acomptes, dépenses)
+          </button>
         </Card>
 
         {/* Rappel Non attribué */}

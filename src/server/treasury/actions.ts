@@ -166,3 +166,80 @@ export async function supplierPaymentAction(input: {
   revalidate();
   return { ok: true, data: { id: mv.id } };
 }
+
+/**
+ * Importe l'historique (ventes encaissées, acomptes/soldes des commandes
+ * confirmées sans vente, dépenses) dans la poche « Non attribué », à répartir.
+ * Idempotent : ignore toute origine ayant déjà un mouvement.
+ */
+export async function backfillTreasuryAction(): Promise<ActionResult<{ created: number }>> {
+  const unassigned = await ensureUnassignedPocket();
+  const existing = await prisma.cashMovement.findMany({
+    where: { refId: { not: null } },
+    select: { refType: true, refId: true },
+  });
+  const has = new Set(existing.map((m) => `${m.refType}:${m.refId}`));
+  let created = 0;
+
+  const sales = await prisma.sale.findMany({
+    select: { id: true, soldAt: true, totalRevenue: true, remainingDue: true },
+  });
+  for (const s of sales) {
+    if (has.has(`Sale:${s.id}`)) continue;
+    const cashed = Number(s.totalRevenue) - Number(s.remainingDue);
+    if (cashed > 0.005) {
+      await recordMovement({
+        pocketId: unassigned,
+        amount: cashed,
+        kind: "SALE_IN",
+        label: "Vente (historique)",
+        refType: "Sale",
+        refId: s.id,
+        occurredAt: s.soldAt,
+      });
+      created += 1;
+    }
+  }
+
+  const orders = await prisma.order.findMany({
+    where: { status: { in: ["READY", "DELIVERED"] }, sale: null },
+    select: { payments: { select: { id: true, type: true, amount: true, paidAt: true } } },
+  });
+  for (const o of orders) {
+    for (const pay of o.payments) {
+      if (has.has(`PaymentTransaction:${pay.id}`)) continue;
+      const kind =
+        pay.type === "DEPOSIT" ? "DEPOSIT_IN" : pay.type === "BALANCE" ? "BALANCE_IN" : "REFUND_OUT";
+      await recordMovement({
+        pocketId: unassigned,
+        amount: Number(pay.amount),
+        kind,
+        label: "Encaissement commande (historique)",
+        refType: "PaymentTransaction",
+        refId: pay.id,
+        occurredAt: pay.paidAt,
+      });
+      created += 1;
+    }
+  }
+
+  const expenses = await prisma.batchExpense.findMany({
+    select: { id: true, amount: true, occurredAt: true, label: true },
+  });
+  for (const e of expenses) {
+    if (has.has(`BatchExpense:${e.id}`)) continue;
+    await recordMovement({
+      pocketId: unassigned,
+      amount: Number(e.amount),
+      kind: "EXPENSE_OUT",
+      label: e.label || "Dépense (historique)",
+      refType: "BatchExpense",
+      refId: e.id,
+      occurredAt: e.occurredAt,
+    });
+    created += 1;
+  }
+
+  revalidate();
+  return { ok: true, data: { created } };
+}
