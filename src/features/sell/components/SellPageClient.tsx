@@ -88,6 +88,7 @@ export function SellPageClient() {
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [confirmSale, setConfirmSale] = useState(false);
   const [splitRows, setSplitRows] = useState<SplitRow[]>([]);
+  const [cashReceived, setCashReceived] = useState("");
   const { pockets } = usePockets(true);
 
   // Charge order si bridge.
@@ -422,6 +423,38 @@ export function SellPageClient() {
               </div>
             ) : null}
           </HStack>
+
+          {totals.revenue > 0 ? (
+            <div className="mt-3 border-t border-[var(--admin-border)] pt-3">
+              <HStack gap={2} align="center">
+                <span className="text-[12px] text-[var(--admin-text-muted)]">Reçu espèces</span>
+                <input
+                  inputMode="decimal"
+                  value={cashReceived}
+                  onChange={(e) => setCashReceived(e.target.value)}
+                  placeholder="0"
+                  className="ml-auto h-10 w-24 rounded-[10px] border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 text-right text-[15px] tabular-nums outline-none focus:border-[var(--admin-accent)]"
+                />
+                <span className="text-[12px] text-[var(--admin-text-subtle)]">€</span>
+              </HStack>
+              {(() => {
+                const recu = Number(cashReceived.replace(",", "."));
+                if (!Number.isFinite(recu) || recu <= 0) return null;
+                const change = recu - totals.revenue;
+                return (
+                  <p className="mt-2 text-right text-[14px] font-semibold tabular-nums">
+                    {change >= 0 ? (
+                      <span className="text-[var(--admin-success)]">À rendre : {change.toFixed(2)} €</span>
+                    ) : (
+                      <span className="text-[var(--admin-warning)]">
+                        Manque : {Math.abs(change).toFixed(2)} €
+                      </span>
+                    )}
+                  </p>
+                );
+              })()}
+            </div>
+          ) : null}
         </Card>
 
         {lines.length > 0 && pockets.length > 0 && totals.revenue > 0 ? (
