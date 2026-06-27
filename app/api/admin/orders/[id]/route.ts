@@ -53,6 +53,7 @@ type UpdateOrderBody = {
   depositPaid?: boolean;
   depositAmount?: number | string | null;
   items?: OrderItemInput[];
+  batchId?: string | null;
 };
 
 export async function GET(
@@ -200,6 +201,19 @@ export async function PATCH(
         }
       }
       data.status = body.status;
+    }
+
+    if ("batchId" in body) {
+      const bid = body.batchId;
+      if (bid === null || bid === "") {
+        data.batch = { disconnect: true };
+      } else if (typeof bid === "string") {
+        const batch = await prisma.batch.findUnique({ where: { id: bid }, select: { id: true } });
+        if (!batch) {
+          return NextResponse.json({ error: "Lot introuvable." }, { status: 404 });
+        }
+        data.batch = { connect: { id: bid } };
+      }
     }
 
     if ("deliveryAt" in body) {
