@@ -50,8 +50,19 @@ export type BatchSaleRow = {
   itemCount: number;
 };
 
+export type BatchOrderRow = {
+  id: string;
+  customerName: string;
+  status: "READY" | "DELIVERED";
+  orderedAt: string;
+  total: string;
+  cashed: string;
+  due: string;
+};
+
 export type BatchDetail = BatchRowLite & {
   sales: BatchSaleRow[];
+  orders: BatchOrderRow[];
   expensesList: BatchExpenseRow[];
 };
 
@@ -168,6 +179,19 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
           _count: { select: { items: true } },
         },
       },
+      orders: {
+        where: { status: { in: ["READY", "DELIVERED"] }, sale: null },
+        orderBy: { orderedAt: "desc" },
+        select: {
+          id: true,
+          customerName: true,
+          customer: { select: { fullName: true } },
+          status: true,
+          orderedAt: true,
+          items: { select: { unitPrice: true, quantity: true } },
+          payments: { select: { type: true, amount: true } },
+        },
+      },
       expenses: {
         orderBy: { occurredAt: "desc" },
         select: {
@@ -234,6 +258,28 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
         remainingDue: saleDue.toFixed(2),
         netMargin: saleCashed.minus(saleCost).toFixed(2),
         itemCount: s._count.items,
+      };
+    }),
+    orders: b.orders.map((o) => {
+      const oTotal = o.items.reduce(
+        (acc, it) => acc.plus(new Decimal(it.unitPrice.toString()).times(it.quantity)),
+        new Decimal(0),
+      );
+      let paid = new Decimal(0);
+      for (const p of o.payments) {
+        const a = new Decimal(p.amount.toString());
+        paid = p.type === "REFUND" ? paid.minus(a) : paid.plus(a);
+      }
+      const cashed = paid.greaterThan(oTotal) ? oTotal : paid.greaterThan(0) ? paid : new Decimal(0);
+      const due = oTotal.greaterThan(paid) ? oTotal.minus(paid) : new Decimal(0);
+      return {
+        id: o.id,
+        customerName: o.customer?.fullName ?? o.customerName ?? "Anonyme",
+        status: o.status as "READY" | "DELIVERED",
+        orderedAt: o.orderedAt.toISOString(),
+        total: oTotal.toFixed(2),
+        cashed: cashed.toFixed(2),
+        due: due.toFixed(2),
       };
     }),
     expensesList: b.expenses.map((e) => ({
