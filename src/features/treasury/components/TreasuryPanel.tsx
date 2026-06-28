@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeftRight, Plus, SlidersHorizontal, AlertTriangle, Truck, ChevronRight } from "lucide-react";
+import { ArrowLeftRight, Plus, SlidersHorizontal, AlertTriangle, Truck, ChevronRight, ChevronDown } from "lucide-react";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
 import { Button } from "@/ui/primitives/Button";
@@ -244,63 +244,9 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
           </Stack>
         ) : null}
 
-        {/* Mouvements */}
+        {/* Mouvements groupés par mois */}
         {movements.length > 0 ? (
-          <div>
-            <h3 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--admin-text-muted)]">
-              Mouvements récents
-            </h3>
-            <Card padding={0}>
-              <ul className="divide-y px-3" style={{ borderColor: "var(--admin-border)" }}>
-                {movements.map((m) => {
-                  const amt = Number(m.amount);
-                  const positive = amt >= 0;
-                  const inner = (
-                    <>
-                      <span className="min-w-0">
-                        <span className="block truncate text-[14px] font-medium text-[var(--admin-text)]">
-                          {m.title}
-                        </span>
-                        <span className="block truncate text-[12px] text-[var(--admin-text-subtle)]">
-                          {KIND_LABEL[m.kind]} · {m.pocketName} ·{" "}
-                          {new Date(m.occurredAt).toLocaleDateString("fr-FR")}
-                        </span>
-                      </span>
-                      <span className="flex shrink-0 items-center gap-1">
-                        <span
-                          className={cn(
-                            "text-[14px] font-bold tabular-nums",
-                            positive ? "text-[var(--admin-success)]" : "text-[var(--admin-danger)]",
-                          )}
-                        >
-                          {positive ? "+" : "−"}
-                          {Math.abs(amt).toFixed(2)} €
-                        </span>
-                        {m.href ? (
-                          <ChevronRight size={15} className="text-[var(--admin-text-subtle)]" aria-hidden />
-                        ) : null}
-                      </span>
-                    </>
-                  );
-                  return (
-                    <li key={m.id}>
-                      {m.href ? (
-                        <Link
-                          href={m.href}
-                          prefetch
-                          className="flex items-center justify-between gap-3 py-2.5 tap-scale"
-                        >
-                          {inner}
-                        </Link>
-                      ) : (
-                        <div className="flex items-center justify-between gap-3 py-2.5">{inner}</div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </Card>
-          </div>
+          <MovementsByMonth movements={movements} />
         ) : null}
       </Stack>
 
@@ -434,5 +380,138 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
 
       {toast ? <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} /> : null}
     </>
+  );
+}
+
+const MONTH_LABELS: Record<string, string> = {
+  "01": "Janvier", "02": "Février", "03": "Mars", "04": "Avril",
+  "05": "Mai", "06": "Juin", "07": "Juillet", "08": "Août",
+  "09": "Septembre", "10": "Octobre", "11": "Novembre", "12": "Décembre",
+};
+
+function monthLabel(iso: string): { key: string; label: string } {
+  const d = new Date(iso);
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const y = d.getFullYear();
+  return { key: `${y}-${m}`, label: `${MONTH_LABELS[m]} ${y}` };
+}
+
+function MovementsByMonth({ movements }: { movements: MovementRow[] }) {
+  const groups = useMemo(() => {
+    const map = new Map<string, { label: string; items: MovementRow[]; net: number }>();
+    for (const m of movements) {
+      const { key, label } = monthLabel(m.occurredAt);
+      const g = map.get(key) ?? { label, items: [], net: 0 };
+      g.items.push(m);
+      g.net += Number(m.amount);
+      map.set(key, g);
+    }
+    return Array.from(map.entries()).sort((a, b) => (a[0] < b[0] ? 1 : -1));
+  }, [movements]);
+
+  const [openKeys, setOpenKeys] = useState<Set<string>>(() => new Set([groups[0]?.[0]].filter(Boolean) as string[]));
+  const toggle = (k: string) =>
+    setOpenKeys((s) => {
+      const next = new Set(s);
+      next.has(k) ? next.delete(k) : next.add(k);
+      return next;
+    });
+
+  return (
+    <div>
+      <h3 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--admin-text-muted)]">
+        Mouvements
+      </h3>
+      <Stack gap={2}>
+        {groups.map(([key, g]) => {
+          const isOpen = openKeys.has(key);
+          return (
+            <Card key={key} padding={0}>
+              <button
+                type="button"
+                onClick={() => toggle(key)}
+                className="flex w-full items-center justify-between gap-3 px-3 py-2.5 tap-scale"
+              >
+                <span className="flex items-center gap-2">
+                  <ChevronDown
+                    size={14}
+                    className={cn(
+                      "text-[var(--admin-text-subtle)] transition-transform",
+                      isOpen ? "" : "-rotate-90",
+                    )}
+                    aria-hidden
+                  />
+                  <span className="text-[13px] font-semibold text-[var(--admin-text)]">
+                    {g.label}
+                  </span>
+                  <span className="text-[11px] text-[var(--admin-text-subtle)]">
+                    {g.items.length} mvt{g.items.length > 1 ? "s" : ""}
+                  </span>
+                </span>
+                <span
+                  className={cn(
+                    "text-[13px] font-bold tabular-nums",
+                    g.net >= 0 ? "text-[var(--admin-success)]" : "text-[var(--admin-danger)]",
+                  )}
+                >
+                  {g.net >= 0 ? "+" : "−"}
+                  {Math.abs(g.net).toFixed(2)} €
+                </span>
+              </button>
+              {isOpen ? (
+                <ul className="divide-y border-t px-3" style={{ borderColor: "var(--admin-border)" }}>
+                  {g.items.map((m) => {
+                    const amt = Number(m.amount);
+                    const positive = amt >= 0;
+                    const inner = (
+                      <>
+                        <span className="min-w-0">
+                          <span className="block truncate text-[14px] font-medium text-[var(--admin-text)]">
+                            {m.title}
+                          </span>
+                          <span className="block truncate text-[12px] text-[var(--admin-text-subtle)]">
+                            {KIND_LABEL[m.kind]} · {m.pocketName} ·{" "}
+                            {new Date(m.occurredAt).toLocaleDateString("fr-FR")}
+                          </span>
+                        </span>
+                        <span className="flex shrink-0 items-center gap-1">
+                          <span
+                            className={cn(
+                              "text-[14px] font-bold tabular-nums",
+                              positive ? "text-[var(--admin-success)]" : "text-[var(--admin-danger)]",
+                            )}
+                          >
+                            {positive ? "+" : "−"}
+                            {Math.abs(amt).toFixed(2)} €
+                          </span>
+                          {m.href ? (
+                            <ChevronRight size={15} className="text-[var(--admin-text-subtle)]" aria-hidden />
+                          ) : null}
+                        </span>
+                      </>
+                    );
+                    return (
+                      <li key={m.id}>
+                        {m.href ? (
+                          <Link
+                            href={m.href}
+                            prefetch
+                            className="flex items-center justify-between gap-3 py-2.5 tap-scale"
+                          >
+                            {inner}
+                          </Link>
+                        ) : (
+                          <div className="flex items-center justify-between gap-3 py-2.5">{inner}</div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
+            </Card>
+          );
+        })}
+      </Stack>
+    </div>
   );
 }
