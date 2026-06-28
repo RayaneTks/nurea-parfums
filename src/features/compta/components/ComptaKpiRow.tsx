@@ -4,13 +4,24 @@ import type { ComptaListResult } from "@/server/sales/queries";
 
 type ComptaKpiRowProps = {
   summary: ComptaListResult["summary"];
+  /** Encaissé venant des ventes ponctuelles (pour breakdown). */
+  salesCashed?: string;
+  /** Encaissé venant des commandes confirmées (pour breakdown). */
+  ordersCashed?: string;
 };
 
-export function ComptaKpiRow({ summary }: ComptaKpiRowProps) {
+export function ComptaKpiRow({ summary, salesCashed, ordersCashed }: ComptaKpiRowProps) {
   const debt = Number(summary.outstandingRevenue ?? "0");
   const hasDebt = Number.isFinite(debt) && debt > 0;
   const expenses = Number(summary.totalExpenses ?? "0");
   const hasExpenses = Number.isFinite(expenses) && expenses > 0;
+  const breakdown =
+    salesCashed && ordersCashed
+      ? {
+          sales: Number(salesCashed),
+          orders: Number(ordersCashed),
+        }
+      : null;
 
   return (
     <div className="space-y-2 min-w-0">
@@ -22,6 +33,11 @@ export function ComptaKpiRow({ summary }: ComptaKpiRowProps) {
           <p className="mt-1 text-[16px] sm:text-[18px] font-bold leading-none">
             <Money value={summary.cashedRevenue} compact />
           </p>
+          {breakdown ? (
+            <p className="mt-0.5 text-[10px] tabular-nums text-[var(--admin-text-subtle)]">
+              {breakdown.sales.toFixed(0)} ventes · {breakdown.orders.toFixed(0)} cmds
+            </p>
+          ) : null}
         </Card>
         <Card padding={3} tone="surface">
           <p className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
