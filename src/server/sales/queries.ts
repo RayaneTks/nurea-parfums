@@ -96,6 +96,10 @@ export type ComptaListResult = {
     salesCashed: string;
     /** Décomposition du CA : encaissé venant des commandes confirmées. */
     ordersCashed: string;
+    /** Reste dû sur les ventes (clients qui doivent encore payer). */
+    salesDue: string;
+    /** Reste dû sur les commandes confirmées. */
+    ordersDue: string;
     outstandingRevenue: string;
     totalCost: string;
     totalExpenses: string;
@@ -313,6 +317,8 @@ export async function listSalesGroupedByCustomer(params: {
       cashedRevenue: cashedRevenue.toFixed(2),
       salesCashed: totalRevenueBilled.minus(totalOutstanding).toFixed(2),
       ordersCashed: ordersCashed.toFixed(2),
+      salesDue: totalOutstanding.toFixed(2),
+      ordersDue: ordersDue.toFixed(2),
       outstandingRevenue: outstanding.toFixed(2),
       totalCost: grandCost.toFixed(2),
       totalExpenses: totalExpenses.toFixed(2),

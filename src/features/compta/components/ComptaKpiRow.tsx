@@ -4,13 +4,21 @@ import type { ComptaListResult } from "@/server/sales/queries";
 
 type ComptaKpiRowProps = {
   summary: ComptaListResult["summary"];
-  /** Encaissé venant des ventes ponctuelles (pour breakdown). */
   salesCashed?: string;
-  /** Encaissé venant des commandes confirmées (pour breakdown). */
   ordersCashed?: string;
+  /** Reste dû sur les ventes (clients qui doivent encore payer). */
+  salesDue?: string;
+  /** Reste dû sur les commandes confirmées (acomptes partiels). */
+  ordersDue?: string;
 };
 
-export function ComptaKpiRow({ summary, salesCashed, ordersCashed }: ComptaKpiRowProps) {
+export function ComptaKpiRow({
+  summary,
+  salesCashed,
+  ordersCashed,
+  salesDue,
+  ordersDue,
+}: ComptaKpiRowProps) {
   const debt = Number(summary.outstandingRevenue ?? "0");
   const hasDebt = Number.isFinite(debt) && debt > 0;
   const expenses = Number(summary.totalExpenses ?? "0");
@@ -35,7 +43,7 @@ export function ComptaKpiRow({ summary, salesCashed, ordersCashed }: ComptaKpiRo
           </p>
           {breakdown ? (
             <p className="mt-0.5 text-[10px] tabular-nums text-[var(--admin-text-subtle)]">
-              {breakdown.sales.toFixed(0)} ventes · {breakdown.orders.toFixed(0)} cmds
+              {breakdown.sales.toFixed(0)} € ventes · {breakdown.orders.toFixed(0)} € commandes
             </p>
           ) : null}
         </Card>
@@ -90,6 +98,11 @@ export function ComptaKpiRow({ summary, salesCashed, ordersCashed }: ComptaKpiRo
               {debt.toFixed(0)} €
             </span>
           </div>
+          {salesDue && ordersDue ? (
+            <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
+              {Number(salesDue).toFixed(0)} € ventes · {Number(ordersDue).toFixed(0)} € commandes
+            </p>
+          ) : null}
         </Card>
       ) : null}
     </div>
