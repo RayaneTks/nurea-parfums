@@ -21,6 +21,7 @@ import { InlineNameEditor } from "@/ui/patterns/InlineNameEditor";
 import { Money } from "@/ui/patterns/Money";
 import { BatchExpensesSection } from "./BatchExpensesSection";
 import { BatchAssignSheet } from "./BatchAssignSheet";
+import { BatchAssignOrdersSheet } from "./BatchAssignOrdersSheet";
 import type { BatchDetail } from "@/server/batches/queries";
 
 type BatchDetailClientProps = {
@@ -33,6 +34,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [pending, startTransition] = useTransition();
   const [assignOpen, setAssignOpen] = useState(false);
+  const [assignOrdersOpen, setAssignOrdersOpen] = useState(false);
 
   const isOpen = current.status === "OPEN";
 
@@ -345,6 +347,95 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
           )}
         </Card>
 
+        <Card padding={0}>
+          <div className="flex items-center justify-between gap-2 border-b border-[var(--admin-border)] px-3 py-2.5">
+            <div className="min-w-0">
+              <h2 className="text-[14px] font-semibold text-[var(--admin-text)]">
+                Commandes ({current.orders.length})
+              </h2>
+              <p className="mt-0.5 text-[11px] text-[var(--admin-text-subtle)]">
+                Statut « À traiter » ou « Livrée » rattachées à ce lot.
+              </p>
+            </div>
+            {isOpen ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                leadingIcon={<Plus size={14} />}
+                onClick={() => setAssignOrdersOpen(true)}
+                disabled={pending}
+              >
+                Assigner
+              </Button>
+            ) : null}
+          </div>
+          {current.orders.length === 0 ? (
+            <EmptyState
+              icon={ShoppingBag}
+              title="Aucune commande"
+              description="Assigne des commandes « À traiter » ou « Livrée » à ce lot."
+              className="py-6"
+              action={
+                isOpen ? (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="md"
+                    leadingIcon={<Plus size={15} />}
+                    onClick={() => setAssignOrdersOpen(true)}
+                    disabled={pending}
+                  >
+                    Assigner des commandes
+                  </Button>
+                ) : undefined
+              }
+            />
+          ) : (
+            <ul className="divide-y divide-[var(--admin-border)]">
+              {current.orders.map((o) => {
+                const due = Number(o.due);
+                return (
+                  <li key={o.id}>
+                    <Link
+                      href={`/admin/ordres/${o.id}`}
+                      prefetch={false}
+                      className="flex items-center gap-3 px-3 py-3 tap-scale hover:bg-[var(--admin-surface-muted)]"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[14px] font-medium text-[var(--admin-text)]">
+                          {o.customerName}
+                        </p>
+                        <p className="text-[11px] text-[var(--admin-text-subtle)]">
+                          {o.status === "READY" ? "À traiter" : "Livrée"} ·{" "}
+                          {new Date(o.orderedAt).toLocaleDateString("fr-FR", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <Money value={o.cashed} bold className="text-[14px]" />
+                        {due > 0.005 ? (
+                          <p className="mt-0.5 text-[11px] text-[var(--admin-warning)]">
+                            Reste {due.toFixed(0)} €
+                          </p>
+                        ) : null}
+                      </div>
+                      <ChevronRight
+                        size={14}
+                        className="shrink-0 text-[var(--admin-text-subtle)]"
+                        aria-hidden
+                      />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Card>
+
         {current.notes ? (
           <Card padding={3}>
             <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
@@ -384,6 +475,18 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
           void refresh();
           router.refresh();
           setToast({ type: "success", message: "Lot mis à jour." });
+        }}
+        onError={(message) => setToast({ type: "error", message })}
+      />
+
+      <BatchAssignOrdersSheet
+        batchId={current.id}
+        open={assignOrdersOpen}
+        onOpenChange={setAssignOrdersOpen}
+        onSaved={() => {
+          void refresh();
+          router.refresh();
+          setToast({ type: "success", message: "Commandes mises à jour." });
         }}
         onError={(message) => setToast({ type: "error", message })}
       />
