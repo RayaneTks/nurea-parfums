@@ -126,6 +126,8 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
           summary={data.summary}
           salesCashed={data.summary.salesCashed}
           ordersCashed={data.summary.ordersCashed}
+          salesDue={data.summary.salesDue}
+          ordersDue={data.summary.ordersDue}
         />
 
         {fetchError ? (
