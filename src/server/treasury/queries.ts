@@ -29,6 +29,10 @@ export type MovementRow = {
   refType: string | null;
   refId: string | null;
   occurredAt: string;
+  /** Libellé clair résolu (ex. « Vente · Fares »). */
+  title: string;
+  /** Lien vers l'origine (vente / commande / lot), null si interne. */
+  href: string | null;
 };
 
 // Pas de cache : données financières à faible trafic qui doivent rester
@@ -105,15 +109,89 @@ export async function listMovements(params?: {
       pocket: { select: { name: true } },
     },
   });
-  return rows.map((r) => ({
-    id: r.id,
-    pocketId: r.pocketId,
-    pocketName: r.pocket.name,
-    amount: r.amount.toString(),
-    kind: r.kind,
-    label: r.label,
-    refType: r.refType,
-    refId: r.refId,
-    occurredAt: r.occurredAt.toISOString(),
-  }));
+  // Résolution des origines en lots (titre clair + lien) — évite N+1.
+  const saleIds = rows.filter((r) => r.refType === "Sale" && r.refId).map((r) => r.refId!);
+  const payIds = rows
+    .filter((r) => r.refType === "PaymentTransaction" && r.refId)
+    .map((r) => r.refId!);
+  const expIds = rows.filter((r) => r.refType === "BatchExpense" && r.refId).map((r) => r.refId!);
+
+  const [sales, payments, expenses] = await Promise.all([
+    saleIds.length
+      ? prisma.sale.findMany({
+          where: { id: { in: saleIds } },
+          select: { id: true, customerName: true, customer: { select: { fullName: true } } },
+        })
+      : Promise.resolve([]),
+    payIds.length
+      ? prisma.paymentTransaction.findMany({
+          where: { id: { in: payIds } },
+          select: {
+            id: true,
+            type: true,
+            orderId: true,
+            order: {
+              select: { customerName: true, customer: { select: { fullName: true } } },
+            },
+          },
+        })
+      : Promise.resolve([]),
+    expIds.length
+      ? prisma.batchExpense.findMany({
+          where: { id: { in: expIds } },
+          select: { id: true, label: true, batchId: true },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const saleMap = new Map(sales.map((s) => [s.id, s]));
+  const payMap = new Map(payments.map((p) => [p.id, p]));
+  const expMap = new Map(expenses.map((e) => [e.id, e]));
+
+  function resolve(
+    refType: string | null,
+    refId: string | null,
+    kind: CashMovementKind,
+    fallback: string | null,
+  ): { title: string; href: string | null } {
+    if (refType === "Sale" && refId) {
+      const s = saleMap.get(refId);
+      const who = s?.customer?.fullName ?? s?.customerName ?? "client";
+      return { title: `Vente · ${who}`, href: `/admin/compta?sale=${refId}` };
+    }
+    if (refType === "PaymentTransaction" && refId) {
+      const p = payMap.get(refId);
+      const who = p?.order?.customer?.fullName ?? p?.order?.customerName ?? "client";
+      const what = p?.type === "DEPOSIT" ? "Acompte" : p?.type === "BALANCE" ? "Solde" : "Remboursement";
+      return {
+        title: `${what} · ${who}`,
+        href: p?.orderId ? `/admin/ordres/${p.orderId}` : null,
+      };
+    }
+    if (refType === "BatchExpense" && refId) {
+      const e = expMap.get(refId);
+      return {
+        title: `Dépense · ${e?.label ?? "—"}`,
+        href: e?.batchId ? `/admin/lots/${e.batchId}` : null,
+      };
+    }
+    return { title: fallback || "Mouvement", href: null };
+  }
+
+  return rows.map((r) => {
+    const { title, href } = resolve(r.refType, r.refId, r.kind, r.label);
+    return {
+      id: r.id,
+      pocketId: r.pocketId,
+      pocketName: r.pocket.name,
+      amount: r.amount.toString(),
+      kind: r.kind,
+      label: r.label,
+      refType: r.refType,
+      refId: r.refId,
+      occurredAt: r.occurredAt.toISOString(),
+      title,
+      href,
+    };
+  });
 }

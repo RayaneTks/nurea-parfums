@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeftRight, Plus, SlidersHorizontal, AlertTriangle, Truck } from "lucide-react";
+import { ArrowLeftRight, Plus, SlidersHorizontal, AlertTriangle, Truck, ChevronRight } from "lucide-react";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
 import { Button } from "@/ui/primitives/Button";
@@ -254,26 +255,46 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
                 {movements.map((m) => {
                   const amt = Number(m.amount);
                   const positive = amt >= 0;
-                  return (
-                    <li key={m.id} className="flex items-center justify-between gap-3 py-2.5">
+                  const inner = (
+                    <>
                       <span className="min-w-0">
                         <span className="block truncate text-[14px] font-medium text-[var(--admin-text)]">
-                          {m.label || KIND_LABEL[m.kind]}
+                          {m.title}
                         </span>
                         <span className="block truncate text-[12px] text-[var(--admin-text-subtle)]">
                           {KIND_LABEL[m.kind]} · {m.pocketName} ·{" "}
                           {new Date(m.occurredAt).toLocaleDateString("fr-FR")}
                         </span>
                       </span>
-                      <span
-                        className={cn(
-                          "shrink-0 text-[14px] font-bold tabular-nums",
-                          positive ? "text-[var(--admin-success)]" : "text-[var(--admin-danger)]",
-                        )}
-                      >
-                        {positive ? "+" : "−"}
-                        {Math.abs(amt).toFixed(2)} €
+                      <span className="flex shrink-0 items-center gap-1">
+                        <span
+                          className={cn(
+                            "text-[14px] font-bold tabular-nums",
+                            positive ? "text-[var(--admin-success)]" : "text-[var(--admin-danger)]",
+                          )}
+                        >
+                          {positive ? "+" : "−"}
+                          {Math.abs(amt).toFixed(2)} €
+                        </span>
+                        {m.href ? (
+                          <ChevronRight size={15} className="text-[var(--admin-text-subtle)]" aria-hidden />
+                        ) : null}
                       </span>
+                    </>
+                  );
+                  return (
+                    <li key={m.id}>
+                      {m.href ? (
+                        <Link
+                          href={m.href}
+                          prefetch
+                          className="flex items-center justify-between gap-3 py-2.5 tap-scale"
+                        >
+                          {inner}
+                        </Link>
+                      ) : (
+                        <div className="flex items-center justify-between gap-3 py-2.5">{inner}</div>
+                      )}
                     </li>
                   );
                 })}
