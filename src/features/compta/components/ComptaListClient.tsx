@@ -122,7 +122,11 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
     <>
       <Stack gap={4}>
         <ComptaHeader query={query} onQueryChange={setQuery} />
-        <ComptaKpiRow summary={data.summary} />
+        <ComptaKpiRow
+          summary={data.summary}
+          salesCashed={data.summary.salesCashed}
+          ordersCashed={data.summary.ordersCashed}
+        />
 
         {fetchError ? (
           <EmptyState

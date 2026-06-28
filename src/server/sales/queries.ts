@@ -92,6 +92,10 @@ export type ComptaListResult = {
   orderRows: OrderComptaRow[];
   summary: {
     cashedRevenue: string;
+    /** Décomposition du CA : encaissé venant des ventes ponctuelles. */
+    salesCashed: string;
+    /** Décomposition du CA : encaissé venant des commandes confirmées. */
+    ordersCashed: string;
     outstandingRevenue: string;
     totalCost: string;
     totalExpenses: string;
@@ -307,6 +311,8 @@ export async function listSalesGroupedByCustomer(params: {
     orderRows: orders.rows,
     summary: {
       cashedRevenue: cashedRevenue.toFixed(2),
+      salesCashed: totalRevenueBilled.minus(totalOutstanding).toFixed(2),
+      ordersCashed: ordersCashed.toFixed(2),
       outstandingRevenue: outstanding.toFixed(2),
       totalCost: grandCost.toFixed(2),
       totalExpenses: totalExpenses.toFixed(2),
