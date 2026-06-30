@@ -192,16 +192,26 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
 
         {balanceSlot}
 
-        {current.status !== "PENDING" && current.status !== "CANCELLED" ? (
+        {current.status === "READY" || current.status === "DELIVERED" ? (
           <BatchPicker
             endpoint={`/api/admin/orders/${current.id}`}
             current={current.batchId ? { id: current.batchId, name: current.batchName ?? "Lot" } : null}
             onAssigned={(next) => {
               setCurrent((c) => ({ ...c, batchId: next?.id ?? null, batchName: next?.name ?? null }));
               setToast({ type: "success", message: next ? "Commande assignée au lot." : "Retirée du lot." });
+              router.refresh();
             }}
             onError={(message) => setToast({ type: "error", message })}
           />
+        ) : current.status === "PENDING" ? (
+          <Card padding={3} tone="surface">
+            <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+              Lot
+            </p>
+            <p className="mt-1 text-[13px] text-[var(--admin-text-muted)]">
+              Encaisse l&apos;acompte (statut « À traiter ») pour pouvoir assigner cette commande à un lot.
+            </p>
+          </Card>
         ) : null}
 
         {current.notes ? (
