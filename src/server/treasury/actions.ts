@@ -145,7 +145,11 @@ export async function adjustmentAction(input: {
   return { ok: true, data: { id: mv.id } };
 }
 
-/** Paiement fournisseur / sortie d'avance depuis une poche. */
+/**
+ * Avance fournisseur — déplace l'argent depuis une poche réelle (Revolut/Cash…)
+ * vers la poche SUPPLIER (avance). S'il n'y a pas de poche SUPPLIER, retombe sur
+ * un SUPPLIER_OUT classique (sortie sèche).
+ */
 export async function supplierPaymentAction(input: {
   pocketId?: string | null;
   amount?: number | string;
@@ -154,6 +158,24 @@ export async function supplierPaymentAction(input: {
 }): Promise<ActionResult<{ id: string }>> {
   const amount = parseAmount(input.amount);
   if (amount === null || amount <= 0) return { ok: false, error: "Montant invalide (> 0)." };
+
+  const supplier = await prisma.pocket.findFirst({
+    where: { archived: false, kind: "SUPPLIER" },
+    select: { id: true },
+    orderBy: { sortOrder: "asc" },
+  });
+
+  if (supplier && input.pocketId && supplier.id !== input.pocketId) {
+    // Vraie avance : sort de la poche source, entre en avance chez le fournisseur.
+    const groupId = await transfer({
+      fromPocketId: input.pocketId,
+      toPocketId: supplier.id,
+      amount,
+      label: input.label?.trim() || "Avance fournisseur",
+    });
+    revalidate();
+    return { ok: true, data: { id: groupId } };
+  }
 
   const mv = await recordMovement({
     pocketId: input.pocketId ?? null,

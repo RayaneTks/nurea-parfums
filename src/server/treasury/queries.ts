@@ -33,6 +33,10 @@ export type MovementRow = {
   title: string;
   /** Lien vers l'origine (vente / commande / lot), null si interne. */
   href: string | null;
+  /** Identifiant de regroupement (ex: « batch:<id> » pour grouper les dépenses d'un même lot). */
+  groupKey: string | null;
+  /** Libellé du groupe (ex. nom du lot). */
+  groupLabel: string | null;
 };
 
 // Pas de cache : données financières à faible trafic qui doivent rester
@@ -139,7 +143,12 @@ export async function listMovements(params?: {
     expIds.length
       ? prisma.batchExpense.findMany({
           where: { id: { in: expIds } },
-          select: { id: true, label: true, batchId: true },
+          select: {
+            id: true,
+            label: true,
+            batchId: true,
+            batch: { select: { id: true, name: true } },
+          },
         })
       : Promise.resolve([]),
   ]);
@@ -153,11 +162,16 @@ export async function listMovements(params?: {
     refId: string | null,
     kind: CashMovementKind,
     fallback: string | null,
-  ): { title: string; href: string | null } {
+  ): { title: string; href: string | null; groupKey: string | null; groupLabel: string | null } {
     if (refType === "Sale" && refId) {
       const s = saleMap.get(refId);
       const who = s?.customer?.fullName ?? s?.customerName ?? "client";
-      return { title: `Vente · ${who}`, href: `/admin/compta?sale=${refId}` };
+      return {
+        title: `Vente · ${who}`,
+        href: `/admin/compta?sale=${refId}`,
+        groupKey: null,
+        groupLabel: null,
+      };
     }
     if (refType === "PaymentTransaction" && refId) {
       const p = payMap.get(refId);
@@ -166,6 +180,8 @@ export async function listMovements(params?: {
       return {
         title: `${what} · ${who}`,
         href: p?.orderId ? `/admin/ordres/${p.orderId}` : null,
+        groupKey: null,
+        groupLabel: null,
       };
     }
     if (refType === "BatchExpense" && refId) {
@@ -173,13 +189,24 @@ export async function listMovements(params?: {
       return {
         title: `Dépense · ${e?.label ?? "—"}`,
         href: e?.batchId ? `/admin/lots/${e.batchId}` : null,
+        groupKey: e?.batchId ? `batch:${e.batchId}` : null,
+        groupLabel: e?.batch?.name ?? null,
       };
     }
-    return { title: fallback || "Mouvement", href: null };
+    if (refType === "Batch" && refId) {
+      // SUPPLIER_OUT lié à un Batch — groupe avec les dépenses du même lot.
+      return {
+        title: fallback || "Paiement fournisseur",
+        href: `/admin/lots/${refId}`,
+        groupKey: `batch:${refId}`,
+        groupLabel: null,
+      };
+    }
+    return { title: fallback || "Mouvement", href: null, groupKey: null, groupLabel: null };
   }
 
   return rows.map((r) => {
-    const { title, href } = resolve(r.refType, r.refId, r.kind, r.label);
+    const { title, href, groupKey, groupLabel } = resolve(r.refType, r.refId, r.kind, r.label);
     return {
       id: r.id,
       pocketId: r.pocketId,
@@ -192,6 +219,8 @@ export async function listMovements(params?: {
       occurredAt: r.occurredAt.toISOString(),
       title,
       href,
+      groupKey,
+      groupLabel,
     };
   });
 }
