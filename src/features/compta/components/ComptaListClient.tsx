@@ -98,13 +98,14 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
     [query],
   );
 
-  const chartSales = useMemo(
+  const allSales = useMemo(
     () => [
       ...data.batchGroups.flatMap((g) => g.sales),
       ...data.customerGroups.flatMap((g) => g.sales),
     ],
     [data],
   );
+  const chartSales = allSales;
 
   const handleOpenSale = (saleId: string) => {
     setOpenSaleId(saleId);
@@ -128,6 +129,8 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
           ordersCashed={data.summary.ordersCashed}
           salesDue={data.summary.salesDue}
           ordersDue={data.summary.ordersDue}
+          salesList={allSales}
+          ordersList={orderRows}
         />
 
         {fetchError ? (
