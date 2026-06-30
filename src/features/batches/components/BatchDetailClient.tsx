@@ -171,8 +171,11 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
                 ariaLabel="Renommer le lot"
               />
               <p className="mt-1 text-[12px] text-[var(--admin-text-subtle)]">
-                {current.salesCount} vente{current.salesCount > 1 ? "s" : ""} ·{" "}
-                {isOpen ? "Ouvert" : "Clos"}
+                {current.salesCount} vente{current.salesCount > 1 ? "s" : ""}
+                {current.ordersCount > 0
+                  ? ` · ${current.ordersCount} commande${current.ordersCount > 1 ? "s" : ""}`
+                  : null}{" "}
+                · {isOpen ? "Ouvert" : "Clos"}
                 {current.expectedAt
                   ? ` · prévu le ${new Date(current.expectedAt).toLocaleDateString("fr-FR")}`
                   : null}
@@ -198,6 +201,16 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
             <p className="mt-1 text-[18px] font-bold leading-none">
               <Money value={current.cashedRevenue} compact />
             </p>
+            {Number(current.salesCashed) > 0 && Number(current.ordersCashed) > 0 ? (
+              <p className="mt-0.5 text-[10px] tabular-nums text-[var(--admin-text-subtle)]">
+                {Number(current.salesCashed).toFixed(0)} € ventes ·{" "}
+                {Number(current.ordersCashed).toFixed(0)} € commandes
+              </p>
+            ) : Number(current.ordersCashed) > 0 ? (
+              <p className="mt-0.5 text-[10px] tabular-nums text-[var(--admin-text-subtle)]">
+                acomptes commandes
+              </p>
+            ) : null}
           </Card>
           <Card padding={3} tone="alt">
             <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
@@ -207,15 +220,18 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
               <Money value={current.netMargin} compact tone="auto" />
             </p>
             <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
-              {current.marginPct}%
+              {current.marginPct}%{Number(current.expenses) > 0 ? " · net dépenses" : ""}
             </p>
           </Card>
           <Card padding={3} tone="surface">
             <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-              Dépenses
+              Coût achats
             </p>
             <p className="mt-1 text-[18px] font-bold leading-none">
-              <Money value={current.expenses} compact tone="danger" />
+              <Money value={current.totalCost} compact />
+            </p>
+            <p className="mt-0.5 text-[10px] tabular-nums text-[var(--admin-text-subtle)]">
+              parfums payés au fournisseur
             </p>
           </Card>
           {Number(current.outstandingRevenue) > 0 ? (
@@ -229,14 +245,21 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
               >
                 {Number(current.outstandingRevenue).toFixed(0)} €
               </p>
+              {Number(current.salesOutstanding) > 0 &&
+              Number(current.ordersOutstanding) > 0 ? (
+                <p className="mt-0.5 text-[10px] tabular-nums text-[var(--admin-text-subtle)]">
+                  {Number(current.salesOutstanding).toFixed(0)} € ventes ·{" "}
+                  {Number(current.ordersOutstanding).toFixed(0)} € commandes
+                </p>
+              ) : null}
             </Card>
           ) : (
             <Card padding={3} tone="surface">
               <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-                Coût achats
+                Dépenses
               </p>
               <p className="mt-1 text-[18px] font-bold leading-none">
-                <Money value={current.totalCost} compact />
+                <Money value={current.expenses} compact tone="danger" />
               </p>
             </Card>
           )}
