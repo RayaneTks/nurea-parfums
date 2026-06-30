@@ -4,15 +4,13 @@ import Decimal from "decimal.js-light";
 export type BatchStatus = "OPEN" | "CLOSED";
 
 /**
- * KPIs cash-basis. On affiche que du concret :
- *  - cashedRevenue : encaissé réel (totalRevenue − remainingDue par vente).
- *  - outstandingRevenue : reste à encaisser (somme remainingDue). Affiché en badge si > 0.
- *  - totalCost : coût des parfums (déjà payé, peu importe encaissement client).
- *  - expenses : dépenses opérationnelles du lot.
- *  - netMargin : cashedRevenue − totalCost − expenses (marge nette concrète).
- *  - marginPct : netMargin / cashedRevenue × 100.
- *
- * `totalRevenue` (facturé) reste exposé pour audit / debug mais l'UI doit utiliser cashedRevenue.
+ * KPIs cash-basis. Tout est concret, ventes + commandes assignées au lot pèsent ensemble :
+ *  - cashedRevenue  = encaissé total (ventes encaissées + acomptes/soldes des commandes À traiter/Livrée).
+ *  - salesCashed / ordersCashed : décomposition pour drill-down.
+ *  - outstandingRevenue = reste à encaisser (ventes + commandes).
+ *  - totalCost = coût d'achat des parfums (ventes + commandes assignées — déjà payé au fournisseur).
+ *  - expenses = dépenses opérationnelles du lot.
+ *  - netMargin = cashedRevenue − totalCost − expenses.
  */
 export type BatchRowLite = {
   id: string;
@@ -22,9 +20,14 @@ export type BatchRowLite = {
   notes: string | null;
   createdAt: string;
   salesCount: number;
+  ordersCount: number;
   totalRevenue: string;
   cashedRevenue: string;
+  salesCashed: string;
+  ordersCashed: string;
   outstandingRevenue: string;
+  salesOutstanding: string;
+  ordersOutstanding: string;
   totalCost: string;
   expenses: string;
   netMargin: string;
@@ -58,6 +61,7 @@ export type BatchOrderRow = {
   total: string;
   cashed: string;
   due: string;
+  cost: string;
 };
 
 export type BatchDetail = BatchRowLite & {
@@ -66,25 +70,79 @@ export type BatchDetail = BatchRowLite & {
   expensesList: BatchExpenseRow[];
 };
 
+type LineForCost = {
+  unitPrice: { toString(): string };
+  quantity: number;
+  unitCost: { toString(): string };
+};
+
+type PaymentForSum = { type: string; amount: { toString(): string } };
+
+function orderTotals(items: LineForCost[], payments: PaymentForSum[]): {
+  total: Decimal;
+  cost: Decimal;
+  cashed: Decimal;
+  due: Decimal;
+} {
+  const total = items.reduce(
+    (acc, it) => acc.plus(new Decimal(it.unitPrice.toString()).times(it.quantity)),
+    new Decimal(0),
+  );
+  const cost = items.reduce(
+    (acc, it) => acc.plus(new Decimal(it.unitCost.toString()).times(it.quantity)),
+    new Decimal(0),
+  );
+  let deposit = new Decimal(0);
+  let balance = new Decimal(0);
+  let refund = new Decimal(0);
+  for (const p of payments) {
+    const amt = new Decimal(p.amount.toString());
+    if (p.type === "DEPOSIT") deposit = deposit.plus(amt);
+    else if (p.type === "BALANCE") balance = balance.plus(amt);
+    else if (p.type === "REFUND") refund = refund.plus(amt);
+  }
+  const paid = deposit.plus(balance).minus(refund);
+  const cappedPaid = paid.greaterThan(total) ? total : paid;
+  const cashed = cappedPaid.greaterThan(0) ? cappedPaid : new Decimal(0);
+  const due = total.greaterThan(paid) ? total.minus(paid) : new Decimal(0);
+  return { total, cost, cashed, due };
+}
+
 function computeKpis(opts: {
-  totalRevenue: Decimal;
-  outstanding: Decimal;
-  totalCost: Decimal;
+  salesRevenue: Decimal;
+  salesOutstanding: Decimal;
+  salesCost: Decimal;
+  ordersCashed: Decimal;
+  ordersDue: Decimal;
+  ordersCost: Decimal;
   expenses: Decimal;
 }): {
   cashedRevenue: string;
+  salesCashed: string;
+  ordersCashed: string;
   outstandingRevenue: string;
+  salesOutstanding: string;
+  ordersOutstanding: string;
+  totalCost: string;
   netMargin: string;
   marginPct: string;
 } {
-  const cashed = opts.totalRevenue.minus(opts.outstanding);
-  const net = cashed.minus(opts.totalCost).minus(opts.expenses);
+  const salesCashed = opts.salesRevenue.minus(opts.salesOutstanding);
+  const cashed = salesCashed.plus(opts.ordersCashed);
+  const totalCost = opts.salesCost.plus(opts.ordersCost);
+  const outstanding = opts.salesOutstanding.plus(opts.ordersDue);
+  const net = cashed.minus(totalCost).minus(opts.expenses);
   const pct = cashed.greaterThan(0)
     ? net.dividedBy(cashed).times(100).toFixed(1)
     : "0.0";
   return {
     cashedRevenue: cashed.toFixed(2),
-    outstandingRevenue: opts.outstanding.toFixed(2),
+    salesCashed: salesCashed.toFixed(2),
+    ordersCashed: opts.ordersCashed.toFixed(2),
+    outstandingRevenue: outstanding.toFixed(2),
+    salesOutstanding: opts.salesOutstanding.toFixed(2),
+    ordersOutstanding: opts.ordersDue.toFixed(2),
+    totalCost: totalCost.toFixed(2),
     netMargin: net.toFixed(2),
     marginPct: pct,
   };
@@ -107,34 +165,51 @@ export async function listBatches(): Promise<BatchRowLite[]> {
           remainingDue: true,
         },
       },
-      expenses: {
-        select: { amount: true },
+      orders: {
+        where: { status: { in: ["READY", "DELIVERED"] }, sale: null },
+        select: {
+          items: { select: { unitPrice: true, quantity: true, unitCost: true } },
+          payments: { select: { type: true, amount: true } },
+        },
       },
+      expenses: { select: { amount: true } },
       _count: { select: { sales: true } },
     },
   });
 
   return batches.map((b) => {
-    const rev = b.sales.reduce(
+    const salesRev = b.sales.reduce(
       (acc, s) => acc.plus(new Decimal(s.totalRevenue.toString())),
       new Decimal(0),
     );
-    const cost = b.sales.reduce(
+    const salesCost = b.sales.reduce(
       (acc, s) => acc.plus(new Decimal(s.totalCost.toString())),
       new Decimal(0),
     );
-    const outstanding = b.sales.reduce(
+    const salesOut = b.sales.reduce(
       (acc, s) => acc.plus(new Decimal(s.remainingDue.toString())),
       new Decimal(0),
     );
+    let ordersCashed = new Decimal(0);
+    let ordersDue = new Decimal(0);
+    let ordersCost = new Decimal(0);
+    for (const o of b.orders) {
+      const t = orderTotals(o.items as LineForCost[], o.payments);
+      ordersCashed = ordersCashed.plus(t.cashed);
+      ordersDue = ordersDue.plus(t.due);
+      ordersCost = ordersCost.plus(t.cost);
+    }
     const exp = b.expenses.reduce(
       (acc, e) => acc.plus(new Decimal(e.amount.toString())),
       new Decimal(0),
     );
     const kpis = computeKpis({
-      totalRevenue: rev,
-      outstanding,
-      totalCost: cost,
+      salesRevenue: salesRev,
+      salesOutstanding: salesOut,
+      salesCost,
+      ordersCashed,
+      ordersDue,
+      ordersCost,
       expenses: exp,
     });
     return {
@@ -145,10 +220,15 @@ export async function listBatches(): Promise<BatchRowLite[]> {
       notes: b.notes,
       createdAt: b.createdAt.toISOString(),
       salesCount: b._count.sales,
-      totalRevenue: rev.toFixed(2),
+      ordersCount: b.orders.length,
+      totalRevenue: salesRev.toFixed(2),
       cashedRevenue: kpis.cashedRevenue,
+      salesCashed: kpis.salesCashed,
+      ordersCashed: kpis.ordersCashed,
       outstandingRevenue: kpis.outstandingRevenue,
-      totalCost: cost.toFixed(2),
+      salesOutstanding: kpis.salesOutstanding,
+      ordersOutstanding: kpis.ordersOutstanding,
+      totalCost: kpis.totalCost,
       expenses: exp.toFixed(2),
       netMargin: kpis.netMargin,
       marginPct: kpis.marginPct,
@@ -188,7 +268,7 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
           customer: { select: { fullName: true } },
           status: true,
           orderedAt: true,
-          items: { select: { unitPrice: true, quantity: true } },
+          items: { select: { unitPrice: true, quantity: true, unitCost: true } },
           payments: { select: { type: true, amount: true } },
         },
       },
@@ -206,26 +286,51 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
   });
   if (!b) return null;
 
-  const rev = b.sales.reduce(
+  const salesRev = b.sales.reduce(
     (acc, s) => acc.plus(new Decimal(s.totalRevenue.toString())),
     new Decimal(0),
   );
-  const cost = b.sales.reduce(
+  const salesCost = b.sales.reduce(
     (acc, s) => acc.plus(new Decimal(s.totalCost.toString())),
     new Decimal(0),
   );
-  const outstanding = b.sales.reduce(
+  const salesOut = b.sales.reduce(
     (acc, s) => acc.plus(new Decimal(s.remainingDue.toString())),
     new Decimal(0),
   );
+
+  const orderRows: BatchOrderRow[] = [];
+  let ordersCashed = new Decimal(0);
+  let ordersDue = new Decimal(0);
+  let ordersCost = new Decimal(0);
+  for (const o of b.orders) {
+    const t = orderTotals(o.items as LineForCost[], o.payments);
+    ordersCashed = ordersCashed.plus(t.cashed);
+    ordersDue = ordersDue.plus(t.due);
+    ordersCost = ordersCost.plus(t.cost);
+    orderRows.push({
+      id: o.id,
+      customerName: o.customer?.fullName ?? o.customerName ?? "Anonyme",
+      status: o.status as "READY" | "DELIVERED",
+      orderedAt: o.orderedAt.toISOString(),
+      total: t.total.toFixed(2),
+      cashed: t.cashed.toFixed(2),
+      due: t.due.toFixed(2),
+      cost: t.cost.toFixed(2),
+    });
+  }
+
   const exp = b.expenses.reduce(
     (acc, e) => acc.plus(new Decimal(e.amount.toString())),
     new Decimal(0),
   );
   const kpis = computeKpis({
-    totalRevenue: rev,
-    outstanding,
-    totalCost: cost,
+    salesRevenue: salesRev,
+    salesOutstanding: salesOut,
+    salesCost,
+    ordersCashed,
+    ordersDue,
+    ordersCost,
     expenses: exp,
   });
 
@@ -237,10 +342,15 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
     notes: b.notes,
     createdAt: b.createdAt.toISOString(),
     salesCount: b.sales.length,
-    totalRevenue: rev.toFixed(2),
+    ordersCount: orderRows.length,
+    totalRevenue: salesRev.toFixed(2),
     cashedRevenue: kpis.cashedRevenue,
+    salesCashed: kpis.salesCashed,
+    ordersCashed: kpis.ordersCashed,
     outstandingRevenue: kpis.outstandingRevenue,
-    totalCost: cost.toFixed(2),
+    salesOutstanding: kpis.salesOutstanding,
+    ordersOutstanding: kpis.ordersOutstanding,
+    totalCost: kpis.totalCost,
     expenses: exp.toFixed(2),
     netMargin: kpis.netMargin,
     marginPct: kpis.marginPct,
@@ -260,28 +370,7 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
         itemCount: s._count.items,
       };
     }),
-    orders: b.orders.map((o) => {
-      const oTotal = o.items.reduce(
-        (acc, it) => acc.plus(new Decimal(it.unitPrice.toString()).times(it.quantity)),
-        new Decimal(0),
-      );
-      let paid = new Decimal(0);
-      for (const p of o.payments) {
-        const a = new Decimal(p.amount.toString());
-        paid = p.type === "REFUND" ? paid.minus(a) : paid.plus(a);
-      }
-      const cashed = paid.greaterThan(oTotal) ? oTotal : paid.greaterThan(0) ? paid : new Decimal(0);
-      const due = oTotal.greaterThan(paid) ? oTotal.minus(paid) : new Decimal(0);
-      return {
-        id: o.id,
-        customerName: o.customer?.fullName ?? o.customerName ?? "Anonyme",
-        status: o.status as "READY" | "DELIVERED",
-        orderedAt: o.orderedAt.toISOString(),
-        total: oTotal.toFixed(2),
-        cashed: cashed.toFixed(2),
-        due: due.toFixed(2),
-      };
-    }),
+    orders: orderRows,
     expensesList: b.expenses.map((e) => ({
       id: e.id,
       label: e.label,
