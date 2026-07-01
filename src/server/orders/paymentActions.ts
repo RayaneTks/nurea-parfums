@@ -11,6 +11,7 @@ import type { ActionResult } from "@/server/customers/actions";
 import { computeOrderBalance } from "./payments";
 import { canTransition } from "@/domain/order-status";
 import { recordMovement, reverseMovementsFor } from "@/server/treasury/movements";
+import { syncOrderPurchaseCost } from "@/server/orders/purchaseCost";
 import type { OrderStatus } from "@prisma/client";
 
 async function refreshOrderCache(orderId: string): Promise<void> {
@@ -90,6 +91,9 @@ export async function recordPaymentAction(
       if (guard.ok) {
         await prisma.order.update({ where: { id: orderId }, data: { status: "READY" } });
         nextStatus = "READY";
+        // La commande devient réelle → sortie « Coût d'achat » en trésorerie, dans la
+        // même poche que l'acompte encaissé (à répartir si aucune).
+        await syncOrderPurchaseCost(orderId, { pocketId: pocketId ?? null });
       }
     }
 

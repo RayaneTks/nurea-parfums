@@ -213,18 +213,32 @@ export async function backfillTreasuryAction(): Promise<ActionResult<{ created: 
   // par les paiements de cette commande (boucle ci-dessous).
   const sales = await prisma.sale.findMany({
     where: { orderId: null },
-    select: { id: true, soldAt: true, totalRevenue: true, remainingDue: true },
+    select: { id: true, soldAt: true, totalRevenue: true, totalCost: true, remainingDue: true },
   });
   for (const s of sales) {
-    if (has.has(`Sale:${s.id}`)) continue;
-    const cashed = Number(s.totalRevenue) - Number(s.remainingDue);
-    if (cashed > 0.005) {
+    if (!has.has(`Sale:${s.id}`)) {
+      const cashed = Number(s.totalRevenue) - Number(s.remainingDue);
+      if (cashed > 0.005) {
+        await recordMovement({
+          pocketId: unassigned,
+          amount: cashed,
+          kind: "SALE_IN",
+          label: "Vente (historique)",
+          refType: "Sale",
+          refId: s.id,
+          occurredAt: s.soldAt,
+        });
+        created += 1;
+      }
+    }
+    // Coût de revient = sortie de trésorerie (achat du stock vendu).
+    if (!has.has(`SaleCost:${s.id}`) && Number(s.totalCost) > 0.005) {
       await recordMovement({
         pocketId: unassigned,
-        amount: cashed,
-        kind: "SALE_IN",
-        label: "Vente (historique)",
-        refType: "Sale",
+        amount: Number(s.totalCost),
+        kind: "SUPPLIER_OUT",
+        label: "Coût d'achat (historique)",
+        refType: "SaleCost",
         refId: s.id,
         occurredAt: s.soldAt,
       });
@@ -236,7 +250,12 @@ export async function backfillTreasuryAction(): Promise<ActionResult<{ created: 
   // qu'elles aient été finalisées en vente ou non.
   const orders = await prisma.order.findMany({
     where: { status: { in: ["READY", "DELIVERED"] } },
-    select: { payments: { select: { id: true, type: true, amount: true, paidAt: true } } },
+    select: {
+      id: true,
+      orderedAt: true,
+      items: { select: { unitCost: true, quantity: true } },
+      payments: { select: { id: true, type: true, amount: true, paidAt: true } },
+    },
   });
   for (const o of orders) {
     for (const pay of o.payments) {
@@ -253,6 +272,22 @@ export async function backfillTreasuryAction(): Promise<ActionResult<{ created: 
         occurredAt: pay.paidAt,
       });
       created += 1;
+    }
+    // Coût de revient de la commande = sortie de trésorerie (achat du stock).
+    if (!has.has(`OrderCost:${o.id}`)) {
+      const cost = o.items.reduce((acc, it) => acc + Number(it.unitCost) * it.quantity, 0);
+      if (cost > 0.005) {
+        await recordMovement({
+          pocketId: unassigned,
+          amount: cost,
+          kind: "SUPPLIER_OUT",
+          label: "Coût d'achat (historique)",
+          refType: "OrderCost",
+          refId: o.id,
+          occurredAt: o.orderedAt,
+        });
+        created += 1;
+      }
     }
   }
 

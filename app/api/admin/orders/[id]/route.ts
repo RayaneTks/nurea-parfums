@@ -13,6 +13,7 @@ import {
 } from "@/lib/gestion/orderLineValidation";
 import { canTransition } from "@/domain/order-status";
 import { reverseMovementsFor } from "@/server/treasury/movements";
+import { syncOrderPurchaseCost, ORDER_COST_REF } from "@/server/orders/purchaseCost";
 import { revalidateTag } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
 import Decimal from "decimal.js-light";
@@ -61,6 +62,8 @@ type UpdateOrderBody = {
   depositAmount?: number | string | null;
   items?: OrderItemInput[];
   batchId?: string | null;
+  /** Poche d'où sort l'argent de l'achat du stock (au passage en « À traiter »). */
+  costPocketId?: string | null;
 };
 
 export async function GET(
@@ -353,6 +356,17 @@ export async function PATCH(
       include: orderInclude,
     });
 
+    // Coût de revient = sortie de trésorerie quand la commande devient réelle
+    // (« À traiter »/« Livrée »), réintégré si elle repasse « En attente ». On
+    // resynchronise dès qu'un statut ou des articles changent.
+    if ("status" in data || "items" in data) {
+      await syncOrderPurchaseCost(
+        id,
+        "costPocketId" in body ? { pocketId: body.costPocketId ?? null } : {},
+      );
+      revalidateTag(tagFor.treasury(), "default");
+    }
+
     await writeAudit(ctx.sub, "order.update", "Order", id, {
       fields: Object.keys(data),
     });
@@ -392,6 +406,8 @@ export async function DELETE(
     for (const p of existing.payments) {
       await reverseMovementsFor("PaymentTransaction", p.id);
     }
+    // Contre-passe aussi la sortie « Coût d'achat » de la commande.
+    await reverseMovementsFor(ORDER_COST_REF, id);
     await writeAudit(ctx.sub, "order.delete", "Order", id);
     revalidateTag(tagFor.treasury(), "default");
     revalidateTag(tagFor.kpi(), "default");

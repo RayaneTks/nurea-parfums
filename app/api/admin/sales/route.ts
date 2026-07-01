@@ -12,6 +12,7 @@ import {
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { isValidVolumeMl, resolveUnitCostEur } from "@/lib/gestion/orderLineValidation";
 import { recordMovement } from "@/server/treasury/movements";
+import { SALE_COST_REF } from "@/server/orders/purchaseCost";
 import { revalidateTag } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
 import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
@@ -47,6 +48,8 @@ type CreateSaleBody = {
   items?: SaleLineInputBody[];
   /** Répartition de l'encaissé par poche (ex. 20€ espèces + 30€ Revolut). */
   payments?: { pocketId?: string | null; amount?: number | string }[];
+  /** Poche d'où sort l'argent de l'achat (coût de revient). null → « Non attribué ». */
+  costPocketId?: string | null;
 };
 
 const saleInclude = {
@@ -421,6 +424,23 @@ export async function POST(request: Request) {
           createdById: ctx.sub,
         });
       }
+    }
+
+    // Coût de revient = sortie de trésorerie (sans stock, chaque vente = un achat réel).
+    // Pas pour les ventes issues d'une commande : leur coût est déjà sorti au passage
+    // en « À traiter » de la commande.
+    const costOut = Number(totals.totalCost);
+    if (!linkedOrderId && costOut > 0.005) {
+      await recordMovement({
+        pocketId: body.costPocketId ?? null,
+        amount: costOut,
+        kind: "SUPPLIER_OUT",
+        label: "Coût d'achat",
+        refType: SALE_COST_REF,
+        refId: sale.id,
+        occurredAt: soldAt,
+        createdById: ctx.sub,
+      });
     }
 
     await writeAudit(ctx.sub, "sale.create", "Sale", sale.id, {

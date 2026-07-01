@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import Decimal from "decimal.js-light";
 import type { PocketKind, CashMovementKind } from "@prisma/client";
+import { ORDER_COST_REF, SALE_COST_REF } from "@/server/orders/purchaseCost";
 
 export type PocketWithBalance = {
   id: string;
@@ -114,13 +115,18 @@ export async function listMovements(params?: {
     },
   });
   // Résolution des origines en lots (titre clair + lien) — évite N+1.
-  const saleIds = rows.filter((r) => r.refType === "Sale" && r.refId).map((r) => r.refId!);
+  const saleIds = rows
+    .filter((r) => (r.refType === "Sale" || r.refType === "SaleCost") && r.refId)
+    .map((r) => r.refId!);
   const payIds = rows
     .filter((r) => r.refType === "PaymentTransaction" && r.refId)
     .map((r) => r.refId!);
   const expIds = rows.filter((r) => r.refType === "BatchExpense" && r.refId).map((r) => r.refId!);
+  const orderIds = rows
+    .filter((r) => r.refType === "OrderCost" && r.refId)
+    .map((r) => r.refId!);
 
-  const [sales, payments, expenses] = await Promise.all([
+  const [sales, payments, expenses, orders] = await Promise.all([
     saleIds.length
       ? prisma.sale.findMany({
           where: { id: { in: saleIds } },
@@ -151,11 +157,18 @@ export async function listMovements(params?: {
           },
         })
       : Promise.resolve([]),
+    orderIds.length
+      ? prisma.order.findMany({
+          where: { id: { in: orderIds } },
+          select: { id: true, customerName: true, customer: { select: { fullName: true } } },
+        })
+      : Promise.resolve([]),
   ]);
 
   const saleMap = new Map(sales.map((s) => [s.id, s]));
   const payMap = new Map(payments.map((p) => [p.id, p]));
   const expMap = new Map(expenses.map((e) => [e.id, e]));
+  const orderMap = new Map(orders.map((o) => [o.id, o]));
 
   function resolve(
     refType: string | null,
@@ -201,6 +214,26 @@ export async function listMovements(params?: {
         href: e?.batchId ? `/admin/lots/${e.batchId}` : null,
         groupKey: e?.batchId ? `batch:${e.batchId}` : null,
         groupLabel: e?.batch?.name ?? null,
+      };
+    }
+    if (refType === ORDER_COST_REF && refId) {
+      const o = orderMap.get(refId);
+      const who = o?.customer?.fullName ?? o?.customerName ?? null;
+      return {
+        title: who ? `Coût d'achat · ${who}` : "Coût d'achat",
+        href: `/admin/ordres/${refId}`,
+        groupKey: null,
+        groupLabel: null,
+      };
+    }
+    if (refType === SALE_COST_REF && refId) {
+      const s = saleMap.get(refId);
+      const who = s?.customer?.fullName ?? s?.customerName ?? null;
+      return {
+        title: who ? `Coût d'achat · ${who}` : "Coût d'achat",
+        href: `/admin/compta?sale=${refId}`,
+        groupKey: null,
+        groupLabel: null,
       };
     }
     if (refType === "Batch" && refId) {
