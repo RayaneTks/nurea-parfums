@@ -22,7 +22,7 @@ import {
   assignUnattributedAction,
   adjustmentAction,
   supplierPaymentAction,
-  backfillTreasuryAction,
+  resetTreasuryToRealAction,
   archivePocketAction,
 } from "@/server/treasury/actions";
 
@@ -123,17 +123,18 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
     setPending(false);
     res.ok ? done("Ajustement enregistré.") : fail(res.error);
   };
-  const submitBackfill = async () => {
+  const submitReset = async () => {
+    if (
+      !window.confirm(
+        "Repartir des soldes réels : fige chaque poche à son solde actuel, remet « Non attribué » à 0 et efface l'historique des mouvements. À faire une seule fois pour corriger un double comptage. Continuer ?",
+      )
+    ) {
+      return;
+    }
     setPending(true);
-    const res = await backfillTreasuryAction();
+    const res = await resetTreasuryToRealAction();
     setPending(false);
-    res.ok
-      ? done(
-          res.data.created > 0
-            ? `${res.data.created} mouvement(s) importé(s) dans « Non attribué ».`
-            : "Historique déjà à jour.",
-        )
-      : fail(res.error);
+    res.ok ? done(`Trésorerie réinitialisée : ${res.data.total} €.`) : fail(res.error);
   };
   const submitSupplier = async () => {
     setPending(true);
@@ -162,11 +163,11 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
           </p>
           <button
             type="button"
-            onClick={submitBackfill}
+            onClick={submitReset}
             disabled={pending}
             className="mt-2 text-[12px] font-medium text-[var(--admin-accent)] tap-scale disabled:opacity-50"
           >
-            Importer l&apos;historique (ventes, acomptes, dépenses)
+            Repartir des soldes réels (corriger un double comptage)
           </button>
         </Card>
 

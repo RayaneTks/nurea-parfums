@@ -18,6 +18,40 @@ function parseAmount(value: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/**
+ * Repart des soldes réels : fige chaque poche réelle à son solde actuel (devient son
+ * solde d'ouverture), remet la poche « Non attribué » à 0, et efface tous les mouvements.
+ *
+ * À utiliser quand la trésorerie a été faussée par un double comptage (soldes réels saisis
+ * ET « Importer l'historique »). Après ça, la trésorerie = tes soldes réels, et seuls les
+ * NOUVEAUX mouvements (ventes, coûts, dépenses…) l'ajusteront. Ne PAS réimporter l'historique.
+ */
+export async function resetTreasuryToRealAction(): Promise<ActionResult<{ total: string }>> {
+  const pockets = await prisma.pocket.findMany({
+    where: { archived: false },
+    select: { id: true, isSystem: true, openingBalance: true },
+  });
+  const sums = await prisma.cashMovement.groupBy({ by: ["pocketId"], _sum: { amount: true } });
+  const sumMap = new Map(sums.map((s) => [s.pocketId, Number(s._sum.amount ?? 0)]));
+
+  let total = 0;
+  await prisma.$transaction(async (tx) => {
+    for (const p of pockets) {
+      const current = Number(p.openingBalance) + (sumMap.get(p.id) ?? 0);
+      const nextOpening = p.isSystem ? 0 : Math.round(current * 100) / 100;
+      total += nextOpening;
+      await tx.pocket.update({
+        where: { id: p.id },
+        data: { openingBalance: new Prisma.Decimal(nextOpening.toFixed(2)) },
+      });
+    }
+    await tx.cashMovement.deleteMany({});
+  });
+
+  revalidate();
+  return { ok: true, data: { total: total.toFixed(2) } };
+}
+
 export async function createPocketAction(input: {
   name?: string;
   kind?: PocketKind;
