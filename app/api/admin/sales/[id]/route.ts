@@ -8,6 +8,7 @@ import { computeLineTotals, sumSaleTotals } from "@/lib/gestion/calculations";
 import { isValidVolumeMl, parseMoneyField } from "@/lib/gestion/orderLineValidation";
 import { getSaleById } from "@/server/sales/queries";
 import { reverseMovementsFor } from "@/server/treasury/movements";
+import { SALE_COST_REF } from "@/server/orders/purchaseCost";
 import { revalidateTag } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
 import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
@@ -432,6 +433,7 @@ export async function DELETE(
 
     await prisma.sale.delete({ where: { id } });
     await reverseMovementsFor("Sale", id);
+    await reverseMovementsFor(SALE_COST_REF, id);
     // Restitue le stock des lignes catalogue.
     for (const it of existing.items) {
       if (it.perfumeId !== null) {

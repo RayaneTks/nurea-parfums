@@ -21,6 +21,7 @@ import { SellLineRow, type SellLine } from "./SellLineRow";
 import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
 import { CustomerCombobox, type SelectedCustomer } from "@/components/admin/customers/CustomerCombobox";
 import { PocketSplit, type SplitRow } from "@/features/treasury/components/PocketSplit";
+import { PocketSelector } from "@/features/treasury/components/PocketSelector";
 import { usePockets } from "@/features/treasury/usePockets";
 import { useLastExchangeRate } from "@/hooks/useLastExchangeRate";
 
@@ -89,6 +90,7 @@ export function SellPageClient() {
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [confirmSale, setConfirmSale] = useState(false);
   const [splitRows, setSplitRows] = useState<SplitRow[]>([]);
+  const [costPocketId, setCostPocketId] = useState<string | null>(null);
   const { pockets } = usePockets(true);
   const { rate: lastRate, remember: rememberRate } = useLastExchangeRate();
 
@@ -258,6 +260,7 @@ export function SellPageClient() {
           exchangeRate: l.exchangeRate === "" ? "0" : l.exchangeRate.replace(",", "."),
         })),
         payments: splitRows,
+        costPocketId,
       };
       const r = await fetch("/api/admin/sales", {
         method: "POST",
@@ -455,6 +458,33 @@ export function SellPageClient() {
                 </p>
               );
             })()}
+          </Card>
+        ) : null}
+
+        {/* Coût d'achat : sans stock, chaque vente = un achat réel → sortie de trésorerie.
+            (Pas affiché pour un encaissement de commande : le coût est déjà sorti au lot.) */}
+        {!bridge && lines.length > 0 && totals.cost > 0.005 ? (
+          <Card padding={3}>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--admin-text-muted)]">
+                Coût d&apos;achat
+              </p>
+              <Money value={totals.cost} bold tone="danger" />
+            </div>
+            <p className="mt-1 mb-2 text-[12px] text-[var(--admin-text-subtle)]">
+              Ce que tu as payé pour ces parfums — sort de la trésorerie.
+            </p>
+            {pockets.length > 0 ? (
+              <>
+                <p className="mb-1.5 text-[13px] font-medium text-[var(--admin-text-muted)]">
+                  Payé depuis (poche)
+                </p>
+                <PocketSelector pockets={pockets} value={costPocketId} onChange={setCostPocketId} />
+                <p className="mt-1 text-[11px] text-[var(--admin-text-subtle)]">
+                  Sans choix → « Non attribué », à répartir plus tard.
+                </p>
+              </>
+            ) : null}
           </Card>
         ) : null}
 
