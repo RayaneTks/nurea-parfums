@@ -186,6 +186,8 @@ model Order {
   customerContact String?
   orderedAt     DateTime             @default(now())
   deliveryAt    DateTime?
+  /// Horodatage réel du passage en statut « Livrée » (archivage 24h de la liste Livrées).
+  deliveredAt   DateTime?
   status        OrderStatus          @default(PENDING)
   notes         String?
   /// CACHE dénormalisé : true si depositPaidTotal > 0. Source de vérité = PaymentTransaction.
@@ -206,6 +208,7 @@ model Order {
   @@index([deliveryAt])
   @@index([depositPaid])
   @@index([status, deliveryAt])
+  @@index([status, deliveredAt])
   @@index([customerId])
   @@index([batchId])
 }
