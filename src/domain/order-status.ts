@@ -1,28 +1,22 @@
 /**
  * Order status state machine.
  *
- * PENDING  ─(deposit recorded)─→ READY
- *    │                              │
- *    └────────(cancel)─→ CANCELLED ←┘
- *                                   │
- *                              (deliver)
- *                                   ↓
- *                              DELIVERED
+ * Philosophie : l'admin décide. Les statuts sont librement navigables — l'acompte
+ * et le solde sont *indicatifs*, jamais bloquants. On garde uniquement 2 garde-fous
+ * de cohérence dure :
+ *   1. Une commande sans article ne peut pas être livrée.
+ *   2. Une commande livrée déjà transformée en vente (`hasSale`) ne peut pas revenir
+ *      en arrière sans supprimer d'abord la vente (sinon double comptage).
  *
- * Source of truth: PaymentTransaction (P6). `Order.depositPaid` is a denormalized cache.
+ *   PENDING ⇄ READY ⇄ DELIVERED   (toutes directions libres)
+ *      └──────── CANCELLED (via suppression) ────────┘
+ *
+ * Source of truth des paiements : PaymentTransaction. `Order.depositPaid` est un cache.
  */
 
 export type OrderStatus = "PENDING" | "READY" | "DELIVERED" | "CANCELLED";
 
 export const ORDER_STATUSES = ["PENDING", "READY", "DELIVERED", "CANCELLED"] as const;
-
-export type OrderTransition =
-  | { from: "PENDING"; to: "READY"; requires: "deposit-positive" }
-  | { from: "PENDING"; to: "CANCELLED"; requires: "none" }
-  | { from: "READY"; to: "DELIVERED"; requires: "balance-paid" }
-  | { from: "READY"; to: "PENDING"; requires: "deposit-voided" }
-  | { from: "READY"; to: "CANCELLED"; requires: "none" }
-  | { from: "DELIVERED"; to: "READY"; requires: "sale-deleted" }; // admin correction path
 
 export type TransitionContext = {
   depositPaidTotal: number; // sum DEPOSIT - sum REFUND
@@ -36,6 +30,11 @@ export type TransitionResult =
   | { ok: true }
   | { ok: false; reason: string };
 
+/**
+ * Statut librement modifiable entre PENDING / READY / DELIVERED.
+ * Seuls 2 garde-fous de cohérence dure subsistent (voir en-tête).
+ * L'annulation (CANCELLED) passe par la suppression, pas par ce contrôle.
+ */
 export function canTransition(
   from: OrderStatus,
   to: OrderStatus,
@@ -43,54 +42,29 @@ export function canTransition(
 ): TransitionResult {
   if (from === to) return { ok: false, reason: "Statut identique." };
 
-  switch (from) {
-    case "PENDING":
-      if (to === "READY") {
-        if (ctx.depositPaidTotal <= 0) {
-          return { ok: false, reason: "Acompte requis pour passer en « à traiter »." };
-        }
-        return { ok: true };
-      }
-      if (to === "CANCELLED") return { ok: true };
-      return { ok: false, reason: `Transition ${from} → ${to} interdite.` };
-
-    case "READY":
-      if (to === "DELIVERED") {
-        if ((ctx.itemCount ?? 1) < 1) {
-          return { ok: false, reason: "Ajoute au moins un article avant la livraison." };
-        }
-        const due = ctx.orderTotal - ctx.depositPaidTotal - ctx.balancePaidTotal;
-        if (due > 0.005) {
-          return { ok: false, reason: `Solde dû ${due.toFixed(2)} € — encaisse avant livraison.` };
-        }
-        return { ok: true };
-      }
-      if (to === "PENDING") {
-        if (ctx.depositPaidTotal > 0) {
-          return { ok: false, reason: "Annule les acomptes d'abord." };
-        }
-        return { ok: true };
-      }
-      if (to === "CANCELLED") return { ok: true };
-      return { ok: false, reason: `Transition ${from} → ${to} interdite.` };
-
-    case "DELIVERED":
-      if (to === "READY") {
-        if (ctx.hasSale) {
-          return { ok: false, reason: "Supprime la vente associée d'abord." };
-        }
-        return { ok: true };
-      }
-      return { ok: false, reason: "Commande livrée — utilise une correction manuelle." };
-
-    case "CANCELLED":
-      return { ok: false, reason: "Commande annulée — création d'une nouvelle si besoin." };
-
-    default: {
-      const _exhaustive: never = from;
-      return { ok: false, reason: `Statut inconnu: ${_exhaustive as string}` };
-    }
+  if (to === "CANCELLED") {
+    // L'annulation se fait via « Supprimer la commande », pas via le contrôle de statut.
+    return from === "PENDING" || from === "READY"
+      ? { ok: true }
+      : { ok: false, reason: "Utilise « Supprimer la commande » pour annuler." };
   }
+
+  if (from === "CANCELLED") {
+    return { ok: false, reason: "Commande annulée — crées-en une nouvelle si besoin." };
+  }
+
+  // Garde-fou 1 : pas de livraison d'une commande vide.
+  if (to === "DELIVERED" && (ctx.itemCount ?? 1) < 1) {
+    return { ok: false, reason: "Ajoute au moins un article avant la livraison." };
+  }
+
+  // Garde-fou 2 : une commande devenue vente ne recule pas sans suppression de la vente.
+  if (from === "DELIVERED" && ctx.hasSale) {
+    return { ok: false, reason: "Supprime la vente associée d'abord." };
+  }
+
+  // Toutes les autres transitions PENDING/READY/DELIVERED sont autorisées.
+  return { ok: true };
 }
 
 /**

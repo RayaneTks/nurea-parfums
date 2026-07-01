@@ -13,66 +13,62 @@ const base: TransitionContext = {
   hasSale: false,
 };
 
-describe("OrderStatus.canTransition", () => {
-  it("PENDING → READY needs positive deposit", () => {
-    expect(canTransition("PENDING", "READY", base).ok).toBe(false);
+describe("OrderStatus.canTransition (statuts libres, acompte indicatif)", () => {
+  it("PENDING → READY autorisé sans acompte (l'admin décide)", () => {
+    expect(canTransition("PENDING", "READY", base).ok).toBe(true);
     expect(canTransition("PENDING", "READY", { ...base, depositPaidTotal: 10 }).ok).toBe(true);
   });
 
-  it("PENDING → CANCELLED always allowed", () => {
+  it("PENDING → CANCELLED autorisé", () => {
     expect(canTransition("PENDING", "CANCELLED", base).ok).toBe(true);
   });
 
-  it("PENDING → DELIVERED rejected (must go via READY)", () => {
-    expect(canTransition("PENDING", "DELIVERED", base).ok).toBe(false);
+  it("PENDING → DELIVERED autorisé en direct (avec au moins un article)", () => {
+    expect(canTransition("PENDING", "DELIVERED", { ...base, itemCount: 1 }).ok).toBe(true);
   });
 
-  it("READY → DELIVERED needs full balance", () => {
+  it("READY → DELIVERED autorisé même avec solde dû (acompte indicatif)", () => {
     expect(
       canTransition("READY", "DELIVERED", {
         ...base,
         depositPaidTotal: 50,
-        balancePaidTotal: 49,
-      }).ok,
-    ).toBe(false);
-
-    expect(
-      canTransition("READY", "DELIVERED", {
-        ...base,
-        depositPaidTotal: 50,
-        balancePaidTotal: 50,
+        balancePaidTotal: 0,
+        itemCount: 1,
       }).ok,
     ).toBe(true);
   });
 
-  it("READY → PENDING requires deposit voided", () => {
-    expect(canTransition("READY", "PENDING", { ...base, depositPaidTotal: 30 }).ok).toBe(false);
+  it("READY → PENDING autorisé librement (même avec acompte reçu)", () => {
+    expect(canTransition("READY", "PENDING", { ...base, depositPaidTotal: 30 }).ok).toBe(true);
     expect(canTransition("READY", "PENDING", { ...base, depositPaidTotal: 0 }).ok).toBe(true);
   });
 
-  it("DELIVERED → READY only without linked Sale", () => {
+  it("DELIVERED → READY bloqué uniquement si une vente est liée", () => {
     expect(canTransition("DELIVERED", "READY", { ...base, hasSale: true }).ok).toBe(false);
     expect(canTransition("DELIVERED", "READY", { ...base, hasSale: false }).ok).toBe(true);
   });
 
-  it("CANCELLED is terminal", () => {
+  it("DELIVERED → PENDING autorisé sans vente liée", () => {
+    expect(canTransition("DELIVERED", "PENDING", { ...base, hasSale: false }).ok).toBe(true);
+    expect(canTransition("DELIVERED", "PENDING", { ...base, hasSale: true }).ok).toBe(false);
+  });
+
+  it("CANCELLED est terminal", () => {
     expect(canTransition("CANCELLED", "PENDING", base).ok).toBe(false);
     expect(canTransition("CANCELLED", "READY", base).ok).toBe(false);
     expect(canTransition("CANCELLED", "DELIVERED", base).ok).toBe(false);
   });
 
-  it("READY → DELIVERED needs at least one item", () => {
+  it("→ DELIVERED refusé sans article (garde-fou de cohérence)", () => {
     expect(
-      canTransition("READY", "DELIVERED", {
-        ...base,
-        depositPaidTotal: 50,
-        balancePaidTotal: 50,
-        itemCount: 0,
-      }).ok,
+      canTransition("READY", "DELIVERED", { ...base, itemCount: 0 }).ok,
+    ).toBe(false);
+    expect(
+      canTransition("PENDING", "DELIVERED", { ...base, itemCount: 0 }).ok,
     ).toBe(false);
   });
 
-  it("same status rejects", () => {
+  it("statut identique refusé", () => {
     expect(canTransition("PENDING", "PENDING", base).ok).toBe(false);
   });
 });

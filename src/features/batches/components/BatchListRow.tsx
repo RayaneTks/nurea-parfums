@@ -61,7 +61,10 @@ export function BatchListRow({ batch }: BatchListRowProps) {
               ) : null}
             </div>
             <p className="mt-0.5 text-[12px] text-[var(--admin-text-subtle)]">
-              {batch.salesCount} vente{batch.salesCount > 1 ? "s" : ""}
+              {(() => {
+                const ops = batch.salesCount + batch.ordersCount;
+                return `${ops} vente${ops > 1 ? "s" : ""}`;
+              })()}
               {Number(batch.expenses) > 0
                 ? ` · ${Number(batch.expenses).toFixed(0)} € dépenses`
                 : null}

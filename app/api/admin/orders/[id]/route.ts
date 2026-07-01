@@ -6,7 +6,11 @@ import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { serializeOrder } from "@/lib/gestion/orderJson";
 import { purgeOrderIfEphemeral } from "@/lib/gestion/orderPurge";
-import { isValidVolumeMl, parseOptionalMoneyToZero } from "@/lib/gestion/orderLineValidation";
+import {
+  isValidVolumeMl,
+  parseOptionalMoneyToZero,
+  resolveUnitCostEur,
+} from "@/lib/gestion/orderLineValidation";
 import { canTransition } from "@/domain/order-status";
 import Decimal from "decimal.js-light";
 
@@ -201,6 +205,15 @@ export async function PATCH(
         }
       }
       data.status = body.status;
+      // Horodatage de livraison : posé à l'entrée en DELIVERED (repère d'archivage 24h),
+      // effacé en sortie pour repartir proprement si on re-livre plus tard.
+      if (body.status === OrderStatus.DELIVERED) {
+        if (existing.status !== OrderStatus.DELIVERED) {
+          data.deliveredAt = new Date();
+        }
+      } else {
+        data.deliveredAt = null;
+      }
     }
 
     if ("batchId" in body) {
@@ -281,13 +294,18 @@ export async function PATCH(
           );
         }
         const up = parseOptionalMoneyToZero(raw.unitPrice);
-        const uc = parseOptionalMoneyToZero(raw.unitCost);
         if (up === null) {
           return NextResponse.json(
             { error: "Prix client invalide sur une ligne." },
             { status: 400 },
           );
         }
+        // Coût euro dérivé du DZD/taux (le formulaire n'envoie pas d'euro direct).
+        const uc = resolveUnitCostEur({
+          unitCost: raw.unitCost,
+          unitCostDzd: raw.unitCostDzd,
+          exchangeRate: raw.exchangeRate,
+        });
         if (uc === null) {
           return NextResponse.json(
             { error: "Prix d'achat (ton coût) invalide sur une ligne." },
@@ -351,20 +369,8 @@ export async function PATCH(
       );
     }
 
-    const mergedPaidForStatus =
-      "depositPaid" in data ? Boolean(data.depositPaid) : existing.depositPaid;
-    const mergedAmtForStatus = Number("depositAmount" in data ? data.depositAmount : existing.depositAmount);
-    if ("status" in data && (data as { status?: OrderStatus }).status === OrderStatus.READY) {
-      if (!mergedPaidForStatus || mergedAmtForStatus <= 0) {
-        return NextResponse.json(
-          {
-            error:
-              "Acompte reçu (montant > 0 €) requis pour passer en « à traiter ».",
-          },
-          { status: 400 },
-        );
-      }
-    }
+    // L'acompte est indicatif : passer en « à traiter » n'exige plus de montant reçu.
+    // Les seules règles de statut vivent dans canTransition (garde-fous de cohérence).
 
     const updated = await prisma.order.update({
       where: { id },

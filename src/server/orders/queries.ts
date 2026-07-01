@@ -85,6 +85,9 @@ function sumPayments(payments: Array<{ type: string; amount: { toString(): strin
 }
 
 export async function listOrders(filter: OrdersFilter = "all"): Promise<OrdersListResult> {
+  // Fenêtre d'archivage : une commande livrée reste visible dans l'onglet « Livrées »
+  // 24h après sa livraison, puis disparaît (elle vit désormais en Compta comme vente).
+  const deliveredSince = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const where =
     filter === "all"
       ? { status: { not: "DELIVERED" as OrderStatus } }
@@ -92,7 +95,7 @@ export async function listOrders(filter: OrdersFilter = "all"): Promise<OrdersLi
         ? { status: "PENDING" as OrderStatus }
         : filter === "ready"
           ? { status: "READY" as OrderStatus }
-          : { status: "DELIVERED" as OrderStatus };
+          : { status: "DELIVERED" as OrderStatus, deliveredAt: { gte: deliveredSince } };
 
   const orders = await prisma.order.findMany({
     where,

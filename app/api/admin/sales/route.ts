@@ -10,7 +10,7 @@ import {
   sumSaleTotals,
 } from "@/lib/gestion/calculations";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
-import { isValidVolumeMl } from "@/lib/gestion/orderLineValidation";
+import { isValidVolumeMl, resolveUnitCostEur } from "@/lib/gestion/orderLineValidation";
 import { recordMovement } from "@/server/treasury/movements";
 import { revalidateTag } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
@@ -161,14 +161,19 @@ export async function POST(request: Request) {
       }
 
       const unitPriceN = Number(raw.unitPrice);
-      const unitCostN = Number(raw.unitCost);
       if (!Number.isFinite(unitPriceN) || unitPriceN < 0) {
         return NextResponse.json(
           { error: "Prix client invalide (doit être ≥ 0)." },
           { status: 400 },
         );
       }
-      if (!Number.isFinite(unitCostN) || unitCostN < 0) {
+      // Coût dérivé du DZD/taux (le formulaire n'envoie pas d'euro direct).
+      const unitCostN = resolveUnitCostEur({
+        unitCost: raw.unitCost,
+        unitCostDzd: raw.unitCostDzd,
+        exchangeRate: raw.exchangeRate,
+      });
+      if (unitCostN === null) {
         return NextResponse.json(
           { error: "Prix d'achat (ton coût) invalide (doit être ≥ 0)." },
           { status: 400 },
@@ -348,7 +353,7 @@ export async function POST(request: Request) {
       if (linkedOrderId) {
         await tx.order.update({
           where: { id: linkedOrderId },
-          data: { status: OrderStatus.DELIVERED },
+          data: { status: OrderStatus.DELIVERED, deliveredAt: new Date() },
         });
       }
 
