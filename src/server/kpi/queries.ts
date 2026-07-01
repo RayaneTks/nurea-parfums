@@ -55,7 +55,10 @@ const cachedRevenueSummaryGlobal = unstable_cache(
         },
         _count: true,
       }),
-      prisma.batchExpense.aggregate({ _sum: { amount: true } }),
+      prisma.batchExpense.aggregate({
+        _sum: { amount: true },
+        where: { countInCompta: true },
+      }),
       confirmedOrdersFinancials(null),
     ]);
     return {

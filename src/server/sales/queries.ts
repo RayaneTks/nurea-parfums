@@ -282,9 +282,10 @@ export async function listSalesGroupedByCustomer(params: {
   );
 
   // Dépenses réalisées (BatchExpense) sur la même période, déduites de la marge.
+  // Les dépenses « hors compta » (argent perso) sont exclues.
   const expenseAgg = await prisma.batchExpense.aggregate({
     _sum: { amount: true },
-    ...(since ? { where: { occurredAt: { gte: since } } } : {}),
+    where: { countInCompta: true, ...(since ? { occurredAt: { gte: since } } : {}) },
   });
   const totalExpenses = new Decimal((expenseAgg._sum.amount ?? 0).toString());
 
