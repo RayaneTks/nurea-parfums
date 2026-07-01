@@ -17,6 +17,7 @@ import { MetaSection } from "./MetaSection";
 import type { OrderFormLine, OrderFormState } from "./types";
 import { createOrderAction, updateOrderAction } from "@/server/orders/actions";
 import { useLastExchangeRate } from "@/hooks/useLastExchangeRate";
+import { usePockets } from "@/features/treasury/usePockets";
 import type {
   CreateOrderInput,
   OrderItemInput,
@@ -82,6 +83,8 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
   const [pending, startTransition] = useTransition();
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const { rate: lastRate, remember: rememberRate } = useLastExchangeRate();
+  // Poches chargées uniquement en création (le sélecteur d'acompte n'existe qu'ici).
+  const { pockets } = usePockets(mode === "create");
 
   const [state, setState] = useState<OrderFormState>(() => ({
     customer: initial?.customer ?? null,
@@ -89,7 +92,8 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
     deliveryAt: initial?.deliveryAt ?? "",
     notes: initial?.notes ?? "",
     items: initial?.items ?? [],
-    initialDeposit: mode === "create" ? { on: false, amount: "", method: "" } : null,
+    initialDeposit:
+      mode === "create" ? { on: false, amount: "", method: "", pocketId: null } : null,
   }));
 
   const orderTotals = useMemo(() => {
@@ -240,6 +244,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
             ? {
                 amount: state.initialDeposit.amount.replace(",", "."),
                 method: state.initialDeposit.method.trim() || null,
+                pocketId: state.initialDeposit.pocketId,
               }
             : null,
         };
@@ -304,6 +309,8 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
             on={state.initialDeposit.on}
             amount={state.initialDeposit.amount}
             method={state.initialDeposit.method}
+            pocketId={state.initialDeposit.pocketId}
+            pockets={pockets}
             onToggle={(on) =>
               setState((s) => ({
                 ...s,
@@ -320,6 +327,12 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
               setState((s) => ({
                 ...s,
                 initialDeposit: s.initialDeposit ? { ...s.initialDeposit, method } : null,
+              }))
+            }
+            onPocketChange={(pocketId) =>
+              setState((s) => ({
+                ...s,
+                initialDeposit: s.initialDeposit ? { ...s.initialDeposit, pocketId } : null,
               }))
             }
           />
