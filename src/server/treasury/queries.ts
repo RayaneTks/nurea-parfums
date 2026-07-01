@@ -175,10 +175,20 @@ export async function listMovements(params?: {
     }
     if (refType === "PaymentTransaction" && refId) {
       const p = payMap.get(refId);
-      const who = p?.order?.customer?.fullName ?? p?.order?.customerName ?? "client";
-      const what = p?.type === "DEPOSIT" ? "Acompte" : p?.type === "BALANCE" ? "Solde" : "Remboursement";
+      const who = p?.order?.customer?.fullName ?? p?.order?.customerName ?? null;
+      // Libellé dérivé du KIND du mouvement (toujours présent et cohérent avec le montant),
+      // pas du type de paiement — qui peut être introuvable et retomberait à tort sur
+      // « Remboursement ».
+      const what =
+        kind === "DEPOSIT_IN"
+          ? "Acompte"
+          : kind === "BALANCE_IN"
+            ? "Solde"
+            : kind === "REFUND_OUT"
+              ? "Remboursement"
+              : "Encaissement";
       return {
-        title: `${what} · ${who}`,
+        title: who ? `${what} · ${who}` : what,
         href: p?.orderId ? `/admin/ordres/${p.orderId}` : null,
         groupKey: null,
         groupLabel: null,
