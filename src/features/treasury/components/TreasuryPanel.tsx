@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeftRight, Plus, SlidersHorizontal, AlertTriangle, Truck, ChevronRight, ChevronDown, Trash2 } from "lucide-react";
+import { ArrowLeftRight, Plus, SlidersHorizontal, AlertTriangle, Truck, ChevronRight, ChevronDown, Trash2, PiggyBank } from "lucide-react";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
 import { Button } from "@/ui/primitives/Button";
@@ -22,6 +22,7 @@ import {
   assignUnattributedAction,
   adjustmentAction,
   supplierPaymentAction,
+  capitalInjectionAction,
   rebuildTreasuryFromComptaAction,
   archivePocketAction,
 } from "@/server/treasury/actions";
@@ -52,7 +53,7 @@ const POCKET_KIND_OPTIONS: { value: PocketKind; label: string }[] = [
   { value: "OTHER", label: "Autre" },
 ];
 
-type SheetKind = "create" | "transfer" | "assign" | "adjust" | "supplier" | null;
+type SheetKind = "create" | "transfer" | "assign" | "adjust" | "supplier" | "capital" | null;
 
 export function TreasuryPanel({ total, unattributed, pockets, movements }: TreasuryPanelProps) {
   const router = useRouter();
@@ -141,6 +142,12 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
     const res = await supplierPaymentAction({ pocketId: fromId, amount, label });
     setPending(false);
     res.ok ? done("Paiement fournisseur enregistré.") : fail(res.error);
+  };
+  const submitCapital = async () => {
+    setPending(true);
+    const res = await capitalInjectionAction({ pocketId: fromId, amount, label });
+    setPending(false);
+    res.ok ? done("Apport perso enregistré.") : fail(res.error);
   };
   const submitArchivePocket = async (id: string) => {
     setPending(true);
@@ -272,6 +279,11 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
           </Stack>
         ) : null}
 
+        {/* Apport perso — toujours dispo (même sans poche : va dans « Non attribué »). */}
+        <Button variant="secondary" size="md" fullWidth leadingIcon={<PiggyBank size={15} />} onClick={() => open("capital")}>
+          Apport perso
+        </Button>
+
         {/* Mouvements groupés par mois */}
         {movements.length > 0 ? (
           <MovementsByMonth movements={movements} />
@@ -402,6 +414,33 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
           </div>
           <Input label="Montant €" inputMode="decimal" variant="elevated" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="ex. 200" enterKeyHint="next" />
           <Input label="Note (opt.)" variant="elevated" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Commande de mars…" enterKeyHint="done" />
+        </Stack>
+      </Sheet>
+
+      {/* Sheet : apport perso (injection de capital) */}
+      <Sheet
+        open={sheet === "capital"}
+        onOpenChange={(o) => (o ? null : close())}
+        title="Apport perso"
+        description="L'argent de ta poche perso que tu as mis dans Nuréa (ex. pour financer la première commande quand la trésorerie était à 0). Ça fait monter la trésorerie réelle, sans toucher à la marge."
+        footer={
+          <Button variant="primary" size="lg" fullWidth isLoading={pending} onClick={submitCapital}>
+            Enregistrer l&apos;apport
+          </Button>
+        }
+      >
+        <Stack gap={3}>
+          <Input label="Montant €" inputMode="decimal" variant="elevated" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="ex. 373,32" enterKeyHint="next" autoFocus />
+          <div>
+            <p className="mb-1.5 text-[13px] font-medium text-[var(--admin-text-muted)]">
+              Vers la poche (opt.)
+            </p>
+            <PocketSelector pockets={pockets} value={fromId} onChange={setFromId} includeSystem />
+            <p className="mt-1 text-[11px] text-[var(--admin-text-subtle)]">
+              Sans choix → « Non attribué », à répartir ensuite.
+            </p>
+          </div>
+          <Input label="Note (opt.)" variant="elevated" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Apport initial, coût 1re commande…" enterKeyHint="done" />
         </Stack>
       </Sheet>
 

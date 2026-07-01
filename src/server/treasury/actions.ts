@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { Prisma, type PocketKind } from "@prisma/client";
 import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
@@ -19,19 +20,53 @@ function parseAmount(value: unknown): number | null {
 }
 
 /**
- * Recalcule TOUTE la trésorerie depuis la compta : efface les mouvements, remet les
- * soldes d'ouverture à 0, puis reconstruit chaque mouvement à partir des données réelles
- * (ventes encaissées, acomptes/soldes de commandes, coûts d'achat, dépenses comptées).
+ * Recalcule TOUTE la trésorerie depuis la compta : efface les mouvements AUTO
+ * (ventes encaissées, acomptes/soldes de commandes, coûts d'achat, dépenses comptées)
+ * puis les reconstruit à partir des données réelles.
  *
- * La trésorerie devient une pure fonction de la compta — jamais un solde saisi à la main.
- * Tout arrive dans « Non attribué » ; tu peux ensuite répartir vers tes poches (Espèces,
- * Revolut…) sans changer le total.
+ * Ce qui SURVIT au recalcul : les mouvements saisis à la main qui ne dérivent d'aucune
+ * donnée compta — apports perso (« Capital »), ajustements, transferts/répartitions.
+ * Ils représentent de l'argent réel (ou son déplacement entre poches) qu'aucune vente ni
+ * commande ne peut recalculer. Les effacer casserait la trésorerie à chaque « Recalculer ».
+ *
+ * La trésorerie reste une pure fonction de la compta + ces apports réels — jamais un solde
+ * saisi à la main sur une poche. Tout l'auto arrive dans « Non attribué » ; tu répartis
+ * ensuite vers tes poches (Espèces, Revolut…) sans changer le total.
  */
+const AUTO_REF_TYPES = ["Sale", "SaleCost", "PaymentTransaction", "OrderCost", "BatchExpense"];
+
 export async function rebuildTreasuryFromComptaAction(): Promise<ActionResult<{ created: number }>> {
-  await prisma.cashMovement.deleteMany({});
+  await prisma.cashMovement.deleteMany({ where: { refType: { in: AUTO_REF_TYPES } } });
   await prisma.pocket.updateMany({ data: { openingBalance: new Prisma.Decimal(0) } });
-  // backfillTreasuryAction recrée tous les mouvements depuis la compta et revalide le cache.
+  // backfillTreasuryAction recrée tous les mouvements auto depuis la compta et revalide.
   return backfillTreasuryAction();
+}
+
+/**
+ * Apport perso (injection de capital). L'argent réel qu'on a mis de notre poche
+ * personnelle dans Nuréa — typiquement pour financer la toute première commande quand la
+ * trésorerie Nuréa était à 0. Ce n'est ni une vente ni une dépense : c'est du capital
+ * qui entre. On le trace comme un ADJUSTMENT positif (refType « Capital ») pour qu'il
+ * survive aux recalculs et fasse remonter la trésorerie réelle sans fausser la marge.
+ */
+export async function capitalInjectionAction(input: {
+  amount?: number | string;
+  pocketId?: string | null;
+  label?: string;
+}): Promise<ActionResult<{ id: string }>> {
+  const amount = parseAmount(input.amount);
+  if (amount === null || amount <= 0) return { ok: false, error: "Montant invalide (> 0)." };
+
+  const mv = await recordMovement({
+    pocketId: input.pocketId ?? null,
+    amount,
+    kind: "ADJUSTMENT",
+    label: input.label?.trim() || "Apport perso",
+    refType: "Capital",
+    refId: randomUUID(),
+  });
+  revalidate();
+  return { ok: true, data: { id: mv.id } };
 }
 
 export async function createPocketAction(input: {
