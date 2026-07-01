@@ -40,6 +40,8 @@ export type BatchExpenseRow = {
   amount: string;
   occurredAt: string;
   notes: string | null;
+  /** false → dépense informative (hors business) : non déduite, sans trésorerie. */
+  countInCompta: boolean;
 };
 
 export type BatchSaleRow = {
@@ -172,7 +174,7 @@ export async function listBatches(): Promise<BatchRowLite[]> {
           payments: { select: { type: true, amount: true } },
         },
       },
-      expenses: { select: { amount: true } },
+      expenses: { select: { amount: true, countInCompta: true } },
       _count: { select: { sales: true } },
     },
   });
@@ -200,7 +202,7 @@ export async function listBatches(): Promise<BatchRowLite[]> {
       ordersCost = ordersCost.plus(t.cost);
     }
     const exp = b.expenses.reduce(
-      (acc, e) => acc.plus(new Decimal(e.amount.toString())),
+      (acc, e) => (e.countInCompta ? acc.plus(new Decimal(e.amount.toString())) : acc),
       new Decimal(0),
     );
     const kpis = computeKpis({
@@ -278,6 +280,7 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
           id: true,
           label: true,
           amount: true,
+          countInCompta: true,
           occurredAt: true,
           notes: true,
         },
@@ -321,7 +324,7 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
   }
 
   const exp = b.expenses.reduce(
-    (acc, e) => acc.plus(new Decimal(e.amount.toString())),
+    (acc, e) => (e.countInCompta ? acc.plus(new Decimal(e.amount.toString())) : acc),
     new Decimal(0),
   );
   const kpis = computeKpis({
@@ -377,6 +380,7 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
       amount: e.amount.toString(),
       occurredAt: e.occurredAt.toISOString(),
       notes: e.notes,
+      countInCompta: e.countInCompta,
     })),
   };
 }

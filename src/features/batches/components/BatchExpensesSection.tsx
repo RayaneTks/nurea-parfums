@@ -41,6 +41,7 @@ export function BatchExpensesSection({
   const [label, setLabel] = useState("");
   const [amount, setAmount] = useState("");
   const [pocketId, setPocketId] = useState<string | null>(null);
+  const [countInCompta, setCountInCompta] = useState(true);
   const [pending, startTransition] = useTransition();
   const { pockets } = usePockets(adding);
 
@@ -61,7 +62,12 @@ export function BatchExpensesSection({
           method: "POST",
           credentials: "include",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ label: lbl, amount: amt.toFixed(2), pocketId }),
+          body: JSON.stringify({
+            label: lbl,
+            amount: amt.toFixed(2),
+            pocketId: countInCompta ? pocketId : null,
+            countInCompta,
+          }),
         });
         if (!r.ok) {
           const j = (await r.json().catch(() => ({}))) as { error?: string };
@@ -71,7 +77,30 @@ export function BatchExpensesSection({
         setLabel("");
         setAmount("");
         setPocketId(null);
+        setCountInCompta(true);
         setAdding(false);
+        onChange();
+        router.refresh();
+      } catch {
+        onError("Réseau indisponible.");
+      }
+    });
+  };
+
+  const toggleCounted = (expenseId: string, next: boolean) => {
+    startTransition(async () => {
+      try {
+        const r = await fetch(`/api/admin/batches/${batchId}/expenses/${expenseId}`, {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ countInCompta: next }),
+        });
+        if (!r.ok) {
+          const j = (await r.json().catch(() => ({}))) as { error?: string };
+          onError(j.error ?? "Modification impossible.");
+          return;
+        }
         onChange();
         router.refresh();
       } catch {
@@ -149,14 +178,24 @@ export function BatchExpensesSection({
         />
       ) : (
         <Stack gap={2}>
-          {expenses.map((e) => (
+          {expenses.map((e) => {
+            const counted = e.countInCompta;
+            return (
             <div
               key={e.id}
               className="flex items-center gap-3 rounded-[12px] bg-[var(--admin-surface-muted)] px-3 py-2"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[14px] font-medium text-[var(--admin-text)]">
-                  {e.label}
+                <p className="flex items-center gap-1.5 truncate text-[14px] font-medium text-[var(--admin-text)]">
+                  <span className="truncate">{e.label}</span>
+                  {!counted ? (
+                    <span
+                      className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                      style={{ background: "var(--admin-surface)", color: "var(--admin-text-muted)" }}
+                    >
+                      Hors compta
+                    </span>
+                  ) : null}
                 </p>
                 <p className="text-[11px] text-[var(--admin-text-subtle)]">
                   {new Date(e.occurredAt).toLocaleDateString("fr-FR", {
@@ -164,9 +203,27 @@ export function BatchExpensesSection({
                     month: "short",
                     year: "numeric",
                   })}
+                  {canEdit ? (
+                    <>
+                      {" · "}
+                      <button
+                        type="button"
+                        onClick={() => toggleCounted(e.id, !counted)}
+                        disabled={pending}
+                        className="font-medium text-[var(--admin-accent)] tap-scale disabled:opacity-50"
+                      >
+                        {counted ? "Exclure de la compta" : "Compter dans la compta"}
+                      </button>
+                    </>
+                  ) : null}
                 </p>
               </div>
-              <Money value={e.amount} bold className="text-[14px]" />
+              <Money
+                value={e.amount}
+                bold
+                className="text-[14px]"
+                tone={counted ? "default" : "muted"}
+              />
               {canEdit ? (
                 <button
                   type="button"
@@ -179,7 +236,8 @@ export function BatchExpensesSection({
                 </button>
               ) : null}
             </div>
-          ))}
+            );
+          })}
           {expenses.length > 0 ? (
             <div className="mt-1 flex items-center justify-between border-t border-[var(--admin-border)] pt-2 text-[13px]">
               <span className="font-medium text-[var(--admin-text-muted)]">
@@ -213,7 +271,24 @@ export function BatchExpensesSection({
             placeholder="0,00"
             enterKeyHint="done"
           />
-          {pockets.length > 0 ? (
+          <label className="flex items-start gap-2.5 rounded-[10px] bg-[var(--admin-surface-muted)] p-2.5">
+            <input
+              type="checkbox"
+              checked={!countInCompta}
+              onChange={(e) => setCountInCompta(!e.target.checked)}
+              className="mt-0.5 h-4 w-4"
+              style={{ accentColor: "var(--admin-accent)" }}
+            />
+            <span>
+              <span className="block text-[13px] font-medium text-[var(--admin-text)]">
+                Hors compta (argent perso)
+              </span>
+              <span className="block text-[11px] text-[var(--admin-text-subtle)]">
+                Juste une note : ni déduite de la marge, ni sortie de trésorerie.
+              </span>
+            </span>
+          </label>
+          {countInCompta && pockets.length > 0 ? (
             <div>
               <p className="mb-1.5 text-[13px] font-medium text-[var(--admin-text-muted)]">
                 Payé depuis (poche)

@@ -336,6 +336,9 @@ model BatchExpense {
   label      String
   /// Montant en € (toujours positif).
   amount     Decimal  @db.Decimal(10, 2)
+  /// Si false : dépense informative (argent perso / hors business) — NON déduite
+  /// de la marge et SANS mouvement de trésorerie. Sert juste de note de suivi.
+  countInCompta Boolean @default(true)
   occurredAt DateTime @default(now())
   notes      String?
   createdAt  DateTime @default(now())

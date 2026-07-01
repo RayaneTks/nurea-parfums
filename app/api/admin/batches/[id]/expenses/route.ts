@@ -18,6 +18,8 @@ type AddExpenseBody = {
   notes?: string | null;
   /** Poche d'où sort l'argent. null/absent → « Non attribué ». */
   pocketId?: string | null;
+  /** false → dépense informative (hors business) : ni marge ni trésorerie. Défaut true. */
+  countInCompta?: boolean;
 };
 
 export async function POST(
@@ -68,27 +70,32 @@ export async function POST(
       occurredAt = d;
     }
 
+    const countInCompta = body.countInCompta !== false; // défaut true
     const expense = await prisma.batchExpense.create({
       data: {
         batchId: id,
         label,
         amount: new Prisma.Decimal(amountN),
+        countInCompta,
         occurredAt,
         notes: body.notes?.trim() || null,
       },
     });
 
-    // Mouvement de trésorerie : l'argent sort d'une poche (ou « Non attribué »).
-    await recordMovement({
-      pocketId: body.pocketId ?? null,
-      amount: amountN,
-      kind: "EXPENSE_OUT",
-      label,
-      refType: "BatchExpense",
-      refId: expense.id,
-      occurredAt,
-      createdById: ctx.sub,
-    });
+    // Mouvement de trésorerie uniquement si la dépense compte dans la compta.
+    // Une dépense « hors compta » (argent perso) ne touche ni la marge ni la trésorerie.
+    if (countInCompta) {
+      await recordMovement({
+        pocketId: body.pocketId ?? null,
+        amount: amountN,
+        kind: "EXPENSE_OUT",
+        label,
+        refType: "BatchExpense",
+        refId: expense.id,
+        occurredAt,
+        createdById: ctx.sub,
+      });
+    }
 
     await writeAudit(ctx.sub, "batch.expense.add", "Batch", id, {
       expenseId: expense.id,
