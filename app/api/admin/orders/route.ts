@@ -6,7 +6,11 @@ import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { serializeOrder } from "@/lib/gestion/orderJson";
 import { purgeEphemeralOrders } from "@/lib/gestion/orderPurge";
-import { isValidVolumeMl, parseOptionalMoneyToZero } from "@/lib/gestion/orderLineValidation";
+import {
+  isValidVolumeMl,
+  parseOptionalMoneyToZero,
+  resolveUnitCostEur,
+} from "@/lib/gestion/orderLineValidation";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -175,13 +179,18 @@ export async function POST(request: Request) {
         );
       }
       const up = parseOptionalMoneyToZero(raw.unitPrice);
-      const uc = parseOptionalMoneyToZero(raw.unitCost);
       if (up === null) {
         return NextResponse.json(
           { error: "Prix client invalide sur une ligne (nombre ≥ 0 ou vide pour 0 €)." },
           { status: 400 },
         );
       }
+      // Coût euro dérivé du DZD/taux (le formulaire n'envoie pas d'euro direct).
+      const uc = resolveUnitCostEur({
+        unitCost: raw.unitCost,
+        unitCostDzd: raw.unitCostDzd,
+        exchangeRate: raw.exchangeRate,
+      });
       if (uc === null) {
         return NextResponse.json(
           { error: "Prix d'achat (ton coût) invalide sur une ligne (nombre ≥ 0 ou vide pour 0 €)." },
