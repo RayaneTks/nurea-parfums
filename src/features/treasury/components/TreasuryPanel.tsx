@@ -22,7 +22,7 @@ import {
   assignUnattributedAction,
   adjustmentAction,
   supplierPaymentAction,
-  resetTreasuryToRealAction,
+  rebuildTreasuryFromComptaAction,
   archivePocketAction,
 } from "@/server/treasury/actions";
 
@@ -96,7 +96,7 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
 
   const submitCreate = async () => {
     setPending(true);
-    const res = await createPocketAction({ name, kind, openingBalance: amount || 0 });
+    const res = await createPocketAction({ name, kind });
     setPending(false);
     res.ok ? done("Poche créée.") : fail(res.error);
   };
@@ -123,18 +123,18 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
     setPending(false);
     res.ok ? done("Ajustement enregistré.") : fail(res.error);
   };
-  const submitReset = async () => {
+  const submitRebuild = async () => {
     if (
       !window.confirm(
-        "Repartir des soldes réels : fige chaque poche à son solde actuel, remet « Non attribué » à 0 et efface l'historique des mouvements. À faire une seule fois pour corriger un double comptage. Continuer ?",
+        "Recalculer la trésorerie depuis la compta : efface les mouvements et les reconstruit à partir de tes ventes, coûts et dépenses réels. Tout arrive dans « Non attribué », à répartir ensuite. Continuer ?",
       )
     ) {
       return;
     }
     setPending(true);
-    const res = await resetTreasuryToRealAction();
+    const res = await rebuildTreasuryFromComptaAction();
     setPending(false);
-    res.ok ? done(`Trésorerie réinitialisée : ${res.data.total} €.`) : fail(res.error);
+    res.ok ? done("Trésorerie recalculée depuis la compta.") : fail(res.error);
   };
   const submitSupplier = async () => {
     setPending(true);
@@ -161,32 +161,36 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
           <p className="mt-1 text-[28px] font-bold leading-none">
             <Money value={total} />
           </p>
+          <p className="mt-1 text-[12px] text-[var(--admin-text-subtle)]">
+            Calculée automatiquement depuis ta compta (ventes − coûts − dépenses).
+          </p>
           <button
             type="button"
-            onClick={submitReset}
+            onClick={submitRebuild}
             disabled={pending}
-            className="mt-2 text-[12px] font-medium text-[var(--admin-accent)] tap-scale disabled:opacity-50"
+            className="mt-1.5 text-[12px] font-medium text-[var(--admin-accent)] tap-scale disabled:opacity-50"
           >
-            Repartir des soldes réels (corriger un double comptage)
+            Recalculer depuis la compta
           </button>
         </Card>
 
-        {/* Rappel Non attribué */}
-        {hasUnattributed ? (
+        {/* Non attribué — répartition optionnelle vers les poches réelles. */}
+        {hasUnattributed && realPockets.length > 0 ? (
           <button
             type="button"
             onClick={() => open("assign")}
-            className="w-full rounded-[14px] border border-[var(--admin-danger-border)] bg-[var(--admin-danger-bg)] p-3 text-left tap-scale"
+            className="w-full rounded-[14px] border border-[var(--admin-border)] bg-[var(--admin-surface)] p-3 text-left tap-scale"
           >
             <HStack justify="between" align="center">
-              <span className="flex items-center gap-2 text-[14px] font-semibold text-[var(--admin-danger)]">
-                <AlertTriangle size={16} />
-                {unattributedNum.toFixed(2)} € non attribué
+              <span className="flex items-center gap-2 text-[14px] font-semibold text-[var(--admin-text)]">
+                <AlertTriangle size={16} className="text-[var(--admin-text-muted)]" />
+                {unattributedNum.toFixed(2)} € non répartis
               </span>
-              <span className="text-[13px] font-semibold text-[var(--admin-danger)]">Répartir →</span>
+              <span className="text-[13px] font-semibold text-[var(--admin-accent)]">Répartir →</span>
             </HStack>
             <p className="mt-1 text-[12px] text-[var(--admin-text-muted)]">
-              Cet argent doit être affecté à une poche réelle.
+              Optionnel : ventile cet argent dans tes poches (Espèces, Revolut…) pour savoir
+              où il se trouve. Le total ne change pas.
             </p>
           </button>
         ) : null}
@@ -208,7 +212,7 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
           {realPockets.length === 0 ? (
             <EmptyState
               title="Aucune poche"
-              description="Crée tes poches (Espèces, Revolut, Fournisseur…) avec leur solde actuel."
+              description="Crée tes poches (Espèces, Revolut, Fournisseur…). Elles se remplissent depuis la compta ; tu répartis l'argent dedans."
               action={
                 <Button variant="primary" size="md" leadingIcon={<Plus size={16} />} onClick={() => open("create")}>
                   Créer une poche
@@ -279,7 +283,7 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
         open={sheet === "create"}
         onOpenChange={(o) => (o ? null : close())}
         title="Nouvelle poche"
-        description="Saisis le solde réel actuel comme point de départ."
+        description="Un endroit où est ton argent (Espèces, Revolut…). Il se remplit tout seul depuis tes ventes et répartitions."
         footer={
           <Button variant="primary" size="lg" fullWidth isLoading={pending} onClick={submitCreate}>
             Créer la poche
@@ -287,7 +291,7 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
         }
       >
         <Stack gap={3}>
-          <Input label="Nom" variant="elevated" value={name} onChange={(e) => setName(e.target.value)} placeholder="Espèces, Revolut, Fournisseur…" enterKeyHint="next" autoFocus />
+          <Input label="Nom" variant="elevated" value={name} onChange={(e) => setName(e.target.value)} placeholder="Espèces, Revolut, Fournisseur…" enterKeyHint="done" autoFocus />
           <div>
             <p className="mb-1.5 text-[13px] font-medium text-[var(--admin-text-muted)]">Type</p>
             <div className="flex flex-wrap gap-2">
@@ -308,7 +312,6 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
               ))}
             </div>
           </div>
-          <Input label="Solde d'ouverture €" inputMode="decimal" variant="elevated" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0" enterKeyHint="done" />
         </Stack>
       </Sheet>
 

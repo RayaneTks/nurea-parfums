@@ -19,56 +19,37 @@ function parseAmount(value: unknown): number | null {
 }
 
 /**
- * Repart des soldes réels : fige chaque poche réelle à son solde actuel (devient son
- * solde d'ouverture), remet la poche « Non attribué » à 0, et efface tous les mouvements.
+ * Recalcule TOUTE la trésorerie depuis la compta : efface les mouvements, remet les
+ * soldes d'ouverture à 0, puis reconstruit chaque mouvement à partir des données réelles
+ * (ventes encaissées, acomptes/soldes de commandes, coûts d'achat, dépenses comptées).
  *
- * À utiliser quand la trésorerie a été faussée par un double comptage (soldes réels saisis
- * ET « Importer l'historique »). Après ça, la trésorerie = tes soldes réels, et seuls les
- * NOUVEAUX mouvements (ventes, coûts, dépenses…) l'ajusteront. Ne PAS réimporter l'historique.
+ * La trésorerie devient une pure fonction de la compta — jamais un solde saisi à la main.
+ * Tout arrive dans « Non attribué » ; tu peux ensuite répartir vers tes poches (Espèces,
+ * Revolut…) sans changer le total.
  */
-export async function resetTreasuryToRealAction(): Promise<ActionResult<{ total: string }>> {
-  const pockets = await prisma.pocket.findMany({
-    where: { archived: false },
-    select: { id: true, isSystem: true, openingBalance: true },
-  });
-  const sums = await prisma.cashMovement.groupBy({ by: ["pocketId"], _sum: { amount: true } });
-  const sumMap = new Map(sums.map((s) => [s.pocketId, Number(s._sum.amount ?? 0)]));
-
-  let total = 0;
-  await prisma.$transaction(async (tx) => {
-    for (const p of pockets) {
-      const current = Number(p.openingBalance) + (sumMap.get(p.id) ?? 0);
-      const nextOpening = p.isSystem ? 0 : Math.round(current * 100) / 100;
-      total += nextOpening;
-      await tx.pocket.update({
-        where: { id: p.id },
-        data: { openingBalance: new Prisma.Decimal(nextOpening.toFixed(2)) },
-      });
-    }
-    await tx.cashMovement.deleteMany({});
-  });
-
-  revalidate();
-  return { ok: true, data: { total: total.toFixed(2) } };
+export async function rebuildTreasuryFromComptaAction(): Promise<ActionResult<{ created: number }>> {
+  await prisma.cashMovement.deleteMany({});
+  await prisma.pocket.updateMany({ data: { openingBalance: new Prisma.Decimal(0) } });
+  // backfillTreasuryAction recrée tous les mouvements depuis la compta et revalide le cache.
+  return backfillTreasuryAction();
 }
 
 export async function createPocketAction(input: {
   name?: string;
   kind?: PocketKind;
-  openingBalance?: number | string;
 }): Promise<ActionResult<{ id: string }>> {
   const name = input.name?.trim();
   if (!name || name.length < 2) return { ok: false, error: "Nom requis (2 caractères min)." };
   const kind = input.kind && KINDS.includes(input.kind) ? input.kind : "OTHER";
-  const opening = parseAmount(input.openingBalance ?? 0);
-  if (opening === null || opening < 0) return { ok: false, error: "Solde d'ouverture invalide." };
 
+  // Pas de solde saisi à la main : une poche démarre à 0 et se remplit via les mouvements
+  // réels (ventes, coûts, répartitions…). La trésorerie reste une fonction de la compta.
   const count = await prisma.pocket.count({ where: { archived: false } });
   const pocket = await prisma.pocket.create({
     data: {
       name,
       kind,
-      openingBalance: new Prisma.Decimal(opening),
+      openingBalance: new Prisma.Decimal(0),
       sortOrder: count,
     },
     select: { id: true },
