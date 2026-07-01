@@ -89,13 +89,17 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
         }
         const next = (await r.json()) as ComptaListResult;
         setData(next);
+        // Re-exécute le composant serveur (ComptaPage) pour rafraîchir aussi la
+        // trésorerie et les mouvements (props SSR), sinon l'onglet Trésorerie garde
+        // des données périmées après une suppression/mutation.
+        router.refresh();
       } catch {
         setFetchError("Réseau indisponible. Vérifie ta connexion.");
       } finally {
         setRefreshing(false);
       }
     },
-    [query],
+    [query, router],
   );
 
   const allSales = useMemo(
