@@ -50,11 +50,14 @@ const createOrderBaseSchema = z.object({
   notes: z.string().trim().max(2000).nullable().optional(),
   items: z.array(orderItemInputSchema).min(1, "Ajoute au moins une ligne."),
   /// Acompte enregistré à la création (optionnel). Si fourni > 0, crée
-  /// automatiquement une PaymentTransaction(DEPOSIT) et passe en READY.
+  /// automatiquement une PaymentTransaction(DEPOSIT) + un mouvement de trésorerie
+  /// (poche `pocketId`, sinon « Non attribué ») et passe en READY.
   initialDeposit: z
     .object({
       amount: moneyRequired,
       method: z.string().trim().max(50).nullable().optional(),
+      /// Poche d'encaissement de l'acompte (null → « Non attribué », à répartir).
+      pocketId: z.string().min(1).nullable().optional(),
     })
     .nullable()
     .optional(),

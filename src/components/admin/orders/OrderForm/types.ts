@@ -27,8 +27,8 @@ export type OrderFormState = {
   deliveryAt: string; // datetime-local string
   notes: string;
   items: OrderFormLine[];
-  /** Acompte initial — uniquement en mode create. */
-  initialDeposit: { on: boolean; amount: string; method: string } | null;
+  /** Acompte initial — uniquement en mode create. `pocketId` : poche d'encaissement. */
+  initialDeposit: { on: boolean; amount: string; method: string; pocketId: string | null } | null;
 };
 
 export const VOLUMES = [30, 50, 100] as const;

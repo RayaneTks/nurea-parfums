@@ -20,6 +20,8 @@ import { Money } from "@/ui/patterns/Money";
 import { createOrderAction } from "@/server/orders/actions";
 import type { CreateOrderInput, OrderItemInput } from "@/schemas/order";
 import type { PickerResult } from "@/features/sell";
+import { PocketSelector } from "@/features/treasury/components/PocketSelector";
+import { usePockets } from "@/features/treasury/usePockets";
 
 const PerfumePicker = dynamic(
   () => import("@/features/sell").then((m) => m.PerfumePicker),
@@ -84,7 +86,9 @@ export function QuickOrderForm() {
   const [lines, setLines] = useState<LineState[]>([]);
   const [depositOn, setDepositOn] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
+  const [depositPocketId, setDepositPocketId] = useState<string | null>(null);
   const { rate: exchangeRateDefault, remember: rememberRate } = useLastExchangeRate();
+  const { pockets } = usePockets(depositOn);
 
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
 
@@ -220,7 +224,7 @@ export function QuickOrderForm() {
       notes: null,
       items,
       initialDeposit: depositOn
-        ? { amount: depositAmount.replace(",", "."), method: null }
+        ? { amount: depositAmount.replace(",", "."), method: null, pocketId: depositPocketId }
         : null,
     };
 
@@ -239,7 +243,7 @@ export function QuickOrderForm() {
       router.push(`/admin/ordres/${result.data.id}`);
       router.refresh();
     });
-  }, [customer, customerName, depositAmount, depositOn, lines, router, rememberRate]);
+  }, [customer, customerName, depositAmount, depositOn, depositPocketId, lines, router, rememberRate]);
 
   return (
     <>
@@ -431,7 +435,7 @@ export function QuickOrderForm() {
             </span>
           </label>
           {depositOn ? (
-            <div className="mt-3">
+            <div className="mt-3 space-y-2">
               <Input
                 label="Montant acompte €"
                 inputMode="decimal"
@@ -441,6 +445,17 @@ export function QuickOrderForm() {
                 placeholder="50"
                 enterKeyHint="done"
               />
+              {pockets.length > 0 ? (
+                <div>
+                  <p className="mb-1.5 text-[13px] font-medium text-[var(--admin-text-muted)]">
+                    Encaissé dans (poche)
+                  </p>
+                  <PocketSelector pockets={pockets} value={depositPocketId} onChange={setDepositPocketId} />
+                  <p className="mt-1 text-[11px] text-[var(--admin-text-subtle)]">
+                    Sans choix → « Non attribué », à répartir plus tard.
+                  </p>
+                </div>
+              ) : null}
             </div>
           ) : null}
         </Card>

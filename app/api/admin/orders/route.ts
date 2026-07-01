@@ -11,6 +11,9 @@ import {
   parseOptionalMoneyToZero,
   resolveUnitCostEur,
 } from "@/lib/gestion/orderLineValidation";
+import { recordMovement } from "@/server/treasury/movements";
+import { revalidateTag } from "next/cache";
+import { tagFor } from "@/lib/admin/cache-tags";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -253,20 +256,50 @@ export async function POST(request: Request) {
 
     const customerContact = body.customerContact?.trim() || null;
 
-    const order = await prisma.order.create({
-      data: {
-        customerName,
-        customerContact,
-        deliveryAt,
-        status,
-        notes: body.notes?.trim() || null,
-        depositPaid,
-        depositAmount: new Prisma.Decimal(depositN),
-        items: {
-          create: cleanItems,
+    const order = await prisma.$transaction(async (tx) => {
+      const created = await tx.order.create({
+        data: {
+          customerName,
+          customerContact,
+          deliveryAt,
+          status,
+          notes: body.notes?.trim() || null,
+          depositPaid,
+          depositAmount: new Prisma.Decimal(depositN),
+          items: {
+            create: cleanItems,
+          },
         },
-      },
-      include: orderInclude,
+        include: orderInclude,
+      });
+
+      // Acompte = argent réel : PaymentTransaction (source de vérité) + mouvement de
+      // trésorerie. Jamais de simple cache non tracé.
+      if (depositPaid && depositN > 0) {
+        const payment = await tx.paymentTransaction.create({
+          data: {
+            orderId: created.id,
+            type: "DEPOSIT",
+            amount: new Prisma.Decimal(depositN),
+            note: "Acompte initial à la création",
+          },
+          select: { id: true },
+        });
+        await recordMovement(
+          {
+            pocketId: null,
+            amount: depositN,
+            kind: "DEPOSIT_IN",
+            label: "Acompte",
+            refType: "PaymentTransaction",
+            refId: payment.id,
+            createdById: ctx.sub,
+          },
+          tx,
+        );
+      }
+
+      return created;
     });
 
     await writeAudit(ctx.sub, "order.create", "Order", order.id, {
@@ -274,6 +307,8 @@ export async function POST(request: Request) {
       customerName: order.customerName,
       depositPaid,
     });
+
+    if (depositPaid) revalidateTag(tagFor.treasury(), "default");
 
     return NextResponse.json({ order: serializeOrder(order) });
   } catch (error) {

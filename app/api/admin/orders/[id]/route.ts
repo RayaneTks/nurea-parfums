@@ -115,8 +115,6 @@ export async function PATCH(
         id: true,
         sale: { select: { id: true } },
         status: true,
-        depositPaid: true,
-        depositAmount: true,
         items: { select: { unitPrice: true, quantity: true } },
         payments: { select: { type: true, amount: true } },
       },
@@ -141,28 +139,18 @@ export async function PATCH(
       data.notes = body.notes?.trim() || null;
     }
 
-    if ("depositPaid" in body) {
-      const nextPaid = Boolean(body.depositPaid);
-      data.depositPaid = nextPaid;
-      if (nextPaid === false) {
-        if (!("depositAmount" in body)) {
-          data.depositAmount = new Prisma.Decimal(0);
-        }
-        if (existing.status === OrderStatus.READY) {
-          data.status = OrderStatus.PENDING;
-        }
-      }
-    }
-
-    if ("depositAmount" in body) {
-      const d = parseOptionalMoneyToZero(body.depositAmount);
-      if (d === null) {
-        return NextResponse.json(
-          { error: "Montant d'acompte invalide (nombre ≥ 0 ou vide pour 0 €)." },
-          { status: 400 },
-        );
-      }
-      data.depositAmount = new Prisma.Decimal(d);
+    // L'acompte n'est plus modifiable en « cache » ici : c'est de l'argent réel qui doit
+    // être tracé. Toute modification passe par les paiements (POST/DELETE
+    // /api/admin/orders/[id]/payments), qui créent la PaymentTransaction ET le mouvement
+    // de trésorerie. `depositPaid` / `depositAmount` sont dérivés des paiements.
+    if ("depositPaid" in body || "depositAmount" in body) {
+      return NextResponse.json(
+        {
+          error:
+            "L'acompte se gère via les paiements de la commande (pour être tracé en trésorerie), pas ici.",
+        },
+        { status: 400 },
+      );
     }
 
     if ("status" in body && body.status) {
@@ -353,23 +341,7 @@ export async function PATCH(
       );
     }
 
-    const nextDepositPaid = "depositPaid" in data ? Boolean(data.depositPaid) : existing.depositPaid;
-    const nextDepositAmount: Prisma.Decimal =
-      "depositAmount" in data
-        ? (data.depositAmount as Prisma.Decimal)
-        : (existing.depositAmount as Prisma.Decimal);
-    const nextAmtNum = Number(nextDepositAmount);
-    if (nextDepositPaid && nextAmtNum <= 0) {
-      return NextResponse.json(
-        {
-          error:
-            "Indique le montant d’acompte (supérieur à 0 €) pour enregistrer l’acompte payé, ou remets l’acompte en attente.",
-        },
-        { status: 400 },
-      );
-    }
-
-    // L'acompte est indicatif : passer en « à traiter » n'exige plus de montant reçu.
+    // L'acompte n'est plus modifiable ici (voir plus haut) : rien à valider côté cache.
     // Les seules règles de statut vivent dans canTransition (garde-fous de cohérence).
 
     const updated = await prisma.order.update({

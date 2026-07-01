@@ -9,6 +9,7 @@ import { tagFor } from "@/lib/admin/cache-tags";
 import { createOrderInputSchema, updateOrderInputSchema } from "@/schemas/order";
 import type { CreateOrderInput, UpdateOrderInput } from "@/schemas/order";
 import type { ActionResult } from "@/server/customers/actions";
+import { recordMovement } from "@/server/treasury/movements";
 
 function lineUnitCostEur(unitCostDzd: string | null, exchangeRate: string | null): string {
   if (!unitCostDzd || !exchangeRate) return "0";
@@ -84,7 +85,7 @@ export async function createOrderAction(
       });
 
       if (depositPaid) {
-        await tx.paymentTransaction.create({
+        const payment = await tx.paymentTransaction.create({
           data: {
             orderId: order.id,
             type: "DEPOSIT",
@@ -92,7 +93,21 @@ export async function createOrderAction(
             method: data.initialDeposit?.method ?? null,
             note: "Acompte initial à la création",
           },
+          select: { id: true },
         });
+        // Trésorerie : l'acompte entre réellement dans une poche (ou « Non attribué »).
+        // Source de vérité unique = PaymentTransaction ; le mouvement la référence.
+        await recordMovement(
+          {
+            pocketId: data.initialDeposit?.pocketId ?? null,
+            amount: depositAmountStr,
+            kind: "DEPOSIT_IN",
+            label: "Acompte",
+            refType: "PaymentTransaction",
+            refId: payment.id,
+          },
+          tx,
+        );
       }
 
       // PerfumePricing upsert : "smart memory" serveur — chaque ligne fixe le prix
@@ -130,6 +145,7 @@ export async function createOrderAction(
     revalidateTag(tagFor.orders(), "default");
     revalidateTag(tagFor.pipeline(), "default");
     revalidateTag(tagFor.kpi(), "default");
+    if (depositPaid) revalidateTag(tagFor.treasury(), "default");
     return { ok: true, data: { id: created.id, status: created.status as "PENDING" | "READY" } };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Création impossible." };
