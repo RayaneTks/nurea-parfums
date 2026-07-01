@@ -12,6 +12,9 @@ import {
   resolveUnitCostEur,
 } from "@/lib/gestion/orderLineValidation";
 import { canTransition } from "@/domain/order-status";
+import { reverseMovementsFor } from "@/server/treasury/movements";
+import { revalidateTag } from "next/cache";
+import { tagFor } from "@/lib/admin/cache-tags";
 import Decimal from "decimal.js-light";
 
 export const dynamic = "force-dynamic";
@@ -375,14 +378,25 @@ export async function DELETE(
 
     const existing = await prisma.order.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, payments: { select: { id: true } } },
     });
     if (!existing) {
       return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
     }
 
+    // La suppression cascade les PaymentTransaction, mais leurs mouvements de trésorerie
+    // (référence souple) ne sont PAS supprimés automatiquement. On les contre-passe pour
+    // ne jamais laisser d'argent orphelin dans la trésorerie (sinon total faussé + libellés
+    // « Remboursement » fantômes).
     await prisma.order.delete({ where: { id } });
+    for (const p of existing.payments) {
+      await reverseMovementsFor("PaymentTransaction", p.id);
+    }
     await writeAudit(ctx.sub, "order.delete", "Order", id);
+    revalidateTag(tagFor.treasury(), "default");
+    revalidateTag(tagFor.kpi(), "default");
+    revalidateTag(tagFor.orders(), "default");
+    revalidateTag(tagFor.pipeline(), "default");
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[api/admin/orders/[id]][DELETE]", error);

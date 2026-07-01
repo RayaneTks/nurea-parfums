@@ -446,6 +446,9 @@ export async function DELETE(
     });
     revalidateTag(tagFor.treasury(), "default");
     revalidateTag(tagFor.perfumes(), "default");
+    revalidateTag(tagFor.kpi(), "default");
+    revalidateTag(tagFor.sales(), "default");
+    revalidateTag(tagFor.batches(), "default");
     revalidateAdminCatalogue();
 
     return NextResponse.json({ ok: true });
