@@ -388,7 +388,7 @@ export function QuickOrderForm() {
                       value={line.isGift ? "0" : line.unitPrice}
                       disabled={line.isGift}
                       onChange={(e) => patchLine(line.key, { unitPrice: e.target.value })}
-                      placeholder="120"
+                      placeholder="ex. 120"
                       enterKeyHint="next"
                     />
                     <Input
@@ -397,7 +397,7 @@ export function QuickOrderForm() {
                       inputMode="decimal"
                       value={line.unitCostDzd}
                       onChange={(e) => patchLine(line.key, { unitCostDzd: e.target.value })}
-                      placeholder="36000"
+                      placeholder="ex. 36000"
                       enterKeyHint="next"
                     />
                     <Input
@@ -406,7 +406,7 @@ export function QuickOrderForm() {
                       inputMode="decimal"
                       value={line.exchangeRate}
                       onChange={(e) => patchLine(line.key, { exchangeRate: e.target.value })}
-                      placeholder="277"
+                      placeholder="ex. 277"
                       enterKeyHint="done"
                     />
                   </div>
@@ -430,7 +430,7 @@ export function QuickOrderForm() {
                 Acompte encaissé
               </span>
               <span className="block text-[12px] text-[var(--admin-text-subtle)]">
-                Active la transition automatique vers « À traiter ».
+                Enregistré et tracé en trésorerie. Passe la commande en « À traiter ».
               </span>
             </span>
           </label>
@@ -442,7 +442,7 @@ export function QuickOrderForm() {
                 variant="elevated"
                 value={depositAmount}
                 onChange={(e) => setDepositAmount(e.target.value)}
-                placeholder="50"
+                placeholder="ex. 50"
                 enterKeyHint="done"
               />
               {pockets.length > 0 ? (

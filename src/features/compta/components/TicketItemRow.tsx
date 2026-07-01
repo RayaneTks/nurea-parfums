@@ -108,7 +108,7 @@ export function TicketItemRow({
               inputMode="decimal"
               value={line.unitPrice}
               onChange={(e) => onPatch(line.key, { unitPrice: e.target.value })}
-              placeholder="120"
+              placeholder="ex. 120"
               enterKeyHint="next"
             />
             <Input
@@ -117,7 +117,7 @@ export function TicketItemRow({
               inputMode="decimal"
               value={line.unitCostDzd}
               onChange={(e) => onPatch(line.key, { unitCostDzd: e.target.value })}
-              placeholder="36000"
+              placeholder="ex. 36000"
               enterKeyHint="next"
             />
             <Input
@@ -126,7 +126,7 @@ export function TicketItemRow({
               inputMode="decimal"
               value={line.exchangeRate}
               onChange={(e) => onPatch(line.key, { exchangeRate: e.target.value })}
-              placeholder="277"
+              placeholder="ex. 277"
               enterKeyHint="done"
             />
           </div>

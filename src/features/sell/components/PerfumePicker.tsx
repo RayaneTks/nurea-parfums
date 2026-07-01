@@ -168,7 +168,7 @@ export function PerfumePicker({
                 label="Nom du parfum"
                 value={manualName}
                 onChange={(e) => setManualName(e.target.value)}
-                placeholder="Aventus"
+                placeholder="ex. Aventus"
                 variant="elevated"
                 enterKeyHint="next"
               />
@@ -176,7 +176,7 @@ export function PerfumePicker({
                 label="Marque"
                 value={manualBrand}
                 onChange={(e) => setManualBrand(e.target.value)}
-                placeholder="Creed"
+                placeholder="ex. Creed"
                 variant="elevated"
                 enterKeyHint="done"
                 onKeyDown={(e) => {

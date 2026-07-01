@@ -2,6 +2,7 @@
 
 import {
   forwardRef,
+  type ChangeEvent,
   type FocusEvent,
   type InputHTMLAttributes,
   type KeyboardEvent,
@@ -9,6 +10,16 @@ import {
   useId,
 } from "react";
 import { cn } from "@/lib/utils";
+
+/**
+ * Retire les zéros de tête d'une saisie numérique sans casser les décimales :
+ * "060" → "60", "00" → "0", "0" → "0", "0,5" → "0,5", "" → "".
+ * N'agit que sur une saisie strictement numérique (chiffres + un séparateur).
+ */
+function stripLeadingZeros(v: string): string {
+  if (!/^\d*[.,]?\d*$/.test(v)) return v;
+  return v.replace(/^0+(?=\d)/, "");
+}
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -41,6 +52,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     id,
     onFocus,
     onKeyDown,
+    onChange,
     enterKeyHint,
     type,
     ...rest
@@ -50,6 +62,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const autoId = useId();
   const inputId = id ?? autoId;
   const helpId = error ? `${inputId}-err` : hint ? `${inputId}-hint` : undefined;
+
+  // Champs numériques : on nettoie les zéros de tête à la saisie (« 060 » → « 60 »)
+  // pour que la valeur remontée au parent soit toujours propre.
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (numeric) {
+      const cleaned = stripLeadingZeros(e.target.value);
+      if (cleaned !== e.target.value) e.target.value = cleaned;
+    }
+    onChange?.(e);
+  };
 
   const handleFocus = (e: FocusEvent<HTMLInputElement>) => {
     onFocus?.(e);
@@ -121,6 +143,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           aria-describedby={helpId}
           onFocus={handleFocus}
           onKeyDown={handleKeyDown}
+          onChange={handleChange}
           className={cn(
             "block w-full min-h-[44px] rounded-[12px]",
             variant === "elevated"

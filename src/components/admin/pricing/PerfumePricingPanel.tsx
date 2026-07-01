@@ -171,7 +171,7 @@ export function PerfumePricingPanel({ perfumeId, initial }: PerfumePricingPanelP
                     numeric
                     value={d.unitPriceEur}
                     onChange={(e) => updateDraft(v, { unitPriceEur: e.target.value })}
-                    placeholder="120"
+                    placeholder="ex. 120"
                     enterKeyHint="next"
                   />
                   <Input
@@ -180,7 +180,7 @@ export function PerfumePricingPanel({ perfumeId, initial }: PerfumePricingPanelP
                     numeric
                     value={d.unitCostDzd}
                     onChange={(e) => updateDraft(v, { unitCostDzd: e.target.value })}
-                    placeholder="36000"
+                    placeholder="ex. 36000"
                     enterKeyHint="next"
                   />
                   <Input
@@ -189,7 +189,7 @@ export function PerfumePricingPanel({ perfumeId, initial }: PerfumePricingPanelP
                     numeric
                     value={d.exchangeRate}
                     onChange={(e) => updateDraft(v, { exchangeRate: e.target.value })}
-                    placeholder="277"
+                    placeholder="ex. 277"
                     enterKeyHint="done"
                   />
                 </div>
