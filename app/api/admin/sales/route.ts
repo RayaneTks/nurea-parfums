@@ -389,10 +389,16 @@ export async function POST(request: Request) {
       for (const p of splits) {
         const amt = Number(String(p.amount ?? "").replace(",", "."));
         if (!Number.isFinite(amt) || amt <= 0) continue;
-        attributed += amt;
+        // Plafonne l'attribution au montant de la vente : si le client a donné plus
+        // (rendu de monnaie), on n'enregistre en trésorerie que la part de la vente,
+        // jamais l'excédent rendu.
+        const room = cashed - attributed;
+        if (room <= 0.005) break;
+        const rec = Math.min(amt, room);
+        attributed += rec;
         await recordMovement({
           pocketId: p.pocketId ?? null,
-          amount: amt,
+          amount: rec,
           kind: "SALE_IN",
           label: "Vente",
           refType: "Sale",
