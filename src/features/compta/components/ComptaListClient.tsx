@@ -113,7 +113,15 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
   };
 
   const showLoadingState = pending || refreshing;
-  const orderRows = data.orderRows ?? [];
+  const orderRows = useMemo(() => data.orderRows ?? [], [data.orderRows]);
+  const deliveredOrderRows = useMemo(
+    () => orderRows.filter((o) => o.status === "DELIVERED"),
+    [orderRows],
+  );
+  const readyOrderRows = useMemo(
+    () => orderRows.filter((o) => o.status !== "DELIVERED"),
+    [orderRows],
+  );
   const hasAny =
     data.batchGroups.length > 0 ||
     data.customerGroups.length > 0 ||
@@ -172,48 +180,20 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
           <Stack gap={3}>
             {showLoadingState ? <Skeleton height={2} /> : null}
 
-            {orderRows.length > 0 ? (
-              <Stack gap={2}>
-                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--admin-text-subtle)]">
-                  Commandes en cours ({orderRows.length})
-                </p>
-                <Card padding={0}>
-                  <ul className="divide-y px-3" style={{ borderColor: "var(--admin-border)" }}>
-                    {orderRows.map((o) => {
-                      const due = Number(o.due);
-                      return (
-                        <li key={o.id}>
-                          <Link
-                            href={`/admin/ordres/${o.id}`}
-                            prefetch
-                            className="flex items-center justify-between gap-3 py-3 tap-scale"
-                          >
-                            <span className="min-w-0">
-                              <span className="block truncate text-[15px] font-semibold text-[var(--admin-text)]">
-                                {o.customerName}
-                              </span>
-                              <span className="mt-0.5 flex items-center gap-1.5">
-                                <OrderStatusBadge status={o.status} />
-                                {due > 0.005 ? (
-                                  <span className="text-[12px] font-medium text-[var(--admin-warning)] tabular-nums">
-                                    · <Money value={o.due} compact /> dû
-                                  </span>
-                                ) : null}
-                              </span>
-                            </span>
-                            <span className="shrink-0 text-right">
-                              <Money value={o.cashed} bold />
-                              <span className="mt-0.5 block text-[11px] text-[var(--admin-text-subtle)]">
-                                encaissé
-                              </span>
-                            </span>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </Card>
-              </Stack>
+            {deliveredOrderRows.length > 0 ? (
+              <OrderComptaSection
+                title={`Ventes sur commande (${deliveredOrderRows.length})`}
+                subtitle="Commandes livrées — comptées dans le chiffre d'affaires."
+                rows={deliveredOrderRows}
+              />
+            ) : null}
+
+            {readyOrderRows.length > 0 ? (
+              <OrderComptaSection
+                title={`Commandes à traiter (${readyOrderRows.length})`}
+                subtitle="Acompte encaissé, livraison à venir."
+                rows={readyOrderRows}
+              />
             ) : null}
 
             {data.batchGroups.length > 0 ? (
@@ -261,5 +241,62 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
         onSaved={refresh}
       />
     </>
+  );
+}
+
+function OrderComptaSection({
+  title,
+  subtitle,
+  rows,
+}: {
+  title: string;
+  subtitle: string;
+  rows: ComptaListResult["orderRows"];
+}) {
+  return (
+    <Stack gap={2}>
+      <div className="px-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--admin-text-subtle)]">
+          {title}
+        </p>
+        <p className="mt-0.5 text-[11px] text-[var(--admin-text-subtle)]">{subtitle}</p>
+      </div>
+      <Card padding={0}>
+        <ul className="divide-y px-3" style={{ borderColor: "var(--admin-border)" }}>
+          {rows.map((o) => {
+            const due = Number(o.due);
+            return (
+              <li key={o.id}>
+                <Link
+                  href={`/admin/ordres/${o.id}`}
+                  prefetch
+                  className="flex items-center justify-between gap-3 py-3 tap-scale"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate text-[15px] font-semibold text-[var(--admin-text)]">
+                      {o.customerName}
+                    </span>
+                    <span className="mt-0.5 flex items-center gap-1.5">
+                      <OrderStatusBadge status={o.status} />
+                      {due > 0.005 ? (
+                        <span className="text-[12px] font-medium text-[var(--admin-warning)] tabular-nums">
+                          · <Money value={o.due} compact /> dû
+                        </span>
+                      ) : null}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <Money value={o.cashed} bold />
+                    <span className="mt-0.5 block text-[11px] text-[var(--admin-text-subtle)]">
+                      encaissé
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </Card>
+    </Stack>
   );
 }
