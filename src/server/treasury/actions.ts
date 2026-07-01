@@ -190,9 +190,15 @@ export async function supplierPaymentAction(input: {
 }
 
 /**
- * Importe l'historique (ventes encaissées, acomptes/soldes des commandes
- * confirmées sans vente, dépenses) dans la poche « Non attribué », à répartir.
- * Idempotent : ignore toute origine ayant déjà un mouvement.
+ * Importe l'historique dans la poche « Non attribué », à répartir. Idempotent :
+ * ignore toute origine ayant déjà un mouvement.
+ *
+ * Règle anti-double-comptage (identique au chemin live) : l'argent d'une commande
+ * est tracé UNE seule fois, via ses paiements (DEPOSIT/BALANCE). Donc :
+ *  - ventes DIRECTES (sans commande liée) → SALE_IN sur l'encaissé ;
+ *  - toute commande (livrée ou à traiter) → ses paiements, qu'elle ait ou non une vente liée ;
+ *  - une vente issue d'une commande (`orderId`) n'apporte AUCUN mouvement (déjà couvert
+ *    par les paiements de la commande).
  */
 export async function backfillTreasuryAction(): Promise<ActionResult<{ created: number }>> {
   const unassigned = await ensureUnassignedPocket();
@@ -203,7 +209,10 @@ export async function backfillTreasuryAction(): Promise<ActionResult<{ created: 
   const has = new Set(existing.map((m) => `${m.refType}:${m.refId}`));
   let created = 0;
 
+  // Ventes directes uniquement : les ventes issues d'une commande sont couvertes
+  // par les paiements de cette commande (boucle ci-dessous).
   const sales = await prisma.sale.findMany({
+    where: { orderId: null },
     select: { id: true, soldAt: true, totalRevenue: true, remainingDue: true },
   });
   for (const s of sales) {
@@ -223,8 +232,10 @@ export async function backfillTreasuryAction(): Promise<ActionResult<{ created: 
     }
   }
 
+  // Toutes les commandes confirmées : leurs paiements sont la source de vérité du cash,
+  // qu'elles aient été finalisées en vente ou non.
   const orders = await prisma.order.findMany({
-    where: { status: { in: ["READY", "DELIVERED"] }, sale: null },
+    where: { status: { in: ["READY", "DELIVERED"] } },
     select: { payments: { select: { id: true, type: true, amount: true, paidAt: true } } },
   });
   for (const o of orders) {
