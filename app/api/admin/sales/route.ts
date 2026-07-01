@@ -239,6 +239,7 @@ export async function POST(request: Request) {
 
     let linkedOrderId: string | null = null;
     let orderCustomerName: string | null = null;
+    let orderBatchId: string | null = null;
     if (body.orderId) {
       const order = await prisma.order.findUnique({
         where: { id: body.orderId },
@@ -255,6 +256,9 @@ export async function POST(request: Request) {
       }
       linkedOrderId = order.id;
       orderCustomerName = order.customerName;
+      // La vente hérite du lot de la commande : sinon la transaction disparaîtrait du lot
+      // (la commande est exclue car elle a une vente, et la vente ne serait pas rattachée).
+      orderBatchId = order.batchId;
     }
 
     const totals = sumSaleTotals(normalizedLines);
@@ -303,6 +307,7 @@ export async function POST(request: Request) {
       const created = await tx.sale.create({
         data: {
           orderId: linkedOrderId,
+          batchId: orderBatchId,
           customerId: linkedCustomerId,
           customerName,
           customerContact,
@@ -371,8 +376,14 @@ export async function POST(request: Request) {
     });
 
     // Trésorerie : l'encaissé (totalRevenue − remainingDue) entre dans une/des poche(s).
+    //
+    // IMPORTANT — pas de double comptage : une vente issue d'une commande (`linkedOrderId`)
+    // n'a d'accès à « Finaliser » que lorsque la commande est déjà soldée (due ≤ 0). Son
+    // argent est donc DÉJÀ en trésorerie via les paiements de la commande (DEPOSIT_IN /
+    // BALANCE_IN). On ne ré-enregistre rien ici. La trésorerie ne compte l'argent d'une
+    // commande qu'une seule fois, via ses paiements.
     const cashed = Number(totals.totalRevenue) - remainingDueN;
-    if (cashed > 0.005) {
+    if (!linkedOrderId && cashed > 0.005) {
       const splits = Array.isArray(body.payments) ? body.payments : [];
       let attributed = 0;
       for (const p of splits) {
