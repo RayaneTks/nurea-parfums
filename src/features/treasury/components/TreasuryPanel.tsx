@@ -323,7 +323,7 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
             <p className="mb-1.5 text-[13px] font-medium text-[var(--admin-text-muted)]">Vers</p>
             <PocketSelector pockets={pockets} value={toId} onChange={setToId} includeSystem />
           </div>
-          <Input label="Montant €" inputMode="decimal" variant="elevated" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="50" enterKeyHint="next" />
+          <Input label="Montant €" inputMode="decimal" variant="elevated" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="ex. 50" enterKeyHint="next" />
           <Input label="Note (opt.)" variant="elevated" value={label} onChange={(e) => setLabel(e.target.value)} enterKeyHint="done" />
         </Stack>
       </Sheet>
@@ -388,7 +388,7 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
             <p className="mb-1.5 text-[13px] font-medium text-[var(--admin-text-muted)]">Depuis la poche</p>
             <PocketSelector pockets={pockets} value={fromId} onChange={setFromId} includeSystem />
           </div>
-          <Input label="Montant €" inputMode="decimal" variant="elevated" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="200" enterKeyHint="next" />
+          <Input label="Montant €" inputMode="decimal" variant="elevated" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="ex. 200" enterKeyHint="next" />
           <Input label="Note (opt.)" variant="elevated" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Commande de mars…" enterKeyHint="done" />
         </Stack>
       </Sheet>

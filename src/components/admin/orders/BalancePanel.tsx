@@ -297,7 +297,7 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
             variant="elevated"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder="50"
+            placeholder="ex. 50"
             autoFocus
             enterKeyHint="next"
           />

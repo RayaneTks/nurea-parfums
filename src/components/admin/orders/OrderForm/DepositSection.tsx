@@ -52,7 +52,7 @@ export function DepositSection({
             Acompte encaissé
           </span>
           <span className="mt-0.5 block text-[12px] text-[var(--admin-text-subtle)]">
-            Coché → commande passe immédiatement en « à traiter ».
+            Enregistré et tracé en trésorerie. Passe la commande en « à traiter ».
           </span>
         </span>
       </button>
@@ -65,7 +65,7 @@ export function DepositSection({
               numeric
               value={amount}
               onChange={(e) => onAmountChange(e.target.value)}
-              placeholder="50"
+              placeholder="ex. 50"
               enterKeyHint="next"
             />
             <Input

@@ -159,7 +159,7 @@ export function ItemsSection({ items, onAddItem, onPatchItem, onRemoveItem }: It
                     value={it.isGift ? "0" : it.unitPrice}
                     disabled={it.isGift}
                     onChange={(e) => void onPatchItem(it.key, { unitPrice: e.target.value })}
-                    placeholder="120"
+                    placeholder="ex. 120"
                     enterKeyHint="next"
                   />
                   <Input
@@ -168,7 +168,7 @@ export function ItemsSection({ items, onAddItem, onPatchItem, onRemoveItem }: It
                     inputMode="decimal"
                     value={it.unitCostDzd}
                     onChange={(e) => void onPatchItem(it.key, { unitCostDzd: e.target.value })}
-                    placeholder="36000"
+                    placeholder="ex. 36000"
                     enterKeyHint="next"
                   />
                   <Input
@@ -177,7 +177,7 @@ export function ItemsSection({ items, onAddItem, onPatchItem, onRemoveItem }: It
                     inputMode="decimal"
                     value={it.exchangeRate}
                     onChange={(e) => void onPatchItem(it.key, { exchangeRate: e.target.value })}
-                    placeholder="277"
+                    placeholder="ex. 277"
                     enterKeyHint="done"
                   />
                 </div>
