@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeftRight, Plus, SlidersHorizontal, AlertTriangle, Truck, ChevronRight, ChevronDown } from "lucide-react";
+import { ArrowLeftRight, Plus, SlidersHorizontal, AlertTriangle, Truck, ChevronRight, ChevronDown, Trash2 } from "lucide-react";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
 import { Button } from "@/ui/primitives/Button";
@@ -23,6 +23,7 @@ import {
   adjustmentAction,
   supplierPaymentAction,
   backfillTreasuryAction,
+  archivePocketAction,
 } from "@/server/treasury/actions";
 
 type TreasuryPanelProps = {
@@ -139,6 +140,13 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
     const res = await supplierPaymentAction({ pocketId: fromId, amount, label });
     setPending(false);
     res.ok ? done("Paiement fournisseur enregistré.") : fail(res.error);
+  };
+  const submitArchivePocket = async (id: string) => {
+    setPending(true);
+    const res = await archivePocketAction({ id });
+    setPending(false);
+    setTracePocketId(null);
+    res.ok ? done("Poche supprimée.") : fail(res.error);
   };
 
   return (
@@ -396,6 +404,8 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
       <PocketTraceSheet
         pocket={pockets.find((p) => p.id === tracePocketId) ?? null}
         movements={movements}
+        pending={pending}
+        onArchive={submitArchivePocket}
         onClose={() => setTracePocketId(null)}
       />
 
@@ -407,10 +417,14 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
 function PocketTraceSheet({
   pocket,
   movements,
+  pending,
+  onArchive,
   onClose,
 }: {
   pocket: PocketWithBalance | null;
   movements: MovementRow[];
+  pending: boolean;
+  onArchive: (id: string) => void;
   onClose: () => void;
 }) {
   const open = pocket !== null;
@@ -474,6 +488,27 @@ function PocketTraceSheet({
               </ul>
             )}
           </div>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="md"
+            fullWidth
+            disabled={pending}
+            leadingIcon={<Trash2 size={15} />}
+            className="text-[var(--admin-danger)]"
+            onClick={() => {
+              const warn =
+                Math.abs(balance) > 0.005
+                  ? `Cette poche a un solde de ${balance.toFixed(2).replace(".", ",")} € qui sera retiré du total. `
+                  : "";
+              if (window.confirm(`${warn}Supprimer la poche « ${pocket.name} » ?`)) {
+                onArchive(pocket.id);
+              }
+            }}
+          >
+            Supprimer la poche
+          </Button>
         </Stack>
       ) : null}
     </Sheet>
