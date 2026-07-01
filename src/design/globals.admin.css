@@ -140,7 +140,13 @@ body.admin-route .nurea-viewport-top-shield {
 .admin-app-container {
   position: relative;
   width: 100%;
-  height: 100%;
+  /* Hauteur = viewport RÉELLEMENT visible (visualViewport, posé par ViewportSync).
+     Quand le clavier iOS monte, --admin-vh rétrécit → tout le shell se compresse
+     au-dessus du clavier : inputs, CTA sticky et TabBar restent visibles au lieu
+     d'être recouverts. Fallback 100% (= body h-full) tant que le JS n'a pas mesuré,
+     conforme au pattern « pas de dvh/svh sur iOS PWA ». */
+  height: var(--admin-vh, 100%);
+  max-height: var(--admin-vh, 100%);
   max-width: min(430px, 100%);
   margin-left: auto;
   margin-right: auto;
