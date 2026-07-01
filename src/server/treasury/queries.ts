@@ -245,6 +245,10 @@ export async function listMovements(params?: {
         groupLabel: null,
       };
     }
+    if (refType === "Capital") {
+      // Apport perso (injection de capital) — argent réel entré de la poche perso.
+      return { title: fallback || "Apport perso", href: null, groupKey: null, groupLabel: null };
+    }
     return { title: fallback || "Mouvement", href: null, groupKey: null, groupLabel: null };
   }
 
