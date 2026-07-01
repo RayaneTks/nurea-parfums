@@ -9,6 +9,7 @@ import { CommandPalette } from "./CommandPalette";
 import { AdminLoadingProgress } from "./AdminLoadingProgress";
 import { PwaInstallHint } from "./PwaInstallHint";
 import { UndoProvider } from "./UndoProvider";
+import { ViewportSync } from "./ViewportSync";
 import { useAdminKeyboardInset } from "@/hooks/useAdminKeyboardInset";
 
 type AdminShellProps = {
@@ -31,16 +32,20 @@ export function AdminShell({ children }: AdminShellProps) {
 
   if (isLogin) {
     return (
-      <div className="admin-theme flex h-full w-full">
-        <div className="mx-auto flex h-full w-full max-w-[var(--admin-app-max-width)]">
-          {children}
+      <>
+        <ViewportSync />
+        <div className="admin-theme flex h-full w-full">
+          <div className="mx-auto flex h-full w-full max-w-[var(--admin-app-max-width)]">
+            {children}
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
     <UndoProvider>
+    <ViewportSync />
     <div className="admin-theme admin-app-container">
       <PwaInstallHint />
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
