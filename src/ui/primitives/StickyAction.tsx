@@ -13,8 +13,12 @@ type StickyActionProps = {
 /**
  * Conteneur sticky bas-de-page pour CTA principal d'une page.
  *
- * - Flotte AU-DESSUS de la tab bar (fixe, 88px) : `bottom` = max(hauteur tab bar,
- *   inset clavier). Sinon le CTA passe derrière la tab bar / le clavier iOS.
+ * - Clavier fermé : le CTA flotte AU-DESSUS de la tab bar fixe (88px).
+ * - Clavier ouvert : le shell se comprime déjà au-dessus du clavier (--admin-vh),
+ *   donc le bas de la zone de scroll est PILE au-dessus du clavier. On ne doit PAS
+ *   re-décaler le CTA de la hauteur du clavier (sinon il flotte au milieu / disparaît) :
+ *   on résorbe la réserve tab bar au fur et à mesure que le clavier monte, jusqu'à 0.
+ *   → `bottom = max(0, tab-bar − inset)` : 88px sans clavier, 0 avec clavier.
  * - z-20 < tab bar (50) mais positionné plus haut → jamais masqué.
  * - place ce composant en dernier enfant du scroll content.
  */
@@ -32,7 +36,8 @@ export function StickyAction({ children, background = true, className }: StickyA
         className,
       )}
       style={{
-        bottom: "max(var(--admin-tab-bar-height), var(--admin-keyboard-inset, 0px))",
+        bottom:
+          "max(0px, calc(var(--admin-tab-bar-height) - var(--admin-keyboard-inset, 0px)))",
       }}
     >
       {children}
