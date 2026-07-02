@@ -31,7 +31,12 @@ body.admin-route {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* Top-aligné, PAS centré : quand le clavier iOS monte, --admin-vh rétrécit le
+     shell sous la hauteur du body. Un `justify-content: center` recentrerait alors
+     le shell → un vide apparaît en haut et le header « saute » (bug remonté).
+     Top-aligné, le shell reste collé en haut ; seul le contenu se comprime au-dessus
+     du clavier. (Un frame 430px collé en haut = look app natif, aussi sur desktop.) */
+  justify-content: flex-start;
 }
 
 body.admin-route .nurea-viewport-top-shield {
