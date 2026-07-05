@@ -252,9 +252,18 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
             orderId={current.id}
             items={current.items}
             editable={canDeliver}
+            orderDue={Number(current.due)}
             onFulfillmentChange={(next, items) => {
               setFulfillment(next);
               setCurrent((c) => ({ ...c, items }));
+            }}
+            onCollected={(amount) => {
+              // Livrer un flacon encaisse son solde → met à jour le reste dû affiché.
+              setCurrent((c) => ({
+                ...c,
+                due: Math.max(0, Number(c.due) - amount).toFixed(2),
+              }));
+              setToast({ type: "success", message: `Encaissé ${amount.toFixed(2)} € à la livraison.` });
             }}
             onError={(message) => setToast({ type: "error", message })}
           />
