@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { CheckCircle2, Clock, CreditCard, MinusCircle, Plus, RotateCcw } from "lucide-react";
 import { Card } from "@/ui/primitives/Card";
 import { Button } from "@/ui/primitives/Button";
@@ -59,6 +59,16 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
   const { pockets } = usePockets(sheetOpen);
   const [pending, startTransition] = useTransition();
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
+
+  // Re-synchronise avec le serveur après un router.refresh() (ex. solde encaissé
+  // automatiquement à la livraison d'un flacon, hors de ce panneau). Les props ne
+  // changent d'identité qu'après un vrai refetch serveur → pas de reset intempestif.
+  useEffect(() => {
+    setBalance(initialBalance);
+  }, [initialBalance]);
+  useEffect(() => {
+    setPayments(initialPayments);
+  }, [initialPayments]);
 
   const openSheet = (t: PaymentTypeValue) => {
     setSheetType(t);

@@ -2,9 +2,15 @@
 
 import Image from "next/image";
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Check, Minus, Plus } from "lucide-react";
 import { Card } from "@/ui/primitives/Card";
+import { Button } from "@/ui/primitives/Button";
+import { Sheet } from "@/ui/primitives/Sheet";
+import { Stack } from "@/ui/primitives/Stack";
 import { Money } from "@/ui/patterns/Money";
+import { PocketSelector } from "@/features/treasury/components/PocketSelector";
+import { usePockets } from "@/features/treasury/usePockets";
 import { cn } from "@/lib/utils";
 import { deriveFulfillment, type Fulfillment } from "@/domain/order-status";
 import type { OrderDetailRow } from "@/server/orders/queries";
@@ -16,30 +22,58 @@ type OrderItemsFulfillmentProps = {
   items: Item[];
   /** Si false, affichage seul (vente liée, commande figée). */
   editable: boolean;
+  /** Reste dû actuel (€) — plafonne l'encaissement automatique à la livraison. */
+  orderDue: number;
   onFulfillmentChange?: (next: Fulfillment, items: Item[]) => void;
+  /** Argent encaissé automatiquement à la livraison (pour rafraîchir le solde parent). */
+  onCollected?: (amount: number) => void;
   onError?: (message: string) => void;
+};
+
+/** Attente d'un choix de poche avant d'encaisser la livraison d'un flacon. */
+type PendingCollect = {
+  itemId: string;
+  targetQuantity: number;
+  previous: Item[];
+  next: Item[];
+  amount: number;
+  label: string;
 };
 
 /**
  * Liste des articles avec suivi de livraison par ligne (livraison partielle).
  *
  * - Stepper −/+ (hitbox 44px) + bouton « Tout » pour livrer la ligne entière.
+ * - Livrer un flacon = récupérer son argent : toute hausse encaisse la valeur livrée
+ *   (plafonnée au reste dû) en « Solde », dans une poche choisie à chaque fois.
  * - Optimistic update, PATCH /api/admin/orders/[id]/fulfillment, rollback sur erreur.
  */
 export function OrderItemsFulfillment({
   orderId,
   items: initialItems,
   editable,
+  orderDue,
   onFulfillmentChange,
+  onCollected,
   onError,
 }: OrderItemsFulfillmentProps) {
+  const router = useRouter();
   const [items, setItems] = useState(initialItems);
+  const [due, setDue] = useState(orderDue);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [collect, setCollect] = useState<PendingCollect | null>(null);
+  const [pocketId, setPocketId] = useState<string | null>(null);
+  const { pockets } = usePockets(collect !== null);
   const [, startTransition] = useTransition();
 
   if (items.length === 0) return null;
 
-  const persist = (next: Item[], itemId: string, previous: Item[]) => {
+  const persist = (
+    next: Item[],
+    itemId: string,
+    previous: Item[],
+    payPocketId?: string | null,
+  ) => {
     setItems(next);
     setPendingId(itemId);
     onFulfillmentChange?.(deriveFulfillment(next), next);
@@ -52,6 +86,7 @@ export function OrderItemsFulfillment({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             items: [{ id: itemId, deliveredQuantity: target?.deliveredQuantity ?? 0 }],
+            ...(payPocketId !== undefined ? { pocketId: payPocketId } : {}),
           }),
         });
         if (!res.ok) {
@@ -59,6 +94,15 @@ export function OrderItemsFulfillment({
           setItems(previous);
           onFulfillmentChange?.(deriveFulfillment(previous), previous);
           onError?.(err.error ?? "Livraison non enregistrée.");
+          return;
+        }
+        const json = (await res.json().catch(() => ({}))) as { collected?: number };
+        const collected = Number(json.collected ?? 0);
+        if (collected > 0.005) {
+          setDue((d) => Math.max(0, d - collected));
+          onCollected?.(collected);
+          // Rafraîchit le panneau Solde (nouveau paiement) et la trésorerie.
+          router.refresh();
         }
       } catch {
         setItems(previous);
@@ -72,18 +116,44 @@ export function OrderItemsFulfillment({
 
   const setDelivered = (itemId: string, value: number) => {
     const previous = items;
+    const line = items.find((it) => it.id === itemId);
+    if (!line) return;
+    const clamped = Math.max(0, Math.min(value, line.quantity));
+    if (clamped === line.deliveredQuantity) return;
     const next = items.map((it) =>
-      it.id === itemId
-        ? { ...it, deliveredQuantity: Math.max(0, Math.min(value, it.quantity)) }
-        : it,
+      it.id === itemId ? { ...it, deliveredQuantity: clamped } : it,
     );
-    if (next.find((it) => it.id === itemId)?.deliveredQuantity === previous.find((it) => it.id === itemId)?.deliveredQuantity) {
+
+    const delta = clamped - line.deliveredQuantity;
+    // Hausse d'une ligne payante avec du reste dû → on demande la poche d'encaissement.
+    const collectable = Math.min(
+      delta > 0 && !line.isGift ? Number(line.unitPrice) * delta : 0,
+      Math.max(0, due),
+    );
+    if (collectable > 0.005) {
+      setPocketId(null);
+      setCollect({
+        itemId,
+        targetQuantity: clamped,
+        previous,
+        next,
+        amount: collectable,
+        label: line.snapshot.name,
+      });
       return;
     }
     persist(next, itemId, previous);
   };
 
+  const confirmCollect = () => {
+    if (!collect) return;
+    const c = collect;
+    setCollect(null);
+    persist(c.next, c.itemId, c.previous, pocketId);
+  };
+
   return (
+    <>
     <Card padding={0}>
       <ul className="divide-y px-3" style={{ borderColor: "var(--admin-border)" }}>
         {items.map((it) => {
@@ -175,5 +245,46 @@ export function OrderItemsFulfillment({
         })}
       </ul>
     </Card>
+
+      {/* Encaissement du flacon livré : d'où entre l'argent (livrer = récupérer les sous). */}
+      <Sheet
+        open={collect !== null}
+        onOpenChange={(o) => (o ? null : setCollect(null))}
+        title="Flacon livré — encaissé"
+        description={collect ? `${collect.label} · reçu ${collect.amount.toFixed(2)} €.` : undefined}
+        footer={
+          <Button variant="primary" size="lg" fullWidth onClick={confirmCollect}>
+            C&apos;est reçu — livrer
+          </Button>
+        }
+      >
+        <Stack gap={3}>
+          <div className="rounded-[14px] p-3" style={{ background: "var(--admin-surface-alt)" }}>
+            <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+              Encaissé à la livraison (entre en trésorerie)
+            </p>
+            <p className="mt-1 text-[24px] font-bold leading-none">
+              <Money value={collect?.amount ?? 0} />
+            </p>
+          </div>
+          {pockets.length > 0 ? (
+            <div>
+              <p className="mb-1.5 text-[13px] font-medium text-[var(--admin-text-muted)]">
+                Reçu dans (poche)
+              </p>
+              <PocketSelector pockets={pockets} value={pocketId} onChange={setPocketId} />
+              <p className="mt-1 text-[11px] text-[var(--admin-text-subtle)]">
+                Sans choix → « Non attribué », à répartir plus tard.
+              </p>
+            </div>
+          ) : (
+            <p className="text-[12px] text-[var(--admin-text-subtle)]">
+              Crée une poche (Espèces, Revolut…) dans Trésorerie pour tracer où entre l&apos;argent.
+              Sans poche, l&apos;encaissé ira dans « Non attribué ».
+            </p>
+          )}
+        </Stack>
+      </Sheet>
+    </>
   );
 }
