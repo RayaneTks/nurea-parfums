@@ -1,136 +1,35 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import type { ReactNode } from "react";
-import "./globals.css";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { RootJsonLd } from "@/components/seo/JsonLd";
-import {
-  DEFAULT_DESCRIPTION,
-  SEO_KEYWORDS,
-  SITE_NAME,
-  SITE_TAGLINE,
-  SITE_URL,
-} from "@/lib/site";
-import { GFS_Didot, Inter } from "next/font/google";
+import { SITE_URL } from "@/lib/site";
 
-const serif = GFS_Didot({
-  weight: "400",
-  subsets: ["greek", "latin"],
-  variable: "--font-serif",
-  display: "swap",
-});
-
-const sans = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-/** OG dynamique 1200×630 — voir `app/opengraph-image.tsx` */
-const ogImage = "/opengraph-image";
-
-export const viewport: Viewport = {
-  themeColor: "#0A0508",
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 5,
-  userScalable: true,
-  viewportFit: "cover",
-};
-
-const googleVerification = process.env.GOOGLE_SITE_VERIFICATION;
+/**
+ * Root layout minimal — volontairement SANS CSS ni police.
+ *
+ * Les deux registres du produit ont des feuilles de style disjointes :
+ *   - vitrine  → `app/(shop)/layout.tsx`  (globals.css, GFS Didot + Inter, thème sombre)
+ *   - gestion  → `app/admin/layout.tsx`   (globals.admin.css, -apple-system, thème clair)
+ *
+ * Garder l'import ici embarquerait la CSS vitrine et deux polices Google dans
+ * chaque écran de la PWA admin.
+ */
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  applicationName: SITE_NAME,
-  title: {
-    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    template: `%s | ${SITE_NAME}`,
-  },
-  description: DEFAULT_DESCRIPTION,
-  keywords: SEO_KEYWORDS,
-  authors: [{ name: SITE_NAME, url: SITE_URL }],
-  creator: SITE_NAME,
-  publisher: SITE_NAME,
-  category: "Perfume store",
-  robots: { index: true, follow: true },
-  alternates: {
-    canonical: "/",
-    languages: { "fr-FR": "/" },
-  },
-  formatDetection: {
-    telephone: true,
-    email: true,
-    address: true,
-  },
-  ...(googleVerification
-    ? { verification: { google: googleVerification } }
-    : {}),
-  openGraph: {
-    type: "website",
-    locale: "fr_FR",
-    url: SITE_URL,
-    siteName: SITE_NAME,
-    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    description: DEFAULT_DESCRIPTION,
-    images: [
-      {
-        url: ogImage,
-        width: 1200,
-        height: 630,
-        alt: `${SITE_NAME} — ${SITE_TAGLINE}`,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    description: DEFAULT_DESCRIPTION,
-    images: [ogImage],
-  },
-  appleWebApp: {
-    capable: true,
-    title: SITE_NAME,
-    statusBarStyle: "black-translucent",
-  },
-  /** Vitrine : manifeste PWA = entrée sur `/` (voir `app/api/pwa/shop`). */
-  manifest: "/api/pwa/shop",
-  icons: {
-    icon: "/favicon.ico",
-    apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
-  },
-  /** Sert d’icône sur Android; le manifeste PWA est `manifest` + `/api/pwa/shop` */
-  other: { "mobile-web-app-capable": "yes" },
 };
 
-interface RootLayoutProps {
-  children: ReactNode;
-}
-
-export default async function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
   const headerList = await headers();
   const isAdminRoute = headerList.get("x-nurea-admin-route") === "1";
 
   return (
     <html
       lang="fr"
-      className={`dark transition-colors duration-300 ease-out${isAdminRoute ? " admin-route-root" : ""}`}
+      className={isAdminRoute ? "admin-route-root" : "dark"}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
-      <body
-        className={`${serif.variable} ${sans.variable} font-sans antialiased transition-colors duration-300 ease-out${isAdminRoute ? " admin-route" : ""}`}
-      >
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-[var(--nurea-accent)] focus:text-white focus:px-4 focus:py-2 focus:text-sm"
-        >
-          Aller au contenu principal
-        </a>
-        <RootJsonLd />
-        <div className="nurea-viewport-top-shield" aria-hidden />
-        <ThemeProvider>{children}</ThemeProvider>
-      </body>
+      <body className={isAdminRoute ? "admin-route" : undefined}>{children}</body>
     </html>
   );
 }
