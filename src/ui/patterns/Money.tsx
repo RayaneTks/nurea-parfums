@@ -20,8 +20,12 @@ type MoneyProps = {
   compact?: boolean;
   /** Affiche le signe + si valeur positive. */
   signed?: boolean;
-  /** Couleur sémantique selon valeur. */
-  tone?: "default" | "muted" | "success" | "danger" | "accent" | "auto";
+  /**
+   * Couleur sémantique selon valeur. `inherit` laisse la couleur au parent —
+   * indispensable sur les fonds pleins (carte accent, badge) où les jetons de
+   * texte standards ne passeraient pas le contraste.
+   */
+  tone?: "default" | "muted" | "success" | "danger" | "accent" | "auto" | "inherit";
   /** Si true, montant gras. */
   bold?: boolean;
   className?: string;
@@ -41,6 +45,7 @@ const toneClass: Record<NonNullable<MoneyProps["tone"]>, string> = {
   danger: "text-[var(--admin-danger)]",
   accent: "text-[var(--admin-accent)]",
   auto: "",
+  inherit: "",
 };
 
 export function Money({ value, compact = false, signed = false, tone = "default", bold = false, className }: MoneyProps) {
