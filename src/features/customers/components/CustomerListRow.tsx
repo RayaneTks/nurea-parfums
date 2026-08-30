@@ -22,11 +22,15 @@ export function CustomerListRow({ customer }: CustomerListRowProps) {
         </span>
       }
       secondary={
-        <span className="text-[12px] text-[var(--admin-text-subtle)]">
-          {customer.phoneE164 ?? customer.snapchat ?? "Pas de contact"}
-          {customer.ordersCount > 0
-            ? ` · ${customer.ordersCount} commande${customer.ordersCount > 1 ? "s" : ""}`
-            : ""}
+        // Le contact prime s'il existe ; sinon le nombre de commandes. Cumuler
+        // les deux faisait tronquer la ligne dès qu'un montant dû s'affichait
+        // à droite, et « Pas de contact » occupait la place d'une information.
+        <span className="block truncate text-[12px] text-[var(--admin-text-subtle)]">
+          {customer.phoneE164 ??
+            customer.snapchat ??
+            (customer.ordersCount > 0
+              ? `${customer.ordersCount} commande${customer.ordersCount > 1 ? "s" : ""}`
+              : "Aucune commande")}
         </span>
       }
       trailing={

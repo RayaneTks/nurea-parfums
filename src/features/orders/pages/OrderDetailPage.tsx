@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { PageScaffold } from "@/ui/patterns/PageScaffold";
 import { getOrderForDetail } from "@/server/orders/queries";
 import { computeOrderBalance, listPaymentsForOrder } from "@/server/orders/payments";
-import { BalancePanel } from "@/components/admin/orders/BalancePanel";
+import { BalancePanel } from "@/features/orders/components/BalancePanel";
 import { OrderDetailClient } from "../components/OrderDetailClient";
 
 export async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {

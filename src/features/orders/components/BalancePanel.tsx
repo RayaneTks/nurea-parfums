@@ -135,57 +135,10 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
           Acomptes & solde
         </h2>
 
-        <div className="grid grid-cols-3 gap-2">
-          <Card padding={2} tone="muted" elevated={false} borderless>
-            <p className="text-[10px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-              Total
-            </p>
-            <p className="mt-0.5">
-              <Money value={totalNum} bold className="text-[14px]" />
-            </p>
-          </Card>
-          <div
-            className="rounded-[14px] p-2"
-            style={{ background: "var(--admin-success-bg)" }}
-          >
-            <p
-              className="text-[10px] font-medium uppercase tracking-[0.04em]"
-              style={{ color: "var(--admin-success)" }}
-            >
-              Payé
-            </p>
-            <p className="mt-0.5">
-              <Money value={totalPaidNum} bold tone="success" className="text-[14px]" />
-            </p>
-          </div>
-          <div
-            className="rounded-[14px] p-2"
-            style={{
-              background: hasDue
-                ? "var(--admin-danger-bg)"
-                : "var(--admin-surface-muted)",
-            }}
-          >
-            <p
-              className="text-[10px] font-medium uppercase tracking-[0.04em]"
-              style={{
-                color: hasDue ? "var(--admin-danger)" : "var(--admin-text-subtle)",
-              }}
-            >
-              Dû
-            </p>
-            <p className="mt-0.5">
-              <Money
-                value={dueNum}
-                bold
-                tone={hasDue ? "danger" : "muted"}
-                className="text-[14px]"
-              />
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-2">
+        {/* Les montants Total / Payé / Dû sont rendus par `OrderSummaryCard`
+            en haut de la fiche : ce panneau ne porte que les actions de
+            paiement et leur historique. */}
+        <div className="grid grid-cols-2 gap-2">
           <Button
             type="button"
             variant="primary"

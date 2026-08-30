@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Copy, Trash2 } from "lucide-react";
+import { Copy, Trash2 } from "lucide-react";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
 import { Button } from "@/ui/primitives/Button";
@@ -145,13 +144,8 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
   return (
     <>
       <Stack gap={4}>
-        <Link
-          href="/admin/ordres"
-          className="inline-flex items-center gap-1 text-[13px] text-[var(--admin-text-muted)] hover:text-[var(--admin-text)] tap-scale w-fit"
-        >
-          <ArrowLeft size={14} /> Commandes
-        </Link>
-
+        {/* Pas de lien retour ici : le header applicatif en affiche un,
+            dérivé de la route (voir src/app-shell/navigation.ts). */}
         <OrderDetailHeader order={current} onCustomerNameSave={handleCustomerNameSave} />
         <OrderStatusControl
           order={current}

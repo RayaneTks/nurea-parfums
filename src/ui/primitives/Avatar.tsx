@@ -31,14 +31,20 @@ function initials(name: string): string {
   return ((parts[0]?.[0] ?? "") + (parts[parts.length - 1]?.[0] ?? "")).toUpperCase();
 }
 
+/**
+ * Teinte déterministe tirée du nom : deux fiches voisines restent
+ * distinguables d'un coup d'œil dans une longue liste.
+ *
+ * La palette se limite aux jetons sémantiques du thème (bordeaux, cuivre,
+ * vert, bleu ardoise). L'ancienne version tirait aussi un violet et un cyan
+ * étrangers à la charte, qui trahissaient tout de suite le hasard.
+ */
 function colorFromName(name: string): { bg: string; fg: string } {
   const palette = [
-    { bg: "rgba(123, 11, 29, 0.12)", fg: "#7B0B1D" },
-    { bg: "rgba(30, 125, 69, 0.12)", fg: "#1E7D45" },
-    { bg: "rgba(163, 91, 18, 0.12)", fg: "#A35B12" },
-    { bg: "rgba(62, 90, 122, 0.12)", fg: "#3E5A7A" },
-    { bg: "rgba(123, 90, 165, 0.12)", fg: "#7B5AA5" },
-    { bg: "rgba(36, 100, 140, 0.12)", fg: "#24648C" },
+    { bg: "var(--admin-accent-bg)", fg: "var(--admin-accent)" },
+    { bg: "var(--admin-cuivre-subtle)", fg: "var(--admin-cuivre)" },
+    { bg: "var(--admin-success-bg)", fg: "var(--admin-success)" },
+    { bg: "var(--admin-info-bg)", fg: "var(--admin-info)" },
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
@@ -69,7 +75,7 @@ export function Avatar({ name, src, size = "md", className }: AvatarProps) {
         className,
       )}
       style={{ width: px, height: px, background: bg, color: fg }}
-      aria-label={name}
+      aria-hidden
     >
       {initials(name)}
     </span>
