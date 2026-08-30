@@ -14,6 +14,18 @@ export function BatchListRow({ batch }: BatchListRowProps) {
   const isOpen = batch.status === "OPEN";
   const outstanding = Number(batch.outstandingRevenue);
   const hasOutstanding = Number.isFinite(outstanding) && outstanding > 0;
+
+  // Ventes et commandes confirmées alimentent toutes deux les montants du lot :
+  // n'en nommer qu'une contredisait les chiffres affichés juste en dessous.
+  const parts: string[] = [];
+  if (batch.salesCount > 0) {
+    parts.push(`${batch.salesCount} vente${batch.salesCount > 1 ? "s" : ""}`);
+  }
+  if (batch.ordersCount > 0) {
+    parts.push(`${batch.ordersCount} commande${batch.ordersCount > 1 ? "s" : ""}`);
+  }
+  const contents = parts.length > 0 ? parts.join(" · ") : "Lot vide";
+
   return (
     <Link
       href={`/admin/lots/${batch.id}`}
@@ -61,7 +73,7 @@ export function BatchListRow({ batch }: BatchListRowProps) {
               ) : null}
             </div>
             <p className="mt-0.5 text-[12px] text-[var(--admin-text-subtle)]">
-              {batch.salesCount} vente{batch.salesCount > 1 ? "s" : ""}
+              {contents}
               {Number(batch.expenses) > 0
                 ? ` · ${Number(batch.expenses).toFixed(0)} € dépenses`
                 : null}

@@ -42,7 +42,8 @@ export async function ActiveBatchesBlock() {
                     {b.name}
                   </p>
                   <p className="text-[11px] text-[var(--admin-text-subtle)]">
-                    {b.salesCount} vente{b.salesCount > 1 ? "s" : ""} ·{" "}
+                    {b.salesCount + b.ordersCount} ligne
+                    {b.salesCount + b.ordersCount > 1 ? "s" : ""} ·{" "}
                     <Money value={b.cashedRevenue} compact /> encaissé
                     {hasOutstanding ? (
                       <span
