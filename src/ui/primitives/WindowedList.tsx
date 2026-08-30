@@ -28,7 +28,7 @@ function findScrollParent(node: HTMLElement | null): HTMLElement | null {
   return document.getElementById("admin-scroll-root");
 }
 
-export type AdminWindowedListProps<T> = {
+export type WindowedListProps<T> = {
   items: readonly T[];
   itemKey: (item: T, index: number) => string | number;
   /** Hauteur estimée d'une ligne (px), hors gap. */
@@ -42,10 +42,10 @@ export type AdminWindowedListProps<T> = {
 };
 
 /**
- * Liste fenêtrée pour scroll parent admin (#admin-scroll-root).
+ * Liste fenêtrée adossée au conteneur de scroll de l'app (#admin-scroll-root).
  * Sous le seuil : rendu complet. Au-dessus : windowing + content-visibility.
  */
-export function AdminWindowedList<T>({
+export function WindowedList<T>({
   items,
   itemKey,
   estimateSize = 80,
@@ -55,7 +55,7 @@ export function AdminWindowedList<T>({
   role,
   "aria-label": ariaLabel,
   renderItem,
-}: AdminWindowedListProps<T>) {
+}: WindowedListProps<T>) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [range, setRange] = useState({ start: 0, end: items.length });
 
