@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { AdminBrandEditPage } from "@/components/admin/AdminBrandEditPage";
+import { BrandForm } from "@/features/catalogue";
 
 export const metadata: Metadata = {
   title: "Modifier une marque",
   robots: { index: false, follow: false },
 };
 
-export default function EditBrandPage({ params }: { params: Promise<{ id: string }> }) {
-  return <AdminBrandEditPage params={params} />;
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <BrandForm brandId={id} />;
 }
