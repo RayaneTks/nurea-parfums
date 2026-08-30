@@ -20,3 +20,4 @@ export { Divider } from "./Divider";
 export { StickyAction } from "./StickyAction";
 export { SegmentedControl } from "./SegmentedControl";
 export { SearchField } from "./SearchField";
+export { WindowedList } from "./WindowedList";
