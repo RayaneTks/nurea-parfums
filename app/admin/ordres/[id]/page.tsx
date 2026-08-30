@@ -4,7 +4,7 @@ import { OrderDetailPage } from "@/features/orders";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Commande — Admin",
+  title: "Commande",
   robots: { index: false, follow: false },
 };
 

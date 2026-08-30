@@ -11,7 +11,7 @@ import { topPerfumes } from "@/server/kpi/queries";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Top parfums — Admin",
+  title: "Top parfums",
   robots: { index: false, follow: false },
 };
 
