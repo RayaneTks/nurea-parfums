@@ -9,6 +9,8 @@ import { CommandPalette } from "./CommandPalette";
 import { AdminLoadingProgress } from "./AdminLoadingProgress";
 import { PwaInstallHint } from "./PwaInstallHint";
 import { UndoProvider } from "./UndoProvider";
+import { ViewportSync } from "./ViewportSync";
+import { ServiceWorkerRegistrar } from "./ServiceWorkerRegistrar";
 import { useAdminKeyboardInset } from "@/hooks/useAdminKeyboardInset";
 
 type AdminShellProps = {
@@ -32,6 +34,7 @@ export function AdminShell({ children }: AdminShellProps) {
   if (isLogin) {
     return (
       <div className="admin-theme flex h-full w-full">
+        <ViewportSync />
         <div className="mx-auto flex h-full w-full max-w-[var(--admin-app-max-width)]">
           {children}
         </div>
@@ -41,23 +44,28 @@ export function AdminShell({ children }: AdminShellProps) {
 
   return (
     <UndoProvider>
-    <div className="admin-theme admin-app-container">
-      <PwaInstallHint />
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-        <AppHeader onOpenCommandPalette={() => setPaletteOpen(true)} />
-        <PullToRefresh scrollRef={scrollRef} />
-        <div
-          ref={scrollRef}
-          id="admin-scroll-root"
-          className="admin-shell-scroll flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]"
-        >
-          {children}
+      <div className="admin-theme admin-app-container">
+        {/* `--admin-vh` alimente la hauteur max des sheets : sans ce composant
+            monté, elles retombent sur 100dvh, que iOS ne met pas à jour quand
+            le clavier s'ouvre. */}
+        <ViewportSync />
+        <ServiceWorkerRegistrar />
+        <PwaInstallHint />
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+          <AppHeader onOpenCommandPalette={() => setPaletteOpen(true)} />
+          <PullToRefresh scrollRef={scrollRef} />
+          <div
+            ref={scrollRef}
+            id="admin-scroll-root"
+            className="admin-shell-scroll flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]"
+          >
+            {children}
+          </div>
         </div>
+        <TabBar />
+        <AdminLoadingProgress />
+        <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
       </div>
-      <TabBar />
-      <AdminLoadingProgress />
-      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
-    </div>
     </UndoProvider>
   );
 }
