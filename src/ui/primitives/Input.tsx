@@ -91,7 +91,19 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       e.currentTarget.blur();
       return;
     }
-    // "done", "search", "send", "go", "enter" ou non précisé : ferme le clavier.
+    // "go"/"send" annoncent une validation : le clavier iOS affiche « OK » /
+    // « Envoyer », et appuyer dessus doit soumettre. Sans ce cas, l'appel à
+    // preventDefault plus bas avalait la soumission native du formulaire.
+    if (hint === "go" || hint === "send") {
+      const form = e.currentTarget.form;
+      if (form) {
+        e.preventDefault();
+        e.currentTarget.blur();
+        form.requestSubmit();
+        return;
+      }
+    }
+    // "done", "search", "enter" ou non précisé : ferme simplement le clavier.
     e.preventDefault();
     e.currentTarget.blur();
   };

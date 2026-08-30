@@ -1,8 +1,22 @@
-import { AdminRouteFallback } from "@/components/admin/ui/AdminLoadingPrimitives";
+import { Skeleton, SkeletonList } from "@/ui/primitives/Skeleton";
+import { PageScaffold } from "@/ui/patterns/PageScaffold";
 
 /**
- * Navigation entre routes `/admin/*` (RSC) : squelette mobile/PWA aligné sur le shell.
+ * Squelette affiché pendant la navigation entre routes `/admin/*`.
+ *
+ * Reprend la structure de tout écran de l'app — titre puis liste — pour que la
+ * transition n'ait pas l'air d'un changement de gabarit.
  */
 export default function AdminLoading() {
-  return <AdminRouteFallback rows={6} rowClassName="h-[72px]" />;
+  return (
+    <PageScaffold padding={4} ariaLabel="Chargement">
+      <div aria-busy="true" className="space-y-4">
+        <div className="space-y-2">
+          <Skeleton width="55%" height={28} />
+          <Skeleton width="35%" height={13} />
+        </div>
+        <SkeletonList count={6} />
+      </div>
+    </PageScaffold>
+  );
 }
