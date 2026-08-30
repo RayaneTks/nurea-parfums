@@ -114,7 +114,9 @@ export function ComptaTrendChart({ sales }: ComptaTrendChartProps) {
       </div>
       <div className="mt-2 min-w-0 w-full" style={{ height: 148 }}>
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-          <BarChart data={data} margin={{ top: 4, right: 2, left: -18, bottom: 0 }}>
+          {/* `left: 0` + axe large : avec une marge négative, les milliers de
+                l'axe Y étaient rognés et n'affichaient qu'un « 0 ». */}
+          <BarChart data={data} margin={{ top: 4, right: 2, left: 0, bottom: 0 }}>
             <XAxis
               dataKey="label"
               tick={{ fontSize: 10, fill: "var(--admin-text-subtle)" }}
@@ -125,7 +127,7 @@ export function ComptaTrendChart({ sales }: ComptaTrendChartProps) {
             <YAxis
               tick={{ fontSize: 10, fill: "var(--admin-text-subtle)" }}
               tickFormatter={(v: number) => (v >= 1000 ? `${Math.round(v / 1000)}k` : `${v}`)}
-              width={32}
+              width={40}
               tickLine={false}
               axisLine={false}
             />

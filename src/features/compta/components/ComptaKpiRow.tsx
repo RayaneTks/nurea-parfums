@@ -12,6 +12,22 @@ type ComptaKpiRowProps = {
   ordersDue?: string;
 };
 
+function eur(value: string | number | undefined): string {
+  const n = Number(value ?? 0);
+  return Number.isFinite(n) ? `${n.toFixed(0)} €` : "0 €";
+}
+
+/**
+ * Chiffres de la vue Ventes.
+ *
+ * Deux tuiles seulement en haut — « Encaissé » et « Marge nette » — au même
+ * vocabulaire que le tableau de bord. La grille à trois colonnes précédente
+ * repliait ses libellés sur deux lignes dès 375 px, et son « Panier moyen »
+ * n'était consulté par personne : le nombre de ventes suffit, en légende.
+ *
+ * Ce qui reste dû et ce qui a été dépensé sont des lignes, pas des tuiles :
+ * ce sont des montants à surveiller, pas des indicateurs de performance.
+ */
 export function ComptaKpiRow({
   summary,
   salesCashed,
@@ -23,86 +39,71 @@ export function ComptaKpiRow({
   const hasDebt = Number.isFinite(debt) && debt > 0;
   const expenses = Number(summary.totalExpenses ?? "0");
   const hasExpenses = Number.isFinite(expenses) && expenses > 0;
-  const breakdown =
-    salesCashed && ordersCashed
-      ? {
-          sales: Number(salesCashed),
-          orders: Number(ordersCashed),
-        }
-      : null;
+  const hasBreakdown = salesCashed !== undefined && ordersCashed !== undefined;
 
   return (
-    <div className="space-y-2 min-w-0">
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-        <Card padding={3} tone="surface">
-          <p className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-            CA
+    <div className="min-w-0 space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        <Card padding={3}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+            Encaissé
           </p>
-          <p className="mt-1 text-[16px] sm:text-[18px] font-bold leading-none">
+          <p className="mt-1 text-[20px] font-bold leading-none">
             <Money value={summary.cashedRevenue} compact />
           </p>
-          {breakdown ? (
-            <p className="mt-0.5 text-[10px] tabular-nums text-[var(--admin-text-subtle)]">
-              {breakdown.sales.toFixed(0)} € ventes · {breakdown.orders.toFixed(0)} € commandes
-            </p>
-          ) : null}
-        </Card>
-        <Card padding={3} tone="surface">
-          <p className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-            Marge
+          <p className="mt-1 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
+            {hasBreakdown
+              ? `${eur(salesCashed)} ventes · ${eur(ordersCashed)} commandes`
+              : `${summary.salesCount} vente${summary.salesCount > 1 ? "s" : ""}`}
           </p>
-          <p className="mt-1 text-[16px] sm:text-[18px] font-bold leading-none">
+        </Card>
+        <Card padding={3}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
+            Marge nette
+          </p>
+          <p className="mt-1 text-[20px] font-bold leading-none">
             <Money value={summary.netMargin} compact tone="auto" />
           </p>
-          <p className="mt-0.5 text-[10px] sm:text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
-            {summary.marginPct}%{hasExpenses ? " · net dépenses" : ""}
-          </p>
-        </Card>
-        <Card padding={3} tone="surface">
-          <p className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-            Panier
-          </p>
-          <p className="mt-1 text-[16px] sm:text-[18px] font-bold leading-none">
-            <Money value={summary.avgCashedValue} compact />
-          </p>
-          <p className="mt-0.5 text-[10px] sm:text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
-            {summary.salesCount} ventes
+          <p className="mt-1 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
+            {summary.marginPct} %{hasExpenses ? " · net dépenses" : ""}
           </p>
         </Card>
       </div>
-      {hasExpenses ? (
-        <Card padding={3} tone="alt">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[12px] font-medium text-[var(--admin-text)]">
-              Dépenses déduites
-            </p>
-            <span
-              className="tnum whitespace-nowrap text-[16px] font-bold"
-              style={{ color: "var(--admin-danger)" }}
-            >
-              −{expenses.toFixed(0)} €
-            </span>
-          </div>
-        </Card>
-      ) : null}
+
       {hasDebt ? (
         <Card padding={3} tone="alt">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[12px] font-medium text-[var(--admin-text)]">
+            <p className="text-[13px] font-medium text-[var(--admin-text)]">
               Reste à encaisser
             </p>
             <span
               className="tnum whitespace-nowrap text-[16px] font-bold"
               style={{ color: "var(--admin-warning)" }}
             >
-              {debt.toFixed(0)} €
+              {eur(debt)}
             </span>
           </div>
-          {salesDue && ordersDue ? (
+          {salesDue !== undefined && ordersDue !== undefined ? (
             <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
-              {Number(salesDue).toFixed(0)} € ventes · {Number(ordersDue).toFixed(0)} € commandes
+              {eur(salesDue)} ventes · {eur(ordersDue)} commandes
             </p>
           ) : null}
+        </Card>
+      ) : null}
+
+      {hasExpenses ? (
+        <Card padding={3} tone="alt">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[13px] font-medium text-[var(--admin-text)]">
+              Dépenses déduites
+            </p>
+            <span
+              className="tnum whitespace-nowrap text-[16px] font-bold"
+              style={{ color: "var(--admin-danger)" }}
+            >
+              −{eur(expenses)}
+            </span>
+          </div>
         </Card>
       ) : null}
     </div>
