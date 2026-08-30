@@ -19,7 +19,8 @@ import { Money } from "@/ui/patterns/Money";
 import { PerfumePicker, type PickerResult } from "./PerfumePicker";
 import { SellLineRow, type SellLine } from "./SellLineRow";
 import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
-import { CustomerCombobox, type SelectedCustomer } from "@/components/admin/customers/CustomerCombobox";
+import type { SelectedCustomer } from "@/features/customers/components/CustomerCombobox";
+import { CustomerField } from "@/ui/patterns/CustomerField";
 import { PocketSplit, type SplitRow } from "@/features/treasury/components/PocketSplit";
 import { usePockets } from "@/features/treasury/usePockets";
 import { useLastExchangeRate } from "@/hooks/useLastExchangeRate";
@@ -283,13 +284,6 @@ export function SellPageClient() {
   return (
     <PageScaffold padding={4} formScroll ariaLabel={bridge ? "Encaisser" : "Vendre"}>
       <Stack gap={4}>
-        <Link
-          href={bridge ? `/admin/ordres/${bridge.id}` : "/admin/ordres"}
-          className="inline-flex w-fit items-center gap-1 text-[13px] text-[var(--admin-text-muted)] tap-scale hover:text-[var(--admin-text)]"
-        >
-          <ArrowLeft size={14} /> {bridge ? "Commande" : "Commandes"}
-        </Link>
-
         <header>
           <Heading level={1}>{bridge ? "Encaisser" : "Vendre"}</Heading>
           <p className="mt-0.5 text-[13px] text-[var(--admin-text-muted)]">
@@ -300,59 +294,43 @@ export function SellPageClient() {
         </header>
 
         {bridge ? (
-          <Card padding={3} tone="accent">
-            <div className="flex items-center justify-between gap-2">
-              <span className="inline-flex items-center gap-2">
-                <Receipt size={14} className="text-[var(--admin-accent)]" aria-hidden />
-                <span className="text-[13px] font-medium text-[var(--admin-text)]">
-                  Commande #{bridge.id.slice(-8)}
-                </span>
+          <Link
+            href={`/admin/ordres/${bridge.id}`}
+            prefetch={false}
+            className="flex min-h-[var(--admin-touch-min)] items-center justify-between gap-2 rounded-[14px] px-3 py-2.5 tap-scale"
+            style={{
+              background: "var(--admin-accent-bg)",
+              border: "1px solid var(--admin-accent)",
+            }}
+          >
+            <span className="inline-flex min-w-0 items-center gap-2">
+              <Receipt size={15} className="shrink-0 text-[var(--admin-accent)]" aria-hidden />
+              <span className="truncate text-[13px] font-medium text-[var(--admin-text)]">
+                Commande de {bridge.customerName ?? "client"}
               </span>
-              <Badge tone="accent" size="sm">
-                Depuis commande
-              </Badge>
-            </div>
-          </Card>
+            </span>
+            <span className="inline-flex shrink-0 items-center gap-1 text-[13px] font-medium text-[var(--admin-accent)]">
+              Ouvrir
+              <ArrowLeft size={13} className="rotate-180" aria-hidden />
+            </span>
+          </Link>
         ) : null}
 
         <Card padding={3}>
-          <Stack gap={3}>
-            <div>
-              <label className="mb-1.5 block text-[13px] font-medium text-[var(--admin-text-muted)]">
-                Client
-              </label>
-              <CustomerCombobox
-                value={customer}
-                onChange={(c) => {
-                  setCustomer(c);
-                  setCustomerName(c?.fullName ?? "");
-                  if (c?.phoneE164) setCustomerContact(c.phoneE164);
-                }}
-                placeholder="Rechercher ou créer…"
-              />
-            </div>
-            {!customer ? (
-              <Input
-                label="Nom (saisie libre)"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Anonyme si vide"
-                autoComplete="off"
-                variant="elevated"
-                hint="Rattache une fiche existante via le sélecteur."
-                enterKeyHint="next"
-              />
-            ) : null}
-            <Input
-              label="Contact (optionnel)"
-              value={customerContact}
-              onChange={(e) => setCustomerContact(e.target.value)}
-              placeholder="Téléphone, Snapchat, WhatsApp…"
-              autoComplete="off"
-              variant="elevated"
-              enterKeyHint="done"
-            />
-          </Stack>
+          <h2 className="mb-3 text-[14px] font-semibold text-[var(--admin-text)]">Client</h2>
+          <CustomerField
+            customer={customer}
+            customerName={customerName}
+            onCustomerChange={(c) => {
+              setCustomer(c);
+              setCustomerName(c?.fullName ?? "");
+              if (c?.phoneE164) setCustomerContact(c.phoneE164);
+            }}
+            onCustomerNameChange={setCustomerName}
+            contact={customerContact}
+            onContactChange={setCustomerContact}
+            placeholder="Rechercher ou créer…"
+          />
         </Card>
 
         {bridgeLoading ? (
@@ -390,7 +368,7 @@ export function SellPageClient() {
           </Stack>
         )}
 
-        {!bridgeLoading ? (
+        {!bridgeLoading && lines.length > 0 ? (
           <Button
             type="button"
             variant="secondary"
@@ -403,6 +381,9 @@ export function SellPageClient() {
           </Button>
         ) : null}
 
+        {/* Le récapitulatif n'apparaît qu'une fois le ticket commencé :
+            afficher « Total 0 € » sous un écran vide n'informe de rien. */}
+        {lines.length > 0 ? (
         <Card padding={3}>
           <HStack justify="between" align="end">
             <div>
@@ -460,6 +441,7 @@ export function SellPageClient() {
             </div>
           ) : null}
         </Card>
+        ) : null}
 
         {lines.length > 0 && pockets.length > 0 && totals.revenue > 0 ? (
           <Card padding={3}>
