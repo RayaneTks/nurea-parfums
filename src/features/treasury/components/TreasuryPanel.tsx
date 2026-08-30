@@ -3,7 +3,16 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeftRight, Plus, SlidersHorizontal, AlertTriangle, Truck, ChevronRight, ChevronDown } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Plus,
+  SlidersHorizontal,
+  AlertTriangle,
+  Truck,
+  ChevronRight,
+  ChevronDown,
+  History,
+} from "lucide-react";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
 import { Button } from "@/ui/primitives/Button";
@@ -151,14 +160,6 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
           <p className="mt-1 text-[28px] font-bold leading-none">
             <Money value={total} />
           </p>
-          <button
-            type="button"
-            onClick={submitBackfill}
-            disabled={pending}
-            className="mt-2 text-[12px] font-medium text-[var(--admin-accent)] tap-scale disabled:opacity-50"
-          >
-            Importer l&apos;historique (ventes, acomptes, dépenses)
-          </button>
         </Card>
 
         {/* Rappel Non attribué */}
@@ -248,6 +249,26 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
         {movements.length > 0 ? (
           <MovementsByMonth movements={movements} />
         ) : null}
+
+        {/* Reprise d'historique : opération de maintenance, idempotente
+            (dédoublonnée par origine côté serveur). Elle vivait sous le solde
+            total, en lien coloré, où elle se lisait comme une alerte. */}
+        <div className="pt-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            fullWidth
+            isLoading={pending}
+            leadingIcon={<History size={14} />}
+            onClick={submitBackfill}
+          >
+            Importer l&apos;historique
+          </Button>
+          <p className="mt-1 text-center text-[11px] text-[var(--admin-text-subtle)]">
+            Ajoute les ventes, acomptes et dépenses déjà enregistrés dans
+            «&nbsp;Non attribué&nbsp;». Sans effet s&apos;ils y sont déjà.
+          </p>
+        </div>
       </Stack>
 
       {/* Sheet : créer poche */}
