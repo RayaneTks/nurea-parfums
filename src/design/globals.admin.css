@@ -1,8 +1,14 @@
 /**
  * Nuréa Admin — feuille dédiée PWA iOS (app/admin/layout.tsx).
  * Source CSS alignée sur src/design/tokens.ts.
- * Les utilitaires admin partagés vivent ici ; app/globals.css ne duplique plus les tokens.
+ *
+ * Feuille AUTONOME : les routes `/admin` ne chargent plus `app/globals.css`
+ * (thème vitrine sombre + polices Google), d'où les directives Tailwind ici.
  */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* ─── Route admin (html/body) ───────────────────────────────────────── */
 
@@ -32,10 +38,6 @@ body.admin-route {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-}
-
-body.admin-route .nurea-viewport-top-shield {
-  display: none;
 }
 
 /* ─── Thème admin (tokens) ────────────────────────────────────────────── */

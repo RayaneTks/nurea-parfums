@@ -1,4 +1,7 @@
 import Link from "next/link";
+// Le root layout n'embarque aucune CSS (voir app/layout.tsx) : la page 404
+// globale charge donc elle-même la feuille vitrine.
+import "./globals.css";
 
 export default function NotFound() {
   return (
