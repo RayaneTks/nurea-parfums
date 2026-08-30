@@ -1,35 +1,15 @@
 import { Suspense } from "react";
-import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
 import { Stack } from "@/ui/primitives/Stack";
-import { Heading } from "@/ui/primitives/Heading";
-import { Skeleton } from "@/ui/primitives/Skeleton";
 import { Card } from "@/ui/primitives/Card";
+import { Skeleton } from "@/ui/primitives/Skeleton";
+import { Heading } from "@/ui/primitives/Heading";
 import { PageScaffold } from "@/ui/patterns/PageScaffold";
-import { treasurySummary } from "@/server/treasury/queries";
-import { prisma } from "@/lib/db/prisma";
-import { LOW_STOCK_THRESHOLD } from "@/domain/stock";
-import { Package } from "lucide-react";
-import { KpiBlock } from "../components/KpiBlock";
-import { KpiSkeletonGrid } from "../components/KpiSkeletonGrid";
+import { AlertsBlock, AlertsFallback } from "../components/AlertsBlock";
+import { MoneyBlock, MoneyBlockFallback } from "../components/MoneyBlock";
 import { PipelineBlock } from "../components/PipelineBlock";
 import { ActiveBatchesBlock } from "../components/ActiveBatchesBlock";
 import { TopPerfumesBlock } from "../components/TopPerfumesBlock";
-import { QuickActionsBlock } from "../components/QuickActionsBlock";
-import { PilotageBlock } from "../components/PilotageBlock";
-
-function PipelineFallback() {
-  return (
-    <Card padding={3} aria-busy="true" aria-label="Chargement du pipeline">
-      <Skeleton width="40%" height={14} />
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        {[0, 1, 2].map((i) => (
-          <Skeleton key={i} height={64} className="rounded-[12px]" />
-        ))}
-      </div>
-    </Card>
-  );
-}
+import { ShortcutsBlock } from "../components/ShortcutsBlock";
 
 function ListBlockFallback({ label }: { label: string }) {
   return (
@@ -52,90 +32,57 @@ function ListBlockFallback({ label }: { label: string }) {
   );
 }
 
-async function UnattributedBanner() {
-  const { unattributed } = await treasurySummary();
-  const amount = Number(unattributed);
-  if (!Number.isFinite(amount) || amount <= 0.005) return null;
+function PipelineFallback() {
   return (
-    <Link
-      href="/admin/compta"
-      prefetch
-      className="block rounded-[14px] border border-[var(--admin-danger-border)] bg-[var(--admin-danger-bg)] p-3 tap-scale"
-    >
-      <span className="flex items-center justify-between gap-2">
-        <span className="flex items-center gap-2 text-[14px] font-semibold text-[var(--admin-danger)]">
-          <AlertTriangle size={16} />
-          {amount.toFixed(2)} € non attribué
-        </span>
-        <span className="text-[13px] font-semibold text-[var(--admin-danger)]">Répartir →</span>
-      </span>
-      <span className="mt-1 block text-[12px] text-[var(--admin-text-muted)]">
-        De l&apos;argent encaissé/dépensé n&apos;est pas affecté à une poche.
-      </span>
-    </Link>
+    <div aria-hidden className="grid grid-cols-3 gap-2">
+      <div className="admin-skeleton h-[72px] rounded-[14px]" />
+      <div className="admin-skeleton h-[72px] rounded-[14px]" />
+      <div className="admin-skeleton h-[72px] rounded-[14px]" />
+    </div>
   );
 }
 
-async function LowStockBanner() {
-  const [out, low] = await Promise.all([
-    prisma.perfume.count({ where: { isPrivate: false, stock: { lte: 0 } } }),
-    prisma.perfume.count({
-      where: { isPrivate: false, stock: { gt: 0, lte: LOW_STOCK_THRESHOLD } },
-    }),
-  ]);
-  if (out + low === 0) return null;
-  const parts: string[] = [];
-  if (out > 0) parts.push(`${out} en rupture`);
-  if (low > 0) parts.push(`${low} bas`);
-  return (
-    <Link
-      href="/admin/catalogue"
-      prefetch
-      className="block rounded-[14px] border border-[var(--admin-warning-border)] bg-[var(--admin-warning-bg)] p-3 tap-scale"
-    >
-      <span className="flex items-center justify-between gap-2">
-        <span className="flex items-center gap-2 text-[14px] font-semibold text-[var(--admin-warning)]">
-          <Package size={16} />
-          Stock : {parts.join(" · ")}
-        </span>
-        <span className="text-[13px] font-semibold text-[var(--admin-warning)]">Voir →</span>
-      </span>
-    </Link>
-  );
-}
-
+/**
+ * Tableau de bord.
+ *
+ * Ordre de lecture, du plus urgent au plus contextuel :
+ *   1. Alertes      — ce qui bloque aujourd'hui (rien affiché si rien à faire).
+ *   2. Argent       — un chiffre dominant, trois chiffres de contexte.
+ *   3. Commandes    — compteurs d'actions à mener.
+ *   4. Raccourcis   — écrans sans onglet dédié.
+ *   5. Lots / Top   — suivi, consulté volontairement.
+ *
+ * Chaque bloc a son propre `Suspense` : le premier chiffre s'affiche sans
+ * attendre la requête la plus lente de l'écran.
+ */
 export function DashboardPage() {
+  const today = new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date());
+
   return (
     <PageScaffold padding={4} ariaLabel="Tableau de bord">
       <Stack gap={4}>
         <header>
           <Heading level={1}>Tableau de bord</Heading>
-          <p className="mt-0.5 text-[13px] text-[var(--admin-text-muted)]">
-            Vue d&apos;ensemble — ⌘K pour aller plus vite.
-          </p>
+          <p className="mt-0.5 text-[13px] capitalize text-[var(--admin-text-muted)]">{today}</p>
         </header>
 
-        <Suspense fallback={null}>
-          <UnattributedBanner />
+        <Suspense fallback={<AlertsFallback />}>
+          <AlertsBlock />
         </Suspense>
 
-        <Suspense fallback={null}>
-          <LowStockBanner />
+        <Suspense fallback={<MoneyBlockFallback />}>
+          <MoneyBlock />
         </Suspense>
-
-        <Suspense fallback={<KpiSkeletonGrid />}>
-          <KpiBlock />
-        </Suspense>
-
-        <Suspense fallback={null}>
-          <PilotageBlock />
-        </Suspense>
-
-        <QuickActionsBlock />
 
         <Suspense fallback={<PipelineFallback />}>
           <PipelineBlock />
         </Suspense>
+
+        <ShortcutsBlock />
 
         <Suspense fallback={<ListBlockFallback label="Chargement des lots" />}>
           <ActiveBatchesBlock />
