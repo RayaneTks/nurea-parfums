@@ -33,7 +33,7 @@ export function OrdersGroup({ label, rows }: OrdersGroupProps) {
         <ul className="divide-y px-2 py-1" style={{ borderColor: "var(--admin-border)" }}>
           {rows.map((order) => (
             <li key={order.id}>
-              <OrderListItem order={order} />
+              <OrderListItem order={order} hideStatus />
             </li>
           ))}
         </ul>

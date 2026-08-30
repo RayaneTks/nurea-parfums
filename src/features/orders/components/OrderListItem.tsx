@@ -10,9 +10,15 @@ import type { OrderListRow } from "@/server/orders/queries";
 
 type OrderListItemProps = {
   order: OrderListRow;
+  /**
+   * Masque la pastille de statut. À activer quand la liste est déjà groupée
+   * par statut : répéter « À traiter » sur les huit lignes d'une section
+   * intitulée « À traiter » n'ajoute rien et encombre la colonne de droite.
+   */
+  hideStatus?: boolean;
 };
 
-export function OrderListItem({ order }: OrderListItemProps) {
+export function OrderListItem({ order, hideStatus = false }: OrderListItemProps) {
   const dueNum = Number(order.due);
   const showDueBadge = dueNum > 0.01 && order.status !== "CANCELLED";
 
@@ -27,20 +33,21 @@ export function OrderListItem({ order }: OrderListItemProps) {
       }
       secondary={
         <span className="flex items-center gap-1.5 text-[12px] text-[var(--admin-text-subtle)]">
+          {/* Pas de « Pas de date » : l'absence de date de livraison est le
+              cas courant, l'annoncer sur chaque ligne n'informe de rien. */}
           {order.deliveryAt ? (
             <span className="tnum">
               Livraison <RelativeTime date={order.deliveryAt} />
             </span>
-          ) : (
-            <span>Pas de date</span>
-          )}
+          ) : null}
+          {order.deliveryAt && showDueBadge ? <span aria-hidden>·</span> : null}
           {showDueBadge ? (
-            <>
-              <span aria-hidden>·</span>
-              <span className="text-[var(--admin-warning)] font-medium">
-                <Money value={order.due} compact /> dû
-              </span>
-            </>
+            <span className="font-medium text-[var(--admin-warning)]">
+              <Money value={order.due} compact /> dû
+            </span>
+          ) : null}
+          {!order.deliveryAt && !showDueBadge ? (
+            <span>Soldée</span>
           ) : null}
         </span>
       }
@@ -53,7 +60,7 @@ export function OrderListItem({ order }: OrderListItemProps) {
                 Partiel
               </Badge>
             ) : null}
-            <OrderStatusBadge status={order.status} />
+            {hideStatus ? null : <OrderStatusBadge status={order.status} />}
           </div>
         </div>
       }
