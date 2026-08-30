@@ -1,21 +1,18 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
+import { LoginForm } from "@/features/auth/components/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Administration — Connexion",
+  title: "Connexion",
   robots: { index: false, follow: false },
 };
 
 export default function AdminLoginPage() {
   return (
-    <div className="flex h-full items-center justify-center px-5 py-10">
-      <Suspense
-        fallback={
-          <div className="text-[13px] text-admin-subtle">Chargement…</div>
-        }
-      >
-        <AdminLoginForm />
+    <div className="flex h-full w-full items-center justify-center">
+      {/* `useSearchParams` dans le formulaire impose la frontière Suspense. */}
+      <Suspense fallback={null}>
+        <LoginForm />
       </Suspense>
     </div>
   );
