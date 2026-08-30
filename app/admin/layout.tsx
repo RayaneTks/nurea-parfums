@@ -1,35 +1,47 @@
 import type { Metadata, Viewport } from "next";
 import "@/design/globals.admin.css";
 import { AdminShell } from "@/app-shell";
+import { ADMIN_STARTUP_IMAGES } from "@/lib/pwa/admin-splash";
 import { SITE_NAME } from "@/lib/site";
 
-const adminThemeColor = "#7B0B1D";
+/**
+ * Couleur de la barre d'état iOS en mode standalone.
+ *
+ * Volontairement l'arrière-plan de l'app (et non le bordeaux de marque) :
+ * avec `statusBarStyle: "default"` iOS écrit l'heure en NOIR, illisible sur
+ * bordeaux. Le bordeaux reste la couleur de l'écran de lancement
+ * (`background_color` du manifeste) et de l'icône.
+ */
+const adminStatusBarColor = "#F2F2F7";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
   applicationName: `${SITE_NAME} — Gestion`,
+  title: {
+    default: `${SITE_NAME} — Gestion`,
+    template: "%s — Gestion",
+  },
   manifest: "/api/pwa/admin",
   appleWebApp: {
     capable: true,
-    title: `${SITE_NAME} — Gestion`,
+    title: "Nuréa Gestion",
     statusBarStyle: "default",
-    startupImage: [],
+    startupImage: [...ADMIN_STARTUP_IMAGES],
   },
-  icons: {
-    icon: "/branding/monogram/np-circle-bordeaux.png",
-    apple: { url: "/branding/monogram/np-circle-bordeaux.png", sizes: "512x512" },
-  },
+  // Les icônes viennent des fichiers `app/admin/icon.png` et
+  // `app/admin/apple-icon.png` (les conventions de fichier ont priorité sur
+  // `metadata.icons`, d'où l'absence de champ ici).
   other: {
-    "mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "default",
+    // `appleWebApp` ci-dessus émet déjà `mobile-web-app-capable` et le style de
+    // barre d'état ; seule la variante historique `apple-mobile-web-app-capable`
+    // manque, et les iOS antérieurs à Safari 17 n'ouvrent en plein écran que
+    // sur cette clé-là.
+    "apple-mobile-web-app-capable": "yes",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: adminThemeColor },
-    { media: "(prefers-color-scheme: dark)", color: adminThemeColor },
-  ],
+  themeColor: adminStatusBarColor,
   colorScheme: "light",
   width: "device-width",
   initialScale: 1,
