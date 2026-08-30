@@ -4,7 +4,7 @@ import { BatchNewPage } from "@/features/batches";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Nouveau lot — Admin",
+  title: "Nouveau lot",
   robots: { index: false, follow: false },
 };
 

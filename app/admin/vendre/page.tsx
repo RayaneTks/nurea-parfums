@@ -4,7 +4,7 @@ import { SellPage } from "@/features/sell";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Vendre — Admin",
+  title: "Vendre",
   robots: { index: false, follow: false },
 };
 

@@ -4,7 +4,7 @@ import { ComptaPage } from "@/features/compta";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Compta — Admin",
+  title: "Compta",
   robots: { index: false, follow: false },
 };
 
