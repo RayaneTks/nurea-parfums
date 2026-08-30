@@ -74,8 +74,7 @@ test.describe("Audit visuel mobile", () => {
     const routes: Array<[string, string]> = [
       ["/admin", "01-dashboard"],
       ["/admin/ordres", "02-commandes"],
-      ["/admin/ordres/new?mode=quick", "03-commande-rapide"],
-      ["/admin/ordres/new", "04-commande-full"],
+      ["/admin/ordres/new", "03-commande"],
       ["/admin/vendre", "05-vendre"],
       ["/admin/compta", "06-compta"],
       ["/admin/lots", "07-lots"],

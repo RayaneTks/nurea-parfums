@@ -138,21 +138,22 @@ test.describe("Admin Gestion — UI (mocks API)", () => {
     await page.goto("/admin/compta");
 
     await expect(page.getByRole("heading", { name: "Compta" })).toBeVisible();
-    await expect(page.getByText("Chiffre d'affaires")).toBeVisible();
-    await expect(page.getByText("Marge", { exact: true })).toBeVisible();
+    await expect(page.getByText("Encaissé", { exact: true })).toBeVisible();
+    await expect(page.getByText("Marge nette", { exact: true })).toBeVisible();
     await expect(page.getByText("Aucune vente sur cette période")).toBeVisible();
   });
 
-  test("BottomNav : 4 items Produits / Vendre / Commandes / Compta", async ({ page }) => {
+  test("TabBar : cinq onglets, aucun menu « Plus »", async ({ page }) => {
     await setupAdminSession(page);
     await page.goto("/admin/compta");
 
     const nav = page.getByRole("navigation", { name: "Navigation principale" });
     await expect(nav).toBeVisible();
-    await expect(nav.getByRole("link", { name: /Produits/i })).toBeVisible();
-    await expect(nav.getByRole("link", { name: /Vendre/i })).toBeVisible();
-    await expect(nav.getByRole("link", { name: /Commandes/i })).toBeVisible();
-    await expect(nav.getByRole("link", { name: /Compta/i })).toBeVisible();
+    for (const label of ["Accueil", "Commandes", "Vendre", "Compta", "Catalogue"]) {
+      await expect(nav.getByRole("link", { name: new RegExp(label, "i") })).toBeVisible();
+    }
+    // Cinq destinations exactement : un sixième onglet tronquerait les libellés.
+    await expect(nav.getByRole("link")).toHaveCount(5);
   });
 
   test("Commandes : empty state + FAB création", async ({ page }) => {

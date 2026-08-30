@@ -111,7 +111,7 @@ test.describe("Passe 2 — features", () => {
   test("clavier iOS : StickyAction relie son offset à --admin-keyboard-inset", async ({ page }) => {
     test.setTimeout(60_000);
     await login(page);
-    await page.goto("/admin/ordres/new?mode=quick", { waitUntil: "domcontentloaded" });
+    await page.goto("/admin/ordres/new", { waitUntil: "domcontentloaded" });
     await page.waitForSelector("[data-sticky-action]", { timeout: 20_000 });
 
     // Simule un clavier de 240px : le CTA sticky doit remonter d'autant.

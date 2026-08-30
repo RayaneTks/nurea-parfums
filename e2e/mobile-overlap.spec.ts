@@ -73,8 +73,7 @@ test.describe("Audit overlap mobile", () => {
     await login(page);
 
     for (const [url, name] of [
-      ["/admin/ordres/new?mode=quick", "ordre-quick"],
-      ["/admin/ordres/new", "ordre-full"],
+      ["/admin/ordres/new", "ordre-new"],
       ["/admin/clients/new", "client-new"],
       ["/admin/lots/new", "lot-new"],
       ["/admin/vendre", "vendre"],
