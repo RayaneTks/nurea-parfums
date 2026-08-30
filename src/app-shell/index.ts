@@ -4,3 +4,7 @@ export { TabBar } from "./TabBar";
 export { CommandPalette } from "./CommandPalette";
 export { AdminLoadingProgress } from "./AdminLoadingProgress";
 export { PwaInstallHint } from "./PwaInstallHint";
+export { ViewportSync } from "./ViewportSync";
+export { ServiceWorkerRegistrar } from "./ServiceWorkerRegistrar";
+export { ADMIN_TABS, getParentScreen } from "./navigation";
+export type { AdminTab, AdminParent } from "./navigation";

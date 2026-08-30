@@ -4,6 +4,7 @@ import { Command } from "cmdk";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Boxes,
   ClipboardList,
   Home,
   Loader2,
@@ -172,8 +173,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     { id: "nav.vendre", label: "Vendre", icon: PlusCircle, group: "Navigation", run: () => go("/admin/vendre") },
     { id: "nav.compta", label: "Compta", icon: TrendingUp, group: "Navigation", run: () => go("/admin/compta") },
     { id: "nav.clients", label: "Clients", icon: Users, group: "Navigation", run: () => go("/admin/clients") },
+    { id: "nav.lots", label: "Lots", icon: Boxes, group: "Navigation", run: () => go("/admin/lots") },
 
-    { id: "new.quick-order", label: "Commande rapide", hint: "30 s", icon: PlusCircle, group: "Créer", run: () => go("/admin/ordres/new?mode=quick") },
     { id: "new.order", label: "Nouvelle commande", icon: ClipboardList, group: "Créer", run: () => go("/admin/ordres/new") },
     { id: "new.sale", label: "Nouvelle vente", icon: PlusCircle, group: "Créer", run: () => go("/admin/vendre") },
     { id: "new.perfume", label: "Nouveau parfum", icon: Package, group: "Créer", run: () => go("/admin/perfumes/new") },
