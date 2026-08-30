@@ -22,6 +22,12 @@ export type BatchRowLite = {
   notes: string | null;
   createdAt: string;
   salesCount: number;
+  /**
+   * Commandes confirmées rattachées au lot (READY/DELIVERED sans vente).
+   * Comptées séparément des ventes parce qu'elles alimentent les mêmes
+   * montants : afficher « 0 vente » à côté de 295 € encaissés était faux.
+   */
+  ordersCount: number;
   totalRevenue: string;
   cashedRevenue: string;
   outstandingRevenue: string;
@@ -107,26 +113,52 @@ export async function listBatches(): Promise<BatchRowLite[]> {
           remainingDue: true,
         },
       },
+      orders: {
+        where: { status: { in: ["READY", "DELIVERED"] }, sale: null },
+        select: {
+          items: { select: { unitPrice: true, quantity: true, unitCost: true } },
+          payments: { select: { type: true, amount: true } },
+        },
+      },
       expenses: {
         select: { amount: true },
       },
-      _count: { select: { sales: true } },
+      _count: { select: { sales: true, orders: true } },
     },
   });
 
   return batches.map((b) => {
-    const rev = b.sales.reduce(
+    let rev = b.sales.reduce(
       (acc, s) => acc.plus(new Decimal(s.totalRevenue.toString())),
       new Decimal(0),
     );
-    const cost = b.sales.reduce(
+    let cost = b.sales.reduce(
       (acc, s) => acc.plus(new Decimal(s.totalCost.toString())),
       new Decimal(0),
     );
-    const outstanding = b.sales.reduce(
+    let outstanding = b.sales.reduce(
       (acc, s) => acc.plus(new Decimal(s.remainingDue.toString())),
       new Decimal(0),
     );
+    for (const o of b.orders) {
+      const oTotal = o.items.reduce(
+        (acc, it) => acc.plus(new Decimal(it.unitPrice.toString()).times(it.quantity)),
+        new Decimal(0),
+      );
+      const oCost = o.items.reduce(
+        (acc, it) => acc.plus(new Decimal(it.unitCost.toString()).times(it.quantity)),
+        new Decimal(0),
+      );
+      let paid = new Decimal(0);
+      for (const p of o.payments) {
+        const a = new Decimal(p.amount.toString());
+        paid = p.type === "REFUND" ? paid.minus(a) : paid.plus(a);
+      }
+      const oDue = oTotal.greaterThan(paid) ? oTotal.minus(paid) : new Decimal(0);
+      rev = rev.plus(oTotal);
+      cost = cost.plus(oCost);
+      outstanding = outstanding.plus(oDue);
+    }
     const exp = b.expenses.reduce(
       (acc, e) => acc.plus(new Decimal(e.amount.toString())),
       new Decimal(0),
@@ -145,6 +177,7 @@ export async function listBatches(): Promise<BatchRowLite[]> {
       notes: b.notes,
       createdAt: b.createdAt.toISOString(),
       salesCount: b._count.sales,
+      ordersCount: b.orders.length,
       totalRevenue: rev.toFixed(2),
       cashedRevenue: kpis.cashedRevenue,
       outstandingRevenue: kpis.outstandingRevenue,
@@ -188,7 +221,7 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
           customer: { select: { fullName: true } },
           status: true,
           orderedAt: true,
-          items: { select: { unitPrice: true, quantity: true } },
+          items: { select: { unitPrice: true, quantity: true, unitCost: true } },
           payments: { select: { type: true, amount: true } },
         },
       },
@@ -206,18 +239,41 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
   });
   if (!b) return null;
 
-  const rev = b.sales.reduce(
+  // Ventes liées au lot.
+  let rev = b.sales.reduce(
     (acc, s) => acc.plus(new Decimal(s.totalRevenue.toString())),
     new Decimal(0),
   );
-  const cost = b.sales.reduce(
+  let cost = b.sales.reduce(
     (acc, s) => acc.plus(new Decimal(s.totalCost.toString())),
     new Decimal(0),
   );
-  const outstanding = b.sales.reduce(
+  let outstanding = b.sales.reduce(
     (acc, s) => acc.plus(new Decimal(s.remainingDue.toString())),
     new Decimal(0),
   );
+
+  // Commandes confirmées liées au lot (mêmes règles que la compta).
+  for (const o of b.orders) {
+    const oTotal = o.items.reduce(
+      (acc, it) => acc.plus(new Decimal(it.unitPrice.toString()).times(it.quantity)),
+      new Decimal(0),
+    );
+    const oCost = o.items.reduce(
+      (acc, it) => acc.plus(new Decimal(it.unitCost.toString()).times(it.quantity)),
+      new Decimal(0),
+    );
+    let paid = new Decimal(0);
+    for (const p of o.payments) {
+      const a = new Decimal(p.amount.toString());
+      paid = p.type === "REFUND" ? paid.minus(a) : paid.plus(a);
+    }
+    const oDue = oTotal.greaterThan(paid) ? oTotal.minus(paid) : new Decimal(0);
+    rev = rev.plus(oTotal);
+    cost = cost.plus(oCost);
+    outstanding = outstanding.plus(oDue);
+  }
+
   const exp = b.expenses.reduce(
     (acc, e) => acc.plus(new Decimal(e.amount.toString())),
     new Decimal(0),
@@ -237,6 +293,7 @@ export async function getBatchById(id: string): Promise<BatchDetail | null> {
     notes: b.notes,
     createdAt: b.createdAt.toISOString(),
     salesCount: b.sales.length,
+    ordersCount: b.orders.length,
     totalRevenue: rev.toFixed(2),
     cashedRevenue: kpis.cashedRevenue,
     outstandingRevenue: kpis.outstandingRevenue,
