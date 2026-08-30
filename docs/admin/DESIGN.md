@@ -44,7 +44,15 @@ Tokens CSS sous `.admin-theme` (`globals.admin.css`). Ne pas réutiliser `--nure
 
 Chaque état sémantique expose aussi `*-bg`, `*-subtle`, `*-border` pour badges et alertes.
 
-**PWA** : `theme_color` et `background_color` manifest = `#7B0B1D` (`src/lib/pwa/manifests.ts`, `app/admin/layout.tsx`).
+**PWA** :
+
+| Rôle | Couleur | Où |
+|------|---------|-----|
+| `theme_color` (barre d'état iOS/Android) | `#F2F2F7` | `manifests.ts`, `viewport.themeColor` |
+| `background_color` (écran de lancement) | `#7B0B1D` | `manifests.ts` |
+| Icônes | bordeaux plein + monogramme ivoire | `public/pwa/admin/*` |
+
+`theme_color` suit le chrome de l'app, pas la marque : avec `apple-mobile-web-app-status-bar-style: default`, iOS écrit l'heure en **noir**, illisible sur bordeaux.
 
 **Stratégie couleur** : committed light-only — bordeaux unique sur neutres iOS, pas de palette multicolore décorative.
 
@@ -81,7 +89,7 @@ Grille **4px** (`tokens.space`). Pas de breakpoints — calibré **320–430px**
 |-------|--------|-------|
 | `--admin-app-max-width` | `430px` | Rail max (iPhone 14 Pro Max) |
 | `--admin-header-height` | `56px` | Header sticky |
-| `--admin-tab-bar-height` | `64px` | Hauteur tab bar (hors safe area) |
+| `--admin-tab-bar-height` | `88px` | Hauteur tab bar, safe area incluse |
 | `--admin-touch-min` | `44px` | Cible tactile iOS HIG |
 | `--admin-scroll-bottom-pad` | `tab-bar + safe-area-bottom + 16px` | Padding bas listes |
 | `--admin-sticky-cta-pad` | `0.75rem + safe-area + keyboard-inset` | Barres d'action fixes |
@@ -89,9 +97,13 @@ Grille **4px** (`tokens.space`). Pas de breakpoints — calibré **320–430px**
 
 **Shell** (`AdminShell.tsx`) :
 
-- `h-[100dvh] overflow-hidden` sur le conteneur racine.
-- Header fixe + `#admin-scroll-root.admin-shell-scroll` scrollable.
+- `height: 100%` + `overflow: hidden` sur `html`/`body`/`.admin-app-container` —
+  **pas** de `100dvh`, qui casse le `position: fixed` de la tab bar en PWA iOS.
+- Header sticky + `#admin-scroll-root.admin-shell-scroll` : zone de scroll unique.
 - `admin-page-bottom-pad` / `admin-form-scroll-pad` sur le contenu.
+- `ViewportSync` alimente `--admin-vh` depuis `visualViewport` (hauteur max des
+  sheets clavier ouvert) ; `useAdminKeyboardInset` alimente
+  `--admin-keyboard-inset` (CTA collants).
 
 **Desktop** : même rail 430px centré — pas d'expansion latérale.
 
@@ -110,32 +122,37 @@ Viewport : `viewportFit: cover` pour que le contenu respecte encoche et home ind
 
 ## Tab Bar
 
-Composant : `src/app-shell/TabBar.tsx`. Styles : `.admin-tab-bar`, `.admin-tab-bar__inner`, `.admin-tab-bar__item`.
+Composant : `src/app-shell/TabBar.tsx`. Destinations : `src/app-shell/navigation.ts`.
 
 **Structure** :
 
-- Fixée `bottom-0`, `max-w-[var(--admin-app-max-width)]`, centrée.
-- 5 onglets primaires + bouton **Plus** (menu popover).
-- Indicateur actif : barre 3px bordeaux en haut de l'onglet.
-- Icônes Lucide 22px ; labels 10px.
+- Fixée `bottom-0`, `max-w-[var(--admin-app-max-width)]`, centrée, safe area incluse.
+- **Cinq onglets, pas de menu « Plus »** — limite des HIG iOS. Un sixième onglet
+  tronque les libellés ; un menu « Plus » cache la moitié de l'app derrière un tap.
+- Actif : couleur `--admin-accent` + libellé `font-bold`. Pas de barre indicatrice.
+- Icônes Lucide 23px ; libellés 10px.
 
 **Onglets** :
 
 | Label | Route | Match étendu |
-|-------|-------|----------------|
-| Tableau | `/admin` | exact |
-| Produits | `/admin/catalogue` | + `/admin/perfumes`, `/admin/brands` |
+|-------|-------|--------------|
+| Accueil | `/admin` | + `/admin/clients`, `/admin/stats`, `/admin/reglages`, `/admin/offline` |
 | Commandes | `/admin/ordres` | préfixe |
-| Vendre | `/admin/vendre` | préfixe |
+| Vendre | `/admin/vendre` | préfixe — traitement accentué (action la plus fréquente) |
 | Compta | `/admin/compta` | + `/admin/lots` |
-| Plus → Clients | `/admin/clients` | menu secondaire |
+| Catalogue | `/admin/catalogue` | + `/admin/perfumes`, `/admin/brands` |
+
+**Règle** : toute route `/admin/*` doit être rattachée à exactement un onglet via
+`ADMIN_TABS[].match`. Sans quoi la barre n'affiche aucun état actif.
+
+**Retour** : le header dérive l'écran parent de la route (`getParentScreen`), pas de
+l'historique — un lien profond doit revenir dans l'app, pas en sortir. Les pages ne
+rendent donc **jamais** leur propre lien retour.
 
 **Visuel** :
 
-- Fond `color-mix(surface 92%, transparent)` + `backdrop-filter: saturate(180%) blur(20px)`.
-- Bordure top `--admin-border`.
-- `z-index: var(--admin-z-tab-bar)` (50) — sous sheets (70+).
-- `transform: translateZ(0)` — isolation du scale Vaul sur `body`.
+- `backdrop-filter: saturate(180%) blur(20px)` + bordure haute `--admin-border`.
+- `z-index: var(--admin-z-tab-bar)` (50) — sous les sheets (70+).
 
 ## Components
 
@@ -189,7 +206,13 @@ Composant : `src/app-shell/TabBar.tsx`. Styles : `.admin-tab-bar`, `.admin-tab-b
 - Serif display, uppercase tracking large façon landing.
 - Layout > 430px utile (tableaux larges non scrollables).
 - Oublier safe area ou padding tab bar sur listes longues.
-- `h-screen` au lieu de `100dvh` / `-webkit-fill-available`.
+- `h-screen` ou `100dvh` sur le shell (casse `position: fixed` en PWA iOS).
+- Deux chiffres qui mesurent la même somme sous deux noms sur un même écran.
+- Répéter dans une ligne de liste une information déjà portée par son en-tête de
+  groupe (statut, catégorie).
+- Un badge d'état sur 100 % des lignes : n'afficher que l'état anormal.
+- Deux chemins visibles simultanément vers la même destination (raccourci +
+  onglet).
 
 ## Self-audit (avant livraison UI admin)
 
@@ -206,6 +229,9 @@ Composant : `src/app-shell/TabBar.tsx`. Styles : `.admin-tab-bar`, `.admin-tab-b
 | [`docs/admin/PRODUCT.md`](./PRODUCT.md) | Contexte produit, flows, contraintes PWA. |
 | [`src/design/globals.admin.css`](../../src/design/globals.admin.css) | Feuille CSS admin complète. |
 | [`src/design/tokens.ts`](../../src/design/tokens.ts) | Tokens TypeScript. |
-| [`src/app-shell/TabBar.tsx`](../../src/app-shell/TabBar.tsx) | Navigation principale. |
+| [`src/app-shell/navigation.ts`](../../src/app-shell/navigation.ts) | Onglets et écrans parents — source de vérité de l'IA. |
+| [`src/app-shell/TabBar.tsx`](../../src/app-shell/TabBar.tsx) | Rendu de la navigation principale. |
+| [`public/admin-sw.js`](../../public/admin-sw.js) | Service worker (assets + repli hors ligne). |
+| [`scripts/build-admin-pwa-assets.mjs`](../../scripts/build-admin-pwa-assets.mjs) | Génération icônes + écrans de lancement iOS. |
 | [`src/app-shell/AdminShell.tsx`](../../src/app-shell/AdminShell.tsx) | Layout shell. |
 | [`app/admin/layout.tsx`](../../app/admin/layout.tsx) | Viewport, manifest, metadata PWA. |

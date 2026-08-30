@@ -47,20 +47,43 @@ Permettre de gérer l'activité quotidienne de Nuréa Parfums sans ouvrir un ord
 
 ## Flows principaux
 
-Navigation primaire via `TabBar` (`src/app-shell/TabBar.tsx`) + menu **Plus** pour l'entrée secondaire.
+Navigation primaire : **cinq onglets**, aucun menu « Plus » (`src/app-shell/navigation.ts`).
 
-| Zone | Route(s) | Rôle |
-|------|----------|------|
-| **Tableau** | `/admin` | Vue d'ensemble, raccourcis (commande rapide, compta, clients). |
-| **Produits** (catalogue) | `/admin/catalogue`, `/admin/perfumes/*`, `/admin/brands/*` | CRUD parfums et marques, filtres, visibilité, gammes complètes. |
-| **Commandes** (ordres) | `/admin/ordres`, `/admin/ordres/new`, `/admin/ordres/[id]` | Liste filtrée (attente, à traiter, livré), création rapide ou complète, détail et statuts. |
-| **Vendre** | `/admin/vendre` | Enregistrement vente terrain (flux court). |
-| **Compta** | `/admin/compta`, `/admin/lots`, `/admin/lots/new`, `/admin/lots/[id]` | Suivi financier ; lots rattachés au même onglet tab bar. |
-| **Clients** | `/admin/clients`, `/admin/clients/new`, `/admin/clients/[id]` | Fiches client ; accessible via menu **Plus**. |
+| Onglet | Route(s) | Rôle |
+|--------|----------|------|
+| **Accueil** | `/admin` | Alertes, chiffres, compteurs commandes, raccourcis. Rattache aussi `/admin/clients*`, `/admin/stats*`. |
+| **Commandes** | `/admin/ordres`, `/admin/ordres/new`, `/admin/ordres/[id]` | Liste groupée par statut, création, détail, paiements, livraison. |
+| **Vendre** | `/admin/vendre` | Encaissement terrain. Aussi `?fromOrder=<id>` pour solder une commande. |
+| **Compta** | `/admin/compta`, `/admin/lots*` | Deux vues (`?vue=ventes` / `?vue=tresorerie`), lots d'achat. |
+| **Catalogue** | `/admin/catalogue`, `/admin/perfumes/*`, `/admin/brands/*` | Parfums, marques, mise en avant. |
 
-**Palette de commandes** (`Cmd+K` / `Ctrl+K`) : navigation et création rapide (commande, vente, parfum, client).
+**Écrans sans onglet** — Clients, Lots, Statistiques : accessibles depuis les
+raccourcis de l'Accueil et la palette de commandes. Ils sont rattachés à l'onglet
+Accueil pour que la barre garde un état actif.
 
-**Auth** : `/admin/login` — hors shell (pas de tab bar).
+**Bouton retour** : dérivé de la route par `getParentScreen`, affiché par le header
+du shell. Les pages ne rendent jamais leur propre lien retour.
+
+**Palette de commandes** (`Cmd+K` / bouton Rechercher) : navigation, création et
+recherche globale (parfums, clients, commandes).
+
+**Auth** : `/admin/login` — hors shell (ni header ni tab bar).
+
+**Hors ligne** : `/admin/offline` — page de repli mise en cache par le service worker.
+
+## Vocabulaire des chiffres
+
+Un même montant porte le même nom partout. Ne pas introduire de synonyme.
+
+| Terme | Définition |
+|-------|-----------|
+| **Encaissé** | Argent réellement reçu (ventes + commandes confirmées). |
+| **À encaisser** | Reste dû par les clients. |
+| **Marge nette** | Encaissé − coûts d'achat − dépenses de lot. |
+| **Trésorerie** | Solde cumulé des poches. |
+
+Interdits : « CA », « bénéfice net », « prévision trésorerie », « panier moyen » —
+tous redondants avec les quatre ci-dessus ou dérivables d'eux.
 
 ## Règles métier (rappel opérationnel)
 
@@ -77,17 +100,25 @@ L'admin est conçu comme une **app iOS installée**, pas un site responsive gén
 
 | Contrainte | Implémentation |
 |------------|----------------|
-| Manifest dédié | `getAdminWebManifest()` — scope `/admin`, `standalone`, `theme_color` / `background_color` `#7B0B1D`. |
-| Viewport | `viewportFit: cover`, `maximumScale: 1`, `userScalable: false` (`app/admin/layout.tsx`). |
-| Status bar | `black-translucent`, `apple-mobile-web-app-capable`. |
-| Largeur app | `--admin-app-max-width: 430px` — rail type iPhone sur desktop. |
-| Scroll | `body` / `html` `overflow: hidden` ; zone scroll unique `.admin-shell-scroll`. |
+| Feuille de style isolée | `/admin` ne charge **ni** `app/globals.css` **ni** les polices Google de la vitrine — route groups `app/(shop)` vs `app/admin` avec un root layout minimal. |
+| Manifeste dédié | `getAdminWebManifest()` — scope `/admin`, `standalone`, icônes aux dimensions réelles + entrée `maskable` dédiée. |
+| Écran de lancement | `apple-touch-startup-image` × 12 résolutions (`src/lib/pwa/admin-splash.ts`), sinon flash blanc au démarrage. |
+| Icône écran d'accueil | `app/admin/apple-icon.png` (convention de fichier, prioritaire sur `metadata.icons`). |
+| Service worker | `public/admin-sw.js`, scope `/admin/` : assets versionnés en cache-first, page de repli hors ligne. Aucune réponse d'API mise en cache. |
+| Viewport | `viewportFit: cover`, zoom autorisé (WCAG). |
+| Barre d'état | `default` + `theme-color` `#F2F2F7` (heure en noir : fond clair obligatoire). |
+| Largeur app | `--admin-app-max-width: 430px` — rail iPhone sur desktop. |
+| Scroll | `body`/`html` `overflow: hidden` ; zone de scroll unique `.admin-shell-scroll`. |
 | Safe areas | `env(safe-area-inset-*)` sur tab bar, header, padding bas de liste. |
-| Clavier virtuel | `--admin-keyboard-inset` via `useAdminKeyboardInset` ; padding formulaires adaptatif. |
-| Inputs iOS | `font-size: 16px` minimum (évite zoom Safari). |
+| Clavier virtuel | `--admin-keyboard-inset` (`useAdminKeyboardInset`) et `--admin-vh` (`ViewportSync`). |
+| Inputs iOS | `font-size: 16px` minimum (évite le zoom Safari). |
 | Install hint | `PwaInstallHint` — iOS Safari uniquement, hors standalone, dismiss localStorage. |
-| Overscroll | `overscroll-behavior: none` sur body ; `contain` sur scroll interne. |
-| Tab bar vs sheets | Tab bar `z-index: 50` ; sheets Vaul `70+` ; `translateZ(0)` pour isoler du scale body. |
+
+**Régénérer les assets PWA** (icône ou couleur d'accent modifiée) :
+
+```bash
+node scripts/build-admin-pwa-assets.mjs
+```
 
 **Hors scope admin** : pas de dark mode, pas de breakpoints desktop — tout est calibré 320–430px (`src/design/tokens.ts`).
 
@@ -101,6 +132,9 @@ L'admin est conçu comme une **app iOS installée**, pas un site responsive gén
 - `transition: all` sur les interactions tactiles.
 - Gradients violet/bleu, néon, cartes dans des cartes.
 - Copy creux : « Bienvenue sur », « N'hésitez pas », « Cliquez ici ».
+- Deux formulaires concurrents pour la même tâche (« rapide » vs « complet ») :
+  un seul écran, champs facultatifs repliés.
+- Deux systèmes de composants en parallèle. Tout passe par `src/ui/*`.
 
 ## Strategic Product Principles
 
