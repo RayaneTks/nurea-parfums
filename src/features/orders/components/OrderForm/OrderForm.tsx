@@ -5,15 +5,18 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/ui/primitives/Button";
 import { Card } from "@/ui/primitives/Card";
+import { Heading } from "@/ui/primitives/Heading";
+import { Input } from "@/ui/primitives/Input";
+import { Textarea } from "@/ui/primitives/Textarea";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { StickyAction } from "@/ui/primitives/StickyAction";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
 import { PageScaffold } from "@/ui/patterns/PageScaffold";
+import { CollapsibleSection } from "@/ui/patterns/CollapsibleSection";
 import { Money } from "@/ui/patterns/Money";
 import { CustomerSection } from "./CustomerSection";
 import { ItemsSection } from "./ItemsSection";
 import { DepositSection } from "./DepositSection";
-import { MetaSection } from "./MetaSection";
 import type { OrderFormLine, OrderFormState } from "./types";
 import { createOrderAction, updateOrderAction } from "@/server/orders/actions";
 import { useLastExchangeRate } from "@/hooks/useLastExchangeRate";
@@ -23,7 +26,7 @@ import type {
   UpdateOrderInput,
 } from "@/schemas/order";
 import type { PickerResult } from "@/features/sell";
-import type { SelectedCustomer } from "../../customers/CustomerCombobox";
+import type { SelectedCustomer } from "@/features/customers/components/CustomerCombobox";
 
 type Mode = "create" | "edit";
 
@@ -276,6 +279,19 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
     });
   };
 
+  const metaSummary = (() => {
+    const parts: string[] = [];
+    if (state.deliveryAt) {
+      parts.push(
+        new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(
+          new Date(state.deliveryAt),
+        ),
+      );
+    }
+    if (state.notes.trim()) parts.push("note");
+    return parts.length > 0 ? parts.join(" · ") : "Facultatif";
+  })();
+
   return (
     <PageScaffold
       padding={4}
@@ -283,6 +299,15 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
       ariaLabel={mode === "create" ? "Nouvelle commande" : "Modifier commande"}
     >
       <Stack gap={3}>
+        <header>
+          <Heading level={1}>
+            {mode === "create" ? "Nouvelle commande" : "Modifier la commande"}
+          </Heading>
+          <p className="mt-0.5 text-[13px] text-[var(--admin-text-muted)]">
+            Client et parfums suffisent. Le reste est facultatif.
+          </p>
+        </header>
+
         <CustomerSection
           customer={state.customer}
           customerName={state.customerName}
@@ -325,12 +350,29 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
           />
         ) : null}
 
-        <MetaSection
-          deliveryAt={state.deliveryAt}
-          notes={state.notes}
-          onDeliveryChange={(v) => setState((s) => ({ ...s, deliveryAt: v }))}
-          onNotesChange={(v) => setState((s) => ({ ...s, notes: v }))}
-        />
+        {/* Repliée par défaut : sur la majorité des commandes, ni date ni
+            note ne sont saisies. Le résumé indique ce qui est déjà rempli. */}
+        <CollapsibleSection
+          title="Livraison et notes"
+          defaultOpen={state.deliveryAt !== "" || state.notes !== ""}
+          summary={metaSummary}
+        >
+          <Input
+            label="Livraison prévue"
+            type="datetime-local"
+            value={state.deliveryAt}
+            onChange={(e) => setState((s) => ({ ...s, deliveryAt: e.target.value }))}
+            enterKeyHint="next"
+          />
+          <Textarea
+            label="Notes internes"
+            value={state.notes}
+            onChange={(e) => setState((s) => ({ ...s, notes: e.target.value }))}
+            rows={3}
+            placeholder="Précisions internes (contraintes, préférences…)"
+            enterKeyHint="done"
+          />
+        </CollapsibleSection>
 
         <Card padding={3} tone="alt">
           <HStack justify="between" align="end">
