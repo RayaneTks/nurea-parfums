@@ -101,7 +101,7 @@ export function OrdersListClient({ initial, initialFilter }: OrdersListClientPro
             description={empty.description}
             action={
               empty.showAction ? (
-                <Link href="/admin/ordres/new?mode=quick">
+                <Link href="/admin/ordres/new">
                   <Button variant="primary" size="md" leadingIcon={<Plus size={16} />}>
                     Créer une commande
                   </Button>
@@ -125,7 +125,7 @@ export function OrdersListClient({ initial, initialFilter }: OrdersListClientPro
         )}
       </Stack>
 
-      <FAB icon={Plus} ariaLabel="Nouvelle commande" href="/admin/ordres/new?mode=quick" />
+      <FAB icon={Plus} ariaLabel="Nouvelle commande" href="/admin/ordres/new" />
     </>
   );
 }

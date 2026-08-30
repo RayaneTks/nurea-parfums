@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
-import { OrderForm } from "@/components/admin/orders/OrderForm";
-import type { OrderFormLine } from "@/components/admin/orders/OrderForm/types";
+import { OrderForm } from "@/features/orders/components/OrderForm";
+import type { OrderFormLine } from "@/features/orders/components/OrderForm/types";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Modifier commande — Admin",
+  title: "Modifier commande",
   robots: { index: false, follow: false },
 };
 

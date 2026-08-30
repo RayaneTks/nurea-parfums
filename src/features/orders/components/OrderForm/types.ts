@@ -1,4 +1,4 @@
-import type { SelectedCustomer } from "../../customers/CustomerCombobox";
+import type { SelectedCustomer } from "@/features/customers/components/CustomerCombobox";
 
 export type OrderFormLineSnapshot = {
   name: string;

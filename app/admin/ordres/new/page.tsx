@@ -1,44 +1,28 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { OrderForm } from "@/components/admin/orders/OrderForm";
-import { QuickOrderForm } from "@/components/admin/orders/QuickOrderForm";
+import { OrderForm } from "@/features/orders/components/OrderForm";
 import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/admin/session";
 
 export const metadata: Metadata = {
-  title: "Administration — Nouvelle Commande",
+  title: "Nouvelle commande",
   robots: { index: false, follow: false },
 };
 
-type SearchParams = Promise<{ mode?: string }>;
-
-export default async function NewOrderPage({ searchParams }: { searchParams: SearchParams }) {
+/**
+ * Écran unique de création de commande.
+ *
+ * Il n'y a plus de variante `?mode=quick` : un seul formulaire, dont les
+ * champs facultatifs (livraison, notes) sont repliés. Demander « rapide ou
+ * détaillée ? » avant d'avoir saisi quoi que ce soit obligeait à choisir sans
+ * information, et deux formulaires divergeaient à chaque évolution métier.
+ * Les anciens liens `?mode=quick` restent valides et aboutissent ici.
+ */
+export default async function NewOrderPage() {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
   if (!token) redirect("/admin/login");
   const user = await verifyAdminToken(token);
   if (!user) redirect("/admin/login");
-
-  const { mode } = await searchParams;
-
-  if (mode === "quick") {
-    return (
-      <main
-        id="main-content"
-        className="flex-1 space-y-4 px-5 pt-2"
-        style={{ paddingBottom: "var(--admin-scroll-bottom-pad)" }}
-      >
-        <header>
-          <h1 className="text-2xl font-bold leading-tight tracking-tight text-neutral-900">
-            Commande rapide
-          </h1>
-          <p className="mt-0.5 text-sm text-neutral-500">
-            Client + 1 parfum + acompte (optionnel). 30 secondes.
-          </p>
-        </header>
-        <QuickOrderForm />
-      </main>
-    );
-  }
 
   return <OrderForm mode="create" />;
 }

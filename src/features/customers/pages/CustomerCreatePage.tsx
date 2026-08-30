@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { PageScaffold } from "@/ui/patterns/PageScaffold";
 import { Heading } from "@/ui/primitives/Heading";
 import { Stack } from "@/ui/primitives/Stack";
-import { CustomerForm } from "@/components/admin/customers/CustomerForm";
+import { CustomerForm } from "@/features/customers/components/CustomerForm";
 
 export function CustomerCreatePage() {
   return (
