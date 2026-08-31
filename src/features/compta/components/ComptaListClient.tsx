@@ -147,10 +147,6 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
           />
         ) : null}
 
-        {!fetchError && query.trim().length === 0 && data.summary.salesCount > 0 ? (
-          <ComptaTrendChart sales={chartSales} />
-        ) : null}
-
         {!fetchError && !hasAny ? (
           showLoadingState ? (
             <SkeletonList count={4} />
@@ -191,18 +187,32 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
                               </span>
                               <span className="mt-0.5 flex items-center gap-1.5">
                                 <OrderStatusBadge status={o.status} />
-                                {due > 0.005 ? (
-                                  <span className="text-[12px] font-medium text-[var(--admin-warning)] tabular-nums">
-                                    · <Money value={o.due} compact /> dû
-                                  </span>
-                                ) : null}
+                                <span className="text-[12px] tabular-nums text-[var(--admin-text-subtle)]">
+                                  · <Money value={o.cashed} compact /> encaissé
+                                </span>
                               </span>
                             </span>
+                            {/* Le reste dû mène la ligne. La colonne de droite
+                                affichait l'encaissé — soit « 0,00 € » en gras
+                                sur une commande non payée, pendant que le seul
+                                chiffre à retenir tenait en petit à gauche. */}
                             <span className="shrink-0 text-right">
-                              <Money value={o.cashed} bold />
-                              <span className="mt-0.5 block text-[11px] text-[var(--admin-text-subtle)]">
-                                encaissé
-                              </span>
+                              {due > 0.005 ? (
+                                <>
+                                  <Money
+                                    value={o.due}
+                                    bold
+                                    className="text-[17px] text-[var(--admin-warning)]"
+                                  />
+                                  <span className="mt-0.5 block text-[11px] text-[var(--admin-warning)]">
+                                    à encaisser
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-[13px] font-medium text-[var(--admin-success)]">
+                                  Soldée
+                                </span>
+                              )}
                             </span>
                           </Link>
                         </li>
@@ -243,6 +253,11 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
                   />
                 ))}
               </Stack>
+            ) : null}
+            {/* Consultation : elle passe après le travail. Placé en tête, ce
+                graphe repoussait la première ligne de commande hors écran. */}
+            {query.trim().length === 0 && data.summary.salesCount > 0 ? (
+              <ComptaTrendChart sales={chartSales} />
             ) : null}
           </Stack>
         ) : null}
