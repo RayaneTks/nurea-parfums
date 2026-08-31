@@ -127,6 +127,33 @@ export async function collectLayoutViolations(page: Page): Promise<{
         }
       }
 
+      // ─── Un seul bloc de niveau page ────────────────────────────────────
+      /*
+       * La zone de défilement ne doit contenir QU'UN bloc de page.
+       *
+       * Deux frères à ce niveau, c'est deux mises en page qui s'ignorent :
+       * chacune calcule sa hauteur et sa réserve basse dans son coin, et
+       * l'une finit posée sur l'autre. C'est ce qui plaçait la grille
+       * tarifaire par-dessus la carte des visuels, sur la fiche parfum.
+       *
+       * Un écran qui a besoin d'un bloc supplémentaire le passe en slot au
+       * composant de page, il ne l'empile pas à côté.
+       */
+      const scrollRoot = document.getElementById("admin-scroll-root");
+      if (scrollRoot) {
+        const blocks = Array.from(scrollRoot.children).filter((el) => isRendered(el));
+        if (blocks.length > 1) {
+          violations.push({
+            rule: "deux-blocs-de-page",
+            detail:
+              `${blocks.length} blocs de niveau page empilés dans la zone de défilement ` +
+              `(${blocks.map((el) => el.tagName.toLowerCase()).join(", ")}) : ` +
+              "leurs mises en page s'ignorent et se recouvrent.",
+            selector: "#admin-scroll-root",
+          });
+        }
+      }
+
       // ─── Cibles tactiles ────────────────────────────────────────────────
       const interactive = Array.from(
         document.querySelectorAll(

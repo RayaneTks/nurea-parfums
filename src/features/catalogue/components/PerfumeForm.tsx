@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { Stack } from "@/ui/primitives/Stack";
@@ -48,7 +48,20 @@ const CATALOGUE_HREF = "/admin/catalogue";
  *   - le garde-fou « gamme complète » utilise une boîte de dialogue du thème
  *     et non `window.confirm`, que iOS affiche hors du cadre de l'app.
  */
-export function PerfumeForm({ perfumeId }: { perfumeId?: string }) {
+type PerfumeFormProps = {
+  perfumeId?: string;
+  /**
+   * Grille tarifaire, chargée côté serveur par la route.
+   *
+   * Passée en slot pour être rendue DANS le scaffold du formulaire. Empilée en
+   * frère à côté de lui, elle créait un second bloc de niveau page dans le même
+   * conteneur de défilement : deux `<main>`, deux flux, et la grille finissait
+   * posée par-dessus la carte des visuels.
+   */
+  pricingSlot?: ReactNode;
+};
+
+export function PerfumeForm({ perfumeId, pricingSlot }: PerfumeFormProps) {
   const router = useRouter();
   const isNew = !perfumeId;
 
@@ -342,6 +355,8 @@ export function PerfumeForm({ perfumeId }: { perfumeId?: string }) {
               className={publicationLocked ? "pointer-events-none opacity-50" : undefined}
             />
           </FormSection>
+
+          {pricingSlot}
 
           {!isNew && !readOnly ? (
             <div className="flex justify-center pt-1">
