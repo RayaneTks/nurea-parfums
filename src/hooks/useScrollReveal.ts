@@ -2,8 +2,15 @@
 
 import { useEffect, useRef } from "react";
 
+/**
+ * Marque l'élément comme révélé la première fois qu'il entre dans le viewport.
+ *
+ * Le style est porté par `.nurea-reveal[data-revealed]` (`app/globals.css`) :
+ * une opacité et 12 px de montée, une seule fois. La charte n'admet aucun
+ * autre mouvement — voir § 05.
+ */
 export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(
-  options?: { threshold?: number; rootMargin?: string }
+  threshold = 0.1
 ) {
   const ref = useRef<T>(null);
 
@@ -13,20 +20,16 @@ export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) {
-          el.classList.add("revealed");
-          observer.disconnect();
-        }
+        if (!entry?.isIntersecting) return;
+        el.dataset.revealed = "true";
+        observer.disconnect();
       },
-      {
-        threshold: options?.threshold ?? 0.1,
-        rootMargin: options?.rootMargin ?? "0px 0px -40px 0px",
-      }
+      { threshold, rootMargin: "0px 0px -40px 0px" }
     );
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [options?.threshold, options?.rootMargin]);
+  }, [threshold]);
 
   return ref;
 }

@@ -1,45 +1,35 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Clock } from "lucide-react";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
-import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { buttonClass } from "@/components/ui/Button";
+import { SITE_NAME } from "@/lib/site";
 
-export default function LegalComingSoon() {
+export const metadata: Metadata = {
+  title: "Informations légales",
+  description: `Mentions légales, conditions de vente et politique de confidentialité de ${SITE_NAME}.`,
+  alternates: { canonical: "/legal" },
+  /* Page d'attente : rien à indexer tant que le contenu n'est pas rédigé. */
+  robots: { index: false, follow: true },
+};
+
+export default function LegalPage() {
   return (
-    <div className="nurea-vitrine-shell grain flex min-h-screen flex-col bg-[var(--nurea-bg)] text-[var(--nurea-text)]">
-      <Navbar />
+    <section className="nurea-page py-18 pt-32 md:pt-40">
+      <p className="nurea-label">Informations légales</p>
+      <h1 className="nurea-title mt-4 text-nurea-text">Bientôt disponible</h1>
+      <p className="nurea-body nurea-prose mt-6">
+        Nous rédigeons cette section pour vous apporter toutes les précisions sur
+        nos conditions et nos engagements. En attendant, écrivez-nous : nous
+        répondons à toute question sur une commande ou une livraison.
+      </p>
 
-      <main className="flex flex-1 flex-col items-center justify-center px-4 py-24 text-center">
-        <ScrollReveal direction="scale">
-          <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-full border border-[var(--nurea-border)] bg-[var(--nurea-surface)] text-[var(--nurea-accent)] shadow-2xl shadow-[var(--nurea-accent-subtle)]">
-            <Clock size={32} strokeWidth={1.5} />
-          </div>
-
-          <span className="mb-4 block text-[11px] font-medium uppercase tracking-[0.3em] text-[var(--nurea-accent)]">
-            Nuréa Parfums
-          </span>
-          <h1 className="mb-6 font-serif text-[clamp(28px,5vw,42px)] leading-tight text-[var(--nurea-text)]">   
-            Informations Légales
-          </h1>
-          <p className="mx-auto max-w-md text-[15px] leading-relaxed text-[var(--nurea-text-muted)]">
-            Nous préparons actuellement cette section pour vous apporter toutes les précisions sur nos conditions et engagements. Elle sera disponible très bientôt.
-          </p>
-
-          <div className="mt-12">
-            <Link
-              href="/"
-              className="btn-nurea group gap-3 border-[var(--nurea-border)] hover:border-[var(--nurea-accent)]" 
-            >
-              <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
-              Retour au Catalogue
-            </Link>
-          </div>
-        </ScrollReveal>
-      </main>
-
-      <Footer />
-    </div>
+      <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+        <Link href="/contact" className={buttonClass("outline")}>
+          Nous écrire
+        </Link>
+        <Link href="/" className={buttonClass("link")}>
+          Retour au catalogue
+        </Link>
+      </div>
+    </section>
   );
 }

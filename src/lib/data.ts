@@ -4,8 +4,14 @@ import {
 import type { ExternalPerfumeHint } from "./search/externalSearchTypes";
 
 export const CONTACT = {
-  whatsapp:
-    "https://wa.me/33600000000?text=Bonjour%20Maison%20Nur%C3%A9a,%20je%20souhaite%20me%20renseigner%20sur...",
+  /**
+   * Lien nu, sans message pré-rempli : `whatsappOrderUrl`
+   * (`src/lib/catalog/perfumePresentation.ts`) y ajoute la référence consultée.
+   *
+   * TODO — numéro de démonstration. À remplacer par le numéro réel avant mise
+   * en ligne (voir « Reste à produire » de la charte graphique).
+   */
+  whatsapp: "https://wa.me/33600000000",
   snapchat: "https://snapchat.com/add/nureaparfums",
   /** Affichage footer / UI (cohérent avec l’URL snapchat.com/add/…) */
   snapchatHandle: "@nureaparfums",
@@ -49,26 +55,6 @@ export const categories: Category[] = [
  * mais les composants doivent consommer les données de l'API / DB.
  */
 export const mockPerfumes: Perfume[] = [];
-
-/**
- * Retourne l'URL de l'image appropriée selon le thème.
- * Logique Nuréa : 
- * 1. Image seule -> Utilisée pour Light & Dark.
- * 2. Image + ImageLight -> Image devient Dark, ImageLight devient Light.
- */
-export function getPerfumeImage(
-  perfume: Perfume,
-  theme: "light" | "dark" | undefined = "dark"
-): string {
-  const isDark = theme === "dark";
-  
-  if (!isDark && perfume.imageLight && perfume.imageLight.trim() !== "") {
-    return perfume.imageLight;
-  }
-  
-  // Dans tous les autres cas (thème dark OU pas d'image light), on utilise l'image principale.
-  return perfume.image || "/placeholder.svg";
-}
 
 // --- Logique de recherche (Fuzzy Search) ---
 

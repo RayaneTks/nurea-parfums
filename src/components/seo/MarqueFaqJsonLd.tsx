@@ -1,44 +1,20 @@
-import { SITE_URL, SITE_NAME } from "@/lib/site";
+import { MARQUE_FAQ } from "@/lib/marqueFaq";
 
-/** FAQ orientée marque / confusion orthographique (extraits de réponse pour le référencement). */
+/**
+ * Balisage `FAQPage` de la page « La parfumerie ».
+ *
+ * Il dérive de `MARQUE_FAQ`, la même liste que la page affiche : les moteurs
+ * exigent que chaque question déclarée soit visible à l'écran.
+ */
 export function MarqueFaqJsonLd() {
   const data = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: `Comment s'écrit correctement le nom ${SITE_NAME} ?`,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: `L'orthographe officielle est « Nuréa » (N-U-R-É-A), suivi de « Parfums » au pluriel : ${SITE_NAME}.`,
-        },
-      },
-      {
-        "@type": "Question",
-        name: `Quel est le site officiel de ${SITE_NAME} ?`,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: `Le site officiel est ${SITE_URL.replace("https://", "")} — vérifiez l'adresse dans votre navigateur pour éviter toute confusion avec des noms ou orthographes proches.`,
-        },
-      },
-      {
-        "@type": "Question",
-        name: `${SITE_NAME} est-il une marque indépendante ?`,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: `${SITE_NAME} est une maison de haute parfumerie indépendante. D'autres marques ou orthographes similaires sur Internet sont des acteurs distincts ; seul le domaine officiel et le contact avec la maison garantissent nos services.`,
-        },
-      },
-      {
-        "@type": "Question",
-        name: "Je ne trouve pas un parfum dans le catalogue, que faire ?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Écrivez depuis la page Contact : nous pouvons vous orienter ou rechercher une fragrance sur commande selon les disponibilités.",
-        },
-      },
-    ],
+    mainEntity: MARQUE_FAQ.map(({ question, answer }) => ({
+      "@type": "Question",
+      name: question,
+      acceptedAnswer: { "@type": "Answer", text: answer },
+    })),
   };
 
   return (

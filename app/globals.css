@@ -1,560 +1,454 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   NURÃ‰A PARFUMS â€” Design System v2 Â« Nuit Bordeaux Â»
-   Dark-first, mobile-first, editorial haute couture
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════════════════════════════════════
+   NURÉA PARFUMS — Vitrine
+   Charte graphique v3. Source des valeurs : `src/design/brand.ts`.
+
+   Trois règles structurent tout ce fichier :
+     · Angles 0. Aucun arrondi, nulle part.
+     · Ombres : aucune. On sépare au filet 1 px, jamais à la carte flottante.
+     · Transition 160 ms ease-out sur la couleur seule. Jamais de déplacement
+       ni d'agrandissement au survol.
+
+   Le registre gestion a sa propre feuille : `src/design/globals.admin.css`.
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 @layer base {
-  /* â”€â”€â”€ Dark mode (default) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ─── Sombre — thème de référence de la charte ─────────────────────────
+     Les teintes sont déclarées en canaux RVB : Tailwind peut ainsi leur
+     appliquer un modificateur d'opacité (`bg-nurea-bg/80`), et les valeurs
+     translucides se *dérivent* de la teinte source au lieu d'être recopiées.
+     Le filet, par exemple, est littéralement « le cuivre à 16 % ». */
   :root {
-    /* Ã‰chelle typo (rÃ©fÃ©rence design system â€” adoption progressive dans les composants) */
-    --nurea-text-caption: 0.625rem;
-    --nurea-text-label: 0.6875rem;
-    --nurea-text-body-sm: 0.8125rem;
-    --nurea-text-body: 0.9375rem;
-    --nurea-tracking-tight: -0.02em;
-    --nurea-tracking-label: 0.12em;
-    --nurea-tracking-wide: 0.2em;
+    /* Marque */
+    --nurea-bg-rgb: 10 5 8; /* noir     — fond de tout */
+    --nurea-text-rgb: 253 248 244; /* ivoire   — 19,2:1 sur noir */
+    --nurea-accent-rgb: 196 149 106; /* cuivre   — 7,6:1 sur noir */
+    --nurea-bordeaux-rgb: 123 11 29; /* bordeaux — sceau, cachet */
 
-    --nurea-bg: #0A0508;
-    --nurea-surface: #140E12;
-    --nurea-surface-hover: #1C1418;
-    --nurea-accent: #D88080;
-    --nurea-accent-hover: #E89595;
-    --nurea-accent-solid: #A64545;
-    --nurea-accent-subtle: rgba(216, 128, 128, 0.14);
-    --nurea-text: #FDF8F4;
-    --nurea-text-muted: #D1B8C4;
-    --nurea-text-subtle: #9A7E8E;
-    --nurea-cuivre: #D4A57A;
-    --nurea-snapchat: #FFD100;
-    --nurea-border: rgba(216, 128, 128, 0.12);
-    --nurea-border-hover: rgba(216, 128, 128, 0.30);
-    --nurea-glow: rgba(216, 128, 128, 0.06);
-    --nurea-overlay: rgba(10, 5, 8, 0.94);
-    --nurea-overlay-light: rgba(10, 5, 8, 0.75);
+    /* Teintes de support — écran uniquement */
+    --nurea-surface-rgb: 20 14 18;
+    --nurea-surface-hover-rgb: 28 20 24;
+    --nurea-text-muted-rgb: 228 210 218; /* 14,0:1 */
+    --nurea-text-subtle-rgb: 180 159 171; /* 8,2:1  */
+    --nurea-text-disabled-rgb: 110 90 100;
+    --nurea-alert-rgb: 216 128 128; /* erreurs seules, jamais un accent */
 
-    /* SÃ©mantique : admin / gestion */
-    --nurea-success: #7FB291;
-    --nurea-success-subtle: rgba(127, 178, 145, 0.12);
-    --nurea-success-border: rgba(127, 178, 145, 0.28);
-    --nurea-warning: #D4A57A;
-    --nurea-warning-subtle: rgba(212, 165, 122, 0.12);
-    --nurea-warning-border: rgba(212, 165, 122, 0.28);
-    --nurea-danger: #D88080;
-    --nurea-danger-subtle: rgba(216, 128, 128, 0.12);
-    --nurea-danger-border: rgba(216, 128, 128, 0.32);
-    --nurea-info: #9FB7D4;
-    --nurea-info-subtle: rgba(159, 183, 212, 0.12);
-    --nurea-info-border: rgba(159, 183, 212, 0.28);
+    /* Interaction */
+    --nurea-accent-hover-rgb: 212 170 132;
+    /* Texte porté par un aplat d'accent. */
+    --nurea-on-accent-rgb: 10 5 8;
+
     color-scheme: dark;
   }
 
-  /* â”€â”€â”€ Light mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ─── Clair — hors charte, dérivé ─────────────────────────────────────
+     La charte ne décrit qu'une palette sombre. Ce thème prolonge ses deux
+     seuls usages sur ivoire (le bordeaux et le gris de la carte de main) en
+     gardant ses paliers de contraste. Le cuivre y tombe à 2,5:1 : il n'y
+     porte aucun texte, uniquement filets et aplats. L'accent devient donc le
+     bordeaux — et le filet suit, sans quoi il disparaîtrait. */
   .light {
-    --nurea-bg: #FAF6F2;
-    --nurea-surface: #FFFFFF;
-    --nurea-surface-hover: #F2EDE8;
-    --nurea-accent: #8B3A3A;
-    --nurea-accent-hover: #A44545;
-    --nurea-accent-solid: #7A3030;
-    --nurea-accent-subtle: rgba(139, 58, 58, 0.08);
-    --nurea-text: #1A1215;
-    --nurea-text-muted: #4A3A42; /* Even darker for safe contrast */
-    --nurea-text-subtle: #66555C; /* Hit 7:1 ratio for maximum legibility */
-    --nurea-cuivre: #966D42; /* Darkened for better presence */
-    --nurea-snapchat: #A68A00; /* Dark gold for safe 4.5:1 ratio on light backgrounds */
-    --nurea-border: rgba(80, 20, 20, 0.15);
-    --nurea-border-hover: rgba(80, 20, 20, 0.35);
-    --nurea-glow: rgba(139, 58, 58, 0.06);
-    --nurea-overlay: rgba(248, 244, 240, 0.94);
-    --nurea-overlay-light: rgba(250, 246, 242, 0.96);
+    --nurea-bg-rgb: 253 248 244;
+    --nurea-text-rgb: 10 5 8; /* 19,2:1 sur ivoire */
+    --nurea-accent-rgb: 123 11 29; /* 10,4:1 */
 
-    /* SÃ©mantique : admin / gestion */
-    --nurea-success: #3E7554;
-    --nurea-success-subtle: rgba(62, 117, 84, 0.10);
-    --nurea-success-border: rgba(62, 117, 84, 0.32);
-    --nurea-warning: #8B5A2B;
-    --nurea-warning-subtle: rgba(139, 90, 43, 0.10);
-    --nurea-warning-border: rgba(139, 90, 43, 0.32);
-    --nurea-danger: #8B3A3A;
-    --nurea-danger-subtle: rgba(139, 58, 58, 0.10);
-    --nurea-danger-border: rgba(139, 58, 58, 0.32);
-    --nurea-info: #3E5A7A;
-    --nurea-info-subtle: rgba(62, 90, 122, 0.10);
-    --nurea-info-border: rgba(62, 90, 122, 0.32);
+    --nurea-surface-rgb: 246 238 232;
+    --nurea-surface-hover-rgb: 237 226 217;
+    --nurea-text-muted-rgb: 61 52 58; /* 11,4:1 */
+    --nurea-text-subtle-rgb: 84 77 88; /* 7,7:1  */
+    --nurea-text-disabled-rgb: 140 131 145;
+    --nurea-alert-rgb: 155 16 32; /* 8,0:1 */
+
+    --nurea-accent-hover-rgb: 94 8 22;
+    --nurea-on-accent-rgb: 253 248 244;
+
     color-scheme: light;
   }
 
-  * {
-    border-color: var(--nurea-border);
+  /* ─── Teintes résolues ─────────────────────────────────────────────────
+     Déclarées une fois, hors des blocs de thème : seuls les canaux changent
+     d'un thème à l'autre, jamais ces formules. */
+  :root {
+    --nurea-bg: rgb(var(--nurea-bg-rgb));
+    --nurea-text: rgb(var(--nurea-text-rgb));
+    --nurea-accent: rgb(var(--nurea-accent-rgb));
+    --nurea-accent-hover: rgb(var(--nurea-accent-hover-rgb));
+    --nurea-bordeaux: rgb(var(--nurea-bordeaux-rgb, 123 11 29));
+    --nurea-surface: rgb(var(--nurea-surface-rgb));
+    --nurea-surface-hover: rgb(var(--nurea-surface-hover-rgb));
+    --nurea-text-muted: rgb(var(--nurea-text-muted-rgb));
+    --nurea-text-subtle: rgb(var(--nurea-text-subtle-rgb));
+    --nurea-text-disabled: rgb(var(--nurea-text-disabled-rgb));
+    --nurea-alert: rgb(var(--nurea-alert-rgb));
+    --nurea-on-accent: rgb(var(--nurea-on-accent-rgb));
+
+    /* Charte § 04 — filet 1 px, cuivre à 16 % d'opacité. */
+    --nurea-border: rgb(var(--nurea-accent-rgb) / 0.16);
+    --nurea-border-strong: rgb(var(--nurea-accent-rgb) / 0.4);
+    --nurea-accent-subtle: rgb(var(--nurea-accent-rgb) / 0.12);
+    --nurea-overlay: rgb(var(--nurea-bg-rgb) / 0.85);
+
+    /* Charte § 05 — la seule durée d'interaction, sur la couleur seule. */
+    --nurea-transition: 160ms ease-out;
+
+    /* Voile posé sur le visuel d'accueil. Le sombre laisse la photo porter la
+       page ; le clair doit la noyer pour que le texte noir tienne dessus. */
+    --nurea-hero-scrim: rgb(var(--nurea-bg-rgb) / 0.72);
+  }
+
+  .light {
+    --nurea-hero-scrim: rgb(var(--nurea-bg-rgb) / 0.9);
+  }
+
+  /* Le bordeaux du mode clair est plus dense que le cuivre du mode sombre :
+     à 16 % le filet y devient un trait dur. On le desserre. */
+  .light {
+    --nurea-border: rgb(var(--nurea-accent-rgb) / 0.14);
+    --nurea-accent-subtle: rgb(var(--nurea-accent-rgb) / 0.07);
   }
 
   html {
+    background-color: var(--nurea-bg);
     scroll-behavior: smooth;
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-    overflow-x: clip;
-    overscroll-behavior-x: none;
+    /* Barre de navigation fixe + ancres (#collection, scrollIntoView) */
+    scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 3.5rem);
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    /* Barre de navigation fixe + ancres (#collection, scrollIntoView) */
-    scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 3.75rem);
-    @media (min-width: 768px) {
-      scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 4.5rem);
-    }
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    /* MÃªme teinte que le body : Ã©vite tout flash / contenu visible au rebond de scroll */
-    background-color: var(--nurea-bg);
+  }
+
+  @media (min-width: 768px) {
+    html {
+      scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 4.25rem);
+    }
   }
 
   body {
+    min-height: 100svh;
     background-color: var(--nurea-bg);
     color: var(--nurea-text);
     font-family: var(--font-sans), system-ui, sans-serif;
-    overflow-x: hidden;
-    overflow-x: clip;
-    width: 100%;
-    max-width: 100%;
-    min-height: 100svh;
-    overscroll-behavior-x: none;
-    /* Limite le Â« rubber band Â» qui rÃ©vÃ¨le le contenu au-dessus du header sur mobile */
-    overscroll-behavior-y: none;
+    /* Limite le « rubber band » qui révèle le contenu sous les bords fixes */
+    overscroll-behavior: none;
   }
 
-  /**
-   * Colonnes de la grille / split Ã©ditorial : sans min-width, le contenu peut forcer
-   * un scroll horizontal (images, mots longs).
-   */
-  .editorial-split > * {
-    min-width: 0;
+  /* Le filet est la seule séparation du système : il devient la bordure par
+     défaut, ce qui évite d'avoir à la rappeler sur chaque `border`. */
+  *,
+  *::before,
+  *::after {
+    border-color: var(--nurea-border);
   }
 
-  /**
-   * Shell pages vitrine : empÃªche le dÃ©bordement sur lâ€™axe X (full-bleed, -mx, flex).
-   */
-  .nurea-vitrine-shell {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    overflow-x: clip;
+  /* Charte § 05 — focus : filet cuivre à l'intérieur du bord. */
+  :focus-visible {
+    outline: 1px solid var(--nurea-accent);
+    outline-offset: -2px;
   }
 
   ::selection {
-    background: var(--nurea-accent-solid);
-    color: #F0E6E0;
+    background: var(--nurea-accent);
+    color: var(--nurea-on-accent);
   }
 }
 
-/* â”€â”€â”€ Scrollbar masquee â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+/* ═══════════════════════════════════════════════════════════════════════════
+   ÉCHELLE TYPOGRAPHIQUE — charte § 03
+   Une classe par rôle. Les tailles fluides descendent jusqu'aux minimums de
+   la charte (Newsreader 20 px, Instrument Sans 11 px) sans jamais passer
+   dessous, et ne montent pas au-delà de la valeur nominale.
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-/* â”€â”€â”€ Scrollbar custom â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: var(--nurea-border) transparent;
-}
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: var(--nurea-border);
-  border-radius: 4px;
-}
-
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   SCROLL REVEAL SYSTEM
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-
-.scroll-reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition:
-    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-
-}
-.scroll-reveal.revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.scroll-reveal-left {
-  opacity: 0;
-  transform: translateX(-36px);
-  transition:
-    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-
-}
-.scroll-reveal-left.revealed {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.scroll-reveal-right {
-  opacity: 0;
-  transform: translateX(36px);
-  transition:
-    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-
-}
-.scroll-reveal-right.revealed {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.scroll-reveal-scale {
-  opacity: 0;
-  transform: scale(0.96);
-  transition:
-    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-
-}
-.scroll-reveal-scale.revealed {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   HERO ANIMATIONS
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-
-@keyframes heroFadeIn {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes heroLineGrow {
-  from { transform: scaleY(0); }
-  to { transform: scaleY(1); }
-}
-
-@keyframes heroPulse {
-  0%, 100% { opacity: 0.15; }
-  50% { opacity: 0.6; }
-}
-
-.hero-stagger > *:nth-child(1) { animation: heroFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both; }
-.hero-stagger > *:nth-child(2) { animation: heroFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both; }
-.hero-stagger > *:nth-child(3) { animation: heroFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.55s both; }
-.hero-stagger > *:nth-child(4) { animation: heroFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.75s both; }
-.hero-stagger > *:nth-child(5) { animation: heroFadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.95s both; }
-
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   CARD SYSTEM
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-
-.card-hover {
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.5s ease;
-}
-/* Hover / zoom : uniquement pointeur precis (evite effets fantomes au scroll tactile) */
-@media (hover: hover) and (pointer: fine) {
-  .card-hover:hover {
-    transform: translateY(-3px);
+@layer components {
+  /* Titre de page — Newsreader 500 · 56 / 1,08 / −0,015 em */
+  .nurea-title {
+    font-family: var(--font-serif), Georgia, serif;
+    font-size: clamp(2rem, 6.5vw, 3.5rem);
+    font-weight: 500;
+    line-height: 1.08;
+    letter-spacing: -0.015em;
   }
-  .card-hover:hover .card-image-wrapper {
-    box-shadow: 0 16px 48px var(--nurea-glow);
+
+  /* Titre de section — Newsreader 500 · 40 / 1,1 */
+  .nurea-section-title {
+    font-family: var(--font-serif), Georgia, serif;
+    font-size: clamp(1.75rem, 4.5vw, 2.5rem);
+    font-weight: 500;
+    line-height: 1.1;
   }
-  .group:hover .card-image-zoom {
-    transform: scale(1.04);
+
+  /* Nom de parfum — Newsreader 500 · 24 / 1,3 */
+  .nurea-name {
+    font-family: var(--font-serif), Georgia, serif;
+    font-size: clamp(1.25rem, 2.4vw, 1.5rem);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  /* Texte courant — Instrument Sans 400 · 16 / 1,8 */
+  .nurea-body {
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.8;
+    color: var(--nurea-text-muted);
+  }
+
+  /* Étiquette — Instrument Sans 600 · 11 / 0,18 em capitales */
+  .nurea-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--nurea-accent);
+  }
+
+  /* Légende — Instrument Sans 400 · 12,5 / 1,75 */
+  .nurea-caption {
+    font-size: 0.78125rem;
+    font-weight: 400;
+    line-height: 1.75;
+    color: var(--nurea-text-subtle);
+  }
+
+  /* ─── Mise en page — charte § 04 ───────────────────────────────────── */
+
+  /* Marge de page : 72 px, 24 px sur mobile. */
+  .nurea-page {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .nurea-page {
+      padding-inline: 4.5rem;
+    }
+  }
+
+  /* Largeur de texte : 640 px maximum. */
+  .nurea-prose {
+    max-width: 40rem;
+  }
+
+  /* ─── Boutons — charte § 05 ────────────────────────────────────────────
+     Hauteur 48 px, 44 px sur mobile. Padding 15/28. Un seul bouton plein par
+     écran. Transition sur la couleur uniquement.
+     Les variantes sont composées par `src/components/ui/Button.tsx`. */
+  .nurea-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    min-height: 2.75rem;
+    padding: 0.9375rem 1.75rem;
+    border: 1px solid transparent;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-align: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color var(--nurea-transition),
+      border-color var(--nurea-transition),
+      color var(--nurea-transition);
+  }
+
+  @media (min-width: 768px) {
+    .nurea-btn {
+      min-height: 3rem;
+    }
+  }
+
+  .nurea-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Lien texte souligné — 13,5 px / 500, filet cuivre à 40 %. */
+  .nurea-btn-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding-block: 0.375rem;
+    border-bottom: 1px solid var(--nurea-border-strong);
+    font-size: 0.84375rem;
+    font-weight: 500;
+    color: var(--nurea-accent);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      color var(--nurea-transition),
+      border-color var(--nurea-transition);
+  }
+
+  .nurea-btn-link:hover {
+    border-bottom-color: var(--nurea-accent);
+  }
+
+  /* ─── Champs de formulaire ─────────────────────────────────────────── */
+  .nurea-field {
+    display: block;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--nurea-border);
+    background-color: var(--nurea-surface);
+    color: var(--nurea-text);
+    font-size: 1rem;
+    line-height: 1.5;
+    transition:
+      border-color var(--nurea-transition),
+      background-color var(--nurea-transition);
+  }
+
+  .nurea-field::placeholder {
+    color: var(--nurea-text-subtle);
+  }
+
+  .nurea-field:focus {
+    border-color: var(--nurea-accent);
+    outline: none;
+  }
+
+  .nurea-field[aria-invalid="true"] {
+    border-color: var(--nurea-alert);
   }
 }
 
-.card-image-zoom {
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
+/* ═══════════════════════════════════════════════════════════════════════════
+   GRILLES
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-.card-overlay {
-  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-              backdrop-filter 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   EDITORIAL SPLIT LAYOUT
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-
-.editorial-split {
+/* Catalogue — les fiches partagent leurs bords, séparées au filet. */
+.nurea-catalogue-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  min-height: 65vh;
-}
-@media (min-width: 768px) {
-  .editorial-split {
-    grid-template-columns: 1fr 1fr;
-    min-height: 70vh;
-  }
-  .editorial-split.reverse > *:first-child { order: 2; }
-  .editorial-split.reverse > *:last-child { order: 1; }
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   CATALOGUE GRID â€” Mobile 2-col, tablet 2-col, desktop 3-col
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-
-.catalogue-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
-  width: 100%;
-  grid-auto-rows: min-content;
-}
-.catalogue-grid > * {
-  min-width: 0;
-  min-height: 0;
-}
-@media (min-width: 768px) {
-  .catalogue-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
-  }
-}
 @media (min-width: 1024px) {
-  .catalogue-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 22px;
+  .nurea-catalogue-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   GRAIN OVERLAY â€” subtle film texture
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-
-.grain::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  /* Sous le header / overlays (z-50+) : le grain ne doit pas couvrir lâ€™UI */
-  z-index: 25;
-  pointer-events: none;
-  opacity: 0.02;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 128px 128px;
-  mix-blend-mode: overlay;
-}
-@media (max-width: 767px) {
-  .grain::after {
-    opacity: 0.014;
-    mix-blend-mode: soft-light;
-  }
+/* Bandeau éditorial — image / texte, moitié-moitié à partir de md.
+   Le filet qui les sépare est la gouttière elle-même : une grille à `gap: 1px`
+   sur fond cuivre, comme les tableaux de la charte. Les blocs partagent donc
+   littéralement leur bord, sans bordure à poser sur l'un ou sur l'autre. */
+.nurea-editorial {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1px;
+  background-color: var(--nurea-border);
 }
 
-/* AlignÃ© sur la hauteur rÃ©elle du header (Navbar) â€” pas de bande qui dÃ©passe sous la barre */
-.nurea-viewport-top-shield {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 45;
-  pointer-events: none;
+.nurea-editorial > * {
   background-color: var(--nurea-bg);
-  /* safe-area + min-h barre (58px mobile / 68px md, comme Navbar) */
-  height: calc(env(safe-area-inset-top, 0px) + 3.625rem);
 }
+
 @media (min-width: 768px) {
-  .nurea-viewport-top-shield {
-    height: calc(env(safe-area-inset-top, 0px) + 4.25rem);
+  .nurea-editorial {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Alternance : on permute les colonnes plutôt que l'ordre, pour que la
+     gouttière reste au milieu dans les deux sens. */
+  .nurea-editorial[data-reverse="true"] > *:first-child {
+    grid-area: 1 / 2;
+  }
+
+  .nurea-editorial[data-reverse="true"] > *:last-child {
+    grid-area: 1 / 1;
   }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   UTILITY ANIMATIONS
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOUVEMENT
+   La charte n'admet aucun mouvement au survol. Ne subsiste qu'une entrée au
+   défilement : une opacité et 12 px de montée, une seule fois.
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.8); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.nurea-reveal {
   opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 600ms ease-out,
+    transform 600ms ease-out;
 }
 
-.animate-scale-in {
-  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.nurea-reveal[data-revealed="true"] {
+  opacity: 1;
+  transform: none;
 }
 
-/* Stagger pour grid */
-.stagger-grid > * {
-  opacity: 0;
-  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.stagger-grid > *:nth-child(1) { animation-delay: 0.04s; }
-.stagger-grid > *:nth-child(2) { animation-delay: 0.08s; }
-.stagger-grid > *:nth-child(3) { animation-delay: 0.12s; }
-.stagger-grid > *:nth-child(4) { animation-delay: 0.16s; }
-.stagger-grid > *:nth-child(5) { animation-delay: 0.20s; }
-.stagger-grid > *:nth-child(6) { animation-delay: 0.24s; }
-.stagger-grid > *:nth-child(7) { animation-delay: 0.28s; }
-.stagger-grid > *:nth-child(8) { animation-delay: 0.32s; }
-.stagger-grid > *:nth-child(9) { animation-delay: 0.36s; }
-.stagger-grid > *:nth-child(10) { animation-delay: 0.40s; }
-.stagger-grid > *:nth-child(11) { animation-delay: 0.44s; }
-.stagger-grid > *:nth-child(12) { animation-delay: 0.48s; }
-.stagger-grid > *:nth-child(13) { animation-delay: 0.52s; }
-.stagger-grid > *:nth-child(14) { animation-delay: 0.56s; }
-.stagger-grid > *:nth-child(15) { animation-delay: 0.60s; }
-.stagger-grid > *:nth-child(16) { animation-delay: 0.64s; }
-.stagger-grid > *:nth-child(17) { animation-delay: 0.68s; }
-.stagger-grid > *:nth-child(18) { animation-delay: 0.72s; }
-.stagger-grid > *:nth-child(19) { animation-delay: 0.76s; }
-.stagger-grid > *:nth-child(20) { animation-delay: 0.80s; }
-.stagger-grid > *:nth-child(21) { animation-delay: 0.84s; }
-.stagger-grid > *:nth-child(22) { animation-delay: 0.88s; }
-.stagger-grid > *:nth-child(23) { animation-delay: 0.92s; }
-.stagger-grid > *:nth-child(24) { animation-delay: 0.96s; }
-.stagger-grid > *:nth-child(25) { animation-delay: 1.00s; }
-.stagger-grid > *:nth-child(26) { animation-delay: 1.04s; }
-.stagger-grid > *:nth-child(27) { animation-delay: 1.08s; }
-.stagger-grid > *:nth-child(28) { animation-delay: 1.12s; }
-.stagger-grid > *:nth-child(29) { animation-delay: 1.16s; }
-.stagger-grid > *:nth-child(30) { animation-delay: 1.20s; }
-
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   CTA BUTTONS
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-
-.btn-nurea {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid var(--nurea-border-hover);
-  border-radius: 2px;
-  padding: 14px 24px;
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--nurea-text);
-  text-decoration: none;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  background: transparent;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  min-height: 48px;
-}
-.btn-nurea:hover {
-  background: var(--nurea-accent-subtle);
-  border-color: var(--nurea-accent);
-}
-.btn-nurea:active {
-  transform: scale(0.98);
-}
-
-.btn-accent {
-  background: var(--nurea-accent);
-  border-color: var(--nurea-accent);
-  color: var(--nurea-bg); /* Use dark background color for text to ensure contrast in dark mode */
-}
-.light .btn-accent {
-  color: #FDF8F4; /* Light text on dark accent in light mode */
-}
-.btn-accent:hover {
-  background: var(--nurea-accent-hover);
-  border-color: var(--nurea-accent-hover);
-}
-
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   OVERLAY & BACKDROP
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-
-.overlay-enter {
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   FOCUS & ACCESSIBILITY
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-
-*:focus-visible {
-  outline: 2px solid var(--nurea-accent);
-  outline-offset: 2px;
-}
-
-/* Mobile Tactile Utilities */
-.active-scale {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.active-scale:active {
-  transform: scale(0.96) !important;
-}
-
-.tap-highlight-transparent {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Hide native search input clear button */
-input[type="search"]::-webkit-search-decoration,
-input[type="search"]::-webkit-search-cancel-button,
-input[type="search"]::-webkit-search-results-button,
-input[type="search"]::-webkit-search-results-decoration {
-  -webkit-appearance: none;
-}
-
-/* Mobile safe area padding */
-.pb-safe-bottom {
-  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-}
-
-/* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
-  .animate-spin,
-  .animate-pulse {
-    animation-duration: 1.2s !important;
-    animation-iteration-count: infinite !important;
-  }
-  .scroll-reveal,
-  .scroll-reveal-left,
-  .scroll-reveal-right,
-  .scroll-reveal-scale {
+
+  .nurea-reveal {
     opacity: 1;
     transform: none;
   }
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation-duration: 0.01ms !important;
-  }
 }
 
-/* View Transitions API (activé via next.config experimental.viewTransition) */
-@supports (view-transition-name: root) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation-duration: 0.18s;
-    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITAIRES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer utilities {
+  /* Rangée de filtres défilante : la barre native casserait le filet. */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .thin-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--nurea-border-strong) transparent;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--nurea-border-strong);
+  }
+
+  .pb-safe {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Bouton natif du champ `type="search"` : hors charte, retiré. */
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
   }
 }
-
-
-/* Admin PWA : tokens et shell -> src/design/globals.admin.css (import admin layout) */

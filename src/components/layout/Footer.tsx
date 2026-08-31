@@ -1,130 +1,123 @@
-"use client";
-
+import type { FC, ReactNode } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { useTheme } from "next-themes";
-import { useEffect, useState, type FC } from "react";
-import { CONTACT } from "@/lib/data";
-import { ScrollReveal } from "@/components/ui/ScrollReveal";
-import { WhatsAppIcon, SnapchatIcon } from "@/components/ui/Icons";
 import { Mail, MapPin } from "lucide-react";
+import { BrandLogo } from "./BrandLogo";
+import { CONTACT } from "@/lib/data";
+import { SnapchatIcon, WhatsAppIcon } from "@/components/ui/Icons";
+import { SITE_NAME } from "@/lib/site";
 
-export const Footer: FC = () => {
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const [year, setYear] = useState(2026); // Fallback to current year in context
+const NAVIGATION = [
+  { href: "/", label: "Le catalogue" },
+  { href: "/marque", label: "La parfumerie" },
+  { href: "/contact", label: "Contact & commande" },
+] as const;
 
-  useEffect(() => {
-    setMounted(true);
-    setYear(new Date().getFullYear());
-  }, []);
+const LEGAL = [
+  { href: "/legal", label: "Mentions légales" },
+  { href: "/legal", label: "Politique de confidentialité" },
+  { href: "/legal", label: "CGV / CGU" },
+  { href: "/legal", label: "Livraison & retours" },
+] as const;
 
-  const isDark = resolvedTheme !== "light";
+const SOCIAL = [
+  { href: CONTACT.snapchat, label: "Snapchat", Icon: SnapchatIcon },
+  { href: CONTACT.whatsapp, label: "WhatsApp", Icon: WhatsAppIcon },
+] as const;
 
-  return (
-    <footer className="relative border-t border-[var(--nurea-border)] bg-[var(--nurea-bg)] pt-16 pb-8 md:pt-24">
-      <div className="mx-auto max-w-[1200px] px-4 md:px-10">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-          
-          {/* Brand & Mission */}
-          <div className="flex flex-col gap-6 lg:col-span-1">
-            <Link href="/" className="inline-block transition-opacity hover:opacity-80">
-              {mounted && (
-                <Image
-                  src={
-                    isDark
-                      ? "/branding/logos/nurea-logo-horizontal-dark.webp"
-                      : "/branding/logos/nurea-logo-horizontal-black.webp"
-                  }
-                  alt="Nuréa Parfums"
-                  width={469}
-                  height={100}
-                  className="h-8 w-auto md:h-10"
-                  style={{ width: "auto", height: "auto" }}
-                />
-              )}
-            </Link>
-            <p className="max-w-xs text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-              Retrouvez vos parfums préférés au meilleur prix. Une sélection rigoureuse des plus grandes marques mondiales, disponible immédiatement.
-            </p>
-            <div className="flex items-center gap-4">
-              <a
-                href={CONTACT.snapchat}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--nurea-border)] text-[var(--nurea-text-muted)] transition-all hover:border-[var(--nurea-snapchat)] hover:text-[var(--nurea-snapchat)] active:scale-95"
-                aria-label="Snapchat"
-              >
-                <SnapchatIcon className="h-[18px] w-[18px]" />
-              </a>
-              <a
-                href={CONTACT.whatsapp}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--nurea-border)] text-[var(--nurea-text-muted)] transition-all hover:border-[var(--nurea-accent)] hover:text-[var(--nurea-accent)] active:scale-95"
-                aria-label="WhatsApp"
-              >
-                <WhatsAppIcon className="h-[18px] w-[18px]" />
-              </a>
-            </div>
-            </div>
+/**
+ * Pied de page.
+ *
+ * Composant serveur : l'année provient du rendu, et le logo est servi dans ses
+ * deux variantes commutées en CSS. Ce bloc n'a donc plus besoin d'attendre
+ * l'hydratation pour s'afficher entièrement.
+ */
+export const Footer: FC = () => (
+  <footer className="border-t border-nurea-border">
+    <div className="nurea-page grid gap-12 py-18 md:grid-cols-2 lg:grid-cols-4">
+      <div className="flex flex-col gap-6">
+        <Link href="/" aria-label={`${SITE_NAME} — accueil`} className="w-fit">
+          <BrandLogo className="h-8" />
+        </Link>
 
-            {/* Navigation */}
-            <div className="flex flex-col gap-6">
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--nurea-accent)]">
-              Navigation
-            </h3>
-            <ul className="flex flex-col gap-3 text-[14px] text-[var(--nurea-text-muted)]">
-              <li><Link href="/" className="transition-colors hover:text-[var(--nurea-text)]">Le Catalogue</Link></li>
-              <li><Link href="/marque" className="transition-colors hover:text-[var(--nurea-text)]">La Parfumerie</Link></li>
-              <li><Link href="/contact" className="transition-colors hover:text-[var(--nurea-text)]">Contact & Commande</Link></li>
-            </ul>
-            </div>          {/* Contact Direct */}
-          <div className="flex flex-col gap-6">
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--nurea-accent)]">
-              Contact
-            </h3>
-            <ul className="flex flex-col gap-4 text-[14px] text-[var(--nurea-text-muted)]">
-              <li className="flex items-start gap-3">
-                <Mail size={16} strokeWidth={1.5} className="mt-0.5 shrink-0 text-[var(--nurea-accent)]" />
-                <a href={`mailto:${CONTACT.email}`} className="transition-colors hover:text-[var(--nurea-text)]">
-                  {CONTACT.email}
-                </a>
-              </li>
-              <li className="flex items-start gap-3">
-                <MapPin size={16} strokeWidth={1.5} className="mt-0.5 shrink-0 text-[var(--nurea-accent)]" />
-                <span>Basé à Marseille & alentours. Envoi possible sur demande.</span>
-              </li>
-            </ul>
-          </div>
+        <p className="nurea-caption max-w-xs">
+          Une sélection tenue à la main, pour homme et pour femme, sans
+          intermédiaire entre vous et le flacon.
+        </p>
 
-          {/* Informations Légales */}
-          <div className="flex flex-col gap-6">
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--nurea-accent)]">
-              Légal
-            </h3>
-            <ul className="flex flex-col gap-3 text-[14px] text-[var(--nurea-text-muted)]">
-              <li><Link href="/legal" className="transition-colors hover:text-[var(--nurea-text)]">Mentions Légales</Link></li>
-              <li><Link href="/legal" className="transition-colors hover:text-[var(--nurea-text)]">Politique de Confidentialité</Link></li>
-              <li><Link href="/legal" className="transition-colors hover:text-[var(--nurea-text)]">CGV / CGU</Link></li>
-              <li><Link href="/legal" className="transition-colors hover:text-[var(--nurea-text)]">Livraison & Retours</Link></li>
-            </ul>
-          </div>
-
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="mt-16 flex flex-col items-center justify-between gap-6 border-t border-[var(--nurea-border)] pt-8 text-[11px] text-[var(--nurea-text-subtle)] md:flex-row md:mt-24">
-          <p>© {year} Nuréa Parfums. Tous droits réservés.</p>
-          <div className="flex items-center gap-6">
-            <span className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
-              Service Client Actif
-            </span>
-            <p className="uppercase tracking-widest opacity-80">Marseille</p>
-          </div>
+        <div className="flex gap-3">
+          {SOCIAL.map(({ href, label, Icon }) => (
+            <a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={label}
+              className="flex h-11 w-11 items-center justify-center border border-nurea-border text-nurea-muted transition-colors duration-nurea ease-out hover:border-nurea-accent hover:text-nurea-accent"
+            >
+              <Icon className="h-[18px] w-[18px]" />
+            </a>
+          ))}
         </div>
       </div>
-    </footer>
-  );
-};
+
+      <FooterColumn title="Navigation">
+        {NAVIGATION.map(({ href, label }) => (
+          <li key={label}>
+            <Link
+              href={href}
+              className="transition-colors duration-nurea ease-out hover:text-nurea-text"
+            >
+              {label}
+            </Link>
+          </li>
+        ))}
+      </FooterColumn>
+
+      <FooterColumn title="Contact">
+        <li className="flex items-start gap-3">
+          <Mail size={16} strokeWidth={1.5} aria-hidden className="mt-1 shrink-0 text-nurea-accent" />
+          <a
+            href={`mailto:${CONTACT.email}`}
+            className="min-w-0 break-words transition-colors duration-nurea ease-out hover:text-nurea-text"
+          >
+            {CONTACT.email}
+          </a>
+        </li>
+        <li className="flex items-start gap-3">
+          <MapPin size={16} strokeWidth={1.5} aria-hidden className="mt-1 shrink-0 text-nurea-accent" />
+          <span>{CONTACT.location}. Envoi possible sur demande.</span>
+        </li>
+      </FooterColumn>
+
+      <FooterColumn title="Légal">
+        {LEGAL.map(({ href, label }) => (
+          <li key={label}>
+            <Link
+              href={href}
+              className="transition-colors duration-nurea ease-out hover:text-nurea-text"
+            >
+              {label}
+            </Link>
+          </li>
+        ))}
+      </FooterColumn>
+    </div>
+
+    <div className="nurea-page flex flex-col gap-3 border-t border-nurea-border py-8 sm:flex-row sm:items-center sm:justify-between">
+      <p className="nurea-caption">
+        © {new Date().getFullYear()} {SITE_NAME}. Tous droits réservés.
+      </p>
+      <p className="nurea-label text-nurea-subtle">Marseille</p>
+    </div>
+  </footer>
+);
+
+const FooterColumn: FC<{ title: string; children: ReactNode }> = ({
+  title,
+  children,
+}) => (
+  <div className="flex flex-col gap-6">
+    <h2 className="nurea-label">{title}</h2>
+    <ul className="flex flex-col gap-3 text-sm text-nurea-muted">{children}</ul>
+  </div>
+);
