@@ -11,6 +11,7 @@ import { reverseMovementsFor } from "@/server/treasury/movements";
 import { revalidateTag } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
 import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
+import { recordMovement } from "@/server/treasury/movements";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -395,8 +396,34 @@ export async function PATCH(
       return NextResponse.json({ error: "Vente introuvable." }, { status: 404 });
     }
 
+    /*
+     * Baisser le reste à payer, c'est encaisser. Cette route acceptait la
+     * correction sans jamais créer de mouvement : l'argent disparaissait des
+     * livres, et la trésorerie restait fausse sans que rien ne l'indique.
+     *
+     * Le mouvement va dans « Non attribué » : cette route ne sait pas dans
+     * quelle poche l'argent est entré. C'est l'écran d'encaissement qui pose
+     * la question ; ici on garantit au moins que la somme est comptée.
+     */
+    if (hasRemainingDue) {
+      const before = new Prisma.Decimal(existing.remainingDue);
+      const after = new Prisma.Decimal(remainingDueN);
+      const collected = before.minus(after);
+      if (collected.greaterThan(0.005)) {
+        await recordMovement({
+          pocketId: null,
+          amount: collected.toFixed(2),
+          kind: "BALANCE_IN",
+          label: `Solde vente${existing.customerName ? ` · ${existing.customerName}` : ""}`,
+          refType: "Sale",
+          refId: id,
+        });
+      }
+    }
+
     await writeAudit(ctx.sub, "sale.update", "Sale", id, {
       linesPatched: hasItems ? (body.items?.length ?? 0) : 0,
+      ...(hasRemainingDue ? { remainingDue: remainingDueN.toFixed(2) } : {}),
     });
 
     return NextResponse.json({ sale: refreshed });
