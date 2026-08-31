@@ -61,21 +61,23 @@ export function CustomerCombobox({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Champ vide : l'API renvoie les clients les plus actifs. Un sélecteur muet
+  // tant qu'on n'a pas tapé oblige à connaître le nom exact et pousse à
+  // recréer une fiche existante.
   useEffect(() => {
     if (!open) return;
-    if (q.trim().length === 0) {
-      setRows([]);
-      setStatus("idle");
-      return;
-    }
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setStatus("loading");
-    debounceRef.current = setTimeout(() => {
-      void fetchSearch(q.trim()).then((found) => {
-        setRows(found);
-        setStatus("idle");
-      });
-    }, DEBOUNCE_MS);
+    const term = q.trim();
+    debounceRef.current = setTimeout(
+      () => {
+        void fetchSearch(term).then((found) => {
+          setRows(found);
+          setStatus("idle");
+        });
+      },
+      term.length === 0 ? 0 : DEBOUNCE_MS,
+    );
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
@@ -90,12 +92,15 @@ export function CustomerCombobox({
   const exactMatch = rows.find((r) => r.fullName.toLowerCase() === q.trim().toLowerCase());
   const canCreateInline = allowInlineCreate && q.trim().length >= 2 && !exactMatch;
 
-  const select = (c: SelectedCustomer) => {
-    onChange(c);
-    setQ("");
-    setRows([]);
-    setOpen(false);
-  };
+  const select = useCallback(
+    (c: SelectedCustomer) => {
+      onChange(c);
+      setQ("");
+      setRows([]);
+      setOpen(false);
+    },
+    [onChange],
+  );
 
   const createInline = useCallback(async () => {
     const name = q.trim();
@@ -121,12 +126,15 @@ export function CustomerCombobox({
     } finally {
       setStatus("idle");
     }
-  }, [q]);
+  }, [q, select]);
 
+  // Tant que des fiches correspondent, créer n'est plus l'action attendue :
+  // le bouton passe en secondaire pour ne pas éclipser les résultats.
+  const hasMatches = rows.length > 0;
   const footer = canCreateInline ? (
     <Button
       type="button"
-      variant="primary"
+      variant={hasMatches ? "secondary" : "primary"}
       size="lg"
       fullWidth
       leadingIcon={<Plus size={16} />}
@@ -207,21 +215,25 @@ export function CustomerCombobox({
             </div>
           </div>
 
-          <ul className="space-y-1.5 pt-3" role="listbox">
-            {status === "loading" ? (
+          {hasMatches ? (
+            <p className="px-1 pt-3 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--admin-text-muted)]">
+              {q.trim().length === 0
+                ? "Clients récents"
+                : `${rows.length} client${rows.length > 1 ? "s" : ""}`}
+            </p>
+          ) : null}
+
+          <ul className="space-y-1.5 pt-2" role="listbox">
+            {status === "loading" && rows.length === 0 ? (
               <li className="px-2 py-3 text-center text-[13px] text-[var(--admin-text-subtle)]">
                 Recherche…
               </li>
             ) : null}
-            {status === "idle" && q.trim().length === 0 ? (
+            {status === "idle" && rows.length === 0 ? (
               <li className="px-2 py-6 text-center text-[13px] text-[var(--admin-text-subtle)]">
-                Tape un nom ou un téléphone pour rechercher.
-              </li>
-            ) : null}
-            {status === "idle" && rows.length === 0 && q.trim().length > 0 ? (
-              <li className="px-2 py-6 text-center text-[13px] text-[var(--admin-text-subtle)]">
-                Aucun client trouvé.
-                {canCreateInline ? " Tape « Créer » ci-dessous." : ""}
+                {q.trim().length === 0
+                  ? "Aucun client enregistré pour l'instant."
+                  : `Aucun client ne correspond à « ${q.trim()} ».`}
               </li>
             ) : null}
             {rows.map((r) => (
