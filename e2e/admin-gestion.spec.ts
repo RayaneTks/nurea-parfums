@@ -14,8 +14,8 @@ test.describe("Admin — smoke (sans session)", () => {
 
   test("la page de connexion s'affiche avec le bon design Nuréa", async ({ page }) => {
     await page.goto("/admin/login");
-    await expect(page.getByRole("heading", { level: 1, name: "Bienvenue" })).toBeVisible();
-    await expect(page.getByText(/gérer la boutique/i)).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Nuréa Gestion" })).toBeVisible();
+    await expect(page.getByText(/Connecte-toi pour continuer/i)).toBeVisible();
     await expect(page.getByLabel("Identifiant")).toBeVisible();
     await expect(page.getByLabel("Mot de passe")).toBeVisible();
     await expect(page.getByRole("button", { name: /Se connecter/i })).toBeVisible();
@@ -133,14 +133,36 @@ test.describe("Admin Gestion — UI (mocks API)", () => {
     });
   }
 
-  test("Compta : affiche les StatCards + empty state", async ({ page }) => {
+  /*
+   * Ces tests décrivent la STRUCTURE des écrans, jamais leur contenu.
+   * Les pages de gestion sont des composants serveur qui interrogent Prisma :
+   * mocker les routes d'API ne change rien à ce qu'elles affichent. Les
+   * anciennes assertions sur des états vides (« Aucune vente sur cette
+   * période ») ne pouvaient donc plus passer dès que la base contenait des
+   * données. Ce qui se vérifie ici tient quel que soit le volume.
+   */
+
+  test("Compta : titre, chiffres clés et bascule de vue", async ({ page }) => {
     await setupAdminSession(page);
     await page.goto("/admin/compta");
 
     await expect(page.getByRole("heading", { name: "Compta" })).toBeVisible();
     await expect(page.getByText("Encaissé", { exact: true })).toBeVisible();
     await expect(page.getByText("Marge nette", { exact: true })).toBeVisible();
-    await expect(page.getByText("Aucune vente sur cette période")).toBeVisible();
+    await expect(page.getByRole("radio", { name: "Ventes" })).toBeVisible();
+    await expect(page.getByRole("radio", { name: "Trésorerie" })).toBeVisible();
+  });
+
+  test("Compta : la vue Trésorerie s'inscrit dans l'URL", async ({ page }) => {
+    await setupAdminSession(page);
+    await page.goto("/admin/compta");
+
+    // La vue active doit survivre au partage d'un lien et au retour arrière.
+    await page.getByRole("radio", { name: "Trésorerie" }).click();
+    await expect(page).toHaveURL(/vue=tresorerie/);
+
+    await page.getByRole("radio", { name: "Ventes" }).click();
+    await expect(page).not.toHaveURL(/vue=tresorerie/);
   });
 
   test("TabBar : cinq onglets, aucun menu « Plus »", async ({ page }) => {
@@ -156,52 +178,24 @@ test.describe("Admin Gestion — UI (mocks API)", () => {
     await expect(nav.getByRole("link")).toHaveCount(5);
   });
 
-  test("Commandes : empty state + FAB création", async ({ page }) => {
+  test("Commandes : titre, filtres et création accessible", async ({ page }) => {
     await setupAdminSession(page);
     await page.goto("/admin/ordres");
 
     await expect(page.getByRole("heading", { name: "Commandes" })).toBeVisible();
-    await expect(page.getByText(/Aucune commande/)).toBeVisible();
-    await expect(page.getByRole("button", { name: /Nouvelle commande/i }).first()).toBeVisible();
+    for (const filter of ["Tout", "En attente", "À traiter", "Livrées"]) {
+      await expect(page.getByRole("radio", { name: filter })).toBeVisible();
+    }
+    await expect(page.getByRole("link", { name: /Nouvelle commande/i })).toBeVisible();
   });
 
-  test("Vendre : saisie rapide avec totaux live", async ({ page }) => {
+  test("Vendre : client et choix du parfum atteignables", async ({ page }) => {
     await setupAdminSession(page);
     await page.goto("/admin/vendre");
 
     await expect(page.getByRole("heading", { name: "Vendre" })).toBeVisible();
-    await expect(page.getByLabel(/Client/)).toBeVisible();
-    await expect(page.getByText(/Aucune ligne/)).toBeVisible();
-    await expect(page.getByRole("button", { name: /Ajouter un parfum/i }).first()).toBeVisible();
-  });
-
-  test("Filtres période Compta changent l'URL de stats fetched", async ({ page }) => {
-    await setupAdminSession(page);
-
-    const urls: string[] = [];
-    await page.route("**/api/admin/sales/stats*", async (route) => {
-      urls.push(route.request().url());
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          period: "month",
-          count: 0,
-          totalRevenue: "0.00",
-          totalCost: "0.00",
-          totalMargin: "0.00",
-          averageSale: "0.00",
-        }),
-      });
-    });
-
-    await page.goto("/admin/compta");
-    await expect.poll(() => urls.some((u) => u.includes("period=month"))).toBeTruthy();
-
-    await page.getByRole("radio", { name: "Semaine" }).click();
-    await expect.poll(() => urls.some((u) => u.includes("period=week"))).toBeTruthy();
-
-    await page.getByRole("radio", { name: "Tout" }).click();
-    await expect.poll(() => urls.some((u) => u.includes("period=all"))).toBeTruthy();
+    // Le client passe par une sheet : c'est un bouton, pas un champ.
+    await expect(page.getByRole("button", { name: /Rechercher ou créer/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /parfum/i }).first()).toBeVisible();
   });
 });
