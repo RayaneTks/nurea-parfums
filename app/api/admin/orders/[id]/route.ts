@@ -9,6 +9,7 @@ import { purgeOrderIfEphemeral } from "@/lib/gestion/orderPurge";
 import { isValidVolumeMl, parseOptionalMoneyToZero } from "@/lib/gestion/orderLineValidation";
 import { canTransition } from "@/domain/order-status";
 import Decimal from "decimal.js-light";
+import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -376,6 +377,7 @@ export async function PATCH(
       fields: Object.keys(data),
     });
 
+    revalidateAdminData(["commandes", "lots"], { orderId: updated.id });
     return NextResponse.json({ order: serializeOrder(updated) });
   } catch (error) {
     console.error("[api/admin/orders/[id]][PATCH]", error);
@@ -405,6 +407,7 @@ export async function DELETE(
 
     await prisma.order.delete({ where: { id } });
     await writeAudit(ctx.sub, "order.delete", "Order", id);
+    revalidateAdminData(["commandes", "lots"]);
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[api/admin/orders/[id]][DELETE]", error);

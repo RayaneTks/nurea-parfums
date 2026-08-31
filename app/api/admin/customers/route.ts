@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { listCustomers } from "@/server/customers/queries";
 import { createCustomerAction } from "@/server/customers/actions";
+import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -36,5 +37,6 @@ export async function POST(request: Request) {
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: 400 });
   }
+  revalidateAdminData(["clients"]);
   return NextResponse.json({ customer: result.data }, { status: 201 });
 }

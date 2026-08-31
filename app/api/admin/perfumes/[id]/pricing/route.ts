@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { listPricingsForPerfume, lookupPricing } from "@/server/pricing/queries";
 import { upsertPerfumePricingAction, deletePerfumePricingAction } from "@/server/pricing/actions";
+import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -72,5 +73,6 @@ export async function DELETE(request: Request, { params }: Params) {
 
   const result = await deletePerfumePricingAction(perfumeId, volumeMl);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+  revalidateAdminCatalogue();
   return NextResponse.json({ ok: true });
 }

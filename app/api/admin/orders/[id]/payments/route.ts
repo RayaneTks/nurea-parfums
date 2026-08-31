@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { listPaymentsForOrder } from "@/server/orders/payments";
 import { recordPaymentAction } from "@/server/orders/paymentActions";
+import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -37,5 +38,6 @@ export async function POST(request: Request, { params }: Params) {
 
   const result = await recordPaymentAction(merged);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+  revalidateAdminData(["commandes"], { orderId: id });
   return NextResponse.json({ payment: result.data }, { status: 201 });
 }

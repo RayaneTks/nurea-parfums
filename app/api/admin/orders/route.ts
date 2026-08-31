@@ -7,6 +7,7 @@ import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { serializeOrder } from "@/lib/gestion/orderJson";
 import { purgeEphemeralOrders } from "@/lib/gestion/orderPurge";
 import { isValidVolumeMl, parseOptionalMoneyToZero } from "@/lib/gestion/orderLineValidation";
+import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -266,6 +267,7 @@ export async function POST(request: Request) {
       depositPaid,
     });
 
+    revalidateAdminData(["commandes", "clients"], { orderId: order.id });
     return NextResponse.json({ order: serializeOrder(order) });
   } catch (error) {
     console.error("[api/admin/orders][POST]", error);
