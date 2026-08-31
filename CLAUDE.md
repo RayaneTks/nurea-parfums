@@ -1,6 +1,6 @@
 # CLAUDE.md — Nuréa Parfums
 
-Fichier de contexte projet pour Gemini CLI.
+Fichier de contexte projet chargé automatiquement par Claude Code.
 
 ## Commandes Utiles
 - **Build** : `npm run build`
