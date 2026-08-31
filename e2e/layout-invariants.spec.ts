@@ -35,6 +35,7 @@ const STATIC_ROUTES = [
   "/admin/vendre",
   "/admin/compta",
   "/admin/compta?vue=tresorerie",
+  "/admin/encaisser",
   "/admin/catalogue",
   "/admin/catalogue?tab=brands",
   "/admin/catalogue?tab=featured",

@@ -58,7 +58,10 @@ export const ADMIN_TABS: readonly AdminTab[] = [
     href: "/admin/compta",
     label: "Compta",
     icon: TrendingUp,
-    match: (p) => p.startsWith("/admin/compta") || p.startsWith("/admin/lots"),
+    match: (p) =>
+      p.startsWith("/admin/compta") ||
+      p.startsWith("/admin/lots") ||
+      p.startsWith("/admin/encaisser"),
   },
   {
     href: "/admin/catalogue",
@@ -98,6 +101,7 @@ const PARENTS: readonly ParentRule[] = [
   { pattern: "/admin/clients", href: "/admin", label: "Accueil" },
   { pattern: "/admin/lots/*", href: "/admin/lots", label: "Lots" },
   { pattern: "/admin/lots", href: "/admin/compta", label: "Compta" },
+  { pattern: "/admin/encaisser", href: "/admin", label: "Accueil" },
   { pattern: "/admin/stats/*", href: "/admin", label: "Accueil" },
   { pattern: "/admin/reglages/*", href: "/admin", label: "Accueil" },
 ];
