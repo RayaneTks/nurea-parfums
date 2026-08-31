@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import "../globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { RootJsonLd } from "@/components/seo/JsonLd";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 import {
   DEFAULT_DESCRIPTION,
   SEO_KEYWORDS,
@@ -10,26 +12,14 @@ import {
   SITE_TAGLINE,
   SITE_URL,
 } from "@/lib/site";
-import { GFS_Didot, Inter } from "next/font/google";
-
-const serif = GFS_Didot({
-  weight: "400",
-  subsets: ["greek", "latin"],
-  variable: "--font-serif",
-  display: "swap",
-});
-
-const sans = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
+import { THEME_COLOR } from "@/design/brand";
+import { brandFontClassName } from "@/design/fonts";
 
 /** OG dynamique 1200×630 — voir `app/(shop)/opengraph-image.tsx` */
 const ogImage = "/opengraph-image";
 
 export const viewport: Viewport = {
-  themeColor: "#0A0508",
+  themeColor: THEME_COLOR,
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -100,20 +90,32 @@ export const metadata: Metadata = {
   other: { "mobile-web-app-capable": "yes" },
 };
 
+/**
+ * Coque commune à toutes les pages de la vitrine.
+ *
+ * La barre de navigation et le pied de page vivent ici, pas dans chaque page :
+ * ils sont présents partout, et les y recopier avait fini par produire quatre
+ * enveloppes légèrement différentes. Les pages ne rendent plus que leur contenu.
+ */
 export default function ShopLayout({ children }: { children: ReactNode }) {
   return (
     <div
-      className={`${serif.variable} ${sans.variable} font-sans antialiased transition-colors duration-300 ease-out`}
+      className={`${brandFontClassName} flex min-h-svh flex-col`}
     >
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-[var(--nurea-accent)] focus:text-white focus:px-4 focus:py-2 focus:text-sm"
+        className="nurea-label sr-only focus:not-sr-only focus:fixed focus:left-6 focus:top-6 focus:z-[100] focus:bg-nurea-accent focus:px-6 focus:py-4 focus:text-nurea-on-accent"
       >
         Aller au contenu principal
       </a>
       <RootJsonLd />
-      <div className="nurea-viewport-top-shield" aria-hidden />
-      <ThemeProvider>{children}</ThemeProvider>
+      <ThemeProvider>
+        <Navbar />
+        <main id="main-content" className="flex-1">
+          {children}
+        </main>
+        <Footer />
+      </ThemeProvider>
     </div>
   );
 }

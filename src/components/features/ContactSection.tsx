@@ -2,12 +2,13 @@
 
 import type { FC, FormEvent } from "react";
 import { useState } from "react";
-import { ArrowRight, Send, Sparkles } from "lucide-react";
-import { WhatsAppIcon, SnapchatIcon } from "@/components/ui/Icons";
 import { CONTACT } from "@/lib/data";
 import { buildContactMailto } from "@/lib/contactMailto";
 import { submitContactForm } from "@/actions/contact";
+import { Button, buttonClass } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { SnapchatIcon, WhatsAppIcon } from "@/components/ui/Icons";
 
 interface ContactFormState {
   name: string;
@@ -16,11 +17,18 @@ interface ContactFormState {
   message: string;
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+type FieldErrors = Partial<Record<keyof ContactFormState, string>>;
 
-function buildInitialState(parfum: string, marque: string): ContactFormState {
-  const hasContext = parfum || marque;
-  if (!hasContext) {
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+
+interface ContactSectionProps {
+  /** Pré-remplissage venu d'une fiche produit. */
+  parfum?: string;
+  marque?: string;
+}
+
+function initialState(parfum: string, marque: string): ContactFormState {
+  if (!parfum && !marque) {
     return { name: "", email: "", subject: "", message: "" };
   }
   const label = [marque, parfum].filter(Boolean).join(" — ");
@@ -32,348 +40,225 @@ function buildInitialState(parfum: string, marque: string): ContactFormState {
   };
 }
 
-interface ContactSectionProps {
-  parfum?: string;
-  marque?: string;
+function validate(state: ContactFormState): FieldErrors {
+  const errors: FieldErrors = {};
+  if (!state.name.trim()) errors.name = "Indiquez votre nom.";
+  if (!state.email.trim()) errors.email = "Indiquez votre e-mail.";
+  else if (!EMAIL_PATTERN.test(state.email.trim())) {
+    errors.email = "Format d'e-mail invalide.";
+  }
+  if (!state.subject.trim()) errors.subject = "Indiquez un sujet.";
+  if (!state.message.trim()) errors.message = "Écrivez votre message.";
+  return errors;
 }
 
-export const ContactSection: FC<ContactSectionProps> = ({ parfum = "", marque = "" }) => {
-  const hasContext = Boolean(parfum || marque);
+/**
+ * Page de contact — canaux directs à gauche, formulaire à droite.
+ *
+ * Charte § 05 : un seul aplat plein par écran. Il revient à Snapchat, canal
+ * principal ; l'envoi du formulaire reste au filet, ce qui reflète aussi le
+ * délai de réponse réel des deux voies.
+ */
+export const ContactSection: FC<ContactSectionProps> = ({
+  parfum = "",
+  marque = "",
+}) => {
   const contextLabel = [marque, parfum].filter(Boolean).join(" — ");
 
-  const [formState, setFormState] = useState<ContactFormState>(() =>
-    buildInitialState(parfum, marque)
+  const [form, setForm] = useState<ContactFormState>(() =>
+    initialState(parfum, marque)
   );
-  const [fieldErrors, setFieldErrors] = useState<
-    Partial<Record<keyof ContactFormState, string>>
-  >({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submitChannel, setSubmitChannel] = useState<"resend" | "mailto" | null>(null);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [sentVia, setSentVia] = useState<"resend" | "mailto" | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const handleContactSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const patch = (key: keyof ContactFormState) => (value: string) =>
+    setForm((current) => ({ ...current, [key]: value }));
+
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setServerError(null);
 
-    const nextErrors: Partial<Record<keyof ContactFormState, string>> = {};
-    if (!formState.name.trim()) nextErrors.name = "Indiquez votre nom.";
-    if (!formState.email.trim()) nextErrors.email = "Indiquez votre e-mail.";
-    else if (!EMAIL_RE.test(formState.email.trim())) {
-      nextErrors.email = "Format d'e-mail invalide.";
-    }
-    if (!formState.subject.trim()) nextErrors.subject = "Indiquez un sujet.";
-    if (!formState.message.trim()) {
-      nextErrors.message = "Écrivez votre message.";
-    }
-
-    setFieldErrors(nextErrors);
+    const nextErrors = validate(form);
+    setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    setIsSubmitting(true);
-    const fd = new FormData();
-    fd.set("name", formState.name.trim());
-    fd.set("email", formState.email.trim());
-    fd.set("subject", formState.subject.trim());
-    fd.set("message", formState.message.trim());
+    setSubmitting(true);
+    const payload = new FormData();
+    payload.set("name", form.name.trim());
+    payload.set("email", form.email.trim());
+    payload.set("subject", form.subject.trim());
+    payload.set("message", form.message.trim());
 
     try {
-      const result = await submitContactForm(fd);
+      const result = await submitContactForm(payload);
       if (!result.ok) {
         setServerError(result.error);
         return;
       }
 
+      /* Sans service d'envoi configuré, on repasse la main à la messagerie
+         du visiteur plutôt que de perdre le message. */
       if (result.via === "mailto") {
-        const mailto = buildContactMailto({
-          name: formState.name.trim(),
-          email: formState.email.trim(),
-          subject: formState.subject.trim(),
-          message: formState.message.trim(),
+        window.location.href = buildContactMailto({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          subject: form.subject.trim(),
+          message: form.message.trim(),
         });
-        window.location.href = mailto;
-        setSubmitChannel("mailto");
-        setFormState(buildInitialState(parfum, marque));
-        setFieldErrors({});
-        setIsSubmitted(true);
-        return;
       }
 
-      setSubmitChannel("resend");
-      setFormState(buildInitialState(parfum, marque));
-      setFieldErrors({});
-      setIsSubmitted(true);
+      setSentVia(result.via === "mailto" ? "mailto" : "resend");
+      setForm(initialState(parfum, marque));
+      setErrors({});
     } catch {
       setServerError(
-        "Envoi impossible pour le moment. Réessayez ou repassez par la page Contact plus tard."
+        "Envoi impossible pour le moment. Réessayez, ou écrivez-nous directement."
       );
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <main id="main-content" className="relative w-full overflow-x-clip">
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[320px] w-[520px] -translate-x-1/2 bg-[var(--nurea-accent)] opacity-[0.03] blur-[110px]" />
+    <section className="nurea-page pb-18 pt-32 md:pt-40">
+      <ScrollReveal>
+        <p className="nurea-label">Contact</p>
+        <h1 className="nurea-title mt-4 text-nurea-text">Passer commande</h1>
+        <p className="nurea-body nurea-prose mt-6">
+          Une question sur un parfum, ou une commande à passer ? Nous répondons
+          vite. Basés à Marseille, nous expédions dans toute la France.
+        </p>
+      </ScrollReveal>
 
-      <div className="mx-auto max-w-[1200px] px-4 pb-16 pt-24 md:px-10 md:pb-24 md:pt-36">
-        <ScrollReveal className="mx-auto mb-10 max-w-2xl text-center md:mb-14">
-          <span className="mb-3 block text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--nurea-accent)]">
-            Contact
-          </span>
-          <h1 className="mb-4 font-serif text-[clamp(28px,7vw,48px)] leading-[1.1] text-[var(--nurea-text)]">
-            Passer Commande
-          </h1>
-          <p className="mx-auto max-w-lg text-[14px] leading-relaxed text-[var(--nurea-text-muted)]">
-            Une question sur un parfum ou une commande à passer ? Nous sommes disponibles pour vous conseiller. Basés à Marseille, nous expédions dans toute la France.
-          </p>
-        </ScrollReveal>
+      <div className="mt-12 grid gap-px border border-nurea-border bg-nurea-border md:mt-18 md:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+        <section className="bg-nurea-bg p-6 md:p-10">
+          <h2 className="nurea-label">Réponse rapide</h2>
+          <p className="nurea-caption mt-2">Snapchat est notre canal principal.</p>
 
-        <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-[1fr_1.2fr] md:gap-10">
-          <ScrollReveal direction="left" className="space-y-4">
-            <h2 className="text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--nurea-text-muted)]">
-              Réponse Rapide
-            </h2>
-
+          <div className="mt-6 flex flex-col items-start gap-3">
             <a
               href={CONTACT.snapchat}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex min-h-[72px] items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-4 py-4 transition-colors hover:border-[var(--nurea-snapchat)] hover:bg-[var(--nurea-surface-hover)]"
+              className={buttonClass("solid", "w-full")}
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors group-hover:border-[var(--nurea-snapchat)]">
-                <SnapchatIcon className="h-6 w-6 text-[var(--nurea-text-muted)] transition-colors group-hover:text-[var(--nurea-snapchat)]" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
-                  Canal Principal
-                </p>
-                <p className="font-serif text-[18px] text-[var(--nurea-text)]">Snapchat</p>
-              </div>
-              <ArrowRight size={16} className="text-[var(--nurea-text-muted)] transition-transform group-hover:-rotate-45" />
+              <SnapchatIcon className="h-4 w-4 shrink-0" aria-hidden />
+              Snapchat
             </a>
 
             <a
               href={CONTACT.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex min-h-[72px] items-center gap-4 border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] px-4 py-4 transition-colors hover:border-[var(--nurea-accent)] hover:bg-[var(--nurea-surface-hover)]"
+              className={buttonClass("outline", "w-full")}
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--nurea-border-hover)] transition-colors group-hover:border-[var(--nurea-accent)]">
-                <WhatsAppIcon className="h-6 w-6 text-[var(--nurea-text-muted)] transition-colors group-hover:text-[var(--nurea-accent)]" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
-                  Disponibilité Immédiate
-                </p>
-                <p className="font-serif text-[18px] text-[var(--nurea-text)]">WhatsApp</p>
-              </div>
-              <ArrowRight size={16} className="text-[var(--nurea-accent)] transition-transform group-hover:-rotate-45" />
+              <WhatsAppIcon className="h-4 w-4 shrink-0" aria-hidden />
+              WhatsApp
             </a>
+          </div>
 
-            <div className="border border-[var(--nurea-border)] bg-[var(--nurea-surface)] px-4 py-4">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--nurea-text-muted)]">
-                Courrier Électronique
-              </p>
+          <dl className="mt-10 border-t border-nurea-border pt-6">
+            <dt className="nurea-caption">Courrier électronique</dt>
+            <dd className="mt-1">
               <a
                 href={`mailto:${CONTACT.email}`}
-                className="mt-1 block text-[15px] text-[var(--nurea-text)] hover:text-[var(--nurea-accent)]"
+                className="break-words text-nurea-text transition-colors duration-nurea ease-out hover:text-nurea-accent"
               >
                 {CONTACT.email}
               </a>
-            </div>
-          </ScrollReveal>
+            </dd>
 
-          <ScrollReveal direction="right" delay={100}>
-            <div className="border border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-5 md:p-7">
-              <h3 className="text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--nurea-text-muted)]">
-                Formulaire
-              </h3>
-              <p className="mb-5 mt-1 font-serif text-[22px] text-[var(--nurea-text)]">
-                Nous Contacter
+            <dt className="nurea-caption mt-6">Zone</dt>
+            <dd className="mt-1 text-nurea-muted">{CONTACT.location}</dd>
+          </dl>
+        </section>
+
+        <section className="bg-nurea-bg p-6 md:p-10">
+          <h2 className="nurea-label">Formulaire</h2>
+
+          {contextLabel && !sentVia ? (
+            <p className="mt-6 border border-nurea-border p-4">
+              <span className="nurea-caption block">Parfum sélectionné</span>
+              <span className="nurea-name mt-1 block text-nurea-text">
+                {contextLabel}
+              </span>
+            </p>
+          ) : null}
+
+          {sentVia ? (
+            <div className="mt-6" role="status">
+              <p className="nurea-name text-nurea-text">Merci pour votre message</p>
+              <p className="nurea-body mt-3">
+                {sentVia === "resend"
+                  ? "Nous vous répondons dans les plus brefs délais."
+                  : "Votre messagerie vient de s'ouvrir. Si ce n'est pas le cas, écrivez-nous directement à l'adresse ci-contre."}
               </p>
-
-              {/* Parfum pré-sélectionné — visible uniquement si URL params présents */}
-              {hasContext && !isSubmitted && (
-                <div className="mb-5 flex items-center gap-3 border border-[var(--nurea-border-hover)] bg-[var(--nurea-accent-subtle)] px-4 py-3">
-                  <Sparkles
-                    size={14}
-                    className="shrink-0 text-[var(--nurea-accent)]"
-                    aria-hidden="true"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[9px] uppercase tracking-[0.2em] text-[var(--nurea-accent)]">
-                      Parfum sélectionné
-                    </p>
-                    <p className="truncate font-serif text-[15px] text-[var(--nurea-text)]">
-                      {contextLabel}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {isSubmitted ? (
-                <div className="animate-fade-in-up py-10 text-center">
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--nurea-accent)]">
-                    {submitChannel === "resend" ? "Message transmis" : "Messagerie ouverte"}
-                  </p>
-                  <p className="mt-2 font-serif text-[22px] text-[var(--nurea-text)]">
-                    Merci pour votre message
-                  </p>
-                  <p className="mx-auto mt-3 max-w-sm text-[13px] leading-relaxed text-[var(--nurea-text-muted)]">
-                    {submitChannel === "resend"
-                      ? "Nous vous répondrons dans les plus brefs délais."
-                      : "Si votre application ne s'ouvre pas, n'hésitez pas à nous écrire directement."}
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={handleContactSubmit} className="space-y-4" noValidate>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <FormField
-                      id="name"
-                      name="name"
-                      label="Votre Nom"
-                      type="text"
-                      value={formState.name}
-                      error={fieldErrors.name}
-                      onChange={(v) => setFormState({ ...formState, name: v })}
-                    />
-                    <FormField
-                      id="email"
-                      name="email"
-                      label="Votre E-mail"
-                      type="email"
-                      value={formState.email}
-                      error={fieldErrors.email}
-                      onChange={(v) => setFormState({ ...formState, email: v })}
-                    />
-                  </div>
-
-                  <FormField
-                    id="subject"
-                    name="subject"
-                    label="Sujet"
-                    type="text"
-                    value={formState.subject}
-                    error={fieldErrors.subject}
-                    onChange={(v) => setFormState({ ...formState, subject: v })}
-                  />
-
-                  <div>
-                    <label
-                      htmlFor="message"
-                      className="mb-1.5 block text-[12px] font-medium text-[var(--nurea-text-muted)]"
-                    >
-                      Votre Message
-                    </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      rows={5}
-                      value={formState.message}
-                      onChange={(e) =>
-                        setFormState({ ...formState, message: e.target.value })
-                      }
-                      aria-invalid={Boolean(fieldErrors.message)}
-                      aria-describedby={fieldErrors.message ? "message-error" : undefined}
-                      className="block min-h-[128px] w-full resize-y border border-[var(--nurea-border)] bg-transparent px-3 py-3 text-[14px] text-[var(--nurea-text)] outline-none transition-colors focus:border-[var(--nurea-accent)]"
-                    />
-                    {fieldErrors.message ? (
-                      <p
-                        id="message-error"
-                        className="mt-1 text-[12px] text-[var(--nurea-accent)]"
-                        role="alert"
-                      >
-                        {fieldErrors.message}
-                      </p>
-                    ) : null}
-                  </div>
-
-                  {!hasContext && (
-                    <p className="text-[12px] leading-relaxed text-[var(--nurea-text-muted)] italic">
-                      Précisez la marque et le nom du parfum pour une réponse plus précise.
-                    </p>
-                  )}
-
-                  {serverError ? (
-                    <p className="text-[12px] text-[var(--nurea-accent)]" role="alert">
-                      {serverError}
-                    </p>
-                  ) : null}
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="btn-nurea btn-accent mt-2 w-full justify-center disabled:opacity-50"
-                  >
-                    {isSubmitting ? (
-                      <span className="flex items-center gap-2">
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                        Transmission…
-                      </span>
-                    ) : (
-                      <>
-                        Envoyer le message
-                        <Send size={13} className="text-white" />
-                      </>
-                    )}
-                  </button>
-                </form>
-              )}
             </div>
-          </ScrollReveal>
-        </div>
+          ) : (
+            <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-5" noValidate>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field
+                  id="name"
+                  name="name"
+                  label="Votre nom"
+                  autoComplete="name"
+                  value={form.name}
+                  error={errors.name}
+                  onChange={patch("name")}
+                />
+                <Field
+                  id="email"
+                  name="email"
+                  type="email"
+                  label="Votre e-mail"
+                  autoComplete="email"
+                  value={form.email}
+                  error={errors.email}
+                  onChange={patch("email")}
+                />
+              </div>
+
+              <Field
+                id="subject"
+                name="subject"
+                label="Sujet"
+                value={form.subject}
+                error={errors.subject}
+                onChange={patch("subject")}
+              />
+
+              <Field
+                id="message"
+                name="message"
+                label="Votre message"
+                multiline
+                value={form.message}
+                error={errors.message}
+                onChange={patch("message")}
+              />
+
+              {!contextLabel && (
+                <p className="nurea-caption">
+                  Précisez la marque et le nom du parfum pour une réponse plus
+                  précise.
+                </p>
+              )}
+
+              {serverError ? (
+                <p role="alert" className="nurea-caption text-nurea-alert">
+                  {serverError}
+                </p>
+              ) : null}
+
+              <Button type="submit" variant="outline" disabled={submitting}>
+                {submitting ? "Transmission…" : "Envoyer le message"}
+              </Button>
+            </form>
+          )}
+        </section>
       </div>
-    </main>
-  );
-};
-
-const FormField = ({
-  id,
-  name,
-  label,
-  type,
-  value,
-  error,
-  onChange,
-}: {
-  id: string;
-  name: string;
-  label: string;
-  type: string;
-  value: string;
-  error?: string;
-  onChange: (v: string) => void;
-}) => {
-  const errId = `${id}-error`;
-
-  return (
-    <div>
-      <label
-        htmlFor={id}
-        className="mb-1.5 block text-[12px] font-medium text-[var(--nurea-text-muted)]"
-      >
-        {label}
-      </label>
-      <input
-        type={type}
-        id={id}
-        name={name}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? errId : undefined}
-        className="block min-h-[48px] w-full border border-[var(--nurea-border)] bg-transparent px-3 py-2 text-[14px] text-[var(--nurea-text)] outline-none transition-colors focus:border-[var(--nurea-accent)]"
-      />
-      {error ? (
-        <p
-          id={errId}
-          className="mt-1 text-[12px] text-[var(--nurea-accent)]"
-          role="alert"
-        >
-          {error}
-        </p>
-      ) : null}
-    </div>
+    </section>
   );
 };

@@ -7,7 +7,7 @@ import { SITE_URL } from "@/lib/site";
  * Root layout minimal — volontairement SANS CSS ni police.
  *
  * Les deux registres du produit ont des feuilles de style disjointes :
- *   - vitrine  → `app/(shop)/layout.tsx`  (globals.css, GFS Didot + Inter, thème sombre)
+ *   - vitrine  → `app/(shop)/layout.tsx`  (globals.css, Newsreader + Instrument Sans)
  *   - gestion  → `app/admin/layout.tsx`   (globals.admin.css, -apple-system, thème clair)
  *
  * Garder l'import ici embarquerait la CSS vitrine et deux polices Google dans

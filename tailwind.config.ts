@@ -17,32 +17,26 @@ export default {
     },
     extend: {
       colors: {
+        /**
+         * Vitrine — charte graphique v3.
+         * Valeurs dans `app/globals.css`, documentées dans `src/design/brand.ts`.
+         */
         nurea: {
-          bg: "var(--nurea-bg)",
-          surface: "var(--nurea-surface)",
-          "surface-hover": "var(--nurea-surface-hover)",
-          accent: "var(--nurea-accent)",
-          "accent-hover": "var(--nurea-accent-hover)",
+          bg: "rgb(var(--nurea-bg-rgb) / <alpha-value>)",
+          surface: "rgb(var(--nurea-surface-rgb) / <alpha-value>)",
+          "surface-hover": "rgb(var(--nurea-surface-hover-rgb) / <alpha-value>)",
+          text: "rgb(var(--nurea-text-rgb) / <alpha-value>)",
+          muted: "rgb(var(--nurea-text-muted-rgb) / <alpha-value>)",
+          subtle: "rgb(var(--nurea-text-subtle-rgb) / <alpha-value>)",
+          disabled: "rgb(var(--nurea-text-disabled-rgb) / <alpha-value>)",
+          accent: "rgb(var(--nurea-accent-rgb) / <alpha-value>)",
+          "accent-hover": "rgb(var(--nurea-accent-hover-rgb) / <alpha-value>)",
+          "on-accent": "rgb(var(--nurea-on-accent-rgb) / <alpha-value>)",
+          alert: "rgb(var(--nurea-alert-rgb) / <alpha-value>)",
+          /* Déjà translucides : pas de modificateur d'opacité. */
           "accent-subtle": "var(--nurea-accent-subtle)",
-          text: "var(--nurea-text)",
-          muted: "var(--nurea-text-muted)",
-          subtle: "var(--nurea-text-subtle)",
-          cuivre: "var(--nurea-cuivre)",
           border: "var(--nurea-border)",
-          "border-hover": "var(--nurea-border-hover)",
-          glow: "var(--nurea-glow)",
-          success: "var(--nurea-success)",
-          "success-subtle": "var(--nurea-success-subtle)",
-          "success-border": "var(--nurea-success-border)",
-          warning: "var(--nurea-warning)",
-          "warning-subtle": "var(--nurea-warning-subtle)",
-          "warning-border": "var(--nurea-warning-border)",
-          danger: "var(--nurea-danger)",
-          "danger-subtle": "var(--nurea-danger-subtle)",
-          "danger-border": "var(--nurea-danger-border)",
-          info: "var(--nurea-info)",
-          "info-subtle": "var(--nurea-info-subtle)",
-          "info-border": "var(--nurea-info-border)",
+          "border-strong": "var(--nurea-border-strong)",
         },
         /* Admin — app nuréa-admin (Vite) */
         "nurea-bordeaux": "#7b0b1d",
@@ -97,10 +91,13 @@ export default {
       transitionTimingFunction: {
         "out-expo": "cubic-bezier(0.16, 1, 0.3, 1)",
       },
-      letterSpacing: {
-        "nurea-tight": "var(--nurea-tracking-tight)",
-        "nurea-label": "var(--nurea-tracking-label)",
-        "nurea-wide": "var(--nurea-tracking-wide)",
+      spacing: {
+        /** Charte § 04 — marge de page et intervalle entre sections. */
+        18: "4.5rem",
+      },
+      transitionDuration: {
+        /** Charte § 05 — la seule durée d'interaction de la vitrine. */
+        nurea: "160ms",
       },
     },
   },

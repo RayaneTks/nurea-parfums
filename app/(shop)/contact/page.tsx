@@ -1,30 +1,28 @@
 import type { Metadata } from "next";
-import { ContactPageClient } from "@/components/contact/ContactPageClient";
+import { ContactSection } from "@/components/features/ContactSection";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
-import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Contact & Commande",
+  title: "Contact & commande",
   description: `Contactez ${SITE_NAME} pour passer commande ou obtenir un conseil. Stock disponible immédiatement, réponse rapide sur Snapchat et WhatsApp.`,
-  alternates: {
-    canonical: "/contact",
-  },
+  alternates: { canonical: "/contact" },
   openGraph: {
-    title: `Contact & Commande — ${SITE_NAME}`,
-    description: `Une question sur un parfum ? Contactez-nous sur Snapchat ou WhatsApp pour commander.`,
+    title: `Contact & commande — ${SITE_NAME}`,
+    description:
+      "Une question sur un parfum ? Écrivez-nous sur Snapchat ou WhatsApp pour commander.",
     url: `${SITE_URL}/contact`,
     type: "website",
   },
 };
 
 interface ContactPageProps {
+  /** Pré-remplissage venu d'une fiche produit. */
   searchParams: Promise<{ parfum?: string; marque?: string }>;
 }
 
 export default async function ContactPage({ searchParams }: ContactPageProps) {
-  const params = await searchParams;
-  const parfum = params.parfum ?? "";
-  const marque = params.marque ?? "";
+  const { parfum = "", marque = "" } = await searchParams;
 
   return (
     <>
@@ -34,7 +32,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
           { name: "Contact", path: "/contact" },
         ]}
       />
-      <ContactPageClient parfum={parfum} marque={marque} />
+      <ContactSection parfum={parfum} marque={marque} />
     </>
   );
 }

@@ -1,271 +1,245 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef, useCallback } from "react";
-import { X, Check } from "lucide-react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FC,
+  type TouchEvent as ReactTouchEvent,
+} from "react";
+import { Check, X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
+import { cn } from "@/lib/utils";
 
 interface CatalogFilterDrawerProps {
   open: boolean;
-  onClose: () => void;
   brands: CatalogBrowseBrand[];
-  mounted: boolean;
-  selectedBrandSlugs: Set<string>;
-  getResultCount: (brands: Set<string>) => number;
-  onApply: (brands: Set<string>) => void;
-  onReset: () => void;
+  selected: ReadonlySet<string>;
+  onApply: (slugs: Set<string>) => void;
+  onClose: () => void;
 }
 
-export function CatalogFilterDrawer({
-  open,
-  onClose,
-  brands,
-  selectedBrandSlugs,
-  onApply,
-  onReset,
-  getResultCount,
-}: CatalogFilterDrawerProps) {
-  const [draftBrands, setDraftBrands] = useState<Set<string>>(
-    new Set(selectedBrandSlugs)
-  );
-  const [isRendered, setIsRendered] = useState(false);
-  const dragHandleRef = useRef<HTMLDivElement>(null);
-  const touchStartY = useRef<number | null>(null);
-  const touchStartX = useRef<number | null>(null);
+/**
+ * Regroupe par initiale ; tout ce qui ne commence pas par une lettre tombe
+ * en « # ».
+ *
+ * L'accent est retiré avant le test : « Élisabeth Arden » se cherche à la
+ * lettre E, pas dans le groupe des caractères non alphabétiques.
+ */
+function initialOf(name: string): string {
+  const first = name
+    .trim()
+    .charAt(0)
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+  return /^[A-Z]$/.test(first) ? first : "#";
+}
 
-  useEffect(() => setIsRendered(true), []);
+function groupByInitial(brands: CatalogBrowseBrand[]) {
+  const groups = new Map<string, CatalogBrowseBrand[]>();
+
+  for (const brand of [...brands].sort((a, b) => a.name.localeCompare(b.name, "fr"))) {
+    const key = initialOf(brand.name);
+    groups.set(key, [...(groups.get(key) ?? []), brand]);
+  }
+
+  return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, "fr"));
+}
+
+/**
+ * Sélection de marques — feuille par le bas sur mobile, tiroir latéral au-delà.
+ *
+ * La sélection est un brouillon : elle n'agit sur la grille qu'à la validation.
+ * Fermer sans valider ne change donc rien, ce qui rend l'exploration sans
+ * conséquence.
+ */
+export const CatalogFilterDrawer: FC<CatalogFilterDrawerProps> = ({
+  open,
+  brands,
+  selected,
+  onApply,
+  onClose,
+}) => {
+  const [draft, setDraft] = useState<Set<string>>(() => new Set(selected));
+  const touchStartY = useRef<number | null>(null);
+
+  /* Le brouillon repart de la sélection réelle à chaque ouverture. */
+  useEffect(() => {
+    if (open) setDraft(new Set(selected));
+  }, [open, selected]);
 
   useEffect(() => {
-    if (open) setDraftBrands(new Set(selectedBrandSlugs));
-  }, [open, selectedBrandSlugs]);
+    if (!open) return;
+    const { body } = document;
+    const previous = body.style.overflow;
+    body.style.overflow = "hidden";
 
-  const toggleSet = (s: Set<string>, val: string) => {
-    const next = new Set(s);
-    if (next.has(val)) next.delete(val);
-    else next.add(val);
-    return next;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      body.style.overflow = previous;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open, onClose]);
+
+  const groups = useMemo(() => groupByInitial(brands), [brands]);
+
+  const toggle = (slug: string) => {
+    setDraft((current) => {
+      const next = new Set(current);
+      if (!next.delete(slug)) next.add(slug);
+      return next;
+    });
   };
 
-  const draftResultCount = getResultCount(draftBrands);
+  const onTouchStart = (event: ReactTouchEvent) => {
+    touchStartY.current = event.touches[0]?.clientY ?? null;
+  };
 
-  /* Swipe-to-close: écoute les gestes tactiles sur toute la zone en-tête + drag handle */
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
-    const t = e.touches[0];
-    if (!t) return;
-    touchStartY.current = t.clientY;
-    touchStartX.current = t.clientX;
-  }, []);
-
-  const onTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
-      if (touchStartY.current === null || touchStartX.current === null) return;
-      const t = e.changedTouches[0];
-      if (!t) return;
-      const deltaY = t.clientY - touchStartY.current;
-      const deltaX = Math.abs(t.clientX - touchStartX.current);
-      // Ferme si swipe vers le bas > 60px et plus vertical qu'horizontal
-      if (deltaY > 60 && deltaY > deltaX) onClose();
-      touchStartY.current = null;
-      touchStartX.current = null;
-    },
-    [onClose]
-  );
-
-  const grouped = useMemo(() => {
-    const map: Record<string, CatalogBrowseBrand[]> = {};
-    const sorted = [...brands].sort((a, b) => a.name.localeCompare(b.name));
-    for (const b of sorted) {
-      const char = b.name.charAt(0).toUpperCase();
-      const letter = /^[A-Z]$/.test(char) ? char : "#";
-      if (!map[letter]) map[letter] = [];
-      map[letter].push(b);
-    }
-    return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
-  }, [brands]);
-
-  /* Prevent body scroll when open */
-  useEffect(() => {
-    if (open && typeof document !== "undefined") {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [open]);
-
-  if (!isRendered) return null;
+  const onTouchEnd = (event: ReactTouchEvent) => {
+    const start = touchStartY.current;
+    const end = event.changedTouches[0]?.clientY;
+    touchStartY.current = null;
+    if (start !== null && end !== undefined && end - start > 60) onClose();
+  };
 
   return (
     <>
-      {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm transition-all duration-500 cursor-pointer ${
-          open ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        aria-hidden
         onClick={onClose}
+        className={cn(
+          "fixed inset-0 z-[110] bg-nurea-bg/85 transition-opacity duration-nurea ease-out",
+          open ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
       />
 
-      {/* Drawer / Bottom Sheet */}
+      {/* Fermé, le panneau reste monté pour garder sa transition — mais il perd
+          son rôle de boîte modale. Un `role="dialog" aria-modal` permanent
+          ferait croire aux lecteurs d'écran qu'une modale est toujours
+          ouverte, et masquerait le reste de la page. */}
       <aside
-        aria-modal="true"
-        aria-label="Filtrer par marques"
-        role="dialog"
-        className={`fixed z-[120] flex flex-col bg-[var(--nurea-surface)] shadow-2xl transition-all duration-500 ease-out-expo overscroll-none
-          bottom-0 left-0 right-0 rounded-t-[28px] md:rounded-t-none
-          h-[78dvh] md:h-full
-          ${open ? "translate-y-0" : "translate-y-full"}
-          md:right-0 md:left-auto md:top-0 md:w-full md:max-w-[400px]
-          md:translate-y-0
-          ${open ? "md:translate-x-0" : "md:translate-x-full"}
-        `}
-        {...(!open ? { inert: true as unknown as boolean } : {})}
+        {...(open
+          ? { role: "dialog", "aria-modal": true, "aria-label": "Filtrer par marques" }
+          : { inert: true, "aria-hidden": true })}
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-[120] flex h-[78dvh] flex-col border-t border-nurea-border bg-nurea-bg transition-transform duration-300 ease-out",
+          "md:inset-y-0 md:left-auto md:right-0 md:h-full md:w-full md:max-w-[25rem] md:border-l md:border-t-0",
+          open ? "translate-y-0 md:translate-x-0" : "translate-y-full md:translate-y-0 md:translate-x-full"
+        )}
       >
-        {/* Drag handle — zone swipeable étendue pour plus de facilité */}
-        <div
-          ref={dragHandleRef}
+        <header
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
-          className="flex w-full cursor-grab flex-col items-center pb-1 pt-3 md:hidden shrink-0 select-none"
-          aria-hidden="true"
-        >
-          <div className="h-1.5 w-14 rounded-full bg-[var(--nurea-border-hover)] transition-colors active:bg-[var(--nurea-accent)]/40" />
-          <span className="mt-1.5 text-[9px] uppercase tracking-[0.2em] text-[var(--nurea-text-subtle)] opacity-60">
-            Glisser pour fermer
-          </span>
-        </div>
-
-        {/* Header */}
-        <div
-          className="relative flex items-center justify-between border-b border-[var(--nurea-border)]/50 px-6 py-4 z-[50] shrink-0"
-          onTouchStart={onTouchStart}
-          onTouchEnd={onTouchEnd}
+          className="flex shrink-0 items-center justify-between border-b border-nurea-border px-6 py-4"
         >
           <div>
-            <h2 className="font-serif text-xl tracking-tight text-[var(--nurea-text)]">
-              Filtrer par Marques
-            </h2>
-            {draftBrands.size > 0 && (
-              <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-[var(--nurea-accent)]">
-                {draftBrands.size} sélectionnée{draftBrands.size > 1 ? "s" : ""}
-              </p>
-            )}
+            <h2 className="nurea-name text-nurea-text">Filtrer par marque</h2>
+            <p className="nurea-caption mt-1">
+              {draft.size === 0
+                ? "Toutes les marques"
+                : `${draft.size} sélectionnée${draft.size > 1 ? "s" : ""}`}
+            </p>
           </div>
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onClose();
-            }}
+            type="button"
+            onClick={onClose}
             aria-label="Fermer les filtres"
-            className="flex h-12 w-12 items-center justify-center rounded-full transition-all hover:bg-[var(--nurea-surface-hover)] active:bg-[var(--nurea-surface-hover)] text-[var(--nurea-text-muted)] active:scale-90 touch-manipulation"
+            className="-mr-3 flex h-11 w-11 items-center justify-center text-nurea-muted transition-colors duration-nurea ease-out hover:text-nurea-text"
           >
             <X size={22} strokeWidth={1.5} />
           </button>
-        </div>
+        </header>
 
-        {/* Brands list */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar overscroll-contain">
-          {grouped.length === 0 ? (
-            <div className="px-6 py-12 text-center">
-              <p className="text-sm text-[var(--nurea-text-muted)]">
-                Aucune marque disponible.
-              </p>
-            </div>
+        <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          {groups.length === 0 ? (
+            <p className="nurea-caption px-6 py-12 text-center">
+              Aucune marque disponible.
+            </p>
           ) : (
-            grouped.map(([letter, items]) => (
-              <div key={letter} className="relative">
-                <div className="sticky top-0 z-20 border-b border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)]/95 px-5 py-2.5 backdrop-blur-md shadow-sm">
-                  <span className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--nurea-accent)]">
-                    {letter}
-                  </span>
-                </div>
-                <ul className="divide-y divide-[var(--nurea-border)]/40">
-                  {items.map((b) => {
-                    const checked = draftBrands.has(b.slug);
+            groups.map(([initial, items]) => (
+              <section key={initial}>
+                <h3 className="nurea-label sticky top-0 z-10 border-b border-nurea-border bg-nurea-bg px-6 py-2">
+                  {initial}
+                </h3>
+                <ul>
+                  {items.map((brand) => {
+                    const checked = draft.has(brand.slug);
                     return (
-                      <li key={b.id}>
-                        <label className="group flex min-h-[56px] w-full cursor-pointer items-center gap-4 px-5 py-3 text-left transition-all hover:bg-[var(--nurea-surface-hover)] active:bg-[var(--nurea-surface-hover)]/50 active:scale-[0.99] touch-manipulation">
-                          <div
-                            className={`flex h-5 w-5 shrink-0 items-center justify-center border transition-all duration-300 rounded-md ${
-                              checked
-                                ? "border-[var(--nurea-accent)] bg-[var(--nurea-accent)] shadow-[0_0_10px_rgba(216,128,128,0.2)]"
-                                : "border-[var(--nurea-text-subtle)]/30 bg-transparent group-hover:border-[var(--nurea-accent)]"
-                            }`}
-                          >
-                            {checked && (
-                              <Check
-                                size={13}
-                                strokeWidth={3.5}
-                                className="text-white animate-scale-in"
-                              />
-                            )}
-                          </div>
+                      <li key={brand.id} className="border-b border-nurea-border">
+                        <label className="flex min-h-[3.5rem] cursor-pointer items-center gap-4 px-6 py-3 transition-colors duration-nurea ease-out hover:bg-nurea-surface-hover">
                           <input
                             type="checkbox"
                             checked={checked}
-                            onChange={() =>
-                              setDraftBrands(toggleSet(draftBrands, b.slug))
-                            }
-                            className="sr-only"
+                            onChange={() => toggle(brand.slug)}
+                            className="peer sr-only"
                           />
                           <span
-                            className={`flex-1 text-[15px] tracking-wide transition-colors duration-300 ${
+                            aria-hidden
+                            className={cn(
+                              "flex h-5 w-5 shrink-0 items-center justify-center border transition-colors duration-nurea ease-out peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-nurea-accent",
                               checked
-                                ? "text-[var(--nurea-text)] font-semibold"
-                                : "text-[var(--nurea-text-muted)] group-hover:text-[var(--nurea-text)]"
-                            }`}
+                                ? "border-nurea-accent bg-nurea-accent text-nurea-on-accent"
+                                : "border-nurea-border-strong"
+                            )}
                           >
-                            {b.name}
+                            {checked && <Check size={13} strokeWidth={3} />}
                           </span>
                           <span
-                            className={`shrink-0 font-mono text-[10px] font-bold tracking-wider transition-colors duration-300 ${
-                              checked
-                                ? "text-[var(--nurea-accent)]"
-                                : "text-[var(--nurea-text-subtle)] opacity-80"
-                            }`}
+                            className={cn(
+                              "min-w-0 flex-1 truncate text-sm transition-colors duration-nurea ease-out",
+                              checked ? "text-nurea-text" : "text-nurea-muted"
+                            )}
                           >
-                            {b.assortment === "COMPLETE" ? "TOUT" : b.publishedCount}
+                            {brand.name}
+                          </span>
+                          <span className="nurea-caption shrink-0 tabular-nums">
+                            {brand.assortment === "COMPLETE"
+                              ? "Gamme"
+                              : brand.publishedCount}
                           </span>
                         </label>
                       </li>
                     );
                   })}
                 </ul>
-              </div>
+              </section>
             ))
           )}
         </div>
 
-        {/* Footer */}
-        <div className="shrink-0 border-t border-[var(--nurea-border-hover)] bg-[var(--nurea-surface)] p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
-          <div className="mb-3 flex items-center justify-between px-1">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-[var(--nurea-text-muted)]">
-              {draftBrands.size > 0
-                ? `${draftBrands.size} marque${draftBrands.size > 1 ? "s" : ""} sélectionnée${draftBrands.size > 1 ? "s" : ""}`
-                : "Toutes les marques"}
+        <footer className="shrink-0 border-t border-nurea-border p-6 pb-safe">
+          <div className="mb-4 flex items-center justify-between">
+            <span className="nurea-caption">
+              {draft.size === 0
+                ? "Aucun filtre"
+                : `${draft.size} marque${draft.size > 1 ? "s" : ""}`}
             </span>
-            {draftBrands.size > 0 && (
+            {draft.size > 0 && (
               <button
-                onClick={() => {
-                  setDraftBrands(new Set());
-                  onReset();
-                }}
-                className="text-[10px] font-bold uppercase tracking-widest text-[var(--nurea-accent)] hover:opacity-80 transition-opacity"
+                type="button"
+                onClick={() => setDraft(new Set())}
+                className="nurea-label h-11 transition-colors duration-nurea ease-out hover:text-nurea-text"
               >
                 Réinitialiser
               </button>
             )}
           </div>
-          <button
-            onClick={() => onApply(draftBrands)}
-            className="btn-nurea w-full justify-center bg-[var(--nurea-accent)] text-white hover:bg-[var(--nurea-accent-hover)] border-none h-14 rounded-2xl text-base font-bold shadow-xl shadow-[var(--nurea-accent-subtle)]/20 active:scale-95 transition-transform"
+          <Button
+            variant="solid"
+            onClick={() => onApply(new Set(draft))}
+            className="w-full"
           >
             Afficher les résultats
-            {draftResultCount >= 0 && (
-              <span className="ml-1.5 opacity-80">({draftResultCount})</span>
-            )}
-          </button>
-        </div>
+          </Button>
+        </footer>
       </aside>
     </>
   );
-}
+};
