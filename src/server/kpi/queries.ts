@@ -117,6 +117,32 @@ export const revenueSummary = cache(async (): Promise<RevenueSummary> => {
   };
 })
 
+/** Encaissé et nombre de ventes du mois en cours. */
+export type MonthSummary = { cashed: string; count: number };
+
+/**
+ * Agrégat du mois, en une requête.
+ *
+ * Le tableau de bord obtenait ces deux nombres en chargeant TOUTES les ventes
+ * du mois, groupées par client, avec leurs lignes — pour n'afficher qu'un
+ * montant et un compteur. L'agrégation revient à la base.
+ */
+export const monthSummary = cache(async (): Promise<MonthSummary> => {
+  const start = startOfMonth();
+  const rows = await prisma.$queryRaw<{ cashed: string | null; count: number }[]>`
+    SELECT
+      COALESCE(SUM("totalRevenue" - "remainingDue"), 0)::text AS cashed,
+      COUNT(*)::int AS count
+    FROM "Sale"
+    WHERE "soldAt" >= ${start}
+  `;
+  const row = rows[0];
+  return {
+    cashed: new Decimal(row?.cashed ?? "0").toFixed(2),
+    count: row?.count ?? 0,
+  };
+})
+
 export type TopPerfumeRow = {
   perfumeId: number | null;
   name: string;
@@ -319,17 +345,32 @@ export type Pipeline = {
 
 const cachedPipelineCounts = unstable_cache(
   async () => {
-    const [pending, ready, overdue] = await Promise.all([
-      prisma.order.count({ where: { status: "PENDING" } }),
-      prisma.order.count({ where: { status: "READY" } }),
-      prisma.order.count({
-        where: {
-          status: { in: ["PENDING", "READY"] },
-          deliveryAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-        },
-      }),
-    ]);
-    return { pending, ready, overdue };
+    /*
+     * Un seul aller-retour, agrégé par la base.
+     *
+     * Chaque requête coûte environ 140 ms de latence réseau vers la base
+     * distante — trois `count` séparés, même lancés en parallèle, en coûtaient
+     * 420. Ce qui pèse ici est le NOMBRE d'allers-retours, pas le travail
+     * demandé : `FILTER` fait les trois comptages en une passe.
+     */
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const rows = await prisma.$queryRaw<
+      { pending: number; ready: number; overdue: number }[]
+    >`
+      SELECT
+        COUNT(*) FILTER (WHERE status = 'PENDING')::int AS pending,
+        COUNT(*) FILTER (WHERE status = 'READY')::int AS ready,
+        COUNT(*) FILTER (
+          WHERE status IN ('PENDING', 'READY') AND "deliveryAt" < ${cutoff}
+        )::int AS overdue
+      FROM "Order"
+    `;
+    const row = rows[0];
+    return {
+      pending: row?.pending ?? 0,
+      ready: row?.ready ?? 0,
+      overdue: row?.overdue ?? 0,
+    };
   },
   ["kpi-pipeline-counts"],
   { tags: [tagFor.pipeline(), tagFor.orders()], revalidate: 30 },

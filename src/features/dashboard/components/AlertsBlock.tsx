@@ -39,15 +39,24 @@ const toneStyles: Record<Tone, { bg: string; border: string; fg: string }> = {
  * flottaison et se ressemblaient toutes. Rien à faire → rien n'est rendu.
  */
 export async function AlertsBlock() {
-  const [treasury, pipeline, trackedTotal, outOfStock, lowStock] = await Promise.all([
+  const [treasury, pipeline, stock] = await Promise.all([
     treasurySummary(),
     pipelineCounts(),
-    prisma.perfume.count({ where: { isPrivate: false } }),
-    prisma.perfume.count({ where: { isPrivate: false, stock: { lte: 0 } } }),
-    prisma.perfume.count({
-      where: { isPrivate: false, stock: { gt: 0, lte: LOW_STOCK_THRESHOLD } },
-    }),
+    // Un seul aller-retour pour les trois comptages : la latence vers la base
+    // distante (~140 ms) domine le coût, pas le travail demandé.
+    prisma.$queryRaw<{ total: number; out: number; low: number }[]>`
+      SELECT
+        COUNT(*)::int AS total,
+        COUNT(*) FILTER (WHERE stock <= 0)::int AS out,
+        COUNT(*) FILTER (WHERE stock > 0 AND stock <= ${LOW_STOCK_THRESHOLD})::int AS low
+      FROM "Perfume"
+      WHERE "isPrivate" = false
+    `,
   ]);
+
+  const trackedTotal = stock[0]?.total ?? 0;
+  const outOfStock = stock[0]?.out ?? 0;
+  const lowStock = stock[0]?.low ?? 0;
 
   const alerts: Alert[] = [];
 

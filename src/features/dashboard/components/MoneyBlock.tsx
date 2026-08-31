@@ -2,9 +2,8 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import Decimal from "decimal.js-light";
 import { Money } from "@/ui/patterns/Money";
-import { revenueSummary } from "@/server/kpi/queries";
+import { monthSummary, revenueSummary } from "@/server/kpi/queries";
 import { treasurySummary } from "@/server/treasury/queries";
-import { listSalesGroupedByCustomer } from "@/server/sales/queries";
 import { cn } from "@/lib/utils";
 
 /**
@@ -27,7 +26,7 @@ export async function MoneyBlock() {
   const [global, treasury, month] = await Promise.all([
     revenueSummary(),
     treasurySummary(),
-    listSalesGroupedByCustomer({ period: "month" }),
+    monthSummary(),
   ]);
 
   const marginPct = Number(global.marginPct);
@@ -81,8 +80,8 @@ export async function MoneyBlock() {
         />
         <SecondaryTile
           label="Ce mois"
-          value={month.summary.cashedRevenue}
-          hint={`${month.summary.salesCount} vente${month.summary.salesCount > 1 ? "s" : ""}`}
+          value={month.cashed}
+          hint={`${month.count} vente${month.count > 1 ? "s" : ""}`}
           href="/admin/compta"
         />
       </div>
