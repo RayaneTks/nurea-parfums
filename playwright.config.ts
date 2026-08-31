@@ -1,4 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
+import { config as loadEnv } from "dotenv";
+
+// Les invariants de mise en page rendent de vraies pages serveur : le process
+// de test doit disposer d'`ADMIN_JWT_SECRET` pour signer une session valide.
+loadEnv({ path: ".env.local" });
+loadEnv({ path: ".env" });
 
 export default defineConfig({
   testDir: "./e2e",
