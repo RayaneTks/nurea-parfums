@@ -64,8 +64,21 @@ export function Sheet({
             "max-w-[var(--admin-app-max-width)]",
             className,
           )}
+          /**
+           * Hauteur maximale = part visible souhaitée PLUS la hauteur du clavier.
+           *
+           * La sheet est ancrée en bas du viewport de mise en page, que le
+           * clavier iOS ne rétrécit pas : ses derniers pixels passent donc sous
+           * le clavier, et le pied les compense par une marge basse égale à
+           * l'inset. Mais `--admin-vh` suit le viewport VISUEL, déjà amputé du
+           * clavier — plafonner la sheet à cette valeur retranchait le clavier
+           * une seconde fois et réduisait la zone de contenu à quelques dizaines
+           * de pixels, jusqu'à masquer les résultats de recherche.
+           *
+           * `min(…, 100dvh)` garde le garde-fou de l'écran plein.
+           */
           style={{
-            maxHeight: `calc(var(--admin-vh, 100dvh) * ${maxVh / 100})`,
+            maxHeight: `min(calc(var(--admin-vh, 100dvh) * ${maxVh / 100} + var(--admin-keyboard-inset, 0px)), 100dvh)`,
             zIndex: nested ? 81 : 71,
           }}
         >
@@ -109,7 +122,7 @@ export function Sheet({
             )}
             style={{
               paddingBottom: footer
-                ? "calc(0.75rem + var(--admin-keyboard-inset, 0px))"
+                ? "0.75rem"
                 : "calc(1rem + env(safe-area-inset-bottom, 0px) + var(--admin-keyboard-inset, 0px))",
             }}
           >
@@ -121,7 +134,9 @@ export function Sheet({
               className="px-4 pt-3"
               style={{
                 borderTop: "1px solid var(--admin-border)",
-                paddingBottom: "var(--admin-sticky-cta-pad)",
+                paddingBottom: "var(--admin-sheet-footer-pad)",
+                // Remonte le pied au-dessus du clavier : la sheet elle-même
+                // reste ancrée au bas du viewport de mise en page.
                 marginBottom: "var(--admin-keyboard-inset, 0px)",
                 background: "var(--admin-surface)",
               }}
