@@ -15,6 +15,18 @@ import { cn } from "@/lib/utils";
 const VIRT_THRESHOLD = 48;
 const OVERSCAN = 6;
 
+/**
+ * Nombre de lignes rendues au premier passage, avant que le client ne puisse
+ * mesurer quoi que ce soit.
+ *
+ * Le rendu serveur n'a ni fenêtre ni positions : partir de la liste entière y
+ * envoyait les 99 lignes du catalogue dans le HTML, avec une vignette et son
+ * `srcset` chacune — 251 Ko de jeux d'images pour neuf lignes réellement
+ * visibles. Quatorze lignes remplissent le plus grand des écrans visés sans
+ * trou, et la marge basse conserve la hauteur totale : aucun saut au montage.
+ */
+const INITIAL_WINDOW = 14;
+
 function findScrollParent(node: HTMLElement | null): HTMLElement | null {
   if (!node) return null;
   let el: HTMLElement | null = node.parentElement;
@@ -57,7 +69,10 @@ export function WindowedList<T>({
   renderItem,
 }: WindowedListProps<T>) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [range, setRange] = useState({ start: 0, end: items.length });
+  const [range, setRange] = useState(() => ({
+    start: 0,
+    end: items.length >= VIRT_THRESHOLD ? Math.min(items.length, INITIAL_WINDOW) : items.length,
+  }));
 
   const stride = estimateSize + gap;
   const useVirt = items.length >= VIRT_THRESHOLD;
