@@ -18,14 +18,12 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   const pricings = await listPricingsForPerfume(perfumeId);
 
+  // La grille tarifaire est passée EN SLOT, pas empilée à côté du formulaire :
+  // un écran ne rend qu'un seul bloc de niveau page.
   return (
-    <>
-      <PerfumeForm perfumeId={id} />
-      {/* La grille tarifaire est chargée côté serveur : elle vit sous le
-          formulaire plutôt que dedans, pour ne pas dépendre de son état. */}
-      <div className="admin-page-bottom-pad px-4">
-        <PerfumePricingPanel perfumeId={perfumeId} initial={pricings} />
-      </div>
-    </>
+    <PerfumeForm
+      perfumeId={id}
+      pricingSlot={<PerfumePricingPanel perfumeId={perfumeId} initial={pricings} />}
+    />
   );
 }
