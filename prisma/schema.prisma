@@ -186,6 +186,8 @@ model Order {
   customerContact String?
   orderedAt     DateTime             @default(now())
   deliveryAt    DateTime?
+  /// Horodatage réel du passage en statut « Livrée » (archivage 24h de la liste Livrées).
+  deliveredAt   DateTime?
   status        OrderStatus          @default(PENDING)
   notes         String?
   /// CACHE dénormalisé : true si depositPaidTotal > 0. Source de vérité = PaymentTransaction.
@@ -206,6 +208,7 @@ model Order {
   @@index([deliveryAt])
   @@index([depositPaid])
   @@index([status, deliveryAt])
+  @@index([status, deliveredAt])
   @@index([customerId])
   @@index([batchId])
 }
@@ -333,6 +336,9 @@ model BatchExpense {
   label      String
   /// Montant en € (toujours positif).
   amount     Decimal  @db.Decimal(10, 2)
+  /// Si false : dépense informative (argent perso / hors business) — NON déduite
+  /// de la marge et SANS mouvement de trésorerie. Sert juste de note de suivi.
+  countInCompta Boolean @default(true)
   occurredAt DateTime @default(now())
   notes      String?
   createdAt  DateTime @default(now())
