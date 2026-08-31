@@ -68,7 +68,9 @@ export async function MoneyBlock() {
           label="À encaisser"
           value={global.outstandingRevenue}
           hint="dû par clients"
-          href="/admin/ordres"
+          // Mène à l'écran d'encaissement, pas à la liste des commandes : un
+          // montant dû appelle une action, pas une navigation de plus.
+          href="/admin/encaisser"
           tone={new Decimal(global.outstandingRevenue).greaterThan(0) ? "warning" : "default"}
         />
         <SecondaryTile
