@@ -187,7 +187,7 @@ export function ImagePreview({
                 }
                 onClear();
               }}
-              className="inline-flex items-center gap-1 self-start text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-danger)] tap-scale hover:underline"
+              className="admin-hit-target gap-1 self-start text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-danger)] tap-scale hover:underline"
             >
               <X size={12} aria-hidden />
               Supprimer

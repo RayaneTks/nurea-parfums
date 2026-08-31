@@ -21,7 +21,7 @@ export async function ActiveBatchesBlock() {
         <Link
           href="/admin/lots"
           prefetch
-          className="text-[12px] font-medium text-[var(--admin-accent)] tap-scale"
+          className="-mr-2 inline-flex min-h-[var(--admin-touch-min)] items-center rounded-[10px] px-2 text-[12px] font-medium text-[var(--admin-accent)] tap-scale"
         >
           Voir tout
         </Link>

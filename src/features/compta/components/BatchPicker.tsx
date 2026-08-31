@@ -84,7 +84,7 @@ export function BatchPicker({ endpoint, current, onAssigned, onError }: BatchPic
             type="button"
             onClick={() => setOpen((v) => !v)}
             disabled={saving}
-            className="mt-0.5 inline-flex items-center gap-1.5 text-left text-[14px] font-medium text-[var(--admin-text)] tap-scale"
+            className="admin-hit-target gap-1.5 text-left text-[14px] font-medium text-[var(--admin-text)] tap-scale"
           >
             <span className="truncate">{current ? current.name : "Aucun lot — assigner"}</span>
             <ChevronDown size={14} className="shrink-0 text-[var(--admin-text-subtle)]" aria-hidden />

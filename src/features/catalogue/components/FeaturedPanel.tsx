@@ -92,7 +92,7 @@ export function FeaturedPanel({
                     disabled={pendingIds.has(perfume.id)}
                     onClick={() => onToggle(perfume, false)}
                     aria-label={`Retirer ${perfume.name} de la mise en avant`}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--admin-text-subtle)] tap-scale hover:bg-[var(--admin-surface-muted)] disabled:opacity-50"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--admin-text-subtle)] tap-scale hover:bg-[var(--admin-surface-muted)] disabled:opacity-50"
                   >
                     {pendingIds.has(perfume.id) ? (
                       <Loader2 size={15} className="animate-spin" aria-hidden />

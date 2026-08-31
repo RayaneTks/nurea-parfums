@@ -67,7 +67,7 @@ export function ComptaWithTreasury({
         <div className="flex items-center gap-2">
           <a
             href="/api/admin/compta/export"
-            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full bg-[var(--admin-surface)] px-3 text-[12px] font-medium text-[var(--admin-text)] tap-scale hover:bg-[var(--admin-surface-alt)]"
+            className="inline-flex min-h-[var(--admin-touch-min)] items-center gap-1.5 rounded-full bg-[var(--admin-surface)] px-3 text-[12px] font-medium text-[var(--admin-text)] tap-scale hover:bg-[var(--admin-surface-alt)]"
             style={{ border: "1px solid var(--admin-border-strong)" }}
           >
             <Download size={14} aria-hidden />
@@ -76,7 +76,7 @@ export function ComptaWithTreasury({
           <Link
             href="/admin/lots"
             prefetch
-            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full bg-[var(--admin-surface)] px-3 text-[12px] font-medium text-[var(--admin-text)] tap-scale hover:bg-[var(--admin-surface-alt)]"
+            className="inline-flex min-h-[var(--admin-touch-min)] items-center gap-1.5 rounded-full bg-[var(--admin-surface)] px-3 text-[12px] font-medium text-[var(--admin-text)] tap-scale hover:bg-[var(--admin-surface-alt)]"
             style={{ border: "1px solid var(--admin-border-strong)" }}
           >
             <Boxes size={14} aria-hidden />

@@ -57,7 +57,7 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(functi
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         aria-label={ariaLabel ?? placeholder}
-        className="block w-full bg-transparent pl-9 pr-9 py-2 text-[16px] outline-none placeholder:text-[var(--admin-text-subtle)]"
+        className="block h-full w-full bg-transparent pl-9 pr-9 text-[16px] outline-none placeholder:text-[var(--admin-text-subtle)]"
         {...rest}
       />
       {value.length > 0 ? (
