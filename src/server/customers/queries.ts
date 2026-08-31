@@ -92,6 +92,21 @@ export async function listCustomers(params: {
 }
 
 /**
+ * Clients les plus récemment actifs — proposés avant toute frappe.
+ *
+ * Un sélecteur qui n'affiche rien tant qu'on n'a pas tapé oblige à connaître
+ * le nom exact avant de chercher, et pousse à recréer une fiche qui existe
+ * déjà. Le tri est celui de la dernière commande, à défaut de la création.
+ */
+export async function recentCustomers(limit = 8): Promise<CustomerSearchRow[]> {
+  return prisma.customer.findMany({
+    take: Math.max(1, Math.min(limit, 20)),
+    orderBy: [{ orders: { _count: "desc" } }, { createdAt: "desc" }],
+    select: { id: true, fullName: true, phoneE164: true },
+  });
+}
+
+/**
  * Recherche pour autocomplete. Compact, max 20 résultats.
  */
 export async function searchCustomers(q: string, limit = 10): Promise<CustomerSearchRow[]> {

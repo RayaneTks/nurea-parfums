@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
-import { searchCustomers } from "@/server/customers/queries";
+import { recentCustomers, searchCustomers } from "@/server/customers/queries";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -13,8 +13,8 @@ export async function GET(request: Request) {
   const q = (url.searchParams.get("q") ?? "").trim();
   const limit = Number(url.searchParams.get("limit") ?? "10");
 
-  if (q.length === 0) return NextResponse.json({ rows: [] });
-
-  const rows = await searchCustomers(q, limit);
-  return NextResponse.json({ rows });
+  // Requête vide : on renvoie les clients les plus actifs plutôt qu'une liste
+  // vide, pour que le sélecteur montre quelque chose dès son ouverture.
+  const rows = q.length === 0 ? await recentCustomers(8) : await searchCustomers(q, limit);
+  return NextResponse.json({ rows, kind: q.length === 0 ? "recent" : "search" });
 }
