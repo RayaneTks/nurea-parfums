@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowLeft, MapPin, MessageCircle, Phone } from "lucide-react";
+import { MapPin, MessageCircle, Phone } from "lucide-react";
 import { Avatar } from "@/ui/primitives/Avatar";
 import { Card } from "@/ui/primitives/Card";
 import { Stack } from "@/ui/primitives/Stack";
@@ -17,13 +16,6 @@ type CustomerHeaderProps = {
 export function CustomerHeader({ customer, onNameSave }: CustomerHeaderProps) {
   return (
     <Stack gap={4}>
-      <Link
-        href="/admin/clients"
-        className="inline-flex w-fit items-center gap-1 text-[13px] text-[var(--admin-text-muted)] hover:text-[var(--admin-text)] tap-scale"
-      >
-        <ArrowLeft size={14} /> Clients
-      </Link>
-
       <Card padding={3} tone="surface">
         <div className="flex items-start gap-3">
           <Avatar name={customer.fullName} size="xl" />
