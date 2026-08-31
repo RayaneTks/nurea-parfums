@@ -180,7 +180,6 @@ export function CustomerCombobox({
         open={open}
         onOpenChange={setOpen}
         title="Choisir un client"
-        maxVh={92}
         footer={footer}
       >
         <>
