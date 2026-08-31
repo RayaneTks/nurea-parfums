@@ -18,7 +18,7 @@ Permettre de parcourir 200+ références, filtrer par marque/catégorie, consult
 
 ## Brand Personality
 
-- **Luxueux** sans ostentation : or discret, fond sombre, typographie serif élégante
+- **Luxueux** sans ostentation : cuivre discret, fond noir, serif à faible contraste
 - **Intime et personnel** : sélection curatée, pas marketplace impersonnelle
 - **Français, raffiné** : copy sobre, pas de marketing agressif
 - **Tangible** : les flacons et marques sont les héros visuels
@@ -28,8 +28,8 @@ Permettre de parcourir 200+ références, filtrer par marque/catégorie, consult
 - Gradients violet/bleu "AI SaaS"
 - Fond crème/beige + accents laiton (palette premium-consumer générique)
 - Trois cartes identiques en ligne pour les features
-- Eyebrows uppercase sur chaque section (`DÉCOUVRIR`, `NOTRE SÉLECTION`)
-- Em-dash (`—`) dans les textes
+- Eyebrows creuses (`DÉCOUVRIR`, `NOTRE SÉLECTION`) — l'étiquette de la charte
+  (`.nurea-label`) nomme la section, elle ne l'annonce pas
 - Inter comme police par défaut
 - Spinners génériques, cartes blanches avec ombre noire
 - `h-screen` au lieu de `min-h-[100dvh]`
@@ -40,7 +40,7 @@ Permettre de parcourir 200+ références, filtrer par marque/catégorie, consult
 1. **Le parfum est la star** : images produit nettes, UI en retrait
 2. **Mobile d'abord** : catalogue scrollable, barre contact fixe, filtres accessibles
 3. **Conversion = contact** : CTAs Snapchat/WhatsApp visibles sans scroll excessif
-4. **Luxe par le détail** : micro-interactions, transitions courtes (Emil), pas de surcharge
+4. **Luxe par la retenue** : une seule transition, 160 ms sur la couleur ; ni ombre, ni arrondi (voir `DESIGN.md`)
 5. **Pas de look "généré par IA"** : éviter les tells listés dans les skills taste/impeccable
 
 ## Accessibility

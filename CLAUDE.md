@@ -21,7 +21,7 @@ Deux registres **disjoints**, jusque dans les feuilles de style :
 | | Vitrine (`brand`) | Gestion (`product`) |
 |---|---|---|
 | Routes | `app/(shop)/*` | `app/admin/*` |
-| Layout | `app/(shop)/layout.tsx` — `globals.css`, GFS Didot + Inter, thème sombre | `app/admin/layout.tsx` — `globals.admin.css`, `-apple-system`, thème clair |
+| Layout | `app/(shop)/layout.tsx` — `globals.css`, Newsreader + Instrument Sans, sombre par défaut | `app/admin/layout.tsx` — `globals.admin.css`, `-apple-system`, thème clair |
 | Composants | `src/components/*` | `src/features/*` + `src/ui/*` + `src/app-shell/*` |
 | Docs | `PRODUCT.md`, `DESIGN.md` (racine) | `docs/admin/PRODUCT.md`, `docs/admin/DESIGN.md` |
 
@@ -29,11 +29,17 @@ Deux registres **disjoints**, jusque dans les feuilles de style :
 une feuille de style l'embarquerait dans les deux registres.
 
 ### Vitrine
-- `src/components/layout/` — Navbar, Footer.
-- `src/components/home/` — CatalogSection, CatalogFilterDrawer (Bottom Sheet).
-- `src/components/features/` — Hero, FeaturedSection, PerfumeCard.
-- `src/lib/search/` — Logique de recherche, API Fraganty, Cache.
-- `src/lib/catalog/` — Fetching database et transformation de données.
+- `src/design/` — `brand.ts` (charte en TS), `fonts.ts` (Newsreader + Instrument Sans).
+  Les jetons CSS eux-mêmes vivent dans `app/globals.css`.
+- `src/components/ui/` — briques : `Button`, `Field`, `ScrollReveal`, `Icons`.
+- `src/components/layout/` — Navbar, Footer, BrandLogo. **Montés par le layout**,
+  jamais par une page.
+- `src/components/home/` — CatalogSection et ses pièces : `CatalogToolbar`,
+  `CatalogEmptyState`, `CatalogFilterDrawer`, `useCatalogFilters`, `useExtendedSearch`.
+- `src/components/features/` — Hero, FeaturedSection, PerfumeCard, PerfumeDialog,
+  PerfumeImage.
+- `src/lib/search/` — Logique de recherche, API externe, cache.
+- `src/lib/catalog/` — Fetching database, transformation, `perfumePresentation.ts`.
 - `src/actions/` — Server Actions (Contact, etc.).
 
 ### Gestion (PWA admin)
@@ -55,6 +61,32 @@ une feuille de style l'embarquerait dans les deux registres.
 - **Navigation** : Standard mobile-first (Zone du pouce). Zones de clic min 44px.
 - **Copywriting** : Utiliser "Marque", "Catalogue", "Parfum". Éviter "Maison", "Galerie", "Sillage".
 - **CSR Bailout** : `useSearchParams()` nécessite un wrap `<Suspense>`.
+
+## Règles Vitrine (charte graphique v3)
+
+La référence complète est `DESIGN.md`. Les trois règles sans exception :
+- **Angles 0** — aucun arrondi, boutons et images compris.
+- **Aucune ombre** — on sépare au filet 1 px ; les blocs partagent leurs bords.
+- **Survol : la couleur seule**, 160 ms `ease-out`. Jamais de déplacement ni
+  d'agrandissement.
+
+Le reste :
+- **Jetons** : `app/globals.css` (`--nurea-*`, en canaux RVB) et `src/design/brand.ts`
+  pour ce qui ne lit pas de CSS (`next/og`, manifeste, `themeColor`). Les deux
+  doivent rester synchronisés.
+- **Typographie** : une classe par rôle (`.nurea-title`, `.nurea-name`,
+  `.nurea-body`, `.nurea-label`, `.nurea-caption`). Une taille arbitraire en dur
+  signale un rôle manquant — ajoutez-le plutôt que de le contourner.
+- **Boutons** : `src/components/ui/Button.tsx`, trois variantes. **Un seul bouton
+  plein par écran.**
+- **Images bi-thème** : bascule en CSS (`dark:`), jamais via `useTheme` — voir
+  `PerfumeImage` et `BrandLogo`. Les grilles restent rendues côté serveur.
+- **Coque** : Navbar, Footer et l'unique `<main id="main-content">` sont rendus par
+  `app/(shop)/layout.tsx`. Une page ne rend que son contenu.
+- **Mode clair** : hors charte, dérivé. Le cuivre y tombe à 2,5:1 — il n'y porte
+  aucun texte, l'accent devient le bordeaux.
+- **Fiche produit** : ordre imposé marque / nom / contenance ; jamais de prix en
+  grille. Une ligne sans donnée vraie est omise, pas inventée.
 
 ## Règles Admin (PWA)
 - **Navigation** : cinq onglets, pas de menu « Plus ». Toute route `/admin/*` doit
