@@ -106,6 +106,15 @@ body.admin-route {
   --admin-sticky-cta-pad: calc(
     0.75rem + var(--admin-safe-area-bottom) + var(--admin-keyboard-inset, 0px)
   );
+  /* Marge basse du pied d'une sheet. Contrairement à --admin-sticky-cta-pad,
+     l'inset clavier n'y figure PAS : le pied de sheet est déjà remonté par une
+     `margin-bottom` égale à cet inset, et l'inclure ici le comptait deux fois —
+     le pied gonflait de 340 px et écrasait la liste au-dessus.
+     La safe area est retranchée de l'inset : clavier ouvert, le home indicator
+     est recouvert et réserver sa hauteur ajouterait du vide. */
+  --admin-sheet-footer-pad: calc(
+    0.75rem + max(0px, var(--admin-safe-area-bottom) - var(--admin-keyboard-inset, 0px))
+  );
 
   /* Z-index (tokens.ts) — tab bar sous vaul sheets (70+) */
   --admin-z-app-header: 40;
