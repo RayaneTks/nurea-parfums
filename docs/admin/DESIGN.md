@@ -252,6 +252,47 @@ en page, seulement `visualViewport`. Les tests forcent `--admin-vh` et
 - un contrôle volontairement plus petit porte `data-touch-exempt` **avec le
   motif en commentaire**, pour que la liste d'avertissements reste lisible.
 
+## Coût réseau et base
+
+Deux constats mesurés qui doivent guider toute évolution.
+
+**Un aller-retour vers la base coûte ~140 ms.** La base est distante ; ce qui
+rend un écran lent est le NOMBRE de requêtes, pas leur complexité. Trois
+`count` séparés coûtent 420 ms *même lancés en parallèle*. On agrège donc côté
+base (`COUNT(*) FILTER (WHERE …)`) plutôt que d'additionner des requêtes.
+
+Les agrégats partagés entre plusieurs blocs d'un même écran passent par
+`react.cache` : sans ça, deux blocs demandant la trésorerie la paient deux fois.
+
+**Un écran doit afficher son titre immédiatement.** Le premier pixel arrive en
+~50 ms ; tout ce qui attend des données va sous une frontière `Suspense`, avec
+un squelette aux proportions du contenu pour que rien ne se déplace à
+l'arrivée. Une page qui `await` tout avant de rendre laisse un écran vide
+pendant des secondes — c'était le cas de la Compta, 3,4 s.
+
+**Le rendu serveur d'une liste fenêtrée ne doit pas partir de la liste
+entière.** Sans fenêtre à mesurer, il rend TOUT : le catalogue envoyait ses 99
+lignes dans le HTML, dont 251 Ko de `srcset`, pour neuf lignes visibles. Le
+premier rendu se limite à ce qui remplit l'écran.
+
+| Écran | Avant | Après |
+|---|---|---|
+| Tableau de bord, rendu complet | 2796 ms | 1306 ms |
+| Compta, titre lisible | 3,4 s | 35 ms |
+| Catalogue, poids HTML | 539 Ko | 157 Ko |
+
+## Ce qui ne s'affiche pas
+
+Une commande qui ne mène nulle part occupe une place et fait douter.
+
+- Un filtre dont le compteur vaut 0 n'est pas une option, c'est du bruit. Une
+  rangée de filtres qui ne discrimine rien — un seul choix, ou plusieurs
+  désignant le même ensemble — disparaît et rend sa hauteur à la liste.
+- Un graphe sous deux points de mesure ne raconte rien : il ne s'affiche pas.
+- Les alertes ne se montrent que s'il y a quelque chose à faire.
+- Un état n'est affiché que lorsqu'il est ANORMAL. Marquer « visible » sur 99
+  lignes sur 99 noie le seul cas qui compte.
+
 ## Self-audit (avant livraison UI admin)
 
 1. L'action principale est-elle atteignable sans scroll excessif ?

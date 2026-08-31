@@ -29,6 +29,23 @@ export function FilterChips<T extends string>({
   onChange,
   ariaLabel,
 }: FilterChipsProps<T>) {
+  /*
+   * Un filtre qui ne ramènerait rien n'est pas une option, c'est du bruit :
+   * « Masqués 0 » occupe une place sur un écran de téléphone sans jamais
+   * servir. Le filtre actif reste affiché même vide, sinon il disparaîtrait
+   * sous les doigts de qui vient de le choisir.
+   */
+  const shown = options.filter((o) => o.count > 0 || o.value === value);
+
+  /*
+   * La rangée disparaît quand elle ne discrimine rien — un seul filtre, ou
+   * plusieurs qui désignent le même ensemble (« Tous 99 » et « Visibles 99 »
+   * quand aucun parfum n'est masqué). Elle rend alors ses 42 px à la liste, et
+   * revient d'elle-même dès qu'un filtre redevient utile.
+   */
+  const allSameCount = shown.every((o) => o.count === shown[0]!.count);
+  if (shown.length <= 1 || allSameCount) return null;
+
   return (
     <div
       role="radiogroup"
@@ -41,7 +58,7 @@ export function FilterChips<T extends string>({
         "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
       )}
     >
-      {options.map((opt) => {
+      {shown.map((opt) => {
         const active = opt.value === value;
         return (
           <button
