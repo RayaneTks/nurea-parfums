@@ -214,6 +214,44 @@ rendent donc **jamais** leur propre lien retour.
 - Deux chemins visibles simultanément vers la même destination (raccourci +
   onglet).
 
+## Invariants vérifiés automatiquement
+
+La relecture d'écran par écran ne tient pas à l'échelle : elle rate ce qui ne
+se voit qu'à 320 px, clavier ouvert, ou en fin de défilement. Ces règles sont
+donc énoncées une fois et éprouvées sur **toutes** les routes, à trois
+largeurs, par `e2e/layout-invariants.spec.ts`.
+
+```bash
+npm run test:layout
+```
+
+| Invariant | Ce qu'il empêche |
+|-----------|------------------|
+| `non-hydrate` | Un écran qui s'affiche parfaitement et ne réagit à rien. Cause n°1 : `useSearchParams()` sans frontière `<Suspense>`. |
+| `overflow-horizontal` | Le défilement latéral, symptôme d'un élément trop large. |
+| `hors-cadre` | Un élément qui sort du rail 430 px. |
+| `texte-rogne` | `overflow: hidden` sans `text-overflow: ellipsis` : le mot est coupé net, rien n'indique qu'il manque du texte. |
+| `cible-tactile` | Une cible sous 32 px. Entre 32 et 44 px : avertissement, pas d'échec. |
+| `sous-la-barre-onglets` | Un contrôle qui reste masqué par la barre **une fois le bas atteint** — la réserve `--admin-scroll-bottom-pad` manque. |
+| `champ-sous-clavier` / `cta-sous-clavier` | Un champ ou une action principale inatteignables clavier ouvert. |
+| `sheet-ecrasee` | Une sheet dont la zone de contenu tombe sous 120 px clavier ouvert. |
+
+**Simulation du clavier** : le clavier iOS ne rétrécit pas le viewport de mise
+en page, seulement `visualViewport`. Les tests forcent `--admin-vh` et
+`--admin-keyboard-inset`, exactement ce que pose `ViewportSync` sur l'appareil.
+
+**Écrire un écran qui passe** :
+
+- une page = `PageScaffold` (réserve basse) ; une action de page =
+  `StickyAction` ; une sheet = `Sheet`. Ces trois-là portent déjà les calculs
+  de safe area et de clavier — les refaire à la main, c'est les refaire faux ;
+- tout composant client utilisant `useSearchParams()` doit être sous
+  `<Suspense>` dans sa page ;
+- un contrôle textuel compact reçoit `.admin-hit-target` (44 px de surface,
+  typographie inchangée) ;
+- un contrôle volontairement plus petit porte `data-touch-exempt` **avec le
+  motif en commentaire**, pour que la liste d'avertissements reste lisible.
+
 ## Self-audit (avant livraison UI admin)
 
 1. L'action principale est-elle atteignable sans scroll excessif ?
@@ -235,3 +273,4 @@ rendent donc **jamais** leur propre lien retour.
 | [`scripts/build-admin-pwa-assets.mjs`](../../scripts/build-admin-pwa-assets.mjs) | Génération icônes + écrans de lancement iOS. |
 | [`src/app-shell/AdminShell.tsx`](../../src/app-shell/AdminShell.tsx) | Layout shell. |
 | [`app/admin/layout.tsx`](../../app/admin/layout.tsx) | Viewport, manifest, metadata PWA. |
+| [`e2e/layout-invariants.spec.ts`](../../e2e/layout-invariants.spec.ts) | Invariants d'affichage, toutes routes × trois largeurs. |

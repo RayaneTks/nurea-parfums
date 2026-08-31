@@ -67,3 +67,9 @@ une feuille de style l'embarquerait dans les deux registres.
   changement d'icône ou de couleur d'accent.
 - **Service worker** : `public/admin-sw.js` ne met en cache que des URL versionnées
   par leur contenu. Jamais de réponse `/api/*`.
+- **Invariants d'affichage** : `npm run test:layout` éprouve toutes les routes à
+  320/375/430 px, clavier ouvert comme fermé (hydratation, débordement, texte
+  rogné, cibles tactiles, contenu masqué). À lancer après toute modification
+  d'UI admin — voir `docs/admin/DESIGN.md`.
+- **Suspense** : tout composant client utilisant `useSearchParams()` doit être
+  sous `<Suspense>` dans sa page, sinon l'écran s'affiche sans s'hydrater.
