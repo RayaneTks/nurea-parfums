@@ -76,7 +76,7 @@ npm run build
 ## 7) Fichiers de référence
 
 - Schéma Prisma: `prisma/schema.prisma`
-- SQL miroir: `database/schema.sql`
+- Source de vérité du schéma : `prisma/schema.prisma` + migrations Prisma.
 - Seed: `prisma/seed.ts`
 - Lecture catalogue: `src/lib/catalog/getCatalogPerfumes.ts`
 - Admin API: `app/api/admin/brands/*`, `app/api/admin/perfumes/*`

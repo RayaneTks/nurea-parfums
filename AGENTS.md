@@ -10,13 +10,13 @@ Ce fichier est la racine de la hiérarchie `AGENTS.md` utilisée par les skills 
 - `DEVELOPER.md` — commandes dev/prisma et rappels opérationnels.
 - `.cursor/rules/project-memory.mdc` — mémoire persistante always-on.
 - `.cursor/rules/design-engineering.mdc` — standards design/qualité UI non négociables.
-- `docs/shared/agent-performance-loop.md` — protocole d'exécution et auto-correction continue.
 
 ## Subdirectories
 - `docs/` — documentation de référence versionnée.
 - `src/` — code applicatif.
 - `app/` — routes, APIs et pages Next.js.
-- `prisma/` — schéma et logique de persistance.
+- `prisma/` — schéma et migrations : source de vérité de la base.
+- `e2e/` — tests Playwright, dont les invariants d'affichage de l'admin.
 
 ## For Agents
 - Respecter les sections stables (Purpose / Key Files / Subdirectories / For Agents / Testing Requirements).

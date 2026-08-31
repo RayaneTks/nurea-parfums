@@ -48,17 +48,15 @@ playwright/.cache/
 *.tmp
 *.temp
 
-# Captures / audits locaux (ne pas versionner)
+# Captures et audits locaux (ne pas versionner)
 audit-*.png
+audit-shots/
 Visuel.png
 screen.png
 
-# Outils / dossiers locaux optionnels
+# Outils et dossiers locaux optionnels
 .claude/
 .omc/
 .superpowers/
-
-# Audit visuel local
-audit-shots/
-test-results/
-playwright-report/
+.playwright-mcp/
+.tmp/
