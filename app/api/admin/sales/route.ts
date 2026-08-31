@@ -10,7 +10,7 @@ import {
   sumSaleTotals,
 } from "@/lib/gestion/calculations";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
-import { isValidVolumeMl } from "@/lib/gestion/orderLineValidation";
+import { isValidVolumeMl, resolveUnitCostEur } from "@/lib/gestion/orderLineValidation";
 import { recordMovement } from "@/server/treasury/movements";
 import { revalidateTag } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
@@ -161,14 +161,37 @@ export async function POST(request: Request) {
       }
 
       const unitPriceN = Number(raw.unitPrice);
-      const unitCostN = Number(raw.unitCost);
       if (!Number.isFinite(unitPriceN) || unitPriceN < 0) {
         return NextResponse.json(
           { error: "Prix client invalide (doit être ≥ 0)." },
           { status: 400 },
         );
       }
-      if (!Number.isFinite(unitCostN) || unitCostN < 0) {
+
+      const ucdRaw = raw.unitCostDzd;
+      const exRaw = raw.exchangeRate;
+      const ucdN = ucdRaw === null || ucdRaw === undefined ? null : Number(ucdRaw);
+      const exN = exRaw === null || exRaw === undefined ? null : Number(exRaw);
+
+      if (ucdN !== null && (!Number.isFinite(ucdN) || ucdN < 0)) {
+        return NextResponse.json(
+          { error: "Coût d'achat en DZD invalide (doit être ≥ 0)." },
+          { status: 400 },
+        );
+      }
+      if (exN !== null && (!Number.isFinite(exN) || exN < 0)) {
+        return NextResponse.json(
+          { error: "Taux de change invalide (doit être ≥ 0)." },
+          { status: 400 },
+        );
+      }
+
+      // L'écran Vendre saisit le coût en dinars et un taux ; il n'envoie pas
+      // d'`unitCost`. Le `Number(undefined)` d'origine valait NaN et rejetait
+      // donc toute vente. La conversion vit désormais dans un helper partagé
+      // avec l'édition de ticket.
+      const unitCostN = resolveUnitCostEur(raw);
+      if (unitCostN === null) {
         return NextResponse.json(
           { error: "Prix d'achat (ton coût) invalide (doit être ≥ 0)." },
           { status: 400 },
@@ -180,10 +203,6 @@ export async function POST(request: Request) {
         unitPrice: unitPriceN,
         unitCost: unitCostN,
       });
-      const ucdRaw = raw.unitCostDzd;
-      const exRaw = raw.exchangeRate;
-      const ucdN = ucdRaw ? Number(ucdRaw) : null;
-      const exN = exRaw ? Number(exRaw) : null;
 
       let manualName: string | null = null;
       let manualBrand: string | null = null;
