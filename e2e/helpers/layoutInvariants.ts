@@ -280,6 +280,20 @@ export async function collectKeyboardViolations(
     // exactement ce qui manquait au sélecteur de client, réduit à ~24 px.
     const sheet = document.querySelector("[data-vaul-drawer]");
     if (sheet && getComputedStyle(sheet).transform === "none") {
+      // Elle doit aussi occuper la hauteur qui lui est allouée. Une sheet qui
+      // épouse son contenu s'ouvre à mi-écran : la moitié haute est perdue et
+      // il ne reste presque rien une fois le clavier monté.
+      const height = sheet.getBoundingClientRect().height;
+      const available = window.innerHeight - kb;
+      if (height < available * 0.7) {
+        out.push({
+          rule: "sheet-a-mi-ecran",
+          detail: `La sheet n'occupe que ${Math.round(height)}px sur ${Math.round(available)}px disponibles.`,
+          selector: "[data-vaul-drawer]",
+        });
+      }
+    }
+    if (sheet && getComputedStyle(sheet).transform === "none") {
       const body = Array.from(sheet.children).find((el) =>
         el.className.toString().includes("overflow-y-auto"),
       );

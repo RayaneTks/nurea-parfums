@@ -136,7 +136,6 @@ export function PerfumePicker({
       open={open}
       onOpenChange={(o) => (o ? null : onClose())}
       title="Choisir un parfum"
-      maxVh={90}
       footer={footer}
     >
       <>

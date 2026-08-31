@@ -18,8 +18,18 @@ type SheetProps = {
   closeButton?: boolean;
   /** Affiche le drag handle iOS-style (defaut true). */
   handle?: boolean;
-  /** Hauteur max en vh (defaut 92). */
+  /** Hauteur en vh (defaut 92). */
   maxVh?: number;
+  /**
+   * `full` (defaut) — la sheet occupe toute la hauteur allouée, quel que soit
+   * son contenu. `auto` — elle se règle sur son contenu.
+   *
+   * Le défaut est `full` parce qu'une sheet qui épouse son contenu s'ouvre à
+   * mi-écran : la moitié haute est perdue, et dès que le clavier monte il ne
+   * reste presque rien pour le formulaire. Réserver `auto` aux sheets
+   * réellement minuscules.
+   */
+  size?: "full" | "auto";
   /** Footer sticky (CTA principal). */
   footer?: ReactNode;
   /** Désactive le swipe-to-dismiss (utile en mode edit avec dirty). */
@@ -39,6 +49,7 @@ export function Sheet({
   closeButton = true,
   handle = true,
   maxVh = 92,
+  size = "full",
   footer,
   dismissible = true,
   nested = false,
@@ -46,6 +57,16 @@ export function Sheet({
   className,
 }: SheetProps) {
   const Root = nested ? Drawer.NestedRoot : Drawer.Root;
+  /**
+   * Hauteur allouée = part visible souhaitée PLUS la hauteur du clavier.
+   *
+   * La sheet est ancrée au bas du viewport de mise en page, que le clavier iOS
+   * ne rétrécit pas : ses derniers pixels passent sous le clavier, et le pied
+   * les compense par une marge basse égale à l'inset. `--admin-vh` suit lui le
+   * viewport VISUEL, déjà amputé du clavier — sans ce rattrapage, on le
+   * retrancherait deux fois.
+   */
+  const sheetHeight = `min(calc(var(--admin-vh, 100dvh) * ${maxVh / 100} + var(--admin-keyboard-inset, 0px)), 100dvh)`;
   return (
     <Root
       open={open}
@@ -78,7 +99,10 @@ export function Sheet({
            * `min(…, 100dvh)` garde le garde-fou de l'écran plein.
            */
           style={{
-            maxHeight: `min(calc(var(--admin-vh, 100dvh) * ${maxVh / 100} + var(--admin-keyboard-inset, 0px)), 100dvh)`,
+            // Même expression pour `height` et `max-height` : la sheet occupe
+            // la hauteur allouée au lieu de s'ajuster à son contenu.
+            ...(size === "full" ? { height: sheetHeight } : null),
+            maxHeight: sheetHeight,
             zIndex: nested ? 81 : 71,
           }}
         >
@@ -106,7 +130,7 @@ export function Sheet({
                   </Drawer.Title>
                 ) : null}
                 {description ? (
-                  <Drawer.Description className="mt-0.5 text-[12px] text-[var(--admin-text-muted)] truncate">
+                  <Drawer.Description className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-[var(--admin-text-muted)]">
                     {description}
                   </Drawer.Description>
                 ) : null}
