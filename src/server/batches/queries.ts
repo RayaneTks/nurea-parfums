@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import Decimal from "decimal.js-light";
+import { cache } from "react";
 
 export type BatchStatus = "OPEN" | "CLOSED";
 
@@ -96,7 +97,12 @@ function computeKpis(opts: {
   };
 }
 
-export async function listBatches(): Promise<BatchRowLite[]> {
+/**
+ * Mémoïsé par rendu (`react.cache`) : plusieurs blocs du tableau de bord
+ * demandent les mêmes agrégats. Sans ça, chaque bloc rouvrait un aller-retour
+ * vers une base distante, et l'écran attendait la même réponse deux fois.
+ */
+export const listBatches = cache(async (): Promise<BatchRowLite[]> => {
   const batches = await prisma.batch.findMany({
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     select: {
@@ -187,7 +193,7 @@ export async function listBatches(): Promise<BatchRowLite[]> {
       marginPct: kpis.marginPct,
     };
   });
-}
+})
 
 export async function getBatchById(id: string): Promise<BatchDetail | null> {
   const b = await prisma.batch.findUnique({
