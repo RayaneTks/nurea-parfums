@@ -264,6 +264,25 @@ body.admin-route {
   font-variant-numeric: tabular-nums lining-nums;
 }
 
+/* ─── Cibles tactiles ───────────────────────────────────────────────────── */
+
+/*
+ * Surface tactile minimale d'un bouton ou lien TEXTUEL compact.
+ *
+ * Un libellé de 13 px ne fait qu'une vingtaine de pixels de haut : cliquable à
+ * la souris, ratable au pouce. Cette classe étend la zone à 44 px (HIG iOS)
+ * sans toucher à la typographie ni à l'alignement visuel — d'où le recours à
+ * `min-height` plutôt qu'à du padding, qui décalerait le texte.
+ *
+ * À utiliser sur tout contrôle qui n'est ni un `Button` ni une ligne de liste,
+ * les deux étant déjà dimensionnés. Vérifié par `e2e/layout-invariants.spec.ts`.
+ */
+.admin-hit-target {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--admin-touch-min);
+}
+
 /* ─── Touch feedback (Emil: scale 0.97, ~100ms) ─────────────────────────── */
 
 .tap-scale {

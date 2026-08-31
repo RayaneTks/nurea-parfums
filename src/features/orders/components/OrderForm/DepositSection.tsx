@@ -26,7 +26,7 @@ export function DepositSection({
       <button
         type="button"
         onClick={() => onToggle(!on)}
-        className="flex w-full items-start gap-3 text-left tap-scale"
+        className="flex min-h-[var(--admin-touch-min)] w-full items-start gap-3 text-left tap-scale"
         aria-pressed={on}
       >
         <span

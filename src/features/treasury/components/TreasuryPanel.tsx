@@ -191,7 +191,7 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
             <button
               type="button"
               onClick={() => open("create")}
-              className="inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--admin-accent)] tap-scale"
+              className="-mr-2 inline-flex min-h-[var(--admin-touch-min)] items-center gap-1 rounded-[10px] px-2 text-[13px] font-semibold text-[var(--admin-accent)] tap-scale"
             >
               <Plus size={14} /> Poche
             </button>
@@ -451,7 +451,7 @@ function MovementsByMonth({ movements }: { movements: MovementRow[] }) {
               <button
                 type="button"
                 onClick={() => toggle(key)}
-                className="flex w-full items-center justify-between gap-3 px-3 py-2.5 tap-scale"
+                className="flex min-h-[var(--admin-touch-min)] w-full items-center justify-between gap-3 px-3 py-2.5 tap-scale"
               >
                 <span className="flex items-center gap-2">
                   <ChevronDown

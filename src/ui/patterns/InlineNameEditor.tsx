@@ -151,7 +151,7 @@ export function InlineNameEditor({
       disabled={disabled}
       aria-label={ariaLabel}
       className={cn(
-        "group inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-[8px] text-left",
+        "group admin-hit-target min-w-0 max-w-full gap-1.5 rounded-[8px] text-left",
         "tap-scale focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
         disabled ? "cursor-default" : "cursor-text hover:bg-[var(--admin-surface-muted)] px-1.5 -mx-1.5",
         className,

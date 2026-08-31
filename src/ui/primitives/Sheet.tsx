@@ -94,7 +94,7 @@ export function Sheet({
                   type="button"
                   onClick={() => onOpenChange(false)}
                   aria-label="Fermer"
-                  className="-ml-2 inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--admin-text-muted)] tap-scale hover:bg-[var(--admin-surface-muted)]"
+                  className="-ml-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-[var(--admin-text-muted)] tap-scale hover:bg-[var(--admin-surface-muted)]"
                 >
                   <X size={18} />
                 </button>

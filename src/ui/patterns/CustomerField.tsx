@@ -57,7 +57,7 @@ export function CustomerField({
         <button
           type="button"
           onClick={() => setFreeform(true)}
-          className="self-start text-[13px] font-medium text-[var(--admin-accent)] tap-scale hover:underline"
+          className="-ml-2 inline-flex min-h-[var(--admin-touch-min)] items-center self-start rounded-[10px] px-2 text-[13px] font-medium text-[var(--admin-accent)] tap-scale hover:underline"
         >
           Client de passage, sans fiche
         </button>

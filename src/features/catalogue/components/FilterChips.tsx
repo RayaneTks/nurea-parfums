@@ -33,6 +33,9 @@ export function FilterChips<T extends string>({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
+      /* 34 px assumé : filtre secondaire, au même gabarit que les chips de
+         Mail iOS. Les cibles principales de l'écran restent à 44 px. */
+      data-touch-exempt
       className={cn(
         "flex gap-1.5 overflow-x-auto pb-0.5",
         "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
