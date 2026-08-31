@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
+import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -75,6 +76,7 @@ export async function POST(
 
     await writeAudit(ctx.sub, "batch.assign-orders", "Batch", id, result);
 
+    revalidateAdminData(["lots", "commandes"]);
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     console.error("[api/admin/batches/[id]/assign-orders][POST]", error);

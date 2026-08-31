@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
+import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -77,6 +78,7 @@ export async function POST(
       detachIds,
     });
 
+    revalidateAdminData(["lots", "ventes"]);
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     console.error("[api/admin/batches/[id]/assign][POST]", error);

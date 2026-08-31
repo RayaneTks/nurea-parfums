@@ -4,6 +4,7 @@ import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { listBatches, listOpenBatchesLite } from "@/server/batches/queries";
+import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -74,6 +75,7 @@ export async function POST(request: Request) {
 
     await writeAudit(ctx.sub, "batch.create", "Batch", batch.id, { name });
 
+    revalidateAdminData(["lots"]);
     return NextResponse.json({ batch });
   } catch (error) {
     console.error("[api/admin/batches][POST]", error);

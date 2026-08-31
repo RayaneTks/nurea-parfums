@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { getCustomerById } from "@/server/customers/queries";
 import { deleteCustomerAction, updateCustomerAction } from "@/server/customers/actions";
+import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -32,6 +33,7 @@ export async function PATCH(request: Request, { params }: Params) {
   }
   const result = await updateCustomerAction(id, body as Parameters<typeof updateCustomerAction>[1]);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+  revalidateAdminData(["clients", "commandes", "ventes"]);
   return NextResponse.json({ customer: result.data });
 }
 
@@ -44,5 +46,6 @@ export async function DELETE(request: Request, { params }: Params) {
   const { id } = await params;
   const result = await deleteCustomerAction(id);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+  revalidateAdminData(["clients", "commandes", "ventes"]);
   return NextResponse.json({ ok: true });
 }

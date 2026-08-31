@@ -4,6 +4,7 @@ import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { getBatchById } from "@/server/batches/queries";
+import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -28,6 +29,7 @@ export async function GET(
     if (!batch) {
       return NextResponse.json({ error: "Lot introuvable." }, { status: 404 });
     }
+    revalidateAdminData(["lots"]);
     return NextResponse.json({ batch });
   } catch (error) {
     console.error("[api/admin/batches/[id]][GET]", error);
@@ -140,6 +142,7 @@ export async function DELETE(
     }
     await prisma.batch.delete({ where: { id } });
     await writeAudit(ctx.sub, "batch.delete", "Batch", id);
+    revalidateAdminData(["lots", "ventes", "commandes"]);
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[api/admin/batches/[id]][DELETE]", error);

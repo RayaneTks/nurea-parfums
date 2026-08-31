@@ -5,6 +5,7 @@ import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { serializeOrder } from "@/lib/gestion/orderJson";
 import { deriveFulfillment } from "@/domain/order-status";
+import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -131,6 +132,7 @@ export async function PATCH(
       items: updates.length,
     });
 
+    revalidateAdminData(["commandes"], { orderId: id });
     return NextResponse.json({
       order: serializeOrder(updated),
       fulfillment: deriveFulfillment(updated.items),
