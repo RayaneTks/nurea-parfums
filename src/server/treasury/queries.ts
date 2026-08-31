@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import Decimal from "decimal.js-light";
 import type { PocketKind, CashMovementKind } from "@prisma/client";
+import { cache } from "react";
 
 export type PocketWithBalance = {
   id: string;
@@ -37,7 +38,12 @@ export type MovementRow = {
 
 // Pas de cache : données financières à faible trafic qui doivent rester
 // fraîches immédiatement après chaque mouvement (vente, dépense, transfert…).
-export async function treasurySummary(): Promise<TreasurySummary> {
+/**
+ * Mémoïsé par rendu (`react.cache`) : plusieurs blocs du tableau de bord
+ * demandent les mêmes agrégats. Sans ça, chaque bloc rouvrait un aller-retour
+ * vers une base distante, et l'écran attendait la même réponse deux fois.
+ */
+export const treasurySummary = cache(async (): Promise<TreasurySummary> => {
     const [pockets, sums] = await Promise.all([
       prisma.pocket.findMany({
         where: { archived: false },
@@ -81,7 +87,7 @@ export async function treasurySummary(): Promise<TreasurySummary> {
       unattributed: unattributed.toFixed(2),
       pockets: rows,
     };
-}
+})
 
 /** Soldes des poches actives (sans le wrapper résumé). */
 export async function listPockets(): Promise<PocketWithBalance[]> {

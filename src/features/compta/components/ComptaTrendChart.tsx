@@ -9,9 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { TrendingUp } from "lucide-react";
 import { Card } from "@/ui/primitives/Card";
-import { EmptyState } from "@/ui/primitives/EmptyState";
 import type { SaleRowLite } from "@/server/sales/queries";
 
 type WeekPoint = {
@@ -89,18 +87,9 @@ function ChartTooltip({ active, payload }: TooltipPayload & { active?: boolean }
 export function ComptaTrendChart({ sales }: ComptaTrendChartProps) {
   const data = useMemo(() => buildWeeklyTrend(sales), [sales]);
 
-  if (data.length === 0) {
-    return (
-      <Card padding={3} tone="surface">
-        <EmptyState
-          icon={TrendingUp}
-          title="Pas assez de données"
-          description="Le graphique s'affiche dès qu'une vente est enregistrée."
-          className="py-6"
-        />
-      </Card>
-    );
-  }
+  // Sous deux points, une courbe ne raconte rien : mieux vaut rendre l'espace
+  // à la liste des ventes que d'afficher un cadre vide.
+  if (data.length < 2) return null;
 
   return (
     <Card padding={3} tone="surface" className="min-w-0">
@@ -112,7 +101,9 @@ export function ComptaTrendChart({ sales }: ComptaTrendChartProps) {
           8 dernières sem.
         </span>
       </div>
-      <div className="mt-2 min-w-0 w-full" style={{ height: 148 }}>
+      {/* 112 px : trois à huit barres n'ont pas besoin de plus, et sur un
+          écran de téléphone chaque bloc doit gagner sa hauteur. */}
+      <div className="mt-2 min-w-0 w-full" style={{ height: 112 }}>
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           {/* `left: 0` + axe large : avec une marge négative, les milliers de
                 l'axe Y étaient rognés et n'affichaient qu'un « 0 ». */}

@@ -3,6 +3,7 @@ import Decimal from "decimal.js-light";
 import { unstable_cache } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
 import { confirmedOrdersFinancials } from "@/server/orders/financials";
+import { cache } from "react";
 
 export type PeriodRange = { start: Date; end: Date };
 
@@ -76,7 +77,12 @@ const cachedRevenueSummaryGlobal = unstable_cache(
   },
 );
 
-export async function revenueSummary(): Promise<RevenueSummary> {
+/**
+ * Mémoïsé par rendu (`react.cache`) : plusieurs blocs du tableau de bord
+ * demandent les mêmes agrégats. Sans ça, chaque bloc rouvrait un aller-retour
+ * vers une base distante, et l'écran attendait la même réponse deux fois.
+ */
+export const revenueSummary = cache(async (): Promise<RevenueSummary> => {
   const agg = await cachedRevenueSummaryGlobal();
 
   const salesRevenue = new Decimal(agg.totalRevenue);
@@ -109,7 +115,7 @@ export async function revenueSummary(): Promise<RevenueSummary> {
     count,
     avgCashedValue,
   };
-}
+})
 
 export type TopPerfumeRow = {
   perfumeId: number | null;
@@ -329,7 +335,12 @@ const cachedPipelineCounts = unstable_cache(
   { tags: [tagFor.pipeline(), tagFor.orders()], revalidate: 30 },
 );
 
-export async function pipelineCounts(): Promise<Pipeline> {
+/**
+ * Mémoïsé par rendu (`react.cache`) : plusieurs blocs du tableau de bord
+ * demandent les mêmes agrégats. Sans ça, chaque bloc rouvrait un aller-retour
+ * vers une base distante, et l'écran attendait la même réponse deux fois.
+ */
+export const pipelineCounts = cache(async (): Promise<Pipeline> => {
   const { pending, ready, overdue } = await cachedPipelineCounts();
 
   // dueAmount : somme (items total) - somme (payments hors REFUND) sur commandes actives.
@@ -366,4 +377,4 @@ export async function pipelineCounts(): Promise<Pipeline> {
     overdueCount: overdue,
     dueAmount,
   };
-}
+})
