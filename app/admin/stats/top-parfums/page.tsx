@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { PageScaffold } from "@/ui/patterns/PageScaffold";
 import { Stack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
@@ -25,14 +23,6 @@ export default async function TopPerfumesPage() {
     <PageScaffold padding={4} ariaLabel="Top parfums">
       <Stack gap={4}>
         <header>
-          <Link
-            href="/admin"
-            prefetch
-            className="mb-2 inline-flex h-9 items-center gap-1 rounded-full pr-3 text-[13px] font-medium text-[var(--admin-text-muted)] tap-scale hover:text-[var(--admin-text)]"
-          >
-            <ChevronLeft size={16} aria-hidden />
-            Tableau
-          </Link>
           <Heading level={1}>Top parfums</Heading>
           <p className="mt-0.5 text-[13px] text-[var(--admin-text-muted)]">
             Classement complet depuis le début · {totalQty} unité{totalQty > 1 ? "s" : ""} ·{" "}

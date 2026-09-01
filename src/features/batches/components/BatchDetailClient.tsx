@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  ArrowLeft,
   PackageOpen,
   PackageCheck,
   Plus,
@@ -143,13 +142,6 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
   return (
     <>
       <Stack gap={4}>
-        <Link
-          href="/admin/lots"
-          className="inline-flex items-center gap-1 text-[13px] text-[var(--admin-text-muted)] hover:text-[var(--admin-text)] tap-scale w-fit"
-        >
-          <ArrowLeft size={14} /> Lots
-        </Link>
-
         <Card padding={3}>
           <div className="flex items-start gap-3">
             <span

@@ -11,6 +11,7 @@ type CustomerOrdersHistoryProps = {
     id: string;
     orderedAt: string;
     total: string;
+    due: string;
     status: OrderStatus;
   }>;
 };
@@ -39,7 +40,19 @@ export function CustomerOrdersHistory({ orders }: CustomerOrdersHistoryProps) {
                 <p className="text-[14px] font-medium text-[var(--admin-text)]">
                   <RelativeTime date={o.orderedAt} />
                 </p>
-                <Money value={o.total} compact />
+                {Number(o.due) > 0.005 ? (
+                  <span className="flex items-baseline gap-1.5">
+                    <Money value={o.due} compact bold tone="warning" />
+                    <span className="text-[11px] text-[var(--admin-warning)]">
+                      à encaisser
+                    </span>
+                    <span className="text-[11px] text-[var(--admin-text-subtle)]">
+                      sur <Money value={o.total} compact />
+                    </span>
+                  </span>
+                ) : (
+                  <Money value={o.total} compact tone="muted" />
+                )}
               </div>
               <OrderStatusBadge status={o.status} />
               <ChevronRight size={14} className="text-[var(--admin-text-subtle)]" aria-hidden />

@@ -362,16 +362,27 @@ export function CatalogueClient({ initialData }: { initialData: AdminCatalogueCa
         ) : null}
       </header>
 
+      {/*
+        Les onglets sortent de la zone épinglée, la recherche y reste.
+
+        Le bloc collant faisait 124 px, soit près d'un tiers d'un écran de
+        téléphone confisqué pendant tout le défilement. Or on ne change pas de
+        section au milieu d'une liste — on le fait en arrivant, une fois — alors
+        qu'on cherche, lui, à n'importe quel moment. Les onglets libèrent donc
+        leur hauteur au premier geste, la recherche reste sous le pouce : 60 px
+        rendus en permanence, une ligne de parfum de plus.
+      */}
+      <SegmentedControl
+        options={TAB_OPTIONS}
+        value={tab}
+        onChange={setTab}
+        ariaLabel="Section du catalogue"
+      />
+
       <div
         className="sticky top-0 z-20 -mx-4 -mb-4 flex flex-col gap-2 px-4 pb-4 pt-1"
         style={{ background: "var(--admin-bg)" }}
       >
-        <SegmentedControl
-          options={TAB_OPTIONS}
-          value={tab}
-          onChange={setTab}
-          ariaLabel="Section du catalogue"
-        />
         <SearchField
           value={search}
           onChange={setSearch}
