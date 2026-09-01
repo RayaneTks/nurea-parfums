@@ -26,12 +26,22 @@ export function BatchGroupSection({
 
   return (
     <Card padding={0} elevated borderless={false} tone={closed ? "alt" : "surface"}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="flex w-full items-center gap-3 px-3 py-3 tap-scale active:bg-[var(--admin-surface-muted)] rounded-t-[18px]"
-      >
+      {/*
+        Deux actions, deux éléments côte à côte — et non l'un dans l'autre.
+
+        Le lien « ouvrir le lot » était imbriqué DANS le bouton de repli : du
+        HTML invalide (un contrôle interactif dans un autre), une zone de 36 px
+        posée au milieu d'une cible pleine largeur, et un `stopPropagation`
+        pour rattraper le chevauchement. Selon deux pixels près, le même geste
+        repliait ou changeait d'écran.
+      */}
+      <div className="flex w-full items-center gap-1 rounded-t-[18px] pr-2">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="flex min-w-0 flex-1 items-center gap-3 px-3 py-3 text-left tap-scale active:bg-[var(--admin-surface-muted)] rounded-tl-[18px]"
+        >
         <span
           className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
           style={{
@@ -75,14 +85,6 @@ export function BatchGroupSection({
             ) : null}
           </p>
         </div>
-        <Link
-          href={`/admin/lots/${group.batchId}`}
-          onClick={(e) => e.stopPropagation()}
-          aria-label={`Ouvrir le lot ${group.batchName}`}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--admin-accent)] tap-scale hover:bg-[var(--admin-accent-bg)]"
-        >
-          <ExternalLink size={15} aria-hidden />
-        </Link>
         <ChevronDown
           size={18}
           className={cn(
@@ -91,7 +93,15 @@ export function BatchGroupSection({
           )}
           aria-hidden
         />
-      </button>
+        </button>
+        <Link
+          href={`/admin/lots/${group.batchId}`}
+          aria-label={`Ouvrir le lot ${group.batchName}`}
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--admin-accent)] tap-scale hover:bg-[var(--admin-accent-bg)]"
+        >
+          <ExternalLink size={17} aria-hidden />
+        </Link>
+      </div>
       {open ? (
         <ul
           className="divide-y px-2 pb-1"

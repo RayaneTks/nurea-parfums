@@ -23,6 +23,7 @@ type CustomerDetailClientProps = {
     id: string;
     orderedAt: string;
     total: string;
+    due: string;
     status: OrderStatus;
   }>;
 };

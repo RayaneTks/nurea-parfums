@@ -121,7 +121,19 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
   return (
     <>
       <Stack gap={4}>
-        <ComptaHeader query={query} onQueryChange={setQuery} />
+        {/*
+          La recherche n'apparaît que si la liste est assez longue pour qu'on
+          s'y perde.
+
+          L'écran empile déjà 480 px avant la première ligne de travail sur un
+          téléphone — en-tête, onglets, recherche, chiffres — soit plus de la
+          moitié de la hauteur. Tout y est légitime SAUF un champ de recherche
+          au-dessus d'une liste qui tient en un écran : on la parcourt plus vite
+          des yeux qu'on ne tape.
+        */}
+        {data.customerGroups.length + data.batchGroups.length + orderRows.length > 6 ? (
+          <ComptaHeader query={query} onQueryChange={setQuery} />
+        ) : null}
         <ComptaKpiRow
           summary={data.summary}
           salesCashed={data.summary.salesCashed}
