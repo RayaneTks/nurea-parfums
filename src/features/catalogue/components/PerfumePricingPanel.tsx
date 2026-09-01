@@ -156,10 +156,10 @@ export function PerfumePricingPanel({ perfumeId, initial }: PerfumePricingPanelP
                       type="button"
                       onClick={() => remove(v)}
                       disabled={pending && deletingVolume === v}
-                      className="inline-flex items-center gap-1 text-[12px] text-[var(--admin-danger)] tap-scale hover:underline disabled:opacity-50"
+                      className="admin-hit-target gap-1 px-2 text-[12px] text-[var(--admin-danger)] tap-scale hover:underline disabled:opacity-50"
                       aria-label={`Supprimer prix ${v}ml`}
                     >
-                      <Trash2 size={12} /> Retirer
+                      <Trash2 size={14} /> Retirer
                     </button>
                   ) : null}
                 </HStack>

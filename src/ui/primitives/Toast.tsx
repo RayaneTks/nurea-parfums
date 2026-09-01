@@ -64,11 +64,18 @@ export function Toast({
         {iconByType[type]}
       </span>
       <p className="flex-1 text-[14px] leading-snug text-[var(--admin-text)]">{message}</p>
+      {/*
+        « Annuler » est souvent la dernière chance de rattraper une
+        suppression. Il faisait 29 px de haut, à douze pixels d'une croix qui,
+        elle, referme et laisse la suppression faite : deux cibles voisines,
+        l'une trop petite, aux conséquences opposées. La cible passe à 44 px et
+        l'écart entre les deux à 12 px.
+      */}
       {actionLabel && onAction ? (
         <button
           type="button"
           onClick={onAction}
-          className="shrink-0 self-center rounded-lg px-2 py-1 text-[14px] font-semibold text-[var(--admin-accent)] tap-scale hover:bg-[var(--admin-accent-bg)]"
+          className="admin-hit-target mr-3 shrink-0 self-center rounded-lg px-3 text-[14px] font-semibold text-[var(--admin-accent)] tap-scale hover:bg-[var(--admin-accent-bg)]"
         >
           {actionLabel}
         </button>
@@ -77,9 +84,9 @@ export function Toast({
         type="button"
         onClick={onClose}
         aria-label="Fermer"
-        className="-mr-1 shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--admin-text-subtle)] tap-scale hover:bg-[var(--admin-surface-muted)]"
+        className="-mr-1 shrink-0 inline-flex h-11 w-11 items-center justify-center rounded-full text-[var(--admin-text-subtle)] tap-scale hover:bg-[var(--admin-surface-muted)]"
       >
-        <X size={14} />
+        <X size={16} />
       </button>
     </div>
   );

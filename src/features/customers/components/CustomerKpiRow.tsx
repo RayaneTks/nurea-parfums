@@ -21,7 +21,7 @@ export function CustomerKpiRow({ customer }: CustomerKpiRowProps) {
       </Card>
       <Card padding={3} tone={due > 0.01 ? "accent" : "surface"}>
         <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-          Ardoise
+          À encaisser
         </p>
         <p className="mt-1 text-[18px] font-bold leading-none">
           {due > 0.01 ? (

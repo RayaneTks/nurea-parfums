@@ -51,7 +51,7 @@ export function SaleListRow({
                 background: "var(--admin-warning-bg)",
                 color: "var(--admin-warning)",
               }}
-              aria-label={`Reste à payer ${remaining.toFixed(0)} euros`}
+              aria-label={`${formateEuros(remaining)} à encaisser`}
             >
               Reste {formateEuros(remaining, { compact: true })}
             </span>

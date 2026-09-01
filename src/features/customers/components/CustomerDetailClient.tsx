@@ -81,6 +81,13 @@ export function CustomerDetailClient({ customer, orders }: CustomerDetailClientP
         <CustomerHeader customer={current} onNameSave={handleNameSave} />
         <CustomerKpiRow customer={current} />
 
+        {/*
+          Les boutons de contact sont neutres, et ce n'est pas un oubli.
+          « Appeler » et « WhatsApp » portaient le vert « encaissé », « Snap »
+          l'ambre « à encaisser ». Trois couleurs d'argent sur une fiche client
+          où l'on lit justement combien ce client doit : le vert et l'ambre y
+          perdaient leur sens au moment précis où on en a besoin.
+        */}
         {(current.phoneE164 ?? current.whatsappE164 ?? current.snapchat) ? (
           <div className="flex flex-wrap gap-2">
             {current.phoneE164 ? (
@@ -88,9 +95,9 @@ export function CustomerDetailClient({ customer, orders }: CustomerDetailClientP
                 href={`tel:${current.phoneE164}`}
                 className="inline-flex items-center gap-2 rounded-[12px] px-4 py-2.5 text-[14px] font-medium tap-scale"
                 style={{
-                  background: "var(--admin-success-bg)",
-                  color: "var(--admin-success)",
-                  border: "1px solid color-mix(in srgb, var(--admin-success) 25%, transparent)",
+                  background: "var(--admin-surface)",
+                  color: "var(--admin-accent)",
+                  border: "1px solid var(--admin-border)",
                 }}
               >
                 <Phone size={15} aria-hidden /> Appeler
@@ -103,9 +110,9 @@ export function CustomerDetailClient({ customer, orders }: CustomerDetailClientP
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-[12px] px-4 py-2.5 text-[14px] font-medium tap-scale"
                 style={{
-                  background: "var(--admin-success-bg)",
-                  color: "var(--admin-success)",
-                  border: "1px solid color-mix(in srgb, var(--admin-success) 25%, transparent)",
+                  background: "var(--admin-surface)",
+                  color: "var(--admin-accent)",
+                  border: "1px solid var(--admin-border)",
                 }}
               >
                 <MessageCircle size={15} aria-hidden /> WhatsApp
@@ -118,9 +125,9 @@ export function CustomerDetailClient({ customer, orders }: CustomerDetailClientP
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-[12px] px-4 py-2.5 text-[14px] font-medium tap-scale"
                 style={{
-                  background: "var(--admin-warning-bg)",
-                  color: "var(--admin-warning)",
-                  border: "1px solid color-mix(in srgb, var(--admin-warning) 25%, transparent)",
+                  background: "var(--admin-surface)",
+                  color: "var(--admin-accent)",
+                  border: "1px solid var(--admin-border)",
                 }}
               >
                 <span className="text-[13px] leading-none font-bold">👻</span> Snap

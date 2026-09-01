@@ -40,7 +40,10 @@ export function OrderSummaryCard({ order }: OrderSummaryCardProps) {
           Dû
         </p>
         <p className="mt-1 text-[18px] font-bold leading-none">
-          <Money value={order.due} bold tone={dueNum > 0.01 ? "danger" : "muted"} />
+          {/* Ambre et non rouge : le rouge dit une perte, pas une attente. Un
+              client qui n'a pas encore payé ne fait perdre d'argent à
+              personne. */}
+          <Money value={order.due} bold tone={dueNum > 0.01 ? "warning" : "muted"} />
         </p>
       </Card>
     </div>
