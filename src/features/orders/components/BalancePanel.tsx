@@ -241,7 +241,7 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
         description={
           sheetType === "DEPOSIT"
             ? "Premier acompte → passe automatiquement en « à traiter »."
-            : `Reste dû : ${formateEuros(dueNum)}.`
+            : `${formateEuros(dueNum)} à encaisser.`
         }
         footer={
           <Button

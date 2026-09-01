@@ -69,7 +69,7 @@ export function BatchListRow({ batch }: BatchListRowProps) {
                     color: "var(--admin-warning)",
                   }}
                 >
-                  Reste {formateEuros(outstanding, { compact: true })}
+                  {formateEuros(outstanding, { compact: true })} à encaisser
                 </span>
               ) : null}
             </div>

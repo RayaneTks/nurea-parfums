@@ -21,28 +21,45 @@ export async function PipelineBlock() {
   const p = await pipelineCounts();
   if (p.pendingCount === 0 && p.readyCount === 0 && p.overdueCount === 0) return null;
 
+  /*
+   * Les couleurs suivent celles des pastilles de statut : le bordeaux marque
+   * l'endroit où il y a du travail, le vert reste réservé à ce qui est fait.
+   * « À traiter » portait le vert, c'est-à-dire la couleur qui dit « c'est
+   * réglé » partout ailleurs dans l'app.
+   *
+   * « En retard » ne s'affiche que s'il y en a. Une tuile rouge à zéro occupait
+   * un tiers de la rangée pour annoncer qu'il n'y a rien à faire — et la
+   * couleur d'alerte s'y usait à vide.
+   */
   const cells: Cell[] = [
     {
       href: "/admin/ordres?filter=pending",
       label: "En attente",
       count: p.pendingCount,
-      fg: "var(--admin-warning)",
-      bg: "var(--admin-warning-bg)",
+      fg: "var(--admin-text-muted)",
+      bg: "var(--admin-surface-muted)",
     },
     {
       href: "/admin/ordres?filter=ready",
       label: "À traiter",
       count: p.readyCount,
-      fg: "var(--admin-success)",
-      bg: "var(--admin-success-bg)",
+      fg: "var(--admin-accent)",
+      bg: "var(--admin-accent-bg)",
     },
-    {
-      href: "/admin/ordres?filter=ready",
-      label: "En retard",
-      count: p.overdueCount,
-      fg: p.overdueCount > 0 ? "var(--admin-danger)" : "var(--admin-text-subtle)",
-      bg: p.overdueCount > 0 ? "var(--admin-danger-bg)" : "var(--admin-surface-muted)",
-    },
+    // Les commandes en retard sont un sous-ensemble de « à traiter », et la
+    // liste n'a pas de filtre pour elles : le lien y mène donc, faute de mieux,
+    // mais au moins il ne promet pas une vue qui n'existe pas.
+    ...(p.overdueCount > 0
+      ? [
+          {
+            href: "/admin/ordres?filter=ready",
+            label: "dont en retard",
+            count: p.overdueCount,
+            fg: "var(--admin-danger)",
+            bg: "var(--admin-danger-bg)",
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -50,7 +67,7 @@ export async function PipelineBlock() {
       <h2 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--admin-text-muted)]">
         Commandes
       </h2>
-      <div className="grid grid-cols-3 gap-2">
+      <div className={cn("grid gap-2", cells.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
         {cells.map((cell) => (
           <Link
             key={cell.label}

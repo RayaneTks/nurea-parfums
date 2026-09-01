@@ -316,7 +316,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
                                 color: "var(--admin-warning)",
                               }}
                             >
-                              Reste {formateEuros(due, { compact: true })}
+                              {formateEuros(due, { compact: true })} à encaisser
                             </span>
                           ) : null}
                         </div>
@@ -420,7 +420,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
                         <Money value={o.cashed} bold className="text-[14px]" />
                         {due > 0.005 ? (
                           <p className="mt-0.5 text-[11px] text-[var(--admin-warning)]">
-                            Reste {formateEuros(due, { compact: true })}
+                            {formateEuros(due, { compact: true })} à encaisser
                           </p>
                         ) : null}
                       </div>

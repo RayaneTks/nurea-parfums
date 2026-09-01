@@ -12,7 +12,6 @@ import { WindowedList } from "@/ui/primitives/WindowedList";
 import { SkeletonList } from "@/ui/primitives/Skeleton";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
 import { Button } from "@/ui/primitives/Button";
-import { FAB } from "@/ui/primitives/FAB";
 import { PageScaffold } from "@/ui/patterns/PageScaffold";
 import { stockStatus } from "@/domain/stock";
 import { readJsonSafe } from "@/lib/admin/http";
@@ -343,11 +342,24 @@ export function CatalogueClient({ initialData }: { initialData: AdminCatalogueCa
       {/* Titre non collant : il libère sa hauteur dès le premier geste de
           défilement. Seule la barre d'outils reste épinglée, parce que
           chercher et filtrer se fait au milieu de la liste. */}
-      <header className="flex items-baseline justify-between gap-3">
-        <Heading level={1}>Catalogue</Heading>
-        <p className="shrink-0 text-[13px] tabular-nums text-[var(--admin-text-muted)]">
-          {perfumes.length} parfums · {brands.length} marques
-        </p>
+      <header className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <Heading level={1}>Catalogue</Heading>
+          <p className="mt-0.5 text-[13px] tabular-nums text-[var(--admin-text-muted)]">
+            {perfumes.length} parfums · {brands.length} marques
+          </p>
+        </div>
+        {/* Le bouton flottant se posait sur la colonne de droite des lignes —
+            mesuré, il recouvrait l'œil de visibilité d'un parfum. Et il
+            montrait un « + » à soixante pixels de celui de la barre d'onglets,
+            qui ouvre la vente. */}
+        {canEdit && fabHref ? (
+          <Link href={fabHref} className="shrink-0">
+            <Button variant="primary" size="sm" leadingIcon={<Plus size={16} />}>
+              {tab === "perfumes" ? "Parfum" : "Marque"}
+            </Button>
+          </Link>
+        ) : null}
       </header>
 
       <div
@@ -465,14 +477,6 @@ export function CatalogueClient({ initialData }: { initialData: AdminCatalogueCa
           onToggle={(perfume, next) => void toggleFeatured(perfume, next)}
         />
       )}
-
-      {canEdit && fabHref ? (
-        <FAB
-          href={fabHref}
-          icon={Plus}
-          ariaLabel={tab === "perfumes" ? "Nouveau parfum" : "Nouvelle marque"}
-        />
-      ) : null}
 
       {toast ? (
         <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />

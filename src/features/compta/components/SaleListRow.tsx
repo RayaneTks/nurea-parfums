@@ -53,7 +53,7 @@ export function SaleListRow({
               }}
               aria-label={`${formateEuros(remaining)} à encaisser`}
             >
-              Reste {formateEuros(remaining, { compact: true })}
+              {formateEuros(remaining, { compact: true })} à encaisser
             </span>
           ) : null}
           {!hideContextTags && sale.batchName ? (

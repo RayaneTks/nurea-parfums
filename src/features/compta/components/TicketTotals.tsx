@@ -17,8 +17,12 @@ export function TicketTotals({ sale }: TicketTotalsProps) {
   return (
     <div className="grid grid-cols-3 gap-2">
       <Card padding={3} tone="surface">
+        {/* « Vendu » et non « CA » : le vocabulaire du produit interdit ce
+            dernier, qui se confond avec l'encaissé. Ici il s'agit du prix de
+            la vente, que le client l'ait payé ou non — l'encaissé est dit
+            juste à côté, dans le bloc de paiement. */}
         <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-          CA
+          Vendu
         </p>
         <p className="mt-1 text-[18px] font-bold leading-none">
           <Money value={sale.totalRevenue} bold />

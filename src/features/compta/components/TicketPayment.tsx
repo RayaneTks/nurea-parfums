@@ -65,7 +65,7 @@ export function TicketPayment({ total, remainingDue, mode, onChange }: TicketPay
           {!isFullyPaid ? (
             <div className="text-right">
               <p className="text-[11px] uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-                Reste
+                À encaisser
               </p>
               <span
                 className="tnum whitespace-nowrap text-[14px] font-semibold"
@@ -96,10 +96,10 @@ export function TicketPayment({ total, remainingDue, mode, onChange }: TicketPay
           onChange={(e) => onChange(e.target.value)}
           placeholder="0"
           numeric
-          aria-label="Reste à payer en euros"
+          aria-label="Montant restant à encaisser, en euros"
           enterKeyHint="done"
-          error={isOver ? "Reste > total" : undefined}
-          hint={!isOver ? `Payé: ${formateEuros(paid)}` : undefined}
+          error={isOver ? "Supérieur au total de la vente" : undefined}
+          hint={!isOver ? `${formateEuros(paid)} déjà encaissés` : undefined}
         />
       </div>
     </Card>

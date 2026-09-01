@@ -63,7 +63,7 @@ export async function MoneyBlock() {
         </span>
       </Link>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className={`grid gap-2 ${month.count > 0 ? "grid-cols-3" : "grid-cols-2"}`}>
         <SecondaryTile
           label="À encaisser"
           value={global.outstandingRevenue}
@@ -79,12 +79,21 @@ export async function MoneyBlock() {
           hint="toutes poches"
           href="/admin/compta?vue=tresorerie"
         />
-        <SecondaryTile
-          label="Ce mois"
-          value={month.cashed}
-          hint={`${month.count} vente${month.count > 1 ? "s" : ""}`}
-          href="/admin/compta"
-        />
+        {/*
+          « Ce mois » ne s'affiche que s'il s'est passé quelque chose.
+          Une tuile qui annonce « 0 € · 0 vente » occupe un tiers de la rangée
+          pour dire qu'il n'y a rien à dire — et c'est le cas les premiers
+          jours de CHAQUE mois, c'est-à-dire au moment où l'on regarde le
+          tableau de bord en se demandant par quoi commencer.
+        */}
+        {month.count > 0 ? (
+          <SecondaryTile
+            label="Ce mois"
+            value={month.cashed}
+            hint={`${month.count} vente${month.count > 1 ? "s" : ""}`}
+            href="/admin/compta"
+          />
+        ) : null}
       </div>
     </section>
   );
@@ -121,7 +130,10 @@ function SecondaryTile({
         {label}
       </span>
       <span className="mt-1.5 block text-[17px] font-bold leading-none">
-        <Money value={value} compact tone={tone === "warning" ? "danger" : "default"} />
+        {/* Ambre et non rouge. Le rouge dit une perte ; de l'argent qu'un
+            client n'a pas encore versé n'en est pas une, et le peindre ainsi
+            use la couleur des vraies alertes. */}
+        <Money value={value} compact tone={tone === "warning" ? "warning" : "default"} />
       </span>
       <span className="mt-1 block truncate text-[10px] text-[var(--admin-text-subtle)]">
         {hint}

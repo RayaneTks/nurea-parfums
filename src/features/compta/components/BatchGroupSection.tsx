@@ -70,7 +70,7 @@ export function BatchGroupSection({
                   color: "var(--admin-warning)",
                 }}
               >
-                Reste {formateEuros(Number(group.outstandingRevenue), { compact: true })}
+                {formateEuros(Number(group.outstandingRevenue), { compact: true })} à encaisser
               </span>
             ) : null}
           </p>
