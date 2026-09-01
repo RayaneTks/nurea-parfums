@@ -1,6 +1,7 @@
 import { Card } from "@/ui/primitives/Card";
 import { Money } from "@/ui/patterns/Money";
 import type { SaleDetailRow } from "@/server/sales/queries";
+import { formatePourcent } from "@/ui/patterns/format";
 
 type TicketTotalsProps = {
   sale: SaleDetailRow;
@@ -11,7 +12,7 @@ export function TicketTotals({ sale }: TicketTotalsProps) {
   const margin = Number(sale.totalMargin);
   const remaining = Number(sale.remainingDue ?? "0");
   const hasDebt = Number.isFinite(remaining) && remaining > 0;
-  const marginPct = rev > 0 ? ((margin / rev) * 100).toFixed(1) : "0.0";
+  const marginPct = rev > 0 ? (margin / rev) * 100 : 0;
 
   return (
     <div className="grid grid-cols-3 gap-2">
@@ -36,21 +37,19 @@ export function TicketTotals({ sale }: TicketTotalsProps) {
           {hasDebt ? "Marge à risque" : "Marge"}
         </p>
         <p className="mt-1 text-[18px] font-bold leading-none">
-          {hasDebt ? (
-            <Money value={-Math.abs(margin)} bold tone="danger" />
-          ) : (
-            <Money value={sale.totalMargin} bold tone="auto" />
-          )}
+          {/* Le signe reste celui de la marge réelle : voir SaleListRow. Le
+              titre « Marge à risque » dit déjà qu'elle n'est pas encaissée. */}
+          <Money value={sale.totalMargin} bold tone={hasDebt ? "warning" : "auto"} />
         </p>
         <p
           className="mt-0.5 text-[11px] tabular-nums"
           style={{
             color: hasDebt
-              ? "var(--admin-danger)"
+              ? "var(--admin-warning)"
               : "var(--admin-text-subtle)",
           }}
         >
-          {hasDebt ? "non encaissée" : `${marginPct}%`}
+          {hasDebt ? "non encaissée" : formatePourcent(marginPct, 1)}
         </p>
       </Card>
     </div>

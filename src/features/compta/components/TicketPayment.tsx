@@ -5,6 +5,7 @@ import { Card } from "@/ui/primitives/Card";
 import { Input } from "@/ui/primitives/Input";
 import { Money } from "@/ui/patterns/Money";
 import { Check, AlertCircle } from "lucide-react";
+import { formateEuros } from "@/ui/patterns/format";
 
 type TicketPaymentProps = {
   total: number;
@@ -70,7 +71,7 @@ export function TicketPayment({ total, remainingDue, mode, onChange }: TicketPay
                 className="tnum whitespace-nowrap text-[14px] font-semibold"
                 style={{ color: "var(--admin-warning)" }}
               >
-                {rem.toFixed(0)} €
+                {formateEuros(rem, { compact: true })}
               </span>
             </div>
           ) : null}
@@ -98,7 +99,7 @@ export function TicketPayment({ total, remainingDue, mode, onChange }: TicketPay
           aria-label="Reste à payer en euros"
           enterKeyHint="done"
           error={isOver ? "Reste > total" : undefined}
-          hint={!isOver ? `Payé: ${paid.toFixed(2)} €` : undefined}
+          hint={!isOver ? `Payé: ${formateEuros(paid)}` : undefined}
         />
       </div>
     </Card>

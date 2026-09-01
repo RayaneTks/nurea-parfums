@@ -14,6 +14,8 @@ import { PocketSelector } from "@/features/treasury/components/PocketSelector";
 import { usePockets } from "@/features/treasury/usePockets";
 import type { OrderBalance, PaymentRow } from "@/server/orders/payments";
 import type { PaymentTypeValue } from "@/schemas/payment";
+import { formateEuros, pourSaisie } from "@/ui/patterns/format";
+import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
 
 type BalancePanelProps = {
   orderId: string;
@@ -63,7 +65,7 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
   const openSheet = (t: PaymentTypeValue) => {
     setSheetType(t);
     const dueNum = Number(balance.due);
-    setAmount(t === "BALANCE" && dueNum > 0 ? dueNum.toFixed(2) : "");
+    setAmount(t === "BALANCE" && dueNum > 0 ? pourSaisie(dueNum) : "");
     setMethod("");
     setNote("");
     setSheetOpen(true);
@@ -110,6 +112,17 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
       await refreshFromServer();
     });
   };
+
+  /*
+   * Annuler un paiement passe par une confirmation.
+   *
+   * Le geste écrivait un REFUND en base sur-le-champ, sans rien demander,
+   * depuis un bouton de 24 px collé au montant. Un doigt qui glisse et
+   * « Encaissé » comme « À encaisser » bougent sans que personne n'ait rien
+   * validé. Supprimer une commande, elle, demandait déjà confirmation : il n'y
+   * a pas de raison qu'annuler de l'argent en demande moins.
+   */
+  const [aAnnuler, setAAnnuler] = useState<{ id: string; montant: string } | null>(null);
 
   const voidPayment = (paymentId: string) => {
     startTransition(async () => {
@@ -203,13 +216,13 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
                       {p.type !== "REFUND" ? (
                         <button
                           type="button"
-                          onClick={() => voidPayment(p.id)}
+                          onClick={() => setAAnnuler({ id: p.id, montant: String(p.amount) })}
                           disabled={pending}
-                          className="rounded-full p-1.5 text-[var(--admin-text-subtle)] tap-scale hover:bg-[var(--admin-danger-bg)] hover:text-[var(--admin-danger)] disabled:opacity-50"
-                          aria-label="Annuler ce paiement (crée un REFUND)"
-                          title="Annuler (crée REFUND)"
+                          className="admin-hit-target min-w-[var(--admin-touch-min)] justify-center rounded-full text-[var(--admin-text-subtle)] tap-scale hover:bg-[var(--admin-danger-bg)] hover:text-[var(--admin-danger)] disabled:opacity-50"
+                          aria-label="Annuler ce paiement"
+                          title="Annuler ce paiement"
                         >
-                          <RotateCcw size={12} />
+                          <RotateCcw size={16} />
                         </button>
                       ) : null}
                     </span>
@@ -228,7 +241,7 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
         description={
           sheetType === "DEPOSIT"
             ? "Premier acompte → passe automatiquement en « à traiter »."
-            : `Reste dû : ${dueNum.toFixed(2)} €.`
+            : `Reste dû : ${formateEuros(dueNum)}.`
         }
         footer={
           <Button
@@ -283,6 +296,27 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
           />
         </Stack>
       </Sheet>
+
+      <ConfirmDialog
+        open={aAnnuler !== null}
+        onOpenChange={(o) => {
+          if (!o) setAAnnuler(null);
+        }}
+        title="Annuler ce paiement ?"
+        description={
+          aAnnuler
+            ? `${formateEuros(aAnnuler.montant)} seront retirés de l'encaissé et de la trésorerie. L'écriture d'origine est conservée : on ajoute un remboursement en face.`
+            : undefined
+        }
+        confirmLabel="Annuler le paiement"
+        cancelLabel="Garder"
+        tone="danger"
+        onConfirm={async () => {
+          const cible = aAnnuler;
+          setAAnnuler(null);
+          if (cible) voidPayment(cible.id);
+        }}
+      />
 
       {toast ? (
         <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />

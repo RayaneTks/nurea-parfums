@@ -20,7 +20,16 @@ type OrderListItemProps = {
 
 export function OrderListItem({ order, hideStatus = false }: OrderListItemProps) {
   const dueNum = Number(order.due);
-  const showDueBadge = dueNum > 0.01 && order.status !== "CANCELLED";
+  const totalNum = Number(order.total);
+  const reste = dueNum > 0.01 && order.status !== "CANCELLED";
+  /*
+   * Le total ne s'affiche que s'il diffère du reste dû.
+   *
+   * Sur une commande sans acompte — le cas le plus fréquent — les deux sont
+   * égaux, et la ligne montrait alors deux fois le même nombre. Le total
+   * n'apprend quelque chose que lorsqu'une partie est déjà rentrée.
+   */
+  const totalUtile = reste && Math.abs(totalNum - dueNum) > 0.01;
 
   return (
     <ListRow
@@ -40,20 +49,36 @@ export function OrderListItem({ order, hideStatus = false }: OrderListItemProps)
               Livraison <RelativeTime date={order.deliveryAt} />
             </span>
           ) : null}
-          {order.deliveryAt && showDueBadge ? <span aria-hidden>·</span> : null}
-          {showDueBadge ? (
-            <span className="font-medium text-[var(--admin-warning)]">
-              <Money value={order.due} compact /> dû
+          {order.deliveryAt && totalUtile ? <span aria-hidden>·</span> : null}
+          {/*
+            Le total passe en second quand il reste quelque chose à encaisser.
+            La colonne de droite portait le total en gras et le reste dû en
+            petit : sur une commande impayée, le chiffre mis en avant était
+            celui qu'on connaît déjà, pendant que le seul qui appelle une
+            action tenait en douze pixels — et les deux étaient souvent égaux,
+            donc la ligne affichait deux fois le même nombre.
+          */}
+          {totalUtile ? (
+            <span className="tnum">
+              <Money value={order.total} compact /> au total, {" "}
+              <Money value={totalNum - dueNum} compact /> déjà reçus
             </span>
           ) : null}
-          {!order.deliveryAt && !showDueBadge ? (
-            <span>Soldée</span>
-          ) : null}
+          {!order.deliveryAt && !reste ? <span>Soldée</span> : null}
         </span>
       }
       trailing={
         <div className="flex flex-col items-end gap-1">
-          <Money value={order.total} bold />
+          {reste ? (
+            <>
+              <Money value={order.due} compact bold tone="warning" className="text-[17px]" />
+              <span className="text-[11px] font-medium text-[var(--admin-warning)]">
+                à encaisser
+              </span>
+            </>
+          ) : (
+            <Money value={order.total} compact tone="muted" />
+          )}
           <div className="flex items-center gap-1">
             {order.fulfillment === "partial" && order.status !== "DELIVERED" ? (
               <Badge tone="warning" size="sm">

@@ -31,25 +31,19 @@ function initials(name: string): string {
   return ((parts[0]?.[0] ?? "") + (parts[parts.length - 1]?.[0] ?? "")).toUpperCase();
 }
 
-/**
- * Teinte déterministe tirée du nom : deux fiches voisines restent
- * distinguables d'un coup d'œil dans une longue liste.
+/*
+ * La pastille est NEUTRE, et ce n'est pas un oubli.
  *
- * La palette se limite aux jetons sémantiques du thème (bordeaux, cuivre,
- * vert, bleu ardoise). L'ancienne version tirait aussi un violet et un cyan
- * étrangers à la charte, qui trahissaient tout de suite le hasard.
+ * Elle tirait sa teinte d'un hachage du nom, dans une palette qui contenait le
+ * vert « encaissé » et le bordeaux d'accent. Un client pouvait donc porter un
+ * rond vert juste à côté d'un montant ambre « à encaisser » : deux couleurs
+ * qui veulent dire quelque chose, dont l'une ne voulait rien dire.
+ *
+ * Dans cette app, le vert, l'ambre et le rouge parlent d'argent. Les leur
+ * emprunter pour décorer, c'est les vider de leur sens partout ailleurs. Les
+ * initiales suffisent à distinguer deux voisins dans une liste.
  */
-function colorFromName(name: string): { bg: string; fg: string } {
-  const palette = [
-    { bg: "var(--admin-accent-bg)", fg: "var(--admin-accent)" },
-    { bg: "var(--admin-cuivre-subtle)", fg: "var(--admin-cuivre)" },
-    { bg: "var(--admin-success-bg)", fg: "var(--admin-success)" },
-    { bg: "var(--admin-info-bg)", fg: "var(--admin-info)" },
-  ];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
-  return palette[hash % palette.length]!;
-}
+const PASTILLE = { bg: "var(--admin-surface-muted)", fg: "var(--admin-text-muted)" } as const;
 
 export function Avatar({ name, src, size = "md", className }: AvatarProps) {
   const px = sizePx[size];
@@ -66,7 +60,7 @@ export function Avatar({ name, src, size = "md", className }: AvatarProps) {
       </span>
     );
   }
-  const { bg, fg } = colorFromName(name);
+  const { bg, fg } = PASTILLE;
   return (
     <span
       className={cn(

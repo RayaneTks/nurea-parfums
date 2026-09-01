@@ -8,6 +8,7 @@ import { Money } from "@/ui/patterns/Money";
 import { SaleListRow } from "./SaleListRow";
 import type { BatchGroup } from "@/server/sales/queries";
 import { cn } from "@/lib/utils";
+import { formateEuros } from "@/ui/patterns/format";
 
 type BatchGroupSectionProps = {
   group: BatchGroup;
@@ -69,7 +70,7 @@ export function BatchGroupSection({
                   color: "var(--admin-warning)",
                 }}
               >
-                Reste {Number(group.outstandingRevenue).toFixed(0)} €
+                Reste {formateEuros(Number(group.outstandingRevenue), { compact: true })}
               </span>
             ) : null}
           </p>

@@ -15,6 +15,7 @@ import { usePockets } from "@/features/treasury/usePockets";
 import { collectAction } from "@/server/collect/actions";
 import type { OutstandingRow } from "@/server/collect/queries";
 import { cn } from "@/lib/utils";
+import { formateEuros, pourSaisie } from "@/ui/patterns/format";
 
 type CollectSheetProps = {
   /** Créance à encaisser. `null` ferme la sheet. */
@@ -75,7 +76,7 @@ export function CollectSheet({ row, onClose, onCollected }: CollectSheetProps) {
         setError(result.error);
         return;
       }
-      setToast({ type: "success", message: `${amountNumber.toFixed(2)} € encaissés.` });
+      setToast({ type: "success", message: `${formateEuros(amountNumber)} encaissés.` });
       onCollected?.();
       onClose();
       router.refresh();
@@ -98,7 +99,7 @@ export function CollectSheet({ row, onClose, onCollected }: CollectSheetProps) {
             disabled={!canSubmit}
             onClick={submit}
           >
-            {amountNumber > 0 ? `Encaisser ${amountNumber.toFixed(2)} €` : "Encaisser"}
+            {amountNumber > 0 ? `Encaisser ${formateEuros(amountNumber)}` : "Encaisser"}
           </Button>
         }
       >
@@ -131,12 +132,12 @@ export function CollectSheet({ row, onClose, onCollected }: CollectSheetProps) {
             enterKeyHint="done"
             error={
               amountNumber > dueNumber + 0.005
-                ? `Supérieur au reste dû (${dueNumber.toFixed(2)} €).`
+                ? `Supérieur au reste dû (${formateEuros(dueNumber)}).`
                 : undefined
             }
             hint={
               remaining > 0.005 && canSubmit
-                ? `Il restera ${remaining.toFixed(2)} € à encaisser.`
+                ? `Il restera ${formateEuros(remaining)} à encaisser.`
                 : undefined
             }
           />
@@ -145,7 +146,7 @@ export function CollectSheet({ row, onClose, onCollected }: CollectSheetProps) {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => setAmount((dueNumber / 2).toFixed(2))}
+              onClick={() => setAmount(pourSaisie(dueNumber / 2))}
               className="flex-1"
             >
               La moitié
@@ -153,7 +154,7 @@ export function CollectSheet({ row, onClose, onCollected }: CollectSheetProps) {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => setAmount(dueNumber.toFixed(2))}
+              onClick={() => setAmount(pourSaisie(dueNumber))}
               className="flex-1"
             >
               Tout solder

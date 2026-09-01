@@ -9,7 +9,7 @@ import { Heading } from "@/ui/primitives/Heading";
 import { SearchField } from "@/ui/primitives/SearchField";
 import { EmptyState } from "@/ui/primitives/EmptyState";
 import { Card } from "@/ui/primitives/Card";
-import { FAB } from "@/ui/primitives/FAB";
+import { Button } from "@/ui/primitives/Button";
 import { CustomerListRow } from "./CustomerListRow";
 import type { CustomerListRow as Row } from "@/server/customers/queries";
 
@@ -67,12 +67,22 @@ export function CustomersListClient({ initial, initialQuery, nextCursor }: Custo
   return (
     <>
       <Stack gap={4}>
-        <header>
-          <Heading level={1}>Clients</Heading>
-          <p className="mt-0.5 text-[13px] text-[var(--admin-text-muted)] tabular-nums">
-            {initial.length} fiche{initial.length > 1 ? "s" : ""}
-            {query.trim() ? ` · « ${query.trim()} »` : ""}
-          </p>
+        <header className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <Heading level={1}>Clients</Heading>
+            <p className="mt-0.5 text-[13px] text-[var(--admin-text-muted)] tabular-nums">
+              {initial.length} fiche{initial.length > 1 ? "s" : ""}
+              {query.trim() ? ` · « ${query.trim()} »` : ""}
+            </p>
+          </div>
+          {/* Voir le commentaire de la liste des commandes : le bouton
+              flottant recouvrait la colonne des montants et doublonnait avec
+              le « + » de la barre d'onglets. */}
+          <Link href="/admin/clients/new" className="shrink-0">
+            <Button variant="primary" size="sm" leadingIcon={<Plus size={16} />}>
+              Nouveau
+            </Button>
+          </Link>
         </header>
 
         <SearchField
@@ -128,7 +138,6 @@ export function CustomersListClient({ initial, initialQuery, nextCursor }: Custo
         ) : null}
       </Stack>
 
-      <FAB icon={Plus} ariaLabel="Nouveau client" href="/admin/clients/new" />
     </>
   );
 }

@@ -3,6 +3,7 @@ import { Boxes, ChevronRight } from "lucide-react";
 import { Card } from "@/ui/primitives/Card";
 import { Money } from "@/ui/patterns/Money";
 import { listBatches } from "@/server/batches/queries";
+import { formateEuros, formatePourcent } from "@/ui/patterns/format";
 
 export async function ActiveBatchesBlock() {
   const batches = await listBatches();
@@ -53,7 +54,7 @@ export async function ActiveBatchesBlock() {
                           color: "var(--admin-warning)",
                         }}
                       >
-                        Reste {outstanding.toFixed(0)} €
+                        Reste {formateEuros(outstanding, { compact: true })}
                       </span>
                     ) : null}
                   </p>
@@ -63,7 +64,7 @@ export async function ActiveBatchesBlock() {
                     <Money value={b.netMargin} compact tone="auto" />
                   </p>
                   <p className="mt-0.5 text-[10px] tabular-nums text-[var(--admin-text-subtle)]">
-                    {b.marginPct}% net
+                    {formatePourcent(Number(b.marginPct), 1)} net
                   </p>
                 </div>
                 <ChevronRight

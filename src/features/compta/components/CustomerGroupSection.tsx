@@ -8,6 +8,7 @@ import { Money } from "@/ui/patterns/Money";
 import { SaleListRow } from "./SaleListRow";
 import type { CustomerGroup } from "@/server/sales/queries";
 import { cn } from "@/lib/utils";
+import { formateEuros } from "@/ui/patterns/format";
 
 type CustomerGroupSectionProps = {
   group: CustomerGroup;
@@ -45,7 +46,7 @@ export function CustomerGroupSection({
                   color: "var(--admin-warning)",
                 }}
               >
-                Reste {Number(group.outstandingRevenue).toFixed(0)} €
+                Reste {formateEuros(Number(group.outstandingRevenue), { compact: true })}
               </span>
             ) : null}
           </p>

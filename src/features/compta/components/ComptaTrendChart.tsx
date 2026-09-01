@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { Card } from "@/ui/primitives/Card";
 import type { SaleRowLite } from "@/server/sales/queries";
+import { formateEuros } from "@/ui/patterns/format";
 
 type WeekPoint = {
   key: string;
@@ -78,7 +79,7 @@ function ChartTooltip({ active, payload }: TooltipPayload & { active?: boolean }
     >
       <p className="font-semibold">{row.label}</p>
       <p className="mt-0.5 tabular-nums text-[var(--admin-text-muted)]">
-        CA {row.revenue.toFixed(0)} € · Marge {row.margin.toFixed(0)} €
+        Encaissé {formateEuros(row.revenue, { compact: true })} · Marge {formateEuros(row.margin, { compact: true })}
       </p>
     </div>
   );
