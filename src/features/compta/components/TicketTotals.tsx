@@ -49,7 +49,7 @@ export function TicketTotals({ sale }: TicketTotalsProps) {
               : "var(--admin-text-subtle)",
           }}
         >
-          {hasDebt ? "non encaissée" : formatePourcent(marginPct, 1)}
+          {hasDebt ? "pas encore encaissée" : formatePourcent(marginPct, 1)}
         </p>
       </Card>
     </div>

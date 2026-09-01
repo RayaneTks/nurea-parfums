@@ -112,7 +112,7 @@ export function CollectSheet({ row, onClose, onCollected }: CollectSheetProps) {
               style={{ background: "var(--admin-surface-muted)" }}
             >
               <HStack justify="between" align="center">
-                <span className="text-[13px] text-[var(--admin-text-muted)]">Reste dû</span>
+                <span className="text-[13px] text-[var(--admin-text-muted)]">À encaisser</span>
                 <Money value={row.due} bold className="text-[20px]" />
               </HStack>
               <p className="mt-1 text-[12px] text-[var(--admin-text-subtle)] tabular-nums">

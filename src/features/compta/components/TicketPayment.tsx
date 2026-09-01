@@ -84,7 +84,7 @@ export function TicketPayment({ total, remainingDue, mode, onChange }: TicketPay
     <Card padding={3} tone="surface">
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[13px] font-medium text-[var(--admin-text)]">Reste à payer</p>
+          <p className="text-[13px] font-medium text-[var(--admin-text)]">À encaisser</p>
           <p className="text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
             Total <Money value={total.toFixed(2)} compact />
           </p>

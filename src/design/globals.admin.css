@@ -54,7 +54,17 @@ body.admin-route {
   --admin-border-hover: color-mix(in srgb, var(--admin-text) 16%, transparent);
   --admin-text: #111114;
   --admin-text-muted: #5f5862;
-  --admin-text-subtle: #8a828e;
+  /*
+   * Assombri de #8a828e à #726b75 : l'ancien donnait 3,32:1 sur le fond de
+   * page, sous le seuil de 4,5 exigé pour du texte courant. Ce jeton porte
+   * TOUS les libellés de chiffres — « ENCAISSÉ », « À ENCAISSER »,
+   * « TRÉSORERIE » — en capitales de 11 px, c'est-à-dire ce qu'il y a de plus
+   * dur à lire de l'app, et sur un téléphone qu'on regarde dehors.
+   *
+   * La teinte violacée d'origine est conservée : 4,62:1 sur la page, 5,15:1
+   * sur une carte, et il reste nettement distinct de --admin-text-muted.
+   */
+  --admin-text-subtle: #726b75;
   --admin-accent: #7b0b1d;
   --admin-accent-hover: #8f1428;
   --admin-accent-bg: rgba(123, 11, 29, 0.08);

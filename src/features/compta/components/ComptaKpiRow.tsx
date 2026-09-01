@@ -91,7 +91,7 @@ export function ComptaKpiRow({
         >
           <span className="flex items-center justify-between gap-2">
             <span className="text-[13px] font-semibold text-[var(--admin-text)]">
-              Reste à encaisser
+              À encaisser
             </span>
             <span className="inline-flex items-center gap-1">
               <span

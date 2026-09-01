@@ -222,7 +222,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
           {Number(current.outstandingRevenue) > 0 ? (
             <Card padding={3} tone="surface">
               <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--admin-text-subtle)]">
-                Reste à encaisser
+                À encaisser
               </p>
               <p
                 className="mt-1 text-[18px] font-bold leading-none tnum"
