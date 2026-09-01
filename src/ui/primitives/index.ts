@@ -15,7 +15,6 @@ export { Avatar } from "./Avatar";
 export { EmptyState } from "./EmptyState";
 export { Skeleton, SkeletonRow, SkeletonList } from "./Skeleton";
 export { Toast, type ToastType } from "./Toast";
-export { FAB } from "./FAB";
 export { Divider } from "./Divider";
 export { StickyAction } from "./StickyAction";
 export { SegmentedControl } from "./SegmentedControl";

@@ -199,10 +199,16 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
                             <span className="shrink-0 text-right">
                               {due > 0.005 ? (
                                 <>
+                                  {/* `compact` comme les tuiles au-dessus :
+                                      une colonne où « 70,00 € » voisine
+                                      « 1 025 € » se lit ligne à ligne au lieu
+                                      de se balayer. */}
                                   <Money
                                     value={o.due}
                                     bold
-                                    className="text-[17px] text-[var(--admin-warning)]"
+                                    compact
+                                    tone="warning"
+                                    className="text-[17px]"
                                   />
                                   <span className="mt-0.5 block text-[11px] text-[var(--admin-warning)]">
                                     à encaisser

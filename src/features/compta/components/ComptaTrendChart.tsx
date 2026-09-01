@@ -37,9 +37,22 @@ function weekStartKey(iso: string): string {
 function buildWeeklyTrend(sales: SaleRowLite[]): WeekPoint[] {
   const map = new Map<string, WeekPoint>();
 
+  /*
+   * Le graphe trace l'ENCAISSÉ, pas le facturé.
+   *
+   * Il sommait `totalRevenue` sous un titre « CA par semaine » — un terme que
+   * docs/admin/PRODUCT.md interdit précisément parce qu'il se confond avec
+   * l'encaissé — et il était posé juste sous une tuile « Encaissé » qui, elle,
+   * retirait bien le reste dû. Deux chiffres voisins, deux définitions, un
+   * seul mot pour les deux.
+   *
+   * Ce qu'on veut savoir en regardant huit semaines, c'est ce qui est
+   * réellement rentré : c'est ce que la tuile annonce, et c'est ce que le
+   * graphe montre désormais.
+   */
   for (const s of sales) {
     const key = weekStartKey(s.soldAt);
-    const rev = Number(s.totalRevenue);
+    const rev = Number(s.totalRevenue) - Number(s.remainingDue);
     const margin = Number(s.totalMargin);
     const existing = map.get(key);
     if (existing) {
@@ -96,7 +109,7 @@ export function ComptaTrendChart({ sales }: ComptaTrendChartProps) {
     <Card padding={3} tone="surface" className="min-w-0">
       <div className="flex items-baseline justify-between gap-2">
         <h2 className="text-[13px] font-semibold text-[var(--admin-text)]">
-          CA par semaine
+          Encaissé par semaine
         </h2>
         <span className="shrink-0 text-[11px] text-[var(--admin-text-subtle)]">
           8 dernières sem.
