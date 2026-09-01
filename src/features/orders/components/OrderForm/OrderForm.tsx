@@ -27,6 +27,7 @@ import type {
 } from "@/schemas/order";
 import type { PickerResult } from "@/features/sell";
 import type { SelectedCustomer } from "@/features/customers/components/CustomerCombobox";
+import { formatePourcent } from "@/ui/patterns/format";
 
 type Mode = "create" | "edit";
 
@@ -393,7 +394,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
                   <Money value={orderTotals.margin} bold tone="auto" />
                 </p>
                 <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
-                  {orderTotals.marginPct.toFixed(0)}%
+                  {formatePourcent(orderTotals.marginPct)}
                 </p>
               </div>
             ) : null}

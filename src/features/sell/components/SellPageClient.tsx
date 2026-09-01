@@ -24,6 +24,7 @@ import { CustomerField } from "@/ui/patterns/CustomerField";
 import { PocketSplit, type SplitRow } from "@/features/treasury/components/PocketSplit";
 import { usePockets } from "@/features/treasury/usePockets";
 import { useLastExchangeRate } from "@/hooks/useLastExchangeRate";
+import { formateEuros, formatePourcent } from "@/ui/patterns/format";
 
 function toNum(v: string): number {
   const n = Number(v.replace(",", "."));
@@ -403,7 +404,7 @@ export function SellPageClient() {
                   <Money value={totals.margin} bold tone="auto" />
                 </p>
                 <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
-                  {totals.marginPct.toFixed(0)}%
+                  {formatePourcent(totals.marginPct)}
                 </p>
               </div>
             ) : null}
@@ -429,10 +430,10 @@ export function SellPageClient() {
                 return (
                   <p className="mt-2 text-right text-[14px] font-semibold tabular-nums">
                     {change >= 0 ? (
-                      <span className="text-[var(--admin-success)]">À rendre : {change.toFixed(2)} €</span>
+                      <span className="text-[var(--admin-success)]">À rendre : {formateEuros(change)}</span>
                     ) : (
                       <span className="text-[var(--admin-warning)]">
-                        Manque : {Math.abs(change).toFixed(2)} €
+                        Manque : {formateEuros(Math.abs(change))}
                       </span>
                     )}
                   </p>

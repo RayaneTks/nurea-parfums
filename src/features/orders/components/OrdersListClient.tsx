@@ -9,7 +9,6 @@ import { SegmentedControl } from "@/ui/primitives/SegmentedControl";
 import { Heading } from "@/ui/primitives/Heading";
 import { EmptyState } from "@/ui/primitives/EmptyState";
 import { Button } from "@/ui/primitives/Button";
-import { FAB } from "@/ui/primitives/FAB";
 import { OrdersGroup } from "./OrdersGroup";
 import type { OrdersFilter, OrdersListResult } from "@/server/orders/queries";
 import { cn } from "@/lib/utils";
@@ -76,7 +75,8 @@ export function OrdersListClient({ initial, initialFilter }: OrdersListClientPro
   return (
     <>
       <Stack gap={4}>
-        <header>
+        <header className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
           <Heading level={1}>Commandes</Heading>
           <p className="mt-0.5 text-[13px] text-[var(--admin-text-muted)] tabular-nums">
             {initial.counts.pending} en attente · {initial.counts.ready} à traiter
@@ -87,6 +87,25 @@ export function OrdersListClient({ initial, initialFilter }: OrdersListClientPro
               </span>
             ) : null}
           </p>
+          </div>
+          {/*
+            L'action « Nouvelle » vit dans l'en-tête, pas dans un bouton
+            flottant.
+
+            Le flottant se posait en bas à droite, exactement sur la colonne
+            des montants : mesuré, il recouvrait le chiffre d'une ligne de la
+            liste. Et il montrait un « + » à soixante pixels du « + » central
+            de la barre d'onglets, qui lui ouvre la vente — deux plus voisins
+            pour deux actions différentes.
+
+            Ici il ne recouvre rien, se voit sans défiler, et se lit à côté du
+            titre qui dit de quoi il s'agit.
+          */}
+          <Link href="/admin/ordres/new" className="shrink-0">
+            <Button variant="primary" size="sm" leadingIcon={<Plus size={16} />}>
+              Nouvelle
+            </Button>
+          </Link>
         </header>
         <SegmentedControl
           options={FILTER_OPTIONS}
@@ -125,7 +144,6 @@ export function OrdersListClient({ initial, initialFilter }: OrdersListClientPro
         )}
       </Stack>
 
-      <FAB icon={Plus} ariaLabel="Nouvelle commande" href="/admin/ordres/new" />
     </>
   );
 }

@@ -24,6 +24,7 @@ import { Truck } from "lucide-react";
 import { deriveFulfillment, remainingToDeliver, type Fulfillment } from "@/domain/order-status";
 import type { OrderDetailRow } from "@/server/orders/queries";
 import type { OrderStatus } from "@prisma/client";
+import { formatePourcent } from "@/ui/patterns/format";
 
 function computeMargin(items: OrderDetailRow["items"]): { cost: number; margin: number; marginPct: number } {
   let revenue = 0;
@@ -176,7 +177,7 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
                 <div className="text-right">
                   <Money value={margin} bold tone="auto" className="text-[18px]" />
                   <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
-                    {marginPct.toFixed(0)}%
+                    {formatePourcent(marginPct)}
                   </p>
                 </div>
               </HStack>

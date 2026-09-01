@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { pocketIcon, type PocketOption } from "./PocketSelector";
+import { formateEuros, pourSaisie } from "@/ui/patterns/format";
 
 export type SplitRow = { pocketId: string; amount: number };
 
@@ -39,7 +40,7 @@ export function PocketSplit({ pockets, total, onChange }: PocketSplitProps) {
   }, [pockets, rows]);
 
   const addPocket = (id: string) => {
-    setRows((prev) => [...prev, { pocketId: id, amount: remaining > 0 ? remaining.toFixed(2) : "" }]);
+    setRows((prev) => [...prev, { pocketId: id, amount: remaining > 0 ? pourSaisie(remaining) : "" }]);
   };
   const setAmount = (id: string, amount: string) =>
     setRows((prev) => prev.map((r) => (r.pocketId === id ? { ...r, amount } : r)));
@@ -110,7 +111,7 @@ export function PocketSplit({ pockets, total, onChange }: PocketSplitProps) {
           ? "Aucune poche : l'encaissé ira dans « Non attribué »."
           : remaining < 0.005
             ? "Réparti intégralement ✓"
-            : `Reste ${remaining.toFixed(2)} € → « Non attribué »`}
+            : `Reste ${formateEuros(remaining)} → « Non attribué »`}
       </p>
     </div>
   );

@@ -23,6 +23,7 @@ import { BatchExpensesSection } from "./BatchExpensesSection";
 import { BatchAssignSheet } from "./BatchAssignSheet";
 import { BatchAssignOrdersSheet } from "./BatchAssignOrdersSheet";
 import type { BatchDetail } from "@/server/batches/queries";
+import { formateEuros, formatePourcent } from "@/ui/patterns/format";
 
 type BatchDetailClientProps = {
   initial: BatchDetail;
@@ -207,7 +208,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
               <Money value={current.netMargin} compact tone="auto" />
             </p>
             <p className="mt-0.5 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
-              {current.marginPct}%
+              {formatePourcent(Number(current.marginPct), 1)}
             </p>
           </Card>
           <Card padding={3} tone="surface">
@@ -227,7 +228,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
                 className="mt-1 text-[18px] font-bold leading-none tnum"
                 style={{ color: "var(--admin-warning)" }}
               >
-                {Number(current.outstandingRevenue).toFixed(0)} €
+                {formateEuros(Number(current.outstandingRevenue), { compact: true })}
               </p>
             </Card>
           ) : (
@@ -315,7 +316,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
                                 color: "var(--admin-warning)",
                               }}
                             >
-                              Reste {due.toFixed(0)} €
+                              Reste {formateEuros(due, { compact: true })}
                             </span>
                           ) : null}
                         </div>
@@ -419,7 +420,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
                         <Money value={o.cashed} bold className="text-[14px]" />
                         {due > 0.005 ? (
                           <p className="mt-0.5 text-[11px] text-[var(--admin-warning)]">
-                            Reste {due.toFixed(0)} €
+                            Reste {formateEuros(due, { compact: true })}
                           </p>
                         ) : null}
                       </div>

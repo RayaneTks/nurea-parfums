@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { Card } from "@/ui/primitives/Card";
 import { Money } from "@/ui/patterns/Money";
 import type { ComptaListResult } from "@/server/sales/queries";
+import { formateEuros, formatePourcent } from "@/ui/patterns/format";
 
 type ComptaKpiRowProps = {
   summary: ComptaListResult["summary"];
@@ -14,10 +15,13 @@ type ComptaKpiRowProps = {
   ordersDue?: string;
 };
 
-function eur(value: string | number | undefined): string {
-  const n = Number(value ?? 0);
-  return Number.isFinite(n) ? `${n.toFixed(0)} €` : "0 €";
-}
+/**
+ * Ces montants apparaissent en légende, à côté de tuiles mises en forme par
+ * `Money`. Un formateur local produisait « 1025 € » quand la tuile voisine
+ * affichait « 1 480 € » : deux formes pour la même nature de chiffre, sur la
+ * même carte.
+ */
+const eur = (value: string | number | undefined) => formateEuros(value, { compact: true });
 
 /**
  * Chiffres de la vue Ventes.
@@ -67,7 +71,7 @@ export function ComptaKpiRow({
             <Money value={summary.netMargin} compact tone="auto" />
           </p>
           <p className="mt-1 text-[11px] tabular-nums text-[var(--admin-text-subtle)]">
-            {summary.marginPct} %{hasExpenses ? " · net dépenses" : ""}
+            {formatePourcent(Number(summary.marginPct), 1)}{hasExpenses ? " · net dépenses" : ""}
           </p>
         </Card>
       </div>

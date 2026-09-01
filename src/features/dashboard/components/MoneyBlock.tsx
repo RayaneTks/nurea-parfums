@@ -5,6 +5,7 @@ import { Money } from "@/ui/patterns/Money";
 import { monthSummary, revenueSummary } from "@/server/kpi/queries";
 import { treasurySummary } from "@/server/treasury/queries";
 import { cn } from "@/lib/utils";
+import { formatePourcent } from "@/ui/patterns/format";
 
 /**
  * Bloc argent du tableau de bord.
@@ -58,7 +59,7 @@ export async function MoneyBlock() {
         <span className="mt-2 block text-[13px] text-white/75">
           <Money value={global.netMargin} compact tone="inherit" className="font-semibold text-white" />{" "}
           de marge nette
-          {hasMargin ? ` · ${global.marginPct} %` : null}
+          {hasMargin ? ` · ${formatePourcent(marginPct, 1)}` : null}
         </span>
       </Link>
 

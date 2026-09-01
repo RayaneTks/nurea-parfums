@@ -11,6 +11,7 @@ import { RelativeTime } from "@/ui/patterns/RelativeTime";
 import { CollectSheet } from "./CollectSheet";
 import type { OutstandingResult, OutstandingRow } from "@/server/collect/queries";
 import { cn } from "@/lib/utils";
+import { formateEuros } from "@/ui/patterns/format";
 
 /** Au-delà, une créance est « vieille » et mérite d'être signalée. */
 const STALE_DAYS = 30;
@@ -50,7 +51,7 @@ export function CollectListClient({ initial }: { initial: OutstandingResult }) {
           <p className="mt-0.5 text-[13px] text-[var(--admin-text-muted)] tabular-nums">
             {initial.rows.length === 0
               ? "Tout est réglé."
-              : `${initial.rows.length} créance${initial.rows.length > 1 ? "s" : ""} · ${Number(initial.totalDue).toFixed(0)} €`}
+              : `${initial.rows.length} créance${initial.rows.length > 1 ? "s" : ""} · ${formateEuros(Number(initial.totalDue), { compact: true })}`}
           </p>
         </header>
 
@@ -114,7 +115,7 @@ export function CollectListClient({ initial }: { initial: OutstandingResult }) {
                       <button
                         type="button"
                         onClick={() => setTarget(row)}
-                        aria-label={`Encaisser ${Number(row.due).toFixed(2)} € de ${row.customerName}`}
+                        aria-label={`Encaisser ${formateEuros(row.due)} de ${row.customerName}`}
                         className={cn(
                           "inline-flex min-h-[var(--admin-touch-min)] shrink-0 items-center gap-1.5 rounded-[12px] px-3",
                           "bg-[var(--admin-accent)] text-white tap-scale",
@@ -122,7 +123,7 @@ export function CollectListClient({ initial }: { initial: OutstandingResult }) {
                         )}
                       >
                         <span className="tnum text-[15px] font-bold">
-                          {Number(row.due).toFixed(0)} €
+                          {formateEuros(Number(row.due), { compact: true })}
                         </span>
                         <ChevronRight size={15} aria-hidden />
                       </button>
@@ -133,7 +134,7 @@ export function CollectListClient({ initial }: { initial: OutstandingResult }) {
                 {query.trim() && rows.length !== initial.rows.length ? (
                   <p className="px-1 text-[12px] tabular-nums text-[var(--admin-text-subtle)]">
                     {rows.length} affichée{rows.length > 1 ? "s" : ""} ·{" "}
-                    {shownTotal.toFixed(0)} €
+                    {formateEuros(shownTotal, { compact: true })}
                   </p>
                 ) : null}
               </Stack>

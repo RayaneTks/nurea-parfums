@@ -1,18 +1,5 @@
 import { cn } from "@/lib/utils";
-
-const fmtEUR = new Intl.NumberFormat("fr-FR", {
-  style: "currency",
-  currency: "EUR",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
-const fmtEURCompact = new Intl.NumberFormat("fr-FR", {
-  style: "currency",
-  currency: "EUR",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
+import { formateEuros, nombre } from "./format";
 
 type MoneyProps = {
   value: number | string | null | undefined;
@@ -25,33 +12,30 @@ type MoneyProps = {
    * indispensable sur les fonds pleins (carte accent, badge) où les jetons de
    * texte standards ne passeraient pas le contraste.
    */
-  tone?: "default" | "muted" | "success" | "danger" | "accent" | "auto" | "inherit";
+  tone?: "default" | "muted" | "success" | "danger" | "warning" | "accent" | "auto" | "inherit";
   /** Si true, montant gras. */
   bold?: boolean;
   className?: string;
 };
-
-function toNumber(v: MoneyProps["value"]): number {
-  if (v === null || v === undefined) return 0;
-  if (typeof v === "number") return Number.isFinite(v) ? v : 0;
-  const n = Number(String(v).replace(",", ".").trim());
-  return Number.isFinite(n) ? n : 0;
-}
 
 const toneClass: Record<NonNullable<MoneyProps["tone"]>, string> = {
   default: "text-[var(--admin-text)]",
   muted: "text-[var(--admin-text-muted)]",
   success: "text-[var(--admin-success)]",
   danger: "text-[var(--admin-danger)]",
+  // « À encaisser » : ni bon ni mauvais, en attente. C'est la seule couleur
+  // admise pour un montant qu'on n'a pas encore reçu.
+  warning: "text-[var(--admin-warning)]",
   accent: "text-[var(--admin-accent)]",
   auto: "",
   inherit: "",
 };
 
 export function Money({ value, compact = false, signed = false, tone = "default", bold = false, className }: MoneyProps) {
-  const n = toNumber(value);
-  const formatter = compact ? fmtEURCompact : fmtEUR;
-  const formatted = formatter.format(Math.abs(n));
+  const n = nombre(value);
+  // Toute la mise en forme passe par `format.ts` : c'est ce qui garantit qu'un
+  // montant a la même allure ici et dans un message ou un libellé.
+  const formatted = formateEuros(Math.abs(n), { compact });
   const prefix = n < 0 ? "−" : signed && n > 0 ? "+" : "";
 
   const resolvedTone: NonNullable<MoneyProps["tone"]> =

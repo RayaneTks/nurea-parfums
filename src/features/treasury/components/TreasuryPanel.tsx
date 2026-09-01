@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { PocketSelector, pocketIcon } from "./PocketSelector";
 import type { PocketWithBalance, MovementRow } from "@/server/treasury/queries";
 import type { PocketKind, CashMovementKind } from "@prisma/client";
+import { formateEuros, pourSaisie } from "@/ui/patterns/format";
 import {
   createPocketAction,
   transferAction,
@@ -172,7 +173,7 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
             <HStack justify="between" align="center">
               <span className="flex items-center gap-2 text-[14px] font-semibold text-[var(--admin-danger)]">
                 <AlertTriangle size={16} />
-                {unattributedNum.toFixed(2)} € non attribué
+                {formateEuros(unattributedNum)} non attribué
               </span>
               <span className="text-[13px] font-semibold text-[var(--admin-danger)]">Répartir →</span>
             </HStack>
@@ -339,7 +340,7 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
         open={sheet === "assign"}
         onOpenChange={(o) => (o ? null : close())}
         title="Répartir le non attribué"
-        description={`${unattributedNum.toFixed(2)} € à affecter.`}
+        description={`${formateEuros(unattributedNum)} à affecter.`}
         footer={
           <Button variant="primary" size="lg" fullWidth isLoading={pending} onClick={submitAssign}>
             Affecter
@@ -351,7 +352,7 @@ export function TreasuryPanel({ total, unattributed, pockets, movements }: Treas
             <p className="mb-1.5 text-[13px] font-medium text-[var(--admin-text-muted)]">Vers la poche</p>
             <PocketSelector pockets={pockets} value={toId} onChange={setToId} />
           </div>
-          <Input label="Montant €" inputMode="decimal" variant="elevated" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={unattributedNum.toFixed(2)} enterKeyHint="done" />
+          <Input label="Montant €" inputMode="decimal" variant="elevated" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={pourSaisie(unattributedNum)} enterKeyHint="done" />
         </Stack>
       </Sheet>
 
@@ -476,7 +477,7 @@ function MovementsByMonth({ movements }: { movements: MovementRow[] }) {
                   )}
                 >
                   {g.net >= 0 ? "+" : "−"}
-                  {Math.abs(g.net).toFixed(2)} €
+                  {formateEuros(Math.abs(g.net))}
                 </span>
               </button>
               {isOpen ? (
@@ -503,7 +504,7 @@ function MovementsByMonth({ movements }: { movements: MovementRow[] }) {
                             )}
                           >
                             {positive ? "+" : "−"}
-                            {Math.abs(amt).toFixed(2)} €
+                            {formateEuros(Math.abs(amt))}
                           </span>
                           {m.href ? (
                             <ChevronRight size={15} className="text-[var(--admin-text-subtle)]" aria-hidden />

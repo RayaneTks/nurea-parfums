@@ -6,6 +6,7 @@ import { LOW_STOCK_THRESHOLD } from "@/domain/stock";
 import { treasurySummary } from "@/server/treasury/queries";
 import { pipelineCounts } from "@/server/kpi/queries";
 import { cn } from "@/lib/utils";
+import { formateEuros } from "@/ui/patterns/format";
 
 type Tone = "danger" | "warning";
 
@@ -77,7 +78,7 @@ export async function AlertsBlock() {
       id: "unattributed",
       tone: "danger",
       icon: Wallet,
-      title: `${unattributed.toFixed(2)} € non attribués`,
+      title: `${formateEuros(unattributed)} non attribués`,
       detail: "À répartir entre tes poches",
       href: "/admin/compta?vue=tresorerie",
     });

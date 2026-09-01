@@ -4,6 +4,7 @@ import { RelativeTime } from "@/ui/patterns/RelativeTime";
 import { Money } from "@/ui/patterns/Money";
 import { ListRow } from "@/ui/primitives/ListRow";
 import type { SaleRowLite } from "@/server/sales/queries";
+import { formateEuros } from "@/ui/patterns/format";
 
 type SaleListRowProps = {
   sale: SaleRowLite;
@@ -52,7 +53,7 @@ export function SaleListRow({
               }}
               aria-label={`Reste à payer ${remaining.toFixed(0)} euros`}
             >
-              Reste {remaining.toFixed(0)} €
+              Reste {formateEuros(remaining, { compact: true })}
             </span>
           ) : null}
           {!hideContextTags && sale.batchName ? (
@@ -89,15 +90,28 @@ export function SaleListRow({
         <div className="text-right">
           <Money value={sale.totalRevenue} bold />
           <div className="text-[11px] mt-0.5">
-            {hasDebt ? (
-              <Money
-                value={-Math.abs(Number(sale.totalMargin))}
-                compact
-                tone="danger"
-              />
-            ) : (
-              <Money value={sale.totalMargin} compact signed tone="auto" />
-            )}
+            {/*
+              La marge garde son signe VRAI, même quand la vente n'est pas
+              soldée.
+
+              Elle s'affichait en `-Math.abs(...)` et en rouge dès qu'il
+              restait un solde : une vente à +40 € de marge s'imprimait
+              « −40 € », un nombre qui n'existe nulle part dans le modèle. Et
+              une marge réellement négative — vendu sous le coût — sortait
+              avec exactement le même texte et la même couleur : dans la
+              liste, les deux cas devenaient indistinguables, et la colonne
+              ne s'additionnait plus.
+
+              Ce qui est en attente se dit par l'ambre, réservé à l'argent
+              qu'on n'a pas encore reçu. Le rouge et le signe « − » restent
+              disponibles pour la seule vraie perte.
+            */}
+            <Money
+              value={sale.totalMargin}
+              compact
+              signed
+              tone={hasDebt ? "warning" : "auto"}
+            />
           </div>
         </div>
       }

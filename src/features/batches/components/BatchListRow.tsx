@@ -5,6 +5,7 @@ import { ChevronRight, PackageCheck, PackageOpen } from "lucide-react";
 import { Card } from "@/ui/primitives/Card";
 import { Money } from "@/ui/patterns/Money";
 import type { BatchRowLite } from "@/server/batches/queries";
+import { formateEuros, formatePourcent } from "@/ui/patterns/format";
 
 type BatchListRowProps = {
   batch: BatchRowLite;
@@ -68,14 +69,14 @@ export function BatchListRow({ batch }: BatchListRowProps) {
                     color: "var(--admin-warning)",
                   }}
                 >
-                  Reste {outstanding.toFixed(0)} €
+                  Reste {formateEuros(outstanding, { compact: true })}
                 </span>
               ) : null}
             </div>
             <p className="mt-0.5 text-[12px] text-[var(--admin-text-subtle)]">
               {contents}
               {Number(batch.expenses) > 0
-                ? ` · ${Number(batch.expenses).toFixed(0)} € dépenses`
+                ? ` · ${formateEuros(Number(batch.expenses), { compact: true })} dépenses`
                 : null}
             </p>
             <div className="mt-2 grid grid-cols-3 gap-2">
@@ -100,7 +101,7 @@ export function BatchListRow({ batch }: BatchListRowProps) {
                   Marge %
                 </p>
                 <p className="mt-0.5 text-[14px] font-bold leading-none tabular-nums text-[var(--admin-text)]">
-                  {batch.marginPct}%
+                  {formatePourcent(Number(batch.marginPct), 1)}
                 </p>
               </div>
             </div>
