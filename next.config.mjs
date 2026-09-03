@@ -43,6 +43,26 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  /**
+   * Le logotype et la police de la vignette de partage doivent voyager avec la
+   * fonction.
+   *
+   * `app/(shop)/opengraph-image.tsx` lit ces deux fichiers sur le disque pour
+   * composer l'image. Aujourd'hui la route est prérendue au build — elle sort
+   * en « ○ Static » — donc les fichiers sont lus par la machine de build, qui
+   * les a forcément sous la main.
+   *
+   * Cette inscription est là pour le jour où la route redeviendra dynamique :
+   * il suffirait d'y lire une donnée de la base, ou d'en faire une image par
+   * parfum. Le chemin étant assemblé morceau par morceau, le traçage
+   * automatique peut le manquer, et la vignette casserait alors sur TOUS les
+   * partages sans que rien n'échoue en local. Le coût de l'assurance est de
+   * 86 Ko sur une seule fonction.
+   */
+  outputFileTracingIncludes: {
+    "/opengraph-image": ["./app/(shop)/_og/**"],
+    "/twitter-image": ["./app/(shop)/_og/**"],
+  },
 };
 
 export default withBundleAnalyzer(nextConfig);
