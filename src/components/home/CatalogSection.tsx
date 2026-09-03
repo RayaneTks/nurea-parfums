@@ -96,8 +96,23 @@ export const CatalogSection = ({
     return list;
   }, [matching, filters.sort, filters.query]);
 
+  /*
+   * La grille rend TOUTES les fiches ; seule leur visibilité est tronquée.
+   *
+   * Elle n'en écrivait que douze dans le DOM, les autres n'apparaissant qu'au
+   * clic sur « Voir les N références ». Or Google n'interagit pas avec la
+   * page : son robot ne clique pas. Le catalogue déclarait donc douze noms de
+   * parfum sur quatre-vingt-dix-neuf, et les quatre-vingt-sept autres étaient
+   * hors de portée de toute recherche, quelles que soient les autres
+   * optimisations.
+   *
+   * Le contenu masqué en CSS reste indexé — c'est le cas documenté des onglets
+   * et des accordéons ; c'est le contenu ABSENT du DOM qui ne l'est pas. Les
+   * images restent en chargement paresseux, donc aucune requête réseau
+   * supplémentaire à l'affichage.
+   */
   const truncated = !hasNarrowingFilters && !showAll && sorted.length > INITIAL_VISIBLE;
-  const visible = truncated ? sorted.slice(0, INITIAL_VISIBLE) : sorted;
+  const cutoff = truncated ? INITIAL_VISIBLE : sorted.length;
 
   /* La recherche élargie ne part que si le catalogue local n'a rien donné. */
   const extendedSearch = useExtendedSearch(filters.query, sorted.length === 0);
@@ -306,17 +321,27 @@ export const CatalogSection = ({
           </div>
         )}
 
-        {visible.length > 0 ? (
+        {sorted.length > 0 ? (
           <>
             <div className="nurea-catalogue-grid pt-6">
-              {visible.map((perfume, index) => (
-                <PerfumeCard
+              {sorted.map((perfume, index) => (
+                /*
+                 * `display: contents` efface l'enveloppe de la mise en page :
+                 * la fiche reste l'élément de grille, exactement comme avant.
+                 * Masquer la fiche elle-même aurait exigé de battre le `flex`
+                 * de sa classe, donc un `!important`.
+                 */
+                <div
                   key={perfume.id}
-                  perfume={perfume}
-                  caption={captionFor(perfume)}
-                  onOpen={openPerfume}
-                  imagePriority={index < 4}
-                />
+                  className={index < cutoff ? "contents" : "hidden"}
+                >
+                  <PerfumeCard
+                    perfume={perfume}
+                    caption={captionFor(perfume)}
+                    onOpen={openPerfume}
+                    imagePriority={index < 4}
+                  />
+                </div>
               ))}
             </div>
 

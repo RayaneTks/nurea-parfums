@@ -1,19 +1,13 @@
 import type { Metadata } from "next";
 import { ContactSection } from "@/components/features/ContactSection";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { pageOg, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Contact & commande",
   description: `Contactez ${SITE_NAME} pour passer commande ou obtenir un conseil. Stock disponible immédiatement, réponse rapide sur Snapchat et WhatsApp.`,
   alternates: { canonical: "/contact" },
-  openGraph: {
-    title: `Contact & commande — ${SITE_NAME}`,
-    description:
-      "Une question sur un parfum ? Écrivez-nous sur Snapchat ou WhatsApp pour commander.",
-    url: `${SITE_URL}/contact`,
-    type: "website",
-  },
+  openGraph: pageOg("/contact"),
 };
 
 interface ContactPageProps {

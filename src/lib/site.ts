@@ -49,3 +49,32 @@ export const SEO_KEYWORDS: string[] = [
   "meilleur prix parfum",
   "catalogue parfum",
 ];
+
+/**
+ * Le bloc Open Graph d'une page.
+ *
+ * Les métadonnées de Next sont fusionnées À PLAT : une page qui redéclare
+ * `openGraph`, ne serait-ce que pour changer son titre, REMPLACE l'objet entier
+ * du layout. C'est ainsi que `og:site_name` et `og:locale` avaient disparu de
+ * l'accueil, de /marque et de /contact — ils ne survivaient que sur /legal, la
+ * seule page qui n'y touchait pas. Or `og:site_name` est, juste après le
+ * JSON-LD, ce que Google lit pour choisir le nom affiché sous un résultat.
+ *
+ * D'où ce helper : chaque page appelle `pageOg("/son-chemin")` et récupère
+ * l'objet complet, avec sa propre URL. On ne renseigne volontairement ni titre
+ * ni description — sans eux, Next les reprend du titre et de la description
+ * RÉSOLUS de la page, gabarit compris. Les répéter ici ne ferait que créer une
+ * seconde source de vérité, qui finirait par diverger.
+ *
+ * L'image non plus n'y figure pas : la convention de fichier
+ * `app/(shop)/opengraph-image.tsx` l'injecte elle-même, avec l'URL hachée que
+ * seul le build connaît.
+ */
+export function pageOg(path: string) {
+  return {
+    type: "website" as const,
+    locale: "fr_FR",
+    siteName: SITE_NAME,
+    url: new URL(path, SITE_URL).toString(),
+  };
+}
