@@ -15,7 +15,7 @@ export const CONTACT = {
   snapchat: "https://snapchat.com/add/nureaparfums",
   /** Affichage footer / UI (cohérent avec l’URL snapchat.com/add/…) */
   snapchatHandle: "@nureaparfums",
-  email: "contact@nureaparfum.fr",
+  email: "contact@nureaparfums.fr",
   location: "Marseille & alentours",
 };
 
