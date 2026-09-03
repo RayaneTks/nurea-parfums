@@ -8,6 +8,7 @@ import { submitContactForm } from "@/actions/contact";
 import { Button, buttonClass } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { ChannelSoon } from "@/components/ui/ChannelSoon";
 import { SnapchatIcon, WhatsAppIcon } from "@/components/ui/Icons";
 
 interface ContactFormState {
@@ -135,7 +136,7 @@ export const ContactSection: FC<ContactSectionProps> = ({
       <div className="mt-12 grid gap-px border border-nurea-border bg-nurea-border md:mt-18 md:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         <section className="bg-nurea-bg p-6 md:p-10">
           <h2 className="nurea-label">Réponse rapide</h2>
-          <p className="nurea-caption mt-2">Snapchat est notre canal principal.</p>
+          <p className="nurea-caption mt-2">Snapchat est notre canal de commande.</p>
 
           <div className="mt-6 flex flex-col items-start gap-3">
             <a
@@ -148,15 +149,19 @@ export const ContactSection: FC<ContactSectionProps> = ({
               Snapchat
             </a>
 
-            <a
-              href={CONTACT.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={buttonClass("outline", "w-full")}
-            >
-              <WhatsAppIcon className="h-4 w-4 shrink-0" aria-hidden />
-              WhatsApp
-            </a>
+            {CONTACT.whatsapp ? (
+              <a
+                href={CONTACT.whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonClass("outline", "w-full")}
+              >
+                <WhatsAppIcon className="h-4 w-4 shrink-0" aria-hidden />
+                WhatsApp
+              </a>
+            ) : (
+              <ChannelSoon />
+            )}
           </div>
 
           <dl className="mt-10 border-t border-nurea-border pt-6">

@@ -30,7 +30,7 @@ const MAX_FEATURED = 2;
  */
 const TITRE_ACCUEIL = `${SITE_NAME} — Grandes marques au meilleur prix, Marseille`;
 
-const DESCRIPTION_ACCUEIL = `Le catalogue ${SITE_NAME} : parfums des plus grandes marques pour homme et femme, au meilleur prix. Commande directe sur Snapchat ou WhatsApp, remise en main propre à Marseille.`;
+const DESCRIPTION_ACCUEIL = `Le catalogue ${SITE_NAME} : parfums des plus grandes marques pour homme et femme, au meilleur prix. Commande directe sur Snapchat, remise en main propre à Marseille.`;
 
 export const metadata: Metadata = {
   /*

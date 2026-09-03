@@ -5,13 +5,23 @@ import type { ExternalPerfumeHint } from "./search/externalSearchTypes";
 
 export const CONTACT = {
   /**
-   * Lien nu, sans message pré-rempli : `whatsappOrderUrl`
-   * (`src/lib/catalog/perfumePresentation.ts`) y ajoute la référence consultée.
+   * WhatsApp n'est pas encore ouvert — et `null` le dit mieux qu'un faux.
    *
-   * TODO — numéro de démonstration. À remplacer par le numéro réel avant mise
-   * en ligne (voir « Reste à produire » de la charte graphique).
+   * Ce champ portait « https://wa.me/33600000000 », un numéro de démonstration
+   * laissé en production sous un TODO. Tous les boutons « commander sur
+   * WhatsApp » du site menaient donc à un numéro qui n'existe pas : le client
+   * qui cliquait pensait écrire à la boutique et parlait dans le vide. Un
+   * canal absent coûte moins cher qu'un canal qui ment.
+   *
+   * `null` plutôt qu'une chaîne vide : le type oblige chaque appelant à
+   * décider quoi afficher, là où `""` se serait glissé silencieusement dans un
+   * `href`. Le jour où le numéro existe, il suffit de l'écrire ici — les
+   * boutons reviennent d'eux-mêmes.
+   *
+   * Lien nu attendu, sans message pré-rempli : `whatsappOrderUrl`
+   * (`src/lib/catalog/perfumePresentation.ts`) y ajoute la référence consultée.
    */
-  whatsapp: "https://wa.me/33600000000",
+  whatsapp: null as string | null,
   snapchat: "https://snapchat.com/add/nureaparfums",
   /** Affichage footer / UI (cohérent avec l’URL snapchat.com/add/…) */
   snapchatHandle: "@nureaparfums",
