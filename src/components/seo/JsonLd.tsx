@@ -1,3 +1,4 @@
+import { CONTACT } from "@/lib/data";
 import {
   SITE_URL,
   SITE_NAME,
@@ -20,7 +21,17 @@ export function RootJsonLd() {
         url: SITE_URL,
         logo: logoUrl,
         description: DEFAULT_DESCRIPTION,
-        sameAs: [] as string[],
+        email: CONTACT.email,
+        areaServed: { "@type": "City", name: "Marseille" },
+        /*
+         * `sameAs` était vide, alors que le Snapchat est le canal de vente.
+         *
+         * C'est par ces liens qu'un moteur relie la boutique à ses comptes et
+         * comprend qu'il s'agit d'une seule entité. En laisser la liste vide,
+         * c'est se présenter sans références. Le lien WhatsApp n'y figure pas :
+         * `wa.me` ouvre une conversation, ce n'est pas un profil.
+         */
+        sameAs: [CONTACT.snapchat],
       },
       {
         "@type": "WebSite",
