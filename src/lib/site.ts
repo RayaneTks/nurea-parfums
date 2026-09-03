@@ -1,4 +1,18 @@
-export const SITE_URL = "https://nureaparfum.fr" as const;
+/**
+ * Le domaine canonique, au pluriel comme la marque.
+ *
+ * Tout en dérive — métadonnées, sitemap, robots, JSON-LD, manifestes PWA,
+ * image Open Graph et le domaine affiché sur la page Marque. Une seule
+ * constante à changer le jour où le domaine bouge.
+ *
+ * `nureaparfum.fr`, au singulier, est acheté en second et redirige ici. C'est
+ * la faute la plus probable — le nom se prononce avec le s, il s'entend mal —
+ * et un client qui l'oublie doit atterrir chez nous, pas dans le vide. La
+ * redirection se règle chez le registrar, pas dans ce fichier : deux domaines
+ * qui servent le même site sans redirection permanente, ce sont deux sites
+ * en double aux yeux de Google, et l'audience se divise entre les deux.
+ */
+export const SITE_URL = "https://nureaparfums.fr" as const;
 
 export const SITE_NAME = "Nuréa Parfums";
 export const SITE_SHORT_NAME = "Nuréa";
@@ -27,6 +41,7 @@ export const BRAND_ALTERNATE_NAMES: string[] = [
 export const SEO_KEYWORDS: string[] = [
   "Nuréa Parfums",
   "site officiel Nuréa Parfums",
+  "nureaparfums.fr",
   "nureaparfum.fr",
   "parfums pas cher",
   "parfums de luxe",
