@@ -23,6 +23,8 @@
  */
 
 import { Prisma, PrismaClient } from "@prisma/client";
+import { normaliseMarque, normaliseParfum } from "../src/lib/nommage";
+import { brandSlug, perfumeSlug } from "../src/lib/slugify";
 
 const prisma = new PrismaClient();
 const APPLIQUER = process.argv.includes("--appliquer");
@@ -50,39 +52,67 @@ type Ajout = {
 
 const RENOMMAGES: Renommage[] = [
   {
-    id: 117,
-    avant: "You Powerfully",
-    marque: "Giorgio Armani",
-    nom: "Emporio Armani Stronger With You Powerfully",
-    pourquoi: "nom tronqué par le début : le fournisseur n'a gardé que la fin. Page officielle armani.com, ligne Emporio Armani. Aucun autre parfum au monde ne porte le mot Powerfully",
+    id: 189,
+    avant: "Pégase Royal",
+    marque: "Parfums de Marly",
+    nom: "Pegasus",
+    pourquoi: "aucun Guerlain ne s'appelle Pégase. C'est le Pegasus de Parfums de Marly (2011), francisé par le fournisseur. « Royal » vient de la mention ROYAL ESSENCE imprimée sur le flacon, pas du nom : le catalogue officiel ne compte que Pegasus et Pegasus Exclusif",
   },
   {
-    id: 272,
-    avant: "Fantastic Basilic",
-    marque: "Montale",
-    nom: "Fantastic Basilic",
-    pourquoi: "le nom est juste, la marque non : c'est un Montale (EDP 100 ml, EAN 3760260458450), pas un Versace. Absorbe aussi l'entrée isolée « Fantastic - Basilic » de la colonne à identifier",
+    id: 188,
+    avant: "Rouge Smoking",
+    marque: "BDK Parfums",
+    nom: "Rouge Smoking",
+    pourquoi: "le nom est juste, la marque non : Rouge Smoking est un BDK Parfums (2019), pas un Guerlain",
   },
   {
-    id: 138,
-    avant: "Red",
-    marque: "Diesel",
-    nom: "D Red",
-    pourquoi: "ligne « D by Diesel », intitulé officiel D RED sur diesel.com. Diesel n'a que deux références contenant Red, et l'autre serait écrite « Loverdose ». Concentration à lire sur le flacon : EDP 2024 ou Le Parfum 2025",
+    id: 187,
+    avant: "Oud Maracujá",
+    marque: "Maison Crivelli",
+    nom: "Oud Maracujá",
+    pourquoi: "nom déposé de Maison Crivelli, accent compris, extrait 32 %. Aucun Guerlain ne contient de fruit de la passion",
   },
   {
-    id: 248,
-    avant: "La Note",
-    marque: "Roberto Cavalli",
-    nom: "La Notte",
-    pourquoi: "même geste que « Aqua di Gio » vers Acqua di Giò : la finale italienne est mangée. Attention, un « Uomo La Notte » masculin existe aussi, sortis en duo en 2018",
+    id: 141,
+    avant: "J'adore Lumière",
+    marque: "Dior",
+    nom: "J'adore Eau Lumière",
+    pourquoi: "le nom officiel porte « Eau », que le fournisseur a sauté",
   },
   {
-    id: 235,
-    avant: "Bronze Goddess",
-    marque: "Estée Lauder",
-    nom: "Bronze Goddess",
-    pourquoi: "le nom est juste, la marque non : Bronze Goddess est un Estée Lauder. Le catalogue Nina Ricci n'a ni Bronze ni Goddess. Onze déclinaisons existent, la concentration est à lire sur le flacon",
+    id: 206,
+    avant: "Blanc",
+    marque: "Lacoste",
+    nom: "L.12.12 Blanc",
+    pourquoi: "nom officiel complet chez Lacoste ; aligné sur ses deux sœurs de gamme",
+  },
+  {
+    id: 207,
+    avant: "Noir",
+    marque: "Lacoste",
+    nom: "L.12.12 Noir",
+    pourquoi: "nom officiel complet chez Lacoste ; aligné sur ses deux sœurs de gamme",
+  },
+  {
+    id: 208,
+    avant: "Blue",
+    marque: "Lacoste",
+    nom: "L.12.12 Bleu",
+    pourquoi: "« Blue » est le libellé d'export ; Lacoste France écrit L.12.12 Bleu, comme Blanc et Noir déjà en base",
+  },
+  {
+    id: 237,
+    avant: "One Million Lucky",
+    marque: "Rabanne",
+    nom: "1 Million Lucky",
+    pourquoi: "la marque écrit le chiffre, pas le mot — cohérent avec « 1 Million » et « 1 Million Elixir » déjà au catalogue",
+  },
+  {
+    id: 126,
+    avant: "212 VIP Women",
+    marque: "Carolina Herrera",
+    nom: "212 VIP",
+    pourquoi: "« Women » est une mention de genre ajoutée par les revendeurs, pas une partie du nom commercial",
   },
 ];
 
@@ -106,18 +136,28 @@ const AJOUTS: Ajout[] = [
 ];
 
 /** Ce qui reste sans réponse, et ce qu'on en fait. */
-const NON_RESOLU: string[] = [];
+const NON_RESOLU: string[] = [
+  "#131 Chanel · « Gris Montagne » — ce n'est pas un Chanel, la maison n'a aucun « Gris ». Mais",
+  "     deux flacons portent « GRIS MONTAIGNE » : le Dior Collection Privée d'avant 2017",
+  "     (~230 €, rebaptisé Gris Dior depuis) et le clone Ard Al Zaafaran (~10 €). Renommer",
+  "     en « Gris Dior » effacerait la seule chaîne qui permet de retrouver le flacon.",
+  "#164 Escada · « Tadj » — pas clairement un doublon du « Taj Sunset » publié : une douzaine",
+  "     de parfums du Golfe s'appellent Taj, et « Tadj » transcrit تاج en français.",
+  "#166 et #167 Fendi · « Fendi » et « Fendi Fendi » — ne pas fusionner. Ce fournisseur tronque",
+  "     par le DÉBUT, donc un « FENDI » nu est plus vraisemblablement la queue de « Fan di",
+  "     Fendi » que l'éponyme de 1985, qui ne circule qu'en vintage de collection.",
+  "#171 Franck Olivier · « Eau de Passion » — franckolivier.fr écrit « Eau de passion », p",
+  "     minuscule : stylisation du site plutôt qu'orthographe. Laissé en casse de titre.",
+];
 
-function slugifie(nom: string): string {
-  return (
-    nom
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "sans-nom"
-  );
-}
+/*
+ * Les slugs viennent des générateurs de l'app, pas d'une copie locale.
+ *
+ * Ce script avait sa propre `slugifie()`, sans le préfixe `p-<id>-` que pose
+ * `perfumeSlug()`. Chaque fiche qu'il touchait repartait donc hors convention,
+ * et changeait de slug au premier enregistrement depuis l'admin. Une règle de
+ * nommage qui existe en deux exemplaires finit toujours par diverger.
+ */
 
 function cle(s: string): string {
   return s
@@ -129,10 +169,10 @@ function cle(s: string): string {
 
 async function slugLibrePourParfum(
   tx: Prisma.TransactionClient,
-  base: string,
+  racineDemandee: string,
   saufId?: number,
 ): Promise<string> {
-  const racine = slugifie(base);
+  const racine = racineDemandee;
   let slug = racine;
   for (let n = 2; ; n++) {
     const pris = await tx.perfume.findFirst({
@@ -246,12 +286,12 @@ async function main() {
 
       for (const nom of besoins) {
         if (parMarque.has(cle(nom))) continue;
-        let slug = slugifie(nom);
+        let slug = brandSlug(nom);
         for (let n = 2; await tx.brand.findUnique({ where: { slug }, select: { id: true } }); n++) {
-          slug = `${slugifie(nom)}-${n}`;
+          slug = `${brandSlug(nom)}-${n}`;
         }
         const creee = await tx.brand.create({
-          data: { name: nom, slug, status: "DRAFT", catalogMode: "CURATED" },
+          data: { name: normaliseMarque(nom), slug, status: "DRAFT", catalogMode: "CURATED" },
         });
         parMarque.set(cle(nom), creee.id);
         marquesCreees++;
@@ -260,10 +300,10 @@ async function main() {
       for (const r of RENOMMAGES) {
         const brandId = parMarque.get(cle(r.marque));
         if (!brandId) throw new Error(`Marque introuvable : ${r.marque}`);
-        const slug = await slugLibrePourParfum(tx, `${r.marque} ${r.nom}`, r.id);
+        const slug = await slugLibrePourParfum(tx, perfumeSlug(r.id, r.nom, r.marque), r.id);
         await tx.perfume.update({
           where: { id: r.id },
-          data: { name: r.nom, slug, brandId },
+          data: { name: normaliseParfum(r.nom), slug, brandId },
         });
         renommes++;
       }
@@ -271,9 +311,22 @@ async function main() {
       for (const a of ajoutsReels) {
         const brandId = parMarque.get(cle(a.marque));
         if (!brandId) throw new Error(`Marque introuvable : ${a.marque}`);
-        const slug = await slugLibrePourParfum(tx, `${a.marque} ${a.nom}`);
-        await tx.perfume.create({
-          data: { name: a.nom, slug, brandId, image: "", status: "DRAFT" },
+        // `perfumeSlug()` a besoin de l'id, que seule la création donne : on pose
+        // un slug provisoire, puis le définitif.
+        const cree = await tx.perfume.create({
+          data: {
+            name: normaliseParfum(a.nom),
+            slug: `tmp-${brandId}-${cle(a.nom)}`,
+            brandId,
+            image: "",
+            status: "DRAFT",
+          },
+        });
+        await tx.perfume.update({
+          where: { id: cree.id },
+          data: {
+            slug: await slugLibrePourParfum(tx, perfumeSlug(cree.id, a.nom, a.marque), cree.id),
+          },
         });
         ajoutes++;
       }
