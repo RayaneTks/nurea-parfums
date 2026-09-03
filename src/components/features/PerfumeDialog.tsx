@@ -15,6 +15,7 @@ import { X } from "lucide-react";
 import { CONTACT, type Perfume } from "@/lib/data";
 import { contactHref, whatsappOrderUrl } from "@/lib/catalog/perfumePresentation";
 import { buttonClass } from "@/components/ui/Button";
+import { ChannelSoon } from "@/components/ui/ChannelSoon";
 import { SnapchatIcon, WhatsAppIcon } from "@/components/ui/Icons";
 import { PerfumeImage } from "./PerfumeImage";
 
@@ -34,7 +35,7 @@ const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1
  * de gamme, et les trois avaient fini par diverger.
  *
  * Charte § 05 : angles 0, aucune ombre, séparation au filet. Snapchat prend
- * l'unique aplat cuivre de l'écran — c'est le canal principal —, WhatsApp le
+ * l'unique aplat cuivre de l'écran — c'est le seul canal ouvert —, WhatsApp le
  * filet, le formulaire le lien texte.
  */
 const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
@@ -89,6 +90,9 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
     touchStartY.current = null;
     if (start !== null && end !== undefined && end - start > 70) onClose();
   };
+
+  /* `null` tant que le canal n'est pas ouvert — voir `CONTACT.whatsapp`. */
+  const commandeWhatsApp = whatsappOrderUrl(perfume.name, perfume.brand);
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end justify-center md:items-center">
@@ -145,15 +149,19 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
                 Snapchat
               </a>
 
-              <a
-                href={whatsappOrderUrl(perfume.name, perfume.brand)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={buttonClass("outline", "w-full")}
-              >
-                <WhatsAppIcon className="h-4 w-4 shrink-0" aria-hidden />
-                WhatsApp
-              </a>
+              {commandeWhatsApp ? (
+                <a
+                  href={commandeWhatsApp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={buttonClass("outline", "w-full")}
+                >
+                  <WhatsAppIcon className="h-4 w-4 shrink-0" aria-hidden />
+                  WhatsApp
+                </a>
+              ) : (
+                <ChannelSoon />
+              )}
 
               <Link
                 href={contactHref(perfume.name, perfume.brand)}

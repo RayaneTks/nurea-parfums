@@ -19,9 +19,19 @@ const LEGAL = [
   { href: "/legal", label: "Livraison & retours" },
 ] as const;
 
+/*
+ * WhatsApp est retiré du pied de page tant que le canal n'est pas ouvert.
+ *
+ * Ici, contrairement aux écrans de commande, aucune mention « bientôt » : un
+ * pied de page est une liste de raccourcis, pas un endroit où l'on annonce.
+ * Le canal se réannoncera de lui-même le jour où `CONTACT.whatsapp` portera un
+ * numéro.
+ */
 const SOCIAL = [
   { href: CONTACT.snapchat, label: "Snapchat", Icon: SnapchatIcon },
-  { href: CONTACT.whatsapp, label: "WhatsApp", Icon: WhatsAppIcon },
+  ...(CONTACT.whatsapp
+    ? [{ href: CONTACT.whatsapp, label: "WhatsApp", Icon: WhatsAppIcon }]
+    : []),
 ] as const;
 
 /**

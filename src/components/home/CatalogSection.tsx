@@ -263,8 +263,8 @@ export const CatalogSection = ({
           <h2 className="nurea-section-title mt-4 text-nurea-text">Le catalogue</h2>
           <p className="nurea-body nurea-prose mt-4">
             Notre sélection des plus grandes marques, pour homme et pour femme.
-            Les prix se donnent en direct : écrivez-nous sur Snapchat ou WhatsApp
-            pour commander.
+            Les prix se donnent en direct : écrivez-nous sur Snapchat pour
+            commander.
           </p>
         </ScrollReveal>
 

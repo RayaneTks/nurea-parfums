@@ -32,6 +32,6 @@ export const MARQUE_FAQ: readonly FaqEntry[] = [
   {
     question: "Comment passer commande ?",
     answer:
-      "Envoyez-nous le parfum souhaité sur Snapchat ou WhatsApp. Nous confirmons le prix et la disponibilité, puis nous convenons ensemble de la remise ou de l'envoi.",
+      "Envoyez-nous le parfum souhaité sur Snapchat. Nous confirmons le prix et la disponibilité, puis nous convenons ensemble de la remise ou de l'envoi.",
   },
 ] as const;

@@ -5,7 +5,7 @@ import { pageOg, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Contact & commande",
-  description: `Contactez ${SITE_NAME} pour passer commande ou obtenir un conseil. Stock disponible immédiatement, réponse rapide sur Snapchat et WhatsApp.`,
+  description: `Contactez ${SITE_NAME} pour passer commande ou obtenir un conseil. Stock disponible immédiatement, réponse rapide sur Snapchat.`,
   alternates: { canonical: "/contact" },
   openGraph: pageOg("/contact"),
 };

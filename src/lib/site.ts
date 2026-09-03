@@ -19,7 +19,7 @@ export const SITE_SHORT_NAME = "Nuréa";
 export const SITE_TAGLINE = "Parfumerie d'Exception";
 
 export const DEFAULT_DESCRIPTION =
-  "Nuréa Parfums — Retrouvez vos parfums préférés au meilleur prix. Une sélection rigoureuse des plus grandes marques pour homme et femme. Découvrez notre catalogue et commandez directement sur Snapchat ou WhatsApp.";
+  "Nuréa Parfums — Retrouvez vos parfums préférés au meilleur prix. Une sélection rigoureuse des plus grandes marques pour homme et femme. Découvrez notre catalogue et commandez directement sur Snapchat.";
 
 /**
  * Noms alternatifs pour schema.org et cohérence SEO.

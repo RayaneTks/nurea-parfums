@@ -20,8 +20,14 @@ export function contactHref(perfume: string, brand: string): string {
   return `/contact?${params}`;
 }
 
-/** Conversation WhatsApp amorcée sur une référence précise. */
-export function whatsappOrderUrl(perfume: string, brand: string): string {
+/**
+ * Conversation WhatsApp amorcée sur une référence précise.
+ *
+ * Rend `null` tant que le canal n'est pas ouvert, pour que l'appelant retire le
+ * bouton au lieu de proposer un lien mort.
+ */
+export function whatsappOrderUrl(perfume: string, brand: string): string | null {
+  if (!CONTACT.whatsapp) return null;
   const [base] = CONTACT.whatsapp.split("?");
   const message = `Bonjour, je souhaite commander le parfum ${perfume} de ${brand}.`;
   return `${base ?? CONTACT.whatsapp}?text=${encodeURIComponent(message)}`;
