@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Loader2, Plus } from "lucide-react";
 import { Input } from "@/ui/primitives/Input";
 import { readJsonSafe } from "@/lib/admin/http";
+import { cleNom, normaliseMarque, trouveParNom } from "@/lib/nommage";
 import { cn } from "@/lib/utils";
 
 export type BrandOption = {
@@ -51,16 +52,28 @@ export function BrandPicker({
   const selected = useMemo(() => brands.find((b) => b.id === value), [brands, value]);
   const trimmed = query.trim();
 
+  /*
+   * Recherche insensible aux accents, pas seulement a la casse.
+   *
+   * Le filtre comparait `b.name.toLowerCase().includes(q)` : taper « lancome »
+   * ne trouvait pas « Lancome » accentue, ni « dolce gabbana » la marque
+   * ecrite avec une esperluette. On tombait alors sur le bouton « Creer la
+   * marque », et une marque en double naissait a chaque fois.
+   */
   const results = useMemo(() => {
-    const q = trimmed.toLowerCase();
+    const q = cleNom(trimmed);
     if (!q) return brands.slice(0, 8);
-    return brands.filter((b) => b.name.toLowerCase().includes(q)).slice(0, 20);
+    return brands.filter((b) => cleNom(b.name).includes(q)).slice(0, 20);
   }, [brands, trimmed]);
 
-  const hasExactMatch = useMemo(
-    () => brands.some((b) => b.name.toLowerCase() === trimmed.toLowerCase()),
+  /** La marque deja au catalogue qui correspond a la saisie, s'il y en a une. */
+  const equivalente = useMemo(
+    () => trouveParNom(brands, (b) => b.name, trimmed),
     [brands, trimmed],
   );
+
+  /** L'orthographe sous laquelle la marque serait enregistree. */
+  const nomPropose = useMemo(() => normaliseMarque(trimmed), [trimmed]);
 
   useEffect(() => {
     if (!open) return;
@@ -86,6 +99,13 @@ export function BrandPicker({
 
   async function createBrand() {
     if (trimmed.length < MIN_NAME_LENGTH || creating) return;
+    if (equivalente) {
+      // Rien a creer : la marque existe, on la selectionne.
+      onSelect(equivalente);
+      setQuery("");
+      setOpen(false);
+      return;
+    }
     setCreating(true);
     try {
       const res = await fetch("/api/admin/brands", {
@@ -94,12 +114,24 @@ export function BrandPicker({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: trimmed }),
       });
-      const json = await readJsonSafe<{ error?: string; brand?: BrandOption }>(res);
+      const json = await readJsonSafe<{
+        error?: string;
+        brand?: BrandOption;
+        notice?: string | null;
+      }>(res);
       if (!res.ok || !json?.brand) {
         throw new Error(json?.error ?? "La marque n'a pas pu être créée.");
       }
-      onBrandCreated(json.brand);
-      onSelect(json.brand);
+      /*
+       * L'API peut rendre une marque EXISTANTE plutot que la creer, quand la
+       * saisie ne differait que par la casse ou les accents. Ne l'ajouter a la
+       * liste que si elle n'y est pas deja, sans quoi elle y figurerait deux
+       * fois et le doublon qu'on evite en base reapparaitrait a l'ecran.
+       */
+      const brand = json.brand;
+      if (!brands.some((b) => b.id === brand.id)) onBrandCreated(brand);
+      if (json.notice) onError(json.notice);
+      onSelect(brand);
       setQuery("");
       setOpen(false);
     } catch (e) {
@@ -149,7 +181,7 @@ export function BrandPicker({
           className="absolute inset-x-0 top-full z-30 mt-1.5 overflow-hidden rounded-[14px] bg-[var(--admin-surface)] shadow-[var(--admin-shadow-lg)]"
           style={{ border: "1px solid var(--admin-border-strong)" }}
         >
-          {trimmed.length >= MIN_NAME_LENGTH && !hasExactMatch ? (
+          {trimmed.length >= MIN_NAME_LENGTH && !equivalente ? (
             <button
               type="button"
               onClick={() => void createBrand()}
@@ -167,9 +199,18 @@ export function BrandPicker({
                 <Plus size={16} className="shrink-0" aria-hidden />
               )}
               <span className="min-w-0 flex-1 truncate text-[14px] font-semibold">
-                Créer la marque « {trimmed} »
+                Créer la marque « {nomPropose} »
               </span>
             </button>
+          ) : null}
+
+          {equivalente && cleNom(equivalente.name) === cleNom(trimmed) && equivalente.name !== trimmed ? (
+            <p
+              className="px-3 py-2 text-[12px] text-[var(--admin-text-muted)]"
+              style={{ borderBottom: "1px solid var(--admin-border)" }}
+            >
+              Déjà au catalogue sous « {equivalente.name} ».
+            </p>
           ) : null}
 
           <div className="max-h-[240px] overflow-y-auto overscroll-contain">

@@ -6,6 +6,8 @@ import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { brandSlug } from "@/lib/slugify";
+import { normaliseMarque } from "@/lib/nommage";
+import { marqueEquivalente } from "@/lib/admin/resoudMarque";
 
 export const dynamic = "force-dynamic";
 
@@ -76,9 +78,18 @@ export async function PATCH(request: Request, { params }: RouteCtx) {
     imageLight?: string | null;
   } = {};
   if (body.name !== undefined) {
-    const name = body.name.trim();
+    const name = normaliseMarque(body.name);
     if (name.length < 2 || name.length > 120) {
       return NextResponse.json({ error: "Nom de marque invalide." }, { status: 400 });
+    }
+    // Renommer une marque vers le nom d'une autre les rendrait indiscernables
+    // au catalogue, chacune gardant ses parfums.
+    const doublon = await marqueEquivalente(name, id);
+    if (doublon) {
+      return NextResponse.json(
+        { error: `« ${doublon.name} » porte déjà ce nom. Fusionnez plutôt les deux marques.` },
+        { status: 409 },
+      );
     }
     data.name = name;
     data.slug = brandSlug(name);
