@@ -5,7 +5,9 @@ import { PublicationStatus } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
-import { brandSlug, perfumeSlug } from "@/lib/slugify";
+import { perfumeSlug } from "@/lib/slugify";
+import { normaliseParfum } from "@/lib/nommage";
+import { resoudMarqueParNom } from "@/lib/admin/resoudMarque";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +68,9 @@ export async function POST(request: Request) {
 
     const brandId = (body.brandId ?? "").trim();
     const brandName = (body.brandName ?? "").trim();
-    const name = (body.name ?? "").trim();
+    // Le nom part en base mis en forme, jamais brut : une saisie tout en
+    // minuscules laissait « ombre nomade » a cote de « Ombre Nomade ».
+    const name = normaliseParfum(body.name ?? "");
     const image = (body.image ?? "").trim();
 
     if (!name || !image || (!brandId && !brandName)) {
@@ -78,16 +82,21 @@ export async function POST(request: Request) {
     let brand = brandId
       ? await prisma.brand.findUnique({ where: { id: brandId } })
       : null;
+    /*
+     * Marque saisie au clavier plutot que choisie dans la liste.
+     *
+     * L'`upsert` precedent cherchait `where: { name: brandName }`, une egalite
+     * exacte : « louis vuitton » ne retrouvait pas « Louis Vuitton » et creait
+     * une seconde marque. `resoudMarqueParNom` compare sans casse ni accents,
+     * et rend la marque existante quand il y en a une.
+     */
+    let marqueCorrigeeEn: string | undefined;
     if (!brand && brandName) {
-      brand = await prisma.brand.upsert({
-        where: { name: brandName },
-        update: { slug: brandSlug(brandName) },
-        create: {
-          name: brandName,
-          slug: brandSlug(brandName),
-          catalogMode: "CURATED",
-        },
-      });
+      const resolue = await resoudMarqueParNom(brandName);
+      if (resolue) {
+        brand = resolue.brand;
+        marqueCorrigeeEn = resolue.corrigeeEn;
+      }
     }
     if (!brand) {
       return NextResponse.json({ error: "Marque introuvable." }, { status: 404 });
@@ -149,6 +158,11 @@ export async function POST(request: Request) {
           : brand.status === "DRAFT"
             ? "Parfum créé en mode masqué car la marque est masquée."
             : null,
+      // Dit a l'utilisateur ce qui a ete change sous ses doigts : une
+      // correction silencieuse se refait a l'identique la fois suivante.
+      notice: marqueCorrigeeEn
+        ? `Marque rattachée à « ${marqueCorrigeeEn} », déjà au catalogue.`
+        : null,
     });
   } catch (error) {
     console.error("[api/admin/perfumes][POST]", error);

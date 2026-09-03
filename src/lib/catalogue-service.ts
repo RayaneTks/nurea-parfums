@@ -212,7 +212,12 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
 
 const getPublicCatalogueCached = unstable_cache(
   loadPublicCatalogFromDb,
-  ["public-catalogue-v1"],
+  // v2 : les slugs de marque ont ete corriges en base (louis-vuiton ->
+  // louis-vuitton et neuf autres consonnes doublees perdues par un ancien
+  // generateur). Le slug est la valeur du filtre public ?maison=, donc
+  // l'instantane en cache devait etre jete ; changer la cle le garantit au
+  // deploiement, sans dependre d'une mutation admin pour purger le tag.
+  ["public-catalogue-v2"],
   { tags: [PUBLIC_CATALOGUE_CACHE_TAG] },
 );
 

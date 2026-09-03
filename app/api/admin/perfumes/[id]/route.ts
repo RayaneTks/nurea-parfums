@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { perfumeSlug } from "@/lib/slugify";
+import { normaliseParfum } from "@/lib/nommage";
 
 export const dynamic = "force-dynamic";
 
@@ -80,7 +81,7 @@ export async function PUT(request: Request, { params }: RouteCtx) {
   }
 
   const brandId = (body.brandId ?? existing.brandId).trim();
-  const name = (body.name ?? existing.name).trim();
+  const name = normaliseParfum(body.name ?? existing.name);
   const image = (body.image ?? existing.image).trim();
 
   if (!brandId || !name || !image) {

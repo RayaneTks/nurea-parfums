@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { Sheet } from "@/ui/primitives/Sheet";
 import { Input } from "@/ui/primitives/Input";
@@ -11,6 +11,7 @@ import { Skeleton } from "@/ui/primitives/Skeleton";
 import { EmptyState } from "@/ui/primitives/EmptyState";
 import { SegmentedControl } from "@/ui/primitives/SegmentedControl";
 import type { PerfumePickerRow } from "@/lib/gestion/types";
+import { cleNom, normaliseMarque, normaliseParfum, trouveParNom } from "@/lib/nommage";
 
 let pickerCache: PerfumePickerRow[] | null = null;
 
@@ -95,13 +96,51 @@ export function PerfumePicker({
     return () => window.clearTimeout(t);
   }, [open, mode]);
 
-  const q = query.trim().toLowerCase();
+  const q = cleNom(query);
   const filtered = perfumes.filter((p) => {
     if (excludedIds.includes(p.id)) return false;
     if (q.length === 0) return true;
-    const hay = `${p.name} ${p.brand?.name ?? ""}`.toLowerCase();
-    return hay.includes(q);
+    // Recherche sans accents : « lancome » doit trouver « Lancome » accentue,
+    // sinon on passe en saisie libre pour un parfum deja au catalogue.
+    return cleNom(`${p.name} ${p.brand?.name ?? ""}`).includes(q);
   });
+
+  /*
+   * Ce que la saisie libre sait du catalogue.
+   *
+   * Le champ etait un simple bloc-notes : ce qu'on tapait partait tel quel en
+   * instantane sur la ligne de vente. Deux consequences — la casse variait
+   * d'une ligne a l'autre, et on ressaisissait a la main des parfums deja au
+   * catalogue, qui perdaient au passage leur rattachement et leur photo.
+   */
+  const marquesConnues = useMemo(() => {
+    const vues = new Map<string, string>();
+    for (const p of perfumes) {
+      const nom = p.brand?.name?.trim();
+      if (!nom) continue;
+      if (!vues.has(cleNom(nom))) vues.set(cleNom(nom), nom);
+    }
+    return [...vues.values()];
+  }, [perfumes]);
+
+  /** La marque du catalogue qui correspond a la saisie, s'il y en a une. */
+  const marqueConnue = trouveParNom(marquesConnues, (n) => n, manualBrand);
+
+  /** L'orthographe retenue : celle du catalogue d'abord, la mise en forme sinon. */
+  const marqueRetenue =
+    marqueConnue ?? (manualBrand.trim() ? normaliseMarque(manualBrand) : "");
+  const nomRetenu = normaliseParfum(manualName);
+
+  /** Le parfum du catalogue que la saisie libre est en train de recopier. */
+  const dejaAuCatalogue = perfumes.find(
+    (p) =>
+      // Un parfum deja sur le ticket est exclu du choix catalogue : le
+      // proposer ici ajouterait la ligne que le picker refuse par ailleurs.
+      !excludedIds.includes(p.id) &&
+      cleNom(p.name) === cleNom(manualName) &&
+      cleNom(manualName) !== "" &&
+      (marqueRetenue === "" || cleNom(p.brand?.name ?? "") === cleNom(marqueRetenue)),
+  );
 
   const selectCatalog = (p: PerfumePickerRow) => {
     onSelect({ kind: "catalog", perfume: p });
@@ -109,10 +148,12 @@ export function PerfumePicker({
   };
 
   const selectManual = () => {
-    const name = manualName.trim();
-    const brand = manualBrand.trim() || "Hors catalogue";
-    if (name.length < 2) return;
-    onSelect({ kind: "manual", name, brandName: brand });
+    if (nomRetenu.length < 2) return;
+    onSelect({
+      kind: "manual",
+      name: nomRetenu,
+      brandName: marqueRetenue || "Hors catalogue",
+    });
     onClose();
   };
 
@@ -125,7 +166,7 @@ export function PerfumePicker({
         fullWidth
         leadingIcon={<Plus size={16} />}
         onClick={selectManual}
-        disabled={manualName.trim().length < 2}
+        disabled={nomRetenu.length < 2}
       >
         Ajouter en saisie libre
       </Button>
@@ -236,9 +277,48 @@ export function PerfumePicker({
               </ul>
             )
           ) : (
-            <p className="text-[12px] text-[var(--admin-text-muted)]">
-              Pour un parfum hors catalogue. Nom + marque gardés en snapshot.
-            </p>
+            <Stack gap={2}>
+              {dejaAuCatalogue ? (
+                <button
+                  type="button"
+                  onClick={() => selectCatalog(dejaAuCatalogue)}
+                  className="flex w-full min-h-[var(--admin-touch-min)] items-center gap-2 rounded-[12px] bg-[var(--admin-accent-bg)] px-3 py-2.5 text-left tap-scale"
+                  style={{ border: "1px solid var(--admin-accent)" }}
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[14px] font-semibold text-[var(--admin-accent)]">
+                      Déjà au catalogue
+                    </span>
+                    <span className="block truncate text-[12px] text-[var(--admin-text-muted)]">
+                      {dejaAuCatalogue.brand?.name ?? "—"} · {dejaAuCatalogue.name} — le prendre
+                      plutôt qu&apos;une saisie libre
+                    </span>
+                  </span>
+                </button>
+              ) : null}
+
+              {marqueConnue && marqueConnue !== manualBrand.trim() ? (
+                <p className="text-[12px] text-[var(--admin-text-muted)]">
+                  Marque rattachée à « {marqueConnue} », déjà au catalogue.
+                </p>
+              ) : null}
+
+              {!marqueConnue && marqueRetenue !== "" && marqueRetenue !== manualBrand.trim() ? (
+                <p className="text-[12px] text-[var(--admin-text-muted)]">
+                  Sera enregistré sous « {marqueRetenue} ».
+                </p>
+              ) : null}
+
+              {nomRetenu !== "" && nomRetenu !== manualName.trim() ? (
+                <p className="text-[12px] text-[var(--admin-text-muted)]">
+                  Nom mis en forme : « {nomRetenu} ».
+                </p>
+              ) : null}
+
+              <p className="text-[12px] text-[var(--admin-text-muted)]">
+                Pour un parfum hors catalogue. Nom + marque gardés en snapshot.
+              </p>
+            </Stack>
           )}
         </div>
       </>

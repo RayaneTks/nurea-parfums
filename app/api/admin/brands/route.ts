@@ -4,7 +4,8 @@ import { BrandCatalogMode, BrandVisibilityStatus, Prisma } from "@prisma/client"
 import { prisma } from "@/lib/db/prisma";
 import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
-import { brandSlug } from "@/lib/slugify";
+import { normaliseMarque } from "@/lib/nommage";
+import { marqueEquivalente, slugMarqueLibre } from "@/lib/admin/resoudMarque";
 
 export const dynamic = "force-dynamic";
 
@@ -58,9 +59,25 @@ export async function POST(request: Request) {
     } catch {
       return NextResponse.json({ error: "JSON invalide." }, { status: 400 });
     }
-    const name = (body.name ?? "").trim();
+    const name = normaliseMarque(body.name ?? "");
     if (name.length < 2 || name.length > 120) {
       return NextResponse.json({ error: "Nom de marque invalide (2–120 car.)." }, { status: 400 });
+    }
+
+    /*
+     * Marque deja au catalogue sous une autre graphie.
+     *
+     * On la rend au lieu de refuser : le formulaire n'a pas besoin d'un
+     * message d'erreur, il a besoin de la marque a selectionner. Un 409 sec
+     * obligeait a deviner que « louis vuitton » existait deja en « Louis
+     * Vuitton », et la reaction naturelle est d'insister avec une variante.
+     */
+    const doublon = await marqueEquivalente(name);
+    if (doublon) {
+      return NextResponse.json({
+        brand: doublon,
+        notice: `« ${doublon.name} » est déjà au catalogue, elle a été sélectionnée.`,
+      });
     }
 
     const modeRaw = (body.catalogMode ?? "CURATED").trim();
@@ -92,7 +109,7 @@ export async function POST(request: Request) {
       imageLight?: string | null;
     } = {
       name,
-      slug: brandSlug(name),
+      slug: await slugMarqueLibre(name, prisma),
       catalogMode: modeRaw as BrandCatalogMode,
       status: statusRaw as BrandVisibilityStatus,
     };
