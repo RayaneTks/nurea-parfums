@@ -7,6 +7,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import {
   DEFAULT_DESCRIPTION,
+  pageOg,
   SEO_KEYWORDS,
   SITE_NAME,
   SITE_TAGLINE,
@@ -14,9 +15,6 @@ import {
 } from "@/lib/site";
 import { THEME_COLOR } from "@/design/brand";
 import { brandFontClassName } from "@/design/fonts";
-
-/** OG dynamique 1200×630 — voir `app/(shop)/opengraph-image.tsx` */
-const ogImage = "/opengraph-image";
 
 export const viewport: Viewport = {
   themeColor: THEME_COLOR,
@@ -42,7 +40,23 @@ export const metadata: Metadata = {
   creator: SITE_NAME,
   publisher: SITE_NAME,
   category: "Perfume store",
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    /*
+     * Sans `max-image-preview: large`, Google plafonne la vignette d'un
+     * résultat à une miniature. Sur un site dont l'argument est visuel — des
+     * flacons — c'est la moitié du bénéfice d'une image qu'on abandonne.
+     * `max-snippet: -1` lève de même la limite de longueur de l'extrait.
+     */
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   alternates: {
     canonical: "/",
     languages: { "fr-FR": "/" },
@@ -53,28 +67,18 @@ export const metadata: Metadata = {
     address: true,
   },
   ...(googleVerification ? { verification: { google: googleVerification } } : {}),
-  openGraph: {
-    type: "website",
-    locale: "fr_FR",
-    url: SITE_URL,
-    siteName: SITE_NAME,
-    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    description: DEFAULT_DESCRIPTION,
-    images: [
-      {
-        url: ogImage,
-        width: 1200,
-        height: 630,
-        alt: `${SITE_NAME} — ${SITE_TAGLINE}`,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    description: DEFAULT_DESCRIPTION,
-    images: [ogImage],
-  },
+  /*
+   * Valeurs de repli : chaque page appelle `pageOg` et fournit les siennes.
+   *
+   * Ni titre, ni description, ni image ici. Le titre et la description sont
+   * repris de ceux, résolus, de la page. L'image l'est de la convention de
+   * fichier `opengraph-image.tsx` — l'ancienne URL écrite à la main,
+   * « /opengraph-image », renvoyait un 404 : Next sert la vignette sous une
+   * adresse hachée par son contenu, recalculée à chaque build. /contact et
+   * /legal annonçaient donc une image morte aux robots des messageries.
+   */
+  openGraph: pageOg("/"),
+  twitter: { card: "summary_large_image" },
   appleWebApp: {
     capable: true,
     title: SITE_NAME,

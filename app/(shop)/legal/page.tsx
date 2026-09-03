@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { buttonClass } from "@/components/ui/Button";
-import { SITE_NAME } from "@/lib/site";
+import { pageOg, SITE_NAME } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Informations légales",
   description: `Mentions légales, conditions de vente et politique de confidentialité de ${SITE_NAME}.`,
   alternates: { canonical: "/legal" },
+  // Sans cette ligne, la page heritait de l'og du layout et annoncait l'URL de
+  // l'accueil comme etant la sienne.
+  openGraph: pageOg("/legal"),
   /* Page d'attente : rien à indexer tant que le contenu n'est pas rédigé. */
   robots: { index: false, follow: true },
 };

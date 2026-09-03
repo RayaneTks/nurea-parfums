@@ -5,7 +5,7 @@ import { FeaturedSection } from "@/components/features/FeaturedSection";
 import { CatalogSection } from "@/components/home/CatalogSection";
 import { CatalogSkeleton } from "@/components/features/PerfumeCardSkeleton";
 import { getCachedCatalogue } from "@/lib/catalogue-service";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { pageOg, SITE_NAME } from "@/lib/site";
 
 /** Données via `getCachedCatalogue` (tag `public-catalogue`) — pas de HTML figé au build. */
 export const dynamic = "force-dynamic";
@@ -42,21 +42,7 @@ export const metadata: Metadata = {
   title: { absolute: TITRE_ACCUEIL },
   description: DESCRIPTION_ACCUEIL,
   alternates: { canonical: "/" },
-  openGraph: {
-    title: TITRE_ACCUEIL,
-    description: DESCRIPTION_ACCUEIL,
-    url: SITE_URL,
-    type: "website",
-  },
-  /*
-   * Twitter reprend les mêmes valeurs, sans quoi il hérite de celles du layout
-   * et annonce un autre titre que Open Graph. Deux plateformes affichaient deux
-   * promesses différentes pour la même page.
-   */
-  twitter: {
-    title: TITRE_ACCUEIL,
-    description: DESCRIPTION_ACCUEIL,
-  },
+  openGraph: pageOg("/"),
 };
 
 export default async function HomePage() {

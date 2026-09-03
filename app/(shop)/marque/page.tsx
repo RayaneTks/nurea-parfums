@@ -5,7 +5,7 @@ import { MarqueFaqJsonLd } from "@/components/seo/MarqueFaqJsonLd";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { buttonClass } from "@/components/ui/Button";
 import { MARQUE_FAQ } from "@/lib/marqueFaq";
-import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { DEFAULT_DESCRIPTION, pageOg, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "La parfumerie",
@@ -17,17 +17,7 @@ export const metadata: Metadata = {
     "grandes marques",
   ],
   alternates: { canonical: "/marque" },
-  openGraph: {
-    title: `${SITE_NAME} — La parfumerie`,
-    description: DEFAULT_DESCRIPTION,
-    url: `${SITE_URL}/marque`,
-    locale: "fr_FR",
-    type: "website",
-  },
-  twitter: {
-    title: `${SITE_NAME} — La parfumerie`,
-    description: DEFAULT_DESCRIPTION,
-  },
+  openGraph: pageOg("/marque"),
 };
 
 const domain = SITE_URL.replace(/^https?:\/\//, "");
