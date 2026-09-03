@@ -52,95 +52,35 @@ type Ajout = {
 
 const RENOMMAGES: Renommage[] = [
   {
-    id: 189,
-    avant: "Pégase Royal",
-    marque: "Parfums de Marly",
-    nom: "Pegasus",
-    pourquoi: "aucun Guerlain ne s'appelle Pégase. C'est le Pegasus de Parfums de Marly (2011), francisé par le fournisseur. « Royal » vient de la mention ROYAL ESSENCE imprimée sur le flacon, pas du nom : le catalogue officiel ne compte que Pegasus et Pegasus Exclusif",
-  },
-  {
-    id: 188,
-    avant: "Rouge Smoking",
-    marque: "BDK Parfums",
-    nom: "Rouge Smoking",
-    pourquoi: "le nom est juste, la marque non : Rouge Smoking est un BDK Parfums (2019), pas un Guerlain",
-  },
-  {
-    id: 187,
-    avant: "Oud Maracujá",
-    marque: "Maison Crivelli",
-    nom: "Oud Maracujá",
-    pourquoi: "nom déposé de Maison Crivelli, accent compris, extrait 32 %. Aucun Guerlain ne contient de fruit de la passion",
-  },
-  {
-    id: 141,
-    avant: "J'adore Lumière",
+    id: 131,
+    avant: "Gris Montagne",
     marque: "Dior",
-    nom: "J'adore Eau Lumière",
-    pourquoi: "le nom officiel porte « Eau », que le fournisseur a sauté",
-  },
-  {
-    id: 206,
-    avant: "Blanc",
-    marque: "Lacoste",
-    nom: "L.12.12 Blanc",
-    pourquoi: "nom officiel complet chez Lacoste ; aligné sur ses deux sœurs de gamme",
-  },
-  {
-    id: 207,
-    avant: "Noir",
-    marque: "Lacoste",
-    nom: "L.12.12 Noir",
-    pourquoi: "nom officiel complet chez Lacoste ; aligné sur ses deux sœurs de gamme",
-  },
-  {
-    id: 208,
-    avant: "Blue",
-    marque: "Lacoste",
-    nom: "L.12.12 Bleu",
-    pourquoi: "« Blue » est le libellé d'export ; Lacoste France écrit L.12.12 Bleu, comme Blanc et Noir déjà en base",
-  },
-  {
-    id: 237,
-    avant: "One Million Lucky",
-    marque: "Rabanne",
-    nom: "1 Million Lucky",
-    pourquoi: "la marque écrit le chiffre, pas le mot — cohérent avec « 1 Million » et « 1 Million Elixir » déjà au catalogue",
-  },
-  {
-    id: 126,
-    avant: "212 VIP Women",
-    marque: "Carolina Herrera",
-    nom: "212 VIP",
-    pourquoi: "« Women » est une mention de genre ajoutée par les revendeurs, pas une partie du nom commercial",
+    nom: "Gris Dior",
+    pourquoi: "la liste Dior de Rayane tranche : ce n'est pas un Chanel, la maison n'a aucun « Gris ». Nom officiel depuis 2017 ; un flacon antérieur porte « Gris Montaigne », même jus",
   },
 ];
 
 const AJOUTS: Ajout[] = [
-  // ── Louis Vuitton ─────────────────────────────────────────
-  // Liste envoyée par Rayane. Sept des dix-sept étaient déjà au catalogue
-  // (Afternoon Swim, Attrape-Rêves, Contre Moi, Imagination, L'Immensité,
-  // Sur la Route, Symphony) — ils ne sont pas repris ici.
-  { marque: "Louis Vuitton", nom: "Cactus Garden", pourquoi: "2019, Jacques Cavallier Belletrud — orthographe officielle confirmée" },
-  { marque: "Louis Vuitton", nom: "Fantasmagory", pourquoi: "écrit « Fantasmagorie » sur la liste ; le nom officiel est anglais, sans e final (Les Extraits, 2025)" },
-  { marque: "Louis Vuitton", nom: "LV Lovers", pourquoi: "écrit « Lvers » ; le flacon porte LVERS, la boutique LV le vend sous « LV Lovers » (Pharrell, 2024)" },
-  { marque: "Louis Vuitton", nom: "Matière Noire", pourquoi: "écrit « Matière noir » ; le nom est féminin et accordé : Matière Noire (2016)" },
-  { marque: "Louis Vuitton", nom: "Météore", pourquoi: "2020 — deux accents aigus, absents de la liste" },
-  { marque: "Louis Vuitton", nom: "Ombre Nomade", pourquoi: "2018 — orthographe officielle confirmée" },
-  { marque: "Louis Vuitton", nom: "On the Beach", pourquoi: "2022 — « the » en minuscule dans le nom officiel LV" },
-  { marque: "Louis Vuitton", nom: "Pacific Chill", pourquoi: "2023 — orthographe officielle confirmée" },
-  { marque: "Louis Vuitton", nom: "Stellar Times", pourquoi: "2021 — orthographe officielle confirmée" },
-  // ── Identifiés dans la colonne « à identifier » ──────────────────
-  { marque: "Guy Laroche", nom: "Drakkar Noir", pourquoi: "« NOIR » sous une marque écrite « DRÂKAR ». Guy Laroche n'a que quatre parfums, dont trois Drakkar, et aucun ne s'appelle « Noir » seul" },
-  { marque: "Gissah", nom: "Imperial Valley", pourquoi: "correspondance exacte : Gissah (Koweït) référence G00093, EDP 200 ml mixte. Marqué non disponible à la vente chez la marque, ce qui colle à une revente de lot" },
+  // ── Dior ──────────────────────────────────────────────
+  // Liste envoyée par Rayane, dix-huit lignes. Six étaient déjà au catalogue
+  // (J'adore, J'adore Eau Lumière, Poison Girl, Sauvage, Addict, Dior Homme
+  // Intense) et « Gris montagne » est un renommage, pas un ajout : voir
+  // RENOMMAGES. Restent les onze ci-dessous.
+  { marque: "Dior", nom: "Hypnotic Poison", pourquoi: "écrit « Hypnitic » ; Dior écrit Hypnotic Poison (1998)" },
+  { marque: "Dior", nom: "Joy by Dior", pourquoi: "écrit « Joy » ; le nom commercial complet est Joy by Dior (2018)" },
+  { marque: "Dior", nom: "La Colle Noire", pourquoi: "écrit « La colle noi » ; La Collection Privée, 2016, d'après le château de Christian Dior à Montauroux" },
+  { marque: "Dior", nom: "Miss Dior Blooming Bouquet", pourquoi: "écrit « Miss dior blooming » ; nom complet depuis 2014, quand Dior a retiré « Chérie »" },
+  { marque: "Dior", nom: "Miss Dior Chérie", pourquoi: "écrit « Miss dior cherry » ; c'est Chérie, accentué (2005)" },
+  { marque: "Dior", nom: "New Look", pourquoi: "nom actuel de la Collection Privée. Attention : un « New Look 1947 » de 2010 existe aussi, autre jus" },
+  { marque: "Dior", nom: "Sauvage Elixir", pourquoi: "écrit « Sauvage élixir » ; Dior l'écrit sans accent (2021)" },
+  { marque: "Dior", nom: "Dior Homme Cologne", pourquoi: "écrit « Homme cologne » ; la gamme porte « Dior Homme » en entier, comme « Dior Homme Intense » déjà en base" },
+  { marque: "Dior", nom: "Dior Homme Parfum", pourquoi: "écrit « Homme le parfum » ; le nom officiel est Dior Homme Parfum, sans article" },
+  { marque: "Dior", nom: "Dior Homme Sport", pourquoi: "écrit « Homme sport » ; nom complet de la gamme" },
+  { marque: "Dior", nom: "Fahrenheit 32", pourquoi: "écrit « Farhenheit » ; deux lettres inversées. Fahrenheit 32 (2007), à ne pas confondre avec le Fahrenheit d'origine" },
 ];
 
 /** Ce qui reste sans réponse, et ce qu'on en fait. */
 const NON_RESOLU: string[] = [
-  "#131 Chanel · « Gris Montagne » — ce n'est pas un Chanel, la maison n'a aucun « Gris ». Mais",
-  "     deux flacons portent « GRIS MONTAIGNE » : le Dior Collection Privée d'avant 2017",
-  "     (~230 €, rebaptisé Gris Dior depuis) et le clone Ard Al Zaafaran (~10 €). Renommer",
-  "     en « Gris Dior » effacerait la seule chaîne qui permet de retrouver le flacon.",
   "#164 Escada · « Tadj » — pas clairement un doublon du « Taj Sunset » publié : une douzaine",
   "     de parfums du Golfe s'appellent Taj, et « Tadj » transcrit تاج en français.",
   "#166 et #167 Fendi · « Fendi » et « Fendi Fendi » — ne pas fusionner. Ce fournisseur tronque",
@@ -148,6 +88,7 @@ const NON_RESOLU: string[] = [
   "     Fendi » que l'éponyme de 1985, qui ne circule qu'en vintage de collection.",
   "#171 Franck Olivier · « Eau de Passion » — franckolivier.fr écrit « Eau de passion », p",
   "     minuscule : stylisation du site plutôt qu'orthographe. Laissé en casse de titre.",
+  "À identifier, flacon en main : Maryam · The One · Cartier · Essentiel Perfumes · Sofe · Caramel.",
 ];
 
 /*
