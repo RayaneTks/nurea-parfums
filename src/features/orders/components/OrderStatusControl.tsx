@@ -41,7 +41,16 @@ type OrderStatusControlProps = {
 
 export function OrderStatusControl({ order, onStatusChange, onError }: OrderStatusControlProps) {
   const [pending, startTransition] = useTransition();
-  const [confirmTarget, setConfirmTarget] = useState<EditableStatus | null>(null);
+  /*
+   * La cible ET la réserve à afficher. Le texte vient du domaine plutôt que
+   * d'une table écrite ici : c'est lui qui sait ce qui cloche — solde restant,
+   * absence d'acompte, vente rattachée — et une copie locale finirait par
+   * annoncer autre chose que ce qui est réellement vérifié.
+   */
+  const [confirmTarget, setConfirmTarget] = useState<{
+    next: EditableStatus;
+    reserve: string;
+  } | null>(null);
 
   if (!isEditableStatus(order.status)) {
     return null;
@@ -59,8 +68,11 @@ export function OrderStatusControl({ order, onStatusChange, onError }: OrderStat
       return;
     }
 
-    if (next === "PENDING" || (current === "DELIVERED" && next === "READY")) {
-      setConfirmTarget(next);
+    // Une réserve suspend le geste le temps d'une validation ; sans réserve, on
+    // applique directement — un changement de statut anodin ne mérite pas une
+    // boîte de dialogue à chaque fois.
+    if (guard.confirm) {
+      setConfirmTarget({ next, reserve: guard.confirm });
       return;
     }
 
@@ -86,21 +98,6 @@ export function OrderStatusControl({ order, onStatusChange, onError }: OrderStat
     });
   };
 
-  const confirmCopy =
-    confirmTarget === "PENDING"
-      ? {
-          title: "Repasser en attente ?",
-          description: "La commande sortira de la file « à traiter ».",
-          confirmLabel: "Confirmer",
-        }
-      : confirmTarget === "READY"
-        ? {
-            title: "Annuler la livraison ?",
-            description: "La commande repassera en « à traiter ».",
-            confirmLabel: "Corriger",
-          }
-        : null;
-
   return (
     <>
       <Card padding={3}>
@@ -121,17 +118,17 @@ export function OrderStatusControl({ order, onStatusChange, onError }: OrderStat
         </p>
       </Card>
 
-      {confirmTarget && confirmCopy ? (
+      {confirmTarget ? (
         <ConfirmDialog
           open
           onOpenChange={(open) => {
             if (!open) setConfirmTarget(null);
           }}
-          title={confirmCopy.title}
-          description={confirmCopy.description}
-          confirmLabel={confirmCopy.confirmLabel}
+          title={`Passer en « ${statusLabel(confirmTarget.next).toLowerCase()} » ?`}
+          description={confirmTarget.reserve}
+          confirmLabel="Confirmer"
           tone="primary"
-          onConfirm={() => patchStatus(confirmTarget)}
+          onConfirm={() => patchStatus(confirmTarget.next)}
         />
       ) : null}
     </>

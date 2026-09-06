@@ -13,67 +13,137 @@ const base: TransitionContext = {
   hasSale: false,
 };
 
-describe("OrderStatus.canTransition", () => {
-  it("PENDING → READY needs positive deposit", () => {
-    expect(canTransition("PENDING", "READY", base).ok).toBe(false);
-    expect(canTransition("PENDING", "READY", { ...base, depositPaidTotal: 10 }).ok).toBe(true);
+/** Raccourci de lecture : la réserve attachée à un verdict favorable. */
+function reserve(r: ReturnType<typeof canTransition>): string | undefined {
+  return r.ok ? r.confirm : undefined;
+}
+
+/*
+ * Ces tests décrivent un RENVERSEMENT de comportement, pas une correction.
+ *
+ * La version précédente refusait quatre transitions : passer en « à traiter »
+ * sans acompte, livrer avec un solde dû, revenir en arrière avec des acomptes
+ * enregistrés, dé-livrer une commande ayant une vente. Chacune décrivait le cas
+ * courant, aucune ne décrivait la réalité — une commande offerte vaut 0 €, un
+ * client de confiance emporte son flacon avant de payer, un clic se corrige.
+ *
+ * Ces refus deviennent des réserves à confirmer. Ce qui suit vérifie donc que
+ * `ok` est VRAI là où il était faux, et surtout qu'une réserve accompagne bien
+ * chacun de ces cas : autoriser sans prévenir serait l'excès inverse.
+ */
+describe("canTransition — plus aucun mur, des réserves", () => {
+  it("passe en « à traiter » sans acompte, en le signalant", () => {
+    // Le cas rapporté : une commande offerte, total 0 €, aucun acompte.
+    const r = canTransition("PENDING", "READY", { ...base, orderTotal: 0 });
+    expect(r.ok).toBe(true);
+    expect(reserve(r)).toMatch(/aucun acompte/i);
   });
 
-  it("PENDING → CANCELLED always allowed", () => {
-    expect(canTransition("PENDING", "CANCELLED", base).ok).toBe(true);
+  it("laisse sauter directement de « en attente » à « livrée »", () => {
+    // L'écran affiche les trois statuts côte à côte : la case du milieu ne peut
+    // pas être un péage.
+    const r = canTransition("PENDING", "DELIVERED", base);
+    expect(r.ok).toBe(true);
+    expect(reserve(r)).toMatch(/directement/i);
   });
 
-  it("PENDING → DELIVERED rejected (must go via READY)", () => {
-    expect(canTransition("PENDING", "DELIVERED", base).ok).toBe(false);
+  it("livre avec un solde dû, en annonçant le montant exact", () => {
+    const r = canTransition("READY", "DELIVERED", {
+      ...base,
+      depositPaidTotal: 50,
+      balancePaidTotal: 49,
+    });
+    expect(r.ok).toBe(true);
+    expect(reserve(r)).toContain("1,00 €");
   });
 
-  it("READY → DELIVERED needs full balance", () => {
-    expect(
-      canTransition("READY", "DELIVERED", {
-        ...base,
-        depositPaidTotal: 50,
-        balancePaidTotal: 49,
-      }).ok,
-    ).toBe(false);
-
-    expect(
-      canTransition("READY", "DELIVERED", {
-        ...base,
-        depositPaidTotal: 50,
-        balancePaidTotal: 50,
-      }).ok,
-    ).toBe(true);
+  it("revient en arrière malgré des acomptes, en disant qu'ils restent en compta", () => {
+    const r = canTransition("READY", "PENDING", { ...base, depositPaidTotal: 30 });
+    expect(r.ok).toBe(true);
+    expect(reserve(r)).toMatch(/30,00 €.*comptabilité/i);
   });
 
-  it("READY → PENDING requires deposit voided", () => {
-    expect(canTransition("READY", "PENDING", { ...base, depositPaidTotal: 30 }).ok).toBe(false);
-    expect(canTransition("READY", "PENDING", { ...base, depositPaidTotal: 0 }).ok).toBe(true);
+  it("dé-livre une commande ayant une vente, en prévenant qu'elle y reste", () => {
+    const r = canTransition("DELIVERED", "READY", { ...base, hasSale: true });
+    expect(r.ok).toBe(true);
+    expect(reserve(r)).toMatch(/vente est rattachée/i);
   });
 
-  it("DELIVERED → READY only without linked Sale", () => {
-    expect(canTransition("DELIVERED", "READY", { ...base, hasSale: true }).ok).toBe(false);
-    expect(canTransition("DELIVERED", "READY", { ...base, hasSale: false }).ok).toBe(true);
+  it("sort une commande de l'annulation", () => {
+    // L'ancienne version en faisait un cul-de-sac : corriger un clic obligeait
+    // à recréer la commande.
+    for (const cible of ["PENDING", "READY", "DELIVERED"] as const) {
+      const r = canTransition("CANCELLED", cible, base);
+      expect(r.ok).toBe(true);
+      expect(reserve(r)).toMatch(/annulée/i);
+    }
   });
 
-  it("CANCELLED is terminal", () => {
-    expect(canTransition("CANCELLED", "PENDING", base).ok).toBe(false);
-    expect(canTransition("CANCELLED", "READY", base).ok).toBe(false);
-    expect(canTransition("CANCELLED", "DELIVERED", base).ok).toBe(false);
+  it("signale une livraison sans aucun article", () => {
+    const r = canTransition("READY", "DELIVERED", {
+      ...base,
+      orderTotal: 0,
+      itemCount: 0,
+    });
+    expect(r.ok).toBe(true);
+    expect(reserve(r)).toMatch(/aucun article/i);
+  });
+});
+
+describe("canTransition — ce qui passe sans rien demander", () => {
+  /*
+   * L'absence de réserve n'est pas un détail de confort : `paymentActions`
+   * s'en sert pour décider si la transition automatique PENDING → READY peut
+   * se déclencher. Une réserve qui apparaîtrait ici la ferait taire, et
+   * enregistrer un acompte cesserait de faire avancer la commande.
+   */
+  it("passe en « à traiter » sans un mot quand l'acompte est là", () => {
+    const r = canTransition("PENDING", "READY", { ...base, depositPaidTotal: 10 });
+    expect(r).toEqual({ ok: true });
   });
 
-  it("READY → DELIVERED needs at least one item", () => {
-    expect(
-      canTransition("READY", "DELIVERED", {
-        ...base,
-        depositPaidTotal: 50,
-        balancePaidTotal: 50,
-        itemCount: 0,
-      }).ok,
-    ).toBe(false);
+  it("livre sans un mot quand tout est encaissé", () => {
+    const r = canTransition("READY", "DELIVERED", {
+      ...base,
+      depositPaidTotal: 50,
+      balancePaidTotal: 50,
+    });
+    expect(r).toEqual({ ok: true });
   });
 
-  it("same status rejects", () => {
+  it("revient en arrière sans un mot quand aucun acompte n'est enregistré", () => {
+    expect(canTransition("READY", "PENDING", base)).toEqual({ ok: true });
+  });
+
+  it("annule sans un mot depuis les statuts en cours", () => {
+    expect(canTransition("PENDING", "CANCELLED", base)).toEqual({ ok: true });
+    expect(canTransition("READY", "CANCELLED", base)).toEqual({ ok: true });
+  });
+
+  it("annule une commande livrée en le signalant", () => {
+    const r = canTransition("DELIVERED", "CANCELLED", base);
+    expect(r.ok).toBe(true);
+    expect(reserve(r)).toMatch(/livrée/i);
+  });
+});
+
+describe("canTransition — le seul refus qui reste", () => {
+  it("refuse un statut identique", () => {
+    // Ce n'est pas une interdiction : c'est un geste sans effet.
     expect(canTransition("PENDING", "PENDING", base).ok).toBe(false);
+    expect(canTransition("DELIVERED", "DELIVERED", base).ok).toBe(false);
+  });
+
+  it("n'oppose aucun refus aux douze autres combinaisons", () => {
+    const statuts = ["PENDING", "READY", "DELIVERED", "CANCELLED"] as const;
+    const refuses: string[] = [];
+    for (const from of statuts) {
+      for (const to of statuts) {
+        if (from === to) continue;
+        if (!canTransition(from, to, base).ok) refuses.push(`${from} → ${to}`);
+      }
+    }
+    expect(refuses).toEqual([]);
   });
 });
 

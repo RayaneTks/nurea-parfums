@@ -87,7 +87,16 @@ export async function recordPaymentAction(
         orderTotal: total,
         hasSale: false,
       });
-      if (guard.ok) {
+      /*
+       * `!guard.confirm` en plus de `guard.ok` : depuis que la machine
+       * n'interdit plus rien, un verdict favorable peut tout de même porter une
+       * réserve à faire valider. Une transition AUTOMATIQUE, elle, n'a personne
+       * à qui la montrer — elle ne doit donc se déclencher que sur un feu vert
+       * sans réserve. Sans cette condition, enregistrer un acompte ferait
+       * basculer la commande en « à traiter » en avalant silencieusement un
+       * avertissement destiné à un humain.
+       */
+      if (guard.ok && !guard.confirm) {
         await prisma.order.update({ where: { id: orderId }, data: { status: "READY" } });
         nextStatus = "READY";
       }

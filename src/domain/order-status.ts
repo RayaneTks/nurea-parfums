@@ -1,40 +1,88 @@
 /**
- * Order status state machine.
+ * Statuts d'une commande, et ce qu'il faut savoir avant d'en changer.
  *
- * PENDING  ─(deposit recorded)─→ READY
- *    │                              │
- *    └────────(cancel)─→ CANCELLED ←┘
- *                                   │
- *                              (deliver)
- *                                   ↓
- *                              DELIVERED
+ *   En attente  ⇄  À traiter  ⇄  Livrée          (annulable depuis les trois)
  *
- * Source of truth: PaymentTransaction (P6). `Order.depositPaid` is a denormalized cache.
+ * TOUTES les transitions entre ces trois statuts sont permises, dans les deux
+ * sens. Ce module ne dit plus « non » : il dit « voilà ce que tu devrais savoir
+ * avant de confirmer ».
+ *
+ * Pourquoi ce renversement. La machine exigeait un acompte pour passer en
+ * « à traiter », et le solde entier pour passer en « livrée ». Ces règles
+ * décrivent le cas courant, pas la réalité : une commande offerte vaut 0 €, un
+ * client de confiance repart avec son flacon avant d'avoir payé, une erreur de
+ * saisie se corrige à rebours. Dans tous ces cas l'écran refusait, sans recours,
+ * et le patron de la boutique se retrouvait bloqué par son propre outil.
+ *
+ * La règle qui gouverne ce fichier : **on n'interdit que ce qui casserait les
+ * données ; tout le reste se confirme.** Et il se trouve qu'ici rien ne casse
+ * les données — changer un statut ne crée, ne modifie ni ne supprime aucune
+ * vente ni aucun paiement (voir `app/api/admin/orders/[id]/route.ts`, qui
+ * n'écrit que `data.status`). Ce qui restait interdit ne l'était donc que par
+ * prudence, et la prudence se dit dans une boîte de dialogue, pas dans un mur.
+ *
+ * Reste un seul refus : changer un statut pour le même. Ce n'est pas une
+ * interdiction, c'est un geste sans effet.
+ *
+ * Source de vérité des montants : PaymentTransaction. `Order.depositPaid` n'en
+ * est qu'un cache dénormalisé.
  */
 
 export type OrderStatus = "PENDING" | "READY" | "DELIVERED" | "CANCELLED";
 
 export const ORDER_STATUSES = ["PENDING", "READY", "DELIVERED", "CANCELLED"] as const;
 
-export type OrderTransition =
-  | { from: "PENDING"; to: "READY"; requires: "deposit-positive" }
-  | { from: "PENDING"; to: "CANCELLED"; requires: "none" }
-  | { from: "READY"; to: "DELIVERED"; requires: "balance-paid" }
-  | { from: "READY"; to: "PENDING"; requires: "deposit-voided" }
-  | { from: "READY"; to: "CANCELLED"; requires: "none" }
-  | { from: "DELIVERED"; to: "READY"; requires: "sale-deleted" }; // admin correction path
-
 export type TransitionContext = {
-  depositPaidTotal: number; // sum DEPOSIT - sum REFUND
-  balancePaidTotal: number; // sum BALANCE
+  depositPaidTotal: number; // somme DEPOSIT - somme REFUND
+  balancePaidTotal: number; // somme BALANCE
   orderTotal: number;
   hasSale: boolean;
   itemCount?: number;
 };
 
+/**
+ * Le verdict d'une transition.
+ *
+ * `confirm` porte ce que l'utilisateur doit lire AVANT de valider. Sa présence
+ * n'empêche rien : elle demande un second geste. L'appelant qui l'ignore
+ * applique la transition — c'est voulu pour les appels automatiques, mais
+ * `paymentActions` montre le cas où il faut au contraire s'abstenir.
+ */
 export type TransitionResult =
-  | { ok: true }
+  | { ok: true; confirm?: string }
   | { ok: false; reason: string };
+
+/** Montant à la française — le domaine ne dépend d'aucun module d'affichage. */
+function euros(montant: number): string {
+  return `${montant.toFixed(2).replace(".", ",")} €`;
+}
+
+/** Ce qui reste à encaisser sur la commande. */
+function resteDu(ctx: TransitionContext): number {
+  return ctx.orderTotal - ctx.depositPaidTotal - ctx.balancePaidTotal;
+}
+
+/** Assemble les réserves en une seule phrase, ou rend `undefined` s'il n'y en a aucune. */
+function confirmation(...reserves: (string | null)[]): { ok: true; confirm?: string } {
+  const retenues = reserves.filter((r): r is string => r !== null);
+  return retenues.length > 0 ? { ok: true, confirm: retenues.join(" ") } : { ok: true };
+}
+
+const SANS_ACOMPTE = "Aucun acompte n'a été encaissé.";
+const SANS_ARTICLE = "Cette commande ne contient aucun article.";
+const VENTE_LIEE =
+  "Une vente est rattachée à cette commande : elle restera en comptabilité, le statut seul change.";
+
+function reserveSolde(ctx: TransitionContext): string | null {
+  const du = resteDu(ctx);
+  return du > 0.005 ? `Il reste ${euros(du)} à encaisser.` : null;
+}
+
+function reserveAcomptes(ctx: TransitionContext): string | null {
+  return ctx.depositPaidTotal > 0
+    ? `${euros(ctx.depositPaidTotal)} d'acomptes restent enregistrés en comptabilité.`
+    : null;
+}
 
 export function canTransition(
   from: OrderStatus,
@@ -43,48 +91,48 @@ export function canTransition(
 ): TransitionResult {
   if (from === to) return { ok: false, reason: "Statut identique." };
 
+  // Une commande annulée redevient modifiable — l'ancienne version en faisait un
+  // cul-de-sac, ce qui obligeait à recréer la commande pour corriger un clic.
+  if (from === "CANCELLED") {
+    return {
+      ok: true,
+      confirm: "Cette commande était annulée : elle va réapparaître dans le suivi.",
+    };
+  }
+
+  if (to === "CANCELLED") {
+    return from === "DELIVERED"
+      ? confirmation("Cette commande était livrée.", ctx.hasSale ? VENTE_LIEE : null)
+      : { ok: true };
+  }
+
   switch (from) {
     case "PENDING":
       if (to === "READY") {
-        if (ctx.depositPaidTotal <= 0) {
-          return { ok: false, reason: "Acompte requis pour passer en « à traiter »." };
-        }
-        return { ok: true };
+        return confirmation(ctx.depositPaidTotal <= 0 ? SANS_ACOMPTE : null);
       }
-      if (to === "CANCELLED") return { ok: true };
-      return { ok: false, reason: `Transition ${from} → ${to} interdite.` };
+      // Passage direct en livrée : l'écran propose les trois statuts côte à
+      // côte, il serait absurde que la case du milieu soit obligatoire.
+      return confirmation(
+        "La commande passe directement de « en attente » à « livrée ».",
+        (ctx.itemCount ?? 1) < 1 ? SANS_ARTICLE : null,
+        reserveSolde(ctx),
+      );
 
     case "READY":
       if (to === "DELIVERED") {
-        if ((ctx.itemCount ?? 1) < 1) {
-          return { ok: false, reason: "Ajoute au moins un article avant la livraison." };
-        }
-        const due = ctx.orderTotal - ctx.depositPaidTotal - ctx.balancePaidTotal;
-        if (due > 0.005) {
-          return { ok: false, reason: `Solde dû ${due.toFixed(2)} € — encaisse avant livraison.` };
-        }
-        return { ok: true };
+        return confirmation(
+          (ctx.itemCount ?? 1) < 1 ? SANS_ARTICLE : null,
+          reserveSolde(ctx),
+        );
       }
-      if (to === "PENDING") {
-        if (ctx.depositPaidTotal > 0) {
-          return { ok: false, reason: "Annule les acomptes d'abord." };
-        }
-        return { ok: true };
-      }
-      if (to === "CANCELLED") return { ok: true };
-      return { ok: false, reason: `Transition ${from} → ${to} interdite.` };
+      return confirmation(reserveAcomptes(ctx));
 
     case "DELIVERED":
-      if (to === "READY") {
-        if (ctx.hasSale) {
-          return { ok: false, reason: "Supprime la vente associée d'abord." };
-        }
-        return { ok: true };
-      }
-      return { ok: false, reason: "Commande livrée — utilise une correction manuelle." };
-
-    case "CANCELLED":
-      return { ok: false, reason: "Commande annulée — création d'une nouvelle si besoin." };
+      return confirmation(
+        to === "PENDING" ? "La commande revient tout au début du suivi." : null,
+        ctx.hasSale ? VENTE_LIEE : null,
+      );
 
     default: {
       const _exhaustive: never = from;
