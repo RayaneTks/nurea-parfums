@@ -43,7 +43,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
     }
     className="flex w-full flex-col border border-nurea-border bg-nurea-surface text-left transition-colors duration-nurea ease-out hover:bg-nurea-surface-hover"
   >
-    <div className="relative aspect-square w-full overflow-hidden">
+    <div className="nurea-visuel-parfum relative w-full overflow-hidden">
       <PerfumeImage
         perfume={perfume}
         sizes="(max-width: 1023px) 50vw, 33vw"
