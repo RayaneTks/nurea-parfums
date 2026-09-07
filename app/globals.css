@@ -330,6 +330,23 @@
    GRILLES
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* Le cadre d'un visuel de parfum.
+ *
+ * Les 99 photos du catalogue sont toutes en 1024 x 1536, soit un portrait 2:3
+ * — vérifié une à une, sans exception. Les conteneurs, eux, demandaient un
+ * carré sur les fiches et du 4:3 sur mobile : avec `object-cover`, un tiers de
+ * la hauteur disparaissait sur les cartes, et la MOITIÉ dans la fiche produit
+ * et le parfum du moment. Le flacon était coupé en haut et en bas.
+ *
+ * Ce ratio-ci correspond exactement à celui des fichiers : rien n'est rogné,
+ * et rien ne laisse de bande vide. Nommer la règle plutôt que de répéter
+ * `aspect-[2/3]` à trois endroits évite qu'ils divergent — et si le format des
+ * photos change un jour, c'est ici, et ici seulement, qu'il faudra le dire.
+ */
+.nurea-visuel-parfum {
+  aspect-ratio: 2 / 3;
+}
+
 /* Catalogue — les fiches partagent leurs bords, séparées au filet. */
 .nurea-catalogue-grid {
   display: grid;

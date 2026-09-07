@@ -26,11 +26,22 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => (
         data-reverse={index % 2 === 1}
         className="nurea-editorial border-b border-nurea-border"
       >
-        <div className="relative aspect-[4/3] w-full md:aspect-auto md:min-h-[32rem]">
+        {/*
+          Mobile : le cadre prend le ratio des photos, rien n'est rogné.
+
+          Desktop : la bande éditoriale est en deux colonnes égales, et lui
+          imposer le 2:3 donnerait un bloc de plus de mille pixels de haut. La
+          cellule garde donc sa géométrie, et c'est l'image qui s'y contient au
+          lieu de la remplir. Les bandes latérales tombent sur le noir de la
+          charte, qui est aussi celui du fond des photos : elles ne se voient
+          pas, et le flacon est entier.
+        */}
+        <div className="nurea-visuel-parfum relative w-full md:aspect-auto md:min-h-[32rem]">
           <PerfumeImage
             perfume={perfume}
             sizes="(max-width: 767px) 100vw, 50vw"
             priority={index === 0}
+            className="md:object-contain"
           />
         </div>
 

@@ -111,7 +111,7 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
       >
         <div className="md:grid md:grid-cols-2">
           <div
-            className="relative aspect-[4/3] w-full border-b border-nurea-border md:aspect-square md:border-b-0 md:border-r"
+            className="nurea-visuel-parfum relative w-full border-b border-nurea-border md:border-b-0 md:border-r"
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
