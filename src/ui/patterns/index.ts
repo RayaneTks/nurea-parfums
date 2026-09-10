@@ -14,3 +14,4 @@ export { ConfirmDialog } from "./ConfirmDialog";
 export { CustomerField } from "./CustomerField";
 export { ShareButton } from "./ShareButton";
 export { GiftToggle } from "./GiftToggle";
+export { MediaGallery, type MediaItem } from "./MediaGallery";

@@ -18,16 +18,21 @@ export async function POST(request: Request) {
   const denied = requireEditor(ctx);
   if (denied) return denied;
 
-  let body: { filename?: string };
+  let body: { filename?: string; scope?: "catalog" | "story"; perfumeId?: number };
   try {
-    body = (await request.json()) as { filename?: string };
+    body = (await request.json()) as typeof body;
   } catch {
     return NextResponse.json({ error: "JSON invalide." }, { status: 400 });
   }
 
   let path: string;
   try {
-    path = safeImagePath(body.filename ?? "upload.jpg");
+    path = safeImagePath(
+      body.filename ?? "upload.jpg",
+      body.scope === "story"
+        ? { kind: "story", ownerId: body.perfumeId }
+        : { kind: "catalog" },
+    );
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Nom de fichier invalide." },
