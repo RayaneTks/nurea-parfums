@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { writeAudit } from "@/lib/admin/audit";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
+import { publicObjectUrl } from "@/lib/supabase/adminStorage";
 import {
   addPerfumeMedia,
   listPerfumeMedia,
@@ -42,7 +43,7 @@ export async function GET(
 }
 
 type PostBody = {
-  url?: string;
+  /** Chemin dans le bucket. L'URL en est déduite côté serveur. */
   path?: string;
   label?: string | null;
   width?: number;
@@ -91,10 +92,33 @@ export async function POST(
       return NextResponse.json({ error: "Parfum introuvable." }, { status: 404 });
     }
 
-    const { url, path, width, height, bytes } = body;
-    if (!url || !path) {
+    const { path, width, height, bytes } = body;
+    if (!path) {
       return NextResponse.json({ error: "Visuel incomplet." }, { status: 400 });
     }
+
+    /*
+     * Le chemin est VÉRIFIÉ, et l'URL RECALCULÉE — aucun des deux n'est cru
+     * sur parole.
+     *
+     * `path` finit dans `removeObjects()` le jour où le visuel est retiré :
+     * accepter n'importe quelle valeur reviendrait à offrir la suppression
+     * d'un objet arbitraire du bucket — l'image catalogue d'un autre parfum,
+     * par exemple. La route de signature ne délivre que des chemins sous
+     * `stories/<parfum>/` : on exige exactement cette forme.
+     *
+     * L'URL, elle, se déduit du chemin. La recevoir du client permettrait de
+     * faire pointer un visuel vers n'importe quoi, sans rapport avec le
+     * fichier réellement envoyé.
+     */
+    const expectedPrefix = `stories/${perfumeId}/`;
+    if (!path.startsWith(expectedPrefix) || path.includes("..")) {
+      return NextResponse.json(
+        { error: "Chemin de visuel invalide." },
+        { status: 400 },
+      );
+    }
+    const url = publicObjectUrl(path);
     if (
       !Number.isInteger(width) ||
       !Number.isInteger(height) ||

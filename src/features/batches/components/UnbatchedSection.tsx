@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Boxes, PackageCheck, Receipt } from "lucide-react";
@@ -38,6 +38,23 @@ function dateCourte(iso: string): string {
 export function UnbatchedSection({ data, initialQuery }: UnbatchedSectionProps) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
+
+  /*
+   * La frappe attend avant de partir au serveur. Sans cette pause, chaque
+   * lettre déclenche un rendu serveur complet : la liste clignote, neuf
+   * réponses sur dix arrivent périmées, et sur un réseau mobile la recherche
+   * devient plus lente que le défilement qu'elle devait remplacer.
+   */
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (trimmed === initialQuery) return;
+    const t = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (trimmed) params.set("q", trimmed);
+      router.replace(`/admin/lots${params.toString() ? `?${params}` : ""}`, { scroll: false });
+    }, 250);
+    return () => clearTimeout(t);
+  }, [query, initialQuery, router]);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   /*
    * Une ligne rattachée quitte la liste tout de suite, sans attendre le rendu
@@ -73,18 +90,8 @@ export function UnbatchedSection({ data, initialQuery }: UnbatchedSectionProps) 
         {total > 8 || query.trim() !== "" ? (
           <SearchField
             value={query}
-            onChange={(next) => {
-              setQuery(next);
-              const params = new URLSearchParams();
-              if (next.trim()) params.set("q", next.trim());
-              router.replace(`/admin/lots${params.toString() ? `?${params}` : ""}`, {
-                scroll: false,
-              });
-            }}
-            onClear={() => {
-              setQuery("");
-              router.replace("/admin/lots", { scroll: false });
-            }}
+            onChange={setQuery}
+            onClear={() => setQuery("")}
             placeholder="Client, parfum, marque…"
             ariaLabel="Chercher parmi les lignes à rattacher"
           />
