@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  DELIVERED_VISIBILITY_HOURS,
   canTransition,
+  deliveredAtFor,
+  deliveredVisibilitySince,
   deriveFulfillment,
   remainingToDeliver,
   type TransitionContext,
@@ -189,5 +192,42 @@ describe("remainingToDeliver", () => {
         { quantity: 1, deliveredQuantity: 0 },
       ]),
     ).toBe(2);
+  });
+});
+
+describe("horodatage de livraison", () => {
+  it("date la livraison, et seulement elle", () => {
+    const now = new Date("2026-09-10T12:00:00Z");
+    expect(deliveredAtFor("DELIVERED", now)).toBe(now);
+    expect(deliveredAtFor("READY", now)).toBeNull();
+    expect(deliveredAtFor("PENDING", now)).toBeNull();
+  });
+
+  it("efface la date quand la commande n'est plus livrée", () => {
+    // Revenir en arrière ne doit pas laisser la trace d'une livraison annulée :
+    // la commande resterait dans la fenêtre des livrées en affichant « à traiter ».
+    expect(deliveredAtFor("READY")).toBeNull();
+  });
+});
+
+describe("fenêtre de visibilité des livrées", () => {
+  it("remonte exactement de la durée annoncée", () => {
+    const now = new Date("2026-09-10T12:00:00Z");
+    const since = deliveredVisibilitySince(now);
+    const heures = (now.getTime() - since.getTime()) / 3600 / 1000;
+    expect(heures).toBe(DELIVERED_VISIBILITY_HOURS);
+  });
+
+  it("dure 48 h — la valeur que l'écran annonce à l'utilisateur", () => {
+    expect(DELIVERED_VISIBILITY_HOURS).toBe(48);
+  });
+
+  it("une commande livrée à l'instant est dans la fenêtre, une d'il y a trois jours non", () => {
+    const now = new Date("2026-09-10T12:00:00Z");
+    const since = deliveredVisibilitySince(now);
+    const toutJuste = new Date(now.getTime() - 3600 * 1000);
+    const troisJours = new Date(now.getTime() - 72 * 3600 * 1000);
+    expect(toutJuste >= since).toBe(true);
+    expect(troisJours >= since).toBe(false);
   });
 });

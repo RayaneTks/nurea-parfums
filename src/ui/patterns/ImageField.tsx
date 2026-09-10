@@ -41,7 +41,12 @@ export function ImageField({
   const handleFile = async (file: File) => {
     setUploading(true);
     try {
-      const url = await uploadFile(file);
+      /*
+       * Un champ carré porte un LOGO : on ne le recadre pas, la règle du projet
+       * l'interdit et le résultat était méconnaissable. Un champ portrait porte
+       * un flacon, dont le cadrage 2:3 est justement ce que la charte impose.
+       */
+      const url = await uploadFile(file, aspect === "square" ? "fit" : "cover");
       onChange(url);
       onCommit?.(url);
     } catch (e) {

@@ -6,10 +6,52 @@
  * - Génération d'un mini placeholder blur local (facultatif mais utile)
  */
 
-export async function convertToWebp(file: File): Promise<File> {
+export async function convertToWebp(
+  file: File,
+  /*
+   * `mode` décide si l'on recadre.
+   *
+   * « cover » impose le portrait 2:3 de la charte : c'est le bon traitement
+   * pour un flacon photographié, dont le cadrage est justement ce qu'on veut
+   * uniformiser. Appliqué à un LOGO, il était destructeur — un logo large en
+   * 1200×300 ressortait amputé à 200 px de large, soit un sixième de sa
+   * largeur — et contredisait la règle du projet : « ne jamais modifier les
+   * proportions d'un logo ».
+   *
+   * « fit » ne fait que plafonner la définition. Aucun pixel n'est perdu.
+   */
+  mode: "cover" | "fit" = "cover",
+): Promise<File> {
   if (!file.type.startsWith("image/")) return file;
 
   const bitmap = await createImageBitmap(file);
+
+  if (mode === "fit") {
+    const maxEdge = 1024;
+    const longest = Math.max(bitmap.width, bitmap.height);
+    const scale = longest > maxEdge ? maxEdge / longest : 1;
+    const w = Math.round(bitmap.width * scale);
+    const h = Math.round(bitmap.height * scale);
+    const c = document.createElement("canvas");
+    c.width = w;
+    c.height = h;
+    const cctx = c.getContext("2d");
+    if (!cctx) {
+      bitmap.close();
+      return file;
+    }
+    cctx.imageSmoothingEnabled = true;
+    cctx.imageSmoothingQuality = "high";
+    cctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close();
+    const fitBlob = await new Promise<Blob | null>((resolve) =>
+      c.toBlob(resolve, "image/webp", 0.95),
+    );
+    if (!fitBlob) return file;
+    const fitName = file.name.replace(/\.[a-zA-Z0-9]+$/, "");
+    return new File([fitBlob], `${fitName}.webp`, { type: "image/webp" });
+  }
+
   const targetW = 1024;
   const targetH = 1536;
 
@@ -72,8 +114,11 @@ export async function generateBlurDataUrl(file: File): Promise<string> {
   return dataUrl;
 }
 
-export async function uploadFile(file: File): Promise<string> {
-  const prepared = await convertToWebp(file);
+export async function uploadFile(
+  file: File,
+  mode: "cover" | "fit" = "cover",
+): Promise<string> {
+  const prepared = await convertToWebp(file, mode);
 
   const sign = await fetch("/api/admin/storage/sign", {
     method: "POST",

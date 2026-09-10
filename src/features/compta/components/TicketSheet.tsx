@@ -367,7 +367,9 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
         title="Supprimer cette vente ?"
         description={
           sale
-            ? `${sale.customerName ?? "Vente"} · ${sale.itemCount} article${sale.itemCount > 1 ? "s" : ""}`
+            ? `${sale.customerName ?? "Vente"} · ${sale.itemCount} article${
+                sale.itemCount > 1 ? "s" : ""
+              }. Sans retour possible. Si une commande y était liée, elle repasse « à traiter ».`
             : undefined
         }
         confirmLabel="Supprimer"
