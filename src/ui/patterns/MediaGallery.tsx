@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Download, ImagePlus, Share2, Trash2, X } from "lucide-react";
 import { Button } from "@/ui/primitives/Button";
 import { Stack, HStack } from "@/ui/primitives/Stack";
@@ -49,8 +49,16 @@ async function saveMedia(item: MediaItem, fileName: string): Promise<void> {
     if (!res.ok) throw new Error(String(res.status));
     blob = await res.blob();
   } catch {
-    window.open(item.url, "_blank", "noopener");
-    return;
+    /*
+     * L'échec REMONTE, il n'est pas rattrapé par un `window.open`.
+     *
+     * Cet appel arrivait après un aller-retour réseau, donc hors de la tâche
+     * du geste utilisateur : Safari — la cible de cette PWA — le classe en
+     * fenêtre non sollicitée et le bloque. Le bouton ne faisait alors
+     * strictement rien, sans le moindre message. Le lien « Ouvrir dans un
+     * onglet » de la barre reste, lui, actionnable à tout moment.
+     */
+    throw new Error("Téléchargement impossible. Vérifie ta connexion.");
   }
 
   const ext = blob.type.includes("png") ? "png" : blob.type.includes("jpeg") ? "jpg" : "webp";
@@ -64,8 +72,13 @@ async function saveMedia(item: MediaItem, fileName: string): Promise<void> {
     try {
       await nav.share({ files: [file], title: fileName });
       return;
-    } catch {
-      // Partage refusé ou annulé : on retombe sur l'enregistrement direct.
+    } catch (e) {
+      /*
+       * Fermer la feuille de partage rejette la promesse avec `AbortError`.
+       * C'est un refus, pas une panne : enchaîner sur le téléchargement
+       * donnerait à l'utilisateur exactement ce qu'il vient de refuser.
+       */
+      if (e instanceof Error && e.name === "AbortError") return;
     }
   }
 
@@ -100,10 +113,31 @@ export function MediaGallery({
   const [preview, setPreview] = useState<MediaItem | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
 
+  /*
+   * Échap ferme la visionneuse.
+   *
+   * Elle se déclarait `role="dialog" aria-modal="true"` sans rien de ce que
+   * cela promet : au clavier, la seule sortie était de retrouver la croix à
+   * la souris.
+   */
+  useEffect(() => {
+    if (!preview) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPreview(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [preview]);
+
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const save = async (item: MediaItem) => {
     setSaving(item.id);
+    setSaveError(null);
     try {
       await saveMedia(item, fileNameFor(item));
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "Téléchargement impossible.");
     } finally {
       setSaving(null);
     }
@@ -177,8 +211,14 @@ export function MediaGallery({
 
       {preview ? (
         <div
-          className="admin-theme fixed inset-0 flex flex-col bg-black/90"
-          style={{ zIndex: "var(--admin-z-modal)" }}
+          /*
+             Pas de `admin-theme` ici : cette surface est noire, et la classe
+             y imposait `color: var(--admin-text)` — soit du texte #111114 sur
+             fond noir. Le bouton « Retirer », en variante fantôme, était donc
+             littéralement invisible. Les couleurs sont posées à la main.
+          */
+          className="fixed inset-0 flex flex-col bg-black/90"
+          style={{ zIndex: 91 }}
           role="dialog"
           aria-modal="true"
           aria-label={preview.label ?? "Visuel"}
@@ -205,6 +245,20 @@ export function MediaGallery({
             className="px-4 pt-3"
             style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
           >
+            {saveError ? (
+              <p role="alert" className="mb-2 text-[13px] text-white/90">
+                {saveError}{" "}
+                {/* Un lien réel, toujours actionnable — y compris par appui long. */}
+                <a
+                  href={preview.url}
+                  target="_blank"
+                  rel="noopener"
+                  className="underline"
+                >
+                  Ouvrir dans un onglet
+                </a>
+              </p>
+            ) : null}
             <HStack gap={2} wrap>
               <Button
                 variant="primary"
@@ -220,6 +274,7 @@ export function MediaGallery({
                 <Button
                   variant="ghost"
                   size="lg"
+                  className="!text-white/90"
                   leadingIcon={<Trash2 size={16} />}
                   onClick={() => {
                     const target = preview;

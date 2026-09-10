@@ -318,6 +318,12 @@ export async function updateSaleAction(
   }
 }
 
+/**
+ * @deprecated Aucun écran n'appelle cette action : la suppression passe par
+ * `DELETE /api/admin/sales/[id]`, qui restitue aussi le stock et inverse les
+ * mouvements de trésorerie. Gardée le temps de vérifier qu'aucun script ne s'en
+ * sert — toute correction de comportement doit aller dans la route, pas ici.
+ */
 export async function deleteSaleAction(saleId: string): Promise<ActionResult<{ id: string }>> {
   try {
     const sale = await prisma.sale.findUnique({

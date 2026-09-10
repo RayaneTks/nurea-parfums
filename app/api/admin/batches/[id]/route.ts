@@ -126,7 +126,21 @@ export async function DELETE(
     const { id } = await params;
     const existing = await prisma.batch.findUnique({
       where: { id },
-      select: { _count: { select: { sales: true, orders: true } } },
+      select: {
+        _count: {
+          select: {
+            sales: true,
+            /*
+             * Même population que la fiche du lot. Le compteur brut incluait
+             * les commandes ANNULÉES et celles devenues des ventes : un lot
+             * portant une commande annulée — que la fiche masque et qu'aucun
+             * écran ne propose de détacher — devenait indestructible, sans que
+             * le message dise laquelle bloquait.
+             */
+            orders: { where: { status: { not: "CANCELLED" }, sale: null } },
+          },
+        },
+      },
     });
     if (!existing) {
       return NextResponse.json({ error: "Lot introuvable." }, { status: 404 });

@@ -9,6 +9,7 @@ import { isValidVolumeMl, parseOptionalMoneyToZero } from "@/lib/gestion/orderLi
 import { canTransition, deliveredAtFor } from "@/domain/order-status";
 import Decimal from "decimal.js-light";
 import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
+import { DEFAULT_VOLUME_ML, VOLUMES_ML, normalizeVolumeMl } from "@/domain/volumes";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -262,9 +263,9 @@ export async function PATCH(
           typeof raw.perfumeId === "number" ? raw.perfumeId : Number(raw.perfumeId);
         const quantity =
           typeof raw.quantity === "number" ? raw.quantity : Number(raw.quantity ?? 1);
-        const vol =
+        const volSaisi =
           raw.volumeMl === undefined || raw.volumeMl === null
-            ? 100
+            ? DEFAULT_VOLUME_ML
             : Number(raw.volumeMl);
         if (!Number.isFinite(perfumeId) || perfumeId <= 0) {
           return NextResponse.json(
@@ -278,12 +279,20 @@ export async function PATCH(
             { status: 400 },
           );
         }
-        if (!isValidVolumeMl(vol)) {
+        if (!isValidVolumeMl(volSaisi)) {
           return NextResponse.json(
-            { error: "Volume invalide (30, 50 ou 100 ml par ligne)." },
+            { error: `Volume invalide (${VOLUMES_ML.join(", ")} ml).` },
             { status: 400 },
           );
         }
+        /*
+         * La contenance saisie est VALIDÉE puis TRADUITE : le garde accepte les
+         * valeurs héritées (30, 100) pour ne pas refuser une fiche restée
+         * ouverte, mais les laisser filer jusqu'à la base réintroduirait ce que
+         * la migration vient d'effacer. La valeur par défaut vient du domaine —
+         * elle était écrite « 100 » ici, une contenance qui n'existe plus.
+         */
+        const vol = normalizeVolumeMl(volSaisi) ?? DEFAULT_VOLUME_ML;
         const up = parseOptionalMoneyToZero(raw.unitPrice);
         const uc = parseOptionalMoneyToZero(raw.unitCost);
         if (up === null) {

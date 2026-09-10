@@ -151,7 +151,7 @@ export function SellPageClient() {
 
   const handlePickerSelect = useCallback(async (result: PickerResult) => {
     if (result.kind === "catalog") {
-      const pricing = await fetchPricing(result.perfume.id, 100);
+      const pricing = await fetchPricing(result.perfume.id, DEFAULT_VOLUME_ML);
       setLines((prev) => [
         ...prev,
         {
@@ -163,7 +163,7 @@ export function SellPageClient() {
             image: result.perfume.image ?? null,
           },
           quantity: 1,
-          volumeMl: 100,
+          volumeMl: DEFAULT_VOLUME_ML,
           unitPrice: pricing?.defaultUnitPriceEur ?? "",
           unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
           exchangeRate: pricing?.defaultExchangeRate ?? lastRate,
@@ -177,7 +177,7 @@ export function SellPageClient() {
           perfumeId: null,
           snapshot: { name: result.name, brandName: result.brandName, image: null },
           quantity: 1,
-          volumeMl: 100,
+          volumeMl: DEFAULT_VOLUME_ML,
           unitPrice: "",
           unitCostDzd: "",
           exchangeRate: lastRate,

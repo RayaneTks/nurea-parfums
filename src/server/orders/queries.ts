@@ -154,12 +154,20 @@ export async function listOrders(
    * dont on a la réponse. Le filtre d'onglet, lui, continue de s'appliquer.
    */
   const searching = searchTerms(q).length > 0;
-  const where =
-    searching && filter === "all"
+  /*
+   * En recherche, l'onglet garde son filtre de STATUT mais perd sa fenêtre de
+   * temps. La fenêtre est un critère d'encombrement, pas d'appartenance :
+   * chercher « benali » dans l'onglet « Livrées » et s'entendre répondre
+   * « aucun résultat » parce que la livraison date de quatre jours serait
+   * absurde — la commande est bien livrée, et on vient de la nommer.
+   */
+  const searchStatusWhere =
+    filter === "delivered" ? { status: "DELIVERED" as OrderStatus } : statusWhere;
+  const where = searching
+    ? filter === "all"
       ? orderSearchWhere(q)
-      : searching
-        ? { AND: [statusWhere, orderSearchWhere(q)] }
-        : statusWhere;
+      : { AND: [searchStatusWhere, orderSearchWhere(q)] }
+    : statusWhere;
 
   const orders = await prisma.order.findMany({
     where,

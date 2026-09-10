@@ -28,6 +28,7 @@ import type {
 import type { PickerResult } from "@/features/sell";
 import type { SelectedCustomer } from "@/features/customers/components/CustomerCombobox";
 import { formatePourcent } from "@/ui/patterns/format";
+import { DEFAULT_VOLUME_ML } from "@/domain/volumes";
 
 type Mode = "create" | "edit";
 
@@ -115,7 +116,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
   const onAddItem = useCallback(async (result: PickerResult) => {
     if (result.kind === "catalog") {
       const p = result.perfume;
-      const pricing = await fetchPricing(p.id, 100);
+      const pricing = await fetchPricing(p.id, DEFAULT_VOLUME_ML);
       setState((s) => ({
         ...s,
         items: [
@@ -129,7 +130,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
               image: p.image ?? null,
             },
             quantity: 1,
-            volumeMl: 100,
+            volumeMl: DEFAULT_VOLUME_ML,
             unitPrice: pricing?.defaultUnitPriceEur ?? "",
             unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
             exchangeRate: pricing?.defaultExchangeRate ?? lastRate,
@@ -147,7 +148,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
             perfumeId: null,
             snapshot: { name: result.name, brandName: result.brandName, image: null },
             quantity: 1,
-            volumeMl: 100,
+            volumeMl: DEFAULT_VOLUME_ML,
             unitPrice: "",
             unitCostDzd: "",
             exchangeRate: lastRate,
