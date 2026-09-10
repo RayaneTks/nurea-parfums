@@ -16,6 +16,7 @@ export type OrderComptaRow = {
   /** Lot de rattachement. `null` = reste à ranger — voir /admin/lots. */
   batchId: string | null;
   batchName: string | null;
+  batchStatus: "OPEN" | "CLOSED" | null;
 };
 
 export type ConfirmedOrdersFinancials = {
@@ -103,7 +104,7 @@ export async function confirmedOrdersFinancials(
       orderedAt: true,
       customer: { select: { fullName: true } },
       batchId: true,
-      batch: { select: { name: true } },
+      batch: { select: { name: true, status: true } },
       items: { select: { unitPrice: true, quantity: true, unitCost: true } },
       payments: { select: { type: true, amount: true } },
     },
@@ -131,6 +132,7 @@ export async function confirmedOrdersFinancials(
       itemCount: o.items.length,
       batchId: o.batchId,
       batchName: o.batch?.name ?? null,
+      batchStatus: o.batch?.status ?? null,
     };
   });
 

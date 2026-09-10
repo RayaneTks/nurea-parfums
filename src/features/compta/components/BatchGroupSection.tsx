@@ -70,7 +70,20 @@ export function BatchGroupSection({
             ) : null}
           </div>
           <p className="mt-0.5 text-[12px] text-[var(--admin-text-subtle)] tabular-nums">
-            {group.salesCount} vente{group.salesCount > 1 ? "s" : ""} ·{" "}
+            {/*
+              Le décompte énumère ce que le montant additionne. Il n'annonçait
+              que les ventes alors que les commandes rattachées pèsent autant :
+              « 2 ventes · 415 € » sur un lot qui n'en contient qu'une laissait
+              croire à une erreur de calcul.
+            */}
+            {group.salesCount > 0
+              ? `${group.salesCount} vente${group.salesCount > 1 ? "s" : ""}`
+              : null}
+            {group.salesCount > 0 && group.ordersCount > 0 ? " · " : null}
+            {group.ordersCount > 0
+              ? `${group.ordersCount} commande${group.ordersCount > 1 ? "s" : ""}`
+              : null}
+            {group.salesCount + group.ordersCount === 0 ? "Vide" : null} ·{" "}
             <Money value={group.cashedRevenue} compact />
             {Number(group.outstandingRevenue) > 0 ? (
               <span
@@ -117,6 +130,25 @@ export function BatchGroupSection({
               />
             </li>
           ))}
+          {/*
+            Les commandes du lot comptent dans son total mais ne sont pas des
+            ventes : elles se consultent sur leur fiche, ou dans « Commandes en
+            cours » juste au-dessus. Le dire évite de chercher dans cette liste
+            une ligne dont le montant est pourtant bien compté.
+          */}
+          {group.ordersCount > 0 ? (
+            <li className="px-1 py-2.5">
+              <Link
+                href={`/admin/lots/${group.batchId}`}
+                prefetch={false}
+                className="flex items-center gap-1.5 text-[12px] text-[var(--admin-text-muted)] tap-scale"
+              >
+                <PackageCheck size={13} aria-hidden />
+                {group.ordersCount} commande{group.ordersCount > 1 ? "s" : ""} rattachée
+                {group.ordersCount > 1 ? "s" : ""} — voir le lot
+              </Link>
+            </li>
+          ) : null}
         </ul>
       ) : null}
     </Card>

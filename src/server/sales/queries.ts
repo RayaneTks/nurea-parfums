@@ -67,6 +67,14 @@ export type BatchGroup = {
   batchName: string;
   batchStatus: "OPEN" | "CLOSED";
   salesCount: number;
+  /**
+   * Commandes confirmées rattachées au lot mais pas encore devenues des ventes.
+   *
+   * Elles pèsent sur les montants du lot exactement comme les ventes — c'est
+   * ainsi que /admin/lots les compte. Les ignorer ici donnait deux vérités sur
+   * le même lot : « 2 ventes · 120 € » d'un côté, 415 € encaissés de l'autre.
+   */
+  ordersCount: number;
   cashedRevenue: string;
   outstandingRevenue: string;
   netMargin: string;
@@ -229,6 +237,7 @@ export async function listSalesGroupedByCustomer(params: {
           batchName: s.batch.name,
           batchStatus: s.batch.status,
           salesCount: 1,
+          ordersCount: 0,
           cashedRevenue: saleCashed.toFixed(2),
           outstandingRevenue: saleDue.toFixed(2),
           netMargin: saleNet.toFixed(2),
@@ -263,12 +272,6 @@ export async function listSalesGroupedByCustomer(params: {
     }
   }
 
-  // OPEN batches first, then CLOSED ; dans chaque sous-groupe, plus récent d'abord
-  const batchGroups = [...batchMap.values()].sort((a, b) => {
-    if (a.batchStatus !== b.batchStatus) return a.batchStatus === "OPEN" ? -1 : 1;
-    return a.lastSoldAt < b.lastSoldAt ? 1 : -1;
-  });
-
   const customerGroups = [...customerMap.values()].sort((a, b) =>
     a.lastSoldAt < b.lastSoldAt ? 1 : -1,
   );
@@ -282,6 +285,56 @@ export async function listSalesGroupedByCustomer(params: {
 
   // Commandes confirmées (À traiter / Livrées) non finalisées en vente : encaissé réel.
   const orders = await confirmedOrdersFinancials(since, params.q);
+
+  /*
+   * Les commandes rattachées à un lot alimentent le total de CE lot.
+   *
+   * Un lot ne contenant que des commandes — le cas normal avant tout
+   * encaissement — n'apparaissait nulle part dans la section « Lots » : l'écran
+   * affirmait qu'il n'y avait aucun lot alors que /admin/lots en affichait
+   * plusieurs. Le groupe est donc créé au besoin, à partir de la commande.
+   *
+   * Les commandes restent par ailleurs listées dans « Commandes en cours » :
+   * c'est là qu'on va voir ce qu'il reste à encaisser, une information que le
+   * regroupement par lot ne remplace pas.
+   */
+  for (const row of orders.rows) {
+    if (!row.batchId) continue;
+    const cashed = new Decimal(row.cashed);
+    const due = new Decimal(row.due);
+    const net = cashed.minus(new Decimal(row.cost));
+    const existing = batchMap.get(row.batchId);
+    if (existing) {
+      existing.ordersCount += 1;
+      existing.cashedRevenue = new Decimal(existing.cashedRevenue).plus(cashed).toFixed(2);
+      existing.outstandingRevenue = new Decimal(existing.outstandingRevenue).plus(due).toFixed(2);
+      existing.netMargin = new Decimal(existing.netMargin).plus(net).toFixed(2);
+      if (row.orderedAt > existing.lastSoldAt) existing.lastSoldAt = row.orderedAt;
+    } else {
+      batchMap.set(row.batchId, {
+        batchKey: row.batchId,
+        batchId: row.batchId,
+        batchName: row.batchName ?? "Lot",
+        batchStatus: row.batchStatus ?? "OPEN",
+        salesCount: 0,
+        ordersCount: 1,
+        cashedRevenue: cashed.toFixed(2),
+        outstandingRevenue: due.toFixed(2),
+        netMargin: net.toFixed(2),
+        lastSoldAt: row.orderedAt,
+        sales: [],
+      });
+    }
+  }
+
+  // OPEN batches first, then CLOSED ; dans chaque sous-groupe, plus récent
+  // d'abord. Trié APRÈS le repli des commandes, sinon les lots qui n'en
+  // contiennent que sortiraient du tri.
+  const batchGroups = [...batchMap.values()].sort((a, b) => {
+    if (a.batchStatus !== b.batchStatus) return a.batchStatus === "OPEN" ? -1 : 1;
+    return a.lastSoldAt < b.lastSoldAt ? 1 : -1;
+  });
+
   const ordersCashed = new Decimal(orders.totals.cashed);
   const ordersCost = new Decimal(orders.totals.cost);
   const ordersDue = new Decimal(orders.totals.due);
