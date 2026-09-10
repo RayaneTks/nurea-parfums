@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -42,22 +43,47 @@ export function Toast({
     return () => clearTimeout(t);
   }, [duration, onClose]);
 
+  /*
+   * Le filet est PORTALISÉ vers `<body>`, et non rendu là où il est écrit.
+   *
+   * Deux raisons, toutes deux constatées à l'écran. Une feuille ouverte
+   * applique une transformation au conteneur de l'application : un descendant
+   * `position: fixed` s'y ancre alors sur ce conteneur transformé et non sur la
+   * fenêtre — le filet partait se poser de travers. Et une couche modale pose
+   * `pointer-events: none` sur le corps du document : le filet s'affichait bien
+   * par-dessus la feuille, mais ne réagissait à aucun tap, ni sa croix, ni son
+   * bouton « Annuler » — le seul recours contre une suppression.
+   *
+   * `pointerEvents: auto` le sort explicitement de cette neutralisation.
+   */
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const s = styleByType[type];
 
-  return (
+  const node = (
     <div
       role={type === "error" ? "alert" : "status"}
       aria-live={type === "error" ? "assertive" : "polite"}
       className={cn(
-        "fixed left-1/2 -translate-x-1/2 z-[95]",
+        "admin-theme fixed left-1/2 -translate-x-1/2 z-[var(--admin-z-toast)]",
         "flex items-start gap-3 rounded-[14px] px-4 py-3 shadow-[var(--admin-shadow-lg)]",
         "max-w-[min(92vw,400px)] w-full",
         "motion-safe:animate-in motion-safe:slide-in-from-bottom-4",
       )}
       style={{
-        bottom: "calc(var(--admin-tab-bar-height) + 16px)",
+        /*
+         * Le clavier iOS pousse le filet, il ne le recouvre pas. Sans ce
+         * rattrapage — le même que `StickyAction` — toute erreur signalée
+         * pendant une saisie s'affichait derrière le clavier : « Montant > 0
+         * requis », « Nom requis », « Impossible de modifier le nom » étaient
+         * strictement invisibles, et l'utilisateur croyait son geste passé.
+         */
+        bottom:
+          "calc(max(var(--admin-tab-bar-height), var(--admin-keyboard-inset, 0px)) + 16px)",
         background: "var(--admin-surface)",
         border: `1px solid ${s.border}`,
+        pointerEvents: "auto",
       }}
     >
       <span style={{ color: s.fg }} aria-hidden className="shrink-0 mt-0.5">
@@ -90,4 +116,8 @@ export function Toast({
       </button>
     </div>
   );
+
+  // Avant l'hydratation, `document` n'existe pas : on ne rend rien plutôt que
+  // de produire un balisage serveur que le client déplacerait aussitôt.
+  return mounted ? createPortal(node, document.body) : null;
 }

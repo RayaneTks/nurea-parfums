@@ -21,6 +21,12 @@ export type AdminPerfumeRow = {
   status: string;
   isFeatured?: boolean;
   stock?: number;
+  /**
+   * Nombre de visuels story rattachés. Sert à repérer d'un coup d'œil, depuis
+   * la liste, les parfums dont on a déjà la planche prête à publier — c'est la
+   * raison d'être de la galerie : ne plus chercher.
+   */
+  mediaCount?: number;
   brand: {
     id: string;
     name: string;

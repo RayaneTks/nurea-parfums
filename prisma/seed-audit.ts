@@ -41,8 +41,8 @@ async function main() {
       update: {},
     });
     perfumes.push(row);
-    for (const volumeMl of [30, 50, 100]) {
-      const base = volumeMl === 30 ? 45 : volumeMl === 50 ? 70 : 120;
+    for (const volumeMl of [10, 50, 80]) {
+      const base = volumeMl === 10 ? 45 : volumeMl === 50 ? 70 : 120;
       await prisma.perfumePricing.upsert({
         where: { perfumeId_volumeMl: { perfumeId: row.id, volumeMl } },
         create: {
@@ -94,7 +94,7 @@ async function main() {
           {
             perfumeId: perfumes[0]!.id,
             quantity: 1,
-            volumeMl: 100,
+            volumeMl: 80,
             unitPrice: 120,
             unitCost: 38,
             unitCostDzd: 36000,
@@ -152,7 +152,7 @@ async function main() {
             {
               perfumeId: perf.id,
               quantity: 1,
-              volumeMl: 100,
+              volumeMl: 80,
               unitPrice: revenue,
               unitCost: cost,
               unitCostDzd: cost * 277,

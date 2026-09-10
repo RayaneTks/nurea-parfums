@@ -82,12 +82,43 @@ model Perfume {
   orderItems OrderItem[]
   saleItems  SaleItem[]
   pricings   PerfumePricing[]
+  media      PerfumeMedia[]
 
   @@unique([brandId, name])
   @@index([status])
   @@index([brandId])
   @@index([status, brandId])
   @@index([isPrivate])
+}
+
+/// Visuel marketing d'un parfum — format story, destiné à être partagé.
+///
+/// Distinct de `Perfume.image` / `imageLight`, qui sont les visuels du
+/// catalogue public et n'existent qu'en un exemplaire chacun. Ici on stocke la
+/// planche prête à publier : bouteille, notes, charte. Elle ne s'affiche nulle
+/// part sur la vitrine ; elle sert à être retrouvée et récupérée depuis le
+/// téléphone au moment de publier une story, au lieu d'être cherchée parmi
+/// quarante images de la galerie.
+model PerfumeMedia {
+  id        String   @id @default(cuid())
+  perfumeId Int
+  perfume   Perfume  @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
+  /// Chemin DANS le bucket (ex. `perfumes/12/story-1757500000-ab12cd34.webp`).
+  /// Conservé en plus de l'URL : c'est lui, et lui seul, qui permet de
+  /// supprimer l'objet le jour où le visuel est retiré.
+  path      String   @unique
+  /// URL publique complète, telle que servie aux <img>.
+  url       String
+  /// Libellé libre (« Story 9:16 », « Fond clair »…). Optionnel.
+  label     String?
+  width     Int
+  height    Int
+  bytes     Int
+  /// Ordre d'affichage dans la galerie. Le plus petit d'abord.
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([perfumeId, sortOrder])
 }
 
 /// Prix de référence côté serveur. Remplace la `pricingMemory` localStorage.
@@ -222,8 +253,9 @@ model OrderItem {
   /// Quantité déjà livrée pour cette ligne (0..quantity). Suivi livraison partielle.
   deliveredQuantity Int    @default(0)
   note            String?
-  /// Flacon 30, 50 ou 100 ml
-  volumeMl        Int      @default(100)
+  /// Flacon 10, 50 ou 80 ml (contenances réelles). Les valeurs héritées
+  /// 30 et 100 désignaient les mêmes flacons — migrées en 10 et 80.
+  volumeMl        Int      @default(80)
   /// Prix unitaire de vente (€) pour ce flacon
   unitPrice       Decimal  @default(0) @db.Decimal(10, 2)
   /// Coût de revient unitaire (€) - Calculé via unitCostDzd / exchangeRate

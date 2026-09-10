@@ -77,7 +77,11 @@ export function Sheet({
       <Drawer.Portal>
         <Drawer.Overlay
           className="admin-theme fixed inset-0 bg-black/40 backdrop-blur-sm"
-          style={{ zIndex: nested ? 80 : 70 }}
+          style={{
+            zIndex: nested
+              ? "var(--admin-z-sheet-nested-backdrop)"
+              : "var(--admin-z-sheet-backdrop)",
+          }}
         />
         <Drawer.Content
           className={cn(
@@ -103,7 +107,7 @@ export function Sheet({
             // la hauteur allouée au lieu de s'ajuster à son contenu.
             ...(size === "full" ? { height: sheetHeight } : null),
             maxHeight: sheetHeight,
-            zIndex: nested ? 81 : 71,
+            zIndex: nested ? "var(--admin-z-sheet-nested)" : "var(--admin-z-sheet)",
           }}
         >
           {handle ? <div className="admin-sheet-handle" /> : null}

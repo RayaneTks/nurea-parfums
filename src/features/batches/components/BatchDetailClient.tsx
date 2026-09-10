@@ -23,6 +23,7 @@ import { BatchAssignSheet } from "./BatchAssignSheet";
 import { BatchAssignOrdersSheet } from "./BatchAssignOrdersSheet";
 import type { BatchDetail } from "@/server/batches/queries";
 import { formateEuros, formatePourcent } from "@/ui/patterns/format";
+import { statusLabel } from "@/domain/order-status";
 
 type BatchDetailClientProps = {
   initial: BatchDetail;
@@ -112,8 +113,19 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
   };
 
   const remove = () => {
-    if (current.salesCount > 0) {
-      setToast({ type: "error", message: "Détache d'abord les ventes." });
+    /*
+     * Le message nomme ce qui bloque. « Détache d'abord les ventes » sur un lot
+     * qui n'en contient aucune — seulement des commandes — envoyait chercher
+     * une liste vide.
+     */
+    if (current.salesCount > 0 || current.orders.length > 0) {
+      const quoi =
+        current.salesCount > 0 && current.orders.length > 0
+          ? `${current.salesCount} vente(s) et ${current.orders.length} commande(s)`
+          : current.salesCount > 0
+            ? `${current.salesCount} vente(s)`
+            : `${current.orders.length} commande(s)`;
+      setToast({ type: "error", message: `Détache d'abord ${quoi}.` });
       return;
     }
     const ok = window.confirm(
@@ -347,7 +359,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
                 Commandes ({current.orders.length})
               </h2>
               <p className="mt-0.5 text-[11px] text-[var(--admin-text-subtle)]">
-                Statut « À traiter » ou « Livrée » rattachées à ce lot.
+                Rattachées à ce lot. Seules les commandes confirmées pèsent sur les montants.
               </p>
             </div>
             {isOpen ? (
@@ -367,7 +379,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
             <EmptyState
               icon={ShoppingBag}
               title="Aucune commande"
-              description="Assigne des commandes « À traiter » ou « Livrée » à ce lot."
+              description="Assigne des commandes à ce lot, même en attente : ranger n'est pas encaisser."
               className="py-6"
               action={
                 isOpen ? (
@@ -400,7 +412,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
                           {o.customerName}
                         </p>
                         <p className="text-[11px] text-[var(--admin-text-subtle)]">
-                          {o.status === "READY" ? "À traiter" : "Livrée"} ·{" "}
+                          {statusLabel(o.status)} ·{" "}
                           {new Date(o.orderedAt).toLocaleDateString("fr-FR", {
                             day: "2-digit",
                             month: "short",
@@ -440,7 +452,7 @@ export function BatchDetailClient({ initial }: BatchDetailClientProps) {
           </Card>
         ) : null}
 
-        {current.salesCount === 0 ? (
+        {current.salesCount === 0 && current.orders.length === 0 ? (
           <Button
             type="button"
             variant="ghost"

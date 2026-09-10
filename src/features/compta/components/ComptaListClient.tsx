@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { AlertCircle, Receipt } from "lucide-react";
+import { AlertCircle, Boxes, Receipt } from "lucide-react";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import { Card } from "@/ui/primitives/Card";
 import { EmptyState } from "@/ui/primitives/EmptyState";
@@ -34,6 +34,8 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
   const [sheetOpen, setSheetOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+
+  const searching = query.trim().length > 0;
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
@@ -131,7 +133,17 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
           au-dessus d'une liste qui tient en un écran : on la parcourt plus vite
           des yeux qu'on ne tape.
         */}
-        {data.customerGroups.length + data.batchGroups.length + orderRows.length > 6 ? (
+        {/*
+          Le champ reste dès qu'une recherche est en cours.
+          
+          Il n'apparaissait qu'au-delà de six groupes : une recherche qui n'en
+          renvoyait qu'un ou deux faisait donc disparaître le champ qui venait
+          de la produire — plus moyen de l'affiner ni même de l'effacer, sauf à
+          repartir de l'URL. Un outil ne se retire pas des mains de celui qui
+          s'en sert.
+        */}
+        {searching ||
+        data.customerGroups.length + data.batchGroups.length + orderRows.length > 6 ? (
           <ComptaHeader query={query} onQueryChange={setQuery} />
         ) : null}
         <ComptaKpiRow
@@ -168,7 +180,7 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
               title={query.trim().length > 0 ? "Aucun résultat" : "Aucune vente"}
               description={
                 query.trim().length > 0
-                  ? `Rien ne correspond à « ${query.trim()} ». Essaie un autre nom.`
+                  ? `Rien ne correspond à « ${query.trim()} ». La recherche couvre le client, le contact, le parfum, la marque, le lot et les notes.`
                   : "Enregistre une vente depuis Vendre pour commencer le suivi."
               }
             />
@@ -197,8 +209,26 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
                               <span className="block truncate text-[15px] font-semibold text-[var(--admin-text)]">
                                 {o.customerName}
                               </span>
-                              <span className="mt-0.5 flex items-center gap-1.5">
+                              <span className="mt-0.5 flex flex-wrap items-center gap-1.5">
                                 <OrderStatusBadge status={o.status} />
+                                {/*
+                                  Le lot, ou son absence. La liste mélangeait
+                                  ce qui était déjà rangé et ce qui ne l'était
+                                  pas, sans qu'aucun signe ne les distingue :
+                                  impossible de savoir ce qu'il restait à
+                                  rattacher, et la même commande semblait
+                                  apparaître deux fois, ici et dans son lot.
+                                */}
+                                {o.batchName ? (
+                                  <span className="inline-flex items-center gap-1 text-[11px] text-[var(--admin-text-subtle)]">
+                                    <Boxes size={11} aria-hidden />
+                                    {o.batchName}
+                                  </span>
+                                ) : (
+                                  <span className="text-[11px] font-medium text-[var(--admin-warning)]">
+                                    Sans lot
+                                  </span>
+                                )}
                                 <span className="text-[12px] tabular-nums text-[var(--admin-text-subtle)]">
                                   · <Money value={o.cashed} compact /> encaissé
                                 </span>
@@ -250,6 +280,10 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
                   <BatchGroupSection
                     key={g.batchKey}
                     group={g}
+                    /* Un résultat de recherche s'ouvre : replié, il oblige à
+                       taper une seconde fois pour voir la ligne qu'on vient
+                       justement de demander. */
+                    defaultOpen={searching}
                     onOpenSale={handleOpenSale}
                   />
                 ))}
@@ -267,6 +301,7 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
                   <CustomerGroupSection
                     key={g.customerKey}
                     group={g}
+                    defaultOpen={searching}
                     onOpenSale={handleOpenSale}
                   />
                 ))}

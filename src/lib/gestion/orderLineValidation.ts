@@ -1,9 +1,15 @@
-/** Volumes flacon autorisés pour les lignes de commande / vente. */
-export const ORDER_VOLUMES_ML = [30, 50, 100] as const;
-export type OrderVolumeMl = (typeof ORDER_VOLUMES_ML)[number];
+import { isAcceptedVolumeMl } from "@/domain/volumes";
 
-export function isValidVolumeMl(v: number): v is OrderVolumeMl {
-  return ORDER_VOLUMES_ML.includes(v as OrderVolumeMl);
+/**
+ * Contenances : la liste vit dans le domaine. On accepte ici les valeurs
+ * héritées en plus des courantes, et c'est `normalizeVolumeMl` qui les traduit
+ * avant écriture — refuser un 100 ml venu d'une ancienne ligne rendrait
+ * inéditable la commande qui la porte.
+ */
+export { VOLUMES_ML as ORDER_VOLUMES_ML, type VolumeMl as OrderVolumeMl } from "@/domain/volumes";
+
+export function isValidVolumeMl(v: number): boolean {
+  return isAcceptedVolumeMl(v);
 }
 
 export function parseMoneyField(v: unknown): number | null {

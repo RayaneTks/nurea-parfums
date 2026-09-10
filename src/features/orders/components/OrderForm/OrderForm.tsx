@@ -21,13 +21,14 @@ import type { OrderFormLine, OrderFormState } from "./types";
 import { createOrderAction, updateOrderAction } from "@/server/orders/actions";
 import { useLastExchangeRate } from "@/hooks/useLastExchangeRate";
 import type {
-  CreateOrderInput,
-  OrderItemInput,
-  UpdateOrderInput,
+  CreateOrderPayload,
+  OrderItemPayload,
+  UpdateOrderPayload,
 } from "@/schemas/order";
 import type { PickerResult } from "@/features/sell";
 import type { SelectedCustomer } from "@/features/customers/components/CustomerCombobox";
 import { formatePourcent } from "@/ui/patterns/format";
+import { DEFAULT_VOLUME_ML } from "@/domain/volumes";
 
 type Mode = "create" | "edit";
 
@@ -115,7 +116,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
   const onAddItem = useCallback(async (result: PickerResult) => {
     if (result.kind === "catalog") {
       const p = result.perfume;
-      const pricing = await fetchPricing(p.id, 100);
+      const pricing = await fetchPricing(p.id, DEFAULT_VOLUME_ML);
       setState((s) => ({
         ...s,
         items: [
@@ -129,7 +130,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
               image: p.image ?? null,
             },
             quantity: 1,
-            volumeMl: 100,
+            volumeMl: DEFAULT_VOLUME_ML,
             unitPrice: pricing?.defaultUnitPriceEur ?? "",
             unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
             exchangeRate: pricing?.defaultExchangeRate ?? lastRate,
@@ -147,7 +148,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
             perfumeId: null,
             snapshot: { name: result.name, brandName: result.brandName, image: null },
             quantity: 1,
-            volumeMl: 100,
+            volumeMl: DEFAULT_VOLUME_ML,
             unitPrice: "",
             unitCostDzd: "",
             exchangeRate: lastRate,
@@ -220,7 +221,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
       return;
     }
 
-    const items: OrderItemInput[] = state.items.map((it) => ({
+    const items: OrderItemPayload[] = state.items.map((it) => ({
       perfumeId: it.perfumeId,
       perfumeSnapshot: it.perfumeId === null ? it.snapshot : undefined,
       quantity: it.quantity,
@@ -234,7 +235,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
 
     startTransition(async () => {
       if (mode === "create") {
-        const payload: CreateOrderInput = {
+        const payload: CreateOrderPayload = {
           customerId: state.customer?.id ?? null,
           customerName: name,
           deliveryAt: state.deliveryAt ? new Date(state.deliveryAt) : null,
@@ -261,7 +262,7 @@ export function OrderForm({ mode, orderId, initial }: OrderFormProps) {
         router.refresh();
       } else {
         if (!orderId) throw new Error("orderId manquant en mode edit");
-        const payload: UpdateOrderInput = {
+        const payload: UpdateOrderPayload = {
           customerId: state.customer?.id ?? null,
           customerName: name,
           deliveryAt: state.deliveryAt ? new Date(state.deliveryAt) : null,

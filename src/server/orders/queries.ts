@@ -1,7 +1,13 @@
 import { prisma } from "@/lib/db/prisma";
+import { orderSearchWhere, searchTerms } from "@/server/search/filters";
 import Decimal from "decimal.js-light";
 import type { OrderStatus } from "@prisma/client";
-import { deriveFulfillment, type Fulfillment } from "@/domain/order-status";
+import {
+  DELIVERED_VISIBILITY_HOURS,
+  deriveFulfillment,
+  deliveredVisibilitySince,
+  type Fulfillment,
+} from "@/domain/order-status";
 
 export type OrderListRow = {
   id: string;
@@ -84,15 +90,84 @@ function sumPayments(payments: Array<{ type: string; amount: { toString(): strin
   return { deposit, balance, refund };
 }
 
-export async function listOrders(filter: OrdersFilter = "all"): Promise<OrdersListResult> {
-  const where =
+/**
+ * Les commandes livrées récemment — celles qui méritent encore une place dans
+ * le suivi.
+ *
+ * Le suivi sert à savoir ce qu'il reste à faire. Une commande livrée hier peut
+ * encore revenir (un solde à encaisser, une erreur de statut) ; une commande
+ * livrée le mois dernier n'est plus qu'une ligne de comptabilité, et cent
+ * lignes de ce genre finissent par cacher les trois qui demandent une action.
+ * Passé le délai, elle quitte donc le suivi — sans disparaître : la compta la
+ * garde, et son statut y reste modifiable.
+ *
+ * `deliveredAt IS NULL` reste inclus par sécurité : une commande livrée dont
+ * l'horodatage manque (base restaurée, écriture concurrente) doit rester
+ * visible plutôt que devenir introuvable.
+ *
+ * Cette fenêtre remplace `lib/gestion/orderPurge`, qui poursuivait la même
+ * intention en SUPPRIMANT : ouvrir la fiche d'une commande livrée la veille
+ * suffisait à la détruire, avec son historique de paiements (cascade), et à
+ * retirer de la comptabilité une commande confirmée non finalisée en vente —
+ * de l'argent réellement encaissé, effacé par un simple GET. « Ne plus
+ * afficher » ne demande pas d'effacer. La suppression reste possible, mais
+ * comme un geste explicite : « Supprimer la commande », sur la fiche.
+ */
+function recentlyDelivered() {
+  return {
+    status: "DELIVERED" as OrderStatus,
+    OR: [
+      { deliveredAt: { gte: deliveredVisibilitySince() } },
+      { deliveredAt: null },
+    ],
+  };
+}
+
+/**
+ * @param q Recherche libre — client, contact, parfum, marque, lot, notes.
+ *          Voir `server/search/filters`. La liste des commandes n'en avait
+ *          aucune : retrouver « la commande de Sauvage » imposait de faire
+ *          défiler deux cents lignes, alors que la donnée était à une jointure.
+ */
+export async function listOrders(
+  filter: OrdersFilter = "all",
+  q?: string | null,
+): Promise<OrdersListResult> {
+  const statusWhere =
     filter === "all"
-      ? { status: { not: "DELIVERED" as OrderStatus } }
+      ? {
+          OR: [
+            { status: { in: ["PENDING", "READY", "CANCELLED"] as OrderStatus[] } },
+            recentlyDelivered(),
+          ],
+        }
       : filter === "pending"
         ? { status: "PENDING" as OrderStatus }
         : filter === "ready"
           ? { status: "READY" as OrderStatus }
-          : { status: "DELIVERED" as OrderStatus };
+          : recentlyDelivered();
+
+  /*
+   * Une recherche traverse la fenêtre de visibilité des livrées : si on nomme
+   * une commande, c'est qu'on la cherche — la lui cacher parce qu'elle a été
+   * livrée il y a trois jours serait répondre « aucun résultat » à une question
+   * dont on a la réponse. Le filtre d'onglet, lui, continue de s'appliquer.
+   */
+  const searching = searchTerms(q).length > 0;
+  /*
+   * En recherche, l'onglet garde son filtre de STATUT mais perd sa fenêtre de
+   * temps. La fenêtre est un critère d'encombrement, pas d'appartenance :
+   * chercher « benali » dans l'onglet « Livrées » et s'entendre répondre
+   * « aucun résultat » parce que la livraison date de quatre jours serait
+   * absurde — la commande est bien livrée, et on vient de la nommer.
+   */
+  const searchStatusWhere =
+    filter === "delivered" ? { status: "DELIVERED" as OrderStatus } : statusWhere;
+  const where = searching
+    ? filter === "all"
+      ? orderSearchWhere(q)
+      : { AND: [searchStatusWhere, orderSearchWhere(q)] }
+    : statusWhere;
 
   const orders = await prisma.order.findMany({
     where,

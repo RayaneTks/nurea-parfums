@@ -189,14 +189,14 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         type="button"
         aria-label="Fermer la palette"
         onClick={() => onOpenChange(false)}
-        className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 z-[var(--admin-z-command-palette)] bg-black/40 backdrop-blur-sm"
       />
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label="Palette de commandes"
-        className="fixed left-1/2 top-[10dvh] z-[90] w-[min(420px,92vw)] -translate-x-1/2"
+        className="fixed left-1/2 top-[10dvh] z-[var(--admin-z-command-palette)] w-[min(420px,92vw)] -translate-x-1/2"
       >
         <Command
           label="Recherche"

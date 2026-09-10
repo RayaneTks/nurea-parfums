@@ -59,9 +59,15 @@ type PerfumeFormProps = {
    * posée par-dessus la carte des visuels.
    */
   pricingSlot?: ReactNode;
+  /**
+   * Galerie des visuels story, chargée côté serveur. Même raison d'être un
+   * slot que la grille tarifaire — et absente sur une fiche neuve : sans
+   * identifiant de parfum, il n'y a nulle part où ranger un visuel.
+   */
+  mediaSlot?: ReactNode;
 };
 
-export function PerfumeForm({ perfumeId, pricingSlot }: PerfumeFormProps) {
+export function PerfumeForm({ perfumeId, pricingSlot, mediaSlot }: PerfumeFormProps) {
   const router = useRouter();
   const isNew = !perfumeId;
 
@@ -356,6 +362,8 @@ export function PerfumeForm({ perfumeId, pricingSlot }: PerfumeFormProps) {
             />
           </FormSection>
 
+          {mediaSlot}
+
           {pricingSlot}
 
           {!isNew && !readOnly ? (
@@ -405,7 +413,7 @@ export function PerfumeForm({ perfumeId, pricingSlot }: PerfumeFormProps) {
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
         title="Supprimer ce parfum ?"
-        description={`« ${name || "Sans nom"} » sera retiré du catalogue.`}
+        description={`« ${name || "Sans nom"} » sera retiré du catalogue, avec ses tarifs et ses visuels story. Sans retour possible. Les commandes et ventes déjà enregistrées gardent leur trace.`}
         confirmLabel="Supprimer"
         onConfirm={handleDelete}
       />
