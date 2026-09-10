@@ -108,12 +108,27 @@ export async function createSaleAction(
   );
   const totalMargin = totalRevenue.minus(totalCost);
 
+  /*
+   * Le lot suit la commande jusque dans la vente qui en découle : sinon
+   * encaisser une commande rattachée à un lot fait sortir son argent du lot
+   * (la commande cesse d'y être comptée, la vente naît hors lot).
+   */
+  const orderBatchId = data.orderId
+    ? (
+        await prisma.order.findUnique({
+          where: { id: data.orderId },
+          select: { batchId: true },
+        })
+      )?.batchId ?? null
+    : null;
+
   try {
     const sale = await prisma.$transaction(async (tx) => {
       // 1. Crée Sale + items avec snapshot.
       const created = await tx.sale.create({
         data: {
           orderId: data.orderId ?? null,
+          batchId: orderBatchId,
           customerId: data.customerId ?? null,
           customerName: data.customerName ?? null,
           soldAt: data.soldAt ?? new Date(),

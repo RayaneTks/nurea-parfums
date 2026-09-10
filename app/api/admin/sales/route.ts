@@ -254,6 +254,16 @@ export async function POST(request: Request) {
 
     let linkedOrderId: string | null = null;
     let orderCustomerName: string | null = null;
+    /*
+     * Le lot suit la commande jusque dans la vente qui en découle.
+     *
+     * Sans cette reprise, encaisser une commande rattachée au lot « Mars »
+     * faisait sortir son argent du lot : la commande cesse d'être comptée
+     * (`listBatches` ne retient que les commandes SANS vente) et la vente
+     * créée naissait hors lot. L'encaissé du lot retombait donc après chaque
+     * encaissement, sans que rien n'ait été supprimé.
+     */
+    let orderBatchId: string | null = null;
     if (body.orderId) {
       const order = await prisma.order.findUnique({
         where: { id: body.orderId },
@@ -270,6 +280,7 @@ export async function POST(request: Request) {
       }
       linkedOrderId = order.id;
       orderCustomerName = order.customerName;
+      orderBatchId = order.batchId;
     }
 
     const totals = sumSaleTotals(normalizedLines);
@@ -318,6 +329,7 @@ export async function POST(request: Request) {
       const created = await tx.sale.create({
         data: {
           orderId: linkedOrderId,
+          batchId: orderBatchId,
           customerId: linkedCustomerId,
           customerName,
           customerContact,

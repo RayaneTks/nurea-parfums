@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, ListChecks, Search } from "lucide-react";
 import { Sheet } from "@/ui/primitives/Sheet";
 import { Button } from "@/ui/primitives/Button";
@@ -36,6 +36,22 @@ export function BatchAssignOrdersSheet({ batchId, open, onOpenChange, onSaved, o
   const [saving, setSaving] = useState(false);
   const [query, setQuery] = useState("");
 
+  /*
+   * `onError` passe par une référence, jamais par les dépendances de l'effet.
+   *
+   * Le parent le passe en fonction anonyme : son identité change à chaque
+   * rendu. En dépendance, l'effet repartait donc à chaque rendu du parent — il
+   * refaisait la requête et surtout REMETTAIT `selected` à l'état serveur,
+   * effaçant les cases que l'utilisateur venait de cocher (il suffisait qu'un
+   * toast se ferme tout seul pour perdre six sélections). Et en cas d'échec,
+   * `onError` provoquait le rendu qui relançait l'effet : requête, erreur,
+   * requête, sans fin.
+   */
+  const onErrorRef = useRef(onError);
+  useEffect(() => {
+    onErrorRef.current = onError;
+  });
+
   useEffect(() => {
     if (!open) return;
     setLoading(true);
@@ -56,13 +72,13 @@ export function BatchAssignOrdersSheet({ batchId, open, onOpenChange, onSaved, o
         setInitialSelected(initial);
       })
       .catch(() => {
-        onError("Impossible de charger les commandes. Réessaie.");
+        onErrorRef.current("Impossible de charger les commandes. Réessaie.");
         setCandidates([]);
         setSelected(new Set());
         setInitialSelected(new Set());
       })
       .finally(() => setLoading(false));
-  }, [open, batchId, onError]);
+  }, [open, batchId]);
 
   const q = query.trim().toLowerCase();
   const filtered = useMemo(() => {
@@ -103,6 +119,27 @@ export function BatchAssignOrdersSheet({ batchId, open, onOpenChange, onSaved, o
         const j = (await r.json().catch(() => ({}))) as { error?: string };
         onError(j.error ?? "Erreur lors de l'assignation.");
         return;
+      }
+      /*
+       * Le serveur écarte les commandes devenues inéligibles depuis
+       * l'ouverture de la feuille. L'écran annonçait « Commandes mises à
+       * jour » quoi qu'il arrive : la fiche du lot restait vide et rien ne
+       * disait pourquoi. On compte donc ce qui a réellement pris.
+       */
+      const j = (await r.json().catch(() => ({}))) as {
+        attached?: number;
+        detached?: number;
+        requested?: { attach: number; detach: number };
+      };
+      const applied = (j.attached ?? 0) + (j.detached ?? 0);
+      const asked = (j.requested?.attach ?? attachIds.length) + (j.requested?.detach ?? detachIds.length);
+      if (applied < asked) {
+        const manquantes = asked - applied;
+        onError(
+          `${manquantes} commande${manquantes > 1 ? "s n'ont" : " n'a"} pas pu être rattachée${
+            manquantes > 1 ? "s" : ""
+          } : leur statut a changé entre-temps.`,
+        );
       }
       onSaved();
       onOpenChange(false);
