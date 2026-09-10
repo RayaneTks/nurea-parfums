@@ -25,6 +25,7 @@ import { PocketSplit, type SplitRow } from "@/features/treasury/components/Pocke
 import { usePockets } from "@/features/treasury/usePockets";
 import { useLastExchangeRate } from "@/hooks/useLastExchangeRate";
 import { formateEuros, formatePourcent } from "@/ui/patterns/format";
+import { DEFAULT_VOLUME_ML, normalizeVolumeMl } from "@/domain/volumes";
 
 function toNum(v: string): number {
   const n = Number(v.replace(",", "."));
@@ -50,10 +51,6 @@ type FromOrder = {
     perfumeSnapshot?: unknown;
   }>;
 };
-
-function isVol(v: number | null): v is 30 | 50 | 100 {
-  return v === 30 || v === 50 || v === 100;
-}
 
 type PricingPayload = {
   defaultUnitPriceEur: string;
@@ -124,7 +121,7 @@ export function SellPageClient() {
                 image: it.perfume?.image ?? snap?.image ?? null,
               },
               quantity: it.quantity,
-              volumeMl: isVol(it.volumeMl) ? it.volumeMl : 100,
+              volumeMl: normalizeVolumeMl(it.volumeMl) ?? it.volumeMl ?? DEFAULT_VOLUME_ML,
               unitPrice: it.unitPrice,
               unitCostDzd: it.unitCostDzd ?? "",
               exchangeRate: it.exchangeRate ?? "277",

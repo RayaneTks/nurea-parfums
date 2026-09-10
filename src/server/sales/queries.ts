@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import Decimal from "decimal.js-light";
 import { confirmedOrdersFinancials, type OrderComptaRow } from "@/server/orders/financials";
+import { saleSearchWhere } from "@/server/search/filters";
 
 export type SaleRowLite = {
   id: string;
@@ -142,7 +143,9 @@ function groupCustomerKey(customerId: string | null, customerName: string | null
  *   2) `customerGroups` — ventes sans lot, groupées par client (plus récent en tête)
  *
  * `period` est conservé pour back-compat (defaut "all" = pas de filtre temporel).
- * `q` filtre par nom client (case-insensitive, substring).
+ * `q` cherche dans le nom et le contact du client, les notes, le nom du lot,
+ * et jusqu'aux parfums et marques des lignes — y compris les parfums hors
+ * catalogue, qui ne vivent que dans l'instantané. Voir `server/search/filters`.
  */
 export async function listSalesGroupedByCustomer(params: {
   period?: Period;
@@ -152,18 +155,7 @@ export async function listSalesGroupedByCustomer(params: {
   const since = periodStart(period);
   const where = {
     ...(since ? { soldAt: { gte: since } } : {}),
-    ...(params.q && params.q.trim().length > 0
-      ? {
-          OR: [
-            { customerName: { contains: params.q.trim(), mode: "insensitive" as const } },
-            {
-              customer: {
-                fullName: { contains: params.q.trim(), mode: "insensitive" as const },
-              },
-            },
-          ],
-        }
-      : {}),
+    ...saleSearchWhere(params.q),
   };
 
   const sales = await prisma.sale.findMany({
@@ -289,7 +281,7 @@ export async function listSalesGroupedByCustomer(params: {
   const totalExpenses = new Decimal((expenseAgg._sum.amount ?? 0).toString());
 
   // Commandes confirmées (À traiter / Livrées) non finalisées en vente : encaissé réel.
-  const orders = await confirmedOrdersFinancials(since);
+  const orders = await confirmedOrdersFinancials(since, params.q);
   const ordersCashed = new Decimal(orders.totals.cashed);
   const ordersCost = new Decimal(orders.totals.cost);
   const ordersDue = new Decimal(orders.totals.due);

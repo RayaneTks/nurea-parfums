@@ -12,13 +12,24 @@ import {
   upsertPerfumePricingAction,
 } from "@/server/pricing/actions";
 import type { PerfumePricingRow } from "@/server/pricing/queries";
+import { VOLUMES_ML } from "@/domain/volumes";
 
 type PerfumePricingPanelProps = {
   perfumeId: number;
   initial: PerfumePricingRow[];
 };
 
-const VOLUMES = [30, 50, 100] as const;
+/*
+ * Les contenances proposées, plus celles que d'anciens tarifs portent encore :
+ * masquer une ligne de prix existante ne l'efface pas de la base, elle
+ * continuerait de pré-remplir les commandes sans que personne puisse la voir
+ * ni la corriger.
+ */
+function pricingVolumes(initial: readonly { volumeMl: number }[]): number[] {
+  const known = new Set<number>(VOLUMES_ML);
+  const extra = initial.map((r) => r.volumeMl).filter((v) => !known.has(v));
+  return [...new Set([...VOLUMES_ML, ...extra])].sort((a, b) => a - b);
+}
 
 type Draft = {
   unitPriceEur: string;
@@ -45,7 +56,7 @@ function draftFromRow(row: PerfumePricingRow | undefined): Draft {
 export function PerfumePricingPanel({ perfumeId, initial }: PerfumePricingPanelProps) {
   const [drafts, setDrafts] = useState<Record<string, Draft>>(() => {
     const init: Record<string, Draft> = {};
-    for (const v of VOLUMES) {
+    for (const v of pricingVolumes(initial)) {
       init[rowKey(v)] = draftFromRow(initial.find((r) => r.volumeMl === v));
     }
     return init;
@@ -57,7 +68,7 @@ export function PerfumePricingPanel({ perfumeId, initial }: PerfumePricingPanelP
 
   useEffect(() => {
     const next: Record<string, Draft> = {};
-    for (const v of VOLUMES) {
+    for (const v of pricingVolumes(initial)) {
       next[rowKey(v)] = draftFromRow(initial.find((r) => r.volumeMl === v));
     }
     setDrafts(next);
@@ -127,7 +138,7 @@ export function PerfumePricingPanel({ perfumeId, initial }: PerfumePricingPanelP
         </HStack>
 
         <Stack gap={3}>
-          {VOLUMES.map((v) => {
+          {pricingVolumes(initial).map((v) => {
             const d = drafts[rowKey(v)] ?? emptyDraft();
             const existing = initial.find((r) => r.volumeMl === v);
             const has = existing !== undefined;

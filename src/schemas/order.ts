@@ -1,10 +1,31 @@
 import { z } from "zod";
+import { normalizeVolumeMl } from "@/domain/volumes";
 
 export const orderStatusSchema = z.enum(["PENDING", "READY", "DELIVERED", "CANCELLED"]);
 export type OrderStatusValue = z.infer<typeof orderStatusSchema>;
 
-export const VOLUMES_ML = [30, 50, 100] as const;
-export const volumeMlSchema = z.union([z.literal(30), z.literal(50), z.literal(100)]);
+/*
+ * Les contenances viennent du domaine (`src/domain/volumes.ts`) : ce module
+ * n'en garde que la porte d'entrée Zod. Le schéma accepte aussi les valeurs
+ * héritées (30, 100) et les traduit — un ticket enregistré l'an dernier doit
+ * pouvoir être rouvert et réenregistré sans être refusé.
+ */
+export { VOLUMES_ML, DEFAULT_VOLUME_ML, type VolumeMl } from "@/domain/volumes";
+
+export const volumeMlSchema = z
+  .number()
+  .int()
+  .transform((v, ctx) => {
+    const normalized = normalizeVolumeMl(v);
+    if (normalized === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Contenance non proposée : ${v} ml.`,
+      });
+      return z.NEVER;
+    }
+    return normalized;
+  });
 
 const moneyOptional = z
   .union([z.string(), z.number(), z.null(), z.undefined()])
@@ -79,7 +100,25 @@ export const orderListFilterSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
 
+/**
+ * Ce que le serveur reçoit APRÈS validation : la contenance y est déjà
+ * traduite, donc restreinte aux valeurs proposées.
+ */
 export type OrderItemInput = z.infer<typeof orderItemInputSchema>;
+
+/**
+ * Ce qu'un formulaire ENVOIE, avant validation.
+ *
+ * Distinct du précédent depuis que la contenance est normalisée à l'entrée :
+ * l'écran peut légitimement transmettre un 100 ml hérité que le schéma
+ * traduira en 80. Confondre les deux obligerait le formulaire à connaître la
+ * table de correspondance, c'est-à-dire à la dupliquer.
+ */
+export type OrderItemPayload = z.input<typeof orderItemInputSchema>;
 export type CreateOrderInput = z.infer<typeof createOrderInputSchema>;
 export type UpdateOrderInput = z.infer<typeof updateOrderInputSchema>;
+
+/** Charges utiles côté formulaire — avant validation. Voir `OrderItemPayload`. */
+export type CreateOrderPayload = z.input<typeof createOrderInputSchema>;
+export type UpdateOrderPayload = z.input<typeof updateOrderInputSchema>;
 export type OrderListFilter = z.infer<typeof orderListFilterSchema>;

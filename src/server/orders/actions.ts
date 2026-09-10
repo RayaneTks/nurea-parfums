@@ -7,8 +7,9 @@ import { writeAudit } from "@/lib/admin/audit";
 import { revalidateTag } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
 import { createOrderInputSchema, updateOrderInputSchema } from "@/schemas/order";
-import type { CreateOrderInput, UpdateOrderInput } from "@/schemas/order";
+import type { CreateOrderPayload, UpdateOrderPayload } from "@/schemas/order";
 import type { ActionResult } from "@/server/customers/actions";
+import { DEFAULT_VOLUME_ML, normalizeVolumeMl } from "@/domain/volumes";
 
 function lineUnitCostEur(unitCostDzd: string | null, exchangeRate: string | null): string {
   if (!unitCostDzd || !exchangeRate) return "0";
@@ -23,7 +24,10 @@ function lineTotalEur(unitPrice: string, qty: number): Decimal {
 }
 
 export async function createOrderAction(
-  input: CreateOrderInput,
+  // La charge utile est celle d'AVANT validation : c'est cette action qui
+  // valide, et exiger déjà le type validé en entrée reviendrait à demander à
+  // l'appelant de faire le travail dont il vient déléguer la responsabilité.
+  input: CreateOrderPayload,
 ): Promise<ActionResult<{ id: string; status: "PENDING" | "READY" }>> {
   const parsed = createOrderInputSchema.safeParse(input);
   if (!parsed.success) {
@@ -138,7 +142,7 @@ export async function createOrderAction(
 
 export async function updateOrderAction(
   orderId: string,
-  input: UpdateOrderInput,
+  input: UpdateOrderPayload,
 ): Promise<ActionResult<{ id: string }>> {
   const parsed = updateOrderInputSchema.safeParse(input);
   if (!parsed.success) {
@@ -280,7 +284,7 @@ export async function duplicateOrderAction(
             }
           : null,
       quantity: it.quantity,
-      volumeMl: it.volumeMl as 30 | 50 | 100,
+      volumeMl: normalizeVolumeMl(it.volumeMl) ?? DEFAULT_VOLUME_ML,
       unitPrice: it.unitPrice.toString(),
       unitCostDzd: it.unitCostDzd?.toString() ?? "0",
       exchangeRate: it.exchangeRate?.toString() ?? "0",
