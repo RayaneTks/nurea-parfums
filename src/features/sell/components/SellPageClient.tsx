@@ -25,6 +25,7 @@ import { PocketSplit, type SplitRow } from "@/features/treasury/components/Pocke
 import { usePockets } from "@/features/treasury/usePockets";
 import { useLastExchangeRate } from "@/hooks/useLastExchangeRate";
 import { formateEuros, formatePourcent } from "@/ui/patterns/format";
+import { DEFAULT_VOLUME_ML, normalizeVolumeMl } from "@/domain/volumes";
 
 function toNum(v: string): number {
   const n = Number(v.replace(",", "."));
@@ -50,10 +51,6 @@ type FromOrder = {
     perfumeSnapshot?: unknown;
   }>;
 };
-
-function isVol(v: number | null): v is 30 | 50 | 100 {
-  return v === 30 || v === 50 || v === 100;
-}
 
 type PricingPayload = {
   defaultUnitPriceEur: string;
@@ -124,7 +121,7 @@ export function SellPageClient() {
                 image: it.perfume?.image ?? snap?.image ?? null,
               },
               quantity: it.quantity,
-              volumeMl: isVol(it.volumeMl) ? it.volumeMl : 100,
+              volumeMl: normalizeVolumeMl(it.volumeMl) ?? it.volumeMl ?? DEFAULT_VOLUME_ML,
               unitPrice: it.unitPrice,
               unitCostDzd: it.unitCostDzd ?? "",
               exchangeRate: it.exchangeRate ?? "277",
@@ -154,7 +151,7 @@ export function SellPageClient() {
 
   const handlePickerSelect = useCallback(async (result: PickerResult) => {
     if (result.kind === "catalog") {
-      const pricing = await fetchPricing(result.perfume.id, 100);
+      const pricing = await fetchPricing(result.perfume.id, DEFAULT_VOLUME_ML);
       setLines((prev) => [
         ...prev,
         {
@@ -166,7 +163,7 @@ export function SellPageClient() {
             image: result.perfume.image ?? null,
           },
           quantity: 1,
-          volumeMl: 100,
+          volumeMl: DEFAULT_VOLUME_ML,
           unitPrice: pricing?.defaultUnitPriceEur ?? "",
           unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
           exchangeRate: pricing?.defaultExchangeRate ?? lastRate,
@@ -180,7 +177,7 @@ export function SellPageClient() {
           perfumeId: null,
           snapshot: { name: result.name, brandName: result.brandName, image: null },
           quantity: 1,
-          volumeMl: 100,
+          volumeMl: DEFAULT_VOLUME_ML,
           unitPrice: "",
           unitCostDzd: "",
           exchangeRate: lastRate,
@@ -240,11 +237,23 @@ export function SellPageClient() {
       setConfirmSale(true);
       return;
     }
-    void postSale();
+    postSaleDirect();
   };
 
-  const postSale = () => {
-    startTransition(async () => {
+  /**
+   * Enregistre la vente et **rend la promesse**.
+   *
+   * Elle vivait entièrement dans un `startTransition`, qui rend `void` : la
+   * boîte « Finaliser la vente ? » croyait attendre, n'attendait rien, et son
+   * bouton redevenait tapable aussitôt sans jamais montrer de spinner. Deux
+   * taps rapprochés sur « Encaisser » envoyaient donc deux POST — deux ventes
+   * créées pour un seul encaissement, et une comptabilité à corriger à la main.
+   *
+   * Le rejet est délibéré : `ConfirmDialog` s'en sert pour afficher l'échec
+   * dans la boîte, plutôt qu'en filet neutralisé par la couche modale.
+   */
+  const postSale = async (): Promise<void> => {
+    {
       const payload = {
         orderId: bridge?.id ?? null,
         customerId: customer?.id ?? null,
@@ -262,23 +271,39 @@ export function SellPageClient() {
         })),
         payments: splitRows,
       };
-      const r = await fetch("/api/admin/sales", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      let r: Response;
+      try {
+        r = await fetch("/api/admin/sales", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } catch {
+        throw new Error("Réseau indisponible. Réessaie.");
+      }
       if (!r.ok) {
         const err = (await r.json().catch(() => ({}))) as { error?: string };
-        setToast({ type: "error", message: err.error ?? "Échec enregistrement." });
-        return;
+        throw new Error(err.error ?? "Échec enregistrement.");
       }
-      setToast({ type: "success", message: "Vente enregistrée." });
       const usedRate = lines.find((l) => Number(l.exchangeRate) > 0)?.exchangeRate;
       if (usedRate) rememberRate(usedRate);
       setConfirmSale(false);
-      router.push("/admin/compta");
-      router.refresh();
+      setToast({ type: "success", message: "Vente enregistrée." });
+      startTransition(() => {
+        router.push("/admin/compta");
+        router.refresh();
+      });
+    }
+  };
+
+  /** Chemin sans confirmation (vente directe) : l'erreur part en filet. */
+  const postSaleDirect = () => {
+    void postSale().catch((e: unknown) => {
+      setToast({
+        type: "error",
+        message: e instanceof Error ? e.message : "Échec enregistrement.",
+      });
     });
   };
 
@@ -492,12 +517,12 @@ export function SellPageClient() {
         title="Finaliser la vente ?"
         description={
           bridge
-            ? `La commande de ${bridge.customerName ?? "client"} passera en livrée.`
-            : undefined
+            ? `La commande de ${bridge.customerName ?? "client"} passera en livrée, et son lot suivra sur la vente.`
+            : `${lines.length} ligne${lines.length > 1 ? "s" : ""} seront enregistrées en comptabilité et le stock décrémenté.`
         }
         confirmLabel="Encaisser"
         tone="primary"
-        onConfirm={() => postSale()}
+        onConfirm={postSale}
       />
     </PageScaffold>
   );

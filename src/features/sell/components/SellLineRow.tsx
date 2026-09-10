@@ -8,15 +8,16 @@ import { Chip } from "@/ui/primitives/Chip";
 import { Input } from "@/ui/primitives/Input";
 import { Money } from "@/ui/patterns/Money";
 import { GiftToggle } from "@/ui/patterns/GiftToggle";
+import { volumeOptions } from "@/domain/volumes";
 
-const VOLUMES = [30, 50, 100] as const;
+
 
 export type SellLine = {
   key: string;
   perfumeId: number | null;
   snapshot: { name: string; brandName: string; image: string | null };
   quantity: number;
-  volumeMl: 30 | 50 | 100;
+  volumeMl: number;
   unitPrice: string;
   unitCostDzd: string;
   exchangeRate: string;
@@ -74,7 +75,7 @@ export function SellLineRow({ line, onPatch, onRemove }: SellLineRowProps) {
         <HStack gap={2} align="center">
           <span className="w-[64px] text-[12px] text-[var(--admin-text-muted)]">Volume</span>
           <div className="flex gap-1.5">
-            {VOLUMES.map((v) => (
+            {volumeOptions(line.volumeMl).map((v) => (
               <Chip
                 key={v}
                 active={line.volumeMl === v}

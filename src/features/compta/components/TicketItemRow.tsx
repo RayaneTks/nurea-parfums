@@ -8,8 +8,9 @@ import { Input } from "@/ui/primitives/Input";
 import { Money } from "@/ui/patterns/Money";
 import { Stack, HStack } from "@/ui/primitives/Stack";
 import type { TicketDraftLine } from "../hooks/useTicketEdit";
+import { volumeOptions } from "@/domain/volumes";
 
-const VOLUMES = [30, 50, 100] as const;
+
 
 function lineTotal(unitPrice: string, qty: number): number {
   const p = Number(unitPrice.replace(",", "."));
@@ -77,7 +78,7 @@ export function TicketItemRow({
           <HStack gap={2} align="center">
             <span className="w-[64px] text-[12px] text-[var(--admin-text-muted)]">Volume</span>
             <div className="flex gap-1.5">
-              {VOLUMES.map((v) => (
+              {volumeOptions(line.volumeMl).map((v) => (
                 <Chip
                   key={v}
                   active={line.volumeMl === v}

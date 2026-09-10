@@ -142,6 +142,34 @@ export function canTransition(
 }
 
 /**
+ * Horodatage de livraison qui accompagne un changement de statut.
+ *
+ * Trois chemins font passer une commande en « livrée » — la fiche commande,
+ * la création d'une vente liée depuis la compta, et l'API ventes. La règle vit
+ * ici plutôt que dans chacun d'eux, parce qu'une seule de ces trois copies qui
+ * oublie la date suffit à faire réapparaître indéfiniment une commande que
+ * l'écran croyait archivée.
+ *
+ * Revenir en arrière efface la date : une commande qui n'est plus livrée ne
+ * garde pas la trace d'une livraison annulée.
+ */
+export function deliveredAtFor(next: OrderStatus, now: Date = new Date()): Date | null {
+  return next === "DELIVERED" ? now : null;
+}
+
+/**
+ * Délai pendant lequel une commande livrée reste visible dans le suivi avant
+ * de céder la place. Passé ce délai elle n'est plus perdue : la compta la garde
+ * et permet d'y revenir, y compris pour changer son statut.
+ */
+export const DELIVERED_VISIBILITY_HOURS = 48;
+
+/** Borne basse de la fenêtre de visibilité des livrées, pour un `where` Prisma. */
+export function deliveredVisibilitySince(now: Date = new Date()): Date {
+  return new Date(now.getTime() - DELIVERED_VISIBILITY_HOURS * 3600 * 1000);
+}
+
+/**
  * Avancement de la livraison d'une commande, dérivé des quantités livrées par ligne.
  *
  * - `none`    : rien livré (toutes les lignes à 0).

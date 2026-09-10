@@ -5,11 +5,11 @@ import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { serializeOrder } from "@/lib/gestion/orderJson";
-import { purgeOrderIfEphemeral } from "@/lib/gestion/orderPurge";
 import { isValidVolumeMl, parseOptionalMoneyToZero } from "@/lib/gestion/orderLineValidation";
-import { canTransition } from "@/domain/order-status";
+import { canTransition, deliveredAtFor } from "@/domain/order-status";
 import Decimal from "decimal.js-light";
 import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
+import { DEFAULT_VOLUME_ML, VOLUMES_ML, normalizeVolumeMl } from "@/domain/volumes";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -66,10 +66,6 @@ export async function GET(
     if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
-    const removed = await purgeOrderIfEphemeral(prisma, id);
-    if (removed) {
-      return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
-    }
 
     const order = await prisma.order.findUnique({
       where: { id },
@@ -200,6 +196,14 @@ export async function PATCH(
         if (!guard.ok) {
           return NextResponse.json({ error: guard.reason }, { status: 400 });
         }
+        /*
+         * Horodatage réel de la livraison. C'est lui — et non `updatedAt`, que
+         * la moindre correction de note remettrait à zéro — qui fait courir le
+         * délai de retrait de la liste des commandes. Revenir en arrière
+         * l'efface : une commande qui n'est plus livrée ne doit pas garder la
+         * date d'une livraison annulée.
+         */
+        data.deliveredAt = deliveredAtFor(body.status);
       }
       data.status = body.status;
     }
@@ -259,9 +263,9 @@ export async function PATCH(
           typeof raw.perfumeId === "number" ? raw.perfumeId : Number(raw.perfumeId);
         const quantity =
           typeof raw.quantity === "number" ? raw.quantity : Number(raw.quantity ?? 1);
-        const vol =
+        const volSaisi =
           raw.volumeMl === undefined || raw.volumeMl === null
-            ? 100
+            ? DEFAULT_VOLUME_ML
             : Number(raw.volumeMl);
         if (!Number.isFinite(perfumeId) || perfumeId <= 0) {
           return NextResponse.json(
@@ -275,12 +279,20 @@ export async function PATCH(
             { status: 400 },
           );
         }
-        if (!isValidVolumeMl(vol)) {
+        if (!isValidVolumeMl(volSaisi)) {
           return NextResponse.json(
-            { error: "Volume invalide (30, 50 ou 100 ml par ligne)." },
+            { error: `Volume invalide (${VOLUMES_ML.join(", ")} ml).` },
             { status: 400 },
           );
         }
+        /*
+         * La contenance saisie est VALIDÉE puis TRADUITE : le garde accepte les
+         * valeurs héritées (30, 100) pour ne pas refuser une fiche restée
+         * ouverte, mais les laisser filer jusqu'à la base réintroduirait ce que
+         * la migration vient d'effacer. La valeur par défaut vient du domaine —
+         * elle était écrite « 100 » ici, une contenance qui n'existe plus.
+         */
+        const vol = normalizeVolumeMl(volSaisi) ?? DEFAULT_VOLUME_ML;
         const up = parseOptionalMoneyToZero(raw.unitPrice);
         const uc = parseOptionalMoneyToZero(raw.unitCost);
         if (up === null) {
@@ -350,21 +362,6 @@ export async function PATCH(
         },
         { status: 400 },
       );
-    }
-
-    const mergedPaidForStatus =
-      "depositPaid" in data ? Boolean(data.depositPaid) : existing.depositPaid;
-    const mergedAmtForStatus = Number("depositAmount" in data ? data.depositAmount : existing.depositAmount);
-    if ("status" in data && (data as { status?: OrderStatus }).status === OrderStatus.READY) {
-      if (!mergedPaidForStatus || mergedAmtForStatus <= 0) {
-        return NextResponse.json(
-          {
-            error:
-              "Acompte reçu (montant > 0 €) requis pour passer en « à traiter ».",
-          },
-          { status: 400 },
-        );
-      }
     }
 
     const updated = await prisma.order.update({

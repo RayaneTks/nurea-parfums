@@ -18,6 +18,7 @@ import { TicketBatchPicker } from "./TicketBatchPicker";
 import { TicketItemsList } from "./TicketItemsList";
 import { useTicketEdit } from "../hooks/useTicketEdit";
 import type { SaleDetailRow } from "@/server/sales/queries";
+import { DEFAULT_VOLUME_ML, normalizeVolumeMl } from "@/domain/volumes";
 
 type TicketSheetProps = {
   saleId: string | null;
@@ -94,10 +95,7 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
             image: it.snapshot.image ?? null,
           },
           quantity: it.quantity,
-          volumeMl:
-            it.volumeMl === 30 || it.volumeMl === 50 || it.volumeMl === 100
-              ? (it.volumeMl as 30 | 50 | 100)
-              : 100,
+          volumeMl: normalizeVolumeMl(it.volumeMl) ?? it.volumeMl ?? DEFAULT_VOLUME_ML,
           unitPrice: it.unitPrice,
           unitCostDzd: it.unitCostDzd ?? "",
           exchangeRate: it.exchangeRate ?? "277",
@@ -369,7 +367,9 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
         title="Supprimer cette vente ?"
         description={
           sale
-            ? `${sale.customerName ?? "Vente"} · ${sale.itemCount} article${sale.itemCount > 1 ? "s" : ""}`
+            ? `${sale.customerName ?? "Vente"} · ${sale.itemCount} article${
+                sale.itemCount > 1 ? "s" : ""
+              }. Sans retour possible. Si une commande y était liée, elle repasse « à traiter ».`
             : undefined
         }
         confirmLabel="Supprimer"

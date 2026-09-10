@@ -9,6 +9,8 @@ import { tagFor } from "@/lib/admin/cache-tags";
 import { createSaleInputSchema, updateSaleInputSchema } from "@/schemas/sale";
 import type { CreateSaleInput, SaleItemInput, UpdateSaleInput } from "@/schemas/sale";
 import type { ActionResult } from "@/server/customers/actions";
+import { deliveredAtFor } from "@/domain/order-status";
+import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
 type LineComputation = {
   perfumeId: number | null;
@@ -106,12 +108,27 @@ export async function createSaleAction(
   );
   const totalMargin = totalRevenue.minus(totalCost);
 
+  /*
+   * Le lot suit la commande jusque dans la vente qui en découle : sinon
+   * encaisser une commande rattachée à un lot fait sortir son argent du lot
+   * (la commande cesse d'y être comptée, la vente naît hors lot).
+   */
+  const orderBatchId = data.orderId
+    ? (
+        await prisma.order.findUnique({
+          where: { id: data.orderId },
+          select: { batchId: true },
+        })
+      )?.batchId ?? null
+    : null;
+
   try {
     const sale = await prisma.$transaction(async (tx) => {
       // 1. Crée Sale + items avec snapshot.
       const created = await tx.sale.create({
         data: {
           orderId: data.orderId ?? null,
+          batchId: orderBatchId,
           customerId: data.customerId ?? null,
           customerName: data.customerName ?? null,
           soldAt: data.soldAt ?? new Date(),
@@ -142,7 +159,7 @@ export async function createSaleAction(
       if (data.orderId) {
         await tx.order.update({
           where: { id: data.orderId },
-          data: { status: "DELIVERED" },
+          data: { status: "DELIVERED", deliveredAt: deliveredAtFor("DELIVERED") },
         });
       }
 
@@ -301,6 +318,12 @@ export async function updateSaleAction(
   }
 }
 
+/**
+ * @deprecated Aucun écran n'appelle cette action : la suppression passe par
+ * `DELETE /api/admin/sales/[id]`, qui restitue aussi le stock et inverse les
+ * mouvements de trésorerie. Gardée le temps de vérifier qu'aucun script ne s'en
+ * sert — toute correction de comportement doit aller dans la route, pas ici.
+ */
 export async function deleteSaleAction(saleId: string): Promise<ActionResult<{ id: string }>> {
   try {
     const sale = await prisma.sale.findUnique({
@@ -311,18 +334,28 @@ export async function deleteSaleAction(saleId: string): Promise<ActionResult<{ i
 
     await prisma.$transaction(async (tx) => {
       await tx.sale.delete({ where: { id: saleId } });
-      // Si liée à une commande, rebascule en READY (admin peut re-facturer).
+      /*
+       * Si liée à une commande, rebascule en READY (admin peut re-facturer).
+       *
+       * `deliveredAt` repart à null avec le statut : la commande n'est plus
+       * livrée, garder l'horodatage la ferait figurer dans la fenêtre des
+       * livraisons récentes tout en affichant « à traiter ».
+       */
       if (sale.orderId) {
         await tx.order.update({
           where: { id: sale.orderId },
-          data: { status: "READY" },
+          data: { status: "READY", deliveredAt: null },
         });
       }
     });
 
     await writeAudit(undefined, "sale.delete", "Sale", saleId);
-    revalidatePath("/admin/compta");
-    if (sale.orderId) revalidatePath(`/admin/ordres/${sale.orderId}`);
+    /*
+     * La commande redevenait « à traiter » en base, mais l'onglet Commandes,
+     * l'accueil et les compteurs continuaient d'annoncer « livrée » jusqu'à
+     * expiration du cache : seules la compta et la fiche étaient invalidées.
+     */
+    revalidateAdminData(["ventes", "commandes"], { orderId: sale.orderId ?? undefined });
     return { ok: true, data: { id: saleId } };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Suppression impossible." };

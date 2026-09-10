@@ -14,6 +14,7 @@ import { EmptyState } from "@/ui/primitives/EmptyState";
 import { Money } from "@/ui/patterns/Money";
 import { PerfumePicker, type PickerResult } from "@/features/sell";
 import { VOLUMES, type OrderFormLine } from "./types";
+import { volumeOptions } from "@/domain/volumes";
 
 type ItemsSectionProps = {
   items: OrderFormLine[];
@@ -114,7 +115,7 @@ export function ItemsSection({ items, onAddItem, onPatchItem, onRemoveItem }: It
                 <HStack gap={2} align="center">
                   <span className="w-[64px] text-[12px] text-[var(--admin-text-muted)]">Volume</span>
                   <div className="flex gap-1.5">
-                    {VOLUMES.map((v) => (
+                    {volumeOptions(it.volumeMl).map((v) => (
                       <Chip
                         key={v}
                         active={it.volumeMl === v}

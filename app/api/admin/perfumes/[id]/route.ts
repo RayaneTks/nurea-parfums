@@ -7,6 +7,7 @@ import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { perfumeSlug } from "@/lib/slugify";
 import { normaliseParfum } from "@/lib/nommage";
+import { removeObjects } from "@/lib/supabase/adminStorage";
 
 export const dynamic = "force-dynamic";
 
@@ -278,12 +279,24 @@ export async function DELETE(request: Request, { params }: RouteCtx) {
     return NextResponse.json({ error: "ID invalide." }, { status: 400 });
   }
 
+    /*
+     * Les chemins des visuels story sont lus AVANT la suppression : la relation
+     * est en cascade, donc après le `delete` les lignes n'existent plus et
+     * personne ne sait plus quels objets du bucket leur appartenaient. Ils y
+     * resteraient indéfiniment, invisibles et facturés.
+     */
+    const media = await prisma.perfumeMedia.findMany({
+      where: { perfumeId: id },
+      select: { path: true },
+    });
+
     const deleted = await prisma.perfume.delete({ where: { id } });
 
     after(() => {
       revalidatePath("/");
       revalidatePath("/marque");
       revalidateAdminCatalogue();
+      void removeObjects(media.map((m) => m.path));
     });
     await writeAudit(ctx.sub, "perfume.hard_delete", "Perfume", String(id), { name: deleted.name });
     return NextResponse.json({ ok: true });

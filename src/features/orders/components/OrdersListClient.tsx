@@ -8,9 +8,11 @@ import { Stack } from "@/ui/primitives/Stack";
 import { SegmentedControl } from "@/ui/primitives/SegmentedControl";
 import { Heading } from "@/ui/primitives/Heading";
 import { EmptyState } from "@/ui/primitives/EmptyState";
+import { SearchField } from "@/ui/primitives/SearchField";
 import { Button } from "@/ui/primitives/Button";
 import { OrdersGroup } from "./OrdersGroup";
 import type { OrdersFilter, OrdersListResult } from "@/server/orders/queries";
+import { DELIVERED_VISIBILITY_HOURS } from "@/domain/order-status";
 import { cn } from "@/lib/utils";
 
 const FILTER_OPTIONS = [
@@ -40,8 +42,8 @@ const EMPTY_COPY: Record<
     showAction: false,
   },
   delivered: {
-    title: "Aucune livraison",
-    description: "Les commandes finalisées apparaîtront ici.",
+    title: "Aucune livraison récente",
+    description: `Les commandes livrées restent ici ${DELIVERED_VISIBILITY_HOURS} h, puis laissent la place. Les plus anciennes se retrouvent en Compta, où leur statut reste modifiable.`,
     showAction: false,
   },
 };
@@ -49,28 +51,59 @@ const EMPTY_COPY: Record<
 type OrdersListClientProps = {
   initial: OrdersListResult;
   initialFilter: OrdersFilter;
+  initialQuery: string;
 };
 
-export function OrdersListClient({ initial, initialFilter }: OrdersListClientProps) {
+export function OrdersListClient({
+  initial,
+  initialFilter,
+  initialQuery,
+}: OrdersListClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filter, setFilter] = useState<OrdersFilter>(initialFilter);
+  const [query, setQuery] = useState<string>(initialQuery);
   const [pending, startTransition] = useTransition();
 
+  /*
+   * Le filtre part tout de suite, la recherche après une pause.
+   *
+   * Un onglet est un geste unique et délibéré ; une frappe au clavier en
+   * produit dix par seconde, et lancer une requête à chacune ferait clignoter
+   * la liste tout en gaspillant neuf réponses sur dix. Les deux partagent la
+   * même URL : elle reste partageable, et le bouton retour du navigateur rend
+   * la recherche précédente.
+   */
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
     if (filter !== "all") params.set("filter", filter);
     else params.delete("filter");
+    const trimmed = query.trim();
+    if (trimmed.length > 0) params.set("q", trimmed);
+    else params.delete("q");
+
     const next = params.toString();
     if (next === searchParams.toString()) return;
-    startTransition(() => {
-      router.replace(`/admin/ordres${next ? `?${next}` : ""}`, { scroll: false });
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter]);
 
+    const delay = trimmed === initialQuery ? 0 : 250;
+    const t = setTimeout(() => {
+      startTransition(() => {
+        router.replace(`/admin/ordres${next ? `?${next}` : ""}`, { scroll: false });
+      });
+    }, delay);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter, query]);
+
+  const searching = query.trim().length > 0;
   const isEmpty = initial.groups.length === 0;
-  const empty = EMPTY_COPY[filter];
+  const empty = searching
+    ? {
+        title: "Aucun résultat",
+        description: `Rien ne correspond à « ${query.trim()} ». La recherche couvre le client, le contact, le parfum, la marque, le lot et les notes.`,
+        showAction: false,
+      }
+    : EMPTY_COPY[filter];
 
   return (
     <>
@@ -112,6 +145,13 @@ export function OrdersListClient({ initial, initialFilter }: OrdersListClientPro
           value={filter}
           onChange={setFilter}
           ariaLabel="Filtrer commandes"
+        />
+        <SearchField
+          value={query}
+          onChange={setQuery}
+          onClear={() => setQuery("")}
+          placeholder="Client, parfum, marque, lot…"
+          ariaLabel="Rechercher une commande"
         />
         {isEmpty ? (
           <EmptyState

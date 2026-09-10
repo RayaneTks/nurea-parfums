@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useReducer } from "react";
 import type { SaleDetailRow } from "@/server/sales/queries";
+import { DEFAULT_VOLUME_ML, normalizeVolumeMl } from "@/domain/volumes";
 
 export type TicketDraftLine = {
   /** id existant si ligne déjà persistée, sinon "new:N". */
@@ -10,7 +11,7 @@ export type TicketDraftLine = {
   /** snapshot pour off-catalog ou pour affichage en view-mode. */
   snapshot: { name: string; brandName: string | null; image: string | null };
   quantity: number;
-  volumeMl: 30 | 50 | 100 | null;
+  volumeMl: number | null;
   unitPrice: string;
   unitCostDzd: string;
   exchangeRate: string;
@@ -111,10 +112,6 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-function isVolume(v: number | null): v is 30 | 50 | 100 {
-  return v === 30 || v === 50 || v === 100;
-}
-
 function saleToDraft(sale: SaleDetailRow): TicketDraft {
   return {
     customerId: sale.customerId,
@@ -131,7 +128,13 @@ function saleToDraft(sale: SaleDetailRow): TicketDraft {
         image: it.snapshot.image ?? null,
       },
       quantity: it.quantity,
-      volumeMl: isVolume(it.volumeMl ?? null) ? (it.volumeMl as 30 | 50 | 100) : 100,
+      /*
+       * Une contenance héritée est traduite, une inconnue est CONSERVÉE telle
+       * quelle. L'ancienne version repliait tout ce qu'elle ne reconnaissait
+       * pas sur 100 ml : rouvrir puis réenregistrer un ticket suffisait à
+       * réécrire une contenance que personne n'avait touchée.
+       */
+      volumeMl: normalizeVolumeMl(it.volumeMl) ?? it.volumeMl ?? DEFAULT_VOLUME_ML,
       unitPrice: it.unitPrice,
       unitCostDzd: it.unitCostDzd ?? "",
       exchangeRate: it.exchangeRate ?? "277",

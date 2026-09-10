@@ -12,6 +12,8 @@ import { revalidateTag } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
 import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
 import { recordMovement } from "@/server/treasury/movements";
+import { DEFAULT_VOLUME_ML, VOLUMES_ML, normalizeVolumeMl } from "@/domain/volumes";
+import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -177,16 +179,22 @@ export async function PATCH(
           p.volumeMl === undefined
             ? item.volumeMl
             : Number(p.volumeMl);
-        const volIn =
-          volRaw === null || volRaw === undefined
-            ? 100
-            : volRaw;
-        if (!isValidVolumeMl(volIn)) {
+        const volInSaisi =
+          volRaw === null || volRaw === undefined ? DEFAULT_VOLUME_ML : volRaw;
+        if (!isValidVolumeMl(volInSaisi)) {
           return NextResponse.json(
-            { error: "Volume invalide (30, 50 ou 100 ml)." },
+            { error: `Volume invalide (${VOLUMES_ML.join(", ")} ml).` },
             { status: 400 },
           );
         }
+        /*
+         * La contenance saisie est VALIDÉE puis TRADUITE : le garde accepte les
+         * valeurs héritées (30, 100) pour ne pas refuser une fiche restée
+         * ouverte, mais les laisser filer jusqu'à la base réintroduirait ce que
+         * la migration vient d'effacer. La valeur par défaut vient du domaine —
+         * elle était écrite « 100 » ici, une contenance qui n'existe plus.
+         */
+        const volIn = normalizeVolumeMl(volInSaisi) ?? DEFAULT_VOLUME_ML;
       }
     }
 
@@ -262,10 +270,9 @@ export async function PATCH(
             p.volumeMl === undefined
               ? item.volumeMl
               : Number(p.volumeMl);
-          const volIn =
-            volRaw === null || volRaw === undefined
-              ? 100
-              : volRaw;
+          // Même règle que plus haut : traduire l'hérité, ne jamais réécrire
+          // une contenance que la migration a effacée.
+          const volIn = normalizeVolumeMl(volRaw ?? null) ?? DEFAULT_VOLUME_ML;
 
           const ucdRaw = p.unitCostDzd === undefined ? item.unitCostDzd : p.unitCostDzd;
           const exRaw = p.exchangeRate === undefined ? item.exchangeRate : p.exchangeRate;
@@ -318,10 +325,7 @@ export async function PATCH(
       if (hasNewItems) {
         for (const n of body.newItems!) {
           const upN = parseMoneyField(n.unitPrice)!;
-          const volIn =
-            n.volumeMl === 30 || n.volumeMl === 50 || n.volumeMl === 100
-              ? n.volumeMl
-              : 100;
+          const volIn = normalizeVolumeMl(n.volumeMl ?? null) ?? DEFAULT_VOLUME_ML;
           const ucdN =
             n.unitCostDzd !== null && n.unitCostDzd !== undefined && n.unitCostDzd !== ""
               ? Number(n.unitCostDzd)
@@ -458,6 +462,23 @@ export async function DELETE(
     }
 
     await prisma.sale.delete({ where: { id } });
+
+    /*
+     * La commande liée redevient « à traiter », et perd sa date de livraison.
+     *
+     * Ce rattrapage vivait dans `deleteSaleAction` — que PLUS PERSONNE
+     * n'appelle : l'écran passe par cette route. La commande restait donc
+     * « livrée » alors que la vente qui l'avait fait basculer n'existait plus,
+     * et elle continuait de figurer dans la fenêtre des livraisons récentes
+     * avec un horodatage devenu faux.
+     */
+    if (existing.orderId) {
+      await prisma.order.update({
+        where: { id: existing.orderId },
+        data: { status: "READY", deliveredAt: null },
+      });
+    }
+
     await reverseMovementsFor("Sale", id);
     // Restitue le stock des lignes catalogue.
     for (const it of existing.items) {
@@ -474,6 +495,11 @@ export async function DELETE(
     revalidateTag(tagFor.treasury(), "default");
     revalidateTag(tagFor.perfumes(), "default");
     revalidateAdminCatalogue();
+    // La compta, l'onglet Commandes, l'accueil et les compteurs parlent tous de
+    // cette commande : n'en invalider qu'une partie les fait se contredire.
+    revalidateAdminData(["ventes", "commandes"], {
+      orderId: existing.orderId ?? undefined,
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

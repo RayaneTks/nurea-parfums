@@ -33,7 +33,7 @@ export function AdminShell({ children }: AdminShellProps) {
 
   if (isLogin) {
     return (
-      <div className="admin-theme flex h-full w-full">
+      <div className="admin-theme admin-paint flex h-full w-full">
         <ViewportSync />
         <div className="mx-auto flex h-full w-full max-w-[var(--admin-app-max-width)]">
           {children}
@@ -42,9 +42,18 @@ export function AdminShell({ children }: AdminShellProps) {
     );
   }
 
+  /*
+   * `UndoProvider` vit À L'INTÉRIEUR du conteneur thémé.
+   *
+   * Il montait son filet « Commande supprimée — Annuler » au-dessus, donc hors
+   * de `.admin-theme` : aucun jeton ne s'y résolvait et le seul et unique
+   * recours contre une suppression s'affichait en texte nu, sans carte, sans
+   * fond, mal placé, cible tactile perdue. Cinq secondes plus tard la
+   * suppression était définitive.
+   */
   return (
-    <UndoProvider>
-      <div className="admin-theme admin-app-container">
+    <div className="admin-theme admin-app-container">
+      <UndoProvider>
         {/* `--admin-vh` alimente la hauteur max des sheets : sans ce composant
             monté, elles retombent sur 100dvh, que iOS ne met pas à jour quand
             le clavier s'ouvre. */}
@@ -65,7 +74,7 @@ export function AdminShell({ children }: AdminShellProps) {
         <TabBar />
         <AdminLoadingProgress />
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
-      </div>
-    </UndoProvider>
+      </UndoProvider>
+    </div>
   );
 }

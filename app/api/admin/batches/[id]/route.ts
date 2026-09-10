@@ -126,17 +126,43 @@ export async function DELETE(
     const { id } = await params;
     const existing = await prisma.batch.findUnique({
       where: { id },
-      select: { _count: { select: { sales: true } } },
+      select: {
+        _count: {
+          select: {
+            sales: true,
+            /*
+             * Même population que la fiche du lot. Le compteur brut incluait
+             * les commandes ANNULÉES et celles devenues des ventes : un lot
+             * portant une commande annulée — que la fiche masque et qu'aucun
+             * écran ne propose de détacher — devenait indestructible, sans que
+             * le message dise laquelle bloquait.
+             */
+            orders: { where: { status: { not: "CANCELLED" }, sale: null } },
+          },
+        },
+      },
     });
     if (!existing) {
       return NextResponse.json({ error: "Lot introuvable." }, { status: 404 });
     }
-    if (existing._count.sales > 0) {
+    /*
+     * Les commandes comptent autant que les ventes.
+     *
+     * Seules les ventes retenaient la suppression : un lot ne contenant que
+     * des commandes — le cas normal avant tout encaissement — se supprimait
+     * sans le moindre avertissement, et son regroupement, avec les dépenses de
+     * transport qui allaient avec, partait avec lui.
+     */
+    const attached = existing._count.sales + existing._count.orders;
+    if (attached > 0) {
+      const quoi =
+        existing._count.sales > 0 && existing._count.orders > 0
+          ? "des ventes et des commandes sont rattachées"
+          : existing._count.sales > 0
+            ? "des ventes sont rattachées"
+            : "des commandes sont rattachées";
       return NextResponse.json(
-        {
-          error:
-            "Impossible de supprimer : des ventes sont rattachées au lot. Détache-les d'abord.",
-        },
+        { error: `Impossible de supprimer : ${quoi} au lot. Détache-les d'abord.` },
         { status: 409 },
       );
     }

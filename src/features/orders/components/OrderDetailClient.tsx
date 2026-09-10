@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Copy, Trash2 } from "lucide-react";
 import { Stack, HStack } from "@/ui/primitives/Stack";
@@ -9,6 +9,7 @@ import { Button } from "@/ui/primitives/Button";
 import { Toast, type ToastType } from "@/ui/primitives/Toast";
 import { Money } from "@/ui/patterns/Money";
 import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
+import { useOrderStatusChange } from "../hooks/useOrderStatusChange";
 import { cn } from "@/lib/utils";
 import { useUndo } from "@/app-shell/UndoProvider";
 import { ShareButton } from "@/ui/patterns/ShareButton";
@@ -25,6 +26,7 @@ import { deriveFulfillment, remainingToDeliver, type Fulfillment } from "@/domai
 import type { OrderDetailRow } from "@/server/orders/queries";
 import type { OrderStatus } from "@prisma/client";
 import { formatePourcent } from "@/ui/patterns/format";
+import { formateEuros } from "@/ui/patterns/format";
 
 function computeMargin(items: OrderDetailRow["items"]): { cost: number; margin: number; marginPct: number } {
   let revenue = 0;
@@ -55,9 +57,26 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
   const router = useRouter();
   const { scheduleDelete } = useUndo();
   const [current, setCurrent] = useState(order);
+
   const [fulfillment, setFulfillment] = useState<Fulfillment>(() =>
     deriveFulfillment(order.items),
   );
+
+  /*
+   * Le serveur reprend la main à chaque nouveau rendu de la page.
+   *
+   * `current` était initialisé une fois puis vivait sa vie : un
+   * `router.refresh()` déclenché ailleurs — l'enregistrement d'un acompte, qui
+   * fait basculer la commande en « à traiter » côté serveur — rapportait bien
+   * la donnée fraîche, mais cet état local l'ignorait. Le sélecteur restait sur
+   * « en attente », le bouton « Finaliser la vente » n'apparaissait pas, et
+   * retaper « à traiter » affichait une réserve qui mentait (« aucun acompte
+   * n'a été encaissé »).
+   */
+  useEffect(() => {
+    setCurrent(order);
+    setFulfillment(deriveFulfillment(order.items));
+  }, [order]);
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [pending, startTransition] = useTransition();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -79,24 +98,35 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
     });
   };
 
-  const markDelivered = () => {
-    startTransition(async () => {
-      const res = await fetch(`/api/admin/orders/${order.id}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "DELIVERED" }),
-      });
-      if (!res.ok) {
-        const err = (await res.json().catch(() => ({}))) as { error?: string };
-        setToast({ type: "error", message: err.error ?? "Impossible de marquer livrée." });
-        return;
-      }
-      setCurrent({ ...current, status: "DELIVERED" });
-      setToast({ type: "success", message: "Commande livrée." });
+  /**
+   * Applique un statut, quel que soit le bouton qui le demande.
+   *
+   * `router.refresh()` n'est pas décoratif : sans lui, la liste des commandes
+   * reste sur son rendu serveur précédent. On revenait du détail après avoir
+   * fait passer une commande en « à traiter » et elle s'affichait encore sous
+   * son ancien groupe, avec son ancien badge et des compteurs inchangés —
+   * l'application paraissait avoir oublié le geste qu'on venait de faire.
+   */
+  const applyStatus = (next: OrderStatus) => {
+    startTransition(() => {
+      setCurrent((c) => ({ ...c, status: next }));
+      setToast({ type: "success", message: "Statut mis à jour." });
       router.refresh();
     });
   };
+
+  /*
+   * « Tout est livré » passe par le MÊME garde que le sélecteur de statut :
+   * même consultation du domaine, même boîte de confirmation quand il reste
+   * un solde à encaisser. Le bouton envoyait auparavant le PATCH directement,
+   * ce qui rendait la réserve affichée deux centimètres au-dessus purement
+   * décorative — il suffisait de prendre l'autre bouton pour ne jamais la lire.
+   */
+  const statusChange = useOrderStatusChange({
+    order: current,
+    onApplied: applyStatus,
+    onError: (message) => setToast({ type: "error", message }),
+  });
 
   const deleteOrder = async () => {
     // Suppression différée : retour liste immédiat + filet « Annuler » 5 s (shell).
@@ -137,7 +167,7 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
       return;
     }
     startTransition(() => {
-      setCurrent({ ...current, customerName: next });
+      setCurrent((c) => ({ ...c, customerName: next }));
       setToast({ type: "success", message: "Nom mis à jour." });
     });
   };
@@ -150,12 +180,7 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
         <OrderDetailHeader order={current} onCustomerNameSave={handleCustomerNameSave} />
         <OrderStatusControl
           order={current}
-          onStatusChange={(status: OrderStatus) => {
-            startTransition(() => {
-              setCurrent({ ...current, status });
-              setToast({ type: "success", message: "Statut mis à jour." });
-            });
-          }}
+          onStatusChange={applyStatus}
           onError={(message) => setToast({ type: "error", message })}
         />
         <OrderSummaryCard order={current} />
@@ -251,7 +276,7 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
               className="mt-3"
               disabled={pending}
               leadingIcon={<Truck size={16} />}
-              onClick={markDelivered}
+              onClick={() => statusChange.request("DELIVERED")}
             >
               Tout est livré — marquer livrée
             </Button>
@@ -313,10 +338,32 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
         title="Supprimer cette commande ?"
-        description={current.customerName ?? undefined}
+        /*
+         * La description dit ce qui part et ce qu'il reste, plutôt que « cette
+         * action est irréversible » — qui était faux : la liste laisse cinq
+         * secondes pour annuler. Une commande sans nom de client n'affichait
+         * jusqu'ici rien qui permette de l'identifier avant de la détruire.
+         */
+        description={`${current.customerName ?? "Client anonyme"} · ${current.items.length} article${
+          current.items.length > 1 ? "s" : ""
+        } · ${formateEuros(Number(current.total))}. Les acomptes et soldes enregistrés partent avec elle. Un filet « Annuler » reste ouvert 5 secondes.`}
         confirmLabel="Supprimer"
         onConfirm={deleteOrder}
       />
+
+      {statusChange.confirmTarget ? (
+        <ConfirmDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) statusChange.dismissConfirm();
+          }}
+          title={statusChange.confirmTitle}
+          description={statusChange.confirmTarget.reserve}
+          confirmLabel="Confirmer"
+          tone="primary"
+          onConfirm={statusChange.confirmAction}
+        />
+      ) : null}
     </>
   );
 }

@@ -12,7 +12,12 @@ export type OrderFormLine = {
   perfumeId: number | null;
   snapshot: OrderFormLineSnapshot;
   quantity: number;
-  volumeMl: 30 | 50 | 100;
+  /*
+   * `number` et non l'union des contenances proposées : le formulaire doit
+   * pouvoir porter ce que la base contient, y compris une contenance héritée
+   * qu'on n'a pas encore traduite. La normalisation se fait à l'écriture.
+   */
+  volumeMl: number;
   unitPrice: string;
   unitCostDzd: string;
   exchangeRate: string;
@@ -31,4 +36,4 @@ export type OrderFormState = {
   initialDeposit: { on: boolean; amount: string; method: string } | null;
 };
 
-export const VOLUMES = [30, 50, 100] as const;
+export { VOLUMES_ML as VOLUMES, DEFAULT_VOLUME_ML } from "@/domain/volumes";

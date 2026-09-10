@@ -15,6 +15,8 @@ import { recordMovement } from "@/server/treasury/movements";
 import { revalidateTag } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
 import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
+import { deliveredAtFor } from "@/domain/order-status";
+import { DEFAULT_VOLUME_ML, VOLUMES_ML, normalizeVolumeMl } from "@/domain/volumes";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -149,16 +151,24 @@ export async function POST(request: Request) {
         );
       }
 
-      const vol =
+      const volSaisi =
         raw.volumeMl === undefined || raw.volumeMl === null
-          ? 100
+          ? DEFAULT_VOLUME_ML
           : Number(raw.volumeMl);
-      if (!isValidVolumeMl(vol)) {
+      if (!isValidVolumeMl(volSaisi)) {
         return NextResponse.json(
-          { error: "Volume invalide (30, 50 ou 100 ml par ligne)." },
+          { error: `Volume invalide (${VOLUMES_ML.join(", ")} ml).` },
           { status: 400 },
         );
       }
+      /*
+       * La contenance saisie est VALIDÉE puis TRADUITE : le garde accepte les
+       * valeurs héritées (30, 100) pour ne pas refuser une fiche restée
+       * ouverte, mais les laisser filer jusqu'à la base réintroduirait ce que
+       * la migration vient d'effacer. La valeur par défaut vient du domaine —
+       * elle était écrite « 100 » ici, une contenance qui n'existe plus.
+       */
+      const vol = normalizeVolumeMl(volSaisi) ?? DEFAULT_VOLUME_ML;
 
       const unitPriceN = Number(raw.unitPrice);
       if (!Number.isFinite(unitPriceN) || unitPriceN < 0) {
@@ -253,6 +263,16 @@ export async function POST(request: Request) {
 
     let linkedOrderId: string | null = null;
     let orderCustomerName: string | null = null;
+    /*
+     * Le lot suit la commande jusque dans la vente qui en découle.
+     *
+     * Sans cette reprise, encaisser une commande rattachée au lot « Mars »
+     * faisait sortir son argent du lot : la commande cesse d'être comptée
+     * (`listBatches` ne retient que les commandes SANS vente) et la vente
+     * créée naissait hors lot. L'encaissé du lot retombait donc après chaque
+     * encaissement, sans que rien n'ait été supprimé.
+     */
+    let orderBatchId: string | null = null;
     if (body.orderId) {
       const order = await prisma.order.findUnique({
         where: { id: body.orderId },
@@ -269,6 +289,7 @@ export async function POST(request: Request) {
       }
       linkedOrderId = order.id;
       orderCustomerName = order.customerName;
+      orderBatchId = order.batchId;
     }
 
     const totals = sumSaleTotals(normalizedLines);
@@ -317,6 +338,7 @@ export async function POST(request: Request) {
       const created = await tx.sale.create({
         data: {
           orderId: linkedOrderId,
+          batchId: orderBatchId,
           customerId: linkedCustomerId,
           customerName,
           customerContact,
@@ -367,7 +389,10 @@ export async function POST(request: Request) {
       if (linkedOrderId) {
         await tx.order.update({
           where: { id: linkedOrderId },
-          data: { status: OrderStatus.DELIVERED },
+          data: {
+            status: OrderStatus.DELIVERED,
+            deliveredAt: deliveredAtFor("DELIVERED"),
+          },
         });
       }
 

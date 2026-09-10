@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Images, Loader2 } from "lucide-react";
 import { stockStatus } from "@/domain/stock";
 import { nureaAdminThumbLoader } from "@/lib/image/cappedImageLoader";
 import { cn } from "@/lib/utils";
@@ -94,6 +94,23 @@ export function PerfumeListRow({
             {!published ? (
               <span className="shrink-0 rounded-full bg-[var(--admin-surface-muted)] px-1.5 py-px text-[10px] font-bold uppercase tracking-[0.03em] text-[var(--admin-text-muted)]">
                 Masqué
+              </span>
+            ) : null}
+            {/*
+              Le nombre de visuels story, quand il y en a.
+              
+              C'est le repère qui rend la galerie utile depuis la liste : on
+              cherche un parfum, on voit tout de suite si sa planche est déjà
+              là — sans quoi il faudrait ouvrir chaque fiche pour le découvrir,
+              exactement ce que la galerie devait éviter.
+            */}
+            {(perfume.mediaCount ?? 0) > 0 ? (
+              <span className="flex shrink-0 items-center gap-0.5 text-[10px] font-semibold tabular-nums text-[var(--admin-text-subtle)]">
+                <Images size={11} aria-hidden />
+                {perfume.mediaCount}
+                <span className="sr-only">
+                  visuel{(perfume.mediaCount ?? 0) > 1 ? "s" : ""} story
+                </span>
               </span>
             ) : null}
             {showStock ? (

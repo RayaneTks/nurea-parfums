@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { orderSearchWhere } from "@/server/search/filters";
 import Decimal from "decimal.js-light";
 import type { OrderStatus } from "@prisma/client";
 
@@ -12,6 +13,10 @@ export type OrderComptaRow = {
   due: string;
   cost: string;
   itemCount: number;
+  /** Lot de rattachement. `null` = reste à ranger — voir /admin/lots. */
+  batchId: string | null;
+  batchName: string | null;
+  batchStatus: "OPEN" | "CLOSED" | null;
 };
 
 export type ConfirmedOrdersFinancials = {
@@ -75,12 +80,21 @@ export function orderComptaMath(
  */
 export async function confirmedOrdersFinancials(
   since?: Date | null,
+  q?: string | null,
 ): Promise<ConfirmedOrdersFinancials> {
+  /*
+   * La recherche s'applique ICI aussi, et pas seulement aux ventes.
+   * Sans ce filtre, chercher un parfum en compta vidait la liste des ventes
+   * mais laissait la section « commandes confirmées » entière : l'écran
+   * affichait un résultat de recherche mélangé à des lignes hors sujet, et
+   * les totaux ne correspondaient plus à ce qui était visible.
+   */
   const orders = await prisma.order.findMany({
     where: {
       status: { in: ["READY", "DELIVERED"] },
       sale: null,
       ...(since ? { orderedAt: { gte: since } } : {}),
+      ...orderSearchWhere(q),
     },
     orderBy: [{ status: "asc" }, { orderedAt: "desc" }],
     select: {
@@ -89,6 +103,8 @@ export async function confirmedOrdersFinancials(
       status: true,
       orderedAt: true,
       customer: { select: { fullName: true } },
+      batchId: true,
+      batch: { select: { name: true, status: true } },
       items: { select: { unitPrice: true, quantity: true, unitCost: true } },
       payments: { select: { type: true, amount: true } },
     },
@@ -114,6 +130,9 @@ export async function confirmedOrdersFinancials(
       due: m.due,
       cost: m.cost,
       itemCount: o.items.length,
+      batchId: o.batchId,
+      batchName: o.batch?.name ?? null,
+      batchStatus: o.batch?.status ?? null,
     };
   });
 
