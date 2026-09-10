@@ -12,6 +12,7 @@ import { revalidateTag } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
 import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
 import { recordMovement } from "@/server/treasury/movements";
+import { DEFAULT_VOLUME_ML, normalizeVolumeMl } from "@/domain/volumes";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -318,10 +319,7 @@ export async function PATCH(
       if (hasNewItems) {
         for (const n of body.newItems!) {
           const upN = parseMoneyField(n.unitPrice)!;
-          const volIn =
-            n.volumeMl === 30 || n.volumeMl === 50 || n.volumeMl === 100
-              ? n.volumeMl
-              : 100;
+          const volIn = normalizeVolumeMl(n.volumeMl ?? null) ?? DEFAULT_VOLUME_ML;
           const ucdN =
             n.unitCostDzd !== null && n.unitCostDzd !== undefined && n.unitCostDzd !== ""
               ? Number(n.unitCostDzd)

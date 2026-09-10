@@ -7,7 +7,7 @@ function item(overrides: Partial<SaleItemInput> = {}): SaleItemInput {
     perfumeId: 1,
     perfumeSnapshot: undefined,
     quantity: 1,
-    volumeMl: 100,
+    volumeMl: 80,
     unitPrice: "100",
     unitCostDzd: "0",
     exchangeRate: "0",

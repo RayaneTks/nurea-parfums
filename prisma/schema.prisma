@@ -222,8 +222,9 @@ model OrderItem {
   /// Quantité déjà livrée pour cette ligne (0..quantity). Suivi livraison partielle.
   deliveredQuantity Int    @default(0)
   note            String?
-  /// Flacon 30, 50 ou 100 ml
-  volumeMl        Int      @default(100)
+  /// Flacon 10, 50 ou 80 ml (contenances réelles). Les valeurs héritées
+  /// 30 et 100 désignaient les mêmes flacons — migrées en 10 et 80.
+  volumeMl        Int      @default(80)
   /// Prix unitaire de vente (€) pour ce flacon
   unitPrice       Decimal  @default(0) @db.Decimal(10, 2)
   /// Coût de revient unitaire (€) - Calculé via unitCostDzd / exchangeRate

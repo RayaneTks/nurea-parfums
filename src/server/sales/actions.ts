@@ -9,6 +9,7 @@ import { tagFor } from "@/lib/admin/cache-tags";
 import { createSaleInputSchema, updateSaleInputSchema } from "@/schemas/sale";
 import type { CreateSaleInput, SaleItemInput, UpdateSaleInput } from "@/schemas/sale";
 import type { ActionResult } from "@/server/customers/actions";
+import { deliveredAtFor } from "@/domain/order-status";
 
 type LineComputation = {
   perfumeId: number | null;
@@ -142,7 +143,7 @@ export async function createSaleAction(
       if (data.orderId) {
         await tx.order.update({
           where: { id: data.orderId },
-          data: { status: "DELIVERED" },
+          data: { status: "DELIVERED", deliveredAt: deliveredAtFor("DELIVERED") },
         });
       }
 

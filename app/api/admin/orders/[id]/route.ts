@@ -7,7 +7,7 @@ import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { serializeOrder } from "@/lib/gestion/orderJson";
 import { purgeOrderIfEphemeral } from "@/lib/gestion/orderPurge";
 import { isValidVolumeMl, parseOptionalMoneyToZero } from "@/lib/gestion/orderLineValidation";
-import { canTransition } from "@/domain/order-status";
+import { canTransition, deliveredAtFor } from "@/domain/order-status";
 import Decimal from "decimal.js-light";
 import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
@@ -200,6 +200,14 @@ export async function PATCH(
         if (!guard.ok) {
           return NextResponse.json({ error: guard.reason }, { status: 400 });
         }
+        /*
+         * Horodatage réel de la livraison. C'est lui — et non `updatedAt`, que
+         * la moindre correction de note remettrait à zéro — qui fait courir le
+         * délai de retrait de la liste des commandes. Revenir en arrière
+         * l'efface : une commande qui n'est plus livrée ne doit pas garder la
+         * date d'une livraison annulée.
+         */
+        data.deliveredAt = deliveredAtFor(body.status);
       }
       data.status = body.status;
     }
@@ -350,21 +358,6 @@ export async function PATCH(
         },
         { status: 400 },
       );
-    }
-
-    const mergedPaidForStatus =
-      "depositPaid" in data ? Boolean(data.depositPaid) : existing.depositPaid;
-    const mergedAmtForStatus = Number("depositAmount" in data ? data.depositAmount : existing.depositAmount);
-    if ("status" in data && (data as { status?: OrderStatus }).status === OrderStatus.READY) {
-      if (!mergedPaidForStatus || mergedAmtForStatus <= 0) {
-        return NextResponse.json(
-          {
-            error:
-              "Acompte reçu (montant > 0 €) requis pour passer en « à traiter ».",
-          },
-          { status: 400 },
-        );
-      }
     }
 
     const updated = await prisma.order.update({

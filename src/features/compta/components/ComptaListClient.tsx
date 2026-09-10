@@ -168,7 +168,7 @@ export function ComptaListClient({ initial, initialQuery }: ComptaListClientProp
               title={query.trim().length > 0 ? "Aucun résultat" : "Aucune vente"}
               description={
                 query.trim().length > 0
-                  ? `Rien ne correspond à « ${query.trim()} ». Essaie un autre nom.`
+                  ? `Rien ne correspond à « ${query.trim()} ». La recherche couvre le client, le contact, le parfum, la marque, le lot et les notes.`
                   : "Enregistre une vente depuis Vendre pour commencer le suivi."
               }
             />

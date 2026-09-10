@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { orderSearchWhere } from "@/server/search/filters";
 import Decimal from "decimal.js-light";
 import type { OrderStatus } from "@prisma/client";
 
@@ -75,12 +76,21 @@ export function orderComptaMath(
  */
 export async function confirmedOrdersFinancials(
   since?: Date | null,
+  q?: string | null,
 ): Promise<ConfirmedOrdersFinancials> {
+  /*
+   * La recherche s'applique ICI aussi, et pas seulement aux ventes.
+   * Sans ce filtre, chercher un parfum en compta vidait la liste des ventes
+   * mais laissait la section « commandes confirmées » entière : l'écran
+   * affichait un résultat de recherche mélangé à des lignes hors sujet, et
+   * les totaux ne correspondaient plus à ce qui était visible.
+   */
   const orders = await prisma.order.findMany({
     where: {
       status: { in: ["READY", "DELIVERED"] },
       sale: null,
       ...(since ? { orderedAt: { gte: since } } : {}),
+      ...orderSearchWhere(q),
     },
     orderBy: [{ status: "asc" }, { orderedAt: "desc" }],
     select: {

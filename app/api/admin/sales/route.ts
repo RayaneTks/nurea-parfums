@@ -15,6 +15,7 @@ import { recordMovement } from "@/server/treasury/movements";
 import { revalidateTag } from "next/cache";
 import { tagFor } from "@/lib/admin/cache-tags";
 import { revalidateAdminCatalogue } from "@/lib/admin/revalidateAdminCatalogue";
+import { deliveredAtFor } from "@/domain/order-status";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -367,7 +368,10 @@ export async function POST(request: Request) {
       if (linkedOrderId) {
         await tx.order.update({
           where: { id: linkedOrderId },
-          data: { status: OrderStatus.DELIVERED },
+          data: {
+            status: OrderStatus.DELIVERED,
+            deliveredAt: deliveredAtFor("DELIVERED"),
+          },
         });
       }
 

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { OrderForm } from "@/features/orders/components/OrderForm";
 import type { OrderFormLine } from "@/features/orders/components/OrderForm/types";
+import { normalizeVolumeMl } from "@/domain/volumes";
 
 export const dynamic = "force-dynamic";
 
@@ -17,10 +18,6 @@ function toDatetimeLocal(d: Date | null): string {
   if (!d) return "";
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function isVolume(v: number): v is 30 | 50 | 100 {
-  return v === 30 || v === 50 || v === 100;
 }
 
 export default async function EditOrderPage({ params }: { params: Params }) {
@@ -74,7 +71,7 @@ export default async function EditOrderPage({ params }: { params: Params }) {
         image: it.perfume?.image ?? snap?.image ?? null,
       },
       quantity: it.quantity,
-      volumeMl: isVolume(it.volumeMl) ? it.volumeMl : 100,
+      volumeMl: normalizeVolumeMl(it.volumeMl) ?? it.volumeMl,
       unitPrice: it.unitPrice.toString(),
       unitCostDzd: it.unitCostDzd?.toString() ?? "",
       exchangeRate: it.exchangeRate?.toString() ?? "277",
