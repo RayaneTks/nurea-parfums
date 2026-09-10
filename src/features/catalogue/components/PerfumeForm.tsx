@@ -413,7 +413,7 @@ export function PerfumeForm({ perfumeId, pricingSlot, mediaSlot }: PerfumeFormPr
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
         title="Supprimer ce parfum ?"
-        description={`« ${name || "Sans nom"} » sera retiré du catalogue.`}
+        description={`« ${name || "Sans nom"} » sera retiré du catalogue, avec ses tarifs et ses visuels story. Sans retour possible. Les commandes et ventes déjà enregistrées gardent leur trace.`}
         confirmLabel="Supprimer"
         onConfirm={handleDelete}
       />

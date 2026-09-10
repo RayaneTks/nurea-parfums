@@ -367,7 +367,10 @@ export function BrandForm({ brandId }: { brandId?: string }) {
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
         title="Supprimer cette marque ?"
-        description={`« ${name || "Sans nom"} » et tous ses parfums seront supprimés.`}
+        /* L'irréversibilité se dit ici, où elle est vraie — et non dans une
+           phrase générique que la boîte affichait sur toutes ses ouvertures,
+           y compris celles qu'un filet « Annuler » rattrapait. */
+        description={`« ${name || "Sans nom"} », tous ses parfums et leurs visuels seront supprimés. Sans retour possible.`}
         confirmLabel="Supprimer"
         onConfirm={handleDelete}
       />

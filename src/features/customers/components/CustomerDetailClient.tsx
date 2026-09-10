@@ -179,7 +179,10 @@ export function CustomerDetailClient({ customer, orders }: CustomerDetailClientP
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
         title="Supprimer ce client ?"
-        description={`${current.fullName} et son historique seront supprimés.`}
+        /* Ce chemin-là dispose d'un filet : le dire évite de faire peur à
+           tort, et surtout évite qu'on ignore l'avertissement le jour où il
+           n'y en aura pas. */
+        description={`${current.fullName} et son historique seront supprimés. Un filet « Annuler » reste ouvert 5 secondes sur l'écran suivant.`}
         confirmLabel="Supprimer"
         onConfirm={deleteCustomer}
       />
