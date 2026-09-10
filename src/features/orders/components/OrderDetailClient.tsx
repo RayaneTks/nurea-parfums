@@ -26,6 +26,7 @@ import { deriveFulfillment, remainingToDeliver, type Fulfillment } from "@/domai
 import type { OrderDetailRow } from "@/server/orders/queries";
 import type { OrderStatus } from "@prisma/client";
 import { formatePourcent } from "@/ui/patterns/format";
+import { formateEuros } from "@/ui/patterns/format";
 
 function computeMargin(items: OrderDetailRow["items"]): { cost: number; margin: number; marginPct: number } {
   let revenue = 0;
@@ -166,7 +167,7 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
       return;
     }
     startTransition(() => {
-      setCurrent({ ...current, customerName: next });
+      setCurrent((c) => ({ ...c, customerName: next }));
       setToast({ type: "success", message: "Nom mis à jour." });
     });
   };
@@ -345,7 +346,7 @@ export function OrderDetailClient({ order, balanceSlot }: OrderDetailClientProps
          */
         description={`${current.customerName ?? "Client anonyme"} · ${current.items.length} article${
           current.items.length > 1 ? "s" : ""
-        } · ${current.total} €. Les acomptes et soldes enregistrés partent avec elle. Un filet « Annuler » reste ouvert 5 secondes.`}
+        } · ${formateEuros(Number(current.total))}. Les acomptes et soldes enregistrés partent avec elle. Un filet « Annuler » reste ouvert 5 secondes.`}
         confirmLabel="Supprimer"
         onConfirm={deleteOrder}
       />

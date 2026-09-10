@@ -141,6 +141,20 @@ export const layout = {
 
 // ─── Z-index registry ─────────────────────────────────────────────────
 
+/**
+ * Échelle d'empilement — miroir de `--admin-z-*` dans `globals.admin.css`.
+ *
+ * L'ordre encode une hiérarchie d'interruption : une feuille couvre la page,
+ * une feuille imbriquée couvre sa mère, une confirmation couvre tout ce qui
+ * l'a ouverte, et le filet d'information passe au-dessus de tout — c'est
+ * souvent lui qui explique pourquoi le reste ne répond pas.
+ *
+ * Les bandes « modale » et « feuille imbriquée » partageaient 80 et 81 :
+ * laquelle passait devant dépendait de l'ordre d'insertion des portails, donc
+ * du hasard. Ce fichier est la source déclarée par CLAUDE.md ; il doit être
+ * mis à jour dans le même commit que la feuille dérivée, sinon les deux se
+ * contredisent et personne ne sait plus laquelle fait foi.
+ */
 export const zIndex = {
   base: 0,
   appHeader: 40,
@@ -148,10 +162,12 @@ export const zIndex = {
   fab: 55,
   sheetBackdrop: 70,
   sheet: 71,
-  modalBackdrop: 80,
-  modal: 81,
-  commandPalette: 90,
-  toast: 95,
+  sheetNestedBackdrop: 80,
+  sheetNested: 81,
+  modalBackdrop: 90,
+  modal: 91,
+  commandPalette: 92,
+  toast: 100,
 } as const;
 
 // ─── Export consolidé ─────────────────────────────────────────────────

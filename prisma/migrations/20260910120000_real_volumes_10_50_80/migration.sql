@@ -40,6 +40,11 @@ ALTER TABLE "OrderItem" ALTER COLUMN "volumeMl" SET DEFAULT 80;
 -- 20260701090000_order_delivered_at mais personne ne l'écrivait. Les commandes
 -- déjà livrées sont rattrapées sur leur dernière modification, faute de mieux —
 -- sans ça elles resteraient éternellement dans la fenêtre de visibilité de 48 h.
+-- `updatedAt` et non `deliveryAt` : ce dernier est la date PRÉVUE, saisie à la
+-- création dans « Livraison prévue ». Une commande prévue pour dans trois
+-- semaines et livrée en avance serait datée d'un futur, et resterait donc
+-- indéfiniment dans la fenêtre des livraisons récentes. `updatedAt` est une
+-- approximation, mais elle est du bon côté du temps.
 UPDATE "Order"
-SET "deliveredAt" = COALESCE("deliveryAt", "updatedAt")
+SET "deliveredAt" = "updatedAt"
 WHERE "status" = 'DELIVERED' AND "deliveredAt" IS NULL;

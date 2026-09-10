@@ -7,6 +7,7 @@ import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { serializeOrder } from "@/lib/gestion/orderJson";
 import { isValidVolumeMl, parseOptionalMoneyToZero } from "@/lib/gestion/orderLineValidation";
 import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
+import { DEFAULT_VOLUME_ML, VOLUMES_ML, normalizeVolumeMl } from "@/domain/volumes";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -150,9 +151,9 @@ export async function POST(request: Request) {
       const perfumeId = typeof raw.perfumeId === "number" ? raw.perfumeId : Number(raw.perfumeId);
       const quantity =
         typeof raw.quantity === "number" ? raw.quantity : Number(raw.quantity ?? 1);
-      const vol =
+      const volSaisi =
         raw.volumeMl === undefined || raw.volumeMl === null
-          ? 100
+          ? DEFAULT_VOLUME_ML
           : Number(raw.volumeMl);
       if (!Number.isFinite(perfumeId) || perfumeId <= 0) {
         return NextResponse.json(
@@ -166,12 +167,24 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      if (!isValidVolumeMl(vol)) {
+      if (!isValidVolumeMl(volSaisi)) {
         return NextResponse.json(
-          { error: "Volume invalide (30, 50 ou 100 ml par ligne)." },
+          { error: `Volume invalide (${VOLUMES_ML.join(", ")} ml).` },
           { status: 400 },
         );
       }
+      /*
+       * La contenance saisie est VALIDÉE puis TRADUITE, et c'est la traduction
+       * que le reste de la fonction utilise.
+       *
+       * Le garde accepte les contenances héritées (30, 100) pour qu'une fiche
+       * restée ouverte ou un ticket ancien ne soient pas refusés — mais les
+       * laisser filer jusqu'à la base réintroduirait, après la migration, les
+       * valeurs mêmes qu'elle vient d'effacer. La valeur par défaut vient du
+       * domaine : elle était écrite « 100 » ici, une contenance qui n'existe
+       * plus.
+       */
+      const vol = normalizeVolumeMl(volSaisi) ?? DEFAULT_VOLUME_ML;
       const up = parseOptionalMoneyToZero(raw.unitPrice);
       const uc = parseOptionalMoneyToZero(raw.unitCost);
       if (up === null) {

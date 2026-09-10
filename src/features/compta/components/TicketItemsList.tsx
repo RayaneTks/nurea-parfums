@@ -6,6 +6,7 @@ import { Stack } from "@/ui/primitives/Stack";
 import { TicketItemRow } from "./TicketItemRow";
 import { PerfumePicker, type PickerResult } from "@/features/sell/components/PerfumePicker";
 import type { TicketDraftLine } from "../hooks/useTicketEdit";
+import { DEFAULT_VOLUME_ML } from "@/domain/volumes";
 
 type PricingPayload = {
   defaultUnitPriceEur: string;
@@ -49,7 +50,7 @@ export function TicketItemsList({
   const handlePick = async (result: PickerResult) => {
     const key = `new:${Date.now()}`;
     if (result.kind === "catalog") {
-      const pricing = await fetchPricing(result.perfume.id, 100);
+      const pricing = await fetchPricing(result.perfume.id, DEFAULT_VOLUME_ML);
       onAdd({
         key,
         perfumeId: result.perfume.id,
@@ -59,7 +60,7 @@ export function TicketItemsList({
           image: result.perfume.image ?? null,
         },
         quantity: 1,
-        volumeMl: 100,
+        volumeMl: DEFAULT_VOLUME_ML,
         unitPrice: pricing?.defaultUnitPriceEur ?? "",
         unitCostDzd: pricing?.defaultUnitCostDzd ?? "",
         exchangeRate: pricing?.defaultExchangeRate ?? "277",
@@ -74,7 +75,7 @@ export function TicketItemsList({
           image: null,
         },
         quantity: 1,
-        volumeMl: 100,
+        volumeMl: DEFAULT_VOLUME_ML,
         unitPrice: "",
         unitCostDzd: "",
         exchangeRate: "277",
