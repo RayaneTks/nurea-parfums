@@ -139,7 +139,9 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
         .map((l) => ({
           id: l.key.slice(3),
           quantity: l.quantity,
-          volumeMl: l.volumeMl ?? 100,
+          // `?? 100` réécrivait une contenance que la migration a effacée : une
+          // ligne sans volume repartait en base avec un 100 ml tout neuf.
+          volumeMl: normalizeVolumeMl(l.volumeMl) ?? l.volumeMl ?? DEFAULT_VOLUME_ML,
           unitPrice: l.unitPrice.replace(",", "."),
           unitCostDzd: l.unitCostDzd === "" ? null : l.unitCostDzd.replace(",", "."),
           exchangeRate: l.exchangeRate === "" ? null : l.exchangeRate.replace(",", "."),
@@ -310,7 +312,14 @@ export function TicketSheet({ saleId, open, onOpenChange, onSaved }: TicketSheet
                     name: it.snapshot.name,
                     brandName: it.snapshot.brandName,
                     quantity: it.quantity,
-                    volumeMl: it.volumeMl ?? 100,
+                    /*
+                     * Le reçu du client doit dire ce que le ticket affiche.
+                     * Il imprimait la valeur brute repliée sur 100 : le ticket
+                     * annonçait « 80 ml » et le message envoyé au client
+                     * « 100 ml », pour la même ligne.
+                     */
+                    volumeMl:
+                      normalizeVolumeMl(it.volumeMl) ?? it.volumeMl ?? DEFAULT_VOLUME_ML,
                     unitPrice: it.unitPrice,
                   })),
                 })}
