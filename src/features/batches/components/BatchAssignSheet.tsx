@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, ListChecks, Search } from "lucide-react";
 import { Sheet } from "@/ui/primitives/Sheet";
 import { Button } from "@/ui/primitives/Button";
@@ -43,6 +43,22 @@ export function BatchAssignSheet({
   const [saving, setSaving] = useState(false);
   const [query, setQuery] = useState("");
 
+  /*
+   * `onError` passe par une référence, jamais par les dépendances de l'effet.
+   *
+   * Le parent le passe en fonction anonyme : son identité change à chaque
+   * rendu. En dépendance, l'effet repartait donc à chaque rendu du parent — il
+   * refaisait la requête et surtout REMETTAIT `selected` à l'état serveur,
+   * effaçant les cases que l'utilisateur venait de cocher (il suffisait qu'un
+   * toast se ferme tout seul pour perdre six sélections). Et en cas d'échec,
+   * `onError` provoquait le rendu qui relançait l'effet : requête, erreur,
+   * requête, sans fin.
+   */
+  const onErrorRef = useRef(onError);
+  useEffect(() => {
+    onErrorRef.current = onError;
+  });
+
   useEffect(() => {
     if (!open) return;
     setLoading(true);
@@ -63,13 +79,13 @@ export function BatchAssignSheet({
         setInitialSelected(initial);
       })
       .catch(() => {
-        onError("Impossible de charger les ventes. Réessaie.");
+        onErrorRef.current("Impossible de charger les ventes. Réessaie.");
         setCandidates([]);
         setSelected(new Set());
         setInitialSelected(new Set());
       })
       .finally(() => setLoading(false));
-  }, [open, batchId, onError]);
+  }, [open, batchId]);
 
   const q = query.trim().toLowerCase();
   const filtered = useMemo(() => {

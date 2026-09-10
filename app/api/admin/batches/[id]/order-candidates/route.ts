@@ -32,8 +32,20 @@ export async function GET(
     const { id } = await params;
 
     const orders = await prisma.order.findMany({
+      /*
+       * Toute commande vivante est rattachable, « en attente » comprise.
+       *
+       * Le filtre READY/DELIVERED interdisait de ranger une commande fraîche —
+       * c'est pourtant au moment où on la crée qu'on sait à quel envoi elle
+       * appartient. Il rendait aussi indétachable une commande rattachée puis
+       * repassée en attente : plus proposée ici, donc impossible à décocher,
+       * alors qu'elle restait liée en base.
+       *
+       * Le calcul des montants du lot, lui, continue de ne compter que les
+       * commandes confirmées : rattacher n'est pas encaisser.
+       */
       where: {
-        status: { in: ["READY", "DELIVERED"] },
+        status: { not: "CANCELLED" },
         sale: null,
         OR: [{ batchId: null }, { batchId: id }],
       },
@@ -44,6 +56,7 @@ export async function GET(
         customer: { select: { fullName: true } },
         orderedAt: true,
         batchId: true,
+        status: true,
         items: { select: { unitPrice: true, quantity: true } },
       },
     });

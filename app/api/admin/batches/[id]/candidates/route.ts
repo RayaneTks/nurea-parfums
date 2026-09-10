@@ -40,6 +40,10 @@ export async function GET(
       select: {
         id: true,
         customerName: true,
+        // Le nom vivant du client prime sur l'instantané figé à la vente : une
+        // cliente renommée gardait ici son ancien nom, introuvable au champ de
+        // recherche alors que la compta l'affichait déjà sous le nouveau.
+        customer: { select: { fullName: true } },
         soldAt: true,
         batchId: true,
         totalRevenue: true,
@@ -50,7 +54,7 @@ export async function GET(
 
     const candidates: (BatchCandidateSale & { assigned: boolean })[] = sales.map((s) => ({
       id: s.id,
-      customerName: s.customerName ?? "Client inconnu",
+      customerName: s.customer?.fullName ?? s.customerName ?? "Anonyme",
       soldAt: s.soldAt.toISOString(),
       itemCount: s._count.items,
       totalRevenue: s.totalRevenue.toString(),

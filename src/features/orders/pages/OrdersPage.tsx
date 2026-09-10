@@ -19,16 +19,13 @@ export async function OrdersPage({
   return (
     <PageScaffold padding={4} ariaLabel="Commandes">
       {/*
-        `key` sur la recherche ET le filtre : sans elle, React réutilise
-        l'instance du client et garde l'état d'ouverture des groupes d'un
-        résultat à l'autre, ce qui replie la liste qu'on vient de demander.
+        Pas de `key` sur la recherche : elle remonterait le composant à chaque
+        réponse du serveur, donc démonterait le champ de saisie et lui ferait
+        perdre le focus — on tape une lettre, le clavier se referme. Les
+        groupes sont sans état, la donnée arrive par les props : rien à
+        réinitialiser.
       */}
-      <OrdersListClient
-        key={`${filter}:${query}`}
-        initial={data}
-        initialFilter={filter}
-        initialQuery={query}
-      />
+      <OrdersListClient initial={data} initialFilter={filter} initialQuery={query} />
     </PageScaffold>
   );
 }

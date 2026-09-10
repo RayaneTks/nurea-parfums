@@ -62,6 +62,16 @@ function contains(term: string) {
   return { contains: term, mode: "insensitive" as const };
 }
 
+/**
+ * Même chose pour un champ JSON. `mode` compte autant ici qu'ailleurs : sans
+ * lui, chercher « sauvage » ne trouve pas un parfum hors catalogue saisi
+ * « Sauvage » — et c'est précisément sur ces lignes-là, dont le nom ne vit
+ * nulle part ailleurs, que la recherche est le seul moyen de les retrouver.
+ */
+function snapshotContains(key: string, term: string) {
+  return { path: [key], string_contains: term, mode: "insensitive" as const };
+}
+
 /** Conditions sur une vente pour UN terme. Le terme matche si l'une d'elles passe. */
 function saleTermFilter(term: string): Prisma.SaleWhereInput {
   const OR: Prisma.SaleWhereInput[] = [];
@@ -76,8 +86,8 @@ function saleTermFilter(term: string): Prisma.SaleWhereInput {
       { items: { some: { perfume: { name: contains(v) } } } },
       { items: { some: { perfume: { brand: { name: contains(v) } } } } },
       // Lignes hors catalogue : le nom ne vit que dans l'instantané JSON.
-      { items: { some: { perfumeSnapshot: { path: ["name"], string_contains: v } } } },
-      { items: { some: { perfumeSnapshot: { path: ["brandName"], string_contains: v } } } },
+      { items: { some: { perfumeSnapshot: snapshotContains("name", v) } } },
+      { items: { some: { perfumeSnapshot: snapshotContains("brandName", v) } } },
     );
   }
   return { OR };
@@ -97,8 +107,8 @@ function orderTermFilter(term: string): Prisma.OrderWhereInput {
       { items: { some: { perfume: { name: contains(v) } } } },
       { items: { some: { perfume: { brand: { name: contains(v) } } } } },
       { items: { some: { note: contains(v) } } },
-      { items: { some: { perfumeSnapshot: { path: ["name"], string_contains: v } } } },
-      { items: { some: { perfumeSnapshot: { path: ["brandName"], string_contains: v } } } },
+      { items: { some: { perfumeSnapshot: snapshotContains("name", v) } } },
+      { items: { some: { perfumeSnapshot: snapshotContains("brandName", v) } } },
     );
   }
   return { OR };

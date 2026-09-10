@@ -57,7 +57,9 @@ export async function POST(
         const r = await tx.order.updateMany({
           where: {
             id: { in: attachIds },
-            status: { in: ["READY", "DELIVERED"] },
+            // Même règle que `order-candidates` : seule une commande annulée,
+            // ou déjà devenue une vente, n'a rien à faire dans un lot.
+            status: { not: "CANCELLED" },
             sale: null,
           },
           data: { batchId: id },
@@ -77,7 +79,18 @@ export async function POST(
     await writeAudit(ctx.sub, "batch.assign-orders", "Batch", id, result);
 
     revalidateAdminData(["lots", "commandes"]);
-    return NextResponse.json({ ok: true, ...result });
+    /*
+     * `requested` permet à l'écran de constater qu'il a demandé plus que ce
+     * qui a été appliqué. Il annonçait « Commandes mises à jour » quel que
+     * soit le résultat : une commande dont le statut avait changé depuis
+     * l'ouverture de la feuille était silencieusement ignorée, et la fiche du
+     * lot restait vide sans que rien ne dise pourquoi.
+     */
+    return NextResponse.json({
+      ok: true,
+      ...result,
+      requested: { attach: attachIds.length, detach: detachIds.length },
+    });
   } catch (error) {
     console.error("[api/admin/batches/[id]/assign-orders][POST]", error);
     return jsonFromPrismaGestionError(error, "Assignation impossible.");
