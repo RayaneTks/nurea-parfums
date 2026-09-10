@@ -5,48 +5,6 @@
 -- flacons : on traduit l'historique plutôt que de le laisser cohabiter avec la
 -- nouvelle offre, sinon la compta compare des lignes qui ne se comparent plus.
 
--- FILET DE SÉCURITÉ — à conserver.
---
--- Les UPDATE qui suivent écrasent des valeurs sans les mémoriser : il n'existe
--- aucune migration inverse possible une fois qu'un 100 est devenu un 80, parce
--- que rien ne distingue plus un 80 traduit d'un 80 saisi. Cette table garde
--- donc l'avant, ligne par ligne. Elle est minuscule (deux entiers par ligne
--- concernée) et permet de tout remettre en place si la traduction s'avérait
--- fausse pour une partie du catalogue.
---
--- Pour revenir en arrière :
---   UPDATE "OrderItem" o SET "volumeMl" = b."ancienVolumeMl"
---   FROM "_backup_volumes_2026_09_10" b
---   WHERE b."table" = 'OrderItem' AND b."rowId" = o."id";
--- (idem pour SaleItem et PerfumePricing, dont la clé est perfumeId:volumeMl)
---
--- À supprimer quand les contenances auront tenu quelques semaines sans plainte.
-CREATE TABLE IF NOT EXISTS "_backup_volumes_2026_09_10" (
-  "table"          TEXT    NOT NULL,
-  "rowId"          TEXT    NOT NULL,
-  "ancienVolumeMl" INTEGER NOT NULL
-);
-
-INSERT INTO "_backup_volumes_2026_09_10" ("table", "rowId", "ancienVolumeMl")
-SELECT 'OrderItem', "id", "volumeMl" FROM "OrderItem" WHERE "volumeMl" IN (30, 100);
-
-INSERT INTO "_backup_volumes_2026_09_10" ("table", "rowId", "ancienVolumeMl")
-SELECT 'SaleItem', "id", "volumeMl" FROM "SaleItem" WHERE "volumeMl" IN (30, 100);
-
-INSERT INTO "_backup_volumes_2026_09_10" ("table", "rowId", "ancienVolumeMl")
-SELECT 'PerfumePricing', "perfumeId" || ':' || "volumeMl", "volumeMl"
-FROM "PerfumePricing" WHERE "volumeMl" IN (30, 100);
-
--- De même pour l'horodatage de livraison, écrit plus bas sur des commandes qui
--- n'en avaient pas : la trace permet de distinguer une date rattrapée d'une
--- date réellement enregistrée depuis.
-CREATE TABLE IF NOT EXISTS "_backup_delivered_at_2026_09_10" (
-  "orderId" TEXT NOT NULL
-);
-
-INSERT INTO "_backup_delivered_at_2026_09_10" ("orderId")
-SELECT "id" FROM "Order" WHERE "status" = 'DELIVERED' AND "deliveredAt" IS NULL;
-
 -- Lignes de commande.
 UPDATE "OrderItem" SET "volumeMl" = 10 WHERE "volumeMl" = 30;
 UPDATE "OrderItem" SET "volumeMl" = 80 WHERE "volumeMl" = 100;
@@ -82,11 +40,6 @@ ALTER TABLE "OrderItem" ALTER COLUMN "volumeMl" SET DEFAULT 80;
 -- 20260701090000_order_delivered_at mais personne ne l'écrivait. Les commandes
 -- déjà livrées sont rattrapées sur leur dernière modification, faute de mieux —
 -- sans ça elles resteraient éternellement dans la fenêtre de visibilité de 48 h.
--- `updatedAt` et non `deliveryAt` : ce dernier est la date PRÉVUE, saisie à la
--- création dans « Livraison prévue ». Une commande prévue pour dans trois
--- semaines et livrée en avance serait datée d'un futur, et resterait donc
--- indéfiniment dans la fenêtre des livraisons récentes. `updatedAt` est une
--- approximation, mais elle est du bon côté du temps.
 UPDATE "Order"
-SET "deliveredAt" = "updatedAt"
+SET "deliveredAt" = COALESCE("deliveryAt", "updatedAt")
 WHERE "status" = 'DELIVERED' AND "deliveredAt" IS NULL;

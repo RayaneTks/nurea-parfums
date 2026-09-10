@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { DEFAULT_VOLUME_ML, normalizeVolumeMl } from "@/domain/volumes";
 
 function dec(v: Prisma.Decimal | null | undefined): Prisma.Decimal {
   if (v == null) return new Prisma.Decimal(0);
@@ -66,7 +67,10 @@ export function serializeOrder(order: OrderWithItems) {
       quantity: it.quantity,
       deliveredQuantity: it.deliveredQuantity ?? 0,
       note: it.note,
-      volumeMl: it.volumeMl ?? 100,
+      // Dernier repli codé en dur sur une contenance qui n'existe plus. La
+      // valeur héritée est traduite ; l'absence de valeur prend le défaut du
+      // domaine, pas un nombre écrit ici il y a six mois.
+      volumeMl: normalizeVolumeMl(it.volumeMl) ?? it.volumeMl ?? DEFAULT_VOLUME_ML,
       unitPrice: dec(it.unitPrice).toString(),
       unitCost: dec(it.unitCost).toString(),
       perfume: it.perfume,
