@@ -5,7 +5,6 @@ import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { serializeOrder } from "@/lib/gestion/orderJson";
-import { purgeOrderIfEphemeral } from "@/lib/gestion/orderPurge";
 import { isValidVolumeMl, parseOptionalMoneyToZero } from "@/lib/gestion/orderLineValidation";
 import { canTransition, deliveredAtFor } from "@/domain/order-status";
 import Decimal from "decimal.js-light";
@@ -66,10 +65,6 @@ export async function GET(
     if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
-    const removed = await purgeOrderIfEphemeral(prisma, id);
-    if (removed) {
-      return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
-    }
 
     const order = await prisma.order.findUnique({
       where: { id },

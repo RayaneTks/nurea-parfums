@@ -72,8 +72,8 @@ describe("filtres de recherche", () => {
   });
 
   it("n'ajoutent pas de variante inutile quand le terme n'a pas d'accent", () => {
-    const clauses = (saleSearchWhere("dior") as { AND: Array<{ OR: unknown[] }> }).AND[0].OR;
-    const withAccent = (saleSearchWhere("dïor") as { AND: Array<{ OR: unknown[] }> }).AND[0].OR;
-    expect(withAccent.length).toBe(clauses.length * 2);
+    const plain = (saleSearchWhere("dior") as { AND: Array<{ OR: unknown[] }> }).AND[0]!.OR;
+    const accented = (saleSearchWhere("dïor") as { AND: Array<{ OR: unknown[] }> }).AND[0]!.OR;
+    expect(accented.length).toBe(plain.length * 2);
   });
 });

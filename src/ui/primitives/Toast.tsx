@@ -49,13 +49,21 @@ export function Toast({
       role={type === "error" ? "alert" : "status"}
       aria-live={type === "error" ? "assertive" : "polite"}
       className={cn(
-        "fixed left-1/2 -translate-x-1/2 z-[95]",
+        "fixed left-1/2 -translate-x-1/2 z-[var(--admin-z-toast)]",
         "flex items-start gap-3 rounded-[14px] px-4 py-3 shadow-[var(--admin-shadow-lg)]",
         "max-w-[min(92vw,400px)] w-full",
         "motion-safe:animate-in motion-safe:slide-in-from-bottom-4",
       )}
       style={{
-        bottom: "calc(var(--admin-tab-bar-height) + 16px)",
+        /*
+         * Le clavier iOS pousse le filet, il ne le recouvre pas. Sans ce
+         * rattrapage — le même que `StickyAction` — toute erreur signalée
+         * pendant une saisie s'affichait derrière le clavier : « Montant > 0
+         * requis », « Nom requis », « Impossible de modifier le nom » étaient
+         * strictement invisibles, et l'utilisateur croyait son geste passé.
+         */
+        bottom:
+          "calc(max(var(--admin-tab-bar-height), var(--admin-keyboard-inset, 0px)) + 16px)",
         background: "var(--admin-surface)",
         border: `1px solid ${s.border}`,
       }}

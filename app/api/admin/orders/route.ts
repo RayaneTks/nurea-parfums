@@ -5,7 +5,6 @@ import { writeAudit } from "@/lib/admin/audit";
 import { requireAdmin, requireEditor } from "@/lib/admin/requireAdmin";
 import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
 import { serializeOrder } from "@/lib/gestion/orderJson";
-import { purgeEphemeralOrders } from "@/lib/gestion/orderPurge";
 import { isValidVolumeMl, parseOptionalMoneyToZero } from "@/lib/gestion/orderLineValidation";
 import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
@@ -57,8 +56,6 @@ export async function GET(request: Request) {
   try {
     const auth = await requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
-
-    await purgeEphemeralOrders(prisma);
 
     const { searchParams } = new URL(request.url);
     const statusParam = searchParams.get("status");
@@ -227,15 +224,16 @@ export async function POST(request: Request) {
       );
     }
 
-    if (status === OrderStatus.READY && !depositPaid) {
-      return NextResponse.json(
-        {
-          error:
-            "Impossible de créer directement en « À traiter » : l'acompte doit d'abord être encaissé, ou crée la commande en attente.",
-        },
-        { status: 400 },
-      );
-    }
+    /*
+     * Créer directement en « à traiter » sans acompte est permis.
+     *
+     * Ce refus était le dernier survivant de la règle « pas d'acompte, pas de
+     * traitement », que le domaine a abandonnée (voir `src/domain/order-status`)
+     * et que la route PATCH n'applique plus. Une commande offerte vaut 0 € :
+     * la condition y était structurellement impossible à satisfaire, et le
+     * refus renvoyait l'utilisateur créer sa commande en attente pour la faire
+     * avancer juste après — un détour qui n'apprenait rien à personne.
+     */
 
     const deliveryAt =
       body.deliveryAt && body.deliveryAt.trim().length > 0 ? new Date(body.deliveryAt) : null;
