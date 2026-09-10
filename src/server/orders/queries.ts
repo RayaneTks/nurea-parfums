@@ -104,6 +104,14 @@ function sumPayments(payments: Array<{ type: string; amount: { toString(): strin
  * `deliveredAt IS NULL` reste inclus par sécurité : une commande livrée dont
  * l'horodatage manque (base restaurée, écriture concurrente) doit rester
  * visible plutôt que devenir introuvable.
+ *
+ * Cette fenêtre remplace `lib/gestion/orderPurge`, qui poursuivait la même
+ * intention en SUPPRIMANT : ouvrir la fiche d'une commande livrée la veille
+ * suffisait à la détruire, avec son historique de paiements (cascade), et à
+ * retirer de la comptabilité une commande confirmée non finalisée en vente —
+ * de l'argent réellement encaissé, effacé par un simple GET. « Ne plus
+ * afficher » ne demande pas d'effacer. La suppression reste possible, mais
+ * comme un geste explicite : « Supprimer la commande », sur la fiche.
  */
 function recentlyDelivered() {
   return {

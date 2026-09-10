@@ -10,6 +10,7 @@ import { createSaleInputSchema, updateSaleInputSchema } from "@/schemas/sale";
 import type { CreateSaleInput, SaleItemInput, UpdateSaleInput } from "@/schemas/sale";
 import type { ActionResult } from "@/server/customers/actions";
 import { deliveredAtFor } from "@/domain/order-status";
+import { revalidateAdminData } from "@/lib/admin/revalidateAdminData";
 
 type LineComputation = {
   perfumeId: number | null;
@@ -312,18 +313,28 @@ export async function deleteSaleAction(saleId: string): Promise<ActionResult<{ i
 
     await prisma.$transaction(async (tx) => {
       await tx.sale.delete({ where: { id: saleId } });
-      // Si liée à une commande, rebascule en READY (admin peut re-facturer).
+      /*
+       * Si liée à une commande, rebascule en READY (admin peut re-facturer).
+       *
+       * `deliveredAt` repart à null avec le statut : la commande n'est plus
+       * livrée, garder l'horodatage la ferait figurer dans la fenêtre des
+       * livraisons récentes tout en affichant « à traiter ».
+       */
       if (sale.orderId) {
         await tx.order.update({
           where: { id: sale.orderId },
-          data: { status: "READY" },
+          data: { status: "READY", deliveredAt: null },
         });
       }
     });
 
     await writeAudit(undefined, "sale.delete", "Sale", saleId);
-    revalidatePath("/admin/compta");
-    if (sale.orderId) revalidatePath(`/admin/ordres/${sale.orderId}`);
+    /*
+     * La commande redevenait « à traiter » en base, mais l'onglet Commandes,
+     * l'accueil et les compteurs continuaient d'annoncer « livrée » jusqu'à
+     * expiration du cache : seules la compta et la fiche étaient invalidées.
+     */
+    revalidateAdminData(["ventes", "commandes"], { orderId: sale.orderId ?? undefined });
     return { ok: true, data: { id: saleId } };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Suppression impossible." };

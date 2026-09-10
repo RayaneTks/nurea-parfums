@@ -131,12 +131,26 @@ body.admin-route {
   --admin-z-tab-bar: 50;
   --admin-z-tab-bar-menu: 52;
   --admin-z-fab: 55;
+  /*
+   * Échelle d'empilement. L'ordre encode une hiérarchie d'interruption : une
+   * feuille couvre la page, une feuille imbriquée couvre sa feuille mère, une
+   * confirmation couvre tout ce qui l'a ouverte, et le filet d'information
+   * passe au-dessus de tout — c'est souvent lui qui explique pourquoi le reste
+   * ne répond pas.
+   *
+   * Les bandes « modale » et « feuille imbriquée » partageaient les valeurs 80
+   * et 81 : laquelle passait devant dépendait de l'ordre d'insertion des
+   * portails dans le DOM, donc du hasard. Une confirmation ouverte depuis une
+   * feuille imbriquée pouvait passer dessous.
+   */
   --admin-z-sheet-backdrop: 70;
   --admin-z-sheet: 71;
-  --admin-z-modal-backdrop: 80;
-  --admin-z-modal: 81;
-  --admin-z-command-palette: 90;
-  --admin-z-toast: 95;
+  --admin-z-sheet-nested-backdrop: 80;
+  --admin-z-sheet-nested: 81;
+  --admin-z-modal-backdrop: 90;
+  --admin-z-modal: 91;
+  --admin-z-command-palette: 92;
+  --admin-z-toast: 100;
 
   /* Motion */
   --admin-duration-fast: 100ms;
@@ -152,8 +166,31 @@ body.admin-route {
   -moz-osx-font-smoothing: grayscale;
 
   color: var(--admin-text);
-  background: var(--admin-bg);
   color-scheme: light;
+
+  /*
+   * `.admin-theme` distribue des JETONS, il ne peint pas de fond.
+   *
+   * Cette classe est écrite après `@tailwind utilities` : dans la feuille
+   * compilée, ses déclarations passent donc APRÈS toutes les utilitaires, à
+   * spécificité égale (0,1,0). Le `background: var(--admin-bg)` qu'elle portait
+   * l'emportait ainsi sur chaque `bg-*` posée sur un nœud qui porte aussi
+   * `.admin-theme` — c'est-à-dire précisément les quatre nœuds de portail :
+   * voile et carte de la ConfirmDialog, voile et carte de la Sheet. Résultat :
+   * le voile censé être noir à 50 % devenait un aplat gris opaque, et la carte
+   * du dialogue recevait exactement ce même gris. La boîte de confirmation
+   * n'était donc pas mal placée, elle était invisible — du texte et deux
+   * boutons flottant sur un mur uni.
+   *
+   * Le fond de l'application est peint là où il appartient : sur le conteneur
+   * du shell (`.admin-app-container`) et sur la page de connexion
+   * (`.admin-paint`), qui ne se superposent à aucun voile.
+   */
+}
+
+/** Peint le fond de l'application. À réserver aux conteneurs pleine page. */
+.admin-paint {
+  background: var(--admin-bg);
 }
 
 /* ─── Shell app (pattern encore1dessert .app-container) ───────────────── */

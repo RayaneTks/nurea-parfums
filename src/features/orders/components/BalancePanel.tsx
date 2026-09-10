@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import { useCallback, useState, useTransition } from "react";
 import { CheckCircle2, Clock, CreditCard, MinusCircle, Plus, RotateCcw } from "lucide-react";
 import { Card } from "@/ui/primitives/Card";
@@ -50,6 +52,7 @@ const TYPE_TONE: Record<PaymentTypeValue, TypeToneStyle> = {
 };
 
 export function BalancePanel({ orderId, initialBalance, initialPayments }: BalancePanelProps) {
+  const router = useRouter();
   const [balance, setBalance] = useState<OrderBalance>(initialBalance);
   const [payments, setPayments] = useState<PaymentRow[]>(initialPayments);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -110,6 +113,15 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
       setPocketId(null);
       setSheetOpen(false);
       await refreshFromServer();
+      /*
+       * Le premier acompte fait basculer la commande en « à traiter » côté
+       * serveur (voir `recordPaymentAction`). Ce panneau ne rafraîchissait que
+       * SES données — solde et paiements — et laissait le reste de la fiche
+       * sur son rendu précédent : le sélecteur de statut, juste au-dessus,
+       * continuait d'annoncer « en attente ». Il fallait recharger la page à
+       * la main pour voir le vrai statut.
+       */
+      router.refresh();
     });
   };
 
@@ -133,6 +145,9 @@ export function BalancePanel({ orderId, initialBalance, initialPayments }: Balan
       }
       setToast({ type: "success", message: "Paiement annulé." });
       await refreshFromServer();
+      // Un remboursement change les montants dont dépendent les réserves de
+      // transition : la fiche entière doit repartir de la donnée serveur.
+      router.refresh();
     });
   };
 
