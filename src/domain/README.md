@@ -14,6 +14,7 @@ fonctions que le writer, qui recontrôle toujours.
 | `publication.ts` | Visibilité vitrine d'un parfum et d'une marque, mise en avant (≤ 2, parfum visible), cascade de masquage, messages de refus uniques. | 04 §12 |
 | `periods.ts` | Bornes jour / semaine (lundi) / mois / année en Europe/Paris, clé du jour, libellés — jumelles de `nurea_period_start/end`. | 03 §5.1 ; 04 §6.5 |
 | `phone.ts` | Formats français → E.164, aperçu « +33 6 12 34 56 78 ». | 03 §3 (`Customer`) |
+| `sale-line.ts` | Contenances réelles 10 / 50 / 80 ml (80 proposé), règles d'une ligne jumelles des CHECK, garde des lignes reprises hors règles. | 03 §4.3, §4.9 |
 | `ids.ts` | `newId()` (UUID v4, créations idempotentes) et parseurs d'identifiants marqués. | 04 §3.6 |
 | `errors.ts` | `DomainError(code, message, field?)`, `NeedsConfirmation(title, reserves, confirmLabel)`. | 04 §9.1 |
 
