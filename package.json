@@ -26,10 +26,10 @@
     "analyze": "ANALYZE=true next build",
     "test:layout": "playwright test layout-invariants --project=Desktop --workers=2",
     "migration:sql": "tsx scripts/migration/apply-sql-migration.ts",
-    "migration:reference": "node scripts/lib/jalon-a-venir.mjs migration:reference J2",
-    "migration:reprise": "node scripts/lib/jalon-a-venir.mjs migration:reprise J2",
-    "migration:verify": "node scripts/lib/jalon-a-venir.mjs migration:verify J2",
-    "repetition:refresh": "node scripts/lib/jalon-a-venir.mjs repetition:refresh J2",
+    "migration:reference": "tsx scripts/migration/reference.ts",
+    "migration:reprise": "tsx scripts/migration/reprise.ts",
+    "migration:verify": "tsx scripts/migration/verify-post.ts",
+    "repetition:refresh": "tsx scripts/repetition/refresh.ts",
     "check:invariants": "node scripts/lib/jalon-a-venir.mjs check:invariants J7"
   },
   "prisma": {
