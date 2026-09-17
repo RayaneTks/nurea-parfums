@@ -1,23 +1,210 @@
 /**
- * Nuréa Admin — feuille dédiée PWA iOS (app/admin/layout.tsx).
- * Source CSS alignée sur src/design/tokens.ts.
+ * Nuréa Gestion — feuille dédiée PWA iOS (chargée par app/admin/layout.tsx seul).
  *
- * Feuille AUTONOME : les routes `/admin` ne chargent plus `app/globals.css`
- * (thème vitrine sombre + polices Google), d'où les directives Tailwind ici.
+ * DÉRIVÉE de src/design/tokens.ts : chaque `--admin-*` ci-dessous y a son jeton,
+ * à la même valeur. tests/architecture/tokens-sync.test.ts échoue sur toute
+ * divergence, tout jeton non exposé, toute variable sans jeton, et toute
+ * couleur, durée ou z-index écrit en dur hors du bloc de jetons.
+ * Modifier une valeur : tokens.ts d'abord, ici ensuite.
+ *
+ * Feuille AUTONOME : les routes `/admin` ne chargent pas `app/globals.css`
+ * (thème vitrine sombre, polices Google), d'où les directives Tailwind ici.
  */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Route admin (html/body) ───────────────────────────────────────── */
+/* ─── Jetons (tokens.ts) ────────────────────────────────────────────────────
+ *
+ * Posés sur <html> pour que html/body et les portails (sheets, dialogues)
+ * en héritent, et sur `.admin-theme` pour tout sous-arbre admin.
+ *
+ * --admin-vh, --admin-keyboard-inset, --admin-vv-offset : volontairement NON
+ * déclarés. Le service viewport du shell les pose sur <html> ; les redéclarer
+ * ici, même à 0px, masquerait sa valeur pour tous les descendants et ferait
+ * passer CTA et sheets sous le clavier iOS. Repli côté lecteur :
+ * var(--admin-keyboard-inset, 0px).
+ */
+
+html.admin-route-root,
+.admin-theme {
+  /* Couleurs — 05 §2.1 */
+  --admin-bg: #F2F2F7;
+  --admin-surface: #FFFFFF;
+  --admin-surface-alt: #F9F8F6;
+  --admin-surface-muted: #EFEAE4;
+  --admin-surface-hover: #E9E2DA;
+  --admin-border: rgba(0, 0, 0, 0.08);
+  --admin-border-strong: rgba(0, 0, 0, 0.14);
+  --admin-border-hover: color-mix(in srgb, var(--admin-text) 16%, transparent);
+  --admin-text: #111114;
+  --admin-text-muted: #5F5862;
+  /* #726B75 et non #8A828E : 4,62:1 sur la page (3,32:1 avant). Ce jeton porte
+     les libellés de chiffres en capitales de 11 px, lus dehors. */
+  --admin-text-subtle: #726B75;
+  --admin-accent: #7B0B1D;
+  --admin-accent-hover: #8F1428;
+  --admin-accent-bg: rgba(123, 11, 29, 0.08);
+  --admin-accent-subtle: rgba(123, 11, 29, 0.12);
+  --admin-accent-ring: rgba(123, 11, 29, 0.30);
+  --admin-on-accent: #FFFFFF;
+  --admin-success: #1E7D45;
+  --admin-success-bg: rgba(30, 125, 69, 0.10);
+  --admin-success-subtle: rgba(47, 122, 80, 0.10);
+  --admin-success-border: rgba(47, 122, 80, 0.22);
+  --admin-warning: #A35B12;
+  --admin-warning-bg: rgba(163, 91, 18, 0.10);
+  --admin-warning-subtle: rgba(160, 102, 46, 0.10);
+  --admin-warning-border: rgba(160, 102, 46, 0.22);
+  --admin-danger: #B72938;
+  --admin-danger-bg: rgba(183, 41, 56, 0.10);
+  --admin-danger-subtle: rgba(176, 58, 62, 0.08);
+  --admin-danger-border: rgba(176, 58, 62, 0.24);
+  --admin-info: #3E5A7A;
+  --admin-info-bg: rgba(62, 90, 122, 0.10);
+  --admin-info-subtle: rgba(62, 90, 122, 0.08);
+  --admin-info-border: rgba(62, 90, 122, 0.22);
+  --admin-overlay: rgba(26, 18, 21, 0.38);
+
+  /* Typographie — 05 §2.2 */
+  --admin-type-display-size: 32px;
+  --admin-type-display-weight: 700;
+  --admin-type-display-line-height: 1.1;
+  --admin-type-display-tracking: -0.02em;
+  --admin-type-h1-size: 28px;
+  --admin-type-h1-weight: 700;
+  --admin-type-h1-line-height: 1.15;
+  --admin-type-h1-tracking: -0.01em;
+  --admin-type-h2-size: 20px;
+  --admin-type-h2-weight: 600;
+  --admin-type-h2-line-height: 1.25;
+  --admin-type-h2-tracking: 0;
+  --admin-type-h3-size: 16px;
+  --admin-type-h3-weight: 600;
+  --admin-type-h3-line-height: 1.3;
+  --admin-type-h3-tracking: 0;
+  --admin-type-body-size: 15px;
+  --admin-type-body-weight: 400;
+  --admin-type-body-line-height: 1.4;
+  --admin-type-body-tracking: 0;
+  --admin-type-body-em-size: 15px;
+  --admin-type-body-em-weight: 600;
+  --admin-type-body-em-line-height: 1.4;
+  --admin-type-body-em-tracking: 0;
+  --admin-type-field-size: 16px;
+  --admin-type-field-weight: 400;
+  --admin-type-field-line-height: 1.3;
+  --admin-type-field-tracking: 0;
+  --admin-type-caption-size: 13px;
+  --admin-type-caption-weight: 400;
+  --admin-type-caption-line-height: 1.4;
+  --admin-type-caption-tracking: 0;
+  --admin-type-micro-size: 11px;
+  --admin-type-micro-weight: 500;
+  --admin-type-micro-line-height: 1.3;
+  --admin-type-micro-tracking: 0.04em;
+  --admin-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    "Segoe UI", system-ui, -apple-system-body, sans-serif;
+  --admin-font-features: "ss01", "cv11";
+
+  /* Espacement — 05 §2.3 (grille 4 px) */
+  --admin-space-0: 0px;
+  --admin-space-1: 4px;
+  --admin-space-2: 8px;
+  --admin-space-3: 12px;
+  --admin-space-4: 16px;
+  --admin-space-5: 20px;
+  --admin-space-6: 24px;
+  --admin-space-8: 32px;
+  --admin-space-10: 40px;
+  --admin-space-12: 48px;
+  --admin-space-16: 64px;
+  --admin-space-20: 80px;
+
+  /* Rayons — 05 §2.4 */
+  --admin-radius-xs: 6px;
+  --admin-radius-sm: 8px;
+  --admin-radius-md: 12px;
+  --admin-radius-lg: 14px;
+  --admin-radius-xl: 18px;
+  --admin-radius-2xl: 22px;
+  --admin-radius-full: 9999px;
+
+  /* Ombres — 05 §2.5 */
+  --admin-shadow-sm: 0 1px 2px rgba(26, 18, 21, 0.04), 0 1px 3px rgba(139, 58, 58, 0.03);
+  --admin-shadow-md: 0 4px 12px rgba(26, 18, 21, 0.06), 0 2px 4px rgba(139, 58, 58, 0.04);
+  --admin-shadow-lg: 0 12px 32px rgba(26, 18, 21, 0.08), 0 4px 8px rgba(139, 58, 58, 0.05);
+  --admin-shadow-xl: 0 24px 60px rgba(26, 18, 21, 0.12), 0 8px 16px rgba(139, 58, 58, 0.06);
+
+  /* Motion — 05 §2.6 */
+  --admin-duration-fast: 100ms;
+  --admin-duration-default: 200ms;
+  --admin-duration-slow: 260ms;
+  --admin-duration-pulse: 450ms;
+  --admin-duration-skeleton: 1600ms;
+  --admin-easing-default: cubic-bezier(0.16, 1, 0.3, 1);
+  --admin-easing-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  --admin-press-scale: 0.97;
+
+  /* Cibles tactiles — 05 §4.1 */
+  --admin-touch-min: 44px;
+  --admin-touch-comfortable: 48px;
+  --admin-touch-large: 52px;
+
+  /* Layout, safe areas, clavier — 05 §2.8 */
+  --admin-app-max-width: 430px;
+  --admin-header-height: 56px;
+  /* Safe area DANS les 88 px (padding-bottom + border-box), pas en plus. */
+  --admin-tab-bar-height: 88px;
+  --admin-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --admin-scroll-bottom-pad: calc(var(--admin-tab-bar-height) + 5rem);
+  --admin-sticky-cta-pad: calc(
+    0.75rem + var(--admin-safe-area-bottom) + var(--admin-keyboard-inset, 0px)
+  );
+  /* Pied de sheet : l'inset clavier n'y figure PAS — le pied est déjà remonté
+     par une marge basse égale à l'inset ; le compter deux fois gonflait le pied
+     de 340 px et écrasait la liste. Safe area retranchée : clavier ouvert, le
+     home indicator est recouvert. */
+  --admin-sheet-footer-pad: calc(
+    0.75rem + max(0px, var(--admin-safe-area-bottom) - var(--admin-keyboard-inset, 0px))
+  );
+
+  /* Z-index — 05 §2.7 */
+  --admin-z-base: 0;
+  --admin-z-sticky-action: 20;
+  --admin-z-page-header: 30;
+  --admin-z-app-header: 40;
+  --admin-z-tab-bar: 50;
+  --admin-z-tab-bar-menu: 52;
+  --admin-z-sheet-backdrop: 70;
+  --admin-z-sheet: 71;
+  --admin-z-modal-backdrop: 80;
+  --admin-z-modal: 81;
+  --admin-z-command-palette: 90;
+  --admin-z-toast: 95;
+}
+
+/* ─── Thème ─────────────────────────────────────────────────────────────── */
+
+.admin-theme {
+  font-family: var(--admin-font-sans);
+  font-feature-settings: var(--admin-font-features);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--admin-text);
+  background: var(--admin-bg);
+  color-scheme: light;
+}
+
+/* ─── Route admin (html/body) ───────────────────────────────────────────── */
 
 html.admin-route-root {
-  --admin-bg: #f2f2f7;
   scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 6.5rem);
 }
 
-/* Pattern encore1dessert : h-full partout, pas de 100dvh/svh (casse fixed bottom sur iOS PWA). */
+/* height: 100% partout, jamais 100dvh ni h-screen : ils cassent le
+   `position: fixed` de la tab bar en PWA iOS. */
 html.admin-route-root,
 body.admin-route {
   height: 100%;
@@ -25,8 +212,8 @@ body.admin-route {
   max-width: 100%;
   overflow: hidden;
   overflow-x: hidden;
-  background-color: var(--admin-bg, #f2f2f7);
-  color: var(--admin-text, #111114);
+  background-color: var(--admin-bg);
+  color: var(--admin-text);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -40,129 +227,13 @@ body.admin-route {
   justify-content: center;
 }
 
-/* ─── Thème admin (tokens) ────────────────────────────────────────────── */
-
-.admin-theme {
-  /* Couleurs — tokens.ts */
-  --admin-bg: #f2f2f7;
-  --admin-surface: #ffffff;
-  --admin-surface-alt: #f9f8f6;
-  --admin-surface-muted: #efeae4;
-  --admin-surface-hover: #e9e2da;
-  --admin-border: rgba(0, 0, 0, 0.08);
-  --admin-border-strong: rgba(0, 0, 0, 0.14);
-  --admin-border-hover: color-mix(in srgb, var(--admin-text) 16%, transparent);
-  --admin-text: #111114;
-  --admin-text-muted: #5f5862;
-  /*
-   * Assombri de #8a828e à #726b75 : l'ancien donnait 3,32:1 sur le fond de
-   * page, sous le seuil de 4,5 exigé pour du texte courant. Ce jeton porte
-   * TOUS les libellés de chiffres — « ENCAISSÉ », « À ENCAISSER »,
-   * « TRÉSORERIE » — en capitales de 11 px, c'est-à-dire ce qu'il y a de plus
-   * dur à lire de l'app, et sur un téléphone qu'on regarde dehors.
-   *
-   * La teinte violacée d'origine est conservée : 4,62:1 sur la page, 5,15:1
-   * sur une carte, et il reste nettement distinct de --admin-text-muted.
-   */
-  --admin-text-subtle: #726b75;
-  --admin-accent: #7b0b1d;
-  --admin-accent-hover: #8f1428;
-  --admin-accent-bg: rgba(123, 11, 29, 0.08);
-  --admin-accent-subtle: rgba(123, 11, 29, 0.12);
-  --admin-accent-ring: rgba(123, 11, 29, 0.3);
-  --admin-cuivre: #b4895e;
-  --admin-cuivre-subtle: rgba(180, 137, 94, 0.12);
-  --admin-success: #1e7d45;
-  --admin-success-bg: rgba(30, 125, 69, 0.1);
-  --admin-success-subtle: rgba(47, 122, 80, 0.1);
-  --admin-success-border: rgba(47, 122, 80, 0.22);
-  --admin-warning: #a35b12;
-  --admin-warning-bg: rgba(163, 91, 18, 0.1);
-  --admin-warning-subtle: rgba(160, 102, 46, 0.1);
-  --admin-warning-border: rgba(160, 102, 46, 0.22);
-  --admin-danger: #b72938;
-  --admin-danger-bg: rgba(183, 41, 56, 0.1);
-  --admin-danger-subtle: rgba(176, 58, 62, 0.08);
-  --admin-danger-border: rgba(176, 58, 62, 0.24);
-  --admin-info: #3e5a7a;
-  --admin-info-bg: rgba(62, 90, 122, 0.1);
-  --admin-info-subtle: rgba(62, 90, 122, 0.08);
-  --admin-info-border: rgba(62, 90, 122, 0.22);
-  --admin-overlay: rgba(26, 18, 21, 0.38);
-
-  /* Shadows */
-  --admin-shadow-sm: 0 1px 2px rgba(26, 18, 21, 0.04), 0 1px 3px rgba(139, 58, 58, 0.03);
-  --admin-shadow-md: 0 4px 12px rgba(26, 18, 21, 0.06), 0 2px 4px rgba(139, 58, 58, 0.04);
-  --admin-shadow-lg: 0 12px 32px rgba(26, 18, 21, 0.08), 0 4px 8px rgba(139, 58, 58, 0.05);
-  --admin-shadow-xl: 0 24px 60px rgba(26, 18, 21, 0.12), 0 8px 16px rgba(139, 58, 58, 0.06);
-
-  /* Layout — shell tab bar aligné sur encore1dessert (h-[88px] + safe-area-bottom) */
-  --admin-app-max-width: 430px;
-  --admin-tab-bar-shell-height: 88px;
-  --admin-tab-bar-height: var(--admin-tab-bar-shell-height);
-  --admin-header-height: 56px;
-  --admin-touch-min: 44px;
-  /* --admin-keyboard-inset : volontairement NON déclaré ici. La valeur runtime
-     est posée sur <html> par useAdminKeyboardInset et hérite dans .admin-theme.
-     La redéclarer ici (même à 0px) masquerait la valeur du hook pour tous les
-     descendants → CTA/sheets passeraient sous le clavier iOS. Fallback 0px géré
-     côté composants via var(--admin-keyboard-inset, 0px). */
-  --admin-safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  /* Safe-area est DANS les 88px (padding-bottom + border-box), pas en plus. */
-  --admin-tab-bar-total-height: var(--admin-tab-bar-shell-height);
-  /* Réserve = tab bar + hauteur d'un CTA sticky flottant (~5rem) pour que le
-     dernier contenu ne passe jamais derrière le bouton d'action. */
-  --admin-scroll-bottom-pad: calc(var(--admin-tab-bar-shell-height) + 5rem);
-  --admin-sticky-cta-pad: calc(
-    0.75rem + var(--admin-safe-area-bottom) + var(--admin-keyboard-inset, 0px)
-  );
-  /* Marge basse du pied d'une sheet. Contrairement à --admin-sticky-cta-pad,
-     l'inset clavier n'y figure PAS : le pied de sheet est déjà remonté par une
-     `margin-bottom` égale à cet inset, et l'inclure ici le comptait deux fois —
-     le pied gonflait de 340 px et écrasait la liste au-dessus.
-     La safe area est retranchée de l'inset : clavier ouvert, le home indicator
-     est recouvert et réserver sa hauteur ajouterait du vide. */
-  --admin-sheet-footer-pad: calc(
-    0.75rem + max(0px, var(--admin-safe-area-bottom) - var(--admin-keyboard-inset, 0px))
-  );
-
-  /* Z-index (tokens.ts) — tab bar sous vaul sheets (70+) */
-  --admin-z-app-header: 40;
-  --admin-z-tab-bar: 50;
-  --admin-z-tab-bar-menu: 52;
-  --admin-z-fab: 55;
-  --admin-z-sheet-backdrop: 70;
-  --admin-z-sheet: 71;
-  --admin-z-modal-backdrop: 80;
-  --admin-z-modal: 81;
-  --admin-z-command-palette: 90;
-  --admin-z-toast: 95;
-
-  /* Motion */
-  --admin-duration-fast: 100ms;
-  --admin-duration-default: 200ms;
-  --admin-duration-slow: 260ms;
-  --admin-easing-default: cubic-bezier(0.16, 1, 0.3, 1);
-  --admin-easing-sheet: cubic-bezier(0.32, 0.72, 0, 1);
-
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
-    "Segoe UI", system-ui, -apple-system-body, sans-serif;
-  font-feature-settings: "ss01", "cv11";
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  color: var(--admin-text);
-  background: var(--admin-bg);
-  color-scheme: light;
-}
-
-/* ─── Shell app (pattern encore1dessert .app-container) ───────────────── */
+/* ─── Shell ─────────────────────────────────────────────────────────────── */
 
 .admin-app-container {
   position: relative;
   width: 100%;
   height: 100%;
-  max-width: min(430px, 100%);
+  max-width: min(var(--admin-app-max-width), 100%);
   margin-left: auto;
   margin-right: auto;
   flex: 1 1 auto;
@@ -176,8 +247,7 @@ body.admin-route {
   background: var(--admin-bg);
 }
 
-/* ─── Shell scroll (iOS PWA) ──────────────────────────────────────────── */
-
+/* Une seule zone de scroll : #admin-scroll-root. */
 .admin-shell-scroll {
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
@@ -189,17 +259,8 @@ body.admin-route {
 }
 
 .admin-form-scroll-pad {
-  padding-bottom: calc(
-    var(--admin-scroll-bottom-pad) + var(--admin-keyboard-inset, 0px)
-  );
+  padding-bottom: calc(var(--admin-scroll-bottom-pad) + var(--admin-keyboard-inset, 0px));
 }
-
-.admin-sticky-cta-spacer {
-  height: calc(3.25rem + var(--admin-safe-area-bottom));
-  flex-shrink: 0;
-}
-
-/* ─── Header / tab bar ──────────────────────────────────────────────────── */
 
 .admin-header-blur {
   background-color: color-mix(in srgb, var(--admin-bg) 80%, transparent);
@@ -207,27 +268,227 @@ body.admin-route {
   -webkit-backdrop-filter: saturate(180%) blur(20px);
 }
 
-/* Nav blur — même pattern que encore1dessert .nav-blur */
+/* Tab bar : séparée par son filet, pas par une ombre (05 §2.5). */
 .admin-nav-blur {
+  background-color: color-mix(in srgb, var(--admin-surface) 88%, var(--admin-bg));
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-top: 1px solid var(--admin-border);
-  box-shadow: 0 -4px 24px rgba(26, 18, 21, 0.04);
-  background-color: color-mix(in srgb, var(--admin-surface) 88%, var(--admin-bg));
 }
 
-.safe-area-bottom {
+/* Barre d'action collante d'une page (StickyAction). */
+.admin-sticky-bar {
+  background-color: color-mix(in srgb, var(--admin-surface) 94%, transparent);
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  border-top: 1px solid var(--admin-border);
+}
+
+.admin-tab-bar__item {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.admin-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.admin-safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-.admin-tab-bar-menu-scrim {
-  background: rgba(26, 18, 21, 0.18);
-  animation: admin-fade-in var(--admin-duration-default) var(--admin-easing-default) both;
+/* ─── Chiffres ──────────────────────────────────────────────────────────── */
+
+/* Tout chiffre : montants, compteurs, quantités, heures. Les colonnes
+   s'alignent et un montant qui change ne « saute » pas. */
+.tnum {
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
-.admin-tab-bar-menu {
-  transform-origin: bottom right;
-  animation: admin-menu-pop var(--admin-duration-default) var(--admin-easing-default) both;
+/* ─── Saisie iOS ────────────────────────────────────────────────────────── */
+
+/* Sous 16 px, iOS Safari zoome au focus. Spécificité volontairement plus forte
+   qu'une classe utilitaire : aucun composant ne peut descendre en dessous. */
+.admin-theme input,
+.admin-theme textarea,
+.admin-theme select {
+  font-size: var(--admin-type-field-size);
+}
+
+/* ─── Focus, sélection, curseur ─────────────────────────────────────────── */
+
+/* En couche `base` : un contrôle qui porte son propre anneau
+   (`focus-visible:outline-none focus-visible:ring-4`) doit pouvoir retirer le
+   contour global. Hors couche, cette règle gagnait sur les utilitaires et les
+   deux s'affichaient. Jamais de `outline: none` sans anneau de remplacement. */
+@layer base {
+  .admin-theme ::selection {
+    background: var(--admin-accent-subtle);
+    color: var(--admin-text);
+  }
+
+  .admin-theme *:focus-visible {
+    outline: 2px solid var(--admin-accent);
+    outline-offset: 2px;
+  }
+}
+
+body.admin-route .admin-theme button:not(:disabled),
+body.admin-route .admin-theme a[href] {
+  cursor: pointer;
+}
+
+body.admin-route .admin-theme button:disabled,
+body.admin-route .admin-theme [aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* ─── Briques (surchargeables par les utilitaires) ──────────────────────── */
+
+@layer components {
+  /* Rôles typographiques — un par usage (05 §2.2). */
+  .admin-type-display {
+    font-size: var(--admin-type-display-size);
+    font-weight: var(--admin-type-display-weight);
+    line-height: var(--admin-type-display-line-height);
+    letter-spacing: var(--admin-type-display-tracking);
+  }
+  .admin-type-h1 {
+    font-size: var(--admin-type-h1-size);
+    font-weight: var(--admin-type-h1-weight);
+    line-height: var(--admin-type-h1-line-height);
+    letter-spacing: var(--admin-type-h1-tracking);
+  }
+  .admin-type-h2 {
+    font-size: var(--admin-type-h2-size);
+    font-weight: var(--admin-type-h2-weight);
+    line-height: var(--admin-type-h2-line-height);
+    letter-spacing: var(--admin-type-h2-tracking);
+  }
+  .admin-type-h3 {
+    font-size: var(--admin-type-h3-size);
+    font-weight: var(--admin-type-h3-weight);
+    line-height: var(--admin-type-h3-line-height);
+    letter-spacing: var(--admin-type-h3-tracking);
+  }
+  .admin-type-body {
+    font-size: var(--admin-type-body-size);
+    font-weight: var(--admin-type-body-weight);
+    line-height: var(--admin-type-body-line-height);
+    letter-spacing: var(--admin-type-body-tracking);
+  }
+  .admin-type-body-em {
+    font-size: var(--admin-type-body-em-size);
+    font-weight: var(--admin-type-body-em-weight);
+    line-height: var(--admin-type-body-em-line-height);
+    letter-spacing: var(--admin-type-body-em-tracking);
+  }
+  .admin-type-field {
+    font-size: var(--admin-type-field-size);
+    font-weight: var(--admin-type-field-weight);
+    line-height: var(--admin-type-field-line-height);
+    letter-spacing: var(--admin-type-field-tracking);
+  }
+  .admin-type-caption {
+    font-size: var(--admin-type-caption-size);
+    font-weight: var(--admin-type-caption-weight);
+    line-height: var(--admin-type-caption-line-height);
+    letter-spacing: var(--admin-type-caption-tracking);
+  }
+  .admin-type-micro {
+    font-size: var(--admin-type-micro-size);
+    font-weight: var(--admin-type-micro-weight);
+    line-height: var(--admin-type-micro-line-height);
+    letter-spacing: var(--admin-type-micro-tracking);
+  }
+
+  /*
+   * Press scale (05 §4.1) : tout élément tapable rétrécit à 0,97 en 100 ms.
+   * La même classe porte les transitions de couleur du contrôle (200 ms) :
+   * une seule déclaration de `transition`, sans quoi l'une écraserait l'autre.
+   * Jamais de transition sur toutes les propriétés.
+   */
+  .tap-scale {
+    transition-property: transform, background-color, border-color, color, box-shadow, opacity;
+    transition-duration: var(--admin-duration-fast), var(--admin-duration-default),
+      var(--admin-duration-default), var(--admin-duration-default),
+      var(--admin-duration-default), var(--admin-duration-default);
+    transition-timing-function: var(--admin-easing-default);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .tap-scale:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: scale(var(--admin-press-scale));
+  }
+
+  /* Transitions de couleur d'un élément qui ne se presse pas (champ, piste). */
+  .admin-transition {
+    transition-property: background-color, border-color, color, box-shadow, opacity;
+    transition-duration: var(--admin-duration-default);
+    transition-timing-function: var(--admin-easing-default);
+  }
+
+  /*
+   * Surface tactile minimale d'un contrôle TEXTUEL compact : 44 px (HIG iOS)
+   * sans toucher la typographie — `min-height` plutôt que du padding, qui
+   * décalerait le texte. Button et ListRow sont déjà dimensionnés.
+   * Vérifié par e2e/layout-invariants.spec.ts.
+   */
+  .admin-hit-target {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--admin-touch-min);
+  }
+
+  /* Squelette : proportions exactes du contenu final, pulse de 1,6 s. */
+  .admin-skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--admin-surface-muted) 0%,
+      var(--admin-surface-alt) 50%,
+      var(--admin-surface-muted) 100%
+    );
+    background-size: 200% 100%;
+    animation: admin-skeleton-pulse var(--admin-duration-skeleton) ease-in-out infinite;
+  }
+
+  /*
+   * Haptique visuelle du succès (05 §4.4) : un anneau bordeaux qui s'élargit
+   * et s'efface, une fois, sur l'élément qu'une écriture vient de modifier.
+   */
+  .admin-confirm-pulse {
+    animation: admin-confirm-pulse var(--admin-duration-pulse) var(--admin-easing-default) 1;
+  }
+
+  /* Poignée de sheet. */
+  .admin-sheet-handle {
+    width: 36px;
+    height: 5px;
+    border-radius: var(--admin-radius-full);
+    background: var(--admin-border-strong);
+    margin: 6px auto 0;
+  }
+}
+
+/* ─── Sheets (vaul) ──────────────────────────────────────────────────────
+ *
+ * vaul anime entrée et sortie en 500 ms : au-delà du plafond de 400 ms
+ * (05 §4.4) et hors jetons. `.admin-theme` (posée par `Sheet`) donne la
+ * spécificité suffisante sur ses règles injectées. Pendant le glissement,
+ * vaul pilote `transform` en ligne : la sheet suit le doigt.
+ */
+.admin-theme[data-vaul-drawer] {
+  transition-duration: var(--admin-duration-slow);
+  transition-timing-function: var(--admin-easing-sheet);
+  animation-duration: var(--admin-duration-slow);
+  animation-timing-function: var(--admin-easing-sheet);
+}
+
+.admin-theme[data-vaul-overlay] {
+  animation-duration: var(--admin-duration-slow);
 }
 
 @keyframes admin-fade-in {
@@ -239,132 +500,14 @@ body.admin-route {
   }
 }
 
-@keyframes admin-menu-pop {
+@keyframes admin-fade-out {
   from {
-    opacity: 0;
-    transform: translateY(6px) scale(0.96);
+    opacity: 1;
   }
   to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    opacity: 0;
   }
 }
-
-.admin-tab-bar__item {
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* ─── Safe area ─────────────────────────────────────────────────────────── */
-
-.admin-safe-top {
-  padding-top: env(safe-area-inset-top, 0px);
-}
-
-.admin-safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-/* ─── Typo utilitaires ──────────────────────────────────────────────────── */
-
-.tnum {
-  font-feature-settings: "tnum" 1, "lnum" 1;
-  font-variant-numeric: tabular-nums lining-nums;
-}
-
-/* ─── Cibles tactiles ───────────────────────────────────────────────────── */
-
-/*
- * Surface tactile minimale d'un bouton ou lien TEXTUEL compact.
- *
- * Un libellé de 13 px ne fait qu'une vingtaine de pixels de haut : cliquable à
- * la souris, ratable au pouce. Cette classe étend la zone à 44 px (HIG iOS)
- * sans toucher à la typographie ni à l'alignement visuel — d'où le recours à
- * `min-height` plutôt qu'à du padding, qui décalerait le texte.
- *
- * À utiliser sur tout contrôle qui n'est ni un `Button` ni une ligne de liste,
- * les deux étant déjà dimensionnés. Vérifié par `e2e/layout-invariants.spec.ts`.
- */
-.admin-hit-target {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--admin-touch-min);
-}
-
-/* ─── Touch feedback (Emil: scale 0.97, ~100ms) ─────────────────────────── */
-
-.tap-scale {
-  transition: transform var(--admin-duration-fast) var(--admin-easing-default);
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-.tap-scale:active {
-  transform: scale(0.97);
-}
-
-.admin-card-press {
-  transition: transform var(--admin-duration-fast) var(--admin-easing-default);
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-.admin-card-press:active {
-  transform: scale(0.97);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tap-scale,
-  .tap-scale:active,
-  .admin-card-press,
-  .admin-card-press:active {
-    transition: none;
-    transform: none;
-  }
-}
-
-/* ─── iOS PWA inputs ────────────────────────────────────────────────────── */
-
-.admin-theme input,
-.admin-theme textarea,
-.admin-theme select {
-  font-size: 16px;
-}
-
-/* ─── Focus / sélection admin ───────────────────────────────────────────── */
-
-.admin-theme ::selection {
-  background: var(--admin-accent-subtle);
-  color: var(--admin-text);
-}
-
-.admin-theme *:focus-visible {
-  outline: 2px solid var(--admin-accent);
-  outline-offset: 2px;
-}
-
-body.admin-route .admin-theme button:not(:disabled),
-body.admin-route .admin-theme a[href] {
-  cursor: pointer;
-}
-
-body.admin-route .admin-theme button:disabled {
-  cursor: not-allowed;
-}
-
-/* ─── Sheet handle ──────────────────────────────────────────────────────── */
-
-.admin-sheet-handle {
-  width: 36px;
-  height: 5px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.18);
-  margin: 6px auto 0;
-}
-
-/* ─── Skeleton ──────────────────────────────────────────────────────────── */
 
 @keyframes admin-skeleton-pulse {
   0%,
@@ -376,123 +519,34 @@ body.admin-route .admin-theme button:disabled {
   }
 }
 
-.admin-skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--admin-surface-muted) 0%,
-    var(--admin-surface-alt) 50%,
-    var(--admin-surface-muted) 100%
-  );
-  background-size: 200% 100%;
-  animation: admin-skeleton-pulse 1.6s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .admin-skeleton {
-    animation: none;
-  }
-}
-
-/* ─── Cartes interactives (legacy admin components) ─────────────────────── */
-
-@media (hover: hover) and (pointer: fine) {
-  .admin-lift {
-    transition:
-      transform 0.2s var(--admin-easing-default),
-      box-shadow 0.2s var(--admin-easing-default);
-  }
-
-  .admin-lift:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--admin-shadow-md);
-  }
-}
-
-.admin-ios-shadow {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-}
-
-.admin-ios-transition,
-.ios-transition {
-  transition: all 0.3s ease-in-out;
-}
-
-.admin-tab-panel-fade {
-  transition: opacity 0.2s var(--admin-easing-default);
-}
-
-.admin-nav-no-select {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.admin-nav-arrival {
-  animation: admin-nav-arrival-pulse 0.45s var(--admin-easing-default) 1;
-}
-
-@keyframes admin-nav-arrival-pulse {
+@keyframes admin-confirm-pulse {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in oklab, var(--admin-accent) 38%, transparent);
+    box-shadow: 0 0 0 0 var(--admin-accent-ring);
   }
   100% {
-    box-shadow: 0 0 0 0 transparent;
+    box-shadow: 0 0 0 10px transparent;
   }
 }
+
+/* ─── Mouvement réduit (05 §4.4 règle 5) ────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .admin-nav-arrival {
+  .tap-scale,
+  .tap-scale:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: none;
+    transition-property: background-color, border-color, color, box-shadow, opacity;
+  }
+
+  .admin-skeleton,
+  .admin-confirm-pulse {
     animation: none;
   }
-}
 
-@media (hover: hover) and (pointer: fine) {
-  .admin-button-micro:hover {
-    transform: translateY(-1px) scale(1.01);
+  /* Sheets : fondu simple au lieu du glissement. */
+  .admin-theme[data-vaul-drawer][data-vaul-snap-points="false"][data-vaul-drawer-direction="bottom"][data-state="open"] {
+    animation-name: admin-fade-in;
   }
-
-  .admin-input-micro:hover {
-    border-color: var(--admin-border-hover);
-    box-shadow: var(--admin-shadow-md);
-  }
-}
-
-/* ─── Progress bar navigation ───────────────────────────────────────────── */
-
-.admin-nav-route-progress {
-  position: relative;
-  height: 2px;
-  width: 100%;
-  flex-shrink: 0;
-  overflow: hidden;
-  background: color-mix(in oklab, var(--admin-accent) 12%, transparent);
-}
-
-.admin-nav-route-progress__bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 38%;
-  border-radius: 1px;
-  background: var(--admin-accent);
-  opacity: 0.9;
-  animation: admin-nav-route-indeterminate 0.9s ease-in-out infinite;
-}
-
-@keyframes admin-nav-route-indeterminate {
-  0% {
-    transform: translateX(-30%);
-  }
-  100% {
-    transform: translateX(280%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .admin-nav-route-progress__bar {
-    animation: none;
-    left: 0;
-    width: 100%;
-    opacity: 0.5;
+  .admin-theme[data-vaul-drawer][data-vaul-snap-points="false"][data-vaul-drawer-direction="bottom"][data-state="closed"] {
+    animation-name: admin-fade-out;
   }
 }

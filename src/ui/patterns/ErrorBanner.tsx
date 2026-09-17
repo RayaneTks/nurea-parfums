@@ -2,22 +2,28 @@
 
 import { useEffect, useRef } from "react";
 import { AlertCircle } from "lucide-react";
+import { Button } from "../primitives/Button";
 
 type ErrorBannerProps = {
-  /** `null` masque le bandeau. */
+  /** Message français qui dit ce qui manque : « Chiffres indisponibles ». `null` masque le bandeau. */
   message: string | null;
-  /** Fait défiler jusqu'au message à son apparition (defaut true). */
+  /** Geste de correction : un bouton « Réessayer ». */
+  onRetry?: () => void;
+  retryLabel?: string;
+  /**
+   * Fait défiler jusqu'au bandeau à son apparition — pour l'erreur d'un
+   * formulaire soumis. Défaut false : un bloc en échec ne doit pas faire
+   * sauter l'écran.
+   */
   scrollIntoView?: boolean;
 };
 
 /**
- * Bandeau d'erreur de formulaire.
- *
- * Centralisé pour que chaque écran signale l'échec de la même façon : les
- * formulaires historiques peignaient chacun leur variante en `rose-*`, hors
- * des jetons du thème.
+ * Erreur d'un bloc ou d'une page, INLINE à l'emplacement de ce qui a échoué ;
+ * le reste de l'écran vit (05 §5.1). Une erreur de chargement n'est jamais un
+ * toast seul.
  */
-export function ErrorBanner({ message, scrollIntoView = true }: ErrorBannerProps) {
+export function ErrorBanner({ message, onRetry, retryLabel = "Réessayer", scrollIntoView = false }: ErrorBannerProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,20 +37,15 @@ export function ErrorBanner({ message, scrollIntoView = true }: ErrorBannerProps
     <div
       ref={ref}
       role="alert"
-      className="flex items-start gap-2.5 rounded-[14px] p-3"
-      style={{
-        background: "var(--admin-danger-bg)",
-        border: "1px solid var(--admin-danger-border)",
-      }}
+      className="flex items-center gap-2.5 rounded-[var(--admin-radius-lg)] border border-[var(--admin-danger-border)] bg-[var(--admin-danger-bg)] py-1 pl-3 pr-1"
     >
-      <AlertCircle
-        size={16}
-        className="mt-px shrink-0 text-[var(--admin-danger)]"
-        aria-hidden
-      />
-      <p className="text-[13px] font-medium leading-snug text-[var(--admin-danger)]">
-        {message}
-      </p>
+      <AlertCircle size={16} className="shrink-0 text-[var(--admin-danger)]" aria-hidden />
+      <p className="admin-type-caption min-w-0 flex-1 py-2 font-medium text-[var(--admin-danger)]">{message}</p>
+      {onRetry ? (
+        <Button variant="text" size="sm" onClick={onRetry} className="shrink-0">
+          {retryLabel}
+        </Button>
+      ) : null}
     </div>
   );
 }

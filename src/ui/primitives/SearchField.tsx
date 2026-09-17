@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  forwardRef,
-  type ChangeEvent,
-  type InputHTMLAttributes,
-  type KeyboardEvent,
-  useId,
-} from "react";
+import { forwardRef, type ChangeEvent, type InputHTMLAttributes, type KeyboardEvent } from "react";
 import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,11 +12,17 @@ interface SearchFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "
   ariaLabel?: string;
 }
 
+/**
+ * Recherche avec effacement. Debounce et synchronisation d'URL : à l'appelant.
+ *
+ * Règle d'écran (05 §3.1) : le champ RESTE MONTÉ tant qu'un filtre est actif.
+ * L'existant le masquait quand la liste filtrée passait sous le seuil
+ * d'affichage — la recherche disparaissait précisément quand elle réussissait.
+ */
 export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(function SearchField(
   { value, onChange, onClear, placeholder = "Rechercher…", ariaLabel, className, onKeyDown, ...rest },
   ref,
 ) {
-  const id = useId();
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     onKeyDown?.(e);
     if (e.defaultPrevented) return;
@@ -34,30 +34,29 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(functi
   return (
     <div
       className={cn(
-        "relative flex items-center w-full h-[44px] rounded-[12px] bg-[var(--admin-surface)]",
-        "border border-[var(--admin-border-strong)]",
+        "admin-transition relative flex h-[var(--admin-touch-min)] w-full items-center rounded-[var(--admin-radius-md)]",
+        "border border-[var(--admin-border-strong)] bg-[var(--admin-surface)]",
         "focus-within:border-[var(--admin-accent)] focus-within:ring-4 focus-within:ring-[var(--admin-accent-ring)]",
-        "transition-[border-color,box-shadow] duration-[var(--admin-duration-default)] ease-[var(--admin-easing-default)]",
         className,
       )}
     >
-      <Search
-        size={16}
-        className="pointer-events-none absolute left-3 text-[var(--admin-text-subtle)]"
-        aria-hidden
-      />
+      <Search size={16} className="pointer-events-none absolute left-3 text-[var(--admin-text-subtle)]" aria-hidden />
       <input
         ref={ref}
-        id={id}
         type="search"
         inputMode="search"
         enterKeyHint="search"
+        autoComplete="off"
         value={value}
         onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         aria-label={ariaLabel ?? placeholder}
-        className="block h-full w-full bg-transparent pl-9 pr-9 text-[16px] outline-none placeholder:text-[var(--admin-text-subtle)]"
+        className={cn(
+          "admin-type-field block h-full w-full bg-transparent pl-9 text-[var(--admin-text)] placeholder:text-[var(--admin-text-subtle)]",
+          "focus-visible:outline-none [&::-webkit-search-cancel-button]:hidden",
+          value.length > 0 ? "pr-11" : "pr-3",
+        )}
         {...rest}
       />
       {value.length > 0 ? (
@@ -68,9 +67,13 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(functi
             onClear?.();
           }}
           aria-label="Effacer la recherche"
-          className="absolute right-2 inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--admin-text-subtle)] tap-scale hover:bg-[var(--admin-surface-muted)]"
+          className={cn(
+            "tap-scale absolute right-0 inline-flex h-[var(--admin-touch-min)] w-[var(--admin-touch-min)] items-center justify-center rounded-[var(--admin-radius-md)]",
+            "text-[var(--admin-text-subtle)] mouse-hover:text-[var(--admin-text)]",
+            "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
+          )}
         >
-          <X size={14} />
+          <X size={16} />
         </button>
       ) : null}
     </div>

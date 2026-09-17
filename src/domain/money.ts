@@ -233,12 +233,15 @@ function groupThousands(digits: string): string {
   return digits.replace(/\B(?=(\d{3})+(?!\d))/g, NNBSP);
 }
 
-/** « 1 234,50 € » ; `compact` sans centimes (tuiles KPI, 05 §1) ; `signed` affiche « + » devant un positif. */
+/**
+ * « 1 234,50 € » ; `signed` affiche « + » devant un positif.
+ * `compact` (tuiles KPI) masque seulement des centimes nuls : un chiffre d'argent n'est jamais
+ * arrondi à l'affichage, sinon deux tuiles cessent de s'additionner.
+ */
 export function formatEur(v: Eur, o?: { compact?: boolean; signed?: boolean }): string {
   const d = raw(v);
-  const rounded = o?.compact ? d.toDecimalPlaces(0, Decimal.ROUND_HALF_UP) : d;
-  const [int = "0", frac] = rounded.abs().toFixed(o?.compact ? 0 : 2).split(".");
-  const sign = rounded.isZero() ? "" : rounded.isNegative() ? MINUS : o?.signed ? "+" : "";
+  const [int = "0", frac] = d.abs().toFixed(o?.compact && d.isInteger() ? 0 : 2).split(".");
+  const sign = d.isZero() ? "" : d.isNegative() ? MINUS : o?.signed ? "+" : "";
   return `${sign}${groupThousands(int)}${frac ? `,${frac}` : ""}${NNBSP}€`;
 }
 
