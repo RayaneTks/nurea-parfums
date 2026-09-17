@@ -1,8 +1,8 @@
 # Refonte Nuréa Gestion — Dossier pilote
 
-> **Statut** : **construction en cours** sur `refonte/integration` — fondations, shell et moteurs
-> (J0–J6) livrés, serveur du catalogue (J11) livré, chiffres (J7) et écrans du catalogue en cours ; reprise des
-> données répétée avec succès sur la copie réelle. Démarré le 17 septembre 2026.
+> **Statut** : **construction en cours** sur `refonte/integration` — fondations, moteurs, chiffres (J0–J7),
+> Commandes et fiche document (J8), Catalogue (J11) livrés ; Vendre (J9), Clients (J10), Compta (J12) en cours ;
+> reprise des données répétée avec succès sur la copie réelle. Démarré le 17 septembre 2026.
 > **Objet** : refonte complète, from scratch, de l'application de gestion (`/admin`),
 > dite « Nuréa Gestion ». La vitrine publique (`app/(shop)`) n'est **pas** dans le
 > périmètre, mais ses dépendances aux tables partagées sont une contrainte dure.
@@ -81,10 +81,14 @@ Branche de travail : **`refonte/integration`** (la production reste sur `main`, 
 | J5 Moteur documents, stock, clients, lots | ✅ | T1 sans paiement, T2, T3, T4, T6, T13 testées sur base réelle. |
 | J6 Moteur de l'argent | ✅ | `2e9ac88` — encaissements (T1 avec paiements, T7, A-5), annulations (T4b, T5, T8), Trésorerie (T11, T12, T15, poches), dépenses (T9, T10), réglages ; 383 tests base verts. |
 | Écart avec `origin/main` | ✅ intégré | 11 commits de production (contenances 10/50/80, visuels story, « À rattacher »…) : 01 §3.11. |
-| J7 Les chiffres | 🔄 en cours | — |
-| J8 → J10 | ⏳ | — |
-| J11 Catalogue | 🔄 serveur ✅ ; écrans en cours | Serveur `95fdc3c` : parfums et grille en un enregistrement, marques, visuels story, stockage, sélecteur versionné (route `picker`). Écrans E15, E16, E17, E19, S20 en cours. |
-| J12 → J16 | ⏳ | — |
+| J7 Les chiffres | ✅ | `129d4c4` — une définition SQL par chiffre, parité au centime avec le jumeau TS, < 5 ms sur ×10 ; sur la copie réelle : Trésorerie 1 546,00 €, Encaissé 2 050,00 €, À encaisser 825,00 € = rapport de reprise. |
+| J8 Fiche document, Commandes, encaissement | ✅ | `c888f65` — fiche en sheet `?doc=`, E10, E13, S02–S04, recherche globale ; taps : acompte 3, solde 2, pointer 1, encaisser une créance 4 depuis l'Accueil. test:layout 204, e2e 34. |
+| J9 Vendre | 🔄 en cours (copie isolée) | — |
+| J10 Clients | 🔄 en cours (copie isolée) | — |
+| J11 Catalogue | ✅ (WebP serveur en cours) | Serveur `95fdc3c`, écrans `c888f65` : E15, E16 (visuels story, partage), E17, E19, S20 ; parfum avec photo en 9–16 s. **En cours** : conversion WebP côté serveur (iOS Safari n'encode pas le WebP). |
+| J12 Compta, Trésorerie, Journal | 🔄 en cours (copie isolée) | — |
+| J13 → J16 | ⏳ | — |
+| Fusion `main` | ✅ | `9b371e2` — écart déjà intégré (01 §3.11), arbre de la refonte conservé. |
 
 **Base de données locale des tests.** Docker Desktop ne démarre pas sur ce poste. Les tests
 sur base réelle tournent sur un PostgreSQL 15 embarqué (paquet npm `embedded-postgres`,
