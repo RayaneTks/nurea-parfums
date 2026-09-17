@@ -51,3 +51,44 @@ jobs:
           else
             echo "Aucun test sur base réelle avant J1."
           fi
+
+  # Invariants d'affichage et parcours : serveur de dev lancé par Playwright sur la base de CI.
+  ecrans:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: nurea
+          POSTGRES_PASSWORD: nurea
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U nurea"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # La base e2e est créée et migrée par e2e/global-setup.ts ; jamais la production.
+      E2E_DATABASE_URL: postgresql://nurea:nurea@localhost:5432/nurea_test_e2e
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - name: test:layout
+        run: npm run test:layout
+      - name: test:e2e
+        run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: rapport-playwright
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
