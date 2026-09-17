@@ -87,7 +87,6 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
         select: {
           id: true,
           name: true,
-          slug: true,
           image: true,
           imageLight: true,
           isFeatured: true,
