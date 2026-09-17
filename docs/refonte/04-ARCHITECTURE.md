@@ -46,8 +46,8 @@
 | A-2 | Route ajoutée : `app/admin/(gestion)/compta/journal/page.tsx` (journal de Trésorerie par mois, E04). | §2.1 |
 | A-3 | **La fiche document est une sheet adressable** `?doc=<id>` (+ `edition=1`) acceptée sur toute page du shell. `PageScaffold` reçoit une prop `docId?: string` et rend `<Block><DocumentSheetBlock id={docId} /></Block>` ; chaque page de `src/features/*/pages` lit `searchParams.doc` et la transmet (vérifié par `tests/architecture/document-sheet.test.ts`). Pas de slot parallèle `@sheet`. Les pages `commandes/[id]`, `commandes/[id]/modifier`, `compta/ventes/[id]`, `compta/ventes/[id]/modifier` et `commandes/nouvelle` ne sont **pas** créées : ce sont des redirections de `next.config.mjs` vers `?doc=` et `/admin/vendre?mode=commande`. | §2.1, §2.3 |
 | A-4 | Mémoire d'onglet (dernier écran, filtres, défilement), retaper l'onglet actif ferme / remonte / réinitialise, retour qui restitue le contexte du parent (06 §1.5). | §2.1 (`navigation.ts`) |
-| A-5 | Actions composées transactionnelles : `deliverAndCollectAction` (T7 puis T4 en **une** transaction) et `collectAllAction` (un T7 par document, du plus ancien au plus récent, **une** transaction). | §3.4 |
-| A-6 | Fiche parfum et grille tarifaire en **un** enregistrement ; `savePerfumePricingAction` n'est pas créée. | §3.4 |
+| A-5 | Actions composées transactionnelles : `deliverAndCollectAction` (T7 puis T4 en **une** transaction) et `collectAllAction` (un T7 par document, du plus ancien au plus récent, **une** transaction). Règles de mise en œuvre : §3.4 (J6). | §3.4 |
+| A-6 | Fiche parfum et grille tarifaire en **un** enregistrement : `createPerfumeAction` et `updatePerfumeAction` reçoivent la grille (`pricing`) ; aucune action de tarifs séparée. | §3.4 |
 | A-7 | Requêtes d'écran de 06 §8.1.6 : documents d'une période, séries du graphe par période, classement en unités, coût à compléter, récents du composeur, « Achète souvent », libellés de dépense récents. | §6, queries |
 | A-8 | Paramètres d'URL de 06 §8.1.7 et redirections complémentaires de 06 §1.6. | §2.3 |
 | A-9 | « Refaire » / « Revendre » pré-remplissent le composeur (`?depuis=`, `?client=`, `?parfum=`) ; `duplicateDocumentAction` n'est pas créée. | §3.4 |
@@ -171,8 +171,8 @@ nurea-parfums/
 │   ├── create-admin.ts               Crée ou réinitialise le compte unique (sans rôle) — CLI
 │   ├── build-admin-pwa-assets.mjs    Icônes + 12 splash (sharp) ; lit src/lib/pwa/splash-targets.json
 │   ├── check-invariants.ts           Tâche explicite, lecture seule : invariants de 03 §5.7
-│   ├── storage-orphans.ts            Tâche explicite : objets du bucket non référencés par Brand, Perfume ou
-│   │                                 PerfumeMedia (--apply pour supprimer)
+│   ├── storage-orphans.ts            Tâche explicite : objets du bucket non référencés par Brand, Perfume,
+│   │                                 PerfumeMedia ou SaleLine.imageUrl (--apply pour supprimer, §7.3)
 │   └── migration/
 │       └── reprise.ts                Reprise one-shot de 03 §7 (--dry-run par défaut, ROLLBACK final)
 ├── public/
@@ -199,7 +199,7 @@ nurea-parfums/
 │   │   ├── pwa/admin/route.ts        GET manifeste PWA gestion (public) — conservé
 │   │   └── admin/
 │   │       ├── search/route.ts       GET recherche à la frappe (palette, sélecteurs)
-│   │       ├── picker/route.ts       GET parfums + tarifs pour le sélecteur de ligne, versionné
+│   │       ├── picker/route.ts       GET parfums + tarifs pour le sélecteur de ligne, versionné (livrée à J11)
 │   │       └── export/compta/route.ts GET export CSV comptable
 │   └── admin/
 │       ├── layout.tsx                Metadata PWA (splash, manifeste, themeColor), globals.admin.css.
@@ -260,7 +260,7 @@ nurea-parfums/
     │   ├── fields.ts                 Champs communs : identifiant, texte libre, date, drapeau de confirmation
     │   ├── documents.ts              Schémas d'entrée zod + types DTO de sortie
     │   ├── payments.ts · batches.ts · treasury.ts · catalogue.ts · customers.ts · settings.ts · auth.ts
-    │   └── search.ts · picker.ts · chiffres.ts
+    │   └── search.ts · chiffres.ts        (DTO du sélecteur de ligne : dans catalogue.ts, pas de picker.ts)
     ├── server/                       `import "server-only"` en tête de chaque fichier
     │   ├── env.ts                    Variables de la gestion validées (zod), BUILD_ID
     │   ├── core/
@@ -293,11 +293,14 @@ nurea-parfums/
     │   │   └── dto.ts                Conversion lignes SQL → DTO (MoneyString)
     │   ├── documents/                Module « documents » (03 §4.2)
     │   │   ├── actions.ts            "use server" — defineAction uniquement
-    │   │   ├── writer.ts             SaleDocument, SaleLine ; décide les deltas de stock ; apprend les tarifs
+    │   │   ├── writer.ts             SaleDocument, SaleLine ; décide les deltas de stock ; apprend les tarifs ;
+    │   │   │                         corps de T1 (paiements compris), T4b, T5, T7 et A-5, qui composent les
+    │   │   │                         pièces de payments/writer.ts (§3.4, J6)
     │   │   └── queries.ts            Listes (commandes, compta), fiche, vendus récemment, candidats d'un lot
     │   ├── payments/                 Module « encaissements »
-    │   │   ├── actions.ts
-    │   │   └── writer.ts             Payment (+ son mouvement via treasury/movements.ts)
+    │   │   ├── actions.ts            (recordPaymentAction et collectAllAction ouvrent la transaction du writer documents)
+    │   │   └── writer.ts             Payment seul (+ son mouvement via treasury/movements.ts) ; corps de T8
+    │   │                             (annuler, corriger, rembourser) ; n'importe jamais documents/writer.ts
     │   ├── treasury/                 Module « trésorerie »
     │   │   ├── actions.ts
     │   │   ├── movements.ts          LE seul INSERT de CashMovement (et la mise à jour de son libellé)
@@ -307,19 +310,27 @@ nurea-parfums/
     │   │   ├── actions.ts · writer.ts (Batch, BatchExpense) · queries.ts
     │   ├── catalogue/                Module « catalogue »
     │   │   ├── actions.ts
-    │   │   ├── writer.ts             Brand, Perfume (hors stock), PerfumePricing
+    │   │   ├── writer.ts             Brand, Perfume (hors stock), PerfumePricing (grille de la fiche :
+    │   │   │                         savePricingGrid ; apprentissage N8 : upsertPricing) ; verrous de marque (§4.2)
     │   │   ├── media.ts              Writer de PerfumeMedia (visuels story) : ajout (rang calculé, plafond 24),
-    │   │   │                         réordonnancement, retrait qui rend le chemin à effacer (§12)
+    │   │   │                         libellé, réordonnancement, retrait qui rend l'URL de l'objet à effacer (§12)
     │   │   ├── stock.ts              setStock, applyDeliveredDeltas — seules écritures de Perfume.stock (§11)
-    │   │   ├── resoudMarque.ts       Dédoublonnage des marques — repris tel quel (02 §4.5)
+    │   │   ├── resoudMarque.ts       Dédoublonnage des marques (02 §4.5), en LECTURE seule : lecteur en paramètre
+    │   │   │                         (tx.db ou client de lecture) ; resoudMarqueParNom rend { existante } | { aCreer } ;
+    │   │   │                         la création passe par writer.createBrand
     │   │   ├── storage.ts            URL signée Supabase (chemin DÉCIDÉ par le serveur selon l'usage :
     │   │   │                         parfum, logo, story), URL publique recalculée depuis le chemin,
-    │   │   │                         suppression d'objets APRÈS le commit (best-effort journalisé)
+    │   │   │                         suppression d'objets APRÈS le commit, seulement dans notre bucket
+    │   │   │                         (best-effort journalisé)
+    │   │   ├── dto.ts                Grille tarifaire et état de marque en DTO (MoneyString)
     │   │   └── queries.ts            Instantané admin (tag admin-catalogue, nombre de visuels story par parfum
-    │   │                             compris), fiche (galerie story comprise), alertes de stock, version du sélecteur
+    │   │                             compris), fiche parfum non cachée (galerie story, activité des ventes, §10.4),
+    │   │                             brouillon de duplication, fiche marque, alertes de stock, contenu et version
+    │   │                             du sélecteur (empreinte sha256, tag admin-catalogue, §3.5)
     │   ├── customers/                actions.ts · writer.ts · queries.ts
-    │   ├── settings/                 actions.ts · writer.ts (updateSettings, rememberPocket) · queries.ts
-    │   ├── search/queries.ts         Recherche à la frappe sur instantanés cachés (§15)
+    │   ├── settings/                 actions.ts · writer.ts (readSettings, updateSettings, rememberPocket,
+    │   │                             forgetPocket) · queries.ts (getSettings)
+    │   ├── search/queries.ts         Recherche à la frappe sur instantanés cachés (§15) — J8
     │   ├── stats/queries.ts          Top parfums par période
     │   └── export/compta-csv.ts      Construction du CSV (BOM, point-virgule)
     ├── features/                     UI par écran — compose, ne réimplémente rien
@@ -357,7 +368,7 @@ nurea-parfums/
 - **Code en anglais** (dossiers, fichiers, fonctions, types), comme le schéma Prisma. **URL et textes d'écran en français.**
 - **Exceptions nommées, et seulement elles** :
   - les fonctions de `src/server/chiffres/` (`encaisse`, `aEncaisser`, `margeNette`, `tresorerie`, `enRetard`) portent les noms fixés par 03 §5.7. Raison : ce sont les termes du vocabulaire canonique ; les traduire créerait un synonyme, que la règle « un chiffre = un nom » interdit jusque dans le code (une recherche de `aEncaisser` trouve tous les consommateurs) ;
-  - `src/lib/nommage.ts` (`cleNom`, `normalise*`) et `src/server/catalogue/resoudMarque.ts`, repris tels quels (02 §4.5), noms conservés pour que leurs tests et commentaires restent valables.
+  - `src/lib/nommage.ts` (`cleNom`, `normalise*`), repris tel quel, et `src/server/catalogue/resoudMarque.ts` (`marqueEquivalente`, `resoudMarqueParNom`), repris en lecture seule (§2.1) avec la même règle de comparaison (02 §4.5), noms conservés pour que leurs tests et commentaires restent valables.
 - Action : suffixe `Action` (`recordPaymentAction`). Writer : `<domaine>Writer` à l'import (`import * as paymentsWriter from "@/server/payments/writer"`).
 - Une URL admin ne s'écrit **que** dans `src/app-shell/routes.ts` (`routes.document({ id, origin })`, `routes.client(id)`…). Un test vérifie que chaque constructeur pointe sur un `page.tsx` existant.
   *Précisé à J4* (`tests/architecture/routes-builders.test.ts`) : chaque constructeur porte l'état de son écran — un écran **à venir** existe déjà comme constructeur mais n'a pas encore de page (vérifié, son jalon listé en `todo`), un écran **provisoire** ou **livré** a la sienne ; aucune page de `app/admin` n'échappe à l'inventaire. La règle « aucune URL littérale » vaut pour les couches d'interface (`src/app-shell` hors `routes.ts` et `navigation.ts`, `src/features`, `src/ui`, `app/admin`) : le socle serveur (`defineQuery`, `logoutAction`), `src/contracts/auth.ts`, `proxy.ts` et `src/lib/pwa/manifests.ts` écrivent `/admin` et `/admin/login` en dur, faute de pouvoir importer le shell (§1.3).
@@ -486,7 +497,7 @@ Règles :
 - Une action ne fait **jamais** `redirect()` (le client navigue sur `ok`), sauf `logoutAction`.
 - Une action ne lit pas via `queries.ts` : elle lit dans sa transaction (`tx.db`), sur des lignes verrouillées.
 - Une action renvoie le minimum utile à l'écran (id, URL canonique, solde du document) ; le reste arrive par le RSC rafraîchi.
-- Le succès peut porter une `notice` (« Cette marque existait déjà : elle a été sélectionnée. ») affichée en toast d'information — elle n'emprunte plus jamais le canal d'erreur (bug 01 §4.5).
+- Le succès peut porter une `notice` (« Louis Vuitton existe déjà au catalogue : elle a été sélectionnée. ») affichée en toast d'information — elle n'emprunte plus jamais le canal d'erreur (bug 01 §4.5).
 - *Mise en œuvre J3.* `withNotice(data, notice)` est exporté par `define-action.ts` ; `logAction({ action, startedAt, error?, cause? })` journalise aussi les refus de validation ; le détail technique (SQLSTATE, contrainte, pile) n'est écrit que pour `UNEXPECTED`, `UNAVAILABLE` et les CHECK. `defineReadRoute(name, handler)` : le handler rend ses données (`Cache-Control: private, no-store`), `reply(data, { cacheControl })` pour un en-tête choisi (sélecteur versionné), ou une `Response` (export CSV) ; statut HTTP déduit du code (`SESSION_EXPIRED` ⇒ 401, `NOT_FOUND` ⇒ 404, `UNAVAILABLE` ⇒ 503…).
 
 ### 3.4 Inventaire des actions
@@ -496,17 +507,18 @@ Chaque action correspond à un geste de 02 et, pour les écritures multi-tables,
 | Module | Action | Transaction (03 §4.3) | Geste servi |
 |---|---|---|---|
 | documents | `createDocumentAction` | T1 | Vendre (vente directe + « Reçu maintenant », N1), prendre une commande (+ acompte), avec lot dès la création (N9) et client créé en ligne |
-| documents | `duplicateDocumentAction` | T1 | Réassort (lignes et client copiés côté serveur, volumes normalisés) |
 | documents | `updateDocumentAction` | T2 | Modifier lignes (en place), client, date de livraison prévue, notes |
 | documents | `setLineDeliveredAction` | T3 | Pointer une livraison (valeur absolue, bornée) |
-| documents | `changeDocumentStatusAction` | T4 | Livrer, revenir, confirmer, réactiver (réserves confirmées ; une vente directe annulée se réactive en livrée, 03 §2.3). Renvoie le jeton d'annulation de T4b |
-| documents | `revertDocumentChangeAction` | T4b (+ T8) | « Annuler » du toast (5 s) après livrer, « Livrer et encaisser », changer de statut ou encaisser un acompte qui a confirmé : rétablit l'état d'avant (statut, horodatages, quantités livrées, stock) et contre-passe les paiements du geste, en une transaction ; `CONFLICT` si le document a changé depuis |
+| documents | `changeDocumentStatusAction` | T4 | Livrer, revenir, confirmer, réactiver (réserves confirmées ; une vente directe annulée se réactive en livrée, 03 §2.3). Renvoie le jeton d'annulation de T4b (réactivation comprise) |
+| documents | `deliverAndCollectAction` | T7 + T4 (A-5) | « Encaisser 60 € et livrer » (S02 variante Livrer) : un solde puis la livraison, en une transaction. Renvoie le jeton de T4b |
+| documents | `revertDocumentChangeAction` | T4b (+ T8) | « Annuler » du toast (5 s) après tout changement de statut, tout encaissement (T7), « Livrer et encaisser » ou « Tout encaisser » : rétablit l'état d'avant (statut, horodatages, quantités livrées, stock) et contre-passe les paiements du geste, en une transaction ; `CONFLICT` si le document a changé depuis |
 | documents | `cancelDocumentAction` | T5 | Annuler, avec remboursements proposés |
 | documents | `deleteDocumentAction` | T6 | Supprimer un document sans paiement (undo 5 s côté shell) |
 | documents | `assignDocumentsToBatchAction` | T13 | Rattacher / détacher (unitaire et en masse, diff) |
 | payments | `recordPaymentAction` | T7 | Acompte, solde, encaissement depuis Encaisser — **une seule action pour tout encaissement** (fin de la dualité `collectAction` / `recordPaymentAction`). Renvoie le jeton d'annulation de T4b (état d'avant, paiement créé) |
+| payments | `collectAllAction` | T7 ×n (A-5) | « Tout encaisser » d'un client : un T7 par document, du plus ancien au plus récent, en une transaction. Renvoie **un** jeton de T4b pour tous ses documents |
 | payments | `voidPaymentAction` | T8 | Annuler un paiement (contre-passation datée comme l'original). Annuler un remboursement : la contre-passation positive est portée par un paiement d'entrée (DEPOSIT ou BALANCE, 03 §4.4). Ne change jamais le statut |
-| payments | `correctPaymentAction` | T8 | Corriger montant, date ou poche |
+| payments | `correctPaymentAction` | T8 | Corriger montant, date, poche, moyen ou note |
 | payments | `refundAction` | T8 | Rembourser (sortie datée du jour) |
 | batches | `createBatchAction`, `updateBatchAction`, `setBatchStatusAction`, `deleteBatchAction` | — | Créer, renommer / date prévue / notes, clôturer / rouvrir, supprimer un lot vide |
 | batches | `addBatchExpenseAction` | T9 | Ajouter une dépense (datable) |
@@ -517,24 +529,26 @@ Chaque action correspond à un geste de 02 et, pour les écritures multi-tables,
 | treasury | `transferAction` | T11 | Transfert, « Répartir le non attribué » |
 | treasury | `adjustAction`, `recordSupplierPaymentAction` | — | Ajustement signé, paiement fournisseur |
 | treasury | `reverseMovementAction` | T12 | Annuler un mouvement manuel (les deux jambes d'un transfert) |
-| catalogue | `createPerfumeAction`, `updatePerfumeAction`, `deletePerfumeAction` | — | Fiche parfum (le stock n'est **pas** dans le schéma de fiche) |
+| catalogue | `createPerfumeAction`, `updatePerfumeAction` | — | Fiche parfum **et** grille tarifaire en un enregistrement (A-6) : l'entrée porte `pricing`, la grille cible **complète** sur les contenances réelles 10 / 50 / 80 ml (`VOLUMES_ML` de `src/domain/sale-line.ts` ; défaut de saisie 80 ml). Un volume absent est retiré ; un coût ou un taux vidé est effacé (saisie explicite — l'apprentissage N8, lui, garde l'ancienne valeur) ; un prix vide ou à 0 est refusé (`VALIDATION` « Indique le prix du 80 ml, ou retire ce volume. ») ; un coût sans taux est accepté (le taux par défaut sera proposé à la vente). La marque est `{ kind: "existing", brandId } \| { kind: "new", name }`, résolue dans la même transaction. `updatePerfumeInput` n'a ni `stock` (une clé `stock` reçue est ignorée, §11) ni visibilité : la visibilité ne peut que **baisser** (visuel retiré, marque masquée), avec une notice, et la mise en avant est perdue avec elle |
+| catalogue | `deletePerfumeAction` | — | Supprimer un parfum ; visuels et planches story retirés du bucket après le commit (§12 « Suppression ») |
 | catalogue | `setPerfumeStatusAction`, `setPerfumeFeaturedAction` | — | Visibilité (1 tap), mise en avant (≤ 2, `PUBLISHED`) |
 | catalogue | `setPerfumeStockAction` | — | Réglage absolu du stock (geste dédié, `null` = non suivi) |
-| catalogue | `savePerfumePricingAction` | — | Grille 10 / 50 / 80 ml en un seul enregistrement (contenances réelles, `VOLUMES_ML` de `src/domain/sale-line.ts` ; défaut de saisie 80 ml) |
-| catalogue | `createBrandAction`, `updateBrandAction`, `deleteBrandAction` | — | Marque (dédoublonnage : l'existante est rendue avec une `notice`) |
-| catalogue | `setBrandVisibilityAction` | T14 | Masquer / gamme complète, cascade `DRAFT` |
-| catalogue | `createImageUploadUrlAction` | — | URL signée d'upload direct navigateur → Supabase ; entrée `{ usage: "parfum" \| "logo" \| "story", perfumeId?, extension }` — le serveur fabrique le chemin (le nom de fichier du client est jeté, seule l'extension survit : jpg, png, webp, gif, heic, heif, avif) et le rend avec l'URL signée |
-| catalogue | `addPerfumeMediaAction` | — | Ranger un visuel story déposé sur la fiche parfum : chemin **vérifié** (exactement `stories/<perfumeId>/…`, sans `..`), URL **recalculée** depuis le chemin, dimensions et poids entiers positifs, rang calculé (jamais reçu), 24 visuels au plus (`CONFLICT` « Maximum 24 visuels par parfum. Supprime-en un avant d'en ajouter. ») |
+| catalogue | `createBrandAction`, `updateBrandAction`, `deleteBrandAction` | — (T14 pour `updateBrandAction`) | Marque (dédoublonnage : l'existante est rendue avec la `notice` « Louis Vuitton existe déjà au catalogue : elle a été sélectionnée. »). `updateBrandAction` rend `{ brand, hiddenPerfumes, republishable }` et porte la cascade T14 quand l'enregistrement masque la marque ou la passe en gamme complète |
+| catalogue | `setBrandVisibilityAction` | T14 | Masquer / gamme complète, cascade `DRAFT` ; rend `{ brand, hiddenPerfumes, republishable }` (`republishable` : parfums masqués qui ont un visuel, pour proposer « Republier ») |
+| catalogue | `republishBrandPerfumesAction` | — | « Republier les N parfums qui ont un visuel » (E15, E17) : repasse `PUBLISHED` les parfums masqués de la marque qui ont un visuel, si la marque peut les montrer |
+| catalogue | `createImageUploadUrlAction` | — | URL signée d'upload direct navigateur → Supabase ; entrée `{ usage: "parfum" \| "logo" \| "story", perfumeId?, extension }` — le serveur fabrique le chemin (§12 « Images » ; le nom de fichier du client est jeté, seule l'extension survit : jpg, jpeg, png, webp, gif, heic, heif, avif) et le rend avec l'URL signée et l'URL publique |
+| catalogue | `addPerfumeMediaAction` | — | Ranger un visuel story déposé sur la fiche parfum : chemin **vérifié strictement** (exactement `stories/<perfumeId>/<horodatage ms>-<8 hexa>.<ext>`, forme délivrée par le serveur), URL **recalculée** depuis le chemin, poids ≤ 12 Mo, dimensions entières de 1 à 20 000, rang calculé (jamais reçu), 24 visuels au plus (`CONFLICT` « Maximum 24 visuels par parfum. Supprime-en un avant d'en ajouter. ») ; renvoyer le même chemin rend le visuel déjà rangé, sans rien écrire |
+| catalogue | `setPerfumeMediaLabelAction` | — | Libellé libre d'un visuel story (« Story 9:16 », « Fond clair » ; 80 caractères, vidé = effacé) |
 | catalogue | `reorderPerfumeMediaAction` | — | Réordonner la galerie (identifiants inconnus ignorés), une transaction |
-| catalogue | `removePerfumeMediaAction` | — | Retirer un visuel : DELETE de la ligne, puis suppression de l'objet à son `path` **après** le commit |
+| catalogue | `removePerfumeMediaAction` | — | Retirer un visuel : DELETE de la ligne, puis suppression de l'objet désigné par son URL **après** le commit, seulement s'il est dans notre bucket (§12) ; déjà retiré : succès sans écriture |
 | customers | `createCustomerAction`, `updateCustomerAction`, `deleteCustomerAction` | — | Fiche client (suppression refusée, avec sa raison, si un document `PENDING` ou `CONFIRMED` est lié — règle unique de 03 §4.4 ; documents livrés ou annulés conservés sous le nom) |
 | settings | `updateSettingsAction` | — | Taux DZD par défaut, poche par défaut |
 | auth | `loginAction` (publique), `logoutAction` | — | Connexion, déconnexion |
 
 *Mise en œuvre J5 (documents, clients, lots — sans paiement).* Précisions tranchées en construisant, éprouvées par `tests/db/transactions/t01…t13`, `stock.test.ts` et `customers.test.ts` :
 
-- **Où vit le corps d'une transaction.** Chaque fonction exportée de `documents/writer.ts` (`createDocument`, `updateDocument`, `setLineDelivered`, `changeDocumentStatus`, `deleteDocument`, `assignDocumentsToBatch`) est le corps complet de sa transaction : verrous, lectures, gardes et réserves, puis écritures ; elle compose elle-même `customers/writer`, `catalogue/stock` et `catalogue/writer`. L'action ne fait qu'ouvrir `inTransaction` autour : l'exemple du §4.4, qui compose dans l'action, reste valable pour J6 (paiements). `createDocument(tx, input, { pockets })` prend les verrous de poche des paiements de création dans le même appel que le lot, pour tenir l'ordre canonique.
-- **Contrats.** `src/contracts/fields.ts` porte les champs communs (`entityId`, `optionalText`, `optionalDate`, `confirmFlag`) ; dans une modification, un champ absent n'est pas touché, un champ vidé (`null` ou « ») est effacé. Client d'un document : `{ kind: "passing", name, contact }` · `{ kind: "linked", customerId }` · `{ kind: "new", customer }` (fiche créée dans la transaction). Un nom est exigé pour une commande, et pour une vente dont il reste à encaisser (règle serveur de 06 E11 zone 4).
+- **Où vit le corps d'une transaction.** Chaque fonction exportée de `documents/writer.ts` (`createDocument`, `updateDocument`, `setLineDelivered`, `changeDocumentStatus`, `deleteDocument`, `assignDocumentsToBatch`) est le corps complet de sa transaction : verrous, lectures, gardes et réserves, puis écritures ; elle compose elle-même `customers/writer`, `catalogue/stock` et `catalogue/writer`. L'action ne fait qu'ouvrir `inTransaction` autour ; J6 a suivi la même règle pour l'argent (ci-dessous) : l'exemple du §4.4, qui compose dans l'action, illustre la composition, pas l'emplacement réel du code. `createDocument(tx, input, { pockets })` prend les verrous de poche des paiements de création dans le même appel que le lot, pour tenir l'ordre canonique.
+- **Contrats.** `src/contracts/fields.ts` porte les champs communs (`entityId`, `optionalText`, `optionalDate`, `confirmFlag`) ; dans une modification, un champ absent n'est pas touché, un champ vidé (`null` ou « ») est effacé. Client d'un document : `{ kind: "passing", name, contact }` · `{ kind: "linked", customerId }` · `{ kind: "new", customer }` (fiche créée dans la transaction). Un nom est exigé pour une commande, et pour une vente dont il reste à encaisser **après les paiements de création** (règle serveur de 06 E11 zone 4).
 - **Lignes.** Montants saisis au clavier normalisés par le contrat ; ligne offerte à prix non nul, ligne non offerte sans prix, coût sans taux : `VALIDATION` sous le champ. La contenance (10, 50 ou 80 ml) est exigée, jamais posée par défaut côté serveur. En T2, **chaque ligne porte son identifiant**, généré par le formulaire pour une ligne ajoutée : connue, elle est mise à jour en place ; inconnue, elle est créée sous cet id ; un renvoi du même état ne duplique rien (§3.6). Le parfum d'une ligne existante peut changer (stock : −livré sur l'ancien, +livré sur le nouveau) ; une ligne ne passe jamais du catalogue au hors-catalogue ni l'inverse (`isOffCatalog` fixé à la saisie, 03 §3). Coût en euros : recalculé par `dzdToEur` seulement si le coût DZD ou le taux change — un coût en euros repris sans coût en dinars survit à l'édition.
 - **Livré en T2.** Ligne ajoutée : 0, sauf dans un document `DELIVERED` où elle naît livrée ; ligne entièrement livrée d'un document `DELIVERED` : elle le reste à sa nouvelle quantité ; sinon le livré est conservé, borné à la quantité avec la réserve « Sauvage 50 ml — 2 déjà livrés : le livré passera à 1. ». Réserves de ligne et de stock réunies en un dialogue « Enregistrer les modifications ? ».
 - **T3** refusé (`CONFLICT`) sur une vente directe (livrée en entier, sans pointage) et sur un document annulé ; même valeur renvoyée : aucune écriture. **T4** : même statut, succès sans écriture ; « Annuler » n'est pas un statut cible (T5). **T6** et suppressions de fiche client ou de lot : une entité déjà absente est un **succès** `{ deleted: false }` (renvoi après coupure).
@@ -543,6 +557,21 @@ Chaque action correspond à un geste de 02 et, pour les écritures multi-tables,
 - **Idempotence élargie** : `createCustomerAction` et `createBatchAction` acceptent un `id` facultatif (création en ligne S10, S11).
 - **Clients.** Conflit de numéro nommé à la création comme à la modification ; suppression : fiche verrouillée `FOR UPDATE`, refus « Impossible : 2 commandes en cours. Livre-les ou annule-les d'abord. », puis `documents/writer.freezeCustomerName` recopie le **dernier** nom de la fiche dans le snapshot des documents liés avant le `SetNull` (06 E14 : ils « restent affichés sous son nom »).
 - **Lots.** Clôturer et supprimer prennent le lot `FOR UPDATE` (un rattachement en `FOR SHARE` attend) ; refus de suppression chiffré : « Impossible : 12 documents et 3 dépenses rattachés. Clôture-le plutôt. », ou « Impossible : ce lot a un historique de dépenses. Clôture-le plutôt. » si toutes ont été supprimées.
+
+*Mise en œuvre J6 (argent, `2e9ac88`).* Précisions tranchées en construisant, éprouvées par `tests/db/transactions/t01-create-document-with-payments`, `t04b`, `t05`, `t07`…`t12`, `t15`, `pockets-and-settings`, `composed-actions.test.ts` et `concurrency.test.ts` :
+
+- **Où vit le corps.** T7 (`recordPayment`), `collectAll` et `deliverAndCollect` (A-5), T4b et T5 vivent dans `documents/writer.ts` : ils écrivent `SaleDocument` (confirmation automatique, statut, horodatages). `payments/writer.ts` n'écrit que `Payment` : il fournit les pièces (`insertPayment`, `reversePayment`) et porte le corps de T8 (annuler, corriger, rembourser), qui n'écrit aucun document ; il n'importe jamais `documents/writer` (pas de cycle). Les actions `recordPaymentAction` et `collectAllAction` restent dans `payments/actions.ts` et ouvrent la transaction du writer `documents`.
+- **Jeton de T4b.** Signé HMAC-SHA256 avec `ADMIN_JWT_SECRET` (l'écran le renvoie sans pouvoir fabriquer l'état qu'il rétablit) ; il porte le type de geste, `issuedAt`, et pour chaque document l'état d'avant (statut, horodatages, livré par ligne), l'empreinte de l'état d'après (statut, horodatages, `updatedAt`, lignes, identifiants des paiements) et les paiements créés. Tout T4 rend un jeton (réactivation comprise), tout T7, `deliverAndCollectAction` et `collectAllAction` (un jeton pour tous ses documents, annulés ensemble en une transaction) ; un geste **renvoyé** (même identifiant) rend `undo: null`. Refus `CONFLICT` si le document a changé depuis le geste (« Ce document a changé depuis ce geste : rien n'a été annulé. Corrige-le depuis sa fiche. ») ou au-delà de 10 minutes (« Trop tard pour annuler ce geste : corrige-le depuis la fiche du document. »). L'exception « payé net nul » de 03 §4.3 (une commande confirmée par un paiement ne revient « En attente » que si son payé net est nul après contre-passation ; sinon notice « La commande reste confirmée : 120,00 € à encaisser. ») ne vaut que pour un encaissement et « Tout encaisser ». Le « Annuler » du toast après un solde ou « Tout encaisser » passe donc par `revertDocumentChangeAction`, jamais par `voidPaymentAction`.
+- **Actions composées (A-5).** `deliverAndCollectAction` enregistre un **solde** (BALANCE) sans confirmation automatique intermédiaire : la transition part du statut réel, avec ses propres réserves, calculées avec le payé **après** l'encaissement ; toutes les gardes (plafond au dû, transition, stock) passent avant la première écriture. `collectAllAction` verrouille tous les documents d'un appel, les ordonne par `confirmedAt` (à défaut `orderedAt`), puis `orderedAt`, puis id, applique une date de valeur unique, mémorise la poche une fois, et vérifie tous les plafonds avant d'écrire : un plafond dépassé sur le dernier document n'écrit rien.
+- **Création avec paiements (T1, N1).** Σ des paiements > total ⇒ `VALIDATION` sous `payments` : « Le montant reçu dépasse le total (120,00 €). » (contrat et writer) ; plusieurs paiements : la poche du **premier** est mémorisée (N2).
+- **Renvois.** Supprimer une dépense déjà supprimée (T10) : succès `{ deleted: false }`. Annuler (T8) un paiement ou un mouvement manuel (T12) déjà contre-passé : `CONFLICT` « Ce mouvement a déjà été annulé. » ; une contre-passation ne se contre-passe pas (03 §4.4).
+
+*Mise en œuvre J11 côté serveur (catalogue, `95fdc3c`).* Éprouvée par `tests/db/catalogue.test.ts`, `catalogue-media.test.ts` et `catalogue-vitrine.test.ts` :
+
+- **Marque d'une fiche.** `{ kind: "existing", brandId }` (choisie dans S05) ou `{ kind: "new", name }` (saisie) : la marque est résolue **dans la transaction de la fiche** par `resoudMarque` ; une marque équivalente déjà au catalogue est rattachée, avec la notice « Rattaché à Louis Vuitton, déjà au catalogue. ». Rien n'est créé avant « Ajouter au catalogue » ou « Enregistrer » : abandonner E19 ne laisse aucune marque orpheline.
+- **Textes serveur** (06 E17, E19, S18). Parfum enregistré masqué faute de pouvoir être visible : « Sauvage ajouté, masqué : ajoute un visuel pour publier ce parfum. » ; modification qui lui fait perdre la visibilité : « Sauvage masqué : rends d'abord la marque Dior visible. » (raison : le message du domaine, `src/domain/publication.ts`) ; doublon de nom dans la marque, au sens de `cleNom` (autre graphie comprise) : `CONFLICT` « Dior a déjà un parfum nommé Sauvage. » ; renommer une marque vers le nom d'une autre : `CONFLICT` « La marque Louis Vuitton porte déjà ce nom : ouvre-la plutôt que d'en renommer une autre. » ; une gamme complète visible sans logo : `CONFLICT` « Ajoute un logo pour publier une gamme complète. » — jamais masquée en silence.
+- **Réserve de T14.** Titre « Masquer Dior ? » ou « Passer Dior en gamme complète ? » (« Masquer les parfums de Dior ? » si la marque était déjà masquée ou en gamme complète) ; réserve « Ses 14 parfums seront masqués sur la vitrine. », où le nombre compte les parfums **visibles** (« Son parfum visible sera masqué sur la vitrine. » pour un seul) ; levée avant toute écriture. Sans parfum visible, pas de réserve.
+- **« Dupliquer » (E16)** n'est pas une action : E19 lit `perfumeDuplicationDraft(id)` (marque et grille) et pré-remplit le formulaire, comme A-9 ; rien n'est écrit avant « Ajouter au catalogue ».
 
 ### 3.5 Le sort des routes REST
 
@@ -557,6 +586,8 @@ Chaque action correspond à un geste de 02 et, pour les écritures multi-tables,
 | `GET /admin-sw.js` | Service worker (public) | Version injectée par déploiement (§14.3). |
 
 Les trois routes `/api/admin/*` passent par `defineReadRoute` : session exigée, n'exporte que `GET`, corps JSON au format `ActionResult` (401 + `SESSION_EXPIRED` sans session), `Cache-Control: private` explicite, jamais d'import d'un writer.
+
+*Mise en œuvre J11.* `GET /api/admin/picker?v=` est livrée avec le serveur du catalogue (J11), avant les écrans qui la consomment : contenu `pickerCatalogue()` et version `pickerVersion()` de `src/server/catalogue/queries.ts`, DTO `PickerCatalogue` / `PickerPerfume` dans `src/contracts/catalogue.ts` (il n'y a pas de `picker.ts`). La version est l'**empreinte sha256** du contenu (16 premiers caractères hexadécimaux), calculée avec lui et cachée sous le tag `admin-catalogue` : elle change si et seulement si ce que le sélecteur affiche change. « Vendus récemment » (N7) ne fait pas partie de cette charge utile : c'est une requête de `src/server/documents/queries.ts`. `GET /api/admin/search` et `src/server/search/queries.ts` relèvent de J8.
 
 Correspondance avec l'existant :
 
@@ -589,6 +620,8 @@ Les créations sensibles au double envoi — **document, paiement, dépense** �
 Conséquence produit : **« Réessayer » est toujours sûr**, y compris après une coupure réseau dont on ignore si l'écriture a abouti. C'est ce qui rend acceptable l'absence de file d'écriture hors ligne (§14.5).
 
 Les autres gestes sont idempotents par nature : valeurs absolues (`setLineDeliveredAction` envoie la quantité cible, pas « +1 »), transitions vers un statut cible, contre-passations protégées par l'unicité de `reversesId`.
+
+*Mise en œuvre J6.* Les contrats distinguent deux formes d'identifiant. Une **nouvelle création** reçoit un `entityId` (UUID du formulaire) : document, paiement (y compris le remboursement de T5, le nouveau paiement d'une correction), dépense, et, facultatifs, poche (`createPocketAction`), transfert (l'`id` est celui de la jambe sortante **et** du groupe de transfert : un renvoi rend le transfert déjà écrit), ajustement et paiement fournisseur. Une **ligne existante** désignée par l'écran (paiement, mouvement, dépense, poche) est lue par `recordId` (`src/contracts/treasury.ts`) : cuid, UUID, identifiant déterministe de la reprise `mig-…` (03 §7), ou `poche-non-attribue` (§7.4) — `entityId` refuserait les pièces reprises, qu'on ne pourrait plus annuler.
 
 ### 3.7 Côté client
 
@@ -696,10 +729,11 @@ await tx.lock({
 | 4 | `perfumes` | `SELECT id, stock FROM "Perfume" WHERE id = ANY($1::int[]) ORDER BY id FOR UPDATE` |
 
 - Un même appel acquiert dans l'ordre des rangs et trie les ids. Un appel ultérieur est permis **seulement pour un rang ≥ au dernier acquis** (lire les lignes du document verrouillé, puis verrouiller leurs parfums) ; sinon `LockOrderError` — erreur de programmation, remontée en `UNEXPECTED` et attrapée par les tests.
-- **Tout mouvement verrouille sa poche au moins en partage** (`insertMovement` vérifie que le verrou est détenu) : un mouvement ne peut pas entrer dans une poche en cours d'archivage (T15 prend `FOR UPDATE`).
-- Verrou exclusif de poche requis quand une sortie peut rendre « Non attribué » négatif — **T5** (remboursements à l'annulation), T8 (y compris composé dans T4b), T11, T12 — : le contrôle « Non attribué ≥ 0 » se fait sur la ligne verrouillée. La même garde vaut pour toute autre sortie qui viserait « Non attribué » (dépense T9, ajustement, paiement fournisseur ; règle de 03 §4.9). `deliverAndCollectAction`, `collectAllAction` et T1 n'écrivent que des entrées : verrou partagé.
+- **Tout mouvement verrouille sa poche** (`insertMovement` vérifie que le verrou est détenu, sinon erreur de programmation) : **au moins en partage pour une entrée**, **exclusivement pour toute sortie**, quelle que soit la poche — un mouvement ne peut pas entrer dans une poche en cours d'archivage (T15 prend `FOR UPDATE`), et deux sorties concurrentes lisent le solde l'une après l'autre.
+- Sorties, donc verrou exclusif : **T5** (remboursements à l'annulation), T8 (y compris composé dans T4b), T9 (dépense), T11 (source), T12 et toute autre contre-passation qui retire de l'argent, ajustement « Retirer », paiement fournisseur. Le contrôle « Non attribué ≥ 0 » se fait sur la ligne verrouillée (règle de 03 §4.9). `deliverAndCollectAction`, `collectAllAction`, T7 et T1 n'écrivent que des entrées : verrou partagé.
 - Un document **neuf** (T1) ne se verrouille pas : aucune autre transaction ne le voit.
-- *Mise en œuvre J3.* `tx.lock(…)` rend les lignes réellement verrouillées (`{ documents, batches, pockets, perfumes: { id, stock }[] }` : un id absent n'y figure pas, le stock relu sert `applyDeliveredDeltas`) ; `batches` accepte `{ update, share }` comme `pockets` ; un id demandé dans les deux modes est pris `FOR UPDATE` ; `tx.lock.held(catégorie, id)` rend le mode détenu (`insertMovement` vérifiera le verrou de poche). Un appel sans rien à verrouiller ne change pas le rang atteint.
+- *Mise en œuvre J3.* `tx.lock(…)` rend les lignes réellement verrouillées (`{ documents, batches, pockets, perfumes: { id, stock }[] }` : un id absent n'y figure pas, le stock relu sert `applyDeliveredDeltas`) ; `batches` accepte `{ update, share }` comme `pockets` ; un id demandé dans les deux modes est pris `FOR UPDATE` ; `tx.lock.held(catégorie, id)` rend le mode détenu (`insertMovement` s'en sert depuis J6 pour exiger le verrou de poche du bon mode). Un appel sans rien à verrouiller ne change pas le rang atteint.
+- *Mise en œuvre J11 — verrous du catalogue.* Ils se prennent **avant** les lignes `Perfume` (rang 4) : ligne `Brand` **en partage** pour publier ou rattacher un parfum (un parfum ne peut pas être publié pendant que sa marque se masque), ligne `Brand` **exclusive** pour modifier, masquer (T14) ou supprimer la marque ; mise en avant sérialisée par le verrou consultatif `pg_advisory_xact_lock(hashtext('nurea:catalogue:featured'))`, sous lequel le décompte des emplacements est relu (quatre demandes simultanées : deux réussissent). Ces verrous sont écrits en SQL dans `src/server/catalogue/writer.ts` (ids triés, `FOR SHARE` / `FOR UPDATE`) et pourront rejoindre `locks.ts` comme catégorie.
 
 ### 4.3 Propriété des tables
 
@@ -708,15 +742,15 @@ Transposition exacte de 03 §4.2 (« une table n'a qu'un point d'INSERT/UPDATE d
 | Modèle | Seul(s) fichier(s) d'écriture | Appelé par |
 |---|---|---|
 | `SaleDocument`, `SaleLine` | `src/server/documents/writer.ts` | actions `documents` |
-| `Payment` | `src/server/payments/writer.ts` | actions `payments`, `createDocumentAction` (T1), `cancelDocumentAction` (T5) |
+| `Payment` | `src/server/payments/writer.ts` | T8 (son propre corps) ; writer `documents` (T1, T4b, T5, T7, A-5) |
 | `CashMovement` | `src/server/treasury/movements.ts` (`insertMovement`, `insertReversal`, `setMovementLabel`) | writers `payments`, `batches`, `treasury` |
 | `Pocket` | `src/server/treasury/writer.ts` | actions `treasury` |
 | `Batch`, `BatchExpense` | `src/server/batches/writer.ts` | actions `batches` |
-| `Brand`, `Perfume` (hors `stock`), `PerfumePricing` | `src/server/catalogue/writer.ts` (`upsertPricing` compris) | actions `catalogue` ; writer `documents` pour l'apprentissage des tarifs (N8) |
-| `Perfume.stock` | `src/server/catalogue/stock.ts` (`setStock`, `applyDeliveredDeltas`) | `setPerfumeStockAction` ; writer `documents` (T1–T6) |
-| `PerfumeMedia` (visuels story) ; objets du bucket sous `stories/<parfum>/` | `src/server/catalogue/media.ts` (lignes) ; `src/server/catalogue/storage.ts` (objets, après commit) | `addPerfumeMediaAction`, `reorderPerfumeMediaAction`, `removePerfumeMediaAction` ; `deletePerfumeAction` (chemins lus avant le DELETE, cascade en base, objets retirés après commit) |
+| `Brand`, `Perfume` (hors `stock`), `PerfumePricing` | `src/server/catalogue/writer.ts` (`savePricingGrid` pour la fiche, `upsertPricing` pour l'apprentissage) | actions `catalogue` ; writer `documents` pour l'apprentissage des tarifs (N8) |
+| `Perfume.stock` | `src/server/catalogue/stock.ts` (`setStock`, `applyDeliveredDeltas`) | `setPerfumeStockAction` ; writer `documents` (T1–T6, T4b) |
+| `PerfumeMedia` (visuels story) ; objets du bucket (visuels, logos, planches story) | `src/server/catalogue/media.ts` (lignes) ; `src/server/catalogue/storage.ts` (objets, après commit, seulement dans notre bucket) | `addPerfumeMediaAction`, `setPerfumeMediaLabelAction`, `reorderPerfumeMediaAction`, `removePerfumeMediaAction` ; `deletePerfumeAction` et `deleteBrandAction` (URL lues avant le DELETE, cascade en base, objets retirés après commit, §12) |
 | `Customer` | `src/server/customers/writer.ts` | actions `customers` ; `createDocumentAction` (création en ligne) |
-| `Setting` | `src/server/settings/writer.ts` (`updateSettings`, `rememberPocket`) | `updateSettingsAction` ; writers `payments` et `batches` (poche par défaut, N2) |
+| `Setting` | `src/server/settings/writer.ts` (`updateSettings`, `rememberPocket`, `forgetPocket`) | `updateSettingsAction` ; writers `documents` (T1, T7, A-5) et `batches` (T9) pour la poche par défaut (N2) ; writer `treasury` (création « Proposer par défaut », archivage T15) |
 | `AdminUser` | `src/server/auth/writer.ts` | `loginAction` ; `scripts/create-admin.ts` |
 
 Un writer **décide et valide** (plafonds, statuts, lot ouvert, réserves) puis écrit ; un autre module qui a besoin d'écrire sa table **appelle sa fonction** en lui passant `tx`. C'est la composition qui rend T1 atomique sans dupliquer une règle.
@@ -753,7 +787,7 @@ export const createDocumentAction = defineAction(
       for (const p of input.payments) {
         await paymentsWriter.record(tx, { ...p, documentId: doc.id, balance: doc.balance });
         //   ↳ nature fixée par le serveur (DEPOSIT si non livré, BALANCE sinon)
-        //   ↳ plafond : Σ paiements ≤ total (money), sinon CONFLICT
+        //   ↳ plafond : Σ paiements ≤ total (money), sinon VALIDATION sous `payments`
         //   ↳ treasuryMovements.insertMovement(tx, { kind: "PAYMENT", … }) puis INSERT Payment
         //   ↳ settingsWriter.rememberPocket(tx, p.pocketId)
       }
@@ -762,6 +796,8 @@ export const createDocumentAction = defineAction(
     }),
 );
 ```
+
+*Mise en œuvre J5–J6.* L'exemple montre ce que la transaction compose ; dans le code, ce corps vit dans `documents/writer.createDocument` et l'action n'ouvre que `inTransaction` (§3.4). La pièce s'écrit par `paymentsWriter.insertPayment` (le mouvement par `treasury/movements.ts`) ; un dépassement du total est un `VALIDATION` sous `payments` (« Le montant reçu dépasse le total (120,00 €). »), vérifié par le contrat puis par le writer ; plusieurs paiements : la poche du premier est mémorisée.
 
 ### 4.5 Connexion à la base
 
@@ -933,6 +969,8 @@ Correspondance des champs (`documentBalance(lines, payments)`) : `total`, `paid`
 | Fiche document | total, payé, dû | `documentBalance([id])` |
 | Export CSV | Encaissé de la période | `encaisse({ period: { from, to } })` |
 
+*État à la sortie de J6, repris par J7.* Les formulaires d'argent (chips de poche de S02, S12, S15 ; S14) lisent `treasury/queries.activePockets()`, qui **répète** le SQL de solde de 03 §5.5 (poche système en dernier) : J7 fait de `tresorerie()` la seule source de ce calcul, et `activePockets` s'y adosse. `treasury/queries.movementJournal(month, pocketId)` (mois calendaire de Paris, filtre de poche `?poche=`) est prêt pour E04.
+
 ---
 
 ## 7. Lectures sans effet de bord
@@ -959,14 +997,17 @@ Toute maintenance est un **script lancé à la main**, jamais un effet de requê
 | `scripts/create-admin.ts` | Créer ou réinitialiser le compte (identifiant, mot de passe) | `AdminUser` |
 | `scripts/migration/reprise.ts` | Reprise de 03 §7, `--dry-run` par défaut (ROLLBACK final + rapport) | Oui, une transaction |
 | `scripts/check-invariants.ts` | Invariants de 03 §5.7 (Σ payé = Σ mouvements `PAYMENT`, transferts à deux jambes de somme nulle, poches archivées à solde nul, contraintes restées `NOT VALID`) | Non |
-| `scripts/storage-orphans.ts` | Objets du bucket `catalog` non référencés par `Brand` / `Perfume` (`image`, `imageLight`) / `PerfumeMedia` (`path`) ; `--apply` pour supprimer. Un objet sous `stories/<parfum>/` sans ligne `PerfumeMedia` est un orphelin (dépôt abandonné, ou suppression d'objet échouée après commit) | Stockage seulement |
+| `scripts/storage-orphans.ts` | Objets du bucket `catalog` non référencés par `Brand` / `Perfume` (`image`, `imageLight`) / `PerfumeMedia` (`path`) / `SaleLine.imageUrl` (vignette de l'historique, qui protège l'image d'un parfum supprimé) ; `--apply` pour supprimer. Une image **remplacée** sur une fiche n'est pas supprimée par l'écriture (§12) : elle devient un orphelin de ce script si plus rien ne la référence. Un objet sous `stories/<parfum>/` sans ligne `PerfumeMedia` est un orphelin (dépôt abandonné, ou suppression d'objet échouée après commit) | Stockage seulement |
 | `node scripts/build-admin-pwa-assets.mjs` | Icônes et splash (CLAUDE.md) | Fichiers |
 
 **Pas de cron en v1.** Le jour où une tâche planifiée écrira (notifications push, N10, v2), elle sera une route `POST` nommée, protégée par un secret de cron, inscrite dans la liste fermée du §3.5 — jamais un GET.
 
 ### 7.4 Pas d'écriture paresseuse
 
-La poche système « Non attribué » et la ligne `Setting` (id 1) **sont créées par la migration** (03 §7.3, étapes 3a et 3b), jamais « à la demande » pendant une lecture (fin de `ensureUnassignedPocket` et de sa course, 01 §4.3). Leur absence est une panne de configuration : `tresorerie()` et `getSettings()` lèvent une erreur explicite (« Poche système absente : relancer la migration »), visible dans le bloc concerné.
+La poche système « Non attribué » et la ligne `Setting` (id 1) **sont créées par la migration** sur la base réelle (03 §7.3, étapes 3a et 3b), et **jamais « à la demande » pendant une lecture** (fin de `ensureUnassignedPocket` et de sa course, 01 §4.3). Sur une base neuve (tests, préproduction vide), elles naissent dans une **écriture** :
+
+- « Non attribué » est créée par `treasury/writer.unassignedPocketId(tx)`, dans la transaction du premier geste qui en a besoin (encaissement ou mouvement sans poche choisie), sous l'identifiant **fixe** `poche-non-attribue` : deux créations concurrentes butent sur la clé primaire et la seconde est rejouée (§3.6) au lieu d'échouer sur l'index `pocket_single_system_uq`.
+- `Setting` : sans ligne, la lecture rend les valeurs par défaut (taux 277, poche `NULL` = « Non attribué ») — `readSettings(tx)` dans le writer, `getSettings()` (`defineQuery`, `settings/queries.ts`) pour les écrans ; la première écriture fait un `upsert` de l'id 1.
 
 ---
 
@@ -1161,6 +1202,7 @@ Côté domaine, `src/domain/errors.ts` fournit `DomainError(code, message, field
 | Conflit, interblocage | `P2034`, `40001`, `40P01` | rejoué, puis `UNAVAILABLE` | « La base est occupée. Rien n'a été enregistré — réessaie. » |
 | Base injoignable, délai | `P1001`, `P1002`, `P1017`, `P2024`, `57014` | `UNAVAILABLE` | « La base ne répond pas. Rien n'a été enregistré — réessaie. » |
 | Trigger `nurea_*` (écriture seule, cohérence pièce ↔ mouvement) | message commençant par « Nuréa : » | `UNEXPECTED` | Générique + référence ; journalisé en erreur : un writer a enfreint une règle d'or |
+| Stockage d'images Supabase (URL signée refusée, service injoignable) | `Error` levée par `src/server/catalogue/storage.ts` | **Aujourd'hui** `UNEXPECTED` ; **à faire** : `UNAVAILABLE` (réessayable) | Aujourd'hui générique + référence ; prévu : « Le stockage des images ne répond pas. Rien n'a été enregistré — réessaie. » (une panne du stockage n'est pas une erreur de programmation). Une variable Supabase absente est déjà un `ConfigurationError` ⇒ `UNAVAILABLE` ; une suppression d'objet après commit ne fait jamais échouer le geste (§12) |
 | `LockOrderError`, toute autre exception | — | `UNEXPECTED` | Générique + référence |
 
 *Formes réelles relevées sur Prisma 6.19 (J3, éprouvées par `tests/db/errors.test.ts`).* `P2002` porte `meta.modelName` et `meta.target` (champs) ; `P2003` porte `meta.constraint` — une contrainte **de la table écrite** signale une ligne visée disparue (`NOT_FOUND` de l'entité visée), sinon une suppression bloquée (`CONFLICT`) ; `P2025` porte `meta.modelName`. Un CHECK et un trigger n'ont **pas** de code Prisma : ils arrivent en `PrismaClientUnknownRequestError` (trigger différé : au `COMMIT`), le SQLSTATE et le nom de contrainte se lisent dans le texte ; une requête `$queryRaw` en échec arrive en `P2010` avec le SQLSTATE dans `meta.code` (interblocage `40P01` compris). Les messages « {nom} » et « {Marque} » ci-dessus restent ceux des writers, qui cherchent la fiche avant d'écrire (J10, J11) ; la traduction de dernier recours, sans contexte, dit « Ce numéro est déjà celui d'une autre fiche client : ouvre-la plutôt que d'en créer une. ». Un `ConfigurationError` (secret absent) devient `UNAVAILABLE` « Configuration serveur incomplète : ADMIN_JWT_SECRET. ».
@@ -1263,6 +1305,7 @@ export function cached<A extends readonly (string | number | null)[], R extends 
 ### 10.4 Ce qui n'est pas mis en cache inter-requêtes
 
 - La fiche d'un document ouverte pour agir (solde, paiements) : `defineQuery` sans `cached()` — elle doit être exacte à l'instant où l'on encaisse.
+- La fiche parfum (E16, `catalogue/queries.perfumeSheet`) : elle porte l'activité des ventes, qui change avec chaque document (famille `gestion`) et non avec le catalogue. Activité = `units` (Σ des quantités des lignes du parfum), `documents` (nombre de documents), `lastSoldAt` (`orderedAt` le plus récent), documents annulés exclus ; « Vendu N fois » affiche **N unités** (décision du 17/09/2026 : c'est ce qui parle au gérant pour son réassort). La fiche marque et le brouillon de duplication ne sont pas cachés non plus ; l'instantané admin, les alertes de stock et le sélecteur le sont (`admin-catalogue`).
 - Les réglages et poches lus par les formulaires d'écriture : idem.
 - Les résultats de recherche (instantanés cachés, filtrage à la volée).
 - Toute lecture faite **dans** une action : elle passe par `tx.db`, sur des lignes verrouillées.
@@ -1277,7 +1320,7 @@ export function cached<A extends readonly (string | number | null)[], R extends 
 | **Ce qui le fait bouger** | Uniquement le **delta de `SaleLine.deliveredQuantity`** d'une ligne rattachée à un parfum (03 §4.7) : T1 (né livré), T2 (ligne modifiée, parfum changé), T3 (pointage), T4 (entrée en `DELIVERED`), T4b (annulation d'un geste : quantités d'avant), T5 (annulation : livré remis à 0), T6 (suppression : restitution). Et le **réglage absolu** du gérant. |
 | **Qui décide** | Le writer `documents`, seul à connaître les quantités livrées avant et après. |
 | **Qui écrit** | `src/server/catalogue/stock.ts`, seul fichier qui met à jour `Perfume.stock` : `applyDeliveredDeltas(tx, deltas, { confirm })` (appelé par le writer `documents`) et `setStock(tx, perfumeId, value \| null)` (appelé par `setPerfumeStockAction`). |
-| **Jamais** | Le formulaire de fiche parfum : `updatePerfumeInput` n'a pas de champ `stock` (fin de l'écrasement par l'auto-save, 01 §4.5). Jamais « lire puis réécrire » hors verrou. |
+| **Jamais** | Le formulaire de fiche parfum : `updatePerfumeInput` n'a pas de champ `stock` — une clé `stock` reçue est ignorée (fin de l'écrasement par l'auto-save, 01 §4.5). Jamais « lire puis réécrire » hors verrou. |
 
 Algorithme de `applyDeliveredDeltas` :
 
@@ -1291,7 +1334,7 @@ Lecture : `src/domain/stock.ts` expose `stockStatus(stock: number | null): "untr
 
 Tests (`tests/db/stock.test.ts`) : vente directe décrémente ; pointage partiel puis retour arrière ; annulation restitue ; changement de parfum sur une ligne livrée ; plancher avec réserve ; non suivi intact ; réglage absolu concurrent d'une livraison (sérialisés par le verrou de ligne).
 
-*Mise en œuvre J5.* `stock.ts` reprend lui-même le verrou `FOR UPDATE` des parfums (rang 4, le dernier : toujours permis, sans effet s'il est déjà détenu) avant de relire le stock ; il n'exige donc pas que l'action l'ait pris. Il expose en plus `stockReserves(tx, deltas)`, qui calcule les réserves sans écrire : T4 les passe en `extraReserves` de `assertTransition`, T1 et T2 les vérifient avant toute écriture. Des deltas qui s'annulent sur un même parfum n'écrivent rien. L'annulation (T5) est éprouvée à J6 ; J5 éprouve la restitution par la suppression (T6) et le retrait d'une ligne livrée (T2).
+*Mise en œuvre J5.* `stock.ts` reprend lui-même le verrou `FOR UPDATE` des parfums (rang 4, le dernier : toujours permis, sans effet s'il est déjà détenu) avant de relire le stock ; il n'exige donc pas que l'action l'ait pris. Il expose en plus `stockReserves(tx, deltas)`, qui calcule les réserves sans écrire : T4 les passe en `extraReserves` de `assertTransition`, T1 et T2 les vérifient avant toute écriture. Des deltas qui s'annulent sur un même parfum n'écrivent rien. J5 éprouve la restitution par la suppression (T6) et le retrait d'une ligne livrée (T2) ; J6, par l'annulation (T5, `t05-cancel-document`) et le filet « Annuler » (T4b, `t04b-revert-document-change`), qui écrivent leur stock sans réserve (une restitution, ou un retour à l'état d'avant, borné à 0).
 
 ---
 
@@ -1304,13 +1347,13 @@ Le contrat de 01 §5 et 03 §6 est honoré tel quel ; l'architecture l'isole.
 - **Règles de publication en un seul endroit** : `src/domain/publication.ts` (pur) — parfum publiable si visuel non vide, marque `PUBLISHED` et `CURATED` ; marque `COMPLETE` publiable si logo ; mise en avant réservée à un parfum `PUBLISHED`, deux au plus. Le writer `catalogue` les applique (et les CHECK de 03 §4.9 les doublent en base) ; l'UI appelle les mêmes fonctions pour ses pré-contrôles et affiche **les mêmes messages** (fin des trois formulations divergentes, 01 §4.5).
 - **`Brand.slug` stable** : calculé une fois par `createBrand` (suffixe d'unicité), jamais par `updateBrand` ; test unitaire du writer « renommer ne change pas le slug » (02 §4.9).
 - **`Perfume.id`** : séquence PostgreSQL, plus jamais `max(id)+1` (01 §5.3).
-- **Cascade de masquage** (T14) : `setBrandVisibilityAction` passe les parfums en `DRAFT` dans la même transaction.
-- **Suppression** d'un parfum ou d'une marque : les lignes de documents gardent leur snapshot (`SetNull`) ; les images sont supprimées du bucket **après** le commit, en best-effort journalisé ; les orphelins résiduels relèvent de `scripts/storage-orphans.ts`.
-- **Images** : `createImageUploadUrlAction` rend une URL signée (chemin `perfumes/<uuid>.webp` ou `brands/<uuid>.webp` dans le bucket `catalog`) ; conversion WebP côté client dans `src/features/catalogue/components/image-convert.ts` — recadrage portrait 1024×1536 pour un parfum, **jamais pour un logo de marque** (proportions intouchables, règle projet : le logo est seulement plafonné à 1024 px sur le grand côté, comme le fait la production depuis `12e2327`) ; l'auto-save après upload sur fiche existante est conservé (`updatePerfumeAction` sans stock). Extensions acceptées : jpg, png, webp, gif, **heic, heif** (appareil photo de l'iPhone), avif — le navigateur convertit en WebP avant l'envoi.
+- **Cascade de masquage** (T14) : `setBrandVisibilityAction` (ou `updateBrandAction`) passe les parfums en `DRAFT`, et leur retire la mise en avant, dans la même transaction, après une réserve confirmée s'il y avait des parfums visibles (§3.4, J11) ; une gamme complète visible sans logo est refusée (`CONFLICT`), jamais masquée en silence.
+- **Suppression** d'un parfum ou d'une marque : les lignes de documents gardent leur snapshot (`SetNull`) ; tarifs et visuels story partent en cascade. Les URL des objets devenus inutiles — `image` et `imageLight` du parfum (de chaque parfum de la marque), logo et variante claire de la marque, planches story — sont lues **avant** le DELETE ; après le commit, seules sont supprimées celles qui désignent **notre** bucket (préfixe exact du projet et du bucket) **et** que plus rien ne référence une fois les DELETE faits (`Perfume.image`/`imageLight`, `Brand.image`/`imageLight`, `SaleLine.imageUrl`, `PerfumeMedia.url`, relu dans la transaction) : la vignette d'un document de l'historique et une fiche dupliquée qui partage l'image sont protégées. Un visuel repris avec une URL d'un autre projet (la préproduction lit les images de la production) voit sa ligne retirée, jamais son objet. Suppression best-effort journalisée ; **remplacer** une image sur une fiche ne supprime pas l'ancienne : les orphelins relèvent de `scripts/storage-orphans.ts` (§7.3).
+- **Images** : `createImageUploadUrlAction` rend une URL signée, l'URL publique et le chemin, décidé par le serveur : `perfumes/`, `brands/` ou `stories/<perfumeId>/`, suivi de `<horodatage ms sur 13 chiffres>-<8 hexa>.<ext>` (forme de la production, `77985aa`), extension de la saisie conservée, dans le bucket `catalog` ; l'URL signée est demandée avec `upsert: true` (un renvoi du même envoi après coupure n'échoue pas, le chemin étant neuf) ; conversion WebP côté client dans `src/features/catalogue/components/image-convert.ts` — recadrage portrait 1024×1536 pour un parfum, **jamais pour un logo de marque** (proportions intouchables, règle projet : le logo est seulement plafonné à 1024 px sur le grand côté, comme le fait la production depuis `12e2327`) ; l'auto-save après upload sur fiche existante est conservé (`updatePerfumeAction` sans stock). Extensions acceptées : jpg, png, webp, gif, **heic, heif** (appareil photo de l'iPhone), avif — le navigateur convertit en WebP avant l'envoi.
 - **Visuels story (`PerfumeMedia`, 03 §3)** — capacité de la production (`77985aa`, `b8d015c`, `3707715`), reconduite telle quelle dans ses règles :
-  - **Chemin décidé par le serveur, jamais cru du client.** `createImageUploadUrlAction({ usage: "story", perfumeId })` fabrique `stories/<perfumeId>/<horodatage>-<aléa>.<ext>` (nom d'origine jeté) ; `addPerfumeMediaAction` refuse tout chemin qui n'a pas exactement ce préfixe ou qui contient `..`, et **recalcule** l'URL publique depuis le chemin (l'URL n'est pas une entrée). Raison : `path` finit dans la suppression d'objet le jour où le visuel est retiré — un chemin arbitraire offrirait la suppression de n'importe quel objet du bucket, l'image catalogue d'un autre parfum comprise.
+  - **Chemin décidé par le serveur, jamais cru du client.** `createImageUploadUrlAction({ usage: "story", perfumeId })` fabrique `stories/<perfumeId>/<horodatage>-<aléa>.<ext>` (nom d'origine jeté) ; `addPerfumeMediaAction` valide le chemin **strictement** contre cette forme (`isStoryPathOf` : ce parfum, 13 chiffres, tiret, 8 hexadécimaux, extension acceptée, ni `..` ni sous-dossier) et **recalcule** l'URL publique depuis le chemin (l'URL n'est pas une entrée) ; renvoyer un chemin déjà rangé rend le visuel existant sans rien écrire (double tap, « Réessayer »). Poids ≤ 12 Mo, dimensions entières de 1 à 20 000 px. Raison : l'objet de ce visuel finit dans une suppression le jour où il est retiré — un chemin arbitraire offrirait la suppression de n'importe quel objet du bucket, l'image catalogue d'un autre parfum comprise.
   - **Rang et plafond côté serveur** : `sortOrder` = dernier rang + 1, calculé dans la transaction (deux dépôts simultanés ne prennent pas le même rang) ; 24 visuels au plus par parfum.
-  - **Suppression de l'objet après le commit.** `removePerfumeMediaAction` supprime la ligne, **puis**, une fois la transaction validée, l'objet à son `path` (best-effort journalisé : une ligne supprimée avec un objet resté est un orphelin pour `scripts/storage-orphans.ts`, jamais un geste refusé). `deletePerfumeAction` lit les chemins des visuels **avant** le DELETE (la cascade les efface en base) et retire les objets après le commit. Rien n'est supprimé du bucket dans une transaction qui pourrait être annulée.
+  - **Suppression de l'objet après le commit.** `removePerfumeMediaAction` supprime la ligne, **puis**, une fois la transaction validée, l'objet désigné par son URL — seulement si elle est dans notre bucket (`storage.commitThenRemoveObjects`, best-effort journalisé : une ligne supprimée avec un objet resté est un orphelin pour `scripts/storage-orphans.ts`, jamais un geste refusé). `deletePerfumeAction` et `deleteBrandAction` lisent les URL des visuels **avant** le DELETE (la cascade les efface en base) et retirent les objets après le commit, selon la règle de « Suppression » ci-dessus. Rien n'est supprimé du bucket dans une transaction qui pourrait être annulée.
   - **Préparation côté client, jamais de recadrage** : `prepareStoryImage` (dans `image-convert.ts`) plafonne le grand côté à 1920 px, convertit en WebP (HEIC compris), refuse au-delà de 12 Mo avant tout envoi ; une planche 9:16 n'est jamais recadrée en 2:3 (elle perdrait le nom du parfum et les notes). Plusieurs fichiers partent l'un après l'autre ; un échec n'arrête pas les suivants, le bilan est dit.
   - **Récupération** (pattern `MediaGallery`, 05 §3.2) : partage natif avec fichier (`navigator.canShare({ files })` → feuille de partage iOS : Snapchat, Photos), sinon téléchargement d'un blob de même origine ; fermer la feuille de partage (`AbortError`) n'enchaîne pas sur le téléchargement ; aucun `window.open` après un `await` (bloqué par Safari) — l'échec s'affiche avec un lien réel « Ouvrir dans un onglet ».
   - **Lecture** : la fiche parfum (E16) charge la galerie ; l'instantané admin porte le nombre de visuels par parfum (pastille de la liste E15). La vitrine n'en lit rien.
@@ -1475,7 +1518,7 @@ Ils lisent les fichiers sources (glob + expressions régulières, sans dépendan
 | `redirects.test.ts` (07 J3) | Chaque règle de `redirects()` aboutit, sans boucle, à une route de 06 §1.2 avec des paramètres reconnus ; les adresses de travail ne sont jamais redirigées (§2.3) |
 | `maintenance-page.test.ts` (A-11) | `public/admin-maintenance.html` = page servie par `proxy.ts`, autonome ; 503 HTML ou JSON (§8.3) |
 
-*Mise en œuvre J3.* Chaque test d'architecture contient un auto-contrôle (une violation écrite en dur doit être détectée), et chacun a été vu échouer sur une violation réelle introduite puis retirée. Écarts assumés : `cache-calls` admet `unstable_cache` dans `src/lib/catalogue-service.ts` (point de lecture du contrat vitrine, §12, qui reste où il est) ; `table-ownership` tolère l'écriture de `Brand` par `src/lib/admin/resoudMarque.ts` jusqu'à son déplacement dans `src/server/catalogue/` (J11) ; `route-handlers` liste en `todo` les routes de la liste fermée pas encore livrées ; `server-actions` exige en plus que `"use server"` soit la première instruction et interdit `defineAction` hors d'un `actions.ts` ; `layers` vérifie aussi l'`import "server-only"` de tête de chaque fichier de `src/server`. Les tests de `src/app-shell` sont écrits dès maintenant et deviennent effectifs avec le shell (J4).
+*Mise en œuvre J3.* Chaque test d'architecture contient un auto-contrôle (une violation écrite en dur doit être détectée), et chacun a été vu échouer sur une violation réelle introduite puis retirée. Écarts assumés : `cache-calls` admet `unstable_cache` dans `src/lib/catalogue-service.ts` (point de lecture du contrat vitrine, §12, qui reste où il est) ; `table-ownership` tolérait l'écriture de `Brand` par `src/lib/admin/resoudMarque.ts` jusqu'à son déplacement dans `src/server/catalogue/` (tolérance retirée à J11 : le module ne fait plus que lire, `createBrand` du writer écrit) ; `route-handlers` liste en `todo` les routes de la liste fermée pas encore livrées ; `server-actions` exige en plus que `"use server"` soit la première instruction et interdit `defineAction` hors d'un `actions.ts` ; `layers` vérifie aussi l'`import "server-only"` de tête de chaque fichier de `src/server`. Les tests de `src/app-shell` sont écrits dès maintenant et deviennent effectifs avec le shell (J4).
 
 ### 16.3 Intégration sur base réelle (`tests/db/`)
 
@@ -1493,7 +1536,7 @@ Les triggers, CHECK, la vue et les fonctions de période de 03 n'existent qu'en 
 | `invariants.test.ts` | Requêtes de 03 §5.7 vertes après chaque scénario |
 | `periods.test.ts` | `nurea_period_start/end` = `src/domain/periods.ts` autour des changements d'heure |
 | `stock.test.ts` | §11 |
-| `catalogue-media.test.ts` (J11) | Visuels story (§12) : chemin hors `stories/<parfum>/` ou avec `..` refusé ; URL recalculée ; rang calculé sous dépôts concurrents ; 25e visuel refusé ; retrait : suppression d'objet appelée **après** le commit et jamais sur une transaction annulée ; suppression du parfum : chemins lus avant le DELETE |
+| `catalogue-media.test.ts` (J11) | Visuels story (§12) : chemin hors `stories/<parfum>/` ou avec `..` refusé ; URL recalculée ; rang calculé sous dépôts concurrents ; 25e visuel refusé ; retrait : suppression d'objet appelée **après** le commit et jamais sur une transaction annulée ; suppression du parfum : URL lues avant le DELETE |
 | `constraints.test.ts` | CHECK de 03 §4.9 (contenances 10/50/80 : 30 et 100 refusés) ; `PerfumeMedia_path_key` ; cascade `Perfume` → `PerfumeMedia` |
 | `invalidation.test.ts` | Modèles écrits enregistrés, y compris en transaction (§10.2) |
 | `reprise.test.ts` | `scripts/migration/reprise.ts` sur un jeu de données « ancien schéma » (production du 10/09/2026 comprise : contenances 10/50/80, `PerfumeMedia`) reproduisant les cas A, B, C de 03 §7.5 et les cas particuliers de 03 §7.7 : V1–V7 vertes ; écart injecté ⇒ ROLLBACK intégral ; contract appliqué ensuite malgré des lignes qui violent un CHECK (contraintes restées `NOT VALID`, V8) ; visuels story conservés (V11) — détail en 07 J2 |
@@ -1555,13 +1598,13 @@ Ajouts à l'existant, sans toucher aux réglages de la vitrine : `headers()` (§
 | `verify` | `typecheck && lint && test && test:db` |
 | `admin:create-user` | `tsx --conditions=react-server scripts/create-admin.ts` (sans rôle ; garde d'hôte `--confirm-host`) |
 | `migration:reprise` | `scripts/migration/reprise.ts` (`--dry-run` par défaut) |
-| `check:invariants` | `scripts/check-invariants.ts` |
+| `check:invariants` | `scripts/check-invariants.ts` (lecture seule). Exige une `DATABASE_URL` **explicite**, lue avant l'import de Prisma et jamais dans `.env` (qui désigne la production) ; `--confirm-host <hôte>` pour la production (garde partagée des scripts). Exporte `checkInvariants` pour les tests ; option `--chiffres` : J7 |
 | Supprimés | `db:push`, `db:sync` (jamais de `db push` : il ignorerait CHECK, triggers et vue — 03 §3), `db:seed-migrate` |
 | Inchangés (vitrine) | `verify:integration`, `analyze` |
 
 ### 17.4 Dépendances
 
-- **Ajouts** : `server-only`.
+- **Ajouts** : `server-only` ; `esbuild` en dépendance de développement (banc e2e des couches, `e2e/helpers/banc.ts`, qui ne l'avait qu'en dépendance transitive).
 - **Retraits** : `@tanstack/react-query`, `nuqs`, `class-variance-authority`, `motion` (sans importeur à l'audit, à confirmer par recherche avant retrait).
 - **Conservées** : `decimal.js-light` (§5), `jose`, `bcryptjs`, `zod`, `@radix-ui/*`, `vaul`, `cmdk`, `recharts` (chargé à la demande), `@supabase/supabase-js`, `lucide-react`.
 - **React** : l'App Router de Next 16 s'exécute avec la version de React qu'il embarque ; aligner `react`, `react-dom`, `@types/react`, `@types/react-dom` sur la 19 pour que `useOptimistic` et les types associés soient exposés — vérifié par `npm run typecheck` au jalon 0.

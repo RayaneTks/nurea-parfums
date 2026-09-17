@@ -266,7 +266,7 @@ Onze commits de `origin/main`, mis en production le 10/09/2026, absents de la ba
 | | Contenances 10 / 50 / 80, défaut 80, héritées traduites (30 → 10, 100 → 80), contenance inconnue conservée | (b) | CHECK `line_volume_ck` / `pricing_volume_ck` sur 10/50/80 (03 §4.9), `VOLUMES_ML` et `DEFAULT_VOLUME_ML` (`src/domain/sale-line.ts`) ; une valeur hors règle est listée à la reprise et demandée au premier geste (03 §4.3, §7.7), jamais réécrite. |
 | | Quatre écrans qui repliaient une contenance inconnue sur 100 ml | (c) | Impossible : contrat de saisie explicite, garde des lignes reprises (03 §4.3). |
 | | Recherche compta (client seul) et commandes (aucune) | (a) | 06 E10 zone 3, E03 zone 4 (A22). |
-| `3291428` fix(gestion) : la confirmation redevient visible, et ne ment plus | `.admin-theme` repeignait voile et carte des portails | (c) | **Pas rendu impossible : la branche J4a porte le même défaut** — règle ajoutée 05 §2 (« à appliquer »). |
+| `3291428` fix(gestion) : la confirmation redevient visible, et ne ment plus | `.admin-theme` repeignait voile et carte des portails | (c) | **Pas rendu impossible : la branche J4a portait le même défaut** — règle ajoutée 05 §2, appliquée le 17/09/2026 (`01aaed2`). |
 | | `ConfirmDialog` : texte en dur menteur, erreur en toast inerte, `busy` inopérant, corps non défilant, focus | (c) | Texte par appelant et focus sur « Annuler » déjà dans la branche ; **erreur dans la boîte et corps défilant à ajouter** (05 §3.2). |
 | | `orderPurge` supprimait sur GET | (c) | Impossible : aucune lecture n'écrit (04 §7). |
 | | Deux boutons vers « livrée » aux règles différentes | (c) | Impossible : un seul contrôle de statut (06 S01), T4. |
@@ -281,7 +281,7 @@ Onze commits de `origin/main`, mis en production le 10/09/2026, absents de la ba
 | `77985aa` feat(catalogue) : les visuels story vivent enfin à côté du parfum | Modèle `PerfumeMedia`, galerie, partage natif, HEIC, stockage rangé par usage, suppression des objets | (a) + (b) | 03 §2–§3 (`PerfumeMedia`), §7.4 (conservée) ; 04 §12 ; 05 `MediaGallery` (J11) ; 06 E16 zone 7, PC-13. |
 | `12e2327` fix(gestion) : plus de double encaissement, de logo mutilé, de filet muet | Double tap sur « Encaisser » : deux ventes | (c) | Impossible : identifiant fourni par le client + `isLoading` (04 §3.6). |
 | | Logo recadré en 2:3 | (c) | Déjà la règle (02 §4.5, 05 `ImageField kind="logo"`). |
-| | Filet d'information non portalisé : de travers et intapable sous une sheet | (c) | **Défaut présent dans la branche** — règle ajoutée 05 §3.1 (« à appliquer »). |
+| | Filet d'information non portalisé : de travers et intapable sous une sheet | (c) | **Défaut présent dans la branche J4a** — règle ajoutée 05 §3.1, appliquée le 17/09/2026 (`01aaed2`). |
 | | Confirmations qui disent vrai (« sans retour possible » / « filet 5 s ») | (c) | 06 S18. |
 | `b8d015c` fix(visuels) : le serveur ne croit plus le client sur le chemin de stockage | `path` exigé sous `stories/<parfum>/`, URL recalculée | (b) | 04 §3.4 (`addPerfumeMediaAction`), §12. |
 | | Recherche « À rattacher » débouncée | (c) | 06 E05 zone 0 (250 ms). |
