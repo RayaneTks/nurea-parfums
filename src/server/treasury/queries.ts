@@ -5,11 +5,11 @@ import {
   type CashMovementKind,
   type JournalEntry,
   type MonthlyJournal,
-  type PocketKind,
   type PocketSummary,
 } from "@/contracts/treasury";
 import { eurFromDb, toWire } from "@/domain/money";
 import { parisDayKey, parseParisDayKey } from "@/domain/periods";
+import { tresorerie } from "@/server/chiffres";
 import { defineQuery } from "@/server/core/define-query";
 import { db } from "@/server/db/client";
 
@@ -18,41 +18,21 @@ import { db } from "@/server/db/client";
  * poche, S14). Jamais mises en cache inter-requêtes : un formulaire d'écriture lit les poches du moment
  * (04 §10.4). Montants agrégés EN SQL (`numeric`, relus en `::text`, 04 §5.3 règle 4).
  *
- * Le solde d'une poche est la définition de 03 §5.5 ; `src/server/chiffres` (J7) portera `tresorerie()`,
- * seule copie applicative de ce SQL : `activePockets` devra alors s'y adosser (même fragment).
+ * Le solde d'une poche est la définition de 03 §5.5, dont `chiffres.tresorerie()` est la seule source
+ * (04 §6) : `activePockets` la lit, hors cache, et n'y ajoute que la poche proposée par défaut.
  */
-
-type PocketRow = {
-  id: string;
-  name: string;
-  kind: PocketKind;
-  isSystem: boolean;
-  archived: boolean;
-  sortOrder: number;
-  openingBalance: string;
-  balance: string;
-};
 
 /** Poches actives avec leur solde, dans l'ordre choisi (S21), « Non attribué » en dernier (06 S02 zone 3). */
 export const activePockets = defineQuery(async (): Promise<PocketSummary[]> => {
-  const [rows, setting] = await Promise.all([
-    db.$queryRaw<PocketRow[]>`
-      SELECT p.id, p.name, p.kind::text AS kind, p."isSystem", p.archived, p."sortOrder",
-             p."openingBalance"::text AS "openingBalance",
-             (p."openingBalance" + COALESCE(SUM(m.amount), 0))::numeric(12,2)::text AS balance
-      FROM "Pocket" p
-      LEFT JOIN "CashMovement" m ON m."pocketId" = p.id
-      WHERE NOT p.archived
-      GROUP BY p.id
-      ORDER BY p."isSystem", p."sortOrder", p.name, p.id`,
+  const [{ pockets }, setting] = await Promise.all([
+    tresorerie("instant"),
     db.setting.findUnique({ where: { id: 1 }, select: { defaultPocketId: true } }),
   ]);
   const defaultPocketId = setting?.defaultPocketId ?? null;
-  return rows.map((row) => ({
-    ...row,
-    openingBalance: toWire(eurFromDb(row.openingBalance)),
-    balance: toWire(eurFromDb(row.balance)),
-    isDefault: row.isSystem ? defaultPocketId === null : row.id === defaultPocketId,
+  return pockets.map((pocket) => ({
+    ...pocket,
+    archived: false,
+    isDefault: pocket.isSystem ? defaultPocketId === null : pocket.id === defaultPocketId,
   }));
 });
 
