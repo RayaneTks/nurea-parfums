@@ -32,6 +32,9 @@ export function invalidateWrittenModels(models: ReadonlySet<string>): void {
   if (families.has("catalogue")) {
     steps.push(() => updateTag(ADMIN_CATALOGUE_CACHE_TAG));
     steps.push(revalidateAdminCatalogue);
+  } else if (families.has("admin-catalogue")) {
+    // Visuels story seuls : l'instantané de la gestion, sans recalculer la vitrine (04 §10.1).
+    steps.push(() => updateTag(ADMIN_CATALOGUE_CACHE_TAG));
   }
   for (const step of steps) {
     try {

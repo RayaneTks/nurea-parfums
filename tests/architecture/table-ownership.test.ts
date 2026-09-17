@@ -26,6 +26,7 @@ const OWNERS: Record<string, readonly string[]> = {
   brand: ["src/server/catalogue/writer.ts"],
   perfume: ["src/server/catalogue/writer.ts", "src/server/catalogue/stock.ts"],
   perfumePricing: ["src/server/catalogue/writer.ts"],
+  perfumeMedia: ["src/server/catalogue/media.ts"],
   customer: ["src/server/customers/writer.ts"],
   setting: ["src/server/settings/writer.ts"],
   adminUser: ["src/server/auth/writer.ts"],
@@ -33,16 +34,16 @@ const OWNERS: Record<string, readonly string[]> = {
 
 /**
  * Écritures héritées tolérées jusqu'au jalon qui les déplace — jamais au-delà (07 §3.0.3).
- * `resoudMarque.ts` devient `src/server/catalogue/resoudMarque.ts`, écrit par le writer catalogue (J11).
+ * (J11 : `src/lib/admin/resoudMarque.ts` est devenu `src/server/catalogue/resoudMarque.ts`, en lecture
+ * seule ; la marque est créée par le writer catalogue.)
  */
-const PENDING: { file: string; model: string; until: string }[] = [
-  { file: "src/lib/admin/resoudMarque.ts", model: "brand", until: "J11" },
-];
+const PENDING: { file: string; model: string; until: string }[] = [];
 
 const WRITE = /\.\s*(\w+)\s*\.\s*(create|createMany|createManyAndReturn|update|updateMany|updateManyAndReturn|upsert|delete|deleteMany)\s*\(/g;
 
 /** Fichiers qui détiennent le droit d'écrire : ils ne reçoivent que `tx`, jamais le client global. */
-const WRITER_FILE = /^src\/server\/[^/]+\/writer\.ts$|^src\/server\/treasury\/movements\.ts$|^src\/server\/catalogue\/stock\.ts$/;
+const WRITER_FILE =
+  /^src\/server\/[^/]+\/writer\.ts$|^src\/server\/treasury\/movements\.ts$|^src\/server\/catalogue\/(stock|media)\.ts$/;
 
 const SOURCES = listSources("app", "src", "proxy.ts", "instrumentation.ts").filter((file) => !isTestFile(file));
 
