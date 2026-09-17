@@ -1,7 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getAdminWebManifest } from "@/lib/pwa/manifests";
-import { OFFLINE_MESSAGE, OUTDATED_MESSAGE, clientActionError, reservesText } from "../hooks/action-errors";
+import type { ActionError, ActionErrorCode } from "@/contracts/result";
+import { OFFLINE_MESSAGE, OUTDATED_MESSAGE, clientActionError, failsInsideConfirmation, reservesText } from "../hooks/action-errors";
 import { COALESCE_DELAY_MS, createCoalescer } from "../hooks/coalesce";
 import { DRAFT_TTL_MS, readDraft, storageKey, writeDraft, type StorageLike } from "../hooks/draft-store";
 import { applyUrlPatch, readEnum } from "../hooks/url-patch";
@@ -152,6 +153,17 @@ describe("erreurs côté client (04 §9.2)", () => {
         confirm: { title: "Livrer ?", reserves: ["Il reste 40,00 € à encaisser.", "Stock de Sauvage à 1."], confirmLabel: "Livrer" },
       }),
     ).toBe("Il reste 40,00 € à encaisser. Stock de Sauvage à 1.");
+  });
+
+  it("l'écriture confirmée qui échoue se lit DANS la boîte, sauf saisie invalide et session expirée (05 §3.2)", () => {
+    const error = (code: ActionErrorCode): ActionError => ({ code, message: "Refus.", retryable: false });
+    const inside = (["NEEDS_CONFIRMATION", "NOT_FOUND", "CONFLICT", "OFFLINE", "UNAVAILABLE", "UNEXPECTED"] as const).filter((code) =>
+      failsInsideConfirmation(error(code)),
+    );
+    expect(inside).toEqual(["NEEDS_CONFIRMATION", "NOT_FOUND", "CONFLICT", "OFFLINE", "UNAVAILABLE", "UNEXPECTED"]);
+    // Messages sous les champs, derrière la boîte ; retour à la connexion : la boîte se ferme.
+    expect(failsInsideConfirmation(error("VALIDATION"))).toBe(false);
+    expect(failsInsideConfirmation(error("SESSION_EXPIRED"))).toBe(false);
   });
 });
 

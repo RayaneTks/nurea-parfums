@@ -244,7 +244,18 @@ export const runtimeVariables = ["--admin-vh", "--admin-keyboard-inset", "--admi
 
 // ─── Z-index (05 §2.7) ─────────────────────────────────────────────────────
 
-/** Registre unique. Aucun composant n'écrit un z-index littéral. */
+/**
+ * Registre unique. Aucun composant n'écrit un z-index littéral.
+ *
+ * L'ordre encode une hiérarchie d'interruption : une sheet couvre la page, une sheet imbriquée couvre
+ * sa mère, une confirmation couvre tout ce qui l'a ouverte, et le filet d'information passe au-dessus
+ * de tout — c'est souvent lui qui explique pourquoi le reste ne répond pas.
+ *
+ * Une bande par couche, jamais partagée. Sheet imbriquée et modale partageaient 80 / 81 : l'ordre
+ * d'insertion des portails dans le DOM décidait laquelle passait devant, et une confirmation ouverte
+ * depuis une sheet imbriquée pouvait passer dessous (correction de production `3291428`, `3707715`).
+ * Ordre vérifié par `tests/architecture/tokens-sync.test.ts`.
+ */
 export const zIndex = {
   base: 0,
   /** `StickyAction` : au-dessus du contenu qu'il survole dans la zone de scroll. */
@@ -255,14 +266,19 @@ export const zIndex = {
   tabBar: 50,
   /** Menu contextuel ancré à la tab bar. */
   tabBarMenu: 52,
+  /** Sheet, au-dessus de la tab bar. */
   sheetBackdrop: 70,
   sheet: 71,
-  /** Dialogues, ConfirmDialog, sheets imbriquées. */
-  modalBackdrop: 80,
-  modal: 81,
-  commandPalette: 90,
-  /** Au-dessus de tout, y compris de la tab bar. */
-  toast: 95,
+  /** Sheet ouverte depuis une autre sheet (`Sheet nested`). */
+  sheetNestedBackdrop: 80,
+  sheetNested: 81,
+  /** `ConfirmDialog`, dialogues : au-dessus des sheets, imbriquées comprises. */
+  modalBackdrop: 90,
+  modal: 91,
+  /** Palette de commandes (S17). */
+  commandPalette: 92,
+  /** Toasts et filet « Annuler » : au-dessus de tout, confirmation comprise. */
+  toast: 100,
 } as const;
 
 export type ZIndexToken = keyof typeof zIndex;

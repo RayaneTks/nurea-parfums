@@ -72,6 +72,8 @@ Les trois propositions s'accordaient sur l'essentiel (document unique ouvert en 
 | 4 | **Clients** | `Users` | `/admin/clients` | « Qui me doit quoi, et comment le joindre ? » | E12 Clients, E13 À encaisser, E14 Fiche client, E20 Formulaire client |
 | 5 | **Catalogue** | `Package` | `/admin/catalogue` | « Qu'est-ce que je propose sur la vitrine ? » | E15 Catalogue, E16 Fiche parfum, E19 Formulaire parfum, E17 Formulaire marque |
 
+**Lecture de la barre** (décision du 17/09/2026, 05 §3.4) : seul l'onglet actif a un libellé bordeaux et gras. « Vendre » est accentué par sa seule pastille d'icône ; son libellé suit celui des onglets inactifs tant qu'il n'est pas l'onglet courant — deux libellés bordeaux faisaient lire deux onglets actifs.
+
 Hors shell : E18 Connexion (`/admin/login`). Hors routes : E09, page hors ligne statique.
 
 Deux éléments transverses ne sont **ni des onglets ni des routes** : la **recherche globale** (S17, loupe du header, présente sur tous les écrans du shell) et les **sheets** (S01–S21), qui s'ouvrent par-dessus l'écran courant **sans jamais changer d'onglet**.

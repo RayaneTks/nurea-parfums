@@ -224,6 +224,64 @@ export async function collectLayoutViolations(page: Page): Promise<{
 }
 
 /**
+ * Couches peintes (05 §2, correction de production `3291428`) : un voile reste translucide — on doit
+ * voir l'écran dont on vient — et la carte d'une sheet ou d'une confirmation garde sa surface.
+ *
+ * `.admin-theme` portait un fond et passait après les utilitaires : il repeignait voile et carte de
+ * chaque portail en gris opaque, et la confirmation devenait invisible (texte sur un mur uni). Un
+ * voile se déclare par `data-admin-overlay` (posé par `Sheet`, `ConfirmDialog`, la palette).
+ */
+export async function collectLayerPaintViolations(page: Page): Promise<Violation[]> {
+  return page.evaluate(() => {
+    const out: Violation[] = [];
+    const rendered = (el: Element) => {
+      const s = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      return s.display !== "none" && s.visibility !== "hidden" && r.width > 0 && r.height > 0;
+    };
+    const alpha = (color: string): number => {
+      if (color === "transparent") return 0;
+      const inner = /\(([^)]*)\)/.exec(color)?.[1] ?? "";
+      const parts = inner.split(/[\s,/]+/).filter(Boolean);
+      const last = parts.length >= 4 ? parts[parts.length - 1] : undefined;
+      if (last === undefined) return 1;
+      return last.endsWith("%") ? Number.parseFloat(last) / 100 : Number.parseFloat(last);
+    };
+
+    for (const overlay of Array.from(document.querySelectorAll("[data-admin-overlay]"))) {
+      if (!rendered(overlay)) continue;
+      const color = getComputedStyle(overlay).backgroundColor;
+      if (alpha(color) >= 1) {
+        out.push({
+          rule: "voile-opaque",
+          detail: `Voile peint en ${color} : l'écran dessous disparaît (fond repeint par une classe de thème ?).`,
+          selector: `voile ${overlay.tagName.toLowerCase()}`,
+        });
+      }
+    }
+
+    // Couleur de référence résolue par le navigateur, pour comparer à valeur calculée égale.
+    const probe = document.createElement("div");
+    probe.style.background = "var(--admin-surface)";
+    document.body.appendChild(probe);
+    const surface = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    for (const card of Array.from(document.querySelectorAll("[data-vaul-drawer], [data-confirm-dialog]"))) {
+      if (!rendered(card)) continue;
+      const color = getComputedStyle(card).backgroundColor;
+      if (color !== surface) {
+        out.push({
+          rule: "carte-sans-surface",
+          detail: `Carte peinte en ${color} au lieu de la surface (${surface}).`,
+          selector: card.hasAttribute("data-confirm-dialog") ? "confirmation" : "sheet",
+        });
+      }
+    }
+    return out;
+  }) as Promise<Violation[]>;
+}
+
+/**
  * Invariant vérifiable UNIQUEMENT en fin de défilement.
  *
  * La barre d'onglets recouvre la zone de défilement : en cours de route des

@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./Button";
+import { isToastTarget } from "./Toast";
 
 type SheetProps = {
   open: boolean;
@@ -38,13 +39,17 @@ type SheetProps = {
    * l'appelant de demander « Abandonner la saisie ? ».
    */
   dismissible?: boolean;
-  /** Sheet ouverte depuis une autre sheet : couche `modal` (80/81). */
+  /** Sheet ouverte depuis une autre sheet : bande `sheetNested` (80/81), sous les confirmations (90/91). */
   nested?: boolean;
   children: ReactNode;
   className?: string;
 };
 
-/** Bottom sheet iOS (vaul). z 70/71 ; imbriquée 80/81. */
+/**
+ * Bottom sheet iOS (vaul). z 70/71 ; imbriquée 80/81 — bande propre, sous `ConfirmDialog` (90/91) et
+ * le toast (100) : 05 §2.7. Voile et panneau portent `.admin-theme`, qui ne peint pas (05 §2) : le
+ * voile reste translucide, le panneau garde sa surface.
+ */
 export function Sheet({
   open,
   onOpenChange,
@@ -80,18 +85,23 @@ export function Sheet({
     <Root open={open} onOpenChange={onOpenChange} shouldScaleBackground={!nested} dismissible={dismissible}>
       <Drawer.Portal>
         <Drawer.Overlay
+          data-admin-overlay
           className={cn(
             "admin-theme fixed inset-0 bg-[var(--admin-overlay)] backdrop-blur-sm",
-            nested ? "z-[var(--admin-z-modal-backdrop)]" : "z-[var(--admin-z-sheet-backdrop)]",
+            nested ? "z-[var(--admin-z-sheet-nested-backdrop)]" : "z-[var(--admin-z-sheet-backdrop)]",
           )}
         />
         <Drawer.Content
           className={cn(
             "admin-theme fixed inset-x-0 bottom-0 mx-auto flex max-w-[var(--admin-app-max-width)] flex-col outline-none",
             "rounded-t-[var(--admin-radius-xl)] bg-[var(--admin-surface)] shadow-[shadow:var(--admin-shadow-lg)]",
-            nested ? "z-[var(--admin-z-modal)]" : "z-[var(--admin-z-sheet)]",
+            nested ? "z-[var(--admin-z-sheet-nested)]" : "z-[var(--admin-z-sheet)]",
             className,
           )}
+          // Taper « Annuler » sur le toast (au-dessus, 05 §3.1) ne ferme pas la sheet au passage.
+          onPointerDownOutside={(event) => {
+            if (isToastTarget(event.target)) event.preventDefault();
+          }}
           style={{ ...(size === "full" ? { height: sheetHeight } : null), maxHeight: sheetHeight }}
         >
           {handle ? <div className="admin-sheet-handle" /> : null}

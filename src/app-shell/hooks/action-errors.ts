@@ -24,3 +24,24 @@ export function clientActionError(cause: unknown, options: { online: boolean; ou
 export function reservesText(error: ActionError): string {
   return (error.confirm?.reserves ?? []).join(" ");
 }
+
+/**
+ * L'écriture confirmée depuis un `ConfirmDialog` a échoué : son message s'affiche-t-il DANS la boîte
+ * (05 §3.2) ? Oui pour tout refus qui se lit et se réessaie sur place — la boîte reste ouverte,
+ * boutons réactivés, jamais un toast inerte derrière la modale. Non pour `VALIDATION` (les messages
+ * vont sous les champs, derrière la boîte : elle se ferme) et `SESSION_EXPIRED` (retour à la connexion).
+ */
+export function failsInsideConfirmation(error: ActionError): boolean {
+  switch (error.code) {
+    case "VALIDATION":
+    case "SESSION_EXPIRED":
+      return false;
+    case "NEEDS_CONFIRMATION":
+    case "NOT_FOUND":
+    case "CONFLICT":
+    case "OFFLINE":
+    case "UNAVAILABLE":
+    case "UNEXPECTED":
+      return true;
+  }
+}

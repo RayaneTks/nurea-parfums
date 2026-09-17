@@ -9,9 +9,16 @@ import { ListRow } from "../ListRow";
 import { amountToInputText, exceedsMax, sanitizeMoneyText } from "../MoneyInput";
 import { StickyAction } from "../StickyAction";
 import { SWIPE_ACTION_WIDTH, elasticOffset, settleSwipe } from "../SwipeableRow";
+import { Toast } from "../Toast";
 
 const render = (node: React.ReactElement) => renderToStaticMarkup(node);
 const eurOf = (v: string) => eurFromWire(v as MoneyString);
+
+describe("Toast — portalisé (05 §3.1)", () => {
+  it("rien dans le rendu serveur : le toast n'existe que dans le portail vers <body>, après hydratation", () => {
+    expect(render(<Toast message="Ligne supprimée" actionLabel="Annuler" onAction={() => {}} onClose={() => {}} />)).toBe("");
+  });
+});
 
 describe("Button", () => {
   it("expose sa variante : le test d'affichage compte les primary visibles", () => {

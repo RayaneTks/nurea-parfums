@@ -4,6 +4,7 @@ import {
   collectBottomOcclusion,
   collectHydrationViolations,
   collectKeyboardViolations,
+  collectLayerPaintViolations,
   collectLayoutViolations,
   simulateKeyboard,
   type Violation,
@@ -99,10 +100,42 @@ async function collectTabLabelTruncation(page: Page): Promise<Violation[]> {
   );
 }
 
+/**
+ * Seul l'onglet actif a un libellé bordeaux et gras (05 §3.4, décision du 17/09/2026) : quand Vendre
+ * peignait aussi le sien, deux onglets semblaient actifs. Vendre garde son accent par sa pastille.
+ */
+async function collectTabAccent(page: Page): Promise<Violation[]> {
+  return page.evaluate(() => {
+    const bar = document.querySelector<HTMLElement>("[data-tabbar]");
+    if (!bar) return [];
+    const probe = document.createElement("span");
+    probe.style.color = "var(--admin-accent)";
+    bar.appendChild(probe);
+    const accent = getComputedStyle(probe).color;
+    probe.remove();
+    return Array.from(bar.querySelectorAll<HTMLElement>("a")).flatMap((link) => {
+      const label = link.querySelector<HTMLElement>(":scope > span:last-child");
+      if (!label) return [];
+      const name = (label.textContent ?? "").trim();
+      const active = link.getAttribute("aria-current") === "page";
+      const style = getComputedStyle(label);
+      const accented = style.color === accent;
+      const bold = Number(style.fontWeight) >= 700;
+      if (active && (!accented || !bold)) {
+        return [{ rule: "accent-onglet", detail: `Onglet actif sans libellé bordeaux et gras (${style.color}, ${style.fontWeight}).`, selector: `onglet « ${name} »` }];
+      }
+      if (!active && (accented || bold)) {
+        return [{ rule: "accent-onglet", detail: "Libellé bordeaux ou gras sur un onglet inactif : deux onglets semblent actifs.", selector: `onglet « ${name} »` }];
+      }
+      return [];
+    });
+  });
+}
+
 async function screenViolations(page: Page): Promise<{ violations: Violation[]; warnings: Violation[] }> {
   const dead = await collectHydrationViolations(page);
   const { violations, warnings } = await collectLayoutViolations(page);
-  const labels = await collectTabLabelTruncation(page);
+  const labels = [...(await collectTabLabelTruncation(page)), ...(await collectTabAccent(page))];
   await scrollToBottom(page);
   const occluded = await collectBottomOcclusion(page);
   return { violations: unique([...dead, ...violations, ...labels, ...occluded]), warnings };
@@ -155,6 +188,23 @@ test.describe("Invariants d'affichage — gestion", () => {
     expect((await collectTabLabelTruncation(page)).map((v) => v.selector)).toEqual(["onglet « Commandes »"]);
   });
 
+  test("auto-contrôle : seul l'onglet actif parle en bordeaux", async ({ page }) => {
+    await page.setContent(`
+      <nav data-tabbar style="--admin-accent:#7B0B1D">
+        <a href="#" aria-current="page"><span></span><span style="color:#7B0B1D;font-weight:700">Accueil</span></a>
+        <a href="#"><span></span><span style="color:#5F5862;font-weight:500">Commandes</span></a>
+        <a href="#"><span></span><span style="color:#7B0B1D;font-weight:500">Vendre</span></a>
+      </nav>`);
+    expect((await collectTabAccent(page)).map((v) => v.selector)).toEqual(["onglet « Vendre »"]);
+  });
+
+  test("auto-contrôle : un voile repeint en opaque est détecté, un voile translucide passe", async ({ page }) => {
+    await page.setContent(`
+      <div data-admin-overlay style="position:fixed;top:0;left:0;width:40px;height:40px;background:rgba(26,18,21,0.38)"></div>
+      <div data-admin-overlay style="position:fixed;top:0;left:60px;width:40px;height:40px;background:#f2f2f7"></div>`);
+    expect((await collectLayerPaintViolations(page)).map((v) => v.rule)).toEqual(["voile-opaque"]);
+  });
+
   for (const viewport of VIEWPORTS) {
     test.describe(`${viewport.name} (${viewport.width} px)`, () => {
       test.use({
@@ -203,6 +253,7 @@ test.describe("Invariants d'affichage — gestion", () => {
           await expect(dialog.getByLabel("Rechercher", { exact: true })).toBeFocused();
 
           const { violations } = await collectLayoutViolations(page);
+          violations.push(...(await collectLayerPaintViolations(page)));
           expect(violations, format(`${sheet.sheet} sur ${sheet.url} @ ${viewport.width} px`, violations)).toEqual([]);
 
           await simulateKeyboard(page, KEYBOARD);
