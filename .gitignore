@@ -60,3 +60,6 @@ screen.png
 .superpowers/
 .playwright-mcp/
 .tmp/
+
+# Refonte : sorties des scripts de migration et de répétition (données réelles)
+migration-artifacts/

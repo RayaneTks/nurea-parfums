@@ -4,9 +4,21 @@ import bundleAnalyzer from "@next/bundle-analyzer";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+/**
+ * L'hôte de production reste inscrit même quand l'environnement pointe ailleurs :
+ * la base de répétition est une copie de la production et référence ses visuels.
+ */
 function supabaseImageRemotes() {
-  const hostnames = ["lkdhqqzocmxtyarseizc.supabase.co"];
-  return hostnames.map((hostname) => ({
+  const hostnames = new Set(["lkdhqqzocmxtyarseizc.supabase.co"]);
+  const fromEnv = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (fromEnv) {
+    try {
+      hostnames.add(new URL(fromEnv).hostname);
+    } catch {
+      // URL mal formée : on garde l'hôte de production, le build ne doit pas casser pour ça.
+    }
+  }
+  return [...hostnames].map((hostname) => ({
     protocol: "https",
     hostname,
     pathname: "/**",

@@ -34,6 +34,25 @@
 | 15 | Performance | Règles mesurées de l'audit (agrégat en une passe, `react.cache`, Suspense par bloc, listes fenêtrées) ; chiffres de l'Accueil en **un** aller-retour. | 15 |
 | 16 | Tests | Unitaires (argent, domaine) · architecture (règles de ce document) · base réelle (T1–T15, triggers, parité des chiffres, reprise) · e2e (`npm run test:layout` + parcours clés à budget de taps). | 16 |
 
+### 0.1 Amendements reportés au jalon J0 (font foi sur le reste du document)
+
+04 et 06 ont été écrits en parallèle. La réconciliation (07 §3.0.2) tranche : **06 fait foi pour la présentation, la navigation, les gestes et les textes ; ce document fait foi pour le reste**. Les amendements ci-dessous priment sur les passages de ce document qui les contrediraient.
+
+| # | Amendement | Sections touchées |
+|---|---|---|
+| A-1 | Onglets **Accueil · Commandes · Vendre · Clients · Catalogue** ; rattachements et parents de 06 §1.4 (Compta, Journal, Lots, Journée, Statistiques, Réglages sous Accueil ; `/admin/encaisser` sous Clients). | §2.1, §2.3 |
+| A-2 | Route ajoutée : `app/admin/(gestion)/compta/journal/page.tsx` (journal de Trésorerie par mois, E04). | §2.1 |
+| A-3 | **La fiche document est une sheet adressable** `?doc=<id>` (+ `edition=1`) acceptée sur toute page du shell. `PageScaffold` reçoit une prop `docId?: string` et rend `<Block><DocumentSheetBlock id={docId} /></Block>` ; chaque page de `src/features/*/pages` lit `searchParams.doc` et la transmet (vérifié par `tests/architecture/document-sheet.test.ts`). Pas de slot parallèle `@sheet`. Les pages `commandes/[id]`, `commandes/[id]/modifier`, `compta/ventes/[id]`, `compta/ventes/[id]/modifier` et `commandes/nouvelle` ne sont **pas** créées : ce sont des redirections de `next.config.mjs` vers `?doc=` et `/admin/vendre?mode=commande`. | §2.1, §2.3 |
+| A-4 | Mémoire d'onglet (dernier écran, filtres, défilement), retaper l'onglet actif ferme / remonte / réinitialise, retour qui restitue le contexte du parent (06 §1.5). | §2.1 (`navigation.ts`) |
+| A-5 | Actions composées transactionnelles : `deliverAndCollectAction` (T7 puis T4 en **une** transaction) et `collectAllAction` (un T7 par document, du plus ancien au plus récent, **une** transaction). | §3.4 |
+| A-6 | Fiche parfum et grille tarifaire en **un** enregistrement ; `savePerfumePricingAction` n'est pas créée. | §3.4 |
+| A-7 | Requêtes d'écran de 06 §8.1.6 : documents d'une période, séries du graphe par période, classement en unités, coût à compléter, récents du composeur, « Achète souvent », libellés de dépense récents. | §6, queries |
+| A-8 | Paramètres d'URL de 06 §8.1.7 et redirections complémentaires de 06 §1.6. | §2.3 |
+| A-9 | « Refaire » / « Revendre » pré-remplissent le composeur (`?depuis=`, `?client=`, `?parfum=`) ; `duplicateDocumentAction` n'est pas créée. | §3.4 |
+| A-11 | Scripts : `build` passe par `scripts/migration/migrate-deploy-guarded.ts` jusqu'à la bascule (07 §2.3) ; scripts `migration:*` et `repetition:refresh` (07 §2.2) ; mode maintenance `NUREA_GESTION_MAINTENANCE=1` dans `proxy.ts` (503 statique pour `/admin/*`, 503 JSON pour `/api/admin/*`) ; bandeau « Essai — ces données seront effacées » quand `NUREA_ENV=preprod`. | §8.3, §17.3 |
+| A-12 | Note par ligne (`SaleLine.note`) éditable dans le composeur et la fiche document. | §3.4 |
+| A-13 | `tableauDeBord()` : Encaissé et Marge nette **du mois**, À encaisser, Trésorerie ; pas d'Encaissé depuis toujours ni de tuile « Ce mois ». | §6.3, §6.6 |
+
 ---
 
 ## 1. Principes et vue d'ensemble
@@ -190,18 +209,12 @@ nurea-parfums/
 │           ├── page.tsx              Accueil
 │           ├── journee/page.tsx      Récap de journée (N4)
 │           ├── commandes/
-│           │   ├── page.tsx          Liste groupée par urgence
-│           │   ├── nouvelle/page.tsx
-│           │   └── [id]/
-│           │       ├── page.tsx      Fiche d'un document d'origine ORDER
-│           │       └── modifier/page.tsx
-│           ├── vendre/page.tsx
-│           ├── encaisser/page.tsx
+│           │   └── page.tsx          Liste groupée par urgence (fiche document en sheet ?doc=, A-3)
+│           ├── vendre/page.tsx       Composeur unique vente | commande (?mode=commande)
+│           ├── encaisser/page.tsx    Rattaché à l'onglet Clients (A-1)
 │           ├── compta/
 │           │   ├── page.tsx          Vues Ventes / Trésorerie (?vue=tresorerie)
-│           │   └── ventes/[id]/
-│           │       ├── page.tsx      Fiche d'un document d'origine DIRECT_SALE
-│           │       └── modifier/page.tsx
+│           │   └── journal/page.tsx  Journal de Trésorerie par mois (A-2)
 │           ├── lots/
 │           │   ├── page.tsx
 │           │   ├── nouveau/page.tsx
@@ -333,7 +346,7 @@ nurea-parfums/
 
 La route `ordres` n'est pas reconduite (02 §6) ; toutes les routes passent en français. `06-ECRANS-PARCOURS.md` rattache chaque route à un onglet dans `navigation.ts` (invariant : une route, un onglet ; onglet actif et retour racontent le même trajet).
 
-- **Un document, deux adresses selon son origine** : `ORDER` → `/admin/commandes/[id]`, `DIRECT_SALE` → `/admin/compta/ventes/[id]`. Les deux pages montent le même écran (`src/features/documents/pages/DocumentPage.tsx`) ; l'origine ne change jamais (03 §2.3), l'adresse est donc stable. Une page ouverte avec la mauvaise origine redirige vers l'adresse canonique.
+- **Un document s'ouvre en sheet adressable** (amendement A-3, §0.1) : `routes.document({ id, origin })` renvoie `/admin/commandes?doc=<id>` (origine `ORDER`) ou `/admin/compta?doc=<id>` (origine `DIRECT_SALE`). Les adresses `/admin/commandes/[id]`, `/admin/compta/ventes/[id]` et leurs `/modifier` restent joignables **par redirection** vers ces formes (`&edition=1` pour `/modifier`) ; aucune page n'y est créée.
 - **Une sheet qui a besoin de données serveur est pilotée par l'URL** (`?assigner=1`, `?vue=tresorerie`) : ses données arrivent par le RSC de la page, sous `Block`. Aucune route JSON pour charger une sheet.
 
 Redirections permanentes dans `next.config.mjs` (`redirects()`), dans cet ordre :
