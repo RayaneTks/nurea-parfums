@@ -66,6 +66,7 @@ html.admin-route-root,
   --admin-info-subtle: rgba(62, 90, 122, 0.08);
   --admin-info-border: rgba(62, 90, 122, 0.22);
   --admin-overlay: rgba(26, 18, 21, 0.38);
+  --admin-viewer-backdrop: rgba(10, 8, 9, 0.94);
 
   /* Typographie — 05 §2.2 */
   --admin-type-display-size: 32px;

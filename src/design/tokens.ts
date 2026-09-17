@@ -76,6 +76,11 @@ export const colors = {
   infoBorder: "rgba(62, 90, 122, 0.22)",
   /** Backdrop des sheets et des dialogues. */
   overlay: "rgba(26, 18, 21, 0.38)",
+  /**
+   * Fond de la visionneuse plein écran de `MediaGallery` (05 §3.2, portage J11) : une image se juge sur
+   * du noir, pas sur le gris de l'app. Texte et icônes y sont en `onAccent` (≥ 17:1).
+   */
+  viewerBackdrop: "rgba(10, 8, 9, 0.94)",
 } as const;
 
 export type ColorToken = keyof typeof colors;

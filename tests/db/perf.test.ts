@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { Prisma as PrismaNamespace } from "@prisma/client";
+import { ORDERS_PAGE_SIZE } from "@/contracts/documents";
+import { phoneDigitVariants, searchTerms } from "@/contracts/search";
 import { freshStart, loadServer, type Server } from "./transactions/support/harness";
 
 /**
@@ -29,6 +31,7 @@ const BUDGET_MS = 50;
 let server: Server;
 let chiffres: typeof import("@/server/chiffres");
 let sql: typeof import("@/server/chiffres/sql");
+let documentsSql: typeof import("@/server/documents/sql");
 let Prisma: typeof PrismaNamespace;
 
 /** Le jeu × 10, en SQL, dans UNE transaction (les triggers différés vérifient pièces et mouvements au COMMIT). */
@@ -121,26 +124,18 @@ async function explain(query: PrismaNamespace.Sql): Promise<{ execution: number;
 }
 
 /**
- * Première page de la liste Commandes, vue « À livrer » (06 E10 zone 5) : forme attendue de la requête de J8
- * (`documents/queries.ts`, non livrée à J7) — documents à livrer, leur dû par la vue, le client, le décompte des
- * lignes, triés par livraison prévue puis date de commande, 50 par page (04 §15 règle 6).
+ * Première page de la liste Commandes (06 E10, 07 J8) : LA requête de `documents/queries.ts` (`ordersListSql`),
+ * vue « À livrer », sans filtre ni recherche, 50 documents (04 §15 règle 6) ; et la même page sous une recherche
+ * étendue de deux mots, qui plie le texte de chaque commande (E10 zone 3).
  */
-function firstOrdersPageSql(): PrismaNamespace.Sql {
-  return Prisma.sql`
-    SELECT d.id, d.status, d."expectedDeliveryAt", d."expectedDeliveryHasTime", d."orderedAt",
-           COALESCE(c."fullName", d."customerName") AS "customerName",
-           b.total::text AS total, b.paid::text AS paid, b.due::text AS due,
-           lines.count, lines.quantity, lines.delivered
-    FROM "SaleDocument" d
-    JOIN "DocumentBalance" b ON b."documentId" = d.id
-    LEFT JOIN "Customer" c ON c.id = d."customerId"
-    LEFT JOIN LATERAL (
-      SELECT count(*)::int AS count, SUM(l.quantity)::int AS quantity, SUM(l."deliveredQuantity")::int AS delivered
-      FROM "SaleLine" l WHERE l."documentId" = d.id
-    ) lines ON true
-    WHERE d.origin = 'ORDER' AND d.status IN ('PENDING', 'CONFIRMED')
-    ORDER BY d."expectedDeliveryAt" ASC NULLS LAST, d."orderedAt" ASC, d.id ASC
-    LIMIT 50`;
+function firstOrdersPageSql(now: Date, q = ""): PrismaNamespace.Sql {
+  return documentsSql.ordersListSql({
+    view: "a-livrer",
+    filter: null,
+    search: { terms: searchTerms(q), phone: phoneDigitVariants(q) },
+    limit: ORDERS_PAGE_SIZE,
+    now,
+  });
 }
 
 beforeAll(async () => {
@@ -148,6 +143,7 @@ beforeAll(async () => {
   cookieJar.current = await freshStart(server);
   chiffres = await import("@/server/chiffres");
   sql = await import("@/server/chiffres/sql");
+  documentsSql = await import("@/server/documents/sql");
   Prisma = (await import("@prisma/client")).Prisma;
   await server.prisma.$transaction(async (tx) => {
     for (const statement of GENERATE) await tx.$executeRawUnsafe(statement);
@@ -181,8 +177,13 @@ describe("performance des chiffres sur 10 × le volume réel (04 §15)", () => {
     const measures = {
       tableauDeBord: await explain(sql.tableauDeBordSql(now)),
       aEncaisserDetail: await explain(sql.receivablesSql(now)),
-      premierePageCommandes: await explain(firstOrdersPageSql()),
+      premierePageCommandes: await explain(firstOrdersPageSql(now)),
+      premierePageCommandesRecherche: await explain(firstOrdersPageSql(now, "client parfum")),
     };
+    // La requête mesurée est bien celle de l'écran : elle rend la première page de la vue.
+    const rows = await server.prisma.$queryRaw<{ id: string; totalCount: number }[]>(firstOrdersPageSql(now));
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.length).toBeLessThanOrEqual(ORDERS_PAGE_SIZE);
     console.log(
       `EXPLAIN ANALYZE (meilleur de 5, ms) : ${Object.entries(measures)
         .map(([name, m]) => `${name} exécution ${m.execution.toFixed(2)} · planification ${m.planning.toFixed(2)}`)

@@ -14,6 +14,13 @@ export const E2E_REMOTE = process.env.E2E_REMOTE === "1";
 export const E2E_PORT = process.env.PLAYWRIGHT_PORT ?? "3100";
 export const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${E2E_PORT}`;
 
+/**
+ * Faux stockage d'images (`e2e/support/fake-storage-server.ts`) : l'app lancée pour les tests y envoie ses
+ * visuels à la place de Supabase (`NEXT_PUBLIC_SUPABASE_URL`), sur la boucle locale uniquement.
+ */
+export const E2E_STORAGE_PORT = process.env.E2E_STORAGE_PORT ?? "3101";
+export const E2E_STORAGE_URL = `http://127.0.0.1:${E2E_STORAGE_PORT}`;
+
 /** Base locale des e2e : PostgreSQL 15 de `docs/refonte/00-README.md`, base dédiée. */
 export const E2E_DATABASE_URL =
   process.env.E2E_DATABASE_URL ?? "postgresql://nurea:nurea@localhost:54329/nurea_test_e2e";

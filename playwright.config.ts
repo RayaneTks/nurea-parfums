@@ -6,6 +6,8 @@ import {
   E2E_PORT,
   E2E_REMOTE,
   E2E_SERVER,
+  E2E_STORAGE_PORT,
+  E2E_STORAGE_URL,
   STORAGE_STATE,
 } from "./e2e/support/env";
 
@@ -26,8 +28,9 @@ const serverEnv: Record<string, string> = {
   DATABASE_URL: E2E_DATABASE_URL,
   DIRECT_URL: E2E_DATABASE_URL,
   ADMIN_JWT_SECRET: E2E_JWT_SECRET,
-  // Neutralisés : Supabase (stockage d'images) et services de la vitrine ne sont jamais joints.
-  NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:9/e2e-sans-supabase",
+  // Neutralisés : Supabase n'est jamais joint. Le stockage d'images est le faux serveur local
+  // (`e2e/support/fake-storage-server.ts`) : le code de `storage.ts` s'exécute tel quel, vers la boucle locale.
+  NEXT_PUBLIC_SUPABASE_URL: E2E_STORAGE_URL,
   SUPABASE_SERVICE_ROLE_KEY: "e2e-sans-cle",
   SUPABASE_STORAGE_BUCKET: "catalog",
   ADMIN_DASHBOARD_SECRET: "e2e-sans-secret",
@@ -62,16 +65,27 @@ export default defineConfig({
   ],
   webServer: E2E_REMOTE
     ? undefined
-    : {
-        command:
-          E2E_SERVER === "start"
-            ? `node node_modules/next/dist/bin/next start --port ${E2E_PORT}`
-            : `node node_modules/next/dist/bin/next dev --webpack --port ${E2E_PORT}`,
-        url: `${BASE_URL}/admin/login`,
-        reuseExistingServer: process.env.E2E_REUSE_SERVER === "1",
-        timeout: 240_000,
-        stdout: "ignore",
-        stderr: "pipe",
-        env: serverEnv,
-      },
+    : [
+        {
+          command: "node node_modules/tsx/dist/cli.mjs e2e/support/fake-storage-server.ts",
+          url: `${E2E_STORAGE_URL}/health`,
+          reuseExistingServer: process.env.E2E_REUSE_SERVER === "1",
+          timeout: 30_000,
+          stdout: "ignore",
+          stderr: "pipe",
+          env: { E2E_STORAGE_PORT },
+        },
+        {
+          command:
+            E2E_SERVER === "start"
+              ? `node node_modules/next/dist/bin/next start --port ${E2E_PORT}`
+              : `node node_modules/next/dist/bin/next dev --webpack --port ${E2E_PORT}`,
+          url: `${BASE_URL}/admin/login`,
+          reuseExistingServer: process.env.E2E_REUSE_SERVER === "1",
+          timeout: 240_000,
+          stdout: "ignore",
+          stderr: "pipe",
+          env: serverEnv,
+        },
+      ],
 });

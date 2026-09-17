@@ -16,6 +16,7 @@ export { ErrorBanner } from "./ErrorBanner";
 export { InlineNameEditor } from "./InlineNameEditor";
 export { ImageField, type ImageKind, type ImageCrop } from "./ImageField";
 export { ImagePreview, type ImageFrame } from "./ImagePreview";
+export { MediaGallery, saveMedia, SAVE_FAILED_MESSAGE, type MediaItem, type SaveOutcome } from "./MediaGallery";
 export { DateLabel } from "./DateLabel";
 export { RelativeTime } from "./RelativeTime";
 export type { DateFormat } from "./date-format";

@@ -68,6 +68,16 @@ async function open(page: Page, url: string, shell: boolean): Promise<void> {
   await page.waitForTimeout(300);
 }
 
+/**
+ * Contenu rendu après l'hydratation (sheet adressable `?doc=`, 07 J8) : attendu, puis la fin de l'animation
+ * d'entrée de la sheet, avant toute mesure.
+ */
+async function settle(page: Page, waitFor: string | undefined): Promise<void> {
+  if (!waitFor) return;
+  await page.locator(waitFor).first().waitFor({ state: "visible" });
+  await page.waitForTimeout(600);
+}
+
 /** Amène la zone de défilement en bas, jusqu'à stabilisation : la réserve basse se prouve là. */
 async function scrollToBottom(page: Page): Promise<void> {
   let previous = -1;
@@ -221,6 +231,7 @@ test.describe("Invariants d'affichage — gestion", () => {
           test(`${screen.url} respecte les invariants`, async ({ page, context, baseURL }) => {
             await addCookies(context, screen, baseURL);
             await open(page, screen.url, screen.shell);
+            await settle(page, screen.waitFor);
             const { violations, warnings } = await screenViolations(page);
             if (warnings.length > 0) console.warn(format(`${screen.url} @ ${viewport.width} px (avertissements)`, warnings));
             expect(violations, format(`${screen.url} @ ${viewport.width} px`, violations)).toEqual([]);
@@ -231,6 +242,7 @@ test.describe("Invariants d'affichage — gestion", () => {
             test(`clavier ouvert sur « ${field} »`, async ({ page, context, baseURL }) => {
               await addCookies(context, screen, baseURL);
               await open(page, screen.url, screen.shell);
+              await settle(page, screen.waitFor);
               await simulateKeyboard(page, KEYBOARD);
               await page.getByLabel(field, { exact: true }).focus();
               // Le cadrage suit la montée du clavier (~320 ms) puis un défilement doux.
@@ -246,11 +258,28 @@ test.describe("Invariants d'affichage — gestion", () => {
       for (const sheet of SHEETS) {
         test(`${sheet.sheet} — ${sheet.label}, clavier ouvert`, async ({ page }) => {
           await open(page, sheet.url, true);
-          await page.locator("[data-search-trigger]").tap();
-          const dialog = page.locator("[data-command-palette]");
-          await expect(dialog).toBeVisible();
-          // Le champ du dialogue, et non le bouton « Rechercher » du header qui porte le même nom.
-          await expect(dialog.getByLabel("Rechercher", { exact: true })).toBeFocused();
+          let dialog;
+          if (sheet.open === "search") {
+            await page.locator("[data-search-trigger]").tap();
+            dialog = page.locator("[data-command-palette]");
+            await expect(dialog).toBeVisible();
+            // Le champ du dialogue, et non le bouton « Rechercher » du header qui porte le même nom.
+            await expect(dialog.getByLabel("Rechercher", { exact: true })).toBeFocused();
+          } else {
+            const taps = typeof sheet.open.tap === "string" || sheet.open.tap instanceof RegExp ? [sheet.open.tap] : sheet.open.tap;
+            for (const [index, name] of taps.entries()) {
+              // Toucher suivant : le contrôle est dans la sheet ouverte par le précédent, portée APRÈS l'écran dans le DOM.
+              const matches = page.getByRole(sheet.open.role ?? "button", { name, exact: true });
+              const trigger = index === 0 ? matches.first() : matches.last();
+              // Le contrôle vit dans un bloc streamé : il répond une fois hydraté.
+              if (index === 0) await waitForHydration(trigger);
+              await trigger.tap();
+              // Fin de l'animation d'entrée (260 ms) avant le toucher suivant ou la mesure.
+              await page.waitForTimeout(450);
+            }
+            dialog = page.locator(sheet.open.layer === "drawer" ? '[data-vaul-drawer][data-state="open"]' : "[data-media-viewer]").last();
+            await expect(dialog).toBeVisible();
+          }
 
           const { violations } = await collectLayoutViolations(page);
           violations.push(...(await collectLayerPaintViolations(page)));
@@ -259,6 +288,8 @@ test.describe("Invariants d'affichage — gestion", () => {
           await simulateKeyboard(page, KEYBOARD);
           for (const field of sheet.keyboardFields ?? []) {
             await dialog.getByLabel(field, { exact: true }).focus();
+            // Comme pour un écran : le cadrage suit la montée du clavier (~320 ms) puis un défilement doux.
+            await page.waitForTimeout(900);
             const found = await collectKeyboardViolations(page, KEYBOARD);
             expect(found, format(`${sheet.sheet} @ ${viewport.width} px, clavier sur « ${field} »`, found)).toEqual([]);
           }

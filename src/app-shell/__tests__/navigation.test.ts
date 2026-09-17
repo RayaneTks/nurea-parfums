@@ -272,6 +272,17 @@ describe("retour qui restitue le contexte du parent (06 §1.5)", () => {
     expect(toCatalogue && resolveBack(toCatalogue, memory)).toEqual({ url: "/admin/catalogue?tab=parfums", scrollTop: 0 });
   });
 
+  it("un paramètre absent vaut son défaut : la liste Parfums filtrée revient telle quelle depuis une fiche (F-4.5-08)", () => {
+    const memory = createTabMemory();
+    memory.remember("catalogue", "/admin/catalogue?q=sauv&stock=bas", 240);
+    memory.remember("catalogue", "/admin/catalogue/parfums/12", 0);
+    const toParfums = getParentScreen("/admin/catalogue/parfums/12");
+    expect(toParfums && resolveBack(toParfums, memory)).toEqual({ url: "/admin/catalogue?q=sauv&stock=bas", scrollTop: 240 });
+    // L'onglet Marques n'est pas le défaut : le retour « Marques » ne reprend pas la liste des parfums.
+    const toMarques = getParentScreen("/admin/catalogue/marques/nouvelle");
+    expect(toMarques && resolveBack(toMarques, memory)).toEqual({ url: "/admin/catalogue?tab=marques", scrollTop: 0 });
+  });
+
   it("parent jamais visité : son adresse, en haut", () => {
     const parent = getParentScreen("/admin/compta/journal");
     expect(parent && resolveBack(parent, createTabMemory())).toEqual({ url: "/admin/compta?vue=tresorerie", scrollTop: 0 });

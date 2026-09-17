@@ -32,3 +32,18 @@ export function formatPhone(e164: string): string {
   const m = /^\+33([1-9])(\d{2})(\d{2})(\d{2})(\d{2})$/.exec(e164);
   return m ? `+33 ${m.slice(1).join(" ")}` : e164;
 }
+
+/**
+ * Comme on l'écrit en France : « 06 12 34 56 78 » (légendes de liste, 06 E12, S06) ; un numéro étranger est
+ * rendu en format international lisible.
+ */
+export function formatPhoneNational(e164: string): string {
+  const m = /^\+33([1-9])(\d{2})(\d{2})(\d{2})(\d{2})$/.exec(e164);
+  return m ? `0${m[1]} ${m.slice(2).join(" ")}` : e164;
+}
+
+/** Chiffres d'un E.164 sous ses deux formes cherchables : « 33612345678 » et « 0612345678 ». */
+export function phoneSearchDigits(e164: string): string[] {
+  const digits = e164.replace(/\D/g, "");
+  return /^33[1-9]\d{8}$/.test(digits) ? [digits, `0${digits.slice(2)}`] : [digits];
+}

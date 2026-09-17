@@ -1,4 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
+import { seedDocuments } from "./documents";
 
 /**
  * Jeu minimal des tests de bout en bout (04 §16.4) : poches (dont « Non attribué »), réglages,
@@ -12,18 +13,30 @@ import type { PrismaClient } from "@prisma/client";
 /** Visuel local servi par `public/` : un parfum publié exige une image (CHECK `perfume_publish_image_ck`). */
 const IMAGE = "/branding/monogram/np-circle-bordeaux.webp";
 
+/**
+ * Identifiant à la forme d'un cuid (`c` + 24 caractères), la seule qu'acceptent les contrats (`entityId`,
+ * `src/domain/ids.ts`) : un identifiant de seed « e2e-marque-dior » était refusé par toute action qui le
+ * reçoit (« Cet élément n'est plus reconnu »). Lisible dans la base : `ce2emarquedior00000000000`.
+ */
+export function seedEntityId(label: string): string {
+  return `c${`e2e${label}`.replace(/[^a-z0-9]/g, "").padEnd(24, "0").slice(0, 24)}`;
+}
+
 export const SEED = {
+  // Identifiants de poche, de client et de lot à la forme d'un cuid : les encaissements et rattachements (J8) les
+  // reçoivent par leurs contrats (`recordId`, `entityId`).
   pockets: [
-    { id: "e2e-poche-non-attribue", name: "Non attribué", kind: "UNASSIGNED", isSystem: true, sortOrder: 0 },
-    { id: "e2e-poche-especes", name: "Espèces", kind: "CASH", isSystem: false, sortOrder: 1 },
-    { id: "e2e-poche-banque", name: "Banque", kind: "BANK", isSystem: false, sortOrder: 2 },
+    { id: seedEntityId("pochenonattribue"), name: "Non attribué", kind: "UNASSIGNED", isSystem: true, sortOrder: 0 },
+    { id: seedEntityId("pocheespeces"), name: "Espèces", kind: "CASH", isSystem: false, sortOrder: 1 },
+    { id: seedEntityId("pochebanque"), name: "Banque", kind: "BANK", isSystem: false, sortOrder: 2 },
   ],
   brands: [
-    { id: "e2e-marque-dior", name: "Dior", slug: "dior" },
-    { id: "e2e-marque-chanel", name: "Chanel", slug: "chanel" },
-    { id: "e2e-marque-ysl", name: "Yves Saint Laurent", slug: "yves-saint-laurent" },
-    { id: "e2e-marque-guerlain", name: "Guerlain", slug: "guerlain" },
-    { id: "e2e-marque-lattafa", name: "Lattafa", slug: "lattafa" },
+    // `key` : référence des parfums ci-dessous ; `id` : l'identifiant en base, à la forme d'un cuid.
+    { key: "e2e-marque-dior", id: seedEntityId("marquedior"), name: "Dior", slug: "dior" },
+    { key: "e2e-marque-chanel", id: seedEntityId("marquechanel"), name: "Chanel", slug: "chanel" },
+    { key: "e2e-marque-ysl", id: seedEntityId("marqueysl"), name: "Yves Saint Laurent", slug: "yves-saint-laurent" },
+    { key: "e2e-marque-guerlain", id: seedEntityId("marqueguerlain"), name: "Guerlain", slug: "guerlain" },
+    { key: "e2e-marque-lattafa", id: seedEntityId("marquelattafa"), name: "Lattafa", slug: "lattafa" },
   ],
   /** [marque, nom, stock (null = non suivi), publié] — ruptures, stocks bas et masqués compris. */
   perfumes: [
@@ -49,24 +62,38 @@ export const SEED = {
     ["e2e-marque-lattafa", "Oud Mood", 0, true],
   ] as const,
   customers: [
-    { id: "e2e-client-fares", fullName: "Fares Benali", phoneE164: "+33612345678", snapchat: "fares.b" },
-    { id: "e2e-client-lina", fullName: "Lina Haddad", phoneE164: "+33698765432", snapchat: null },
-    { id: "e2e-client-elise", fullName: "Élise Martin", phoneE164: null, snapchat: "elise.m" },
-    { id: "e2e-client-yanis", fullName: "Yanis Cherif", phoneE164: "+33700000001", snapchat: null },
-    { id: "e2e-client-sarah", fullName: "Sarah Kaci", phoneE164: null, snapchat: null },
+    { id: seedEntityId("clientfares"), fullName: "Fares Benali", phoneE164: "+33612345678", snapchat: "fares.b" },
+    { id: seedEntityId("clientlina"), fullName: "Lina Haddad", phoneE164: "+33698765432", snapchat: null },
+    { id: seedEntityId("clientelise"), fullName: "Élise Martin", phoneE164: null, snapchat: "elise.m" },
+    { id: seedEntityId("clientyanis"), fullName: "Yanis Cherif", phoneE164: "+33700000001", snapchat: null },
+    { id: seedEntityId("clientsarah"), fullName: "Sarah Kaci", phoneE164: null, snapchat: null },
   ],
-  batch: { id: "e2e-lot-mars", name: "Commande de mars" },
+  batch: { id: seedEntityId("lotmars"), name: "Commande de mars" },
+  /** Visuels story déjà rangés (06 E16 zone 7 « 3 visuels ») : sur Khamrah, servis par `public/`. */
+  storyVisuals: { perfume: "Khamrah", count: 3 },
 } as const;
+
+/**
+ * Identifiant attendu d'un parfum du jeu : base neuve, séquence à 1, parfums insérés dans l'ordre de
+ * `SEED.perfumes`. `seedE2e` vérifie que la base a bien donné ces identifiants (les adresses d'écran de
+ * `e2e/routes.ts` sont écrites avant toute connexion à la base).
+ */
+export function seedPerfumeId(name: (typeof SEED.perfumes)[number][1]): number {
+  return SEED.perfumes.findIndex((perfume) => perfume[1] === name) + 1;
+}
 
 export async function seedE2e(db: PrismaClient): Promise<void> {
   await db.pocket.createMany({
     data: SEED.pockets.map((p) => ({ ...p, kind: p.kind, openingBalance: "0" })),
   });
-  await db.setting.create({ data: { id: 1, defaultExchangeRate: "277", defaultPocketId: "e2e-poche-especes" } });
-  await db.brand.createMany({ data: SEED.brands.map((b) => ({ ...b, catalogMode: "CURATED", status: "PUBLISHED" })) });
+  await db.setting.create({ data: { id: 1, defaultExchangeRate: "277", defaultPocketId: SEED.pockets[1].id } });
+  await db.brand.createMany({
+    data: SEED.brands.map(({ key: _key, ...b }) => ({ ...b, catalogMode: "CURATED", status: "PUBLISHED" })),
+  });
+  const brandIds = new Map<string, string>(SEED.brands.map((b) => [b.key, b.id]));
   await db.perfume.createMany({
-    data: SEED.perfumes.map(([brandId, name, stock, published]) => ({
-      brandId,
+    data: SEED.perfumes.map(([brandKey, name, stock, published]) => ({
+      brandId: brandIds.get(brandKey) as string,
       name,
       stock,
       image: IMAGE,
@@ -80,8 +107,36 @@ export async function seedE2e(db: PrismaClient): Promise<void> {
       { perfumeId: sauvage.id, volumeMl: 50, defaultUnitPriceEur: "85", defaultUnitCostDzd: "15000", defaultExchangeRate: "277" },
     ],
   });
+  const ids = await db.perfume.findMany({ select: { id: true, name: true } });
+  for (const perfume of ids) {
+    if (perfume.id !== seedPerfumeId(perfume.name as (typeof SEED.perfumes)[number][1])) {
+      throw new Error(`Seed e2e : ${perfume.name} a reçu l'identifiant ${perfume.id}, attendu ${seedPerfumeId(perfume.name as never)}.`);
+    }
+  }
+  const storyPerfume = seedPerfumeId(SEED.storyVisuals.perfume);
+  await db.perfumeMedia.createMany({
+    data: Array.from({ length: SEED.storyVisuals.count }, (_, index) => ({
+      id: `e2e-visuel-${index + 1}`,
+      perfumeId: storyPerfume,
+      path: `stories/${storyPerfume}/175750000000${index}-0000000${index}.webp`,
+      url: IMAGE,
+      label: index === 0 ? "Story 9:16" : null,
+      width: 1080,
+      height: 1920,
+      bytes: 120_000,
+      sortOrder: index,
+    })),
+  });
   await db.customer.createMany({ data: SEED.customers.map((c) => ({ ...c })) });
   await db.batch.create({
     data: { ...SEED.batch, status: "OPEN", expectedAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) },
+  });
+  // Commandes, ventes et paiements des écrans J8 (fiche document, Commandes, À encaisser) : `documents.ts`.
+  await seedDocuments(db, {
+    image: IMAGE,
+    pockets: { cash: SEED.pockets[1].id, bank: SEED.pockets[2].id },
+    customers: Object.fromEntries(SEED.customers.map((c) => [c.fullName.split(" ")[0] as string, c.id])),
+    perfumeId: (name) => seedPerfumeId(name as (typeof SEED.perfumes)[number][1]),
+    brandOf: (name) => SEED.brands.find((b) => b.key === SEED.perfumes.find((p) => p[1] === name)?.[0])?.name ?? null,
   });
 }

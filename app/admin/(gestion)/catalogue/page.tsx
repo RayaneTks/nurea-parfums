@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { ROUTE_SPECS } from "@/app-shell/routes";
-import { EcranProvisoire } from "../_provisoire/EcranProvisoire";
+import { CataloguePage } from "@/features/catalogue";
+import { firstParam, type PageSearchParams } from "@/features/documents";
 
-// PROVISOIRE (07 J4) — E15 Catalogue définitif au jalon J11.
+// E15 — les filtres (`tab`, `q`, `stock`, `visibilite`, `gamme`) sont lus côté client, sous Suspense ; `doc` ici (A-3).
 export const metadata: Metadata = { title: "Catalogue" };
 
-export default function CataloguePage() {
-  return <EcranProvisoire titre="Catalogue" jalon={ROUTE_SPECS.catalogue.jalon} />;
+export default async function Page({ searchParams }: { searchParams: PageSearchParams }) {
+  const params = await searchParams;
+  return <CataloguePage docId={firstParam(params.doc)} />;
 }
