@@ -7,7 +7,7 @@ import type { Tx } from "@/server/db/transaction";
  * Les SEULES écritures de `Perfume.stock` (03 §4.7, 04 §11, test `table-ownership`).
  *
  * - `applyDeliveredDeltas` : le stock suivi bouge du delta des quantités livrées, décidé par le writer
- *   `documents` (T1, T2, T3, T4, T6 ; T4b et T5 à J6).
+ *   `documents` (T1, T2, T3, T4, T4b, T5, T6).
  * - `setStock` : le réglage absolu du gérant (`setPerfumeStockAction`, J11).
  *
  * Toute écriture passe par Prisma : l'unité de travail inscrit `Perfume`, et `defineAction` en déduit

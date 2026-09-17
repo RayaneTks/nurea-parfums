@@ -166,7 +166,7 @@ Reprise de la carte fonctionnelle (01 §3), capacité par capacité. **Toute cap
 | Capacité (01 §3.5) | Décision | Justification |
 |---|---|---|
 | Liste 3 onglets (Parfums / Marques / En avant), recherche, chips, état dans l'URL, deep-link `?stock=low` | **Garder** | Recherche insensible aux accents partout (comme les pickers). |
-| CRUD parfum et marque, dédoublonnage de marques (`cleNom`), normalisation orthographique (`nommage.ts`) | **Garder** | `nommage.ts` et `resoudMarque` repris tels quels (doctrine « on ne recasse que ce dont on est sûr »). |
+| CRUD parfum et marque, dédoublonnage de marques (`cleNom`), normalisation orthographique (`nommage.ts`) | **Garder** | `nommage.ts` et la règle de `resoudMarque` repris tels quels (doctrine « on ne recasse que ce dont on est sûr ») ; `resoudMarque` ne fait plus que lire, la création de marque passe par le writer du catalogue (04 §2.1). |
 | Bascule de visibilité optimiste + rollback, verrous de publication en cascade | **Garder** | Gardes définies en UN endroit serveur, l'UI les consomme (plus trois formulations divergentes). |
 | Mise en avant limitée à 2 emplacements | **Garder** | Contrainte vitrine ; exige désormais un parfum PUBLISHED (plus d'emplacement occupé par un invisible). |
 | Upload d'images WebP (crop client, URL signée Supabase, auto-save après upload) | **Garder** | L'auto-save élimine le cas « image envoyée puis perdue ». Le crop portrait ne s'applique plus aux logos de marque (règle projet : jamais déformer un logo — corrigé aussi en production le 10/09/2026, `12e2327`). Photos HEIC d'iPhone acceptées (converties en WebP). |

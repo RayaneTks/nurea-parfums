@@ -99,7 +99,11 @@ export function seedBatch(prisma: Prisma, data: { name: string; status?: "OPEN" 
   return prisma.batch.create({ data: { name: data.name, status: data.status ?? "OPEN" } });
 }
 
-/** Un paiement comme le module encaissements l'écrira (J6) : mouvement PAYMENT et sa pièce, même transaction. */
+/**
+ * Un acompte semé directement en base, sans passer par les writers : mouvement PAYMENT et sa pièce DEPOSIT, même
+ * transaction, comme `payments/writer.insertPayment`. Sert à préparer un document « qui a un paiement » (T4, T6) ;
+ * les encaissements eux-mêmes sont éprouvés par leurs actions (`t01-create-document-with-payments`, `t07`, `t08`).
+ */
 export async function seedPayment(prisma: Prisma, documentId: string, amount: string) {
   const pocket =
     (await prisma.pocket.findFirst({ where: { isSystem: true } })) ??

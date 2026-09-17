@@ -156,7 +156,7 @@ export function LoginScreen({ retour, expired, preprod }: LoginScreenProps) {
   const busy = pending || leaving;
 
   return (
-    <div className="admin-theme admin-app-container">
+    <div className="admin-theme admin-paint admin-app-container">
       <ViewportService />
       {preprod ? <PreprodBanner /> : null}
       <main

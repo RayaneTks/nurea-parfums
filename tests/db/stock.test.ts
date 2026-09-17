@@ -14,8 +14,10 @@ import {
 
 /**
  * Stock (03 §4.7, 04 §11, 07 J5) : `Perfume.stock` ne bouge que du delta des quantités livrées (T1, T2,
- * T3, T4, T6 ; T4b et T5 à J6) ou par réglage absolu ; `NULL` = non suivi, jamais écrit ; jamais négatif
- * en silence ; lecture et écriture sous verrou de ligne ; toute écriture déclenche le contrat vitrine.
+ * T3, T4, T4b, T5, T6) ou par réglage absolu ; `NULL` = non suivi, jamais écrit ; jamais négatif en
+ * silence ; lecture et écriture sous verrou de ligne ; toute écriture déclenche le contrat vitrine.
+ * L'annulation (T5) et le filet « Annuler » (T4b) sont éprouvés dans `t05-cancel-document` et
+ * `t04b-revert-document-change`.
  */
 
 const cache = vi.hoisted(() => ({ calls: [] as string[] }));
@@ -109,7 +111,7 @@ describe("stock — deltas des quantités livrées", () => {
     }
   });
 
-  it("suppression (T6) et retrait d'une ligne livrée (T2) restituent ; l'annulation (T5) est éprouvée à J6", async () => {
+  it("suppression (T6) et retrait d'une ligne livrée (T2) restituent (l'annulation T5 : t05-cancel-document)", async () => {
     const sauvage = await seedPerfume(server.prisma, { stock: 5 });
     const first = await createDocument("DIRECT_SALE", [catalogueLine(sauvage.id, { quantity: 2 })]);
     const second = await createDocument("DIRECT_SALE", [
