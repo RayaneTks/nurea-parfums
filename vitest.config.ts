@@ -48,7 +48,9 @@ export default defineConfig({
           name: "db",
           include: ["tests/db/**/*.test.ts"],
           globalSetup: ["tests/db/global-setup.ts"],
-          fileParallelism: false,
+          // Un seul processus, fichiers l'un après l'autre : ils partagent la base et la vident par
+          // TRUNCATE. `fileParallelism` n'est lu que dans la config racine (ignoré ici par Vitest 3.2).
+          poolOptions: { forks: { singleFork: true } },
           testTimeout: 30_000,
           hookTimeout: 120_000,
         },
