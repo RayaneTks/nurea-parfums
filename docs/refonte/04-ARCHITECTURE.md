@@ -863,6 +863,8 @@ interface Chiffres {
 
 `src/domain/document-balance.ts` calcule **en mémoire** le total, le coût, le payé et le dû d'un document (aperçu du formulaire, plafond d'encaissement avant envoi, réserves). C'est l'unique calcul d'argent hors SQL (03 §5.7). Le test `tests/db/chiffres-parity.test.ts` génère des documents aléatoires (graine fixe, lignes offertes, coûts inconnus, remboursements, trop-perçus), écrit par les writers, puis compare la vue `DocumentBalance` au jumeau pour chaque document : un centime d'écart fait échouer la CI.
 
+Correspondance des champs (`documentBalance(lines, payments)`) : `total`, `paid`, `due`, `hasUnknownCost` ↔ colonnes homonymes ; **colonne `cost` ↔ `knownCost`** (coûts inconnus comptés 0, règle de la Marge nette, 03 §5.4). Le jumeau expose en plus `cost: Eur | null` — `null` dès qu'une ligne a un coût inconnu, parce qu'un document affiche alors « Marge avant dépenses : coût à compléter » et jamais une marge gonflée par un 0 (06 S01) —, `marginBeforeExpenses` (`null` dans le même cas) et `overpaid` (« Trop-perçu », 06 §1.7). Ces trois champs se déduisent des colonnes : le test de parité vérifie `cost === null ⇔ hasUnknownCost`.
+
 ### 6.5 Le temps
 
 - Bornes métier (« aujourd'hui », « ce mois », « semaine » calendaire commençant le lundi, « en retard ») : **en SQL**, via `nurea_period_start` / `nurea_period_end` en Europe/Paris. Jamais `setHours(0,0,0,0)` ni `new Date(année, mois, 1)` côté serveur (bug 01 §4.6).
@@ -1022,7 +1024,7 @@ Aucune requête ni action ne peut s'exporter sans passer par ces fabriques (test
 
 - **`loginAction`** (seule action `public`, écran `/admin/login`) : identifiant normalisé (trim, minuscules) ; compte inconnu → `bcrypt.compare` contre un hash factice (temps de réponse égalisé, conservé de l'existant) ; message indifférencié « Identifiant ou mot de passe incorrect. ».
 - **Backoff persistant** (`AdminUser.failedLoginCount`, `lockedUntil`, 03 §3) : au 5ᵉ échec consécutif, verrouillage 1 min, puis doublé à chaque nouvel échec (2, 4, 8 min), plafonné à 15 min ; remis à zéro au succès. Message : « Trop d'essais. Réessaie dans 4 min. » Efficace en serverless, contrairement à la `Map` en mémoire de l'existant.
-- **Succès** : cookie posé, `ok` avec la destination ; le client fait `router.replace(retour)` — `retour` n'est accepté que s'il commence par `/admin/` (ni `//`, ni URL absolue).
+- **Succès** : cookie posé, `ok` avec la destination ; le client fait `router.replace(retour)` — `retour` n'est accepté que s'il désigne, une fois résolu sur la même origine, `/admin` ou un chemin sous `/admin/` (ni `//`, ni `/\`, ni URL absolue, ni `/admin/login`) ; sinon la destination est `/admin`, sans erreur de validation. `/admin` seul doit passer : c'est le `retour` que pose `proxy.ts` pour l'Accueil. Implémentation : `safeReturnPath` de `src/contracts/auth.ts`, appliqué par le schéma `loginInput`.
 - **`logoutAction`** : écran Réglages ; efface le cookie, redirige vers la connexion.
 - **Expiration en cours de saisie** : brouillon sauvé, retour à la connexion avec `retour`, brouillon restauré au retour (§3.7) ; le message « Ta session a expiré » est enfin affiché (paramètres morts de l'existant, 01 §4.7).
 
@@ -1075,7 +1077,7 @@ Côté domaine, `src/domain/errors.ts` fournit `DomainError(code, message, field
 | Code | Exemple de message | Réessayable | Comportement client (`useAction`) |
 |---|---|---|---|
 | `VALIDATION` | « Indique un prix pour cette ligne, ou coche Offert. » | non | Messages sous les champs, focus sur le premier |
-| `NEEDS_CONFIRMATION` | titre « Livrer la commande ? » ; réserves « Il reste 40,00 € à encaisser. », « Stock à 1 : la fiche passera à 0. » | — | `ConfirmDialog`, rappel avec `confirm: true` |
+| `NEEDS_CONFIRMATION` | titre « Livrer la commande ? » ; réserves « Il reste 40,00 € à encaisser. », « Stock de Sauvage à 1 : la fiche passera à 0. » | — | `ConfirmDialog`, rappel avec `confirm: true` |
 | `NOT_FOUND` | « Cette commande n'existe plus. Elle a peut-être été supprimée depuis un autre écran. » | non | Toast, retour à l'écran parent |
 | `CONFLICT` | « Le lot « Mars » est clos : rouvre-le pour y rattacher cette vente. » ; « Le montant dépasse le reste dû (35,00 €). » | non | Toast, état optimiste annulé, écran rafraîchi |
 | `SESSION_EXPIRED` | « Ta session a expiré. Reconnecte-toi : ta saisie est gardée. » | — | Brouillon, redirection vers la connexion |
@@ -1098,7 +1100,7 @@ Côté domaine, `src/domain/errors.ts` fournit `DomainError(code, message, field
 | Unicité `CashMovement.reversesId` | `P2002` | `CONFLICT` | « Ce mouvement a déjà été annulé. » |
 | Suppression bloquée (`Restrict`) | `P2003`, nom de contrainte | `CONFLICT` | lot : « Ce lot porte encore des ventes ou des dépenses : clôture-le plutôt. » ; poche : « Cette poche a un historique : archive-la une fois son solde à 0. » ; document : « Ce document a des paiements : annule-le plutôt. » |
 | Enregistrement absent | `P2025` | `NOT_FOUND` | par entité |
-| CHECK de 03 §4.9 | SQLSTATE `23514`, nom de contrainte | `CONFLICT` | ex. `line_gift_ck` : « Une ligne offerte est à 0 €. » ; `perfume_publish_image_ck` : « Ajoute un visuel avant de rendre ce parfum visible. » — journalisé en avertissement (la validation aurait dû l'attraper) |
+| CHECK de 03 §4.9 | SQLSTATE `23514`, nom de contrainte | `CONFLICT` | ex. `line_gift_ck` : « Une ligne offerte est à 0 €. » ; `perfume_publish_image_ck` : « Ajoute un visuel pour publier ce parfum. », `brand_complete_logo_ck` : « Ajoute un logo pour publier une gamme complète. » (textes de `src/domain/publication.ts`, les mêmes que les pré-contrôles de l'écran, §12) — journalisé en avertissement (la validation aurait dû l'attraper) |
 | Conflit, interblocage | `P2034`, `40001`, `40P01` | rejoué, puis `UNAVAILABLE` | « La base est occupée. Rien n'a été enregistré — réessaie. » |
 | Base injoignable, délai | `P1001`, `P1002`, `P1017`, `P2024`, `57014` | `UNAVAILABLE` | « La base ne répond pas. Rien n'a été enregistré — réessaie. » |
 | Trigger `nurea_*` (écriture seule, cohérence pièce ↔ mouvement) | message commençant par « Nuréa : » | `UNEXPECTED` | Générique + référence ; journalisé en erreur : un writer a enfreint une règle d'or |
@@ -1211,7 +1213,7 @@ Algorithme de `applyDeliveredDeltas` :
 1. Agréger les deltas par parfum (une ligne dont le parfum change produit −livré sur l'ancien, +livré sur le nouveau).
 2. Les parfums sont déjà verrouillés `FOR UPDATE` par l'action (rang 4, §4.2) ; relire `stock`.
 3. Parfum non suivi (`NULL`) : ignorer.
-4. `nouveau = stock − delta`. Si `nouveau < 0` et `confirm` absent : lever `NeedsConfirmation` avec la réserve « Stock de {parfum} à {stock} : la fiche passera à 0. » ; confirmé : `nouveau = 0`.
+4. `nouveau = stock − delta`. Si `nouveau < 0` et `confirm` absent : lever `NeedsConfirmation` avec la réserve « Stock de {parfum} à {stock} : la fiche passera à 0. » (« {parfum} est en rupture : la fiche restera à 0. » si le stock est déjà à 0) ; confirmé : `nouveau = 0`. Calcul et texte : `applyDeliveredDelta` de `src/domain/stock.ts` ; un geste de statut joint ces réserves à celles de la transition (`assertTransition(…, { extraReserves })`) pour un seul dialogue.
 5. `UPDATE` par ligne (via Prisma, donc vu par l'invalidation : tags catalogue + `gestion`).
 
 Lecture : `src/domain/stock.ts` expose `stockStatus(stock: number | null): "untracked" | "out" | "low" | "ok"` avec `LOW_STOCK_THRESHOLD = 3` (valeur existante) ; badges de liste, chips « Rupture » et « Stock bas », picker et alerte de l'Accueil l'utilisent. `stockAlerts()` compte **séparément** les parfums suivis en rupture (`out`, stock 0) et en stock bas (`low`, 1 à 3) : l'Accueil en fait deux rangées, dont les liens `?stock=rupture` et `?stock=bas` ouvrent chacun exactement l'ensemble compté (06 E01) — les « fausses alertes massives » de l'existant disparaissent avec `NULL` (01 §2.3 n°10).

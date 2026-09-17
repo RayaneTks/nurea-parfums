@@ -10,7 +10,3 @@ export function slugifySegment(s: string): string {
 export function brandSlug(name: string): string {
   return slugifySegment(name);
 }
-
-export function perfumeSlug(id: number, name: string, brandName: string): string {
-  return `p-${id}-${slugifySegment(brandName)}-${slugifySegment(name)}`.slice(0, 180);
-}

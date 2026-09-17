@@ -1,3 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Nuréa Parfums — schéma cible de la refonte « Nuréa Gestion »
+// Référence : docs/refonte/03-MODELE-DONNEES.md (17 septembre 2026)
+//
+// Ce que Prisma ne sait pas exprimer vit dans les migrations SQL écrites à la main
+// (doc 03 §4.9, §4.10, §5.1) :
+//   - les CHECK (signes, bornes, volumes, cohérence statut/horodatages) ;
+//   - l'index unique partiel de la poche système ;
+//   - les triggers « écriture seule » et « pièce ↔ mouvement » ;
+//   - la vue DocumentBalance et les fonctions de période Europe/Paris.
+// Argent : Decimal(10,2) (euros et dinars) ; taux : Decimal(10,4) ; dates : timestamptz.
+// ─────────────────────────────────────────────────────────────────────────────
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,425 +21,399 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// ═════════════════════════════ Catalogue (lu par la vitrine) ═════════════════
+
+/// Statut de publication vitrine, commun à Brand et Perfume (un seul enum).
 enum PublicationStatus {
+  /// Masqué : jamais lu par la vitrine.
   DRAFT
+  /// Visible sur la vitrine (si les autres règles de visibilité le permettent).
   PUBLISHED
 }
 
+/// Mode d'une marque sur la vitrine.
 enum BrandCatalogMode {
+  /// Sélection : seuls ses parfums publiés apparaissent.
   CURATED
+  /// Gamme complète : une carte unique synthétisée depuis le logo de la marque.
   COMPLETE
 }
 
-enum BrandVisibilityStatus {
-  PUBLISHED
-  DRAFT
-}
-
-enum AdminRole {
-  OWNER
-  EDITOR
-  VIEWER
-}
-
-enum OrderStatus {
-  PENDING
-  READY
-  DELIVERED
-  CANCELLED
-}
-
-enum PaymentType {
-  DEPOSIT
-  BALANCE
-  REFUND
-}
-
-enum BatchStatus {
-  OPEN
-  CLOSED
-}
-
 model Brand {
-  id          String                @id @default(cuid())
-  name        String                @unique
-  slug        String                @unique
-  catalogMode BrandCatalogMode      @default(CURATED)
-  status      BrandVisibilityStatus @default(PUBLISHED)
+  id          String            @id @default(cuid())
+  name        String            @unique
+  /// Valeur publique du filtre vitrine `?maison=`. Fixée à la création, JAMAIS régénérée au renommage.
+  slug        String            @unique
+  catalogMode BrandCatalogMode  @default(CURATED)
+  /// CHECK brand_complete_logo_ck : une marque COMPLETE ne peut être PUBLISHED sans logo.
+  status      PublicationStatus @default(PUBLISHED)
+  /// Logo principal (thème sombre, WebP, proportions d'origine).
   image       String?
+  /// Variante du logo pour le thème clair (optionnelle).
   imageLight  String?
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
+  createdAt   DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime          @updatedAt @db.Timestamptz(3)
   perfumes    Perfume[]
 
   @@index([status])
 }
 
 model Perfume {
+  /// Identifiant entier lu par la vitrine. Séquence Postgres (plus jamais max(id)+1).
   id         Int               @id @default(autoincrement())
   brandId    String
   brand      Brand             @relation(fields: [brandId], references: [id], onDelete: Cascade)
   name       String
-  slug       String            @unique
+  /// Visuel principal (thème sombre, WebP). Chaîne vide = sans visuel ⇒ CHECK : status = DRAFT.
   image      String
+  /// Variante du visuel pour le thème clair (optionnelle).
   imageLight String?
+  /// Mise en avant vitrine : 2 au plus, et seulement un parfum PUBLISHED (règle serveur du module catalogue).
   isFeatured Boolean           @default(false)
-  /// Parfum privé : utilisable dans commandes/ventes mais exclu du catalogue public.
-  isPrivate  Boolean           @default(false)
-  /// Stock disponible (nombre d'unités, tous volumes confondus). Décrémenté à la vente.
-  stock      Int               @default(0)
+  /// Unités en stock, tous volumes confondus. NULL = non suivi (jamais d'alerte) ; 0 = rupture. CHECK >= 0.
+  /// Deux écritures seulement : réglage absolu (geste dédié) et delta des quantités livrées (§4.7).
+  stock      Int?
   status     PublicationStatus @default(PUBLISHED)
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-
-  orderItems OrderItem[]
-  saleItems  SaleItem[]
+  createdAt  DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime          @updatedAt @db.Timestamptz(3)
+  lines      SaleLine[]
   pricings   PerfumePricing[]
 
   @@unique([brandId, name])
   @@index([status])
   @@index([brandId])
   @@index([status, brandId])
-  @@index([isPrivate])
 }
 
-/// Prix de référence côté serveur. Remplace la `pricingMemory` localStorage.
-/// Une ligne par (parfum, volume). Pré-remplit le form commande/vente.
+/// Mémoire de saisie par (parfum, volume) : pré-remplit prix, coût et taux d'une nouvelle ligne.
+/// Préférence, jamais source d'un chiffre. Apprend à chaque ligne non offerte (N8) et depuis la fiche parfum.
 model PerfumePricing {
   perfumeId           Int
+  /// Volume du flacon en ml. CHECK ∈ (30, 50, 100).
   volumeMl            Int
+  /// Dernier prix de vente retenu (€).
   defaultUnitPriceEur Decimal  @db.Decimal(10, 2)
+  /// Dernier coût d'achat unitaire retenu (DZD).
   defaultUnitCostDzd  Decimal? @db.Decimal(10, 2)
-  defaultExchangeRate Decimal? @db.Decimal(8, 4)
-  updatedAt           DateTime @updatedAt
-
-  perfume Perfume @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
+  /// Dernier taux DZD par euro retenu.
+  defaultExchangeRate Decimal? @db.Decimal(10, 4)
+  updatedAt           DateTime @updatedAt @db.Timestamptz(3)
+  perfume             Perfume  @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
 
   @@id([perfumeId, volumeMl])
 }
 
-model AdminUser {
-  id           String               @id @default(cuid())
-  username     String               @unique
-  passwordHash String
-  role         AdminRole            @default(EDITOR)
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  auditLogs    AuditLog[]
-  payments     PaymentTransaction[]
-}
-
-model AuditLog {
-  id        String     @id @default(cuid())
-  actorId   String?
-  actor     AdminUser? @relation(fields: [actorId], references: [id], onDelete: SetNull)
-  action    String
-  entity    String
-  entityId  String?
-  meta      Json?
-  createdAt DateTime   @default(now())
-
-  @@index([createdAt])
-  @@index([entity, entityId])
-}
-
-model ExternalImportSuggestion {
-  id           String    @id @default(cuid())
-  externalId   String
-  name         String
-  brand        String
-  source       String?
-  payload      Json?
-  createdAt    DateTime  @default(now())
-  reviewedAt   DateTime?
-  reviewedById String?
-}
-
-/// Paramètres globaux (taux de change DZD→EUR par défaut, etc.).
-model AppSetting {
-  key       String   @id
-  value     String
-  updatedAt DateTime @updatedAt
-}
-
-// ─── Clients ────────────────────────────────────────────────────
-// Source de vérité des acheteurs. Permet historique, ardoise (solde dû),
-// KPI clients récurrents, autocomplete dans forms.
+// ═════════════════════════════ Clients ═══════════════════════════════════════
 
 model Customer {
-  id           String   @id @default(cuid())
+  id           String         @id @default(cuid())
   fullName     String
-  /// Téléphone normalisé E.164 (ex: +33612345678).
-  phoneE164    String?  @unique
+  /// Téléphone E.164 (+33612345678), normalisé à la saisie depuis les formats français. Unique.
+  phoneE164    String?        @unique
   snapchat     String?
+  /// WhatsApp E.164 (contact sortant du gérant ; cherché comme le téléphone).
   whatsappE164 String?
   address      String?
   notes        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  orders Order[]
-  sales  Sale[]
+  createdAt    DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime       @updatedAt @db.Timestamptz(3)
+  documents    SaleDocument[]
 
   @@index([fullName])
 }
 
-// ─── Gestion (compta / ordres / ventes) ────────────────────────────
-// Flux 100% manuel : l'admin enregistre ordres et ventes à la main.
-// Prix/coûts saisis à chaque ligne, figés en snapshot à la création.
+// ═════════════════════════════ Documents de vente ════════════════════════════
 
-model Order {
-  id            String               @id @default(cuid())
-  /// FK vers Customer (P3). Nullable pour rétro-compat (commandes sans client lié).
-  customerId    String?
-  customer      Customer?            @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  /// Dénormalisé : nom du client au moment de la commande (snapshot historique).
-  customerName  String?
-  /// Contact libre (téléphone, Snapchat, Instagram, …). Optionnel.
-  customerContact String?
-  orderedAt     DateTime             @default(now())
-  deliveryAt    DateTime?
-  /// Horodatage réel du passage en statut « Livrée » (archivage 24h de la liste Livrées).
-  deliveredAt   DateTime?
-  status        OrderStatus          @default(PENDING)
-  notes         String?
-  /// CACHE dénormalisé : true si depositPaidTotal > 0. Source de vérité = PaymentTransaction.
-  depositPaid   Boolean              @default(false)
-  /// CACHE dénormalisé : somme des DEPOSIT moins REFUND (€). Recalculé sur mutation paiement.
-  depositAmount Decimal              @default(0) @db.Decimal(10, 2)
-  /// Lot fournisseur rattaché (optionnel). Permet de grouper commandes + ventes d'un même envoi.
-  batchId       String?
-  batch         Batch?               @relation(fields: [batchId], references: [id], onDelete: SetNull)
-  items         OrderItem[]
-  sale          Sale?
-  payments      PaymentTransaction[]
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+/// Comment un document est né. Fixé à la création, jamais modifié, jamais lu par un calcul d'argent.
+enum DocumentOrigin {
+  /// Pris depuis les Commandes : naît PENDING (ou CONFIRMED avec un acompte sans réserve).
+  ORDER
+  /// Saisi depuis Vendre : naît DELIVERED.
+  DIRECT_SALE
+}
 
-  @@index([status])
+/// Cycle de vie d'un document. « Soldé » n'est PAS un statut : c'est due = 0 dans la vue DocumentBalance.
+enum DocumentStatus {
+  /// En attente : commande notée sans engagement. Ni créance, ni coût compté.
+  PENDING
+  /// Confirmée (libellé d'écran fixé en 06) : engagée — son coût et son dû comptent.
+  CONFIRMED
+  /// Livrée : tout a été remis au client.
+  DELIVERED
+  /// Annulée : hors de tous les chiffres, sauf ses paiements qui restent dans l'Encaissé.
+  CANCELLED
+}
+
+/// LE document de vente : une commande ou une vente directe, du premier geste au dernier encaissement.
+/// Ne stocke AUCUN montant : total, coût, payé et dû se lisent dans la vue SQL DocumentBalance (§5.1).
+model SaleDocument {
+  /// Identifiant texte fourni par le client à la création (UUID v4, 04 §3.6) : un double tap renvoie le même id
+  /// (idempotence). `@default(cuid())` ne sert qu'aux créations serveur (reprise, scripts).
+  id                 String         @id @default(cuid())
+  origin             DocumentOrigin
+  status             DocumentStatus @default(PENDING)
+  /// Fiche client liée ; SetNull : l'historique survit à la suppression de la fiche.
+  customerId         String?
+  customer           Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  /// Snapshot du nom : copié de Customer.fullName au moment du lien, ou saisi pour un client de passage.
+  /// Affichage : customer.fullName ?? customerName ?? libellé « client de passage » (06).
+  customerName       String?
+  /// Contact libre d'un client de passage (téléphone, Snapchat…).
+  customerContact    String?
+  /// Lot fournisseur ; Restrict. Rattachement refusé par le serveur si le lot est CLOSED.
+  batchId            String?
+  batch              Batch?         @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  /// Date du document : prise de commande, ou moment de la vente directe.
+  orderedAt          DateTime       @default(now()) @db.Timestamptz(3)
+  /// Livraison prévue. Base de « en retard » (§5.6). Sans heure fixée : 00:00 Europe/Paris du jour prévu.
+  expectedDeliveryAt DateTime?      @db.Timestamptz(3)
+  /// Vrai si une heure a été choisie : distingue « pas d'heure » de « 00:00 » à l'affichage (06 E10, E11).
+  /// Sans effet sur « en retard ». Faux à la reprise (l'existant ne saisit qu'une date, 01 §3.1).
+  expectedDeliveryHasTime Boolean   @default(false)
+  /// Engagement : posé à l'entrée en CONFIRMED ou DELIVERED, effacé au retour en PENDING ou à l'annulation.
+  /// Rattache le coût du document à une période (§5.4). CHECK : non nul ⇔ status ∈ (CONFIRMED, DELIVERED).
+  confirmedAt        DateTime?      @db.Timestamptz(3)
+  /// Livraison réelle. CHECK : non nul ⇔ status = DELIVERED.
+  deliveredAt        DateTime?      @db.Timestamptz(3)
+  /// Annulation. CHECK : non nul ⇔ status = CANCELLED.
+  cancelledAt        DateTime?      @db.Timestamptz(3)
+  notes              String?
+  createdAt          DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime       @updatedAt @db.Timestamptz(3)
+  lines              SaleLine[]
+  payments           Payment[]
+
+  @@index([status, expectedDeliveryAt])
+  @@index([status, confirmedAt])
+  @@index([deliveredAt])
   @@index([orderedAt])
-  @@index([deliveryAt])
-  @@index([depositPaid])
-  @@index([status, deliveryAt])
-  @@index([status, deliveredAt])
   @@index([customerId])
   @@index([batchId])
 }
 
-model OrderItem {
-  id              String   @id @default(cuid())
-  orderId         String
-  /// Nullable pour parfums hors-catalogue (one-shots). Si null, perfumeSnapshot obligatoire.
-  perfumeId       Int?
-  quantity        Int      @default(1)
-  /// Quantité déjà livrée pour cette ligne (0..quantity). Suivi livraison partielle.
-  deliveredQuantity Int    @default(0)
-  note            String?
-  /// Flacon 30, 50 ou 100 ml
-  volumeMl        Int      @default(100)
-  /// Prix unitaire de vente (€) pour ce flacon
-  unitPrice       Decimal  @default(0) @db.Decimal(10, 2)
-  /// Coût de revient unitaire (€) - Calculé via unitCostDzd / exchangeRate
-  unitCost        Decimal  @default(0) @db.Decimal(10, 2)
-  /// Don : parfum offert (prix 0 autorisé, coût de revient compté en perte).
-  isGift          Boolean  @default(false)
-  /// Coût d'achat en DZD
-  unitCostDzd     Decimal? @db.Decimal(10, 2)
-  /// Taux de change (ex: 277)
-  exchangeRate    Decimal? @db.Decimal(10, 2)
-  /// Snapshot perfume si perfumeId null (off-catalog).
-  perfumeSnapshot Json?
+/// Ligne d'un document. Snapshot TYPÉ et complet, écrit à la saisie : lisible même si le parfum disparaît.
+/// Modifiée EN PLACE (jamais supprimée puis recréée) : la quantité livrée survit à toute édition.
+model SaleLine {
+  id                String       @id @default(cuid())
+  documentId        String
+  document          SaleDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  /// Ordre d'affichage stable des lignes dans le document.
+  position          Int          @default(0)
+  /// Parfum du catalogue ; NULL = hors catalogue, ou parfum supprimé depuis (seul `isOffCatalog` les distingue).
+  perfumeId         Int?
+  perfume           Perfume?     @relation(fields: [perfumeId], references: [id], onDelete: SetNull)
+  /// Ligne saisie hors catalogue, fixé à la saisie et jamais modifié : seul critère du libellé « Hors catalogue »
+  /// (un parfum supprimé depuis n'est pas « hors catalogue »). CHECK : vrai ⇒ perfumeId NULL.
+  /// Reprise : vrai si perfumeId est NULL (l'existant affichait déjà « Hors catalogue » pour ces lignes, §7.7).
+  isOffCatalog      Boolean      @default(false)
+  /// Snapshot du nom du parfum (toujours rempli ; « Hors catalogue » pour une ligne historique sans nom).
+  perfumeName       String
+  /// Snapshot du nom de la marque.
+  brandName         String?
+  /// Snapshot de l'URL du visuel.
+  imageUrl          String?
+  /// Volume du flacon en ml. CHECK ∈ (30, 50, 100) pour toute écriture ; NULL toléré sur des lignes migrées.
+  volumeMl          Int?
+  /// CHECK >= 1.
+  quantity          Int          @default(1)
+  /// Unités remises au client. CHECK 0..quantity. Le stock suivi bouge du DELTA de ce champ (§4.7).
+  deliveredQuantity Int          @default(0)
+  /// Prix unitaire de vente (€). CHECK >= 0 ; CHECK isGift ⇒ 0.
+  unitPriceEur      Decimal      @db.Decimal(10, 2)
+  /// Offert : prix 0, coût d'achat compté dans la Marge nette.
+  isGift            Boolean      @default(false)
+  /// Coût d'achat unitaire saisi en dinars.
+  unitCostDzd       Decimal?     @db.Decimal(10, 2)
+  /// Taux DZD pour 1 € utilisé pour cette ligne. CHECK > 0 si unitCostDzd est renseigné.
+  exchangeRate      Decimal?     @db.Decimal(10, 4)
+  /// Coût unitaire en euros, figé à l'écriture = arrondi(unitCostDzd / exchangeRate, 2) par LA fonction de conversion.
+  /// NULL = coût inconnu : compté 0 dans la Marge nette et signalé « coût à compléter ».
+  unitCostEur       Decimal?     @db.Decimal(10, 2)
+  note              String?
+  createdAt         DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime     @updatedAt @db.Timestamptz(3)
 
-  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  perfume Perfume? @relation(fields: [perfumeId], references: [id], onDelete: SetNull)
-
-  @@index([orderId])
+  @@index([documentId])
   @@index([perfumeId])
 }
 
-/// Historique des paiements liés aux commandes.
-/// Source de vérité pour `Order.depositPaid` et `Order.depositAmount` (cache dénormalisé).
-/// Types :
-///   DEPOSIT — acompte initial. Premier DEPOSIT déclenche PENDING → READY.
-///   BALANCE — solde encaissé (après livraison, ou à la livraison).
-///   REFUND  — remboursement (montant positif, soustrait du total payé).
-model PaymentTransaction {
-  id           String      @id @default(cuid())
-  orderId      String
-  order        Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  type         PaymentType
-  /// Montant positif (€). Pour REFUND, le sens "sortant" est porté par le type.
-  amount       Decimal     @db.Decimal(10, 2)
-  paidAt       DateTime    @default(now())
-  /// Moyen de paiement libre (cash, virement, snap-pay, ...).
-  method       String?
-  note         String?
-  recordedById String?
-  recordedBy   AdminUser?  @relation(fields: [recordedById], references: [id], onDelete: SetNull)
-  createdAt    DateTime    @default(now())
-
-  @@index([orderId])
-  @@index([paidAt])
-  @@index([type])
+/// Nature d'un paiement client. Le sens est porté par la nature : DEPOSIT et BALANCE entrent, REFUND sort.
+/// Fixée par le serveur selon l'état du document au moment de l'écriture — jamais demandée à l'utilisateur.
+enum PaymentKind {
+  /// Acompte : encaissé alors que le document n'est pas livré.
+  DEPOSIT
+  /// Solde : encaissé sur un document livré (dont « Reçu maintenant » d'une vente directe).
+  BALANCE
+  /// Remboursement, ou annulation d'un paiement (mouvement négatif).
+  REFUND
 }
 
-model Sale {
-  id           String     @id @default(cuid())
-  orderId      String?    @unique
-  /// Dénormalisé. Pour ventes directes, peut différer de customer.fullName.
-  customerName String?
-  /// Contact libre saisi sur le ticket (téléphone, Snapchat, Instagram, …).
-  /// Utile pour ventes orphelines sans Customer lié.
-  customerContact String?
-  /// FK vers Customer (P3). Nullable pour ventes orphelines historiques.
-  customerId   String?
-  customer     Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  /// FK optionnelle vers une commande groupée. Permet d'agréger les ventes
-  /// d'un même envoi physique (transport, douane, billet avion à imputer).
-  batchId      String?
-  batch        Batch?     @relation(fields: [batchId], references: [id], onDelete: SetNull)
-  soldAt       DateTime   @default(now())
-  totalRevenue Decimal    @db.Decimal(10, 2)
-  totalCost    Decimal    @db.Decimal(10, 2)
-  totalMargin  Decimal    @db.Decimal(10, 2)
-  /// Solde restant dû sur les ventes livrées partiellement payées (legacy main).
-  /// Remplacé fonctionnellement par PaymentTransaction (REFUND/BALANCE) en P6 ;
-  /// gardé pour compat schéma DB existante.
-  remainingDue Decimal    @default(0) @db.Decimal(10, 2)
-  notes        String?
-  items        SaleItem[]
-  order        Order?     @relation(fields: [orderId], references: [id], onDelete: SetNull)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+/// Pièce d'un paiement client : pour QUEL document, de QUELLE nature, par QUEL moyen.
+/// Montant signé, date de valeur et poche vivent UNE fois, dans le mouvement lié.
+/// Écriture seule (trigger) : ni suppression, ni modification hors `method` et `note`.
+model Payment {
+  /// Pour un paiement repris de l'existant : identifiant du PaymentTransaction d'origine.
+  id         String       @id @default(cuid())
+  /// Restrict : un document qui a des paiements ne se supprime pas, il s'annule.
+  documentId String
+  document   SaleDocument @relation(fields: [documentId], references: [id], onDelete: Restrict)
+  kind       PaymentKind
+  /// Mouvement de nature PAYMENT, créé dans la même transaction. Signe cohérent avec `kind` (trigger).
+  movementId String       @unique
+  movement   CashMovement @relation(fields: [movementId], references: [id], onDelete: Restrict)
+  /// Moyen de paiement libre (espèces, virement…), informatif.
+  method     String?
+  note       String?
+  createdAt  DateTime     @default(now()) @db.Timestamptz(3)
 
-  @@index([soldAt])
-  @@index([customerId])
-  @@index([batchId])
+  @@index([documentId])
 }
 
-/// Commande groupée (batch). Plusieurs ventes appartiennent à un même envoi
-/// physique (commande fournisseur, lot mensuel). Permet de suivre la marge
-/// réelle après dépenses logistiques (transport, billet d'avion, douane).
+// ═════════════════════════════ Lots ══════════════════════════════════════════
+
+/// État d'un lot fournisseur.
+enum BatchStatus {
+  /// Ouvert : on peut y rattacher des documents.
+  OPEN
+  /// Clos : plus aucun rattachement (verrou serveur) ; les dépenses tardives restent possibles.
+  CLOSED
+}
+
 model Batch {
-  id         String      @id @default(cuid())
-  /// Nom libre saisi par l'admin ("Commande de Mars", "Lot 2026-04").
+  id         String         @id @default(cuid())
+  /// Nom libre (« Commande de mars »).
   name       String
-  /// Date prévue d'arrivée / livraison (info éditoriale).
-  expectedAt DateTime?
-  status     BatchStatus @default(OPEN)
+  /// Arrivée prévue de l'envoi (information éditoriale).
+  expectedAt DateTime?      @db.Timestamptz(3)
+  status     BatchStatus    @default(OPEN)
   notes      String?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-
-  sales    Sale[]
-  orders   Order[]
-  expenses BatchExpense[]
+  createdAt  DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime       @updatedAt @db.Timestamptz(3)
+  documents  SaleDocument[]
+  expenses   BatchExpense[]
 
   @@index([status])
   @@index([createdAt])
 }
 
-/// Dépense rattachée à un batch (transport, billet avion, douane, etc.).
-/// Soustraite de la marge brute du batch pour donner la marge nette.
+/// Pièce d'une dépense de lot (transport, douane, billet…). Montant et date : dans le mouvement lié.
+/// « Supprimer la dépense » = contre-passer son mouvement ; elle est alors annulée (dérivé, non stocké).
+/// Écriture seule (trigger) : seuls `label` et `notes` sont modifiables.
 model BatchExpense {
-  id         String   @id @default(cuid())
+  id         String       @id @default(cuid())
+  /// Restrict : un lot qui a des dépenses ne se supprime pas.
   batchId    String
-  batch      Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  /// Libellé court ("Billet avion", "Transporteur DHL", ...).
+  batch      Batch        @relation(fields: [batchId], references: [id], onDelete: Restrict)
   label      String
-  /// Montant en € (toujours positif).
-  amount     Decimal  @db.Decimal(10, 2)
-  /// Si false : dépense informative (argent perso / hors business) — NON déduite
-  /// de la marge et SANS mouvement de trésorerie. Sert juste de note de suivi.
-  countInCompta Boolean @default(true)
-  occurredAt DateTime @default(now())
   notes      String?
-  createdAt  DateTime @default(now())
+  /// Mouvement de nature EXPENSE, négatif, créé dans la même transaction (trigger).
+  movementId String       @unique
+  movement   CashMovement @relation(fields: [movementId], references: [id], onDelete: Restrict)
+  createdAt  DateTime     @default(now()) @db.Timestamptz(3)
 
   @@index([batchId])
 }
 
-model SaleItem {
-  id              String   @id @default(cuid())
-  saleId          String
-  perfumeId       Int?
-  perfumeSnapshot Json
-  quantity        Int      @default(1)
-  volumeMl        Int?
-  unitPrice       Decimal  @db.Decimal(10, 2)
-  unitCost        Decimal  @db.Decimal(10, 2)
-  /// Don : parfum offert (prix 0, coût compté en perte).
-  isGift          Boolean  @default(false)
-  unitCostDzd     Decimal? @db.Decimal(10, 2)
-  exchangeRate    Decimal? @db.Decimal(10, 2)
-  lineRevenue     Decimal  @db.Decimal(10, 2)
-  lineCost        Decimal  @db.Decimal(10, 2)
-  lineMargin      Decimal  @db.Decimal(10, 2)
-  sale            Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  perfume         Perfume? @relation(fields: [perfumeId], references: [id], onDelete: SetNull)
+// ═════════════════════════════ Trésorerie ════════════════════════════════════
 
-  @@index([saleId])
-  @@index([perfumeId])
-}
-
-/// Trésorerie — « poche » où se trouve l'argent (espèces, Revolut, avance fournisseur…).
-/// Solde = openingBalance + Σ(movements.amount). Une poche système « Non attribué »
-/// (isSystem) recueille tout mouvement saisi sans poche, à répartir ensuite.
+/// Nature d'une poche.
 enum PocketKind {
   CASH
   BANK
+  /// Avance chez un fournisseur.
   SUPPLIER
   OTHER
+  /// Réservé à la poche système « Non attribué ».
   UNASSIGNED
 }
 
 model Pocket {
-  id             String         @id @default(cuid())
-  name           String
-  kind           PocketKind     @default(OTHER)
-  /// Montant réel à la création (point de départ). 0 par défaut.
-  openingBalance Decimal        @default(0) @db.Decimal(10, 2)
-  archived       Boolean        @default(false)
-  /// true pour la poche système « Non attribué » (non supprimable, unique).
-  isSystem       Boolean        @default(false)
-  sortOrder      Int            @default(0)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  movements      CashMovement[]
+  id                String         @id @default(cuid())
+  name              String
+  kind              PocketKind     @default(OTHER)
+  /// Solde d'ouverture saisi à la création. Solde = openingBalance + Σ mouvements (jamais stocké).
+  openingBalance    Decimal        @default(0) @db.Decimal(10, 2)
+  /// Archivable seulement à solde nul (son argent ne peut pas sortir du total) ; ne reçoit plus de mouvement.
+  archived          Boolean        @default(false)
+  /// Poche système « Non attribué » : une seule (index unique partiel), kind UNASSIGNED, ni renommable ni archivable.
+  isSystem          Boolean        @default(false)
+  sortOrder         Int            @default(0)
+  createdAt         DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime       @updatedAt @db.Timestamptz(3)
+  movements         CashMovement[]
+  defaultInSettings Setting[]
 
   @@index([archived])
 }
 
+/// Nature d'un mouvement. Le montant est SIGNÉ : + l'argent entre dans la poche, − il en sort.
 enum CashMovementKind {
-  OPENING
-  SALE_IN
-  DEPOSIT_IN
-  BALANCE_IN
-  REFUND_OUT
-  EXPENSE_OUT
-  SUPPLIER_OUT
+  /// Paiement client : porté par exactement un Payment (+ pour DEPOSIT/BALANCE, − pour REFUND).
+  PAYMENT
+  /// Dépense de lot : porté par exactement une BatchExpense (−), ou contre-passation d'une dépense (+).
+  EXPENSE
+  /// Paiement fournisseur (−), ou sa contre-passation (+). Ne touche pas la Marge nette.
+  SUPPLIER
+  /// Jambe d'un transfert entre poches, appariée par transferGroupId (dont « Répartir le non attribué »).
   TRANSFER
+  /// Ajustement manuel signé (dont les écritures « Reprise migration »).
   ADJUSTMENT
 }
 
-/// Mouvement d'argent affectant une poche. amount signé : + entrée, − sortie.
+/// L'EURO : tout argent qui entre, sort ou change de poche est une ligne ici, et nulle part ailleurs.
+/// Écriture seule (trigger) : on ne modifie ni ne supprime ; on contre-passe (même nature, même poche,
+/// même date de valeur, montant opposé).
 model CashMovement {
   id              String           @id @default(cuid())
+  /// Restrict : une poche qui a des mouvements ne se supprime pas.
   pocketId        String
-  pocket          Pocket           @relation(fields: [pocketId], references: [id], onDelete: Cascade)
+  pocket          Pocket           @relation(fields: [pocketId], references: [id], onDelete: Restrict)
+  /// Montant SIGNÉ en euros. CHECK <> 0 ; signe imposé par la nature (§4.9) et par la pièce (§4.10).
   amount          Decimal          @db.Decimal(10, 2)
   kind            CashMovementKind
-  occurredAt      DateTime         @default(now())
+  /// Date de valeur : périodise l'Encaissé, les dépenses et la Trésorerie. Rétrodatable à la saisie seulement.
+  occurredAt      DateTime         @default(now()) @db.Timestamptz(3)
+  /// Libellé libre — seule colonne modifiable après écriture.
   label           String?
-  /// Lien souple vers l'origine pour réversibilité (Sale, PaymentTransaction, BatchExpense, Manual).
-  refType         String?
-  refId           String?
-  /// Regroupe les 2 lignes d'un transfert entre poches.
+  /// Mouvement contre-passé par celui-ci. Unique : un mouvement s'annule au plus une fois.
+  reversesId      String?          @unique
+  reverses        CashMovement?    @relation("Reversal", fields: [reversesId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  reversedBy      CashMovement?    @relation("Reversal")
+  /// Apparie les deux jambes d'un transfert. CHECK : non nul ⇔ kind = TRANSFER.
   transferGroupId String?
-  createdById     String?
-  createdAt       DateTime         @default(now())
+  createdAt       DateTime         @default(now()) @db.Timestamptz(3)
+  /// Pièce éventuelle (relations inverses 1–1).
+  payment         Payment?
+  expense         BatchExpense?
 
-  @@index([pocketId])
-  @@index([refType, refId])
+  @@index([pocketId, occurredAt])
+  @@index([kind, occurredAt])
   @@index([transferGroupId])
+}
+
+// ═════════════════════════════ Réglages & accès ══════════════════════════════
+
+/// Réglages de l'app : UNE ligne (CHECK id = 1). Préférences de saisie, jamais source d'un chiffre.
+model Setting {
+  id                  Int      @id @default(1)
+  /// Taux DZD pour 1 € proposé sur une nouvelle ligne sans mémoire de prix (remplace les « 277 » en dur).
+  defaultExchangeRate Decimal  @default(277) @db.Decimal(10, 4)
+  /// Poche proposée partout (vente, acompte, encaissement, dépense) ; mise à jour quand l'utilisateur
+  /// en choisit une autre (N2), modifiable dans Réglages. NULL ⇒ « Non attribué ».
+  defaultPocketId     String?
+  defaultPocket       Pocket?  @relation(fields: [defaultPocketId], references: [id], onDelete: SetNull)
+  updatedAt           DateTime @updatedAt @db.Timestamptz(3)
+}
+
+/// Compte de connexion, créé par CLI. Mono-opérateur : aucun rôle.
+model AdminUser {
+  id               String    @id @default(cuid())
+  username         String    @unique
+  passwordHash     String
+  /// Échecs de connexion consécutifs (backoff persistant, remis à 0 au succès).
+  failedLoginCount Int       @default(0)
+  /// Connexion refusée jusqu'à cet instant après trop d'échecs.
+  lockedUntil      DateTime? @db.Timestamptz(3)
+  createdAt        DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime  @updatedAt @db.Timestamptz(3)
 }

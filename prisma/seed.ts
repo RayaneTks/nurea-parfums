@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { mockPerfumes } from "../src/lib/data";
-import { brandSlug, perfumeSlug } from "../src/lib/slugify";
+import { brandSlug } from "../src/lib/slugify";
 
 const prisma = new PrismaClient();
 
@@ -59,7 +59,6 @@ async function main() {
         id: p.id,
         brandId,
         name: displayName,
-        slug: perfumeSlug(p.id, displayName, p.brand),
         image: p.image,
         imageLight: p.imageLight ?? null,
         status: "PUBLISHED",
@@ -67,7 +66,6 @@ async function main() {
       update: {
         brandId,
         name: displayName,
-        slug: perfumeSlug(p.id, displayName, p.brand),
         image: p.image,
         imageLight: p.imageLight ?? null,
         status: "PUBLISHED",
