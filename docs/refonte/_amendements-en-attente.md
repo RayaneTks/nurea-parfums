@@ -41,6 +41,28 @@ Quand le fichier est vide, il est supprimé. (Une documentation qui ment est un 
 19. **Code** — `src/server/catalogue/writer.ts` (`unreferencedObjectUrls`) lit encore `PerfumeMedia` en SQL brut : passer au client Prisma.
 20. **e2e vitrine** — `e2e/catalog-filters.spec.ts` attend encore le lien WhatsApp retiré par `f84b6ed` : mettre le test à jour (Snapchat seul canal).
 
+## Depuis J8 (Commandes, fiche document) — 17/09/2026
+
+1. **06 §1.2, E10** — paramètre `pages` (« Afficher plus », +50 par page) ; omis quand il vaut 1, plafonné à 40.
+2. **06 S01** — la fiche garde son pied (CTA) ; pendant la frappe dans un champ de la fiche, pied et description s'effacent, et reviennent quand le champ perd le focus (en édition, fermer le clavier avant « Enregistrer les modifications »).
+3. **06 « sheets `size: full`, CTA en pied »** — S02, S03, S04, S09 ont le CTA dans le corps, en `size: auto` (règle « sheet de saisie courte ») ; pour S02, le CTA vient après Montant, Poche et « Donné en espèces », avant « Plus d'options ».
+4. **05 §3.1 `SearchField`** — intégrer au composant le recentrage du champ au focus (aujourd'hui fait par les écrans via `onFocus={scrollFieldIntoView}`).
+5. **06 §1.5 règle 1** — « retaper l'onglet actif ferme la sheet » est impossible au doigt quand la fiche pleine hauteur recouvre la barre : la règle vaut pour les sheets qui laissent la barre visible.
+6. **06 E10 état vide de départ** — une ligne calme (le bouton « Nouvelle commande » est déjà dans l'en-tête, 05 §5.3).
+7. **06 S17** — un résultat client ouvre E13 filtré (`?q=`) s'il doit de l'argent, E14 dès J10 ; actions sur résultats : J15 ; S05 « hors catalogue » et « Refaire » : J9.
+8. **07 J8 / 06 E13** — E13 (À encaisser) est livré en J8.
+9. **05 §4.2 `SwipeableRow`** — corrigé : le clic qui suit un glissement ne referme plus la rangée ouverte.
+10. **04 §2.1 / §6** — lectures ajoutées : `documentSheet`, `ordersList`, `recentlySold`, `openBatches`, `searchAdmin` ; domaine : `formatPhoneNational`, `phoneSearchDigits`.
+11. **04 §16.4** — harnais e2e : préchauffage de `/api/admin/search` et `/api/admin/picker` ; cas de sheets par suite de taps ; `PLAYWRIGHT_PORT`, `E2E_STORAGE_PORT`, `E2E_DATABASE_URL` pour isoler deux suites en parallèle.
+12. **06 S18** — annulation d'un paiement : « Elle reste confirmée/livrée : X resteront à encaisser. »
+13. **07 J7→J8** — `perf.test.ts` importe désormais la vraie requête `ordersListSql` (première page 1,81 ms sur ×10).
+
+## Polissage UX observé sur captures (J16)
+
+- **S01 fiche document** : « Modifier » est seul sur sa ligne sous « Articles · Livré 1/3 » ; l'aligner à droite du titre de section (même ligne).
+- **E16 fiche parfum** : le `StickyAction` « Vendre » laisse une bande vide entre lui et la barre d'onglets en fin de défilement ; il doit se poser juste au-dessus de la barre.
+- **En-têtes** : deux affordances de recherche coexistent sur E10 (loupe globale « Rechercher » + champ de filtre de liste) — vérifier au test utilisateur que la différence est évidente ; sinon libeller le champ de liste « Filtrer ».
+
 ## Code (petits restes hors périmètre des agents)
 
 - Exemples « 100 ml » périmés : commentaire `src/server/documents/writer.ts` (~l.102), commentaire `src/ui/primitives/Stepper.tsx` (~l.13), attente du test `src/lib/__tests__/share.test.ts:24` (vérifier si c'est un texte vitrine légitime avant de changer).
