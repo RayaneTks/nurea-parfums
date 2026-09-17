@@ -30,7 +30,7 @@
     "migration:reprise": "tsx scripts/migration/reprise.ts",
     "migration:verify": "tsx scripts/migration/verify-post.ts",
     "repetition:refresh": "tsx scripts/repetition/refresh.ts",
-    "check:invariants": "node scripts/lib/jalon-a-venir.mjs check:invariants J7"
+    "check:invariants": "tsx scripts/check-invariants.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

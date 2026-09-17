@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { fieldMessages } from "../zod-fr";
 import {
+  cancelDocumentInput,
+  deliverAndCollectInput,
+  revertDocumentChangeInput,
   DIRECT_SALE_DELIVERY_MESSAGE,
   ITEM_REQUIRED_MESSAGE,
   PRICE_REQUIRED_MESSAGE,
@@ -232,5 +235,59 @@ describe("gestes : pointage, statut, lot", () => {
       "changes.1.documentId": "Ce document apparaît deux fois : recharge la page et réessaie.",
     });
     expect(errors(assignDocumentsToBatchInput.safeParse({ changes: [] }))).toEqual({ changes: "Aucun changement à enregistrer." });
+  });
+});
+
+describe("paiements de création (N1) et gestes d'argent du document (J6)", () => {
+  const PAYMENT_ID = "9d2f3e4a-5b6c-4d7e-8f9a-0b1c2d3e4f5a";
+  const OTHER_ID = "0e3f4a5b-6c7d-4e8f-9a0b-1c2d3e4f5a6b";
+
+  it("« Reçu maintenant » : montants normalisés, poche absente = « Non attribué », aucun paiement par défaut", () => {
+    expect(createDocumentInput.parse(order()).payments).toEqual([]);
+    expect(createDocumentInput.parse(order({ payments: [{ id: PAYMENT_ID, amount: "60,5" }] })).payments).toEqual([
+      { id: PAYMENT_ID, amount: "60.50", pocketId: null },
+    ]);
+  });
+
+  it("Σ des paiements > total ⇒ sous `payments` ; même paiement deux fois ⇒ sous son identifiant", () => {
+    expect(
+      errors(createDocumentInput.safeParse(order({ payments: [{ id: PAYMENT_ID, amount: "100" }, { id: OTHER_ID, amount: "20,01" }] }))),
+    ).toEqual({ payments: "Le montant reçu dépasse le total (120,00 €)." });
+    expect(
+      errors(createDocumentInput.safeParse(order({ payments: [{ id: PAYMENT_ID, amount: "10" }, { id: PAYMENT_ID, amount: "10" }] }))),
+    ).toEqual({ "payments.1.id": "Ce paiement apparaît deux fois : recharge la page et réessaie." });
+  });
+
+  it("vente directe sans nom : exigé pour le reste dû après « Reçu maintenant », pas pour une vente payée en entier", () => {
+    const sale = { origin: "DIRECT_SALE", customer: { kind: "passing", name: null } };
+    expect(errors(createDocumentInput.safeParse(order({ ...sale, payments: [{ id: PAYMENT_ID, amount: "50" }] })))).toEqual({
+      customer: "Choisis le client : il faut un nom pour suivre les 70,00 € à encaisser.",
+    });
+    expect(createDocumentInput.safeParse(order({ ...sale, payments: [{ id: PAYMENT_ID, amount: "120" }] })).success).toBe(true);
+  });
+
+  it("annuler : remboursements facultatifs, chacun une fois, montants positifs", () => {
+    expect(cancelDocumentInput.parse({ documentId: ID })).toEqual({ documentId: ID, refunds: [], confirm: false });
+    expect(cancelDocumentInput.parse({ documentId: ID, refunds: [{ id: PAYMENT_ID, amount: "60" }], confirm: true })).toEqual({
+      documentId: ID,
+      refunds: [{ id: PAYMENT_ID, amount: "60.00", pocketId: null }],
+      confirm: true,
+    });
+    expect(
+      errors(cancelDocumentInput.safeParse({ documentId: ID, refunds: [{ id: PAYMENT_ID, amount: "0" }, { id: PAYMENT_ID, amount: "5" }] })),
+    ).toEqual({
+      "refunds.0.amount": "Indique un montant supérieur à 0 €.",
+      "refunds.1.id": "Ce remboursement apparaît deux fois : recharge la page et réessaie.",
+    });
+  });
+
+  it("livrer et encaisser : un paiement complet ; défaire : un jeton non vide", () => {
+    expect(deliverAndCollectInput.parse({ documentId: ID, payment: { id: PAYMENT_ID, amount: "60" } })).toEqual({
+      documentId: ID,
+      payment: { id: PAYMENT_ID, amount: "60.00", pocketId: null },
+      confirm: false,
+    });
+    expect(errors(deliverAndCollectInput.safeParse({ documentId: ID }))).toEqual({ payment: "Remplis ce champ." });
+    expect(errors(revertDocumentChangeInput.safeParse({ token: "" }))).toEqual({ token: "Ce geste ne peut plus être annulé." });
   });
 });
