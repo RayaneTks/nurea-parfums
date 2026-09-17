@@ -1,24 +1,34 @@
 import "server-only";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import {
   DIRECT_SALE_DELIVERY_MESSAGE,
   ITEM_REQUIRED_MESSAGE,
   customerNameRequirement,
   hasCustomerName,
+  receivedAboveTotalMessage,
   type AssignDocumentsToBatchData,
   type BatchAssignment,
+  type CancelDocumentData,
+  type CancellationResult,
   type ChangeDocumentStatusData,
   type CreateDocumentData,
   type CreateLineData,
+  type DeliverAndCollectData,
+  type DeliveryAndCollection,
   type DocumentCustomerData,
   type DocumentDeletion,
+  type DocumentState,
   type DocumentStatusChange,
   type DocumentSummary,
   type LineDelivery,
   type LineItem,
+  type RevertResult,
   type SetLineDeliveredData,
   type UpdateDocumentData,
   type UpdateLineData,
 } from "@/contracts/documents";
+import type { CollectAllData, CollectAllResult, PaymentKind, PaymentResult, RecordPaymentData } from "@/contracts/payments";
+import { futureDateMessage, valueDateOf } from "@/contracts/treasury";
 import { documentBalance } from "@/domain/document-balance";
 import {
   assertTransition,
@@ -27,6 +37,7 @@ import {
   isEngaged,
   timestampsAfter,
   type DocumentOrigin,
+  type DocumentStatus,
 } from "@/domain/document-status";
 import { DomainError, NeedsConfirmation } from "@/domain/errors";
 import { clampDelivered, deriveFulfillment } from "@/domain/fulfillment";
@@ -36,11 +47,13 @@ import {
   eur,
   eurFromDb,
   eurFromWire,
+  formatEur,
   rateFromDb,
   toDb,
   toWire,
   type Dzd,
   type Eur,
+  type MoneyString,
   type Rate,
 } from "@/domain/money";
 import { periodStart } from "@/domain/periods";
@@ -51,6 +64,10 @@ import * as catalogueStock from "@/server/catalogue/stock";
 import { upsertPricing } from "@/server/catalogue/writer";
 import * as customersWriter from "@/server/customers/writer";
 import type { Tx } from "@/server/db/transaction";
+import { adminJwtSecret } from "@/server/env";
+import * as paymentsWriter from "@/server/payments/writer";
+import * as settingsWriter from "@/server/settings/writer";
+import * as treasuryWriter from "@/server/treasury/writer";
 
 /**
  * Seul fichier qui écrit `SaleDocument` et `SaleLine` (03 §4.2, 04 §4.3). Il décide les deltas de stock
@@ -62,8 +79,10 @@ import type { Tx } from "@/server/db/transaction";
  * lectures, gardes et réserves, PUIS écritures — une réserve non confirmée ou un refus n'écrit rien
  * (et le ROLLBACK le garantirait de toute façon).
  *
- * Livré à J5 : T1 sans paiement, T2, T3, T4, T6, T13. À J6 : paiements de T1, T4b, T5, et les actions
- * composées qui encaissent.
+ * J5 : T1 sans paiement, T2, T3, T4, T6, T13. J6 : les gestes d'argent qui écrivent aussi le document —
+ * paiements de création (T1, N1), encaisser (T7, confirmation automatique), « Tout encaisser » et « Livrer et
+ * encaisser » (A-5), annuler (T5, remboursements), défaire un geste (T4b). Ils composent les pièces de
+ * `payments/writer.ts` (seul écrivain de `Payment`), qui n'importe jamais ce fichier.
  */
 
 // ── Messages ───────────────────────────────────────────────────────────────────
@@ -358,17 +377,20 @@ async function assertBatchOpen(tx: Tx, batchId: string, origin: DocumentOrigin):
   if (batch.status === "CLOSED") throw closedBatch(batch.name, origin, "attach");
 }
 
-// ── T1 : créer un document (sans paiement) ─────────────────────────────────────
+// ── T1 : créer un document ─────────────────────────────────────────────────────
 
 export type PocketLocks = { update?: readonly string[]; share?: readonly string[] };
 
 /**
- * T1. Une commande naît `PENDING`, une vente directe naît `DELIVERED` (quantités livrées complètes, stock
- * décrémenté, `confirmedAt` et `deliveredAt` posés). Rejeu : un identifiant déjà écrit rend le document
- * existant sans rien réécrire (04 §3.6).
+ * T1. Une commande naît `PENDING` — `CONFIRMED` si elle reçoit un acompte (verdict sans réserve, 03 §2.3) —,
+ * une vente directe naît `DELIVERED` (quantités livrées complètes, stock décrémenté, `confirmedAt` et
+ * `deliveredAt` posés). Rejeu : un identifiant déjà écrit rend le document existant sans rien réécrire
+ * (04 §3.6).
  *
- * `options.pockets` : verrous de poche des paiements de création (J6), pris dans le même appel que le lot
- * pour tenir l'ordre canonique (lots → poches → parfums, 04 §4.2).
+ * Paiements de création (« Reçu maintenant », acompte, N1) : Σ ≤ total, datés de l'instant de la création,
+ * solde pour une vente (livrée), acompte pour une commande ; poches verrouillées en partage (des entrées,
+ * 04 §4.2) dans le même appel que le lot, pour tenir l'ordre canonique (lots → poches → parfums). La poche du
+ * premier paiement devient la poche proposée (N2). `options.pockets` : verrous supplémentaires éventuels.
  */
 export async function createDocument(
   tx: Tx,
@@ -378,7 +400,13 @@ export async function createDocument(
   const replay = await summarize(tx, input.id);
   if (replay) return replay;
 
-  await tx.lock({ batches: input.batchId ? { share: [input.batchId] } : undefined, pockets: options.pockets });
+  const payments = input.payments ?? [];
+  const paymentPockets: string[] = [];
+  for (const payment of payments) paymentPockets.push(await treasuryWriter.resolvePocketId(tx, payment.pocketId));
+  await tx.lock({
+    batches: input.batchId ? { share: [input.batchId] } : undefined,
+    pockets: { update: options.pockets?.update, share: [...(options.pockets?.share ?? []), ...paymentPockets] },
+  });
   if (input.batchId) await assertBatchOpen(tx, input.batchId, input.origin);
 
   const catalogueIds = unique(input.lines.flatMap((line) => (line.item.kind === "catalogue" ? [line.item.perfumeId] : [])));
@@ -390,8 +418,10 @@ export async function createDocument(
     amounts: amountsOf(line),
   }));
 
-  // Sans paiement (J5) : payé nul. Avec les paiements de J6, `initialStatus` confirme une commande à acompte.
-  const status = initialStatus(input.origin, eur.zero);
+  const total = eur.sum(lines.map(({ line, amounts }) => eur.times(amounts.unitPriceEur, line.quantity)));
+  const received = eur.sum(payments.map((payment) => eurFromWire(payment.amount)));
+  if (eur.compare(received, total) > 0) throw new DomainError("VALIDATION", receivedAboveTotalMessage(total), "payments");
+  const status = initialStatus(input.origin, received);
   const delivered = status === "DELIVERED";
   const deltas = delivered
     ? lines.flatMap(({ line, snapshot }) =>
@@ -443,6 +473,17 @@ export async function createDocument(
       amounts,
     })),
   );
+  for (const [index, payment] of payments.entries()) {
+    await paymentsWriter.insertPayment(tx, {
+      id: payment.id,
+      documentId: input.id,
+      kind: delivered ? "BALANCE" : "DEPOSIT",
+      amount: eurFromWire(payment.amount),
+      pocketId: paymentPockets[index] as string,
+      occurredAt: tx.now,
+    });
+  }
+  if (paymentPockets.length > 0) await settingsWriter.rememberPocket(tx, paymentPockets[0] as string);
   return summaryOf(tx, input.id);
 }
 
@@ -747,43 +788,69 @@ export async function setLineDelivered(tx: Tx, input: SetLineDeliveredData): Pro
  */
 export async function changeDocumentStatus(tx: Tx, input: ChangeDocumentStatusData): Promise<DocumentStatusChange> {
   const doc = await lockDocument(tx, input.documentId);
-  const from = doc.status;
-  const to = input.to;
-  const timestamps = { confirmedAt: doc.confirmedAt, deliveredAt: doc.deliveredAt, cancelledAt: doc.cancelledAt };
-
-  if (from !== to) {
-    const lines = await readLines(tx, doc.id);
-    const context = {
-      origin: doc.origin,
-      total: storedTotal(lines),
-      paid: await readPaid(tx, doc.id),
-      lineCount: lines.length,
-    };
-    const verdict = canTransition(from, to, context);
-    if (!verdict.ok) throw new DomainError("CONFLICT", verdict.reason);
-
-    const completed = to === "DELIVERED" ? lines.filter((line) => line.deliveredQuantity !== line.quantity) : [];
-    assertStoredLinesWritable(completed);
-    const deltas = completed.flatMap((line) =>
-      line.perfumeId === null ? [] : [{ perfumeId: line.perfumeId, delta: line.quantity - line.deliveredQuantity }],
-    );
-    const stock = deltas.length > 0 ? await catalogueStock.stockReserves(tx, deltas) : [];
-    assertTransition(from, to, context, { confirmed: input.confirm, extraReserves: stock });
-
-    for (const line of completed) {
-      await tx.db.saleLine.update({ where: { id: line.id }, data: { deliveredQuantity: line.quantity }, select: { id: true } });
-    }
-    if (deltas.length > 0) await catalogueStock.applyDeliveredDeltas(tx, deltas, { confirm: input.confirm });
-    Object.assign(timestamps, timestampsAfter(from, to, timestamps, tx.now));
-    await tx.db.saleDocument.update({ where: { id: doc.id }, data: { status: to, ...timestamps }, select: { id: true } });
-  }
-
+  const lines = await readLines(tx, doc.id);
+  const before = snapshotOf(doc, lines);
+  const plan = await planStatusChange(tx, doc, lines, input.to, { confirm: input.confirm });
+  if (plan) await writeStatusChange(tx, doc, plan, input.confirm);
   return {
-    ...(await summaryOf(tx, doc.id)),
-    confirmedAt: timestamps.confirmedAt?.toISOString() ?? null,
-    deliveredAt: timestamps.deliveredAt?.toISOString() ?? null,
-    cancelledAt: timestamps.cancelledAt?.toISOString() ?? null,
+    ...(await documentState(tx, doc.id)),
+    undo: await revertToken(tx, "status", [{ id: doc.id, before, payments: [] }]),
   };
+}
+
+type StatusPlan = {
+  from: DocumentStatus;
+  to: DocumentStatus;
+  /** Lignes complétées à l'entrée en `DELIVERED`. */
+  completed: StoredLine[];
+  deltas: catalogueStock.DeliveredDelta[];
+};
+
+/**
+ * Gardes et réserves de T4, sans écriture ; `null` pour un statut identique (succès sans écriture). `paid` :
+ * payé net à retenir pour les réserves — celui d'après l'encaissement quand T7 et T4 sont composés (A-5) :
+ * « Il reste 60 € à encaisser » ne s'affiche pas pour une livraison qui encaisse ces 60 €.
+ */
+async function planStatusChange(
+  tx: Tx,
+  doc: StoredDocument,
+  lines: readonly StoredLine[],
+  to: DocumentStatus,
+  options: { confirm: boolean; paid?: Eur },
+): Promise<StatusPlan | null> {
+  const from = doc.status;
+  if (from === to) return null;
+  const context = {
+    origin: doc.origin,
+    total: storedTotal(lines),
+    paid: options.paid ?? (await readPaid(tx, doc.id)),
+    lineCount: lines.length,
+  };
+  const verdict = canTransition(from, to, context);
+  if (!verdict.ok) throw new DomainError("CONFLICT", verdict.reason);
+
+  const completed = to === "DELIVERED" ? lines.filter((line) => line.deliveredQuantity !== line.quantity) : [];
+  assertStoredLinesWritable(completed);
+  const deltas = completed.flatMap((line) =>
+    line.perfumeId === null ? [] : [{ perfumeId: line.perfumeId, delta: line.quantity - line.deliveredQuantity }],
+  );
+  const stock = deltas.length > 0 ? await catalogueStock.stockReserves(tx, deltas) : [];
+  assertTransition(from, to, context, { confirmed: options.confirm, extraReserves: stock });
+  return { from, to, completed, deltas };
+}
+
+async function writeStatusChange(tx: Tx, doc: StoredDocument, plan: StatusPlan, confirm: boolean): Promise<void> {
+  for (const line of plan.completed) {
+    await tx.db.saleLine.update({ where: { id: line.id }, data: { deliveredQuantity: line.quantity }, select: { id: true } });
+  }
+  if (plan.deltas.length > 0) await catalogueStock.applyDeliveredDeltas(tx, plan.deltas, { confirm });
+  const timestamps = timestampsAfter(
+    plan.from,
+    plan.to,
+    { confirmedAt: doc.confirmedAt, deliveredAt: doc.deliveredAt, cancelledAt: doc.cancelledAt },
+    tx.now,
+  );
+  await tx.db.saleDocument.update({ where: { id: doc.id }, data: { status: plan.to, ...timestamps }, select: { id: true } });
 }
 
 // ── T6 : supprimer un document sans paiement ───────────────────────────────────
@@ -880,4 +947,546 @@ export async function freezeCustomerName(tx: Tx, customerId: string, fullName: s
     where: { customerId, OR: [{ customerName: null }, { customerName: { not: fullName } }] },
     data: { customerName: fullName },
   });
+}
+
+// ── Argent du document (J6) ────────────────────────────────────────────────────
+
+async function documentState(tx: Tx, id: string): Promise<DocumentState> {
+  return (await paymentsWriter.readDocumentMoney(tx, id)).state;
+}
+
+/** Relecture d'un document déjà verrouillé par l'appelant (verrou pris avec ceux des poches). */
+function readLockedDocument(tx: Tx, id: string): Promise<StoredDocument> {
+  return tx.db.saleDocument.findUniqueOrThrow({ where: { id }, select: DOCUMENT_SELECT });
+}
+
+type Collection = {
+  id: string;
+  amount: Eur;
+  pocketId: string;
+  occurredAt: Date;
+  method: string | null;
+  note: string | null;
+};
+
+function collectionOf(
+  input: { id: string; amount: MoneyString; occurredAt?: Date | null; method?: string | null; note?: string | null },
+  pocketId: string,
+  now: Date,
+): Collection {
+  const occurredAt = valueDateOf(input.occurredAt, now);
+  if (occurredAt === null) throw new DomainError("VALIDATION", futureDateMessage("paiement"), "occurredAt");
+  return {
+    id: input.id,
+    amount: eurFromWire(input.amount),
+    pocketId,
+    occurredAt,
+    method: input.method ?? null,
+    note: input.note ?? null,
+  };
+}
+
+type CollectionPlan = {
+  kind: PaymentKind;
+  /** Payé net AVANT l'encaissement. */
+  paid: Eur;
+  /** Le premier acompte confirme la commande : verdict sans réserve seulement (03 §2.3). */
+  confirms: boolean;
+};
+
+/**
+ * Gardes de T7 sur un document verrouillé, sans écriture : document non annulé, montant ≤ reste dû (plafond
+ * systématique, commandes comprises, 02 §4.2). Nature fixée ici : solde sur un document livré, acompte sinon.
+ */
+async function planCollection(
+  tx: Tx,
+  doc: StoredDocument,
+  lines: readonly StoredLine[],
+  amount: Eur,
+  options: { autoConfirm: boolean; kind?: PaymentKind },
+): Promise<CollectionPlan> {
+  if (doc.status === "CANCELLED") {
+    throw new DomainError("CONFLICT", `Cette ${noun(doc.origin)} est annulée : réactive-la avant d'encaisser.`);
+  }
+  const total = storedTotal(lines);
+  const paid = await readPaid(tx, doc.id);
+  const due = eur.clampZero(eur.sub(total, paid));
+  if (eur.compare(amount, due) > 0) throw new DomainError("CONFLICT", paymentsWriter.dueExceededMessage(due));
+  let confirms = false;
+  if (options.autoConfirm && doc.status === "PENDING") {
+    const verdict = canTransition("PENDING", "CONFIRMED", {
+      origin: doc.origin,
+      total,
+      paid: eur.add(paid, amount),
+      lineCount: lines.length,
+    });
+    confirms = verdict.ok && verdict.reserves.length === 0;
+  }
+  return { kind: options.kind ?? (doc.status === "DELIVERED" ? "BALANCE" : "DEPOSIT"), paid, confirms };
+}
+
+async function writeCollection(
+  tx: Tx,
+  doc: StoredDocument,
+  plan: CollectionPlan,
+  collection: Collection,
+): Promise<paymentsWriter.StoredPayment> {
+  const payment = await paymentsWriter.insertPayment(tx, { ...collection, documentId: doc.id, kind: plan.kind });
+  if (plan.confirms) {
+    const timestamps = timestampsAfter(
+      "PENDING",
+      "CONFIRMED",
+      { confirmedAt: doc.confirmedAt, deliveredAt: doc.deliveredAt, cancelledAt: doc.cancelledAt },
+      tx.now,
+    );
+    await tx.db.saleDocument.update({ where: { id: doc.id }, data: { status: "CONFIRMED", ...timestamps }, select: { id: true } });
+  }
+  return payment;
+}
+
+// ── T7 : encaisser ─────────────────────────────────────────────────────────────
+
+async function paymentReplay(tx: Tx, payment: paymentsWriter.StoredPayment): Promise<PaymentResult> {
+  return { payment: paymentsWriter.paymentReceipt(payment), document: await documentState(tx, payment.documentId), undo: null };
+}
+
+/**
+ * T7 (S02 Acompte, Solde ; E13) — une seule écriture pour tout encaissement. Verrous : document, puis poche en
+ * partage (une entrée). Nature fixée par le serveur ; montant ≤ reste dû ; sur une commande en attente, le
+ * paiement la confirme si le verdict ne porte aucune réserve (`confirmedAt` posé), sinon le statut reste.
+ * La poche choisie devient la poche proposée (N2). Renvoie le jeton de T4b (« Annuler » du toast).
+ * Double envoi du même identifiant : le paiement existant, sans rien réécrire (04 §3.6).
+ */
+export async function recordPayment(tx: Tx, input: RecordPaymentData): Promise<PaymentResult> {
+  const early = await paymentsWriter.findPayment(tx, input.id);
+  if (early) return paymentReplay(tx, early);
+
+  const pocketId = await treasuryWriter.resolvePocketId(tx, input.pocketId);
+  const { documents } = await tx.lock({ documents: [input.documentId], pockets: { share: [pocketId] } });
+  if (documents.length === 0) throw new DomainError("NOT_FOUND", DOCUMENT_NOT_FOUND);
+  // Relu sous verrou : un envoi croisé a pu écrire ce paiement pendant l'attente.
+  const replay = await paymentsWriter.findPayment(tx, input.id);
+  if (replay) return paymentReplay(tx, replay);
+
+  const doc = await readLockedDocument(tx, input.documentId);
+  const lines = await readLines(tx, doc.id);
+  const before = snapshotOf(doc, lines);
+  const collection = collectionOf(input, pocketId, tx.now);
+  const plan = await planCollection(tx, doc, lines, collection.amount, { autoConfirm: true });
+
+  const payment = await writeCollection(tx, doc, plan, collection);
+  await settingsWriter.rememberPocket(tx, pocketId);
+  return {
+    payment: paymentsWriter.paymentReceipt(payment),
+    document: await documentState(tx, doc.id),
+    undo: await revertToken(tx, "payment", [{ id: doc.id, before, payments: [payment.id] }]),
+  };
+}
+
+// ── A-5 : tout encaisser ───────────────────────────────────────────────────────
+
+async function collectAllReplay(tx: Tx, ids: readonly string[]): Promise<CollectAllResult | null> {
+  const existing = await paymentsWriter.findPayments(tx, ids);
+  if (existing.length === 0) return null;
+  if (existing.length < ids.length) {
+    throw new DomainError("CONFLICT", "Une partie de ces encaissements est déjà enregistrée : recharge la page et réessaie.");
+  }
+  const documents: DocumentState[] = [];
+  for (const payment of existing) documents.push(await documentState(tx, payment.documentId));
+  return { payments: existing.map(paymentsWriter.paymentReceipt), documents, undo: null };
+}
+
+type AgedDocument = StoredDocument & { orderedAt: Date };
+
+/** Du plus ancien au plus récent : date d'engagement (ou de prise de commande), puis identifiant. */
+function byAge(a: AgedDocument, b: AgedDocument): number {
+  const since = (doc: AgedDocument) => (doc.confirmedAt ?? doc.orderedAt).getTime();
+  return since(a) - since(b) || a.orderedAt.getTime() - b.orderedAt.getTime() || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+}
+
+/**
+ * « Tout encaisser » d'un client (S02, A-5) : un T7 par document, du plus ancien au plus récent, en UNE
+ * transaction. Tous les documents sont verrouillés d'un appel, puis TOUTES les gardes passent avant la
+ * première écriture : un plafond dépassé sur le dernier document n'écrit rien. Poche en partage (entrées).
+ */
+export async function collectAll(tx: Tx, input: CollectAllData): Promise<CollectAllResult> {
+  const ids = input.payments.map((payment) => payment.id);
+  const early = await collectAllReplay(tx, ids);
+  if (early) return early;
+
+  const pocketId = await treasuryWriter.resolvePocketId(tx, input.pocketId);
+  const documentIds = unique(input.payments.map((payment) => payment.documentId));
+  const locked = await tx.lock({ documents: documentIds, pockets: { share: [pocketId] } });
+  if (locked.documents.length < documentIds.length) throw new DomainError("NOT_FOUND", DOCUMENT_NOT_FOUND);
+  const replay = await collectAllReplay(tx, ids);
+  if (replay) return replay;
+
+  const rows = await tx.db.saleDocument.findMany({
+    where: { id: { in: documentIds } },
+    select: { ...DOCUMENT_SELECT, orderedAt: true },
+  });
+  const docs = new Map<string, AgedDocument>(rows.map((doc) => [doc.id, doc]));
+  const docOf = (id: string) => docs.get(id) as AgedDocument;
+  const ordered = [...input.payments].sort((a, b) => byAge(docOf(a.documentId), docOf(b.documentId)));
+
+  const plans = [];
+  for (const item of ordered) {
+    const doc = docOf(item.documentId);
+    const lines = await readLines(tx, doc.id);
+    const collection = collectionOf(
+      { ...item, occurredAt: input.occurredAt, method: input.method, note: input.note },
+      pocketId,
+      tx.now,
+    );
+    const plan = await planCollection(tx, doc, lines, collection.amount, { autoConfirm: true });
+    plans.push({ doc, before: snapshotOf(doc, lines), collection, plan });
+  }
+
+  const payments: paymentsWriter.StoredPayment[] = [];
+  for (const { doc, plan, collection } of plans) payments.push(await writeCollection(tx, doc, plan, collection));
+  await settingsWriter.rememberPocket(tx, pocketId);
+
+  const documents: DocumentState[] = [];
+  for (const { doc } of plans) documents.push(await documentState(tx, doc.id));
+  const entries = plans.map(({ doc, before }, index) => ({
+    id: doc.id,
+    before,
+    payments: [(payments[index] as paymentsWriter.StoredPayment).id],
+  }));
+  return {
+    payments: payments.map(paymentsWriter.paymentReceipt),
+    documents,
+    undo: await revertToken(tx, "collectAll", entries),
+  };
+}
+
+// ── A-5 : livrer et encaisser ──────────────────────────────────────────────────
+
+async function deliveryReplay(tx: Tx, payment: paymentsWriter.StoredPayment): Promise<DeliveryAndCollection> {
+  return { document: await documentState(tx, payment.documentId), payment: paymentsWriter.paymentReceipt(payment), undo: null };
+}
+
+/**
+ * « Encaisser 60 € et livrer » (S02 variante Livrer, A-5) : T7 puis T4 en UNE transaction. Les gardes des
+ * deux parties passent avant la première écriture — plafond au dû, puis transition et stock, dont les
+ * réserves se lisent avec le payé d'APRÈS l'encaissement. Le paiement est un solde (BALANCE) : il est reçu à
+ * la livraison, dans le même geste. Pas de confirmation automatique intermédiaire : la transition part du
+ * statut réel, avec ses propres réserves (« En attente » → « Livrée »).
+ */
+export async function deliverAndCollect(tx: Tx, input: DeliverAndCollectData): Promise<DeliveryAndCollection> {
+  const early = await paymentsWriter.findPayment(tx, input.payment.id);
+  if (early) return deliveryReplay(tx, early);
+
+  const pocketId = await treasuryWriter.resolvePocketId(tx, input.payment.pocketId);
+  const { documents } = await tx.lock({ documents: [input.documentId], pockets: { share: [pocketId] } });
+  if (documents.length === 0) throw new DomainError("NOT_FOUND", DOCUMENT_NOT_FOUND);
+  const replay = await paymentsWriter.findPayment(tx, input.payment.id);
+  if (replay) return deliveryReplay(tx, replay);
+
+  const doc = await readLockedDocument(tx, input.documentId);
+  const lines = await readLines(tx, doc.id);
+  const before = snapshotOf(doc, lines);
+  const collection = collectionOf(input.payment, pocketId, tx.now);
+  const collect = await planCollection(tx, doc, lines, collection.amount, { autoConfirm: false, kind: "BALANCE" });
+  const delivery = await planStatusChange(tx, doc, lines, "DELIVERED", {
+    confirm: input.confirm,
+    paid: eur.add(collect.paid, collection.amount),
+  });
+
+  const payment = await writeCollection(tx, doc, collect, collection);
+  if (delivery) await writeStatusChange(tx, doc, delivery, input.confirm);
+  await settingsWriter.rememberPocket(tx, pocketId);
+  return {
+    document: await documentState(tx, doc.id),
+    payment: paymentsWriter.paymentReceipt(payment),
+    undo: await revertToken(tx, "deliverAndCollect", [{ id: doc.id, before, payments: [payment.id] }]),
+  };
+}
+
+// ── T5 : annuler ───────────────────────────────────────────────────────────────
+
+/**
+ * T5 (S03, PC-10) : le document passe `CANCELLED` et reste consultable ; ses quantités livrées reviennent à 0
+ * (stock restitué) ; les remboursements choisis sont écrits, datés du jour, Σ ≤ payé net. Verrous : document,
+ * puis les poches de sortie EXCLUSIVEMENT (« Non attribué » jamais négatif, 04 §4.2). Réserve d'un document
+ * livré (« le stock est restitué ») à confirmer. Ligne reprise hors règles parmi celles à remettre à 0 :
+ * `VALIDATION` avant toute écriture (03 §4.3). Déjà annulé : succès sans écriture si c'est un renvoi.
+ */
+export async function cancelDocument(tx: Tx, input: CancelDocumentData): Promise<CancellationResult> {
+  const refunds = input.refunds ?? [];
+  const pockets: string[] = [];
+  for (const refund of refunds) pockets.push(await treasuryWriter.resolvePocketId(tx, refund.pocketId));
+  const { documents } = await tx.lock({ documents: [input.documentId], pockets: { update: unique(pockets) } });
+  if (documents.length === 0) throw new DomainError("NOT_FOUND", DOCUMENT_NOT_FOUND);
+
+  const doc = await readLockedDocument(tx, input.documentId);
+  const existing = await paymentsWriter.findPayments(
+    tx,
+    refunds.map((refund) => refund.id),
+  );
+  if (doc.status === "CANCELLED") {
+    if (existing.length === refunds.length && existing.every((payment) => payment.documentId === doc.id)) {
+      return { document: await documentState(tx, doc.id), refunds: existing.map(paymentsWriter.paymentReceipt) };
+    }
+    throw new DomainError("CONFLICT", `Cette ${noun(doc.origin)} est déjà annulée : rembourse depuis sa fiche.`);
+  }
+  if (existing.length > 0) {
+    throw new DomainError("CONFLICT", "Un de ces remboursements est déjà enregistré : recharge la page et réessaie.");
+  }
+
+  const lines = await readLines(tx, doc.id);
+  const paid = await readPaid(tx, doc.id);
+  const refundable = eur.clampZero(paid);
+  const refundTotal = eur.sum(refunds.map((refund) => eurFromWire(refund.amount)));
+  if (eur.compare(refundTotal, refundable) > 0) {
+    throw new DomainError("CONFLICT", `Le remboursement dépasse ce qui a été payé (${formatEur(refundable)}).`);
+  }
+  const context = { origin: doc.origin, total: storedTotal(lines), paid, lineCount: lines.length };
+  const verdict = canTransition(doc.status, "CANCELLED", context);
+  if (!verdict.ok) throw new DomainError("CONFLICT", verdict.reason);
+  const delivered = lines.filter((line) => line.deliveredQuantity > 0);
+  assertStoredLinesWritable(delivered);
+  assertTransition(doc.status, "CANCELLED", context, { confirmed: input.confirm });
+
+  for (const line of delivered) {
+    await tx.db.saleLine.update({ where: { id: line.id }, data: { deliveredQuantity: 0 }, select: { id: true } });
+  }
+  const deltas = delivered.flatMap((line) =>
+    line.perfumeId === null ? [] : [{ perfumeId: line.perfumeId, delta: -line.deliveredQuantity }],
+  );
+  // Une restitution ne porte jamais de réserve.
+  if (deltas.length > 0) await catalogueStock.applyDeliveredDeltas(tx, deltas, { confirm: true });
+  const timestamps = timestampsAfter(
+    doc.status,
+    "CANCELLED",
+    { confirmedAt: doc.confirmedAt, deliveredAt: doc.deliveredAt, cancelledAt: doc.cancelledAt },
+    tx.now,
+  );
+  await tx.db.saleDocument.update({ where: { id: doc.id }, data: { status: "CANCELLED", ...timestamps }, select: { id: true } });
+
+  const written: paymentsWriter.StoredPayment[] = [];
+  for (const [index, refund] of refunds.entries()) {
+    written.push(
+      await paymentsWriter.insertPayment(tx, {
+        id: refund.id,
+        documentId: doc.id,
+        kind: "REFUND",
+        amount: eurFromWire(refund.amount),
+        pocketId: pockets[index] as string,
+        occurredAt: tx.now,
+      }),
+    );
+  }
+  return { document: await documentState(tx, doc.id), refunds: written.map(paymentsWriter.paymentReceipt) };
+}
+
+// ── T4b : défaire un geste ─────────────────────────────────────────────────────
+
+/** Fenêtre au-delà de laquelle le filet du toast (5 s) n'a plus de sens : on corrige depuis la fiche. */
+export const REVERT_WINDOW_MS = 10 * 60 * 1000;
+
+export const REVERT_REFUSED = "Ce geste ne peut plus être annulé d'ici : corrige-le depuis la fiche du document.";
+export const REVERT_TOO_LATE = "Trop tard pour annuler ce geste : corrige-le depuis la fiche du document.";
+export const REVERT_CHANGED = "Ce document a changé depuis ce geste : rien n'a été annulé. Corrige-le depuis sa fiche.";
+
+export type RevertGesture = "status" | "payment" | "deliverAndCollect" | "collectAll";
+
+/** L'état d'un document que T4b rétablit : statut, horodatages, quantité livrée de chaque ligne (03 §2.3). */
+export type RevertSnapshot = {
+  status: DocumentStatus;
+  confirmedAt: string | null;
+  deliveredAt: string | null;
+  cancelledAt: string | null;
+  /** [identifiant de ligne, quantité livrée]. */
+  lines: [string, number][];
+};
+
+export type RevertPayload = {
+  v: 1;
+  gesture: RevertGesture;
+  /** ISO 8601. */
+  issuedAt: string;
+  documents: {
+    id: string;
+    before: RevertSnapshot;
+    /** Empreinte de l'état écrit par le geste. */
+    after: string;
+    /** Paiements créés par le geste, à contre-passer. */
+    payments: string[];
+  }[];
+};
+
+function snapshotOf(doc: StoredDocument, lines: readonly StoredLine[]): RevertSnapshot {
+  return {
+    status: doc.status,
+    confirmedAt: doc.confirmedAt?.toISOString() ?? null,
+    deliveredAt: doc.deliveredAt?.toISOString() ?? null,
+    cancelledAt: doc.cancelledAt?.toISOString() ?? null,
+    lines: lines.map((line) => [line.id, line.deliveredQuantity]),
+  };
+}
+
+const byId = (a: { id: string }, b: { id: string }) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+
+/**
+ * Empreinte de tout ce qu'un geste ultérieur changerait : statut, horodatages, date de modification du document
+ * (client, notes, lot, livraison prévue), lignes (ajout, retrait, quantité, livré, toute modification) et
+ * paiements (ajout, contre-passation).
+ */
+async function fingerprint(tx: Tx, documentId: string): Promise<string> {
+  const doc = await tx.db.saleDocument.findUnique({
+    where: { id: documentId },
+    select: {
+      status: true,
+      confirmedAt: true,
+      deliveredAt: true,
+      cancelledAt: true,
+      updatedAt: true,
+      lines: { select: { id: true, quantity: true, deliveredQuantity: true, updatedAt: true } },
+      payments: { select: { id: true } },
+    },
+  });
+  if (!doc) return "";
+  const state = [
+    doc.status,
+    doc.confirmedAt?.toISOString() ?? null,
+    doc.deliveredAt?.toISOString() ?? null,
+    doc.cancelledAt?.toISOString() ?? null,
+    doc.updatedAt.toISOString(),
+    [...doc.lines].sort(byId).map((line) => [line.id, line.quantity, line.deliveredQuantity, line.updatedAt.toISOString()]),
+    [...doc.payments].sort(byId).map((payment) => payment.id),
+  ];
+  return createHash("sha256").update(JSON.stringify(state)).digest("base64url");
+}
+
+function revertMac(body: string): string {
+  return createHmac("sha256", adminJwtSecret()).update(`nurea-revert:${body}`).digest("base64url");
+}
+
+/** Jeton signé (secret des sessions) : l'écran le renvoie sans pouvoir fabriquer l'état qu'il rétablit. */
+export function encodeRevertToken(payload: RevertPayload): string {
+  const body = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+  return `${body}.${revertMac(body)}`;
+}
+
+export function decodeRevertToken(token: string, now: Date): RevertPayload {
+  const [body, mac, extra] = token.split(".");
+  if (!body || !mac || extra !== undefined) throw new DomainError("CONFLICT", REVERT_REFUSED);
+  const expected = Buffer.from(revertMac(body));
+  const received = Buffer.from(mac);
+  if (expected.length !== received.length || !timingSafeEqual(expected, received)) {
+    throw new DomainError("CONFLICT", REVERT_REFUSED);
+  }
+  let payload: RevertPayload;
+  try {
+    payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as RevertPayload;
+  } catch {
+    throw new DomainError("CONFLICT", REVERT_REFUSED);
+  }
+  if (payload?.v !== 1 || !Array.isArray(payload.documents)) throw new DomainError("CONFLICT", REVERT_REFUSED);
+  const age = now.getTime() - new Date(payload.issuedAt).getTime();
+  if (!(age <= REVERT_WINDOW_MS)) throw new DomainError("CONFLICT", REVERT_TOO_LATE);
+  return payload;
+}
+
+/** Jeton rendu par un geste, lu sous verrou APRÈS ses écritures (03 §4.3 T4b). */
+async function revertToken(
+  tx: Tx,
+  gesture: RevertGesture,
+  entries: readonly { id: string; before: RevertSnapshot; payments: string[] }[],
+): Promise<string> {
+  const documents: RevertPayload["documents"] = [];
+  for (const entry of entries) documents.push({ ...entry, after: await fingerprint(tx, entry.id) });
+  return encodeRevertToken({ v: 1, gesture, issuedAt: tx.now.toISOString(), documents });
+}
+
+const dateOrNull = (iso: string | null) => (iso === null ? null : new Date(iso));
+const sameInstant = (a: Date | null, b: Date | null) => (a?.getTime() ?? null) === (b?.getTime() ?? null);
+
+/**
+ * T4b (03 §4.3) — « Annuler » du toast après livrer, « Livrer et encaisser », changer de statut, encaisser.
+ * Rétablit EXACTEMENT l'état d'avant le geste, sans réserve de transition : statut, horodatages, quantité
+ * livrée de chaque ligne (donc le stock, delta borné à 0 comme une réserve confirmée), et contre-passe les
+ * paiements du geste (T8 « annuler », même transaction). Refus `CONFLICT`, sans rien écrire, si un document a
+ * changé depuis le geste. Verrous : documents, puis poches des paiements EXCLUSIVEMENT (une contre-passation
+ * retire de l'argent).
+ *
+ * Exception de 03 §4.3 : une commande confirmée par l'acompte annulé ne revient « En attente » que si son payé
+ * net est nul après contre-passation ; sinon elle reste confirmée et la notice le dit.
+ */
+export async function revertDocumentChange(
+  tx: Tx,
+  token: string,
+): Promise<{ result: RevertResult; notice: string | null }> {
+  const payload = decodeRevertToken(token, tx.now);
+  const paymentIds = payload.documents.flatMap((entry) => entry.payments);
+  const payments = await paymentsWriter.findPayments(tx, paymentIds);
+  if (payments.length !== paymentIds.length) throw new DomainError("CONFLICT", REVERT_CHANGED);
+  const documentIds = unique(payload.documents.map((entry) => entry.id));
+  const locked = await tx.lock({
+    documents: documentIds,
+    pockets: { update: unique(payments.map((payment) => payment.pocketId)) },
+  });
+  if (locked.documents.length < documentIds.length) throw new DomainError("NOT_FOUND", DOCUMENT_NOT_FOUND);
+
+  // Gardes, avant toute écriture.
+  const plans = [];
+  for (const entry of payload.documents) {
+    if ((await fingerprint(tx, entry.id)) !== entry.after) throw new DomainError("CONFLICT", REVERT_CHANGED);
+    const doc = await readLockedDocument(tx, entry.id);
+    const lines = await readLines(tx, entry.id);
+    const before = new Map(entry.before.lines);
+    const restored = lines.flatMap((line) => {
+      const target = before.get(line.id);
+      if (target === undefined) throw new DomainError("CONFLICT", REVERT_CHANGED);
+      return target === line.deliveredQuantity ? [] : [{ line, target }];
+    });
+    assertStoredLinesWritable(restored.map(({ line }) => line));
+    plans.push({ entry, doc, lines, restored });
+  }
+
+  const notices: string[] = [];
+  const documents: DocumentState[] = [];
+  for (const { entry, doc, lines, restored } of plans) {
+    for (const paymentId of entry.payments) {
+      const payment = (await paymentsWriter.findPayment(tx, paymentId)) as paymentsWriter.StoredPayment;
+      await paymentsWriter.reversePayment(tx, payment, doc.status);
+    }
+    for (const { line, target } of restored) {
+      await tx.db.saleLine.update({ where: { id: line.id }, data: { deliveredQuantity: target }, select: { id: true } });
+    }
+    const deltas = restored.flatMap(({ line, target }) =>
+      line.perfumeId === null ? [] : [{ perfumeId: line.perfumeId, delta: target - line.deliveredQuantity }],
+    );
+    if (deltas.length > 0) await catalogueStock.applyDeliveredDeltas(tx, deltas, { confirm: true });
+
+    const target = entry.before;
+    const confirmedByPayment =
+      (payload.gesture === "payment" || payload.gesture === "collectAll") &&
+      target.status === "PENDING" &&
+      doc.status === "CONFIRMED";
+    const paid = confirmedByPayment ? await readPaid(tx, doc.id) : eur.zero;
+    if (confirmedByPayment && eur.compare(paid, eur.zero) > 0) {
+      const due = eur.clampZero(eur.sub(storedTotal(lines), paid));
+      notices.push(`La ${noun(doc.origin)} reste confirmée : ${formatEur(due)} à encaisser.`);
+    } else {
+      const next = {
+        status: target.status,
+        confirmedAt: dateOrNull(target.confirmedAt),
+        deliveredAt: dateOrNull(target.deliveredAt),
+        cancelledAt: dateOrNull(target.cancelledAt),
+      };
+      const changed =
+        next.status !== doc.status ||
+        !sameInstant(next.confirmedAt, doc.confirmedAt) ||
+        !sameInstant(next.deliveredAt, doc.deliveredAt) ||
+        !sameInstant(next.cancelledAt, doc.cancelledAt);
+      if (changed) await tx.db.saleDocument.update({ where: { id: doc.id }, data: next, select: { id: true } });
+    }
+    documents.push(await documentState(tx, doc.id));
+  }
+  return {
+    result: { documents, reversedPaymentIds: paymentIds },
+    notice: notices.length > 0 ? notices.join(" ") : null,
+  };
 }

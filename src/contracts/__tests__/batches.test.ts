@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ZodError } from "zod";
 import { fieldMessages } from "../zod-fr";
-import { createBatchInput, setBatchStatusInput, updateBatchInput } from "../batches";
+import { addBatchExpenseInput, createBatchInput, deleteBatchExpenseInput, setBatchStatusInput, updateBatchInput } from "../batches";
 
 const ID = "5b0f3a1e-2c4d-4e6f-8a9b-0c1d2e3f4a5b";
 
@@ -32,5 +32,36 @@ describe("contrats des lots", () => {
   it("statut : OPEN ou CLOSED", () => {
     expect(setBatchStatusInput.safeParse({ id: ID, status: "CLOSED" }).success).toBe(true);
     expect(setBatchStatusInput.safeParse({ id: ID, status: "ARCHIVED" }).success).toBe(false);
+  });
+});
+
+describe("contrats des dépenses de lot", () => {
+  const EXPENSE_ID = "7c1e2d3f-4a5b-4c6d-9e8f-1a2b3c4d5e6f";
+
+  it("ajout : libellé rogné, montant normalisé, poche absente = « Non attribué », date ISO, notes vides effacées", () => {
+    expect(
+      addBatchExpenseInput.parse({ id: EXPENSE_ID, batchId: ID, label: " Transport ", amount: "45,5", occurredAt: "2026-09-16", notes: "" }),
+    ).toEqual({
+      id: EXPENSE_ID,
+      batchId: ID,
+      label: "Transport",
+      amount: "45.50",
+      pocketId: null,
+      occurredAt: new Date("2026-09-16"),
+      notes: null,
+    });
+  });
+
+  it("ajout : identifiant du formulaire, libellé et montant positif exigés", () => {
+    expect(errors(addBatchExpenseInput.safeParse({ id: "x", batchId: ID, label: "T", amount: "-1" }))).toEqual({
+      id: "Cet élément n'est plus reconnu : recharge la page et réessaie.",
+      label: "Indique le libellé de la dépense (Transport, Douane…).",
+      amount: "Saisis un montant en euros (ex. 60 ou 59,90).",
+    });
+  });
+
+  it("suppression : une dépense reprise (`mig-dep-…`) reste désignable", () => {
+    expect(deleteBatchExpenseInput.safeParse({ id: "mig-dep-cm0abc123def456ghi789jkl0" }).success).toBe(true);
+    expect(deleteBatchExpenseInput.safeParse({ id: "../dépense" }).success).toBe(false);
   });
 });

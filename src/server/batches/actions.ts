@@ -1,6 +1,13 @@
 "use server";
 import "server-only";
-import { createBatchInput, deleteBatchInput, setBatchStatusInput, updateBatchInput } from "@/contracts/batches";
+import {
+  addBatchExpenseInput,
+  createBatchInput,
+  deleteBatchExpenseInput,
+  deleteBatchInput,
+  setBatchStatusInput,
+  updateBatchInput,
+} from "@/contracts/batches";
 import * as batchesWriter from "@/server/batches/writer";
 import { defineAction } from "@/server/core/define-action";
 import { inTransaction } from "@/server/db/transaction";
@@ -23,4 +30,14 @@ export const setBatchStatusAction = defineAction("batches.setStatus", setBatchSt
 /** Supprimer un lot vide de toute histoire (E06). */
 export const deleteBatchAction = defineAction("batches.delete", deleteBatchInput, (input) =>
   inTransaction((tx) => batchesWriter.deleteBatch(tx, input.id)),
+);
+
+/** T9 — Ajouter une dépense datée (S12). */
+export const addBatchExpenseAction = defineAction("batches.addExpense", addBatchExpenseInput, (input) =>
+  inTransaction((tx) => batchesWriter.addBatchExpense(tx, input)),
+);
+
+/** T10 — Supprimer une dépense : contre-passation de son mouvement à sa date. */
+export const deleteBatchExpenseAction = defineAction("batches.deleteExpense", deleteBatchExpenseInput, (input) =>
+  inTransaction((tx) => batchesWriter.deleteBatchExpense(tx, input.id)),
 );

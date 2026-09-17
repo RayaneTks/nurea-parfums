@@ -1,20 +1,29 @@
 import "server-only";
 import type {
+  AddBatchExpenseData,
   BatchDeletion,
+  BatchExpenseDeletion,
+  BatchExpenseSummary,
   BatchSummary,
   CreateBatchData,
   SetBatchStatusData,
   UpdateBatchData,
 } from "@/contracts/batches";
+import { futureDateMessage, valueDateOf } from "@/contracts/treasury";
 import { DomainError } from "@/domain/errors";
+import { eur, eurFromDb, eurFromWire, toWire } from "@/domain/money";
 import type { Tx } from "@/server/db/transaction";
+import * as settingsWriter from "@/server/settings/writer";
+import * as movements from "@/server/treasury/movements";
+import * as treasuryWriter from "@/server/treasury/writer";
 
 /**
  * Seul fichier qui écrit `Batch` et `BatchExpense` (03 §4.2, 04 §4.3).
  *
- * PARTIEL (J5) : le lot lui-même — créer, renommer, dater, annoter, clôturer, rouvrir, supprimer un
- * lot vide. Les dépenses (T9, T10) arrivent avec le moteur de l'argent (J6). Le rattachement des
- * documents (T13) écrit `SaleDocument` : il appartient au writer `documents`.
+ * Le lot lui-même (J5) — créer, renommer, dater, annoter, clôturer, rouvrir, supprimer un lot vide — et ses
+ * dépenses (J6) : T9 ajouter (la pièce ici, son euro par `treasury/movements.ts`, même transaction), T10
+ * supprimer (contre-passation du mouvement, la pièce reste). Le rattachement des documents (T13) écrit
+ * `SaleDocument` : il appartient au writer `documents`.
  */
 
 export const BATCH_NOT_FOUND = "Ce lot n'existe plus. Il a peut-être été supprimé depuis un autre écran.";
@@ -108,5 +117,92 @@ export async function deleteBatch(tx: Tx, id: string): Promise<BatchDeletion> {
   });
   if (refusal) throw new DomainError("CONFLICT", refusal);
   await tx.db.batch.delete({ where: { id }, select: { id: true } });
+  return { id, deleted: true };
+}
+
+// ── Dépenses (T9, T10) ─────────────────────────────────────────────────────────
+
+const EXPENSE_NOT_FOUND = "Cette dépense n'existe plus. Recharge le lot pour voir sa version à jour.";
+
+const EXPENSE_SELECT = {
+  id: true,
+  batchId: true,
+  label: true,
+  notes: true,
+  movement: { select: { id: true, pocketId: true, amount: true, occurredAt: true, reversedBy: { select: { id: true } } } },
+} as const;
+
+type ExpenseRow = {
+  id: string;
+  batchId: string;
+  label: string;
+  notes: string | null;
+  movement: { id: string; pocketId: string; amount: { toString(): string }; occurredAt: Date; reversedBy: { id: string } | null };
+};
+
+function expenseSummary(row: ExpenseRow): BatchExpenseSummary {
+  return {
+    id: row.id,
+    batchId: row.batchId,
+    label: row.label,
+    notes: row.notes,
+    // Le mouvement d'une dépense sort (−) : la dépense se lit en positif.
+    amount: toWire(eur.neg(eurFromDb(row.movement.amount))),
+    pocketId: row.movement.pocketId,
+    occurredAt: row.movement.occurredAt.toISOString(),
+    movementId: row.movement.id,
+  };
+}
+
+function findExpense(tx: Tx, id: string): Promise<ExpenseRow | null> {
+  return tx.db.batchExpense.findUnique({ where: { id }, select: EXPENSE_SELECT });
+}
+
+/**
+ * T9 — ajouter une dépense (S12) : la pièce et son mouvement `EXPENSE` négatif dans la même transaction,
+ * datable mais jamais dans le futur. Un lot clos accepte ses dépenses tardives. Verrous : lot en partage (sa
+ * suppression attend), poche EXCLUSIVEMENT (une sortie : « Non attribué » jamais négatif). La poche choisie
+ * devient la poche proposée (N2). Double envoi du même identifiant : la dépense existante (04 §3.6).
+ */
+export async function addBatchExpense(tx: Tx, input: AddBatchExpenseData): Promise<BatchExpenseSummary> {
+  const early = await findExpense(tx, input.id);
+  if (early) return expenseSummary(early);
+
+  const pocketId = await treasuryWriter.resolvePocketId(tx, input.pocketId);
+  const { batches } = await tx.lock({ batches: { share: [input.batchId] }, pockets: { update: [pocketId] } });
+  if (batches.length === 0) throw new DomainError("NOT_FOUND", BATCH_NOT_FOUND);
+  const replay = await findExpense(tx, input.id);
+  if (replay) return expenseSummary(replay);
+
+  const occurredAt = valueDateOf(input.occurredAt, tx.now);
+  if (occurredAt === null) throw new DomainError("VALIDATION", futureDateMessage("dépense"), "occurredAt");
+  const movement = await movements.insertMovement(tx, {
+    pocketId,
+    kind: "EXPENSE",
+    direction: "out",
+    amount: eurFromWire(input.amount),
+    occurredAt,
+    label: input.label,
+  });
+  const created = await tx.db.batchExpense.create({
+    data: { id: input.id, batchId: input.batchId, label: input.label, notes: input.notes ?? null, movementId: movement.id },
+    select: EXPENSE_SELECT,
+  });
+  await settingsWriter.rememberPocket(tx, pocketId);
+  return expenseSummary(created);
+}
+
+/**
+ * T10 — supprimer une dépense (E06) : son mouvement est contre-passé à sa date (03 §4.4) ; la pièce reste,
+ * annulée (dérivé : son mouvement a un `reversedBy`), hors des listes et de la Marge nette. Déjà supprimée :
+ * succès sans écriture (renvoi après coupure). L'entrée d'argent n'exige qu'un verrou partagé de la poche.
+ */
+export async function deleteBatchExpense(tx: Tx, id: string): Promise<BatchExpenseDeletion> {
+  const found = await findExpense(tx, id);
+  if (!found) throw new DomainError("NOT_FOUND", EXPENSE_NOT_FOUND);
+  await tx.lock({ batches: { share: [found.batchId] }, pockets: { share: [found.movement.pocketId] } });
+  const expense = (await findExpense(tx, id)) as ExpenseRow;
+  if (expense.movement.reversedBy !== null) return { id, deleted: false };
+  await movements.insertReversal(tx, expense.movement.id);
   return { id, deleted: true };
 }

@@ -1,12 +1,13 @@
 /**
- * Contrat du module documents (04 §3.4 ; transactions T1–T4, T6, T13 de 03 §4.3 ; écrans E11, S01, S13).
+ * Contrat du module documents (04 §3.4 ; transactions T1–T6, T4b, T13 de 03 §4.3 ; actions composées A-5 ;
+ * écrans E11, S01, S02, S03, S13).
  *
  * Un document est une commande (`ORDER`) ou une vente directe (`DIRECT_SALE`). Les schémas d'entrée
  * normalisent la saisie : montants tapés au clavier (« 119,90 ») rendus en chaînes exactes, lignes
  * confrontées aux règles des CHECK (`src/domain/sale-line.ts`), client choisi sous l'une de trois
  * formes. Les montants de sortie voyagent en `MoneyString` (04 §5).
  *
- * Paiements à la création (« Reçu maintenant », acompte) : J6, avec `src/contracts/payments.ts`.
+ * Paiements à la création (« Reçu maintenant », acompte, N1) : `creationPaymentInput` de `payments.ts`.
  */
 import { z } from "zod";
 import "./zod-fr";
@@ -33,6 +34,8 @@ import {
 } from "@/domain/sale-line";
 import { customerFields } from "./customers";
 import { confirmFlag, entityId, optionalDate, optionalText } from "./fields";
+import { creationPaymentInput, type PaymentReceipt } from "./payments";
+import { pocketChoice, positiveAmount, valueDate } from "./treasury";
 
 // ── Lignes ─────────────────────────────────────────────────────────────────────
 
@@ -209,6 +212,20 @@ export function linesTotal(lines: readonly { quantity: number; unitPriceEur: Mon
 
 export const DIRECT_SALE_DELIVERY_MESSAGE = "Une vente directe est livrée sur-le-champ : retire la date de livraison prévue.";
 
+/** Σ des paiements de création ; null si l'un d'eux est resté invalide. */
+export function paymentsTotal(payments: readonly { amount: MoneyString }[]): Eur | null {
+  try {
+    return eur.sum(payments.map((payment) => eurFromWire(payment.amount)));
+  } catch {
+    return null;
+  }
+}
+
+/** « Le montant reçu dépasse le total (120,00 €). » (N1 : Σ paiements ≤ total, 03 §4.3 T1). */
+export function receivedAboveTotalMessage(total: Eur): string {
+  return `Le montant reçu dépasse le total (${formatEur(total)}).`;
+}
+
 export const createDocumentInput = z
   .object({
     /** UUID v4 généré à l'ouverture du composeur et gardé jusqu'au succès (04 §3.6). */
@@ -222,16 +239,38 @@ export const createDocumentInput = z
     expectedDeliveryHasTime: z.boolean().optional().default(false),
     notes: optionalText(2000),
     lines: z.array(createLineInput).min(1, "Ajoute au moins un article.").max(100, "Garde 100 articles au plus."),
+    /**
+     * « Reçu maintenant » d'une vente, acompte d'une commande (N1), éventuellement réparti sur plusieurs
+     * poches (S08). Σ ≤ total. Une commande qui reçoit un acompte naît confirmée.
+     */
+    payments: z.array(creationPaymentInput).max(10, "Répartis sur 10 poches au plus.").optional().default([]),
     confirm: confirmFlag,
   })
   .superRefine((input, ctx) => {
     if (input.origin === "DIRECT_SALE" && input.expectedDeliveryAt) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["expectedDeliveryAt"], message: DIRECT_SALE_DELIVERY_MESSAGE });
     }
-    if (!input.customer || hasCustomerName(input.customer)) return;
-    // Sans paiement à la création (J5), tout le total reste à encaisser.
     const total = linesTotal(input.lines);
-    const message = total === null ? null : customerNameRequirement(input.origin, total);
+    const received = paymentsTotal(input.payments ?? []);
+    if (total !== null && received !== null && eur.compare(received, total) > 0) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["payments"], message: receivedAboveTotalMessage(total) });
+    }
+    const ids = new Set<string>();
+    (input.payments ?? []).forEach((payment, index) => {
+      if (typeof payment?.id !== "string") return;
+      if (ids.has(payment.id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["payments", index, "id"],
+          message: "Ce paiement apparaît deux fois : recharge la page et réessaie.",
+        });
+      }
+      ids.add(payment.id);
+    });
+    if (!input.customer || hasCustomerName(input.customer)) return;
+    // Ce qui reste à encaisser après les paiements de création exige un nom (06 E11 zone 4).
+    const due = total === null || received === null ? null : eur.clampZero(eur.sub(total, received));
+    const message = due === null ? null : customerNameRequirement(input.origin, due);
     if (message) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["customer"], message });
   });
 
@@ -303,6 +342,76 @@ export const changeDocumentStatusInput = z.object({
 export type ChangeDocumentStatusInput = z.input<typeof changeDocumentStatusInput>;
 export type ChangeDocumentStatusData = z.output<typeof changeDocumentStatusInput>;
 
+// ── T4b : défaire un geste ─────────────────────────────────────────────────────
+
+/**
+ * « Annuler » du toast (5 s) après livrer, « Livrer et encaisser », changer de statut, encaisser (03 §4.3 T4b).
+ * Le jeton est rendu, signé, par le geste lui-même : il porte l'état d'avant, l'empreinte de l'état écrit et
+ * les paiements créés. L'écran ne le lit pas, il le renvoie.
+ */
+export const revertDocumentChangeInput = z.object({
+  token: z.string().min(1, "Ce geste ne peut plus être annulé.").max(20_000, "Ce geste ne peut plus être annulé."),
+});
+
+export type RevertDocumentChangeInput = z.input<typeof revertDocumentChangeInput>;
+
+// ── T5 : annuler ───────────────────────────────────────────────────────────────
+
+/**
+ * Annuler un document (S03) : il reste consultable, marqué annulé ; ses articles livrés reviennent en stock.
+ * Remboursements proposés : un par poche de sortie, datés du jour, Σ ≤ payé net. Aucun : l'argent encaissé
+ * reste dans l'Encaissé (acompte conservé, 02 §6).
+ */
+export const cancelDocumentInput = z
+  .object({
+    documentId: entityId,
+    refunds: z
+      .array(z.object({ id: entityId, amount: positiveAmount, pocketId: pocketChoice }))
+      .max(10, "Rembourse depuis 10 poches au plus.")
+      .optional()
+      .default([]),
+    confirm: confirmFlag,
+  })
+  .superRefine((input, ctx) => {
+    const ids = new Set<string>();
+    (input.refunds ?? []).forEach((refund, index) => {
+      if (typeof refund?.id !== "string") return;
+      if (ids.has(refund.id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["refunds", index, "id"],
+          message: "Ce remboursement apparaît deux fois : recharge la page et réessaie.",
+        });
+      }
+      ids.add(refund.id);
+    });
+  });
+
+export type CancelDocumentInput = z.input<typeof cancelDocumentInput>;
+export type CancelDocumentData = z.output<typeof cancelDocumentInput>;
+
+// ── A-5 : livrer et encaisser ──────────────────────────────────────────────────
+
+/**
+ * S02 variante Livrer : « Encaisser 60 € et livrer » — T7 puis T4 en UNE transaction (A-5). Le paiement est
+ * un solde (le document est livré par le même geste) ; les réserves de la livraison se confirment comme en T4.
+ */
+export const deliverAndCollectInput = z.object({
+  documentId: entityId,
+  payment: z.object({
+    id: entityId,
+    amount: positiveAmount,
+    pocketId: pocketChoice,
+    occurredAt: valueDate,
+    method: optionalText(40),
+    note: optionalText(500),
+  }),
+  confirm: confirmFlag,
+});
+
+export type DeliverAndCollectInput = z.input<typeof deliverAndCollectInput>;
+export type DeliverAndCollectData = z.output<typeof deliverAndCollectInput>;
+
 // ── T6 : supprimer ─────────────────────────────────────────────────────────────
 
 export const deleteDocumentInput = z.object({ documentId: entityId });
@@ -355,11 +464,35 @@ export type DocumentSummary = {
   due: MoneyString;
 };
 
-export type DocumentStatusChange = DocumentSummary & {
+/** Résumé et horodatages d'événement (03 §2.3). */
+export type DocumentState = DocumentSummary & {
   /** ISO 8601. */
   confirmedAt: string | null;
   deliveredAt: string | null;
   cancelledAt: string | null;
+};
+
+export type DocumentStatusChange = DocumentState & {
+  /** Jeton de `revertDocumentChangeAction` (T4b, filet « Annuler » du toast). */
+  undo: string | null;
+};
+
+export type CancellationResult = {
+  document: DocumentState;
+  /** Remboursements écrits (montants négatifs), dans l'ordre reçu. */
+  refunds: PaymentReceipt[];
+};
+
+export type DeliveryAndCollection = {
+  document: DocumentState;
+  payment: PaymentReceipt;
+  undo: string | null;
+};
+
+export type RevertResult = {
+  documents: DocumentState[];
+  /** Paiements contre-passés par l'annulation du geste. */
+  reversedPaymentIds: string[];
 };
 
 export type LineDelivery = {
