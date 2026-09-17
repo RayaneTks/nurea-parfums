@@ -147,6 +147,8 @@ async function warmUp(page: import("@playwright/test").Page): Promise<void> {
   // Routes de lecture appelées à la frappe (07 J8) : compilées d'avance, sinon la première recherche attend la compilation.
   await page.request.get("/api/admin/search?scope=all&q=pr", { timeout: 180_000 });
   await page.request.get("/api/admin/picker", { timeout: 180_000 });
+  // Export CSV (07 J12) : la route est compilée d'avance, sinon le premier « Exporter » attend la compilation.
+  await page.request.get("/api/admin/export/compta", { timeout: 180_000 });
 }
 
 async function expectCookie(context: import("@playwright/test").BrowserContext, name: string): Promise<void> {
