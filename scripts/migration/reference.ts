@@ -10,7 +10,8 @@
  *   de src/server/orders/financials.ts, branche main) et sa décomposition D0, D1, D2 (C2, C3) ;
  * - ancien À encaisser (`listOutstanding` de src/server/collect/queries.ts, reste dû borné, C4) ;
  * - informatif : ancienne liste À encaisser non bornée, Encaissé du mois, Marge nette globale (C6) ;
- * - comptages par table et les trois comptages de la vitrine (V9).
+ * - comptages par table et les trois comptages de la vitrine (V9) ;
+ * - nombre et empreinte des visuels story `PerfumeMedia`, table conservée en place (V11).
  *
  * Lecture seule : une transaction REPEATABLE READ READ ONLY (toutes les mesures voient le même
  * instantané). Refuse de s'exécuter si la table "Order" n'existe plus dans public (déjà contractée).
@@ -29,6 +30,7 @@ import {
   type Reference,
   type VenteReference,
 } from "./lib/reference-format";
+import { mesurerVisuels } from "./lib/visuels";
 import { comptagesVitrine } from "./lib/vitrine";
 import { hostOf } from "../lib/garde-hote";
 
@@ -65,6 +67,7 @@ async function calculerReference(db: Sql, hote: string): Promise<Reference> {
        (SELECT count(*)::int FROM "Brand") AS "Brand",
        (SELECT count(*)::int FROM "Perfume") AS "Perfume",
        (SELECT count(*)::int FROM "PerfumePricing") AS "PerfumePricing",
+       (SELECT count(*)::int FROM "PerfumeMedia") AS "PerfumeMedia",
        (SELECT count(*)::int FROM "Sale" s JOIN "Order" o ON o.id = s."orderId") AS paires,
        (SELECT count(*)::int FROM "OrderItem" i
          WHERE NOT EXISTS (SELECT 1 FROM "Sale" s WHERE s."orderId" = i."orderId")) AS "orderItemsHorsPaires"`,
@@ -157,6 +160,7 @@ async function calculerReference(db: Sql, hote: string): Promise<Reference> {
   );
 
   const vitrine = await comptagesVitrine(db);
+  const visuels = await mesurerVisuels(db);
 
   return {
     format: FORMAT_REFERENCE,
@@ -180,6 +184,7 @@ async function calculerReference(db: Sql, hote: string): Promise<Reference> {
         ),
       },
       vitrine,
+      visuels,
     },
   };
 }

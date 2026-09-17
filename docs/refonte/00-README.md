@@ -1,7 +1,7 @@
 # Refonte Nuréa Gestion — Dossier pilote
 
-> **Statut** : **conception terminée** (docs 00 à 07, vérifiés en croisé) —
-> exécution à démarrer au jalon J0 de `07-PLAN-EXECUTION.md`. Démarré le 17 septembre 2026.
+> **Statut** : **construction en cours** sur `refonte/integration` — fondations et moteurs
+> (J0–J3, J5) livrés, reprise des données répétée avec succès sur la copie réelle. Démarré le 17 septembre 2026.
 > **Objet** : refonte complète, from scratch, de l'application de gestion (`/admin`),
 > dite « Nuréa Gestion ». La vitrine publique (`app/(shop)`) n'est **pas** dans le
 > périmètre, mais ses dépendances aux tables partagées sont une contrainte dure.
@@ -63,7 +63,7 @@ refonte en lisant cette série.
 3. **Planifier** ✅ — 17 jalons vérifiables, bascule répétée, migration chiffrée (07).
 4. **Vérifier** ✅ — deux relectures croisées (données/technique, UX/produit) :
    27 incohérences relevées dont 7 bloquantes, toutes corrigées dans les docs.
-5. **Exécuter** — à démarrer : suivre `07-PLAN-EXECUTION.md` à partir de J0.
+5. **Exécuter** — en cours : voir « Avancement de la construction » ci-dessous.
 
 ## Avancement de la construction
 
@@ -74,10 +74,13 @@ Branche de travail : **`refonte/integration`** (la production reste sur `main`, 
 | J0 Chantier | ✅ partie locale | React 19, Vitest en projets, CI, garde d'hôte, amendements A-1…A-13. **Reste** : projet Supabase de préproduction + variables Vercel *Preview* (compte du gérant requis) ; V-lib-3 (pooler) en attente de la préproduction. |
 | L1 / L2 sur `main` | ✅ prêts, non fusionnés | Branche `fix/vitrine-slug-maintenance` (worktree `../nurea-fix`), vérifiés en local. À fusionner dans `main` avant la bascule. |
 | J1 Schéma, migrations, retrait | ✅ | Schéma cible, expand/contract, 72 tests base, ancienne gestion retirée de la branche. |
-| J2 Reprise des données | 🔄 en cours | — |
-| J3 Socle | 🔄 domaine pur ✅ ; serveur en cours | — |
-| J4 Design system + shell | 🔄 design system ✅ ; shell à faire | — |
-| J5 → J16 | ⏳ | — |
+| J2 Reprise des données | ✅ | Scripts + test des cas tordus. **Répétition n°1 sur la copie réelle (17/09) : verte de bout en bout** — Trésorerie 1 546,00 € = 1 546,00 € ; Encaissé 2 050,00 € = 2 050,00 € (résidu 0,00 €) ; À encaisser 825,00 € = 825,00 € ; Marge nette 1 097,40 € → 1 097,39 € (arrondi d'une ligne historique, règle 03 §4.8). Les 281 stocks à 0 passent en « non suivi » (décision n°5 confirmée : aucun stock n'était réellement suivi). |
+| J3 Socle | ✅ | Domaine pur, contrats, defineAction/Query, transactions, cache, session, proxy, redirections, tests d'architecture. V-lib-1 et V-lib-2 validées. |
+| J4 Design system + shell | 🔄 design system ✅ ; shell en cours | 4 correctifs venus de la production à appliquer au design system (05, « à appliquer »). |
+| J5 Moteur documents, stock, clients, lots | ✅ | T1 sans paiement, T2, T3, T4, T6, T13 testées sur base réelle. |
+| J6 Moteur de l'argent | 🔄 en cours | — |
+| Écart avec `origin/main` | ✅ intégré | 11 commits de production (contenances 10/50/80, visuels story, « À rattacher »…) : 01 §3.11. |
+| J7 → J16 | ⏳ | — |
 
 **Base de données locale des tests.** Docker Desktop ne démarre pas sur ce poste. Les tests
 sur base réelle tournent sur un PostgreSQL 15 embarqué (paquet npm `embedded-postgres`,
@@ -104,7 +107,14 @@ Pour un agent ou un développeur qui arrive sur le chantier :
 **Points ouverts laissés à l'exécutant** (marqués dans 07) : vérifier que la build
 ne touche pas la base ; essayer `vercel deploy --skip-domain` + `promote` en J16 ;
 le premier rejeu de la reprise sur copie réelle (J2) dira s'il existe des poches
-archivées non vides. Le SQL de 03 (CHECK, triggers, vue) a été relu mais **pas
+archivées non vides — *réponse du 17/09/2026 : aucune (trois poches archivées, soldes nuls ;
+répétition sur l'instantané réel verte de bout en bout)*.
+
+**Écart intégré le 17/09/2026.** La conception et la branche sont parties de l'ancien `main`
+local (`47aaad4`) ; la production (`9e0b5d8`) avait 11 commits de plus (contenances 10/50/80,
+visuels story, « À rattacher », recherche étendue, fenêtre de 48 h, correctifs). Inventaire et
+effet sur la refonte : `01-AUDIT-EXISTANT.md` §3.11 ; chaque document amendé porte une note
+« Écart intégré le 17/09/2026 » en tête. Le SQL de 03 (CHECK, triggers, vue) a été relu mais **pas
 exécuté** (pas de Postgres local lors de la conception) : il s'éprouve en J1–J2.
 
 ## Décisions qui changent le quotidien du gérant — tranchées

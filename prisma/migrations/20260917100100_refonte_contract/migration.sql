@@ -146,6 +146,12 @@ ALTER TABLE "PerfumePricing"
   ALTER COLUMN "updatedAt" TYPE TIMESTAMPTZ(3) USING "updatedAt" AT TIME ZONE 'UTC',
   ALTER COLUMN "updatedAt" DROP DEFAULT;
 
+-- PerfumeMedia (visuels story, 20260910140000_perfume_media) : table de la production CONSERVÉE en
+-- place dans public — jamais déplacée dans legacy, aucune ligne touchée. Seule la date passe en
+-- timestamptz (convention 03 §3). Sa clé étrangère vers "Perfume" (Cascade) est inchangée.
+ALTER TABLE "PerfumeMedia"
+  ALTER COLUMN "createdAt" TYPE TIMESTAMPTZ(3) USING "createdAt" AT TIME ZONE 'UTC';
+
 -- ═══ 6. Anciennes tables → legacy (conservées 30 jours, 03 §7.1) ═══════════════════════
 -- 6a. Leurs clés étrangères vers les tables qui restent dans public sont supprimées : legacy
 --     reste figé (une suppression de parfum ou de client ne le modifie plus) et public n'en
@@ -198,8 +204,10 @@ ALTER TABLE "Perfume" ADD CONSTRAINT perfume_publish_image_ck
   CHECK (status = 'DRAFT' OR btrim(image) <> '') NOT VALID;
 ALTER TABLE "Perfume" ADD CONSTRAINT perfume_stock_ck
   CHECK (stock IS NULL OR stock >= 0) NOT VALID;
+-- Contenances réelles 10 / 50 / 80 ml : la production a traduit 30 → 10 et 100 → 80 le 10/09/2026
+-- (20260910120000_real_volumes_10_50_80). Une valeur héritée restante est hors règle (R4, V8).
 ALTER TABLE "PerfumePricing" ADD CONSTRAINT pricing_volume_ck
-  CHECK ("volumeMl" IN (30, 50, 100)) NOT VALID;
+  CHECK ("volumeMl" IN (10, 50, 80)) NOT VALID;
 ALTER TABLE "PerfumePricing" ADD CONSTRAINT pricing_amounts_ck
   CHECK ("defaultUnitPriceEur" >= 0
      AND ("defaultUnitCostDzd"  IS NULL OR "defaultUnitCostDzd"  >= 0)
@@ -217,9 +225,10 @@ ALTER TABLE "SaleLine" ADD CONSTRAINT line_quantity_ck  CHECK (quantity >= 1) NO
 ALTER TABLE "SaleLine" ADD CONSTRAINT line_delivered_ck CHECK ("deliveredQuantity" BETWEEN 0 AND quantity) NOT VALID;
 ALTER TABLE "SaleLine" ADD CONSTRAINT line_price_ck     CHECK ("unitPriceEur" >= 0) NOT VALID;
 ALTER TABLE "SaleLine" ADD CONSTRAINT line_gift_ck      CHECK (NOT "isGift" OR "unitPriceEur" = 0) NOT VALID;
--- Toute écriture exige un volume valide ; les lignes migrées sans volume restent lisibles (contrainte NOT VALID).
+-- Toute écriture exige une contenance réelle (10, 50 ou 80 ml) ; les lignes reprises sans volume, ou à une
+-- contenance héritée 30/100 non traduite, restent lisibles (contrainte NOT VALID, listées en R4).
 ALTER TABLE "SaleLine" ADD CONSTRAINT line_volume_ck
-  CHECK ("volumeMl" IS NOT NULL AND "volumeMl" IN (30, 50, 100)) NOT VALID;
+  CHECK ("volumeMl" IS NOT NULL AND "volumeMl" IN (10, 50, 80)) NOT VALID;
 -- "exchangeRate" IS NOT NULL explicite : un CHECK évalué à NULL est satisfait, et
 -- `"exchangeRate" > 0` vaut NULL quand le taux manque (coût DZD sans taux accepté sinon).
 ALTER TABLE "SaleLine" ADD CONSTRAINT line_cost_ck

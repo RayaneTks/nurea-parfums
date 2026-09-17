@@ -45,7 +45,9 @@ export const REFERENCE = {
   /** Coûts : ventes 237 + commandes confirmées 149 = 386 ; dépenses 150 + 42 + 18 = 210 ; 895 − 386 − 210 */
   margeNetteAncienne: "299.00",
   vitrine: { parfumsPublies: 2, cartesGamme: 1, marquesExplorer: 2 },
-  comptages: { Order: 14, OrderItem: 15, Sale: 12, SaleItem: 13, PaymentTransaction: 13, CashMovement: 34, paires: 4, orderItemsHorsPaires: 11 },
+  comptages: { Order: 14, OrderItem: 15, Sale: 12, SaleItem: 13, PaymentTransaction: 13, CashMovement: 34, PerfumeMedia: 1, paires: 4, orderItemsHorsPaires: 11 },
+  /** Un visuel story sur Sauvage, déposé le 10/09/2026 à 09:09:06,763 UTC : conservé tel quel (V11). */
+  visuels: { nombre: 1, createdAt: "2026-09-10T09:09:06.763Z" },
 };
 
 /**
@@ -148,6 +150,7 @@ export const DOCUMENTS: Record<
   "cmd-doublon": ["ORDER", "CONFIRMED", "2026-08-10T09:15:00.000Z", null, null, "cli-amina", null, "35.00", "35.00"],
   "cmd-divergent": ["ORDER", "CONFIRMED", "2026-08-12T10:10:00.000Z", null, null, "cli-karim", null, "30.00", "30.00"],
   "cmd-confirmee-sans-paiement": ["ORDER", "CONFIRMED", "2026-08-30T08:00:00.000Z", null, null, null, null, "0.00", "25.00"],
+  // Livrée sans `deliveredAt`, prévue le 20/09 : livraison = updatedAt (02/09 12:00), jamais la date prévue.
   "cmd-trop-percu": ["ORDER", "DELIVERED", "2026-09-02T11:00:00.000Z", "2026-09-02T12:00:00.000Z", null, "cli-sofia", null, "35.00", "0.00"],
   // Ventes sans commande.
   "vente-directe-payee": ["DIRECT_SALE", "DELIVERED", "2026-03-05T14:00:00.000Z", "2026-03-05T14:00:00.000Z", null, "cli-amina", "lot-mars", "120.00", "0.00"],
@@ -164,7 +167,8 @@ export const DOCUMENTS: Record<
 export const R4: Record<string, string[]> = {
   ecartsAArbitrer: ["cmd-paire-remontee"],
   horsCatalogueReconstituees: ["ol-sans-nom-1"],
-  volumesAtypiques: ["ol-sans-nom-1", "vl-volume-nul"],
+  /** Hors 10/50/80 : 75 ml, contenance héritée 30 ml non traduite, volume nul. */
+  volumesAtypiques: ["ol-sans-nom-1", "ol-sans-paiement-1", "vl-volume-nul"],
   donsPrixNonNul: ["vl-don-prix"],
   coutsDzdSansTaux: [],
   autresLignesHorsRegles: [],
@@ -186,5 +190,5 @@ export const R4: Record<string, string[]> = {
 /** V8 après le contract : contraintes restées NOT VALID et leurs lignes. */
 export const V8 = {
   line_gift_ck: ["vl-don-prix"],
-  line_volume_ck: ["ol-sans-nom-1", "vl-volume-nul"],
+  line_volume_ck: ["ol-sans-nom-1", "ol-sans-paiement-1", "vl-volume-nul"],
 };

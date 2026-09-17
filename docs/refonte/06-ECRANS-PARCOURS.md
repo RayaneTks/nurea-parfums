@@ -17,6 +17,8 @@
 - `docs/refonte/05-DESIGN-SYSTEM.md` — reçoit les amendements marqués **→ 05** (récapitulés en §8).
 - `docs/refonte/07-PLAN-EXECUTION.md` — reprend les objectifs chronométrés du §2 comme critères d'acceptation et l'inventaire des routes du §1.2 pour `npm run test:layout`.
 
+**Écart intégré le 17/09/2026** (01 §3.11). La production (`9e0b5d8`) a gagné des capacités après l'ancien `main` sur lequel ce document a été écrit ; elles ont désormais leur place : **galerie de visuels story** sur la fiche parfum (E16 zone 7, pastille sur la ligne de E15, parcours PC-13) avec son **geste de partage** vers Snapchat ou Photos ; **« À rattacher »**, ce qui n'appartient à aucun lot, en tête de E05 (PC-08, variante) ; **recherche étendue** au contact, aux notes, au lot, à la marque et aux articles hors catalogue (E03, E10, E05) ; **contenances 10 / 50 / 80 ml**, défaut 80 (E11, E16, E19, S01). Traçabilité : §5.2 (A20–A22), §6.1, §6.3, §6.4, §6.5.
+
 **Invariants tenus** (00, 05 §1.1) : registre `product` (bordeaux `#7B0B1D` sur neutres iOS `#F2F2F7`, police SF, thème clair uniquement, rail 430 px) ; **cinq onglets, sans menu « Plus »** ; vocabulaire des chiffres **Encaissé / À encaisser / Marge nette / Trésorerie**, sans synonyme, une définition chacun (02 §6, 03 §5) ; cibles tactiles ≥ 44 px ; tout composant client qui lit `useSearchParams()` est rendu sous `<Suspense>` ; `npm run test:layout` couvre toutes les routes et les sheets adressables (§1.8) ; feuilles de style vitrine et admin disjointes (rien ici ne touche `app/(shop)`) ; contrat de lecture vitrine (01 §5, 03 §6) honoré par les écrans catalogue (§3, E15–E17, E19) ; français partout.
 
 ---
@@ -200,10 +202,16 @@ export function onTabPress(tab: TabId, ctx: {
 6. Chaque redirection (§1.2, §1.6) aboutit à une route de l'inventaire.
 7. `onTabPress` : table de vérité complète du §1.5.
 
+*Mise en œuvre J4 (`src/app-shell/navigation.ts`, `routes.ts`, `__tests__/navigation.test.ts`).* Le pseudo-code ci-dessus est tenu, avec quatre précisions :
+- `tabOf` rend `TabId | null` : E18 (`/admin/login`) n'appartient à aucun onglet (test 2 et 4). `tabOf` et `getParentScreen` acceptent un chemin **ou** une URL avec query, ce qui rend le test 5 effectif.
+- `goRoot` porte `url` et `scrollTop` (la racine avec ses filtres mémorisés), `resetFilters` porte `url` (la racine nue) : la fonction est pure et décide seule de la destination.
+- Chaque onglet déclare ses `filterParams` (règle 4 du §1.5) : Commandes `vue`, `filtre`, `q` ; Clients `q` ; Catalogue `tab`, `q`, `stock`, `visibilite` ; Accueil et Vendre aucun — `mode`, `client`, `parfum`, `depuis` pré-remplissent le composeur, ils ne filtrent rien et un tap sur Vendre ne les efface pas. `hasActiveFilters(tab, search)` les lit.
+- La mémoire (`createTabMemory`, instance de session `tabMemory`) retient par onglet le dernier écran **et**, pour chaque chemin visité, son URL et son défilement : c'est ce qui permet au retour de restituer le parent (`resolveBack`, §1.5), pas seulement au tap d'onglet. `allowsPullToRefresh(pathname)` y vit aussi (routes de lecture, §3 règles communes).
+
 ### 1.5 Règle du retour et mémoire d'onglet
 
 - **Retour** : rendu par `AppHeader` à partir de `getParentScreen` (chevron + libellé du parent), jamais par une page, jamais dérivé de l'historique. Une racine d'onglet n'a pas de retour. Une sheet n'a **pas** de bouton retour : elle a « ✕ » et le glissement vers le bas.
-- **Le parent restitue son contexte** : si l'URL du parent figure dans la mémoire de l'onglet (même chemin), le retour la reprend **avec sa query et son défilement** (ex. : E06 → retour vers E05 à la même position). **→ 04**
+- **Le parent restitue son contexte** : si l'URL du parent figure dans la mémoire de l'onglet (même chemin), le retour la reprend **avec sa query et son défilement** (ex. : E06 → retour vers E05 à la même position). **→ 04** Précision J4 : seulement si la query mémorisée garde les valeurs que le parent fixe lui-même — le retour « Marques » (`?tab=marques`) reprend `?tab=marques&q=dior`, jamais `?tab=parfums` ; le libellé du chevron ne ment pas.
 - **Tap sur un onglet inactif** : restaure le dernier écran de cet onglet (URL sans paramètres de sheet, défilement) — comme une app iOS. Première visite de la session : la racine.
 - **Tap sur l'onglet actif**, dans cet ordre, la première condition vraie s'applique :
   1. une sheet est ouverte → elle se ferme (si elle n'a pas de saisie modifiée ; sinon `ConfirmDialog` « Abandonner la saisie ? ») ;
@@ -290,7 +298,7 @@ Chaque parcours donne : l'objectif (02 §2 quand il existe, sinon une décision 
 |---|---|---|---|
 | 0 | — | E01 Accueil | 0 s |
 | 1 | Tap onglet « Vendre » | E11 en mode « Vente », vide : grille « Vendus récemment » (8 tuiles), champ « Rechercher un parfum », rien d'autre (ni bloc Paiement ni CTA tant qu'il n'y a pas de ligne) | 1,2 s |
-| 2 | Tap tuile « Sauvage · 100 ml · 120 € » | Une ligne : volume 100 ml, prix 120 €, coût DZD et taux pré-remplis par `PerfumePricing` (N8). Bloc Paiement : « Total 120 € », « Reçu maintenant 120 € » (N1), poche « Espèces » pré-sélectionnée (N2). CTA « Encaisser 120 € », résumé au-dessus « Espèces » | 3,2 s |
+| 2 | Tap tuile « Sauvage · 80 ml · 120 € » | Une ligne : volume 80 ml, prix 120 €, coût DZD et taux pré-remplis par `PerfumePricing` (N8). Bloc Paiement : « Total 120 € », « Reçu maintenant 120 € » (N1), poche « Espèces » pré-sélectionnée (N2). CTA « Encaisser 120 € », résumé au-dessus « Espèces » | 3,2 s |
 | 3 | Tap CTA | Écriture T1 (document `DIRECT_SALE` né `DELIVERED`, paiement + mouvement, stock suivi décrémenté). Le composeur se vide ; **carte de confirmation** en tête « Vente enregistrée · 120 € · Espèces » (Voir · Reçu · Annuler), pulse `admin-confirm-pulse` | 5,4 s |
 
 ```mermaid
@@ -475,7 +483,7 @@ flowchart TD
 | # | Geste | État affiché ensuite | Cumul |
 |---|---|---|---|
 | 1 | Tap onglet « Catalogue » | E15, onglet Parfums | 1,2 s |
-| 2 | Tap « + Parfum » | E19 « Nouveau parfum » : zone Photo en tête, Marque, Nom, Prix 100 ml (30 et 50 ml repliés) ; CTA « Choisir la marque » | 2,4 s |
+| 2 | Tap « + Parfum » | E19 « Nouveau parfum » : zone Photo en tête, Marque, Nom, Prix 80 ml (10 et 50 ml repliés) ; CTA « Choisir la marque » | 2,4 s |
 | 3 | Tap rangée « Marque » | S05 en mode marques : marques récentes, recherche sans accents, « Créer la marque » seulement sans équivalent (`cleNom`) | 3,6 s |
 | 4 | Tap « Dior » | Marque posée ; CTA « Saisir le nom » (focus du champ) | 5,6 s |
 | — | Saisie « sauvage » | Aperçu normalisé « Sauvage » (`nommage.ts`) | 8,6 s |
@@ -483,7 +491,7 @@ flowchart TD
 | 6 | Tap « Photothèque » | Sélecteur de photos iOS | 11 s |
 | 7 | Tap la photo | Recadrage portrait 1024 × 1536 | 13 s |
 | 8 | Tap « Utiliser » | Conversion WebP, envoi direct au stockage (URL signée), aperçu | 19 s |
-| — | Saisie prix 100 ml « 120 » | CTA « Ajouter au catalogue » | 22 s |
+| — | Saisie prix 80 ml « 120 » | CTA « Ajouter au catalogue » | 22 s |
 | 9 | Tap CTA | Création ; ouverture de E16 (consultation) ; toast « Sauvage ajouté » — ou « Sauvage ajouté, masqué : la marque Dior est masquée » si une règle de visibilité l'impose | ≈ 24 s |
 
 Marge de lecture et d'hésitation comprise : **≈ 40 s**.
@@ -520,6 +528,8 @@ flowchart TD
 
 Rattacher les ventes et commandes au lot : **0 tap** (lot pré-rempli dès la création, N9).
 
+**Variante — ranger ce qui n'a pas de lot** (capacité de production du 10/09/2026, `521e086`) : E01 « Tous les lots » (1) → E05, section « À rattacher » en tête (« 4 documents sans lot ») ; sur la ligne, rangée « Lot » (2) → S07 lots ouverts ; tap sur le lot (3) → T13, la ligne quitte la section, toast « Rattaché à Commande de mars » (pour défaire : « Retirer du lot » dans S01, ou décocher dans S13). **3 taps par document**, sans ouvrir de fiche. Une commande livrée s'y range aussi : c'est l'envoi terminé qu'on veut rattacher pour lui imputer le transport.
+
 ```mermaid
 flowchart TD
   A["E01 · Lots ouverts<br/>Marge nette du lot visible"] -->|"1 · lot"| B["E06 fiche lot"]
@@ -528,6 +538,8 @@ flowchart TD
   D -->|"4 · CTA"| E["E06 à jour"]
   B -.->|"Rattacher"| F["S13 sélection multiple"]
   B -.->|"Clôturer"| G{"ConfirmDialog<br/>effets expliqués"}
+  L["E05 · À rattacher"] -->|"rangée Lot"| P["S07 lots ouverts"]
+  P -->|"tap lot · T13"| L
 ```
 
 **Avant (01 §4.4)** : Accueil · bloc lots · lot · Ajouter · libellé · montant · poche · Enregistrer ≈ 5 taps + 2 saisies, sans date possible ; chaque vente se rattachait après coup (≈ 5 taps par document).
@@ -625,6 +637,35 @@ flowchart TD
   V --> Z["E01 · carte disparue"]
 ```
 
+### PC-13 — Publier la story d'un parfum (capacité de production, écart du 17/09/2026)
+
+**Objectif (décision, reprise de `77985aa`)** : à 22 h, retrouver la planche story d'un parfum et l'envoyer vers Snapchat ou Photos **en deux gestes une fois sur la fiche**, sans fouiller une pellicule de quarante images. **Cible** : **5 taps + saisie, ≈ 15 s** depuis l'Accueil ; déposer une planche : **4 taps + import**.
+
+| # | Geste | État affiché ensuite | Cumul |
+|---|---|---|---|
+| 1 | Tap loupe du header | S17, champ focalisé | 1,2 s |
+| — | Saisie « sauv » | Groupe « Parfums » : « Sauvage · Dior » | 4,2 s |
+| 2 | Tap « Sauvage » | E16 en consultation ; zone « Visuels story · 2 » : vignettes 9:16 | 6,2 s |
+| 3 | Tap la vignette | Visionneuse plein écran : visuel, « Partager / Enregistrer », « Retirer » | 8,2 s |
+| 4 | Tap « Partager / Enregistrer » | Téléchargement du fichier (spinner sur le bouton), puis feuille de partage iOS avec le fichier « nurea-dior-sauvage-story » | ≈ 11 s |
+| 5 | Tap « Snapchat » (ou « Enregistrer l'image ») | Snapchat s'ouvre avec la planche | ≈ 15 s |
+
+**Déposer une planche** (fiche ouverte) : « Ajouter des visuels » (1) → menu iOS du champ fichier, « Photothèque » (2) → sélection d'une ou plusieurs images (3) → « Ajouter » (4) → chaque fichier est préparé (WebP, 1920 px au plus, **jamais recadré**), envoyé, rangé ; toast « 2 visuels ajoutés » (ou « 1 visuel ajouté · 1 refusé : format illisible »). Retirer : visionneuse → « Retirer » → `ConfirmDialog` S18 → la vignette disparaît.
+
+```mermaid
+flowchart TD
+  A["E01 Accueil"] -->|"1 · loupe"| S["S17 recherche"]
+  S -->|"saisie · 2 · Sauvage"| F["E16 fiche parfum<br/>zone Visuels story"]
+  F -->|"3 · vignette"| V["Visionneuse plein écran"]
+  V -->|"4 · Partager / Enregistrer"| P["Feuille de partage iOS<br/>fichier joint"]
+  P -->|"5 · Snapchat / Enregistrer l'image"| Z["Story prête"]
+  V -.->|"feuille fermée"| V
+  V -.->|"partage indisponible (ordinateur)"| D["Téléchargement du fichier"]
+  F -.->|"Ajouter des visuels"| U["Import · préparation · rangement"]
+```
+
+**Avant (production avant le 10/09/2026)** : aucune place pour ces visuels — recherche dans la pellicule du téléphone, sans savoir si la planche y était encore.
+
 ### Synthèse chronométrée
 
 | Parcours | Objectif | Avant (estimé) | Cible |
@@ -643,6 +684,8 @@ flowchart TD
 | PC-10 Défaire une erreur | ≤ 3 taps | irréversible pour un paiement | **1–3 taps** |
 | PC-11 Répartir / transférer | ≤ 2 / ≤ 5 taps | 5 taps | **2 / 5 taps** |
 | PC-12 Première vente | < 5 min | non guidé | **carte « Pour commencer »** |
+| PC-13 Publier la story d'un parfum | 2 gestes sur la fiche | production du 10/09/2026 : fiche d'édition → galerie → visionneuse → partage (≈ 5 taps) | **5 taps + saisie, ≈ 15 s** depuis l'Accueil |
+| PC-08 variante · Ranger un document sans lot | — | production du 10/09/2026 : « À rattacher » de `/admin/lots` (3 taps) | **3 taps** |
 
 ---
 
@@ -716,7 +759,7 @@ flowchart TD
   1. Sélecteur de période : chips « Jour · Semaine · Mois · Année · Tout » (`periode`) + navigateur « ‹ septembre 2026 › » (`ref`, absent pour « Tout »).
   2. Chiffres de la période, **non cliquables** sauf la Marge nette (on est sur l'écran de référence) : « Encaissé · septembre » (`display`) ; « Marge nette · septembre » + % (tap → S19) ; ligne « Dépenses déduites · septembre » ; bandeau « À encaisser 340 € » → E13 (sans période : c'est un encours, pas un flux).
   3. Graphe « Encaissé par semaine » (par jour pour « Semaine », par semaine pour « Mois », par mois pour « Année » et « Tout » ; 04 §6.2 ne prévoit que `encaisseParSemaine(8)` : variantes **→ 04**) ; absent sous 2 points.
-  4. Recherche client (`q`), visible au-delà de 6 documents dans la liste de la zone 5 (les lignes sont des documents, plus des groupes) ou tant qu'elle filtre ; chip de filtre actif « Coût à compléter ✕ ».
+  4. Recherche (`q`), visible au-delà de 6 documents dans la liste de la zone 5 (les lignes sont des documents, plus des groupes) ou tant qu'elle filtre — **mêmes champs et mêmes règles que E10 zone 3** (client, contact, notes, lot, parfum, marque, hors catalogue ; tous les mots) ; une section qui contient un résultat s'affiche **ouverte** ; chip de filtre actif « Coût à compléter ✕ ».
   5. **Documents de la période** : documents ayant un paiement dans la période **ou** engagés (`confirmedAt`) dans la période ; une `ListSection` par lot (lots ouverts d'abord ; en-tête « Commande de mars · 12 documents › » → E06, **sans montant** : les montants d'un lot ne se lisent que sur sa fiche, 02 §4.3), puis une section « Hors lot » unique ; ligne : client, « Vente du 3 sept. · 2 articles » (légende « Coût à compléter » en `warning` si besoin), à droite « À encaisser » (`warning`) si dû, sinon « Total » → S01. Liste fenêtrée. **Sous le filtre « Coût à compléter »**, l'ensemble est restreint aux documents **engagés** (`CONFIRMED`/`DELIVERED`) dont `confirmedAt` est dans la période et `hasUnknownCost` : exactement les coûts comptés 0 € dans la Marge nette de la période (S19) ; avec la période « Tout », exactement le compteur de E01 (un document annulé payé n'y figure jamais).
 - **Zones — vue Trésorerie.**
   1. « Trésorerie » (`display`, `tresorerie()`).
@@ -753,13 +796,15 @@ flowchart TD
 #### E05 — Lots · `/admin/lots`
 
 - **But.** Voir tous les envois fournisseur et leur Marge nette ; en créer un.
-- **Zones.** `SectionHeader` « Lots » + action « Nouveau lot » ; `ListSection` « Ouverts » ; `CollapsibleSection` « Clos » repliée. Ligne : nom ; légende « arrivée prévue 3 oct. · 12 documents » (ou « créé en sept. » sans date prévue), complétée de « · 120 € à encaisser » (`Money warning`) quand le lot porte une créance ; à droite « Marge nette du lot » (`Money`, un seul montant en `trailing`) → E06. Encaissé, pourcentage, coûts d'achat et dépenses se lisent sur E06 (décision « Simplifier » de 02 §4.4).
+- **Zones.**
+  0. **« À rattacher »** (écart du 17/09/2026 : capacité de production `521e086`, **avant** les lots — ce qui reste à ranger, personne ne pense à aller le chercher ; absente s'il n'y a rien) : `ListSection` « À rattacher · 4 » ; `SearchField` (visible au-delà de 6 lignes ou tant qu'il filtre ; mêmes champs que E10 zone 3, debounce 250 ms) ; lignes = **documents non annulés sans lot**, commandes **et** ventes, **livrés compris** (un envoi terminé se rattache pour lui imputer transport et douane), du plus récent au plus ancien ; ligne : client, légende « Commande du 12 sept. · Sauvage, Libre +2 » (+ « En attente » / « Livrée »), à droite « À encaisser » ou « Total », rangée secondaire « Lot : choisir › » → S07 (lots **ouverts** seulement) ; le choix écrit T13 et la ligne quitte la section sans attendre le rafraîchissement (rollback + toast portant la raison si refus) ; 100 lignes au plus puis « Afficher plus » — **jamais tronqué en silence** : « 100 affichés sur 132 ». Tap sur la ligne hors rangée « Lot » → S01.
+  1. `SectionHeader` « Lots » + action « Nouveau lot » ; `ListSection` « Ouverts » ; `CollapsibleSection` « Clos » repliée. Ligne : nom ; légende « arrivée prévue 3 oct. · 12 documents » (ou « créé en sept. » sans date prévue), complétée de « · 120 € à encaisser » (`Money warning`) quand le lot porte une créance ; à droite « Marge nette du lot » (`Money`, un seul montant en `trailing`) → E06. Encaissé, pourcentage, coûts d'achat et dépenses se lisent sur E06 (décision « Simplifier » de 02 §4.4).
 - **Action principale** : « Nouveau lot » → E21 puis E06 du lot créé.
 - **Actions secondaires** : déplier « Clos ».
 - **Gestes** : tap ; pull-to-refresh.
 - **États** : *chargement* : `SkeletonList` ; *vide de départ* : `EmptyState` « Aucun lot » + « Créer un lot » ; *erreur* : `ErrorBanner`.
 - **Composants** : `PageScaffold`, `SectionHeader`, `ListSection`, `ListRow`, `CollapsibleSection`, `Money`, `EmptyState`.
-- **Données** : `Batch` (`name`, `expectedAt`, `status`, `createdAt`), compte de `SaleDocument` par lot, Marge nette et À encaisser par lot agrégés côté base (`chiffresParLot()`, 04 §6.2).
+- **Données** : `Batch` (`name`, `expectedAt`, `status`, `createdAt`), compte de `SaleDocument` par lot, Marge nette et À encaisser par lot agrégés côté base (`chiffresParLot()`, 04 §6.2) ; zone 0 : `SaleDocument` `batchId IS NULL AND status <> CANCELLED` (+ `DocumentBalance`, `SaleLine.perfumeName` pour le résumé), compte total ; écriture T13 (`assignDocumentsToBatchAction`, lot ouvert exigé).
 
 #### E06 — Fiche lot · `/admin/lots/[id]`
 
@@ -767,7 +812,7 @@ flowchart TD
 - **Zones.**
   1. En-tête : nom (`InlineNameEditor`) ; légende « Ouvert · arrivée prévue 3 oct. » (tap sur la date → sélecteur natif, effaçable) ; menu « ⋯ » : « Clôturer » / « Rouvrir », « Supprimer le lot ».
   2. **Tuiles fixes** (grille stable, toujours les cinq) : « Encaissé » (`display`) et « Marge nette » + % (tap → S19 au périmètre du lot) ; « À encaisser », « Coûts d'achat », « Dépenses ».
-  3. **« Documents · 12 »** : ligne client, « Commande du 12 sept. · livrée », à droite « À encaisser » ou « Total » → S01 ; action de section « Rattacher » (lot ouvert uniquement) → S13 (`?assigner=1`).
+  3. **« Documents · 12 »** : ligne client, « Commande du 12 sept. · livrée », à droite « À encaisser » ou « Total » → S01 ; action de section « Rattacher » (lot ouvert uniquement) → S13 (`?assigner=1`). **Tout ce qui est rattaché est listé** (écart du 17/09/2026, `521e086`, `3707715`) : une commande **en attente** y figure (légende « En attente » ; son total n'entre ni dans « À encaisser » ni dans « Coûts d'achat » tant qu'elle n'est pas engagée, un acompte déjà reçu compte dans l'Encaissé comme partout, 03 §5.2–5.4) ; un document **annulé** aussi, dans une sous-section repliée « Annulés · 1 » — sinon il resterait rattaché sans être visible ni détachable, et rendrait le lot impossible à supprimer sans que la raison soit lisible.
   4. **« Dépenses · 3 »** : libellé, légende « 12 sept. · Banque » (+ note), montant ; menu « … » : « Modifier » (libellé et notes → S12), « Supprimer » (`ConfirmDialog`, T10).
   5. **« Notes »** : champ modifiable en place (enregistrement à la sortie du champ).
 - **Action principale** : « Ajouter une dépense » (`StickyAction`) → S12 — aussi sur un lot clos (03 : dépenses tardives possibles).
@@ -828,7 +873,7 @@ flowchart TD
 - **Zones.**
   1. `SectionHeader` « Commandes » + action « Nouvelle commande » → `/admin/vendre?mode=commande`.
   2. `SegmentedControl` « À livrer (8) · Livrées · Annulées » (`vue` ; le segment « Annulées » n'apparaît que s'il existe une commande annulée).
-  3. `SearchField` « Client ou parfum » (`q`), visible au-delà de 6 lignes ou tant qu'il filtre.
+  3. `SearchField` « Client, parfum, marque, lot… » (`q`), visible au-delà de 6 lignes ou tant qu'il filtre. **Champs couverts** (écart du 17/09/2026, capacité de production `9a28437`/`521e086`) : nom vivant du client et nom saisi, contact (téléphone normalisé, Snap), notes du document et des lignes, nom du lot, nom et marque de chaque ligne (`SaleLine.perfumeName`, `brandName` : les articles **hors catalogue** compris) ; plusieurs mots = **tous** doivent correspondre, chacun dans n'importe quel champ (« dior sauvage ») ; insensible à la casse et aux accents ; mots d'une lettre ignorés, 6 mots au plus ; debounce 250 ms, le champ garde le focus à chaque frappe. **Une recherche porte sur toute la vue**, repliés compris : dans « Livrées », une commande livrée il y a quatre mois se trouve si on la nomme. Vide : « Rien ne correspond à « … ». La recherche couvre le client, le contact, le parfum, la marque, le lot et les notes. »
   4. Vue « À livrer » : chips « En attente (2) · Confirmées (6) » (`filtre`, rendus seulement s'ils discriminent) ; les filtres ouverts par un lien (`retard`, `aujourdhui`, `demain`) apparaissent en chip actif effaçable « En retard ✕ ».
   5. **Liste « À livrer »** : sections « En retard » (en-tête `warning`) · « Aujourd'hui » · « Demain » · « Cette semaine » · « Plus tard » · « Sans date », chacune avec son compteur ; tri par livraison prévue puis date de commande. Ligne (`SwipeableRow` + `ListRow`) : `Avatar` ; client ; légende « 2 articles · sam. 20 » (+ heure si fixée, c'est-à-dire `expectedDeliveryHasTime`, + « · Livré 1/3 » si partielle) ; à droite, **un seul** élément par priorité : badge « En attente » si `PENDING`, sinon « À encaisser » (`Money warning`) si dû, sinon rien.
   6. **Liste « Livrées »** : section « À encaisser » (commandes livrées avec dû, plus anciennes d'abord), puis une section par mois ; à droite « À encaisser » ou « Total » ; « Afficher plus » (ajoute à la suite).
@@ -857,8 +902,8 @@ flowchart TD
   3. **Carte de confirmation** (après une écriture réussie ; disparaît à l'ajout d'une ligne, à la sortie de l'onglet ou par « ✕ ») : « Vente enregistrée · 120 € · Espèces » ou « Commande de Fares · livraison ven. 18 · acompte 60 € » ; actions « Voir » (S01), « Reçu » / « Récap » (`ShareButton`), « Annuler » : document **avec** paiement → `ConfirmDialog` « Annuler la vente de 120 € ? » puis T5 avec remboursement du payé ; document **sans aucun** paiement (« Reçu maintenant » à 0, commande sans acompte) → `ConfirmDialog` « Supprimer cette vente ? » / « Supprimer cette commande ? » puis T6, suppression différée 5 s avec « Annuler » (une erreur de saisie ne laisse pas de document « Annulée » dans Commandes ni dans l'historique client, 03 §4.4).
   4. **Client** : rangée « Client de passage › » ou « Fares Benali › » (+ contact en légende) → S06. En mode Commande sans client, ou en Vente avec un reste à encaisser sans nom, la rangée est en évidence « Client requis ».
   5. **Articles.**
-     - *Sans ligne* : grille « Vendus récemment » 2 colonnes × 4 (tuile ≥ 88 px de haut : vignette, nom, marque, « 100 ml · 120 € » = dernier volume et dernier prix pratiqués ; badge « Rupture » ou « Masqué » si c'est le cas) ; bouton-champ « Rechercher un parfum » → S05. Retaper une tuile ajoute 1 à la quantité (« ×2 » sur la tuile).
-     - *Avec lignes* : une `Card` par ligne — vignette, nom · marque ; chips de volume « 30 · 50 · 100 » (changer de volume re-remplit prix, coût et taux depuis `PerfumePricing`) ; `Stepper` de quantité (à 1, le « − » devient « Retirer », toast « Ligne retirée » + « Annuler ») ; prix `MoneyInput` (aide « dernier prix : 110 € » si le prix saisi s'en écarte, « Aucun prix mémorisé pour 50 ml » si vide) ; `GiftToggle` « Offert » (décoché : dernier prix restauré) ; rangée repliée « Coût 9 000 DA · taux 277 · 32,49 € » (tap : champs coût DZD, taux et « Note » de la ligne — note par ligne de l'existant, 01 §3.1, `SaleLine.note` ; une note saisie s'affiche en légende de la rangée) ou « Coût à compléter » (`warning`, non bloquant) ; un badge au plus : « Rupture » / « Stock bas » / « Masqué ». Sous les lignes : bandeau horizontal des récents + « Rechercher un parfum ».
+     - *Sans ligne* : grille « Vendus récemment » 2 colonnes × 4 (tuile ≥ 88 px de haut : vignette, nom, marque, « 80 ml · 120 € » = dernier volume et dernier prix pratiqués ; badge « Rupture » ou « Masqué » si c'est le cas) ; bouton-champ « Rechercher un parfum » → S05. Retaper une tuile ajoute 1 à la quantité (« ×2 » sur la tuile).
+     - *Avec lignes* : une `Card` par ligne — vignette, nom · marque ; chips de volume « 10 · 50 · 80 » (contenances réelles ; une ligne ajoutée sans volume mémorisé prend 80 ml, `DEFAULT_VOLUME_ML` ; changer de volume re-remplit prix, coût et taux depuis `PerfumePricing`) ; `Stepper` de quantité (à 1, le « − » devient « Retirer », toast « Ligne retirée » + « Annuler ») ; prix `MoneyInput` (aide « dernier prix : 110 € » si le prix saisi s'en écarte, « Aucun prix mémorisé pour 50 ml » si vide) ; `GiftToggle` « Offert » (décoché : dernier prix restauré) ; rangée repliée « Coût 9 000 DA · taux 277 · 32,49 € » (tap : champs coût DZD, taux et « Note » de la ligne — note par ligne de l'existant, 01 §3.1, `SaleLine.note` ; une note saisie s'affiche en légende de la rangée) ou « Coût à compléter » (`warning`, non bloquant) ; un badge au plus : « Rupture » / « Stock bas » / « Masqué ». Sous les lignes : bandeau horizontal des récents + « Rechercher un parfum ».
   6. **Mode Commande uniquement** : « Livraison prévue » — chips « Aujourd'hui · Demain · Après-demain · Choisir… » (sélecteur natif date, heure facultative : une heure choisie pose `expectedDeliveryHasTime`, sinon le jour est enregistré à 00:00 Europe/Paris, 03 §3) ; « Notes » (`CollapsibleSection`).
   7. **Lot** (les deux modes) : rangée « Lot : Commande de mars › » pré-remplie sur le lot ouvert le plus récent (N9), affichée en clair pour ne jamais rattacher à son insu ; → S07 (dont « Sans lot »).
   8. **Paiement** (`Card`) : « Total 240 € » (`h2`) + légende « Marge avant dépenses 87 € » ; « Reçu maintenant » (Vente, pré-rempli au total, chips « Tout · La moitié · Rien ») ou « Acompte » (Commande, 0 €, chips « Rien · La moitié · Tout ») — `MoneyInput` plafonné au total, « La moitié » arrondie à l'euro ; chips de poche (masqués si le montant vaut 0 ; simple texte s'il n'existe qu'une poche) + lien « Plusieurs poches… » → S08 ; si la poche est de type Espèces : « Donné en espèces » chips « 20 € · 50 € · 100 € · Autre » → « À rendre 30 € » (informatif) ; après un changement de poche : aide « Banque sera proposée la prochaine fois ».
@@ -934,7 +979,7 @@ flowchart TD
   2. Rangée de contact : boutons neutres de 64 px « Appeler » (`tel:`), « WhatsApp » (`wa.me`), « Snap » ; chaque bouton n'apparaît que si le champ existe ; aucun : rangée en évidence « Compléter la fiche » → E20 (fiche créée à la volée, nom seul) — **seul** accès au formulaire tant qu'aucun contact n'existe.
   3. Tuiles en lecture : « À encaisser » (`warning`) · « Documents » (non annulés) · « Dernier achat ». La tuile « À encaisser » n'est pas un lien : l'encaissement est le CTA du bas, sous le pouce (un seul chemin visible vers S02, 05 §5.3).
   4. Boutons secondaires : « Relancer » (s'il y a une créance) ou « Partager le récap » (sinon) → S09 ; « Nouvelle commande » → `/admin/vendre?mode=commande&client=<id>`.
-  5. **« Achète souvent »** (dès 2 documents) : 3 parfums les plus achetés, « 4 fois · 100 ml », bouton « Revendre » → `/admin/vendre?client=<id>&parfum=<perfumeId>`.
+  5. **« Achète souvent »** (dès 2 documents) : 3 parfums les plus achetés, « 4 fois · 80 ml », bouton « Revendre » → `/admin/vendre?client=<id>&parfum=<perfumeId>`.
   6. **« Historique »** : tous les documents, commandes et ventes, du plus récent au plus ancien ; ligne « Vente du 3 août · 2 articles » (+ « En attente » / « Annulée » en légende si c'est le cas) ; à droite « À encaisser » si document engagé à dû, sinon « Total » ; → S01 ; « Afficher plus » (ajoute à la suite).
   7. **« Coordonnées »** en lecture (rangées absentes si vides) : Téléphone (affiché « 06 12 34 56 78 »), WhatsApp, Snap, Adresse, Notes ; bouton de section « Modifier » → E20 (tous les champs, nom compris, au même endroit), affiché **seulement si un moyen de contact existe** ; sinon la rangée « Compléter la fiche » de la zone 2 y mène — jamais deux accès visibles au formulaire.
   8. Bas de page : « Supprimer le client » (texte `danger`).
@@ -963,7 +1008,7 @@ flowchart TD
 - **Zones.**
   1. `SegmentedControl` « Parfums · Marques · En avant » (`tab`).
   2. Zone épinglée : `SearchField` (insensible aux accents) ; chips à compteur rendus seulement s'ils discriminent — Parfums : « Masqués (n) · Stock bas (n) · Rupture (n) » ; Marques : « Masquées (n) · Gammes complètes (n) » ; filtre venu d'un lien toujours affiché et effaçable.
-  3. **Parfums** : `SectionHeader` action « + Parfum » ; liste fenêtrée ; ligne : vignette, nom (+ badge « Rupture » ou « Stock bas » si le stock est suivi), légende marque, à droite **bouton œil** 44 px (œil barré et ligne atténuée si masqué) ; tap ligne → E16.
+  3. **Parfums** : `SectionHeader` action « + Parfum » ; liste fenêtrée ; ligne : vignette, nom (+ badge « Rupture » ou « Stock bas » si le stock est suivi), légende marque (+ « · 2 visuels story » quand le parfum en a — écart du 17/09/2026 : on cherche un parfum et l'on voit tout de suite si sa planche est là, sans ouvrir la fiche ; information, pas un badge), à droite **bouton œil** 44 px (œil barré et ligne atténuée si masqué) ; tap ligne → E16.
   4. **Marques** : action « + Marque » ; ligne : logo (proportions d'origine), nom, légende « Sélection · 14 parfums » ou « Gamme complète », bouton œil ; tap → E17.
   5. **En avant** : deux emplacements matérialisés (rempli : vignette, nom, « Retirer » ; vide : « Emplacement libre » en pointillés) ; dessous, candidats = **parfums visibles uniquement**, avec la recherche ; tap = mettre en avant (refus au-delà de 2 : toast « Les 2 emplacements sont pris : retire d'abord un parfum. »).
 - **Action principale** : « + Parfum » (Parfums) / « + Marque » (Marques) ; aucune (En avant).
@@ -971,7 +1016,7 @@ flowchart TD
 - **Gestes** : tap (l'œil est optimiste, rollback + toast portant la raison du refus : « Rends d'abord la marque Dior visible. », « Ajoute un visuel pour publier ce parfum. » — textes uniques de `src/domain/publication.ts`, les mêmes que le serveur, 04 §12) ; pull-to-refresh. Rendre visible une marque en mode Sélection qui a des parfums masqués avec visuel → `ConfirmDialog` « Dior est visible. Republier aussi ses 8 parfums qui ont un visuel ? » (« Republier » / « Plus tard »).
 - **États** : *chargement* : `SkeletonList` ; *vide de départ* : `EmptyState` « Catalogue vide » + « Ajouter un parfum » ; *vide de filtre* : « Aucun parfum ne correspond » + « Effacer les filtres » (jamais la liste entière sous un filtre actif) ; *erreur* : `ErrorBanner`.
 - **Composants** : `PageScaffold`, `SegmentedControl`, `SearchField`, `Chip`, `SectionHeader`, `WindowedList`, `ListRow`, `Badge`, `Button` (icône), `Card`, `EmptyState`, `ConfirmDialog`, `Toast`.
-- **Données** : instantané catalogue admin (`Brand`, `Perfume` : `status`, `stock`, `image`, `isFeatured`, `catalogMode`) ; écritures du module catalogue suivies de `revalidateAdminCatalogue()` (contrat vitrine 01 §5.2).
+- **Données** : instantané catalogue admin (`Brand`, `Perfume` : `status`, `stock`, `image`, `isFeatured`, `catalogMode` ; nombre de `PerfumeMedia` par parfum) ; écritures du module catalogue suivies de `revalidateAdminCatalogue()` (contrat vitrine 01 §5.2).
 
 #### E16 — Fiche parfum · `/admin/catalogue/parfums/[id]`
 
@@ -980,15 +1025,16 @@ flowchart TD
   1. **Visuel** en grand (bascule clair / sombre en CSS, comme la vitrine).
   2. **Identité** : nom ; marque (tap → E17 de la marque).
   3. **Vitrine** : interrupteur « Visible sur la vitrine » (écriture immédiate, optimiste, rollback + toast portant la raison ; verrouillé avec la raison affichée, même texte que le toast de E15 : « Ajoute un visuel pour publier ce parfum. », « Rends d'abord la marque Dior visible. », « La marque Dior est en gamme complète : repasse-la en Sélection pour publier ce parfum. ») ; interrupteur « Mettre en avant · 1/2 » (seulement si visible).
-  4. **Tarifs** (lecture) : une rangée par volume renseigné « 100 ml · 120 € · coût 9 000 DA (32,49 €) » ; aucun tarif : « Aucun tarif mémorisé » + lien « Modifier ».
+  4. **Tarifs** (lecture) : une rangée par volume renseigné, dans l'ordre 10 · 50 · 80 ml : « 80 ml · 120 € · coût 9 000 DA (32,49 €) » ; aucun tarif : « Aucun tarif mémorisé » + lien « Modifier ».
   5. **Stock** : rangée « Stock : Non suivi › » ou « Stock : 5 › » → S20.
   6. **Activité** : « Vendu 12 fois · dernier le 14 sept. » (absent si jamais vendu).
-- **Action principale** : « Vendre » (`StickyAction`) → `/admin/vendre?parfum=<id>`.
-- **Actions secondaires** : « Modifier » (en-tête) → E19 ; menu « ⋯ » : « Dupliquer » → `/admin/catalogue/parfums/nouveau?dupliquer=<id>` (marque et tarifs repris, nom et visuel vides).
-- **Gestes** : tap ; pull-to-refresh.
-- **États** : *chargement* : squelette de la fiche ; *introuvable* : `EmptyState` « Ce parfum n'existe plus » + « Retour au catalogue » ; *bascule refusée* : interrupteur restauré + toast avec la raison ; *erreur* : `ErrorBanner`.
-- **Composants** : `PageScaffold`, `ImagePreview`, `ListRow`, `Money`, `Badge`, `Button`, `StickyAction`, `Toast` ; interrupteur : **→ 05** (primitive `Switch`).
-- **Données** : `Perfume` (`status`, `isFeatured`, `stock`, `image`, `imageLight`), `Brand`, `PerfumePricing` ×3, compte et dernière date des `SaleLine` du parfum ; écritures `setPerfumeStatusAction`, `setPerfumeFeaturedAction` (04 §3.4), puis `revalidateAdminCatalogue()`.
+  7. **« Visuels story · 2 »** (écart du 17/09/2026 — capacité de production `77985aa`, geste PC-13 ; pattern `MediaGallery`, 05 §3.2) : les planches prêtes à publier, **distinctes du visuel du catalogue** (aide sous le titre : « Pour tes stories. N'apparaissent pas sur la vitrine. ») — elles ne décident jamais de la visibilité. Grille de 3 vignettes 9:16 ; bouton « Ajouter des visuels » (`secondary`, plusieurs fichiers, HEIC accepté ; chaque fichier est préparé sur l'appareil — WebP, 1920 px au plus sur le grand côté, **jamais recadré** —, envoyé par URL signée puis rangé par `addPerfumeMediaAction` ; un fichier refusé n'arrête pas les suivants ; toast « 2 visuels ajoutés » ou « 1 visuel ajouté · 1 refusé : <raison> ») ; tap sur une vignette → **visionneuse plein écran** : « Partager / Enregistrer » (`primary` de la visionneuse ; feuille de partage iOS avec le fichier « nurea-<marque>-<parfum>-story » → Snapchat, Photos ; sur un appareil sans partage de fichiers : « Télécharger ») et « Retirer » (`ghost`) → S18 « Retirer ce visuel ? » → `removePerfumeMediaAction` (objet effacé du stockage après l'écriture). Au-delà de 24 visuels : « Maximum 24 visuels par parfum. Supprime-en un avant d'en ajouter. » Sans visuel : ligne calme « Aucun visuel story » + le bouton d'ajout.
+- **Action principale** : « Vendre » (`StickyAction`) → `/admin/vendre?parfum=<id>`. (Dans la visionneuse de la zone 7, qui recouvre l'écran, « Partager / Enregistrer » est l'unique `primary` visible.)
+- **Actions secondaires** : « Modifier » (en-tête) → E19 ; menu « ⋯ » : « Dupliquer » → `/admin/catalogue/parfums/nouveau?dupliquer=<id>` (marque et tarifs repris, nom et visuel vides — visuels story non repris) ; « Ajouter des visuels », « Partager / Enregistrer », « Retirer » (zone 7).
+- **Gestes** : tap ; pull-to-refresh ; Échap ferme la visionneuse (clavier physique).
+- **États** : *chargement* : squelette de la fiche (grille de la zone 7 : 3 vignettes squelettes au ratio 9:16) ; *introuvable* : `EmptyState` « Ce parfum n'existe plus » + « Retour au catalogue » ; *bascule refusée* : interrupteur restauré + toast avec la raison ; *dépôt en cours* : bouton « Ajouter des visuels » en `isLoading`, grille utilisable ; *partage* : spinner sur « Partager / Enregistrer » pendant le téléchargement du fichier ; feuille de partage fermée sans choix = rien ne se passe (pas de téléchargement de repli) ; *échec de récupération* : message dans la visionneuse « Téléchargement impossible. Vérifie ta connexion. » + lien « Ouvrir dans un onglet » (appui long possible) ; *retrait refusé* : vignette restaurée + toast ; *erreur* : `ErrorBanner`.
+- **Composants** : `PageScaffold`, `ImagePreview`, `ListRow`, `Money`, `Badge`, `Button`, `StickyAction`, `Toast`, `MediaGallery` (porté à J11), `ConfirmDialog` ; interrupteur : **→ 05** (primitive `Switch`).
+- **Données** : `Perfume` (`status`, `isFeatured`, `stock`, `image`, `imageLight`), `Brand`, `PerfumePricing` ×3, compte et dernière date des `SaleLine` du parfum, `PerfumeMedia` du parfum (`url`, `label`, `width`, `height`, par `sortOrder`) ; écritures `setPerfumeStatusAction`, `setPerfumeFeaturedAction` (04 §3.4), puis `revalidateAdminCatalogue()` ; visuels : `createImageUploadUrlAction({ usage: "story", perfumeId })`, `addPerfumeMediaAction`, `removePerfumeMediaAction` (04 §12 — chemin décidé par le serveur ; n'invalident pas la vitrine).
 
 #### E19 — Formulaire parfum · `/admin/catalogue/parfums/[id]/modifier` et `/admin/catalogue/parfums/nouveau`
 
@@ -996,7 +1042,7 @@ flowchart TD
 - **Zones.**
   1. **Visuel** (`ImageField`) : image principale (thème sombre) et « Variante claire » facultative ; recadrage portrait WebP ; en modification, enregistrement automatique après envoi (force de l'existant, 02 §4.5).
   2. **Identité** : rangée « Marque » → S05 (mode marques) ; « Nom » (aide « Sera enregistré : Sauvage » quand la normalisation change la saisie).
-  3. **Tarifs** : une sous-section par volume — « 100 ml » ouverte, « 30 ml » et « 50 ml » repliées si vides — prix €, coût DZD, taux (placeholder = taux par défaut de `Setting`), légende « Coût en euros 32,49 € » ; « Retirer ce volume ».
+  3. **Tarifs** : une sous-section par contenance réelle — « 80 ml » ouverte, « 10 ml » et « 50 ml » repliées si vides — prix €, coût DZD, taux (placeholder = taux par défaut de `Setting`), légende « Coût en euros 32,49 € » ; « Retirer ce volume ».
   4. **Modification seulement** : « Supprimer le parfum » (texte `danger`, bas de page).
   Le stock n'est **pas** dans ce formulaire (03 §4.6, 04 §3.4) : il se règle depuis E16 (S20) ; un parfum créé est « Non suivi ».
 - **Action principale** : « Enregistrer » (modification : fiche + tarifs en **une** écriture **→ 04**, composition de `updatePerfumeAction` et `savePerfumePricingAction` dans une même transaction) ; « Ajouter au catalogue » (création), qui guide tant qu'il manque la marque ou le nom (« Choisir la marque », « Saisir le nom »). Succès → E16 du parfum, pulse.
@@ -1032,10 +1078,11 @@ flowchart TD
 - **États** : *envoi* : `isLoading` ; *refus* : « Identifiant ou mot de passe incorrect. » ; *blocage temporaire* : « Trop d'essais. Réessaie dans 4 min. » (durée réelle du blocage, 04 §8.5) ; *hors ligne* : « Pas de connexion. » Pas de « mot de passe oublié » (02 §7).
 - **Composants** : `Card`, `FormField`, `Input`, `Button` ; composant client sous `<Suspense>` (lecture de `retour`).
 - **Données** : `AdminUser` (`username`, `failedLoginCount`, `lockedUntil`).
+- *Mise en œuvre J4 (`app/admin/login/page.tsx`, `LoginScreen.tsx`).* `retour` est lu par la page serveur et passé en props : le formulaire ne lit pas l'URL, il n'a donc ni `useSearchParams` ni `Suspense` à porter. **Quand dire « Ta session a expiré »** : le navigateur supprime un cookie expiré, la garde ne distingue donc pas une expiration d'une première visite ; le shell pose, dès qu'il s'affiche, un témoin sans donnée (`nurea_admin_vu=1`, chemin `/admin`, `src/app-shell/session-hint.ts`) et la notice s'affiche seulement avec un `retour` **et** ce témoin ; l'écran ouvert sans `retour` (déconnexion, visite directe) efface le témoin. Session déjà valide : l'écran redirige aussitôt vers `retour` (lien de connexion rouvert, PWA relancée). Refus : l'identifiant reste, le mot de passe est vidé et reprend le focus. Bouton « Afficher » sans voler le focus (le clavier reste ouvert). Clavier ouvert : le champ saisi, et le bouton « Se connecter » quand le dernier champ est actif, restent au-dessus du clavier (vérifié par `npm run test:layout` à 320, 375 et 430 px). Formulaire en `method="post"` : un envoi parti avant l'hydratation ne met jamais le mot de passe dans l'URL.
 
 ### 3.7 Sheets et dialogues
 
-Toutes les sheets utilisent `Sheet` (vaul, `size: full`, z 70/71 ; imbriquée : z 80) ; elles ne sont pas glissables tant qu'une saisie a été modifiée (`dismissible: false` → `ConfirmDialog` « Abandonner la saisie ? ») ; leur CTA vit dans le pied de sheet (`--admin-sheet-footer-pad`).
+Toutes les sheets utilisent `Sheet` (vaul, `size: full`, z 70/71 ; imbriquée : z 80/81, bande distincte de celle des confirmations, z 90/91, 05 §2.7) ; elles ne sont pas glissables tant qu'une saisie a été modifiée (`dismissible: false` → `ConfirmDialog` « Abandonner la saisie ? ») ; leur CTA vit dans le pied de sheet (`--admin-sheet-footer-pad`).
 
 #### S01 — Fiche document · `?doc=<id>` (toute route)
 
@@ -1048,7 +1095,7 @@ Toutes les sheets utilisent `Sheet` (vaul, `size: full`, z 70/71 ; imbriquée : 
      - commande en attente : « Total » · « Payé » + ligne « En attente : rien à encaisser tant qu'elle n'est pas confirmée. » ;
      - document annulé : « Total » · « Payé » + ligne « 60 € encaissés conservés » si le payé net est positif ;
      - légende « Marge avant dépenses 87 € · 42 % » ou, si un coût manque, « Marge avant dépenses : coût à compléter » (`warning`, défile vers la ligne).
-  4. **Articles** (`ListSection` « Articles · Livré 3/4 » ; « Articles » pour une vente directe) : une carte par ligne — vignette, nom, un badge au plus (« Offert » prioritaire sur « Hors catalogue »), légende « 100 ml · 2 × 120 € » (+ « Coût à compléter ») ; pour une commande non annulée, seconde rangée « Livré » avec `Stepper` 0..quantité et bouton « Tout » (T3 optimiste, stock suivi ajusté ; valeur finale envoyée 400 ms après le dernier tap, `setLineDeliveredAction` coalescée, 04 §3.7). Action de section « Modifier » → **mode édition en place** : chaque ligne devient une carte du composeur (volume, quantité, prix, Offert, et rangée repliée « Coût » avec coût DZD, taux et note de la ligne), « Ajouter un article » (S05), « Retirer » ; pied « Enregistrer les modifications » / « Annuler » ; sheet non glissable ; T2 (quantités livrées conservées ; réserve si une quantité passe sous le livré : « 2 déjà livrés : le livré passera à 1 »).
+  4. **Articles** (`ListSection` « Articles · Livré 3/4 » ; « Articles » pour une vente directe) : une carte par ligne — vignette, nom, un badge au plus (« Offert » prioritaire sur « Hors catalogue »), légende « 80 ml · 2 × 120 € » (+ « Coût à compléter » ; une ligne reprise sans contenance ou à une contenance héritée 30 / 100 ml : « Volume à choisir » en `warning`, 03 §4.3) ; pour une commande non annulée, seconde rangée « Livré » avec `Stepper` 0..quantité et bouton « Tout » (T3 optimiste, stock suivi ajusté ; valeur finale envoyée 400 ms après le dernier tap, `setLineDeliveredAction` coalescée, 04 §3.7). Action de section « Modifier » → **mode édition en place** : chaque ligne devient une carte du composeur (volume, quantité, prix, Offert, et rangée repliée « Coût » avec coût DZD, taux et note de la ligne), « Ajouter un article » (S05), « Retirer » ; pied « Enregistrer les modifications » / « Annuler » ; sheet non glissable ; T2 (quantités livrées conservées ; réserve si une quantité passe sous le livré, une par ligne concernée : « Sauvage 50 ml — 2 déjà livrés : le livré passera à 1. »).
   5. **Paiements** (absente s'il n'y en a aucun) : « Acompte » / « Solde » / « Paiement » / « Remboursement », légende « 12 sept. · Espèces » (+ moyen, note), montant (négatif pour un remboursement) ; menu « … » : « Corriger » (S04), « Annuler ce paiement » (`ConfirmDialog`, T8). Paire paiement + contre-passation repliée sous « Paiement annulé · 40 € ».
   6. **Infos** : « Lot » (→ S07 lots ouverts ; « Retirer du lot » ; lot clos : « Lot clos », non modifiable) ; « Livraison prévue » (commandes : chips comme E11) ; « Notes » (champ en place).
 - **Action principale** (pied de sheet), selon l'état :
@@ -1204,8 +1251,8 @@ Toutes les sheets utilisent `Sheet` (vaul, `size: full`, z 70/71 ; imbriquée : 
 #### S13 — Rattacher des documents à un lot · `?assigner=1` sur E06
 
 - **But.** Rattacher ou détacher plusieurs documents en une fois (lot ouvert uniquement).
-- **Zones.** `SearchField` client ; candidats : documents non annulés sans lot ou de ce lot, du plus récent au plus ancien, case cochée si déjà rattaché ; compteur « 3 changements ».
-- **Action principale** : « Enregistrer (3 changements) » (seul le différentiel part, T13).
+- **Zones.** `SearchField` (mêmes champs que E10 zone 3) ; candidats : documents non annulés sans lot ou de ce lot, **tous statuts** (une commande en attente se rattache dès sa création, et reste détachable si elle revient en attente), du plus récent au plus ancien, case cochée si déjà rattaché ; compteur « 3 changements ». Données par le RSC de la page sous `?assigner=1` (04 §2.3) : aucune requête lancée par un effet client (fin de la boucle requête → erreur → requête et des cases décochées par la fermeture d'un toast, `521e086`).
+- **Action principale** : « Enregistrer (3 changements) » (seul le différentiel part, T13). Le toast dit **ce qui a été appliqué**, pas ce qui a été demandé : « 3 documents rattachés » ; si un document a changé entre-temps (annulé, lot déplacé) : « 2 documents rattachés · 1 ignoré : annulé depuis » (jamais « mis à jour » quand rien ne l'a été).
 - **États** : *vide* : « Aucun document à rattacher » ; *erreur* : `ErrorBanner`.
 - **Composants** : `Sheet`, `SearchField`, `ListRow` (case), `Button`.
 - **Données** : `SaleDocument` (`batchId`, `status`), `Customer`.
@@ -1247,7 +1294,7 @@ Spécifiée en §4.4.
 
 #### S18 — Confirmations (`ConfirmDialog`)
 
-Toutes les confirmations de l'app, en un seul endroit : leur description **dit la vérité sur l'effet** (05 §3.2).
+Toutes les confirmations de l'app, en un seul endroit : leur description **dit la vérité sur l'effet** (05 §3.2) — « sans retour possible » seulement là où aucun filet n'existe, « Tu pourras annuler pendant 5 secondes » là où le filet existe (correction de production `12e2327`). Un échec de l'écriture confirmée s'affiche **dans la boîte**, qui reste ouverte (05 §3.2, `3291428`).
 
 | Geste | Titre | Description | Bouton (ton) |
 |---|---|---|---|
@@ -1261,7 +1308,8 @@ Toutes les confirmations de l'app, en un seul endroit : leur description **dit l
 | Annuler un mouvement manuel (E04, S14) | « Annuler ce transfert ? » | « Une écriture inverse est ajoutée à la même date sur les deux poches. » | « Annuler le transfert » (`danger`) |
 | Clôturer un lot (E06) | « Clôturer « Commande de mars » ? » | « Plus aucune vente ni commande ne pourra y être rattachée. Les dépenses tardives restent possibles. Tu pourras le rouvrir. » | « Clôturer » (`primary`) |
 | Supprimer un client (E14) | « Supprimer Fares ? » | « Ses 12 documents sont conservés et restent affichés sous son nom. » | « Supprimer » (`danger`) |
-| Supprimer un parfum (E19) | « Supprimer Sauvage ? » | « Il disparaît de la vitrine immédiatement. Les ventes passées gardent son nom. » | « Supprimer » (`danger`) + « Masquer plutôt » (`secondary`) |
+| Supprimer un parfum (E19) | « Supprimer Sauvage ? » | « Il disparaît de la vitrine immédiatement. Les ventes passées gardent son nom. » (+ « Ses 2 visuels story sont supprimés aussi. » s'il en a) | « Supprimer » (`danger`) + « Masquer plutôt » (`secondary`) |
+| Retirer un visuel story (E16 zone 7) | « Retirer ce visuel ? » | « Il est supprimé de la fiche et du stockage, sans retour possible. Ton téléphone garde les copies déjà enregistrées. » | « Retirer » (`danger`) |
 | Masquer une marque / passer en gamme complète (E17) | « Masquer Dior ? » / « Passer Dior en gamme complète ? » | « Ses 14 parfums seront masqués sur la vitrine. » | « Confirmer » (`primary`) |
 | Republier (E15, E17) | « Republier les parfums de Dior ? » | « 8 parfums ont un visuel et redeviendront visibles. » | « Republier » (`primary`) + « Plus tard » |
 | Supprimer une marque (E17) | « Supprimer Dior et ses 14 parfums ? » | « Ils disparaissent de la vitrine. Les ventes passées gardent leurs noms. » | « Supprimer » (`danger`) + « Masquer plutôt » |
@@ -1300,7 +1348,7 @@ Toutes les confirmations de l'app, en un seul endroit : leur description **dit l
 | Élément | Où | Contenu | Règle |
 |---|---|---|---|
 | Carte de confirmation | E11 | Voir §E11 zone 3 | Remplace le toast de succès (un seul signal) |
-| Toast | Shell | Succès, erreur, « Annuler » | Un seul à la fois, z 95, au-dessus de la tab bar ; 3 s, 5 s avec « Annuler » |
+| Toast | Shell | Succès, erreur, « Annuler » | Un seul à la fois, z 100 (au-dessus de tout, confirmation comprise), portalisé vers `<body>` et tapable même sous une sheet ou une modale (05 §3.1), au-dessus de la tab bar et du clavier ; 3 s, 5 s avec « Annuler » |
 | Toast « Nouvelle version · Recharger » | Shell | Mise à jour du service worker disponible | Affiché seulement quand aucune sheet n'est ouverte et aucun formulaire n'est modifié ; sinon différé |
 | Indicateur de navigation | Header | Barre fine sous le header | Seulement pendant une attente réelle (mécanismes de pending de Next, 05 §3.4) |
 | Point de brouillon | Tab bar | Point accent sur « Vendre » | §1.5 |
@@ -1351,7 +1399,7 @@ Règles (05 §4.2, bornées ici) : une action au plus par côté ; **le glisseme
 ### 4.4 Recherche globale (S17)
 
 - **Ouverture** : bouton « Rechercher » du header, sur **tous** les écrans du shell (libellé visible sur les racines, loupe seule ailleurs) ; ⌘K avec un clavier physique ; l'affordance « ⌘K » n'est affichée qu'avec un pointeur fin.
-- **Forme** : dialogue plein écran (Radix Dialog, z 90), `SearchField` avec focus immédiat.
+- **Forme** : dialogue plein écran (Radix Dialog, z 92, 05 §2.7), `SearchField` avec focus immédiat.
 - **Avant saisie** :
   1. « Récents » : les 5 derniers objets ouverts sur cet appareil (documents, clients, parfums, lots).
   2. « Créer » : « Nouvelle vente » (E11), « Nouvelle commande » (E11 `mode=commande`), « Nouveau client » (E20), « Nouveau parfum » (E19), « Nouvelle dépense » (S07 en mode « lot pour une dépense » — sans « Sans lot », lots clos compris — puis S12 portant le lot choisi, sur l'écran courant).
@@ -1360,9 +1408,10 @@ Règles (05 §4.2, bornées ici) : une action au plus par côté ; **le glisseme
   - **Clients** (nom, téléphone normalisé — « 06 12 » trouve « +33 6 12 » —, Snap, WhatsApp) ; à droite, bouton « Encaisser 80 € » si le client a une créance (→ S02 Tout encaisser) ;
   - **Documents** (nom **vivant** du client **et** nom saisi dans le document) : « Commande du 12 sept. · Fares », à droite « À encaisser » ou « Total » ;
   - **Parfums** (nom, marque) : à droite, bouton « Vendre » (→ E11 `?parfum=`).
-- **Enchaînement avec une sheet** : S17 est un dialogue (z 90), au-dessus des sheets (z 70/71). Toute action qui ouvre une sheet — « Encaisser 80 € » d'un client (S02 Tout encaisser), « Nouvelle dépense » (S07 puis S12), un document (S01) — **ferme d'abord la palette**, puis ouvre la sheet sur l'écran courant, sans changer d'onglet ; la sheet n'est jamais rendue sous la palette. Une action qui navigue (« Vendre », client, parfum, lot) ferme la palette en naviguant.
+- **Enchaînement avec une sheet** : S17 est un dialogue (z 92), au-dessus des sheets (z 70/71, imbriquées 80/81). Toute action qui ouvre une sheet — « Encaisser 80 € » d'un client (S02 Tout encaisser), « Nouvelle dépense » (S07 puis S12), un document (S01) — **ferme d'abord la palette**, puis ouvre la sheet sur l'écran courant, sans changer d'onglet ; la sheet n'est jamais rendue sous la palette. Une action qui navigue (« Vendre », client, parfum, lot) ferme la palette en naviguant.
 - **Sélection** : un document ouvre **S01 sur l'écran courant** (l'onglet ne change pas) ; un client ouvre E14 ; un parfum ouvre E16 **en consultation** ; un lot (parmi les récents) ouvre E06 ; « Voir les N résultats » ouvre la liste filtrée (`/admin/clients?q=`, `/admin/catalogue?q=`).
 - **États** : *aucun résultat* : « Rien ne correspond à « … » » + « Créer le client « … » » et « Créer le parfum « … » » ; *erreur* : `ErrorBanner` « Recherche indisponible — Réessayer » ; *hors ligne* : récents et « Créer » restent disponibles.
+- *Mise en œuvre J4 (cadre seulement, `src/app-shell/CommandPalette.tsx`).* Dialogue plein écran Radix, z 90, champ focalisé à l'ouverture, « Fermer » à droite du champ. « Créer » et « Aller à » ne listent que les écrans déjà livrés (`isNavigable` de `routes.ts`) : un raccourci ne mène jamais à une page absente, chaque entrée apparaît au jalon de son écran. Dès 2 caractères, avant J8 : une ligne calme dit que la recherche arrive au jalon J8.
 - **Données** : `Customer`, `SaleDocument` (+ `Customer.fullName`, `customerName`), `Perfume`, `Brand` — instantanés en mémoire côté serveur (04 §15, règle 10) ; le bouton « Encaisser » d'un client lit `aEncaisserParClient()`.
 
 ### 4.5 Clavier iOS
@@ -1436,6 +1485,9 @@ Coût : S (< 1 jour), M (1–3 jours), à l'échelle de `07-PLAN-EXECUTION.md`.
 | A17 | « Lien public » copiable de la marque | E17 | n°7 | S | `Brand.slug` stable (03) |
 | A18 | Récap du jour navigable (jours précédents) | E02 | n°9 | S | — |
 | A19 | Ordre des poches | S21, E08 | n°2 (chips) | S | `Pocket.sortOrder` |
+| A20 | **Visuels story** : galerie, dépôt multiple, visionneuse, « Partager / Enregistrer » (partage natif avec fichier) — capacité de production (`77985aa`), écart du 17/09/2026 | E16 zone 7 ; pastille E15 ; S18 « Retirer ce visuel ? » | publier la story d'un parfum (PC-13) | M | 03 `PerfumeMedia` ; 04 §12 ; 05 `MediaGallery` (J11) |
+| A21 | **« À rattacher »** : documents sans lot, rattachés ligne par ligne — capacité de production (`521e086`), écart du 17/09/2026 | E05 zone 0 ; S07 | n°8 (PC-08 variante) | S | T13 ; recherche de A22 |
+| A22 | **Recherche étendue** (client, contact, notes, lot, parfum, marque, hors catalogue ; tous les mots) — capacité de production (`9a28437`, `521e086`), écart du 17/09/2026 | E10 zone 3, E03 zone 4, E05 zone 0, S13 | n°4, n°9 | S | colonnes `SaleLine.perfumeName` / `brandName` (plus de JSON) |
 
 ---
 
@@ -1449,7 +1501,9 @@ Chaque capacité **non abandonnée** de 02 §4 (liste de non-régression) est po
 |---|---|---|---|
 | Liste groupée par urgence + compteurs + filtre URL | Garder | E10 (sections, compteurs, `vue`, `filtre`) ; E01 (alertes, tuiles) | PC-04 |
 | Pagination + recherche ; livrées repliées | Simplifier | E10 (`q`, vues Livrées / Annulées, « Afficher plus ») | PC-04 |
-| Création : client lié ou libre, catalogue / hors catalogue, volumes, don, coût DZD + taux, notes, livraison | Garder | E11, S05, S06 | PC-03 |
+| Livrées retirées du suivi sans rien effacer (production : fenêtre de 48 h, `9a28437`/`3291428` ; écart du 17/09/2026) | Garder (forme : segment) | E10 : « À livrer » ne montre jamais une livrée, segment « Livrées » (à encaisser d'abord, puis par mois) ; statut toujours modifiable depuis S01 | PC-04 |
+| Recherche étendue : client, contact, notes, lot, parfum, marque, hors catalogue ; traverse les livrées (écart du 17/09/2026) | Garder | E10 zone 3 (A22) | PC-04 |
+| Création : client lié ou libre, catalogue / hors catalogue, contenances 10 / 50 / 80 ml (défaut 80), don, coût DZD + taux, notes, livraison | Garder | E11, S05, S06 | PC-03 |
 | Note par ligne (01 §3.1, `SaleLine.note`) | Garder | E11 zone 5 et S01 zone 4 (rangée repliée « Coût » de chaque ligne) | PC-03 |
 | Acompte initial avec poche | Simplifier | E11 zone 8 (« Acompte » + poche) | PC-03 |
 | Mémoire de prix `PerfumePricing` | Garder (+ N8) | E11, S01 édition, E19 | PC-01, PC-03 |
@@ -1487,7 +1541,7 @@ Chaque capacité **non abandonnée** de 02 §4 (liste de non-régression) est po
 | Écran à deux vues, vue dans l'URL | Garder | E03 (`vue`) | PC-09, PC-11 |
 | Encaissé / Marge nette / bandeau À encaisser / dépenses déduites | Garder | E03 zone 2, E01 bloc Argent, S19 | PC-09 |
 | Liste par sections (lots, hors lot) | Simplifier | E03 zone 5 | PC-09 |
-| Recherche client (reste montée) | Simplifier | E03 zone 4 | — |
+| Recherche (reste montée ; étendue au contact, aux notes, au lot, au parfum, à la marque, au hors catalogue — écart du 17/09/2026) | Simplifier | E03 zone 4 (A22) | — |
 | Graphe « Encaissé par semaine » | Garder | E03 zone 3 | PC-09 |
 | Ticket : consultation, édition, lot, partage, suppression | Garder | S01 | PC-05, PC-10 |
 | Export CSV | Garder | E03 « Exporter » | PC-09 |
@@ -1505,6 +1559,8 @@ Chaque capacité **non abandonnée** de 02 §4 (liste de non-régression) est po
 | Création (nom, date prévue, notes) | Garder | E21 ; S11 (en ligne) | PC-08 |
 | Détail : renommage, clôture / réouverture, tuiles stables, date et notes éditables | Simplifier | E06 | PC-08 |
 | Assignation en masse (un seul sheet) | Fusionner | S13 | PC-08 |
+| Ce qui n'appartient à aucun lot, rattachable ligne par ligne, livrés compris (écart du 17/09/2026) | Garder | E05 zone 0 « À rattacher », S07 (A21) | PC-08 variante |
+| Appartenance au lot visible quel que soit le statut (en attente, annulé détachable) | Garder | E06 zone 3, S13 | PC-08 |
 | Assignation unitaire + dès la création | Garder (+ N9) | S01 zone 6, E11 zone 7 | PC-03 |
 | Dépenses datées, suppression confirmée | Garder | S12, E06 zone 4, S18 | PC-08, PC-10 |
 | Suppression de lot protégée | Garder | E06 menu (désactivé avec raison) | — |
@@ -1519,7 +1575,9 @@ Chaque capacité **non abandonnée** de 02 §4 (liste de non-régression) est po
 | Visibilité optimiste + verrous en cascade | Garder | E15 œil, E16 et E17 interrupteurs, S18 | PC-07 |
 | Mise en avant limitée à 2, parfum visible exigé | Garder | E15 « En avant », E16 | — |
 | Upload WebP, auto-save, logo sans recadrage | Garder | E19, E17 `ImageField` | PC-07 |
-| Grille tarifaire, un seul enregistrement | Garder | E19 zone 3 (lecture sur E16) | PC-07 |
+| Grille tarifaire (10 / 50 / 80 ml), un seul enregistrement | Garder | E19 zone 3 (lecture sur E16) | PC-07 |
+| Visuels story rangés sur la fiche parfum : dépôt multiple (HEIC), sans recadrage, galerie, retrait (écart du 17/09/2026) | Garder | E16 zone 7 (A20) ; pastille E15 | PC-13 |
+| Récupération d'un visuel par le partage natif (Snapchat, Photos), sinon téléchargement | Garder | E16 zone 7, visionneuse | PC-13 |
 | Stock « Non suivi » ≠ « Rupture » | Simplifier | S20, E16 zone 5, E15 badges, E01 alerte | PC-07 |
 | Instantané admin + invalidation coordonnée vitrine | Garder | invisible (03 §6.2) | — |
 | Suppression dure avec historique protégé | Simplifier | E19, E17 (« Masquer plutôt », undo), S18 | — |
@@ -1752,6 +1810,27 @@ Toutes les entrées « Frictions UX » de 01 §4.1 à §4.10 et §5.5, dans l'or
 | Ligne « Don » perdue à l'édition ; décocher « Offert » laisse le prix à 0 (§4.1, §4.2) | État « Offert » conservé en édition ; décocher restaure le dernier prix | S01, E11 |
 | Lignes ajoutées au ticket non enregistrées (§4.3, bug haute) | Édition en place unique (T2) | S01 |
 
+### 7.13 Corrections de production à effet visible (écart du 17/09/2026)
+
+Défauts corrigés sur `main` après l'ancien `main` de la conception (01 §3.11) ; chacun est soit rendu impossible par ce document, soit repris en règle.
+
+| Commit | Défaut corrigé en production | Réponse de la refonte | Où |
+|---|---|---|---|
+| `9a28437` | « Passer à traiter » refusé par une règle restée dans la route après son abandon par le domaine | Impossible : une seule pile d'écriture, un seul `canTransition` (03 §2.3) | S01 zone 2 |
+| `9a28437`, `3707715`, `9e0b5d8` | Écrans qui repliaient en silence toute contenance inconnue sur 100 ml, lignes créées à 100 ml en dur, reçu annonçant « 100 ml » pour une ligne à 80 | Chips 10 · 50 · 80, défaut 80 en un seul endroit (`DEFAULT_VOLUME_ML`) ; une contenance hors règle n'est jamais réécrite : « Volume à choisir » (03 §4.3) ; reçu et récap lus sur `SaleLine.volumeMl` | E11, S01, S09 |
+| `3291428` | Confirmation invisible (voile et carte repeints en gris), texte « irréversible » menteur, erreur en toast inerte | 05 §2, §3.2 : jetons sans fond, textes par appelant, erreur dans la boîte | S18 |
+| `3291428` | Deux boutons menant à « livrée » avec deux règles | Impossible : un seul contrôle de statut, T4 | S01 zone 2 |
+| `3291428` | Fiche et liste non rafraîchies après un acompte ou un changement de statut | Impossible : lecture de ses écritures (04 §10.2) | S01, E10 |
+| `12e2327` | Double tap sur « Encaisser » : deux ventes | Impossible : identifiant client + `isLoading` (04 §3.6) | E11, S02 |
+| `12e2327` | Filet « Annuler » de travers et intapable sous une sheet | 05 §3.1 : toast portalisé | Shell |
+| `12e2327` | Logo de marque recadré en 2:3 | Déjà la règle : `ImageField kind="logo"` sans recadrage | E17 |
+| `521e086` | Liste des commandes qui perdait le focus à chaque frappe ; champ de compta qui disparaissait quand la recherche aboutissait ; résultats repliés | E10 zone 3 (focus conservé), E03 zone 4 (champ monté tant qu'il filtre, sections ouvertes) | E10, E03 |
+| `521e086` | « Commandes mises à jour » affiché même sans rattachement | S13 : le toast dit ce qui a été appliqué | S13 |
+| `521e086`, `3707715` | Commande en attente ou annulée rattachée mais invisible sur la fiche du lot, donc indétachable ; lot rendu indestructible | E06 zone 3 liste tout le rattaché | E06 |
+| `3707715` | Recherche dans « Livrées » muette au-delà de 48 h | Une recherche traverse les repliés | E10 zone 3 |
+| `3707715` | « Retirer » invisible dans la visionneuse, `window.open` bloqué par Safari, téléchargement lancé après fermeture de la feuille de partage | 05 §3.2 `MediaGallery` (règles de portage) | E16 zone 7 |
+| `d433e18` | Un lot avec deux montants selon l'écran | Impossible : pas de montant en en-tête de lot dans la Compta, montants du lot sur E06 seulement (02 §4.3) | E03, E06 |
+
 ---
 
 ## 8. Points transmis aux documents aval
@@ -1778,7 +1857,7 @@ Compléments et arbitrages à intégrer dans `04-ARCHITECTURE.md` (écrit en par
 3. `KpiTile` : `href` facultatif — tuile en lecture seule quand l'action du chiffre est déjà un bouton de l'écran (E14 : CTA « Encaisser ») ; sur son écran de référence, un chiffre s'affiche en `Money` + libellé, sans tuile.
 4. Brique `BarChart` (graphe « Encaissé par … ») dans `src/ui/patterns/`.
 5. Liste fermée des écrans à glissement (§4.2) à reporter dans 05 §4.2.
-6. Superposition : un `ConfirmDialog` ouvert depuis une sheet imbriquée (z 80) doit s'afficher au-dessus d'elle — à garantir (ordre de montage ou jeton dédié) et à couvrir par `npm run test:layout`.
+6. Superposition : un `ConfirmDialog` ouvert depuis une sheet imbriquée doit s'afficher au-dessus d'elle — **tranché le 17/09/2026 par un jeton dédié** (sheet imbriquée 80/81, modale 90/91 : l'ordre de montage des portails s'est révélé aléatoire en production, `3291428`, 05 §2.7) et à couvrir par `npm run test:layout`.
 7. Primitive `Switch` (interrupteur iOS, cible 44 px, `role="switch"`) : E16, E17, S03, S16, S20 — absente de l'inventaire 05 §3.1.
 
 ### 8.3 → 07 Plan d'exécution
@@ -1786,6 +1865,7 @@ Compléments et arbitrages à intégrer dans `04-ARCHITECTURE.md` (écrit en par
 1. Objectifs chronométrés de la synthèse du §2 comme critères d'acceptation (mesure sur iPhone réel, PWA installée).
 2. Couverture `npm run test:layout` du §1.8 ; tests `navigation.test.ts` du §1.4.
 3. Relecture avec le gérant : gabarit du message de relance (S09), textes de la carte « Nouveautés » (E01), confirmations (S18).
+4. Écart du 17/09/2026 : PC-13 (story) et la variante « À rattacher » de PC-08 entrent dans les parcours chronométrés ; E16 zone 7 et E05 zone 0 dans `npm run test:layout` (visionneuse plein écran comprise).
 
 ---
 

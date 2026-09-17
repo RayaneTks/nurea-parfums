@@ -78,6 +78,8 @@ model Perfume {
   updatedAt  DateTime          @updatedAt @db.Timestamptz(3)
   lines      SaleLine[]
   pricings   PerfumePricing[]
+  /// Visuels story (galerie de la fiche parfum), distincts de image / imageLight.
+  media      PerfumeMedia[]
 
   @@unique([brandId, name])
   @@index([status])
@@ -89,7 +91,7 @@ model Perfume {
 /// Préférence, jamais source d'un chiffre. Apprend à chaque ligne non offerte (N8) et depuis la fiche parfum.
 model PerfumePricing {
   perfumeId           Int
-  /// Volume du flacon en ml. CHECK ∈ (30, 50, 100).
+  /// Contenance du flacon en ml. CHECK ∈ (10, 50, 80) — contenances réelles (30 → 10 et 100 → 80 traduits en production le 10/09/2026).
   volumeMl            Int
   /// Dernier prix de vente retenu (€).
   defaultUnitPriceEur Decimal  @db.Decimal(10, 2)
@@ -101,6 +103,32 @@ model PerfumePricing {
   perfume             Perfume  @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
 
   @@id([perfumeId, volumeMl])
+}
+
+/// Visuel story d'un parfum (planche 9:16 prête à publier) : rangé sur la fiche parfum, récupéré par le partage natif.
+/// Jamais lu par la vitrine ; `Perfume.image` reste seul juge de la publication. Né en production le 10/09/2026
+/// (`20260910140000_perfume_media`), conservé tel quel par la refonte (reste dans `public`, jamais dans `legacy`).
+model PerfumeMedia {
+  id        String   @id @default(cuid())
+  perfumeId Int
+  /// Cascade : les lignes suivent le parfum ; les objets du bucket sont retirés par le module catalogue APRÈS le commit.
+  perfume   Perfume  @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
+  /// Chemin DANS le bucket, décidé par le serveur : exactement `stories/<perfumeId>/<horodatage>-<aléa>.<ext>`.
+  /// Seule clé de suppression de l'objet : jamais reçu tel quel du client.
+  path      String   @unique
+  /// URL publique, recalculée par le serveur depuis `path` (jamais reçue du client).
+  url       String
+  /// Libellé libre (« Story 9:16 », « Fond clair »…). Optionnel.
+  label     String?
+  /// Dimensions en pixels et poids en octets du fichier déposé (plafonné à 1920 px, jamais recadré).
+  width     Int
+  height    Int
+  bytes     Int
+  /// Ordre dans la galerie, le plus petit d'abord ; calculé par le serveur (jamais reçu du client).
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([perfumeId, sortOrder])
 }
 
 // ═════════════════════════════ Clients ═══════════════════════════════════════
@@ -212,7 +240,8 @@ model SaleLine {
   brandName         String?
   /// Snapshot de l'URL du visuel.
   imageUrl          String?
-  /// Volume du flacon en ml. CHECK ∈ (30, 50, 100) pour toute écriture ; NULL toléré sur des lignes migrées.
+  /// Contenance du flacon en ml. CHECK ∈ (10, 50, 80) pour toute écriture ; défaut de saisie 80 (règle serveur,
+  /// `DEFAULT_VOLUME_ML`). NULL, ou une contenance héritée 30/100 non traduite, toléré sur des lignes reprises.
   volumeMl          Int?
   /// CHECK >= 1.
   quantity          Int          @default(1)

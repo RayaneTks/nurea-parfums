@@ -52,7 +52,8 @@ async function controlerComptages(ctx: Contexte): Promise<{ controle: Controle; 
             (SELECT count(*)::int FROM "Batch") AS "Batch",
             (SELECT count(*)::int FROM "Brand") AS "Brand",
             (SELECT count(*)::int FROM "Perfume") AS "Perfume",
-            (SELECT count(*)::int FROM "PerfumePricing") AS "PerfumePricing"`,
+            (SELECT count(*)::int FROM "PerfumePricing") AS "PerfumePricing",
+            (SELECT count(*)::int FROM "PerfumeMedia") AS "PerfumeMedia"`,
   );
   const categories = { paiement: 0, depense: 0, manuel: 0, ecart: 0 };
   for (const c of ctx.classements.values()) categories[c.categorie] += 1;
@@ -66,7 +67,7 @@ async function controlerComptages(ctx: Contexte): Promise<{ controle: Controle; 
     ["mouvements sans nature cible", 0, n.mouvementsSansNature as number],
     ["dépenses sans mouvement", 0, n.depensesSansMouvement as number],
   ];
-  for (const table of ["Order", "OrderItem", "Sale", "SaleItem", "PaymentTransaction", "BatchExpense", "Customer", "Batch", "Brand", "Perfume", "PerfumePricing"] as const) {
+  for (const table of ["Order", "OrderItem", "Sale", "SaleItem", "PaymentTransaction", "BatchExpense", "Customer", "Batch", "Brand", "Perfume", "PerfumePricing", "PerfumeMedia"] as const) {
     attendus.push([`${table} = référence`, ref[table], n[table] as number]);
   }
   const ecarts = attendus

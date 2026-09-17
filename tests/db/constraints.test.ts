@@ -75,17 +75,19 @@ const cases: readonly TableCase[] = [
     table: "PerfumePricing",
     valid: () => ({
       perfumeId: PERFUME_ID,
-      volumeMl: 100,
+      volumeMl: 80,
       defaultUnitPriceEur: "95.00",
       defaultUnitCostDzd: "20000.00",
       defaultExchangeRate: "277.0000",
       updatedAt: NOW,
     }),
     violations: [
-      { constraint: "pricing_volume_ck", why: "volume hors 30/50/100", row: { volumeMl: 75 } },
-      { constraint: "pricing_amounts_ck", why: "prix négatif", row: { volumeMl: 30, defaultUnitPriceEur: "-1.00" } },
-      { constraint: "pricing_amounts_ck", why: "coût DZD négatif", row: { volumeMl: 30, defaultUnitCostDzd: "-1.00" } },
-      { constraint: "pricing_amounts_ck", why: "taux nul", row: { volumeMl: 30, defaultExchangeRate: "0" } },
+      { constraint: "pricing_volume_ck", why: "volume hors 10/50/80", row: { volumeMl: 75 } },
+      { constraint: "pricing_volume_ck", why: "contenance héritée 100 ml", row: { volumeMl: 100 } },
+      { constraint: "pricing_volume_ck", why: "contenance héritée 30 ml", row: { volumeMl: 30 } },
+      { constraint: "pricing_amounts_ck", why: "prix négatif", row: { volumeMl: 10, defaultUnitPriceEur: "-1.00" } },
+      { constraint: "pricing_amounts_ck", why: "coût DZD négatif", row: { volumeMl: 10, defaultUnitCostDzd: "-1.00" } },
+      { constraint: "pricing_amounts_ck", why: "taux nul", row: { volumeMl: 10, defaultExchangeRate: "0" } },
     ],
   },
   {
@@ -112,7 +114,7 @@ const cases: readonly TableCase[] = [
       perfumeId: PERFUME_ID,
       perfumeName: "Sauvage",
       brandName: "Dior",
-      volumeMl: 100,
+      volumeMl: 80,
       quantity: 2,
       deliveredQuantity: 1,
       unitPriceEur: "95.00",
@@ -128,7 +130,9 @@ const cases: readonly TableCase[] = [
       { constraint: "line_price_ck", why: "prix négatif", row: { unitPriceEur: "-1.00" } },
       { constraint: "line_gift_ck", why: "offert à prix non nul", row: { isGift: true, unitPriceEur: "10.00" } },
       { constraint: "line_volume_ck", why: "volume absent", row: { volumeMl: null } },
-      { constraint: "line_volume_ck", why: "volume hors 30/50/100", row: { volumeMl: 75 } },
+      { constraint: "line_volume_ck", why: "volume hors 10/50/80", row: { volumeMl: 75 } },
+      { constraint: "line_volume_ck", why: "contenance héritée 100 ml", row: { volumeMl: 100 } },
+      { constraint: "line_volume_ck", why: "contenance héritée 30 ml", row: { volumeMl: 30 } },
       { constraint: "line_cost_ck", why: "coût € négatif", row: { unitCostDzd: null, exchangeRate: null, unitCostEur: "-1.00" } },
       { constraint: "line_cost_ck", why: "coût DZD sans taux", row: { exchangeRate: null } },
       { constraint: "line_cost_ck", why: "coût DZD à taux nul", row: { exchangeRate: "0" } },
@@ -232,6 +236,40 @@ EXCEPTION WHEN unique_violation THEN
   RAISE EXCEPTION 'unique_violation : %', violated;
 END $$`;
 }
+
+/**
+ * Visuels story (`PerfumeMedia`, table de la production conservée en place — 03 §3, §7.4) : un chemin de
+ * bucket ne sert qu'une fois (c'est la clé de suppression de l'objet), et les lignes suivent leur parfum.
+ */
+describe("PerfumeMedia : chemin unique, lignes supprimées avec le parfum", () => {
+  const MEDIA_PERFUME_ID = 2000;
+  const media = (id: string, path: string): Row => ({
+    id,
+    perfumeId: MEDIA_PERFUME_ID,
+    path,
+    url: `https://cdn.test/storage/v1/object/public/catalog/${path}`,
+    width: 941,
+    height: 1672,
+    bytes: 182340,
+  });
+
+  it("refuse un second visuel sur le même chemin (PerfumeMedia_path_key)", async () => {
+    await insert(db, "Perfume", { id: MEDIA_PERFUME_ID, brandId: BRAND_ID, name: "Oud Wood", image: "oud.webp", updatedAt: NOW });
+    await expect(insert(db, "PerfumeMedia", media("media-1", "stories/2000/1757495346763-ab12cd34.webp"))).resolves.toBe(1);
+    await expect(
+      db.$executeRawUnsafe(reportingUniqueIndexName(insertSql("PerfumeMedia", media("media-2", "stories/2000/1757495346763-ab12cd34.webp")))),
+    ).rejects.toThrow("unique_violation : PerfumeMedia_path_key");
+  });
+
+  it("la suppression du parfum emporte ses visuels (Cascade) ; createdAt est un timestamptz", async () => {
+    const [{ type }] = (await db.$queryRawUnsafe<{ type: string }[]>(
+      `SELECT pg_typeof("createdAt")::text AS type FROM "PerfumeMedia" WHERE id = 'media-1'`,
+    )) as [{ type: string }];
+    expect(type).toBe("timestamp with time zone");
+    await expect(db.$executeRawUnsafe(`DELETE FROM "Perfume" WHERE id = ${MEDIA_PERFUME_ID}`)).resolves.toBe(1);
+    expect(await db.$queryRawUnsafe(`SELECT id FROM "PerfumeMedia" WHERE "perfumeId" = ${MEDIA_PERFUME_ID}`)).toEqual([]);
+  });
+});
 
 describe("index unique partiel pocket_single_system_uq", () => {
   it("accepte une poche système, en refuse une seconde, et laisse libres les poches ordinaires", async () => {

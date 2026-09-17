@@ -3,7 +3,9 @@
  *
  * Indépendant de tests/db/global-setup.ts : ce fichier crée ses propres bases sur le serveur de
  * `TEST_DATABASE_URL` (local obligatoire), à l'ANCIEN schéma — dossiers de migration appliqués un par un
- * jusqu'à `20260901120000_retire_gestion_v2` —, y charge le jeu de `fixtures/reprise/jeu.ts`, puis joue
+ * jusqu'à celui qui précède `…_refonte_expand` (aujourd'hui `20260910160000_fix_delivered_at_backfill` :
+ * visuels story et contenances 10/50/80 de la production compris) —, y charge le jeu de
+ * `fixtures/reprise/jeu.ts`, puis joue
  * la vraie chaîne, scripts lancés comme en production (processus séparés) :
  *   instantané en lecture seule → restauration → reference → expand → reprise (--dry-run, écart injecté,
  *   --apply, seconde reprise) → contract → verify.
@@ -29,14 +31,20 @@ const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 
 const LENT = 10 * 60_000;
 
-function urlDeTest(base: string): string {
+/**
+ * Bases propres à ce fichier, nommées d'après la base de test (`nurea_test` → `nurea_test_j2_reprise`,
+ * `nurea_test_x` → `nurea_test_x_j2_reprise`) : deux exécutions sur deux bases de test ne se détruisent
+ * pas l'une l'autre.
+ */
+function urlDeTest(suffixe: string): string {
   const url = new URL(assertNotProduction(TEST_DATABASE_URL, "Tests de reprise"));
-  url.pathname = `/${base}`;
+  const base = decodeURIComponent(url.pathname.replace(/^\//, ""));
+  url.pathname = `/${base}_${suffixe}`;
   return assertCibleLocale(url.toString(), "Tests de reprise").url;
 }
 
-const URL_REPRISE = urlDeTest("nurea_test_j2_reprise");
-const URL_RESTAUREE = urlDeTest("nurea_test_j2_restaure");
+const URL_REPRISE = urlDeTest("j2_reprise");
+const URL_RESTAUREE = urlDeTest("j2_restaure");
 /** Fausse URL de production : référence du projet, hôte local sans serveur (aucune connexion possible). */
 const URL_PRODUCTION = "postgresql://postgres.lkdhqqzocmxtyarseizc:faux@127.0.0.1:1/postgres";
 
@@ -133,7 +141,9 @@ describe("instantané de la source et restauration (variante locale de la répé
       Sale: REFERENCE.comptages.Sale,
       CashMovement: REFERENCE.comptages.CashMovement,
       PaymentTransaction: REFERENCE.comptages.PaymentTransaction,
-      _prisma_migrations: 21,
+      PerfumeMedia: REFERENCE.comptages.PerfumeMedia,
+      // Dossiers de l'ancien schéma : 21 jusqu'à retire_gestion_v2, plus les trois de la production du 10/09/2026.
+      _prisma_migrations: 24,
     });
   }, LENT);
 
@@ -179,8 +189,11 @@ describe("chaîne de reprise : reference → expand → reprise → contract →
         informatif: { aEncaisserListeAncienne: string; margeNetteAncienne: string };
         vitrine: Record<string, number>;
         comptages: Record<string, number>;
+        visuels: { nombre: number; empreinte: string };
       };
     }>(ref());
+    expect(mesures.visuels.nombre).toBe(REFERENCE.visuels.nombre);
+    expect(mesures.visuels.empreinte).toMatch(/^[0-9a-f]{32}$/);
     expect(Object.fromEntries(mesures.poches.map((p) => [p.id, p.solde]))).toEqual(REFERENCE.poches);
     expect(mesures.tresorerie).toEqual({ totalNonArchivees: REFERENCE.totalNonArchivees, nonAttribue: REFERENCE.nonAttribue });
     expect(mesures.encaisse).toEqual({ ancien: REFERENCE.encaisseAncien, d0: REFERENCE.d0, d1: REFERENCE.d1, d2: REFERENCE.d2 });
@@ -355,12 +368,12 @@ describe("chaîne de reprise : reference → expand → reprise → contract →
     expect(await compter(`"CashMovement"`)).toBe(avant);
   }, LENT);
 
-  it("contract : sortie 0 malgré les volumes 75 ml et nul et le don à prix non nul", () => {
+  it("contract : sortie 0 malgré les volumes 75 ml, 30 ml hérité et nul, et le don à prix non nul", () => {
     const execution = script("scripts/migration/apply-sql-migration.ts", ["refonte_contract"]);
     expect(execution.code, sortie(execution)).toBe(0);
   }, LENT);
 
-  it("verify : V8 liste line_volume_ck et line_gift_ck avec leurs lignes ; C1–C5, V9 verts", async () => {
+  it("verify : V8 liste line_volume_ck et line_gift_ck avec leurs lignes ; C1–C5, V9, V11 verts", async () => {
     const rapport = path.join(dossier, "verify");
     const execution = script("scripts/migration/verify-post.ts", ["--reference", ref(), "--report", rapport]);
     expect(execution.code, sortie(execution)).toBe(0);
@@ -370,8 +383,17 @@ describe("chaîne de reprise : reference → expand → reprise → contract →
     expect(json.statut).toBe("verte");
     expect(json.controles.filter((c) => !c.ok)).toEqual([]);
     expect(json.controles.map((c) => c.code)).toEqual(
-      expect.arrayContaining(["C1", "C2", "C3", "C4", "C5", "V1", "V2", "V3", "V4", "V6", "V7", "V8", "V9"]),
+      expect.arrayContaining(["C1", "C2", "C3", "C4", "C5", "V1", "V2", "V3", "V4", "V6", "V7", "V8", "V9", "V11"]),
     );
+
+    // Visuels story : restés dans public, même ligne, date convertie en timestamptz sans décalage.
+    expect(await compter(`legacy."PerfumeMedia"`).catch(() => "absente")).toBe("absente");
+    const visuels = await db.$queryRawUnsafe<{ id: string; type: string; cree: string }[]>(
+      `SELECT id, pg_typeof("createdAt")::text AS type,
+              to_char("createdAt" AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS cree
+       FROM "PerfumeMedia"`,
+    );
+    expect(visuels).toEqual([{ id: "media-sauvage-1", type: "timestamp with time zone", cree: REFERENCE.visuels.createdAt }]);
     expect(json.v8.map((c) => [c.contrainte, c.admise, c.lignes.map((l) => l.id)])).toEqual([
       ["line_gift_ck", true, V8.line_gift_ck],
       ["line_volume_ck", true, V8.line_volume_ck],
@@ -394,5 +416,14 @@ describe("chaîne de reprise : reference → expand → reprise → contract →
     await expect(
       db.$executeRawUnsafe(`UPDATE "SaleLine" SET "deliveredQuantity" = 0 WHERE id = 'vl-volume-nul'`),
     ).rejects.toThrow(/line_volume_ck/);
+  }, LENT);
+
+  it("une ligne reprise à une contenance héritée (30 ml) refuse toute mise à jour, jusqu'au choix d'une contenance réelle", async () => {
+    await expect(
+      db.$executeRawUnsafe(`UPDATE "SaleLine" SET "deliveredQuantity" = 1 WHERE id = 'ol-sans-paiement-1'`),
+    ).rejects.toThrow(/line_volume_ck/);
+    await expect(
+      db.$executeRawUnsafe(`UPDATE "SaleLine" SET "volumeMl" = 10 WHERE id = 'ol-sans-paiement-1'`),
+    ).resolves.toBe(1);
   }, LENT);
 });

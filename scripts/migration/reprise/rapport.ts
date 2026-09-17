@@ -223,7 +223,8 @@ export function construireRapport(args: {
 const TITRES_R4: Record<ListeR4, string> = {
   ecartsAArbitrer: "Documents « écart à arbitrer » (reste dû remonté après coup : un remboursement de reprise a été créé)",
   horsCatalogueReconstituees: "Lignes « Hors catalogue » reconstituées (parfum supprimé, sans nom)",
-  volumesAtypiques: "Volumes atypiques (ni 30, ni 50, ni 100 ml) — à compléter avant tout geste sur la ligne",
+  volumesAtypiques:
+    "Contenances hors 10 / 50 / 80 ml (absente, ou héritée 30 / 100 non traduite) — à compléter avant tout geste sur la ligne",
   donsPrixNonNul: "Dons à prix non nul — mettre le prix à 0 € ou décocher « Offert » avant tout geste",
   coutsDzdSansTaux: "Coûts DZD sans taux — indiquer le taux avant tout geste",
   autresLignesHorsRegles: "Autres lignes hors des règles de ligne",

@@ -8,6 +8,11 @@
 -- Additive : l'ancienne app continue de fonctionner si la reprise échoue (03 §7.9).
 -- Ne touche aucune colonne lue par la vitrine.
 --
+-- S'ordonne APRÈS toutes les migrations ordinaires déjà appliquées en production, dont les trois du
+-- 10/09/2026 (20260910120000_real_volumes_10_50_80, 20260910140000_perfume_media,
+-- 20260910160000_fix_delivered_at_backfill) : la table "PerfumeMedia" existe donc déjà, et reste
+-- dans public telle quelle (03 §7.4).
+--
 -- Tant qu'elle n'a pas été appliquée en production, ce fichier se MODIFIE au lieu d'être
 -- complété par un nouveau dossier (07 §2.1, règle des deux migrations).
 
