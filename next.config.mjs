@@ -9,20 +9,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * la base de répétition est une copie de la production et référence ses visuels.
  */
 function supabaseImageRemotes() {
-  const hostnames = new Set(["lkdhqqzocmxtyarseizc.supabase.co"]);
+  const remotes = new Map([["https://lkdhqqzocmxtyarseizc.supabase.co", { protocol: "https", hostname: "lkdhqqzocmxtyarseizc.supabase.co" }]]);
   const fromEnv = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (fromEnv) {
     try {
-      hostnames.add(new URL(fromEnv).hostname);
+      // Protocole de l'URL configurée : https en préproduction et en production, http pour le faux
+      // stockage local des tests de bout en bout (sans quoi `next/image` refuse ses visuels en dev).
+      const url = new URL(fromEnv);
+      const protocol = url.protocol.replace(":", "");
+      remotes.set(`${protocol}://${url.hostname}`, { protocol, hostname: url.hostname });
     } catch {
       // URL mal formée : on garde l'hôte de production, le build ne doit pas casser pour ça.
     }
   }
-  return [...hostnames].map((hostname) => ({
-    protocol: "https",
-    hostname,
-    pathname: "/**",
-  }));
+  return [...remotes.values()].map((remote) => ({ ...remote, pathname: "/**" }));
 }
 
 const withBundleAnalyzer = bundleAnalyzer({

@@ -45,7 +45,7 @@ export const ADMIN_TABS: readonly AdminTab[] = [
     label: "Commandes",
     icon: ClipboardList,
     match: (p) => under(p, "/admin/commandes"),
-    filterParams: ["vue", "filtre", "q"],
+    filterParams: ["vue", "filtre", "q", "pages"],
   },
   {
     id: "vendre",
@@ -70,7 +70,7 @@ export const ADMIN_TABS: readonly AdminTab[] = [
     label: "Catalogue",
     icon: Package,
     match: (p) => under(p, "/admin/catalogue"),
-    filterParams: ["tab", "q", "stock", "visibilite"],
+    filterParams: ["tab", "q", "stock", "visibilite", "gamme"],
   },
 ];
 
@@ -248,6 +248,19 @@ export function hasSheetParams(search: string): boolean {
 export type Destination = { url: string; scrollTop: number };
 
 /**
+ * Valeur par défaut des paramètres qu'une racine lit sans les écrire (06 §1.2) : `useUrlParam` retire de
+ * l'URL un paramètre égal à son défaut. `/admin/catalogue?q=sauv` EST l'onglet Parfums ; le retour
+ * « Catalogue » d'une fiche parfum (`?tab=parfums`) doit donc la reprendre, filtres et défilement compris
+ * (F-4.5-08), au lieu de repartir d'une liste nue.
+ */
+const PARAM_DEFAULTS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  "/admin/catalogue": { tab: "parfums" },
+  "/admin/commandes": { vue: "a-livrer" },
+  "/admin/compta": { vue: "ventes", periode: "mois" },
+  "/admin/vendre": { mode: "vente" },
+};
+
+/**
  * Où mène le retour : le parent, et s'il figure dans la mémoire de l'onglet (même chemin, et mêmes
  * valeurs pour les paramètres que le parent fixe), son URL mémorisée avec ses filtres et son
  * défilement — E06 → E05 à la même position (06 §1.5).
@@ -258,7 +271,8 @@ export function resolveBack(parent: AdminParent, memory: TabMemory = tabMemory):
   const remembered = tab ? memory.at(tab, target.pathname) : null;
   if (remembered) {
     const kept = new URL(remembered.url, BASE).searchParams;
-    const compatible = [...target.searchParams].every(([key, value]) => kept.get(key) === value);
+    const defaults = PARAM_DEFAULTS[target.pathname] ?? {};
+    const compatible = [...target.searchParams].every(([key, value]) => (kept.get(key) ?? defaults[key]) === value);
     if (compatible) return remembered;
   }
   return { url: parent.href, scrollTop: 0 };

@@ -42,8 +42,13 @@ test("onglet actif, racine filtrée : un tap efface les filtres", async ({ page 
 
 test("onglet actif, fiche document ouverte : un tap ferme la sheet et garde l'écran", async ({ page }) => {
   await openShell(page, routes.document({ id: "doc-inexistant", origin: "ORDER" }));
-  await tab(page, "Commandes").click();
+  // Depuis J8 la fiche s'ouvre vraiment (« Ce document n'existe plus ») ; pleine hauteur, au-dessus de la barre
+  // d'onglets (05 §2.7), elle reçoit le doigt : le clic est remis à l'onglet pour éprouver la règle du shell.
+  await expect(page.getByText("Ce document n'existe plus")).toBeVisible();
+  // La sheet modale retire le reste de l'écran de l'arbre d'accessibilité : l'onglet se désigne par son attribut.
+  await page.locator('[data-tabbar] [data-tab="commandes"]').dispatchEvent("click");
   await expect.poll(() => pathAndQuery(page)).toBe(routes.commandes());
+  await expect(page.getByText("Ce document n'existe plus")).toBeHidden();
 });
 
 test("recherche : s'ouvre au tap, focalise le champ, mène à « Nouvelle commande » sans changer d'écran à la main", async ({ page }) => {
@@ -66,8 +71,9 @@ test("recherche : « Fermer » rend la main à l'écran", async ({ page }) => {
   await openShell(page, routes.commandes());
   await page.getByRole("button", { name: "Rechercher" }).click();
   const palette = page.getByRole("dialog", { name: "Recherche" });
-  await palette.getByLabel("Rechercher", { exact: true }).fill("fa");
-  await expect(palette.getByText("La recherche de clients, commandes et parfums arrive au jalon J8.")).toBeVisible();
+  await palette.getByLabel("Rechercher", { exact: true }).fill("fares");
+  // Recherche à la frappe (07 J8) : le client du jeu est trouvé par son nom.
+  await expect(palette.getByText("Fares Benali", { exact: true })).toBeVisible();
   await palette.getByRole("button", { name: "Fermer" }).click();
   await expect(palette).toBeHidden();
   await expect(page.getByRole("heading", { level: 1, name: "Commandes" })).toBeVisible();

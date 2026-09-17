@@ -4,12 +4,45 @@ import { cn } from "@/lib/utils";
 /** Le clavier iOS met ~300 ms à monter : défiler avant, c'est défiler à côté. */
 const KEYBOARD_RISE_DELAY_MS = 320;
 
-/** Centre le champ une fois le clavier monté (désactivable dans une liste fenêtrée). */
+/** Part de l'écran masquée par le clavier, telle que la pose le service viewport du shell (0 sans clavier). */
+function keyboardInset(): number {
+  const value = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--admin-keyboard-inset"));
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+/** Premier ancêtre qui défile verticalement (zone de défilement de la page, corps d'une sheet). */
+function scrollParentOf(el: HTMLElement): HTMLElement | null {
+  for (let node = el.parentElement; node; node = node.parentElement) {
+    const { overflowY } = getComputedStyle(node);
+    if ((overflowY === "auto" || overflowY === "scroll") && node.scrollHeight > node.clientHeight) return node;
+  }
+  return null;
+}
+
+/**
+ * Centre le champ une fois le clavier monté (désactivable dans une liste fenêtrée).
+ *
+ * Clavier ouvert, le viewport de mise en page ne rétrécit pas (iOS) : « centrer » dans la zone de
+ * défilement plaçait le champ au milieu de l'écran ENTIER, donc sous le clavier sur un petit iPhone
+ * (bas du champ à 250 px, clavier à 232 px sur 320 × 568). On centre alors dans la part restée visible,
+ * entre le haut de la zone de défilement et le haut du clavier, en ne faisant défiler que cette zone :
+ * `scrollIntoView` faisait aussi défiler les ancêtres, et le viewport visuel avec eux.
+ */
 export function scrollFieldIntoView(e: FocusEvent<HTMLElement>): void {
   const el = e.currentTarget;
   window.setTimeout(() => {
     try {
-      el.scrollIntoView({ block: "center", behavior: "smooth" });
+      const inset = keyboardInset();
+      const scroller = inset > 0 ? scrollParentOf(el) : null;
+      if (!scroller) {
+        el.scrollIntoView({ block: "center", behavior: "smooth" });
+        return;
+      }
+      const field = el.getBoundingClientRect();
+      const top = Math.max(0, scroller.getBoundingClientRect().top);
+      const bottom = Math.min(scroller.getBoundingClientRect().bottom, window.innerHeight - inset);
+      const delta = field.top + field.height / 2 - (top + bottom) / 2;
+      if (Math.abs(delta) > 1) scroller.scrollBy({ top: delta, behavior: "smooth" });
     } catch {
       /* moteurs anciens : sans conséquence */
     }

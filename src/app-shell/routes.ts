@@ -47,7 +47,7 @@ export const ROUTE_SPECS = {
   nouveauLot: spec({ screen: "E21", pattern: "/admin/lots/nouveau", params: [], shell: true, jalon: "J13", etat: "a-venir" }),
   statistiques: spec({ screen: "E07", pattern: "/admin/statistiques", params: ["periode", "ref"], shell: true, jalon: "J14", etat: "a-venir" }),
   reglages: spec({ screen: "E08", pattern: "/admin/reglages", params: [], shell: true, jalon: "J15", etat: "a-venir" }),
-  commandes: spec({ screen: "E10", pattern: "/admin/commandes", params: ["vue", "filtre", "q"], shell: true, jalon: "J8", etat: "provisoire" }),
+  commandes: spec({ screen: "E10", pattern: "/admin/commandes", params: ["vue", "filtre", "q", "pages"], shell: true, jalon: "J8", etat: "livree" }),
   vendre: spec({
     screen: "E11",
     pattern: "/admin/vendre",
@@ -57,26 +57,26 @@ export const ROUTE_SPECS = {
     etat: "provisoire",
   }),
   clients: spec({ screen: "E12", pattern: "/admin/clients", params: ["q"], shell: true, jalon: "J10", etat: "provisoire" }),
-  encaisser: spec({ screen: "E13", pattern: "/admin/encaisser", params: ["anciennete", "q"], shell: true, jalon: "J10", etat: "a-venir" }),
+  encaisser: spec({ screen: "E13", pattern: "/admin/encaisser", params: ["anciennete", "q"], shell: true, jalon: "J8", etat: "livree" }),
   client: spec({ screen: "E14", pattern: "/admin/clients/[id]", params: [], shell: true, jalon: "J10", etat: "a-venir" }),
   modifierClient: spec({ screen: "E20", pattern: "/admin/clients/[id]/modifier", params: [], shell: true, jalon: "J10", etat: "a-venir" }),
   nouveauClient: spec({ screen: "E20", pattern: "/admin/clients/nouveau", params: ["nom"], shell: true, jalon: "J10", etat: "a-venir" }),
   catalogue: spec({
     screen: "E15",
     pattern: "/admin/catalogue",
-    params: ["tab", "q", "stock", "visibilite"],
+    params: ["tab", "q", "stock", "visibilite", "gamme"],
     shell: true,
     jalon: "J11",
-    etat: "provisoire",
+    etat: "livree",
   }),
-  parfum: spec({ screen: "E16", pattern: "/admin/catalogue/parfums/[id]", params: [], shell: true, jalon: "J11", etat: "a-venir" }),
+  parfum: spec({ screen: "E16", pattern: "/admin/catalogue/parfums/[id]", params: [], shell: true, jalon: "J11", etat: "livree" }),
   modifierParfum: spec({
     screen: "E19",
     pattern: "/admin/catalogue/parfums/[id]/modifier",
     params: [],
     shell: true,
     jalon: "J11",
-    etat: "a-venir",
+    etat: "livree",
   }),
   nouveauParfum: spec({
     screen: "E19",
@@ -84,7 +84,7 @@ export const ROUTE_SPECS = {
     params: ["dupliquer"],
     shell: true,
     jalon: "J11",
-    etat: "a-venir",
+    etat: "livree",
   }),
   modifierMarque: spec({
     screen: "E17",
@@ -92,9 +92,9 @@ export const ROUTE_SPECS = {
     params: [],
     shell: true,
     jalon: "J11",
-    etat: "a-venir",
+    etat: "livree",
   }),
-  nouvelleMarque: spec({ screen: "E17", pattern: "/admin/catalogue/marques/nouvelle", params: [], shell: true, jalon: "J11", etat: "a-venir" }),
+  nouvelleMarque: spec({ screen: "E17", pattern: "/admin/catalogue/marques/nouvelle", params: [], shell: true, jalon: "J11", etat: "livree" }),
   connexion: spec({ screen: "E18", pattern: "/admin/login", params: ["retour"], shell: false, jalon: "J4", etat: "livree" }),
 } as const satisfies Record<string, RouteSpec>;
 
@@ -145,7 +145,9 @@ export const routes = {
     vue?: "a-livrer" | "livrees" | "annulees";
     filtre?: "retard" | "aujourdhui" | "demain" | "en-attente" | "confirmees";
     q?: string;
-  }) => build("/admin/commandes", q),
+    /** « Afficher plus » (Livrées, Annulées) : nombre de pages de 50 affichées ; 1 ne s'écrit pas. */
+    pages?: number;
+  }) => build("/admin/commandes", q ? { ...q, pages: q.pages && q.pages > 1 ? q.pages : undefined } : q),
   vendre: (q?: { mode?: "vente" | "commande"; client?: string; parfum?: string | number; depuis?: string }) =>
     build("/admin/vendre", q),
   clients: (q?: { q?: string }) => build("/admin/clients", q),
@@ -158,6 +160,8 @@ export const routes = {
     q?: string;
     stock?: "bas" | "rupture";
     visibilite?: "masques";
+    /** Onglet Marques : les gammes complètes seulement (chip « Gammes complètes », 06 E15). */
+    gamme?: "complete";
   }) => build("/admin/catalogue", q),
   parfum: (id: string | number) => `/admin/catalogue/parfums/${segment(id)}`,
   modifierParfum: (id: string | number) => `/admin/catalogue/parfums/${segment(id)}/modifier`,

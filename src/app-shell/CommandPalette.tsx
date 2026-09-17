@@ -11,18 +11,29 @@ import {
   PackagePlus,
   PlusCircle,
   Settings,
+  ShoppingBag,
   UserPlus,
   type LucideIcon,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
+import type { CustomerHitDTO, DocumentHitDTO, PerfumeHitDTO, SearchResultsDTO } from "@/contracts/search";
+import { SEARCH_MIN_LENGTH } from "@/contracts/search";
+import { eur, eurFromWire, type MoneyString } from "@/domain/money";
 import { cn } from "@/lib/utils";
+import { ErrorBanner } from "@/ui/patterns/ErrorBanner";
 import { ListSection } from "@/ui/patterns/ListSection";
+import { Money } from "@/ui/patterns/Money";
+import { formatDate } from "@/ui/patterns/date-format";
+import { Avatar } from "@/ui/primitives/Avatar";
+import { Badge } from "@/ui/primitives/Badge";
 import { Button } from "@/ui/primitives/Button";
 import { EmptyState } from "@/ui/primitives/EmptyState";
 import { ListRow } from "@/ui/primitives/ListRow";
 import { SearchField } from "@/ui/primitives/SearchField";
+import { SkeletonList } from "@/ui/primitives/Skeleton";
 import { isToastTarget } from "@/ui/primitives/Toast";
-import { isNavigable, routes } from "./routes";
+import { useReadRoute } from "./hooks/useReadRoute";
+import { isNavigable, routes, withSheet } from "./routes";
 import { useShellNavigation } from "./ShellNavigation";
 
 type CommandPaletteProps = {
@@ -52,23 +63,42 @@ const GO_TO: Entry[] = [
   { id: "reglages", label: "Réglages", icon: Settings, href: routes.reglages() },
 ].filter((entry) => isNavigable(entry.href));
 
-/** La recherche à la frappe (clients, documents, parfums) arrive avec sa route de lecture (07 J8). */
-const SEARCH_MILESTONE = "J8";
+/** Route de lecture de la recherche à la frappe (04 §3.5) : une API, pas une adresse d'écran. */
+const searchUrl = (q: string) => `/api/admin/search?scope=all&q=${encodeURIComponent(q)}`;
+
+const positive = (value: MoneyString | null): value is MoneyString => value !== null && eur.compare(eurFromWire(value), eur.zero) > 0;
+
+/** « Commande du 12 sept. · Fares » (06 §4.4). */
+function documentLabel(hit: DocumentHitDTO): string {
+  const title = `${hit.origin === "ORDER" ? "Commande" : "Vente"} du ${formatDate(new Date(hit.orderedAt), "short")}`;
+  return hit.customerName ? `${title} · ${hit.customerName}` : title;
+}
 
 /**
- * Recherche globale S17 (06 §4.4) — cadre livré à J4 : dialogue plein écran sur Radix Dialog (focus
- * piégé, défilement bloqué, focus restitué à la fermeture), bande `commandPalette` au-dessus des sheets, champ focalisé
- * à l'ouverture pour que le clavier monte avec elle. Choisir une entrée ferme la palette en naviguant.
+ * Recherche globale S17 (06 §4.4) : dialogue plein écran sur Radix Dialog (focus piégé, défilement bloqué, focus
+ * restitué à la fermeture), bande `commandPalette` au-dessus des sheets, champ focalisé à l'ouverture pour que le
+ * clavier monte avec elle. Dès 2 caractères, la recherche à la frappe (debounce 200 ms, annulable) rend clients,
+ * documents et parfums, par groupes de 6. Un document s'ouvre en fiche SUR L'ÉCRAN COURANT (la palette se ferme
+ * d'abord) ; un parfum ouvre sa fiche ; une navigation ferme la palette. Les actions de résultat (« Encaisser »,
+ * « Vendre ») arrivent au jalon J15.
  */
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { navigate } = useShellNavigation();
-  const searching = query.trim().length >= 2;
+  const trimmed = query.trim();
+  const searching = trimmed.length >= SEARCH_MIN_LENGTH;
+  const read = useReadRoute<SearchResultsDTO>(open && searching ? searchUrl(trimmed) : null, { debounceMs: 200 });
 
   const go = (href: string) => {
     onOpenChange(false);
     navigate(href);
+  };
+
+  /** La fiche document s'ouvre au-dessus de l'écran courant : on ne change jamais d'onglet (06 §1.3). */
+  const openDocument = (id: string) => {
+    onOpenChange(false);
+    navigate(withSheet(`${window.location.pathname}${window.location.search}`, { doc: id }));
   };
 
   const section = (title: string, entries: Entry[]) =>
@@ -87,6 +117,120 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         })}
       </ListSection>
     ) : null;
+
+  const seeAll = (total: number, shown: number, href: string | null) =>
+    href && total > shown && isNavigable(href) ? (
+      <Button variant="text" size="sm" className="self-start" onClick={() => go(href)}>
+        Voir les {total} résultats
+      </Button>
+    ) : undefined;
+
+  const customerRow = (hit: CustomerHitDTO) => {
+    const client = routes.client(hit.id);
+    const encaisser = routes.encaisser({ q: hit.fullName });
+    // Fiche client livrée au jalon J10 ; en attendant, un client qui doit de l'argent mène à ses créances.
+    const target = isNavigable(client) ? client : positive(hit.due) ? encaisser : null;
+    const common = {
+      leading: <Avatar name={hit.fullName} size="md" />,
+      primary: hit.fullName,
+      secondary: hit.contact ?? undefined,
+      trailing: positive(hit.due) ? <Money value={hit.due} tone="warning" bold /> : undefined,
+    };
+    return target ? <ListRow key={hit.id} {...common} onClick={() => go(target)} /> : <ListRow key={hit.id} {...common} />;
+  };
+
+  const documentRow = (hit: DocumentHitDTO) => (
+    <ListRow
+      key={hit.id}
+      leading={
+        hit.origin === "ORDER" ? (
+          <ClipboardList size={20} aria-hidden className="text-[var(--admin-text-muted)]" />
+        ) : (
+          <ShoppingBag size={20} aria-hidden className="text-[var(--admin-text-muted)]" />
+        )
+      }
+      primary={documentLabel(hit)}
+      secondary={hit.status === "CANCELLED" ? "Annulée" : hit.status === "PENDING" ? "En attente" : undefined}
+      trailing={positive(hit.due) ? <Money value={hit.due} tone="warning" bold /> : <Money value={hit.total} tone="muted" />}
+      onClick={() => openDocument(hit.id)}
+    />
+  );
+
+  const perfumeRow = (hit: PerfumeHitDTO) => (
+    <ListRow
+      key={hit.id}
+      leading={<Avatar name={hit.name} src={hit.image || null} size="md" />}
+      primary={hit.name}
+      secondary={hit.brandName}
+      trailing={
+        hit.stockStatus === "out" ? (
+          <Badge tone="danger">Rupture</Badge>
+        ) : hit.status === "DRAFT" ? (
+          <Badge>Masqué</Badge>
+        ) : undefined
+      }
+      onClick={() => go(routes.parfum(hit.id))}
+    />
+  );
+
+  let body: ReactNode;
+  if (!searching) {
+    body = (
+      <>
+        {section("Créer", CREATE)}
+        {section("Aller à", GO_TO)}
+      </>
+    );
+  } else if (read.error) {
+    body = <ErrorBanner message="Recherche indisponible." onRetry={read.reload} />;
+  } else if (!read.data) {
+    body = <SkeletonList count={4} />;
+  } else {
+    const { customers, documents, perfumes } = read.data;
+    const nothing = customers.total + documents.total + perfumes.total === 0;
+    if (nothing) {
+      const createCustomer = routes.nouveauClient({ nom: trimmed });
+      const createPerfume = routes.nouveauParfum();
+      const actions = [
+        isNavigable(createCustomer) ? (
+          <Button key="client" variant="secondary" onClick={() => go(createCustomer)}>
+            Créer le client « {trimmed} »
+          </Button>
+        ) : null,
+        isNavigable(createPerfume) ? (
+          <Button key="parfum" variant="secondary" onClick={() => go(createPerfume)}>
+            Créer le parfum « {trimmed} »
+          </Button>
+        ) : null,
+      ].filter(Boolean);
+      body =
+        actions.length > 0 ? (
+          <EmptyState title={`Rien ne correspond à « ${trimmed} »`} action={<div className="flex flex-col gap-2">{actions}</div>} />
+        ) : (
+          <EmptyState done title={`Rien ne correspond à « ${trimmed} »`} />
+        );
+    } else {
+      body = (
+        <div className={cn("flex flex-col gap-4", read.loading ? "opacity-70" : null)} aria-busy={read.loading || undefined}>
+          {customers.total > 0 ? (
+            <ListSection title="Clients" count={customers.total} footer={seeAll(customers.total, customers.items.length, routes.clients({ q: trimmed }))}>
+              {customers.items.map(customerRow)}
+            </ListSection>
+          ) : null}
+          {documents.total > 0 ? (
+            <ListSection title="Documents" count={documents.total}>
+              {documents.items.map(documentRow)}
+            </ListSection>
+          ) : null}
+          {perfumes.total > 0 ? (
+            <ListSection title="Parfums" count={perfumes.total} footer={seeAll(perfumes.total, perfumes.items.length, routes.catalogue({ q: trimmed }))}>
+              {perfumes.items.map(perfumeRow)}
+            </ListSection>
+          ) : null}
+        </div>
+      );
+    }
+  }
 
   return (
     <Dialog.Root
@@ -136,14 +280,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             className="flex flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-4 pt-4 [-webkit-overflow-scrolling:touch]"
             style={{ paddingBottom: "calc(var(--admin-space-6) + var(--admin-safe-area-bottom) + var(--admin-keyboard-inset, 0px))" }}
           >
-            {searching ? (
-              <EmptyState done title={`La recherche de clients, commandes et parfums arrive au jalon ${SEARCH_MILESTONE}.`} />
-            ) : (
-              <>
-                {section("Créer", CREATE)}
-                {section("Aller à", GO_TO)}
-              </>
-            )}
+            {body}
           </div>
         </Dialog.Content>
       </Dialog.Portal>

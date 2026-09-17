@@ -147,13 +147,20 @@ export function SwipeableRow({ leftAction, rightAction, disabled = false, childr
   };
 
   const onClickCapture = (e: MouseEvent<HTMLDivElement>) => {
-    // Le clic qui suit un glissement, ou un tap sur une rangée ouverte, ne
-    // traverse pas jusqu'à la rangée : il referme, il n'ouvre pas la fiche.
-    if (swallowClick.current || state !== "closed") {
+    // Le clic qui suit un glissement ne traverse pas jusqu'à la rangée et ne
+    // referme pas ce que le glissement vient d'ouvrir : au pointeur (souris,
+    // Playwright), il arrive APRÈS le rendu de l'état ouvert, qui le faisait
+    // refermer aussitôt. Un tap sur une rangée déjà ouverte, lui, referme.
+    if (swallowClick.current) {
       e.preventDefault();
       e.stopPropagation();
       swallowClick.current = false;
-      if (state !== "closed") close();
+      return;
+    }
+    if (state !== "closed") {
+      e.preventDefault();
+      e.stopPropagation();
+      close();
     }
   };
 

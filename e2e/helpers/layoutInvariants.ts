@@ -319,6 +319,8 @@ export async function collectBottomOcclusion(page: Page): Promise<Violation[]> {
     for (const el of interactive) {
       if (tabBar.contains(el)) continue;
       if (el.closest("[data-sticky-action]")) continue;
+      // Une sheet (fiche `?doc=`, 07 J8) couvre la barre d'onglets (z 70/71, 05 §2.7) : ses contrôles ne sont pas dessous.
+      if (el.closest("[data-vaul-drawer]")) continue;
       if (getComputedStyle(el).position === "fixed") continue;
       const r = el.getBoundingClientRect();
       if (r.width <= 2 || r.height <= 2) continue;
@@ -398,7 +400,9 @@ export async function collectKeyboardViolations(
 
     // Une sheet ouverte doit garder une zone de contenu exploitable : c'est
     // exactement ce qui manquait au sélecteur de client, réduit à ~24 px.
-    const sheet = document.querySelector("[data-vaul-drawer]");
+    // Sheets empilées (S02 au-dessus de la fiche S01, 07 J8) : celle du dessus, portée en dernier, reçoit la saisie.
+    const openSheets = document.querySelectorAll('[data-vaul-drawer][data-state="open"]');
+    const sheet = openSheets.length > 0 ? openSheets[openSheets.length - 1] : document.querySelector("[data-vaul-drawer]");
     if (sheet && getComputedStyle(sheet).transform === "none") {
       // Elle doit aussi occuper la hauteur qui lui est allouée. Une sheet qui
       // épouse son contenu s'ouvre à mi-écran : la moitié haute est perdue et

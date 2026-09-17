@@ -10,7 +10,6 @@ import {
 import { DomainError } from "@/domain/errors";
 import { newId } from "@/domain/ids";
 import type { Tx } from "@/server/db/transaction";
-import { recordWrite } from "@/server/db/unit-of-work";
 
 /**
  * Seul fichier qui écrit `PerfumeMedia`, les visuels story d'un parfum (04 §4.3, §12 ; 03 §3).
@@ -23,19 +22,27 @@ import { recordWrite } from "@/server/db/unit-of-work";
  * simultanés ne prennent pas le même), 24 visuels au plus. Le retrait rend l'URL de l'objet : c'est
  * l'action qui le supprime du bucket, APRÈS le commit (`storage.commitThenRemoveObjects`).
  *
- * *Accès SQL paramétré, provisoire* : le client Prisma généré au moment du jalon J11 ne connaît pas encore
- * le modèle `PerfumeMedia` (le moteur est tenu par un serveur de développement sous Windows). Les requêtes
- * restent limitées à ce fichier, portent le nom de la table en dur, et inscrivent elles-mêmes le modèle
- * dans l'unité de travail (`recordWrite`) comme le ferait l'extension de `src/server/db/client.ts`. Après
- * `prisma generate`, elles se traduisent une à une en `tx.db.perfumeMedia.*` sans changer de signature.
+ * Accès par le client Prisma de la transaction (`tx.db.perfumeMedia`) : l'extension de
+ * `src/server/db/client.ts` inscrit le modèle écrit dans l'unité de travail, d'où l'invalidation
+ * `gestion` + `admin-catalogue` sans la vitrine (04 §10.1).
  */
 
-const MODEL = "PerfumeMedia";
+const MEDIA_SELECT = {
+  id: true,
+  url: true,
+  label: true,
+  width: true,
+  height: true,
+  bytes: true,
+  sortOrder: true,
+  createdAt: true,
+} as const;
+
+/** Ordre d'affichage de la galerie : rang, puis date de dépôt, puis identifiant (stable). */
+const GALLERY_ORDER = [{ sortOrder: "asc" }, { createdAt: "asc" }, { id: "asc" }] as const;
 
 type MediaRow = {
   id: string;
-  perfumeId: number;
-  path: string;
   url: string;
   label: string | null;
   width: number;
@@ -66,11 +73,8 @@ async function lockPerfume(tx: Tx, perfumeId: number): Promise<void> {
   if (perfumes.length === 0) throw new DomainError("NOT_FOUND", PERFUME_NOT_FOUND_MESSAGE);
 }
 
-async function listRows(tx: Tx, perfumeId: number): Promise<MediaRow[]> {
-  return tx.db.$queryRaw<MediaRow[]>`
-    SELECT id, "perfumeId", path, url, label, width, height, bytes, "sortOrder", "createdAt"
-    FROM "PerfumeMedia" WHERE "perfumeId" = ${perfumeId}
-    ORDER BY "sortOrder" ASC, "createdAt" ASC, id ASC`;
+function listRows(tx: Tx, perfumeId: number): Promise<MediaRow[]> {
+  return tx.db.perfumeMedia.findMany({ where: { perfumeId }, orderBy: [...GALLERY_ORDER], select: MEDIA_SELECT });
 }
 
 export type NewMedia = {
@@ -93,23 +97,30 @@ export async function addMedia(tx: Tx, input: NewMedia): Promise<PerfumeMediaIte
   if (!isStoryPathOf(input.perfumeId, input.path)) throw new DomainError("VALIDATION", STORY_PATH_MESSAGE, "path");
   await lockPerfume(tx, input.perfumeId);
 
-  const [existing] = await tx.db.$queryRaw<MediaRow[]>`
-    SELECT id, "perfumeId", path, url, label, width, height, bytes, "sortOrder", "createdAt"
-    FROM "PerfumeMedia" WHERE path = ${input.path}`;
+  const existing = await tx.db.perfumeMedia.findUnique({ where: { path: input.path }, select: MEDIA_SELECT });
   if (existing) return toItem(existing); // le préfixe vérifié garantit qu'il s'agit du même parfum
 
-  const [gallery] = await tx.db.$queryRaw<{ count: number; next: number }[]>`
-    SELECT count(*)::int AS count, COALESCE(max("sortOrder") + 1, 0)::int AS next
-    FROM "PerfumeMedia" WHERE "perfumeId" = ${input.perfumeId}`;
-  if ((gallery?.count ?? 0) >= MAX_MEDIA_PER_PERFUME) throw new DomainError("CONFLICT", MAX_MEDIA_MESSAGE);
+  const gallery = await tx.db.perfumeMedia.aggregate({
+    where: { perfumeId: input.perfumeId },
+    _count: { _all: true },
+    _max: { sortOrder: true },
+  });
+  if (gallery._count._all >= MAX_MEDIA_PER_PERFUME) throw new DomainError("CONFLICT", MAX_MEDIA_MESSAGE);
 
-  recordWrite(MODEL);
-  const [created] = await tx.db.$queryRaw<MediaRow[]>`
-    INSERT INTO "PerfumeMedia" (id, "perfumeId", path, url, label, width, height, bytes, "sortOrder")
-    VALUES (${newId()}, ${input.perfumeId}, ${input.path}, ${input.url}, ${input.label},
-            ${input.width}, ${input.height}, ${input.bytes}, ${gallery?.next ?? 0})
-    RETURNING id, "perfumeId", path, url, label, width, height, bytes, "sortOrder", "createdAt"`;
-  if (!created) throw new Error("PerfumeMedia : insertion sans ligne rendue");
+  const created = await tx.db.perfumeMedia.create({
+    data: {
+      id: newId(),
+      perfumeId: input.perfumeId,
+      path: input.path,
+      url: input.url,
+      label: input.label,
+      width: input.width,
+      height: input.height,
+      bytes: input.bytes,
+      sortOrder: gallery._max.sortOrder === null ? 0 : gallery._max.sortOrder + 1,
+    },
+    select: MEDIA_SELECT,
+  });
   return toItem(created);
 }
 
@@ -118,18 +129,20 @@ export async function setMediaLabel(
   tx: Tx,
   input: { perfumeId: number; mediaId: string; label: string | null },
 ): Promise<PerfumeMediaItem> {
-  recordWrite(MODEL);
-  const [row] = await tx.db.$queryRaw<MediaRow[]>`
-    UPDATE "PerfumeMedia" SET label = ${input.label}
-    WHERE id = ${input.mediaId} AND "perfumeId" = ${input.perfumeId}
-    RETURNING id, "perfumeId", path, url, label, width, height, bytes, "sortOrder", "createdAt"`;
+  const { count } = await tx.db.perfumeMedia.updateMany({
+    where: { id: input.mediaId, perfumeId: input.perfumeId },
+    data: { label: input.label },
+  });
+  if (count === 0) throw new DomainError("NOT_FOUND", MEDIA_NOT_FOUND_MESSAGE);
+  const row = await tx.db.perfumeMedia.findUnique({ where: { id: input.mediaId }, select: MEDIA_SELECT });
   if (!row) throw new DomainError("NOT_FOUND", MEDIA_NOT_FOUND_MESSAGE);
   return toItem(row);
 }
 
 /**
- * Réordonne la galerie en une écriture : les identifiants connus dans l'ordre reçu, puis ceux que l'écran
- * n'a pas envoyés, dans leur ordre actuel ; un identifiant inconnu est ignoré. Rangs recompactés 0…n−1.
+ * Réordonne la galerie : les identifiants connus dans l'ordre reçu, puis ceux que l'écran n'a pas
+ * envoyés, dans leur ordre actuel ; un identifiant inconnu est ignoré. Rangs recompactés 0…n−1, seules
+ * les lignes dont le rang change sont écrites (24 au plus, sous le verrou du parfum).
  */
 export async function reorderMedia(
   tx: Tx,
@@ -142,33 +155,29 @@ export async function reorderMedia(
   for (const id of input.orderedIds) if (known.has(id)) placed.add(id);
   const order = [...placed, ...rows.map((row) => row.id).filter((id) => !placed.has(id))];
 
-  const changes = order.filter((id, index) => known.get(id)?.sortOrder !== index);
+  const changes = order
+    .map((id, rank) => ({ id, rank }))
+    .filter(({ id, rank }) => known.get(id)?.sortOrder !== rank);
   if (changes.length === 0) return rows.map(toItem);
 
-  const ids = order;
-  const ranks = order.map((_, index) => index);
-  recordWrite(MODEL);
-  await tx.db.$queryRaw`
-    UPDATE "PerfumeMedia" AS m SET "sortOrder" = v.rank
-    FROM unnest(${ids}::text[], ${ranks}::int[]) AS v(id, rank)
-    WHERE m.id = v.id AND m."perfumeId" = ${input.perfumeId} AND m."sortOrder" <> v.rank
-    RETURNING m.id`;
+  for (const { id, rank } of changes) {
+    await tx.db.perfumeMedia.updateMany({ where: { id, perfumeId: input.perfumeId }, data: { sortOrder: rank } });
+  }
   return (await listRows(tx, input.perfumeId)).map(toItem);
 }
 
 /**
  * Retire un visuel : DELETE de la ligne, et l'URL de son objet rendue pour une suppression APRÈS le commit.
- * Déjà absent : succès sans écriture (renvoi après coupure).
+ * Déjà absent : succès sans suppression d'objet (renvoi après coupure).
  */
 export async function removeMedia(
   tx: Tx,
   input: { perfumeId: number; mediaId: string },
 ): Promise<{ removed: boolean; url: string | null }> {
-  recordWrite(MODEL);
-  const [row] = await tx.db.$queryRaw<{ url: string }[]>`
-    DELETE FROM "PerfumeMedia" WHERE id = ${input.mediaId} AND "perfumeId" = ${input.perfumeId}
-    RETURNING url`;
-  return row ? { removed: true, url: row.url } : { removed: false, url: null };
+  const where = { id: input.mediaId, perfumeId: input.perfumeId };
+  const row = await tx.db.perfumeMedia.findFirst({ where, select: { url: true } });
+  const { count } = await tx.db.perfumeMedia.deleteMany({ where });
+  return row && count > 0 ? { removed: true, url: row.url } : { removed: false, url: null };
 }
 
 /**
@@ -177,7 +186,9 @@ export async function removeMedia(
  */
 export async function mediaUrlsOfPerfumes(tx: Tx, perfumeIds: readonly number[]): Promise<string[]> {
   if (perfumeIds.length === 0) return [];
-  const rows = await tx.db.$queryRaw<{ url: string }[]>`
-    SELECT url FROM "PerfumeMedia" WHERE "perfumeId" = ANY(${[...perfumeIds]}::int[])`;
+  const rows = await tx.db.perfumeMedia.findMany({
+    where: { perfumeId: { in: [...perfumeIds] } },
+    select: { url: true },
+  });
   return rows.map((row) => row.url);
 }

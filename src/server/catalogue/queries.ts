@@ -25,9 +25,6 @@ import { db } from "@/server/db/client";
  * sélecteur sont cachés sous le tag `admin-catalogue` (invalidé par toute écriture de `Brand`, `Perfume`,
  * `PerfumePricing` ou `PerfumeMedia`) ; les fiches ne le sont pas : elles portent l'activité des ventes
  * (tag `gestion`) et servent à agir (04 §10.4).
- *
- * Les visuels story se lisent en SQL paramétré tant que le client Prisma généré ne connaît pas le modèle
- * `PerfumeMedia` (voir `media.ts`).
  */
 
 const searchKey = (...parts: string[]) => parts.map(cleNom).join(" ");
@@ -78,11 +75,10 @@ async function loadAdminCatalogue(): Promise<AdminCatalogue> {
         updatedAt: true,
       },
     }),
-    db.$queryRaw<{ perfumeId: number; count: number }[]>`
-      SELECT "perfumeId", count(*)::int AS count FROM "PerfumeMedia" GROUP BY "perfumeId"`,
+    db.perfumeMedia.groupBy({ by: ["perfumeId"], _count: { _all: true } }),
   ]);
 
-  const media = new Map(mediaCounts.map((row) => [row.perfumeId, row.count]));
+  const media = new Map(mediaCounts.map((row) => [row.perfumeId, row._count._all]));
   const byBrand = new Map(brands.map((brand) => [brand.id, brand]));
   const perfumeRows: AdminPerfumeRow[] = [];
   const counts = new Map<string, { total: number; published: number; republishable: number }>();
@@ -155,10 +151,11 @@ export const perfumeSheet = defineQuery(async (id: number): Promise<PerfumeSheet
   if (!perfume) return null;
 
   const [media, [activity], featuredCount] = await Promise.all([
-    db.$queryRaw<MediaDbRow[]>`
-      SELECT id, url, label, width, height, bytes, "sortOrder", "createdAt"
-      FROM "PerfumeMedia" WHERE "perfumeId" = ${id}
-      ORDER BY "sortOrder" ASC, "createdAt" ASC, id ASC`,
+    db.perfumeMedia.findMany({
+      where: { perfumeId: id },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+      select: { id: true, url: true, label: true, width: true, height: true, bytes: true, sortOrder: true, createdAt: true },
+    }),
     db.$queryRaw<{ units: number; documents: number; lastSoldAt: Date | null }[]>`
       SELECT COALESCE(sum(l.quantity), 0)::int AS units,
              count(DISTINCT l."documentId")::int AS documents,

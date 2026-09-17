@@ -18,6 +18,24 @@ export class TapCounter {
     else await target.click();
   }
 
+  /**
+   * Glisse une ligne (06 « Compter les taps » : un glissement compte 1, le tap sur l'action révélée 1 de plus).
+   * Geste réel au pointeur — appui, déplacement franc de 140 px, relâché — sur `SwipeableRow` (05 §4.2).
+   */
+  async swipe(target: Locator, direction: "right" | "left", label?: string): Promise<void> {
+    this.taps.push(label ?? `glisser vers la ${direction === "right" ? "droite" : "gauche"}`);
+    await target.scrollIntoViewIfNeeded();
+    const box = await target.boundingBox();
+    if (!box) throw new Error("swipe : cible sans boîte (masquée ?)");
+    const y = box.y + box.height / 2;
+    const startX = direction === "right" ? box.x + 24 : box.x + box.width - 24;
+    const endX = direction === "right" ? startX + 140 : startX - 140;
+    await this.page.mouse.move(startX, y);
+    await this.page.mouse.down();
+    await this.page.mouse.move(endX, y, { steps: 12 });
+    await this.page.mouse.up();
+  }
+
   get count(): number {
     return this.taps.length;
   }

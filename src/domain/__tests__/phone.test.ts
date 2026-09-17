@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { formatPhone, normalizePhone } from "../phone";
+import { formatPhone, formatPhoneNational, normalizePhone, phoneSearchDigits } from "../phone";
+
+describe("formatPhoneNational et phoneSearchDigits — recherche et légendes (06 E12, S06, S17)", () => {
+  it("écrit un numéro français comme en France", () => {
+    expect(formatPhoneNational("+33612345678")).toBe("06 12 34 56 78");
+    expect(formatPhoneNational("+213555123456")).toBe("+213555123456");
+  });
+
+  it("rend les deux formes cherchables d'un numéro français", () => {
+    expect(phoneSearchDigits("+33612345678")).toEqual(["33612345678", "0612345678"]);
+    expect(phoneSearchDigits("+213555123456")).toEqual(["213555123456"]);
+  });
+});
 
 describe("normalizePhone — formats français vers E.164", () => {
   it.each([

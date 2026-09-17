@@ -34,7 +34,7 @@ import {
 } from "@/domain/sale-line";
 import { customerFields } from "./customers";
 import { confirmFlag, entityId, optionalDate, optionalText } from "./fields";
-import { creationPaymentInput, type PaymentReceipt } from "./payments";
+import { creationPaymentInput, type PaymentKind, type PaymentReceipt } from "./payments";
 import { pocketChoice, positiveAmount, valueDate } from "./treasury";
 
 // ── Lignes ─────────────────────────────────────────────────────────────────────
@@ -506,3 +506,176 @@ export type LineDelivery = {
 export type DocumentDeletion = { id: string; deleted: boolean };
 
 export type BatchAssignment = { changed: number };
+
+// ── Lectures : fiche document (S01) ────────────────────────────────────────────
+
+/** Une ligne telle que la fiche l'affiche et l'édite en place (06 S01 zone 4). */
+export type DocumentLineDTO = {
+  id: string;
+  position: number;
+  /** null : hors catalogue, ou parfum supprimé depuis (seul `isOffCatalog` les distingue). */
+  perfumeId: number | null;
+  isOffCatalog: boolean;
+  perfumeName: string;
+  brandName: string | null;
+  imageUrl: string | null;
+  /** Contenance telle qu'en base : null ou 30 / 100 sur une ligne reprise hors règle (« Volume à choisir »). */
+  volumeMl: number | null;
+  quantity: number;
+  deliveredQuantity: number;
+  unitPriceEur: MoneyString;
+  isGift: boolean;
+  /** Dinars, chaîne décimale exacte, ou null. */
+  unitCostDzd: string | null;
+  /** Taux, chaîne décimale exacte, ou null (un taux reprise non positif est rendu null). */
+  exchangeRate: string | null;
+  /** null : « Coût à compléter ». */
+  unitCostEur: MoneyString | null;
+  note: string | null;
+};
+
+/** Un paiement de la fiche (06 S01 zone 5), avec sa contre-passation éventuelle. */
+export type DocumentPaymentDTO = {
+  id: string;
+  kind: PaymentKind;
+  /** Signé, comme son mouvement : négatif pour un remboursement ou l'annulation d'une entrée. */
+  amount: MoneyString;
+  /** ISO 8601 : date de valeur. */
+  occurredAt: string;
+  pocketId: string;
+  pocketName: string;
+  method: string | null;
+  note: string | null;
+  /** Ce paiement contre-passe celui-ci (annulation). */
+  reversesPaymentId: string | null;
+  /** Ce paiement a été contre-passé par celui-ci. */
+  reversedByPaymentId: string | null;
+};
+
+export type DocumentSheetDTO = {
+  id: string;
+  origin: DocumentOrigin;
+  status: DocumentStatus;
+  /** Fiche liée ; son nom vivant prime sur le nom saisi. */
+  customer: { id: string; fullName: string; phoneE164: string | null; snapchat: string | null } | null;
+  /** Nom saisi (client de passage) ou snapshot du nom de la fiche. */
+  customerName: string | null;
+  customerContact: string | null;
+  batch: { id: string; name: string; status: "OPEN" | "CLOSED" } | null;
+  /** ISO 8601. */
+  orderedAt: string;
+  expectedDeliveryAt: string | null;
+  expectedDeliveryHasTime: boolean;
+  confirmedAt: string | null;
+  deliveredAt: string | null;
+  cancelledAt: string | null;
+  notes: string | null;
+  lines: DocumentLineDTO[];
+  payments: DocumentPaymentDTO[];
+  /** Colonnes de la vue `DocumentBalance` (03 §5.1) et leurs dérivés d'écran (06 S01 zone 3). */
+  balance: {
+    total: MoneyString;
+    paid: MoneyString;
+    due: MoneyString;
+    /** max(0 ; payé − total) : « Trop-perçu ». */
+    overpaid: MoneyString;
+    hasUnknownCost: boolean;
+    /** « Marge avant dépenses » : total − coûts ; null si un coût manque (jamais une marge gonflée par un 0). */
+    marginBeforeExpenses: MoneyString | null;
+    /** « 42,0 » : part du total ; null si le total est nul ou la marge inconnue. */
+    marginPercent: string | null;
+  };
+};
+
+// ── Lectures : liste Commandes (E10) ───────────────────────────────────────────
+
+export const ORDER_VIEWS = ["a-livrer", "livrees", "annulees"] as const;
+export type OrderView = (typeof ORDER_VIEWS)[number];
+
+export const ORDER_FILTERS = ["retard", "aujourdhui", "demain", "en-attente", "confirmees"] as const;
+export type OrderFilter = (typeof ORDER_FILTERS)[number];
+
+/** Sections de la vue « À livrer », dans l'ordre d'affichage (06 E10 zone 5). */
+export const ORDER_URGENCIES = ["retard", "aujourdhui", "demain", "semaine", "plus-tard", "sans-date"] as const;
+export type OrderUrgency = (typeof ORDER_URGENCIES)[number];
+
+/** Pages de 50 (04 §15 règle 6) ; « Afficher plus » ajoute une page à la suite (`pages`). */
+export const ORDERS_PAGE_SIZE = 50;
+export const MAX_ORDER_PAGES = 40;
+
+export type OrdersParams = { vue: OrderView; filtre: OrderFilter | null; q: string; pages: number };
+
+/**
+ * `?vue=&filtre=&q=&pages=` → paramètres de la liste. Valeur inconnue : défaut (« À livrer », sans filtre, une
+ * page). Un filtre n'a de sens que dans « À livrer » : ailleurs il est ignoré.
+ */
+export function parseOrdersParams(params: {
+  vue?: string | null;
+  filtre?: string | null;
+  q?: string | null;
+  pages?: string | null;
+}): OrdersParams {
+  const vue = (ORDER_VIEWS as readonly string[]).includes(params.vue ?? "") ? (params.vue as OrderView) : "a-livrer";
+  const filtre =
+    vue === "a-livrer" && (ORDER_FILTERS as readonly string[]).includes(params.filtre ?? "") ? (params.filtre as OrderFilter) : null;
+  const q = (params.q ?? "").trim().slice(0, 120);
+  const requested = /^\d{1,3}$/.test(params.pages ?? "") ? Number(params.pages) : 1;
+  return { vue, filtre, q, pages: Math.min(Math.max(requested, 1), MAX_ORDER_PAGES) };
+}
+
+export type OrderRowDTO = {
+  id: string;
+  status: DocumentStatus;
+  customerId: string | null;
+  /** Nom vivant de la fiche, à défaut le nom saisi ; null : « Client de passage ». */
+  customerName: string | null;
+  /** ISO 8601. */
+  orderedAt: string;
+  expectedDeliveryAt: string | null;
+  expectedDeliveryHasTime: boolean;
+  deliveredAt: string | null;
+  cancelledAt: string | null;
+  /** Σ quantités (« 2 articles »). */
+  itemCount: number;
+  /** Σ quantités livrées (« Livré 1/3 »). */
+  deliveredCount: number;
+  total: MoneyString;
+  paid: MoneyString;
+  due: MoneyString;
+};
+
+export type OrderSectionDTO = {
+  /** Urgence (« retard »…), « a-encaisser », ou mois de Paris « 2026-09 ». */
+  key: string;
+  kind: "urgency" | "receivable" | "month";
+  /** Nombre de documents de la section dans la vue filtrée (pas seulement ceux chargés). */
+  count: number;
+  rows: OrderRowDTO[];
+};
+
+export type OrdersListDTO = OrdersParams & {
+  /** Compteurs de toutes les commandes, sans filtre ni recherche (segments, états vides). */
+  counts: { aLivrer: number; livrees: number; annulees: number; all: number };
+  /** Chips « En attente (2) · Confirmées (6) » : vue « À livrer », recherche appliquée, sans filtre. */
+  chips: { enAttente: number; confirmees: number };
+  sections: OrderSectionDTO[];
+  /** Nombre de documents de la vue filtrée. */
+  total: number;
+  /** Il reste des documents au-delà des pages chargées. */
+  hasMore: boolean;
+};
+
+// ── Lectures : « Vendus récemment » (N7) ───────────────────────────────────────
+
+export type RecentlySoldDTO = {
+  perfumeId: number;
+  name: string;
+  brandName: string;
+  image: string;
+  /** Dernière contenance vendue (null : ligne reprise hors règle). */
+  volumeMl: VolumeMl | null;
+  /** Dernier prix pratiqué. */
+  unitPriceEur: MoneyString;
+  /** ISO 8601 : date du dernier document. */
+  soldAt: string;
+};

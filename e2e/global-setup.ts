@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, rmSync } from "node:fs";
 import path from "node:path";
 import { chromium, type FullConfig } from "@playwright/test";
 import { assertNotProduction, HostRefusedError } from "../scripts/lib/garde-hote";
@@ -34,6 +34,7 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
   // Racine du dépôt : le dossier de playwright.config.ts.
   const root = path.dirname(config.configFile ?? path.join(process.cwd(), "playwright.config.ts"));
   if (!E2E_REMOTE) {
+    purgeDataCache(root);
     await recreateDatabase();
     createAccount(root, ADMIN);
     for (const project of LOCK_PROJECTS) {
@@ -42,6 +43,18 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
     }
   }
   await loginThroughTheScreen(root, config);
+}
+
+/**
+ * Le cache de données de Next (`unstable_cache` : instantané admin du catalogue, sélecteur…) survit au
+ * redémarrage du serveur, sur disque. La base, elle, est recréée à chaque exécution : sans purge, l'app
+ * servirait l'état de l'exécution précédente (un parfum masqué par un test d'hier), et une écriture sans
+ * effet n'invaliderait rien. Purgé avant toute lecture de l'app (le serveur n'a servi que `/admin/login`).
+ */
+function purgeDataCache(root: string): void {
+  for (const dir of [path.join(root, ".next", "dev", "cache", "fetch-cache"), path.join(root, ".next", "cache", "fetch-cache")]) {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 async function recreateDatabase(): Promise<void> {
@@ -131,6 +144,9 @@ async function warmUp(page: import("@playwright/test").Page): Promise<void> {
     await page.goto(url, { waitUntil: "load", timeout: 180_000 });
   }
   await page.request.get("/api/pwa/admin", { timeout: 180_000 });
+  // Routes de lecture appelées à la frappe (07 J8) : compilées d'avance, sinon la première recherche attend la compilation.
+  await page.request.get("/api/admin/search?scope=all&q=pr", { timeout: 180_000 });
+  await page.request.get("/api/admin/picker", { timeout: 180_000 });
 }
 
 async function expectCookie(context: import("@playwright/test").BrowserContext, name: string): Promise<void> {
