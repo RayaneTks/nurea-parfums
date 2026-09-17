@@ -19,8 +19,14 @@ type TabBarProps = {
 };
 
 /**
- * Barre d'onglets (05 §3.4) : 88 px safe area comprise, flou, cinq onglets, Vendre accentué. Actif :
- * couleur accent et libellé gras. Aucun menu « Plus ».
+ * Barre d'onglets (05 §3.4) : 88 px safe area comprise, flou, cinq onglets. Aucun menu « Plus ».
+ *
+ * **Seul l'onglet actif a un libellé bordeaux et gras** (décision du 17/09/2026) : quand « Vendre »
+ * peignait aussi son libellé en bordeaux, deux onglets semblaient actifs et l'onglet courant se lisait
+ * moins vite, sur l'écran comme sur une capture. Vendre garde son accent par sa seule pastille d'icône
+ * (fond `accent-bg`, icône bordeaux ; pleine quand il est actif) ; son libellé suit les inactifs.
+ * Contrastes sur la barre : libellé inactif `text-muted` 6,8:1, libellé actif `accent` 10,9:1, icône
+ * bordeaux sur sa pastille 9,3:1, icône blanche sur la pastille pleine 11:1.
  *
  * Chaque onglet reste un vrai lien (préchargement, ouverture dans un nouvel onglet au clic modifié) ;
  * un tap simple est confié au shell, qui applique la mémoire d'onglet.
@@ -60,7 +66,7 @@ export function TabBar({ badges = {}, onTabPress }: TabBarProps) {
             className={cn(
               "admin-tab-bar__item tap-scale relative flex min-h-[var(--admin-touch-min)] min-w-0 flex-1 flex-col items-center justify-start gap-1 rounded-[var(--admin-radius-md)] pt-1",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--admin-accent-ring)]",
-              active || tab.emphasis ? "text-[var(--admin-accent)]" : "text-[var(--admin-text-muted)]",
+              active ? "text-[var(--admin-accent)]" : "text-[var(--admin-text-muted)]",
             )}
           >
             <span className="relative inline-flex h-7 items-center justify-center" aria-hidden>

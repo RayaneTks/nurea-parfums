@@ -5,7 +5,7 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState, type RefObject
 import type { ActionError, ActionResult } from "@/contracts/result";
 import { useOptionalFeedback } from "../FeedbackProvider";
 import { routes } from "../routes";
-import { clientActionError, reservesText } from "./action-errors";
+import { clientActionError, failsInsideConfirmation, reservesText } from "./action-errors";
 
 type Action<I, T> = (input: I) => Promise<ActionResult<T>>;
 
@@ -41,7 +41,9 @@ function pulseOnce(element: HTMLElement | null | undefined) {
  * - `pending` : bouton `isLoading`, second tap sans effet (le même appel est rendu) ;
  * - succès : toast, `notice` éventuelle, pulse, brouillon effacé ;
  * - `NEEDS_CONFIRMATION` : `ConfirmDialog` avec les réserves du domaine, puis rappel avec
- *   `confirm: true` et la même entrée (même identifiant : aucun doublon possible) ;
+ *   `confirm: true` et la même entrée (même identifiant : aucun doublon possible) ; si ce rappel
+ *   échoue, le message s'affiche DANS la boîte, restée ouverte (05 §3.2) — réessayer relance la même
+ *   entrée, annuler rend l'échec sans toast (il a été lu) ;
  * - `VALIDATION` : rendu à l'appelant (`error.fields` sous les champs), aucun toast ;
  * - `SESSION_EXPIRED` : retour à la connexion avec l'écran courant en `retour` (le brouillon est
  *   déjà sur l'appareil) ;
@@ -87,7 +89,8 @@ export function useAction<I, T>(action: Action<I, T>, options: UseActionOptions<
 
         if (!result.ok && result.error.code === "NEEDS_CONFIRMATION" && feedback) {
           const { confirm } = result.error;
-          let confirmed: ActionResult<T> | null = null;
+          // Dernier résultat de l'écriture confirmée (objet : il est écrit depuis le rappel).
+          const attempt: { result: ActionResult<T> | null } = { result: null };
           // L'écriture confirmée part depuis le dialogue : il reste ouvert, bouton en attente, jusqu'à sa fin.
           const accepted = await feedback.confirm(
             {
@@ -97,10 +100,19 @@ export function useAction<I, T>(action: Action<I, T>, options: UseActionOptions<
               tone: "primary",
             },
             async () => {
-              confirmed = await call({ ...(input as object), confirm: true } as I);
+              const confirmed = await call({ ...(input as object), confirm: true } as I);
+              attempt.result = confirmed;
+              // Rejeter garde la boîte ouverte et y affiche le message : jamais un toast sous la modale.
+              if (!confirmed.ok && failsInsideConfirmation(confirmed.error)) throw new Error(confirmed.error.message);
             },
           );
-          if (!accepted || confirmed === null) return result;
+          const confirmed = attempt.result;
+          if (confirmed === null) return result;
+          if (!accepted) {
+            // Tentée, refusée, puis boîte annulée : l'erreur a été lue dans la boîte, pas de toast.
+            if (!confirmed.ok) setError(confirmed.error);
+            return confirmed;
+          }
           result = confirmed;
         }
 

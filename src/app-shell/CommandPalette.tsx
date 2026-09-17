@@ -21,6 +21,7 @@ import { Button } from "@/ui/primitives/Button";
 import { EmptyState } from "@/ui/primitives/EmptyState";
 import { ListRow } from "@/ui/primitives/ListRow";
 import { SearchField } from "@/ui/primitives/SearchField";
+import { isToastTarget } from "@/ui/primitives/Toast";
 import { isNavigable, routes } from "./routes";
 import { useShellNavigation } from "./ShellNavigation";
 
@@ -96,14 +97,17 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       }}
     >
       <Dialog.Portal>
-        {/* Sans `.admin-theme` : la classe peint un fond qui recouvrirait le voile (05 §2.1, écart du 17/09/2026). */}
-        <Dialog.Overlay className="fixed inset-0 z-[var(--admin-z-command-palette)] bg-[var(--admin-overlay)]" />
+        <Dialog.Overlay data-admin-overlay className="fixed inset-0 z-[var(--admin-z-command-palette)] bg-[var(--admin-overlay)]" />
         <Dialog.Content
           aria-describedby={undefined}
           data-command-palette
           onOpenAutoFocus={(event) => {
             event.preventDefault();
             inputRef.current?.focus();
+          }}
+          // Le toast passe au-dessus (05 §2.7) : le toucher ne ferme pas la palette.
+          onPointerDownOutside={(event) => {
+            if (isToastTarget(event.target)) event.preventDefault();
           }}
           className={cn(
             "admin-theme admin-safe-top fixed inset-x-0 bottom-0 top-0 z-[var(--admin-z-command-palette)] mx-auto flex max-w-[var(--admin-app-max-width)] flex-col outline-none",

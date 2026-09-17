@@ -170,7 +170,10 @@ html.admin-route-root,
     0.75rem + max(0px, var(--admin-safe-area-bottom) - var(--admin-keyboard-inset, 0px))
   );
 
-  /* Z-index — 05 §2.7 */
+  /* Z-index — 05 §2.7. Une bande par couche, jamais partagée : sheet < sheet
+     imbriquée < confirmation < palette < toast. Sheet imbriquée et modale
+     partageaient 80 / 81, et l'ordre d'insertion des portails décidait
+     laquelle passait devant. */
   --admin-z-base: 0;
   --admin-z-sticky-action: 20;
   --admin-z-page-header: 30;
@@ -179,22 +182,40 @@ html.admin-route-root,
   --admin-z-tab-bar-menu: 52;
   --admin-z-sheet-backdrop: 70;
   --admin-z-sheet: 71;
-  --admin-z-modal-backdrop: 80;
-  --admin-z-modal: 81;
-  --admin-z-command-palette: 90;
-  --admin-z-toast: 95;
+  --admin-z-sheet-nested-backdrop: 80;
+  --admin-z-sheet-nested: 81;
+  --admin-z-modal-backdrop: 90;
+  --admin-z-modal: 91;
+  --admin-z-command-palette: 92;
+  --admin-z-toast: 100;
 }
 
 /* ─── Thème ─────────────────────────────────────────────────────────────── */
 
+/*
+ * `.admin-theme` distribue des JETONS, il ne peint pas de fond (05 §2).
+ *
+ * Cette règle est écrite après `@tailwind utilities` : à spécificité égale,
+ * ses déclarations passent après toutes les utilitaires. Un `background` ici
+ * écrasait la `bg-*` de chaque nœud portant aussi la classe — précisément les
+ * nœuds de portail : le voile translucide d'une sheet ou d'une confirmation
+ * devenait un aplat gris opaque, et la carte du dialogue prenait ce même gris
+ * (texte et boutons sur un mur uni ; correction de production `3291428`).
+ * Vérifié par tokens-sync (aucun fond dans cette règle).
+ */
 .admin-theme {
   font-family: var(--admin-font-sans);
   font-feature-settings: var(--admin-font-features);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--admin-text);
-  background: var(--admin-bg);
   color-scheme: light;
+}
+
+/* Peint le fond de l'application. Conteneurs pleine page seulement (coque,
+   connexion) — jamais un nœud de portail, qui porte sa propre surface. */
+.admin-paint {
+  background: var(--admin-bg);
 }
 
 /* ─── Route admin (html/body) ───────────────────────────────────────────── */
@@ -244,7 +265,7 @@ body.admin-route {
   overflow: hidden;
   overflow-x: hidden;
   padding-top: env(safe-area-inset-top, 0px);
-  background: var(--admin-bg);
+  /* Fond : `.admin-paint`, posée à côté (le fond de l'app a un seul peintre). */
 }
 
 /* Une seule zone de scroll : #admin-scroll-root. */

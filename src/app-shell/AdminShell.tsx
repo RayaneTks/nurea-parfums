@@ -125,7 +125,7 @@ function ShellFrame({ preprod, children }: { preprod: boolean; children: ReactNo
   );
 
   return (
-    <div className="admin-theme admin-app-container">
+    <div className="admin-theme admin-paint admin-app-container">
       <ViewportService />
       <Suspense fallback={null}>
         <LocationTracker onLocation={onLocation} />

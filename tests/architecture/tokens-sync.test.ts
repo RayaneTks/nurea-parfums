@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { colors, cssVariables, runtimeVariables, typography } from "@/design/tokens";
+import { colors, cssVariables, runtimeVariables, typography, zIndex } from "@/design/tokens";
 
 /**
  * `src/design/tokens.ts` est la source unique ; `globals.admin.css` en est
@@ -82,6 +82,89 @@ describe("tokens.ts ↔ globals.admin.css (05 §2)", () => {
   it("le cuivre a disparu et text-subtle porte la valeur contrastée", () => {
     expect(Object.keys(colors).some((k) => k.toLowerCase().includes("cuivre"))).toBe(false);
     expect(colors.textSubtle).toBe("#726B75");
+  });
+});
+
+/** Déclarations (hors variables) des règles dont la liste de sélecteurs contient exactement `selector`. */
+function ruleDeclarations(selector: string): string[] {
+  const out: string[] = [];
+  for (const match of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const selectors = (match[1] as string).split(",").map((s) => s.trim());
+    if (!selectors.includes(selector)) continue;
+    for (const declaration of (match[2] as string).split(";")) {
+      const prop = declaration.split(":")[0]?.trim() ?? "";
+      if (prop && !prop.startsWith("--")) out.push(prop);
+    }
+  }
+  return out;
+}
+
+describe("le fond de l'app a un seul peintre (05 §2, correction 3291428)", () => {
+  it(".admin-theme distribue des jetons et ne peint aucun fond", () => {
+    // Écrite après les utilitaires, un fond ici écrase la `bg-*` des voiles et cartes de portail.
+    expect(ruleDeclarations(".admin-theme").filter((prop) => prop.startsWith("background"))).toEqual([]);
+  });
+
+  it(".admin-paint peint le fond, et seul un conteneur pleine page la porte", () => {
+    expect(ruleDeclarations(".admin-paint")).toContain("background");
+    // src/ui ne rend que des briques et des portails : jamais le fond de l'app.
+    const painters = uiFiles.filter((file) => /\badmin-paint\b/.test(stripJsComments(readFileSync(file, "utf8")))).map(rel);
+    expect(painters).toEqual([]);
+    const shell = readFileSync(path.join(ROOT, "src/app-shell/AdminShell.tsx"), "utf8");
+    expect(shell).toMatch(/className="[^"]*\badmin-paint\b[^"]*\badmin-app-container\b/);
+  });
+});
+
+describe("bandes d'empilement (05 §2.7)", () => {
+  /** De la page au filet d'information : chaque couche strictement au-dessus de la précédente. */
+  const LAYERS = [
+    "base",
+    "stickyAction",
+    "pageHeader",
+    "appHeader",
+    "tabBar",
+    "tabBarMenu",
+    "sheetBackdrop",
+    "sheet",
+    "sheetNestedBackdrop",
+    "sheetNested",
+    "modalBackdrop",
+    "modal",
+    "commandPalette",
+    "toast",
+  ] as const satisfies readonly (keyof typeof zIndex)[];
+
+  it("le registre est complet, ordonné et sans bande partagée", () => {
+    expect(Object.keys(zIndex).sort()).toEqual([...LAYERS].sort());
+    const values = LAYERS.map((layer) => zIndex[layer]);
+    const inversions = LAYERS.slice(1).filter((layer, i) => zIndex[layer] <= (values[i] as number));
+    expect(inversions, "couches qui ne passent pas au-dessus de la précédente").toEqual([]);
+  });
+
+  it("les valeurs sont celles décidées : sheet 70/71, imbriquée 80/81, modale 90/91, palette 92, toast 100", () => {
+    expect([zIndex.sheetBackdrop, zIndex.sheet]).toEqual([70, 71]);
+    expect([zIndex.sheetNestedBackdrop, zIndex.sheetNested]).toEqual([80, 81]);
+    expect([zIndex.modalBackdrop, zIndex.modal]).toEqual([90, 91]);
+    expect(zIndex.commandPalette).toBe(92);
+    expect(zIndex.toast).toBe(100);
+  });
+
+  it("chaque couche lit sa propre bande : la sheet imbriquée n'emprunte plus celle des modales", () => {
+    const source = (file: string) => stripJsComments(readFileSync(path.join(ROOT, file), "utf8"));
+    const sheet = source("src/ui/primitives/Sheet.tsx");
+    expect(sheet).toContain("--admin-z-sheet-nested-backdrop");
+    expect(sheet).toContain("--admin-z-sheet-nested)");
+    expect(sheet).not.toMatch(/--admin-z-modal/);
+    const dialog = source("src/ui/patterns/ConfirmDialog.tsx");
+    expect(dialog).toContain("--admin-z-modal-backdrop");
+    expect(dialog).toContain("--admin-z-modal)");
+    expect(source("src/ui/primitives/Toast.tsx")).toContain("--admin-z-toast");
+  });
+
+  it("le toast est portalisé vers <body> et sort de la neutralisation des couches modales (05 §3.1)", () => {
+    const toast = stripJsComments(readFileSync(path.join(ROOT, "src/ui/primitives/Toast.tsx"), "utf8"));
+    expect(toast).toMatch(/createPortal\([\s\S]*document\.body\s*,?\s*\)/);
+    expect(toast).toContain(`pointerEvents: "auto"`);
   });
 });
 

@@ -6,7 +6,8 @@ import { Toast, type ToastType } from "@/ui/primitives/Toast";
 
 /**
  * Retours du shell (05 §3.1 `Toast`, §3.2 `ConfirmDialog` ; 06 §3.8) :
- * - UN toast à la fois, rendu ici seulement (bande `toast`, au-dessus de la tab bar et du clavier) ; un
+ * - UN toast à la fois, rendu ici seulement — portalisé vers `<body>` par `Toast`, bande `toast`,
+ *   au-dessus de la tab bar, du clavier, des sheets et des confirmations, et toujours tapable ; un
  *   nouveau toast remplace le précédent, qui en est prévenu (`onDismiss("replaced")`) — c'est ainsi
  *   qu'un nouveau geste valide une suppression différée en cours (`UndoProvider`) ;
  * - une confirmation à la fois, demandée par `useConfirm()` et résolue en `true`/`false`
@@ -39,7 +40,9 @@ type FeedbackValue = {
   dismissToast: (id?: number) => void;
   /**
    * Demande une confirmation. `perform` (facultatif) est l'écriture confirmée : le dialogue reste
-   * ouvert, bouton en attente, jusqu'à sa fin (05 §3.2 : un second tap est sans effet).
+   * ouvert, bouton en attente, jusqu'à sa fin (05 §3.2 : un second tap est sans effet). Si `perform`
+   * rejette, son message s'affiche DANS le dialogue, qui reste ouvert : l'utilisateur réessaie ou
+   * annule (la promesse rend alors `false`). Jamais de toast pour cet échec.
    */
   confirm: (request: ConfirmRequest, perform?: () => Promise<void>) => Promise<boolean>;
 };
@@ -135,13 +138,11 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
           cancelLabel={dialog.cancelLabel}
           tone={dialog.tone}
           onConfirm={async () => {
-            const perform = performRef.current;
+            // Un échec de `perform` REJETTE : le dialogue l'affiche et reste ouvert, boutons réactivés
+            // (05 §3.2) ; « Confirmer » relance la même écriture, « Annuler » résout `false`.
+            await performRef.current?.();
             performRef.current = null;
-            try {
-              await perform?.();
-            } finally {
-              closeDialog(true);
-            }
+            closeDialog(true);
           }}
         />
       ) : null}
