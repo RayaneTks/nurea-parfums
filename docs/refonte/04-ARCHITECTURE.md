@@ -9,6 +9,8 @@
 
 **Directive prioritaire du client** : la prise en main et l'aspect pratique priment. Toute décision d'architecture se juge à ce qu'elle rend possible à l'écran : un geste terrain qui aboutit du premier coup, un chiffre juste immédiatement, une saisie jamais perdue. La sécurité est explicitement secondaire (02 §7) : un garde simple, systématique et invisible.
 
+**Écart intégré le 17/09/2026** (01 §3.11). La production (`9e0b5d8`) porte des capacités absentes de l'ancien `main` sur lequel ce document a été écrit ; elles entrent dans le module catalogue (§2.1, §3.4, §3.5, §12 « Visuels story ») et dans les tags (§10.1) : **visuels story `PerfumeMedia`** (chemin de stockage décidé par le serveur, objet retiré du bucket après le commit), **contenances 10 / 50 / 80 ml** (§3.4), **logo jamais recadré** (§12, déjà la règle ici). La fenêtre de 48 h des commandes livrées et la suppression de la purge sur GET (`3291428`) confirment §7.2.
+
 **Conventions de lecture.** Next.js 16 (App Router), React, TypeScript, Prisma 6.19, PostgreSQL ≥ 15 (Supabase), déploiement Vercel région `cdg1`. « RSC » = composant serveur React ; « action » = Server Action Next (`"use server"`) ; « writer » = fichier serveur qui détient le droit d'écrire une table. Les chiffres s'écrivent **Encaissé / À encaisser / Marge nette / Trésorerie**, sans synonyme.
 
 ---
@@ -28,7 +30,7 @@
 | 9 | Erreurs | **`ActionResult` unique** (huit codes), messages français « constat + geste », traduction centralisée des erreurs Prisma/PostgreSQL ; erreurs de lecture confinées au bloc. | 9 |
 | 10 | Cache | Deux familles de tags : **`gestion`** et le contrat vitrine **`admin-catalogue` / `public-catalogue`** ; invalidation **automatique** déduite des modèles écrits ; clé de cache préfixée par le déploiement. | 10 |
 | 11 | Stock | `Perfume.stock` (`NULL` = non suivi) ; deux fonctions d'écriture dans `src/server/catalogue/stock.ts` ; seul le module documents décide des deltas (quantités livrées). | 11 |
-| 12 | Vitrine | Point de lecture et point d'invalidation inchangés ; règles de publication dans un module pur partagé. | 12 |
+| 12 | Vitrine | Point de lecture et point d'invalidation inchangés ; règles de publication dans un module pur partagé. Visuels story (`PerfumeMedia`) côté gestion seulement : chemin de stockage décidé par le serveur, jamais cru du client ; objet supprimé du bucket après le commit. | 12 |
 | 13 | Structure | `src/domain` · `src/contracts` · `src/server` · `src/features` · `src/ui` · `src/app-shell` ; routes en français sous `app/admin/(gestion)/`. | 2 |
 | 14 | PWA | Manifeste, icônes et 12 splash conservés ; service worker versionné par déploiement ; page hors ligne autonome ; **pas de données hors ligne**, mais brouillons locaux et réessai idempotent. | 14 |
 | 15 | Performance | Règles mesurées de l'audit (agrégat en une passe, `react.cache`, Suspense par bloc, listes fenêtrées) ; chiffres de l'Accueil en **un** aller-retour. | 15 |
@@ -169,7 +171,8 @@ nurea-parfums/
 │   ├── create-admin.ts               Crée ou réinitialise le compte unique (sans rôle) — CLI
 │   ├── build-admin-pwa-assets.mjs    Icônes + 12 splash (sharp) ; lit src/lib/pwa/splash-targets.json
 │   ├── check-invariants.ts           Tâche explicite, lecture seule : invariants de 03 §5.7
-│   ├── storage-orphans.ts            Tâche explicite : images du bucket non référencées (--apply pour supprimer)
+│   ├── storage-orphans.ts            Tâche explicite : objets du bucket non référencés par Brand, Perfume ou
+│   │                                 PerfumeMedia (--apply pour supprimer)
 │   └── migration/
 │       └── reprise.ts                Reprise one-shot de 03 §7 (--dry-run par défaut, ROLLBACK final)
 ├── public/
@@ -247,12 +250,14 @@ nurea-parfums/
     │   ├── publication.ts            Règles de visibilité et de mise en avant (§12)
     │   ├── periods.ts                Bornes Europe/Paris pour l'affichage et les clés de cache
     │   ├── phone.ts                  Normalisation des formats français vers E.164
+    │   ├── sale-line.ts              Contenances 10/50/80, règles d'une ligne jumelles des CHECK (garde des lignes reprises)
     │   ├── ids.ts                    newId() (crypto.randomUUID) + parseurs d'identifiants
     │   ├── errors.ts                 DomainError, NeedsConfirmation
     │   └── __tests__/
     ├── contracts/                    Frontière client ↔ serveur, partagée
     │   ├── result.ts                 ActionResult, ActionError, codes (§9)
     │   ├── zod-fr.ts                 Carte d'erreurs zod en français
+    │   ├── fields.ts                 Champs communs : identifiant, texte libre, date, drapeau de confirmation
     │   ├── documents.ts              Schémas d'entrée zod + types DTO de sortie
     │   ├── payments.ts · batches.ts · treasury.ts · catalogue.ts · customers.ts · settings.ts · auth.ts
     │   └── search.ts · picker.ts · chiffres.ts
@@ -303,10 +308,15 @@ nurea-parfums/
     │   ├── catalogue/                Module « catalogue »
     │   │   ├── actions.ts
     │   │   ├── writer.ts             Brand, Perfume (hors stock), PerfumePricing
+    │   │   ├── media.ts              Writer de PerfumeMedia (visuels story) : ajout (rang calculé, plafond 24),
+    │   │   │                         réordonnancement, retrait qui rend le chemin à effacer (§12)
     │   │   ├── stock.ts              setStock, applyDeliveredDeltas — seules écritures de Perfume.stock (§11)
     │   │   ├── resoudMarque.ts       Dédoublonnage des marques — repris tel quel (02 §4.5)
-    │   │   ├── storage.ts            URL signée Supabase, suppression d'images après commit
-    │   │   └── queries.ts            Instantané admin (tag admin-catalogue), fiche, alertes de stock, version du sélecteur
+    │   │   ├── storage.ts            URL signée Supabase (chemin DÉCIDÉ par le serveur selon l'usage :
+    │   │   │                         parfum, logo, story), URL publique recalculée depuis le chemin,
+    │   │   │                         suppression d'objets APRÈS le commit (best-effort journalisé)
+    │   │   └── queries.ts            Instantané admin (tag admin-catalogue, nombre de visuels story par parfum
+    │   │                             compris), fiche (galerie story comprise), alertes de stock, version du sélecteur
     │   ├── customers/                actions.ts · writer.ts · queries.ts
     │   ├── settings/                 actions.ts · writer.ts (updateSettings, rememberPocket) · queries.ts
     │   ├── search/queries.ts         Recherche à la frappe sur instantanés cachés (§15)
@@ -322,10 +332,18 @@ nurea-parfums/
     │   │    batches, customers, catalogue, stats, settings)
     ├── ui/                           05 §3 : primitives/, patterns/ — rien d'autre
     ├── app-shell/                    05 §3.4 + :
-    │   ├── navigation.ts             Onglets et parents (conservé, testé)
-    │   ├── routes.ts                 Constructeurs d'URL — seul endroit où une URL admin s'écrit
+    │   ├── navigation.ts             Onglets, parents, mémoire d'onglet, onTabPress (conservé, testé)
+    │   ├── routes.ts                 Constructeurs d'URL — seul endroit où une URL admin s'écrit ;
+    │   │                             inventaire de 06 §1.2 avec l'état de chaque écran (à venir, provisoire, livré)
     │   ├── Block.tsx                 Suspense + frontière d'erreur par bloc (§13.2)
     │   ├── hooks/                    useAction, useDraft, useUrlState, useCoalescedAction, useReadRoute
+    │   │                             (+ noyaux purs testés : draft-store, coalesce, url-patch, action-errors)
+    │   ├── AdminShell · AppHeader · TabBar · CommandPalette · PullToRefresh (J4)
+    │   ├── FeedbackProvider.tsx      Toast unique (z 100, portalisé : 05 §2.7, §3.1) et confirmations `useConfirm` (J4)
+    │   ├── UndoProvider · SheetRegistry · ShellNavigation (J4)
+    │   ├── ViewportService.tsx       LE service viewport ; viewport.ts : son calcul pur (J4)
+    │   ├── PreprodBanner.tsx, preprod.ts   Bandeau et suffixe « (essai) » (A-11, J4)
+    │   ├── session-hint.ts           Témoin « une session a existé ici » : message d'expiration (06 E18, J4)
     │   └── pwa/service-worker.ts     Source du service worker (§14.3)
     ├── design/                       tokens.ts (source), globals.admin.css (dérivée) — 05 §2
     ├── lib/                          Vitrine et partagé historique : db/prisma.ts (client de base), pwa/,
@@ -342,6 +360,7 @@ nurea-parfums/
   - `src/lib/nommage.ts` (`cleNom`, `normalise*`) et `src/server/catalogue/resoudMarque.ts`, repris tels quels (02 §4.5), noms conservés pour que leurs tests et commentaires restent valables.
 - Action : suffixe `Action` (`recordPaymentAction`). Writer : `<domaine>Writer` à l'import (`import * as paymentsWriter from "@/server/payments/writer"`).
 - Une URL admin ne s'écrit **que** dans `src/app-shell/routes.ts` (`routes.document({ id, origin })`, `routes.client(id)`…). Un test vérifie que chaque constructeur pointe sur un `page.tsx` existant.
+  *Précisé à J4* (`tests/architecture/routes-builders.test.ts`) : chaque constructeur porte l'état de son écran — un écran **à venir** existe déjà comme constructeur mais n'a pas encore de page (vérifié, son jalon listé en `todo`), un écran **provisoire** ou **livré** a la sienne ; aucune page de `app/admin` n'échappe à l'inventaire. La règle « aucune URL littérale » vaut pour les couches d'interface (`src/app-shell` hors `routes.ts` et `navigation.ts`, `src/features`, `src/ui`, `app/admin`) : le socle serveur (`defineQuery`, `logoutAction`), `src/contracts/auth.ts`, `proxy.ts` et `src/lib/pwa/manifests.ts` écrivent `/admin` et `/admin/login` en dur, faute de pouvoir importer le shell (§1.3).
 
 ### 2.3 Carte des routes et redirections
 
@@ -380,7 +399,9 @@ Les identifiants de documents sont conservés par la migration (03 §7.4) : une 
 | `app/admin/offline/` | `public/admin-offline.html` (§14.4) |
 | `public/admin-sw.js` | `app/admin-sw.js/route.ts` + `src/app-shell/pwa/service-worker.ts` (§14.3) |
 | `src/lib/admin/*` (`audit.ts`, `cache-tags.ts`, `http.ts`, `loginRateLimit.ts`, `parseCookie.ts`, `requireAdmin.ts`, `session.ts`, `revalidateAdminData.ts`, `revalidateAdminCatalogue.ts`, `resoudMarque.ts`, `image-utils.ts`, `catalogue-types.ts`, `index.ts`) | Répartis : `src/server/auth`, `src/server/cache`, `src/server/catalogue`, `src/features/catalogue/components` ; audit, rate-limit mémoire et cookies parsés à la main supprimés |
-| `src/lib/gestion/*` (dont `orderPurge.ts`, `orderJson.ts`, `calculations.ts`, `orderLineValidation.ts`) | Supprimé |
+| `src/lib/gestion/*` (dont `orderPurge.ts`, `orderJson.ts`, `calculations.ts`, `orderLineValidation.ts`) | Supprimé (`orderPurge.ts` l'est déjà en production depuis `3291428`) |
+| Visuels story de la production (10/09/2026) : `app/api/admin/perfumes/[id]/media/**`, `src/server/catalogue/media.ts` (client Prisma global), `src/lib/supabase/adminStorage.ts` (`safeImagePath` à portée, `removeObjects`), `prepareStoryImage` de `src/lib/admin/image-utils.ts`, `src/features/catalogue/components/PerfumeMediaPanel.tsx`, `src/ui/patterns/MediaGallery.tsx` | Règles reprises (§12) : actions et writer `media.ts` du module catalogue, `storage.ts`, `image-convert.ts`, galerie de E16 ; `MediaGallery` porté dans `src/ui/patterns/` au jalon J11 (05 §3.2) |
+| `src/domain/volumes.ts` (production, 10/09/2026 : `VOLUMES_ML`, `LEGACY_VOLUME_ML`, `normalizeVolumeMl`) | `VOLUMES_ML` et `DEFAULT_VOLUME_ML` dans `src/domain/sale-line.ts` ; la traduction 30 → 10 / 100 → 80 n'est pas reconduite (données déjà traduites en production ; une valeur héritée restante est listée et demandée, 03 §7.7) |
 | `src/lib/numeric.ts`, `src/domain/money.ts` actuel, `src/domain/balance.ts` | Remplacés par `src/domain/money.ts` et `src/domain/document-balance.ts` |
 | `src/schemas/*` | `src/contracts/*` |
 | `src/server/sales/*`, `src/server/orders/*`, `src/server/collect/*`, `src/server/kpi/*`, `src/server/pricing/*` | `src/server/documents`, `payments`, `chiffres`, `catalogue` |
@@ -499,13 +520,29 @@ Chaque action correspond à un geste de 02 et, pour les écritures multi-tables,
 | catalogue | `createPerfumeAction`, `updatePerfumeAction`, `deletePerfumeAction` | — | Fiche parfum (le stock n'est **pas** dans le schéma de fiche) |
 | catalogue | `setPerfumeStatusAction`, `setPerfumeFeaturedAction` | — | Visibilité (1 tap), mise en avant (≤ 2, `PUBLISHED`) |
 | catalogue | `setPerfumeStockAction` | — | Réglage absolu du stock (geste dédié, `null` = non suivi) |
-| catalogue | `savePerfumePricingAction` | — | Grille 30/50/100 ml en un seul enregistrement |
+| catalogue | `savePerfumePricingAction` | — | Grille 10 / 50 / 80 ml en un seul enregistrement (contenances réelles, `VOLUMES_ML` de `src/domain/sale-line.ts` ; défaut de saisie 80 ml) |
 | catalogue | `createBrandAction`, `updateBrandAction`, `deleteBrandAction` | — | Marque (dédoublonnage : l'existante est rendue avec une `notice`) |
 | catalogue | `setBrandVisibilityAction` | T14 | Masquer / gamme complète, cascade `DRAFT` |
-| catalogue | `createImageUploadUrlAction` | — | URL signée d'upload direct navigateur → Supabase |
+| catalogue | `createImageUploadUrlAction` | — | URL signée d'upload direct navigateur → Supabase ; entrée `{ usage: "parfum" \| "logo" \| "story", perfumeId?, extension }` — le serveur fabrique le chemin (le nom de fichier du client est jeté, seule l'extension survit : jpg, png, webp, gif, heic, heif, avif) et le rend avec l'URL signée |
+| catalogue | `addPerfumeMediaAction` | — | Ranger un visuel story déposé sur la fiche parfum : chemin **vérifié** (exactement `stories/<perfumeId>/…`, sans `..`), URL **recalculée** depuis le chemin, dimensions et poids entiers positifs, rang calculé (jamais reçu), 24 visuels au plus (`CONFLICT` « Maximum 24 visuels par parfum. Supprime-en un avant d'en ajouter. ») |
+| catalogue | `reorderPerfumeMediaAction` | — | Réordonner la galerie (identifiants inconnus ignorés), une transaction |
+| catalogue | `removePerfumeMediaAction` | — | Retirer un visuel : DELETE de la ligne, puis suppression de l'objet à son `path` **après** le commit |
 | customers | `createCustomerAction`, `updateCustomerAction`, `deleteCustomerAction` | — | Fiche client (suppression refusée, avec sa raison, si un document `PENDING` ou `CONFIRMED` est lié — règle unique de 03 §4.4 ; documents livrés ou annulés conservés sous le nom) |
 | settings | `updateSettingsAction` | — | Taux DZD par défaut, poche par défaut |
 | auth | `loginAction` (publique), `logoutAction` | — | Connexion, déconnexion |
+
+*Mise en œuvre J5 (documents, clients, lots — sans paiement).* Précisions tranchées en construisant, éprouvées par `tests/db/transactions/t01…t13`, `stock.test.ts` et `customers.test.ts` :
+
+- **Où vit le corps d'une transaction.** Chaque fonction exportée de `documents/writer.ts` (`createDocument`, `updateDocument`, `setLineDelivered`, `changeDocumentStatus`, `deleteDocument`, `assignDocumentsToBatch`) est le corps complet de sa transaction : verrous, lectures, gardes et réserves, puis écritures ; elle compose elle-même `customers/writer`, `catalogue/stock` et `catalogue/writer`. L'action ne fait qu'ouvrir `inTransaction` autour : l'exemple du §4.4, qui compose dans l'action, reste valable pour J6 (paiements). `createDocument(tx, input, { pockets })` prend les verrous de poche des paiements de création dans le même appel que le lot, pour tenir l'ordre canonique.
+- **Contrats.** `src/contracts/fields.ts` porte les champs communs (`entityId`, `optionalText`, `optionalDate`, `confirmFlag`) ; dans une modification, un champ absent n'est pas touché, un champ vidé (`null` ou « ») est effacé. Client d'un document : `{ kind: "passing", name, contact }` · `{ kind: "linked", customerId }` · `{ kind: "new", customer }` (fiche créée dans la transaction). Un nom est exigé pour une commande, et pour une vente dont il reste à encaisser (règle serveur de 06 E11 zone 4).
+- **Lignes.** Montants saisis au clavier normalisés par le contrat ; ligne offerte à prix non nul, ligne non offerte sans prix, coût sans taux : `VALIDATION` sous le champ. La contenance (10, 50 ou 80 ml) est exigée, jamais posée par défaut côté serveur. En T2, **chaque ligne porte son identifiant**, généré par le formulaire pour une ligne ajoutée : connue, elle est mise à jour en place ; inconnue, elle est créée sous cet id ; un renvoi du même état ne duplique rien (§3.6). Le parfum d'une ligne existante peut changer (stock : −livré sur l'ancien, +livré sur le nouveau) ; une ligne ne passe jamais du catalogue au hors-catalogue ni l'inverse (`isOffCatalog` fixé à la saisie, 03 §3). Coût en euros : recalculé par `dzdToEur` seulement si le coût DZD ou le taux change — un coût en euros repris sans coût en dinars survit à l'édition.
+- **Livré en T2.** Ligne ajoutée : 0, sauf dans un document `DELIVERED` où elle naît livrée ; ligne entièrement livrée d'un document `DELIVERED` : elle le reste à sa nouvelle quantité ; sinon le livré est conservé, borné à la quantité avec la réserve « Sauvage 50 ml — 2 déjà livrés : le livré passera à 1. ». Réserves de ligne et de stock réunies en un dialogue « Enregistrer les modifications ? ».
+- **T3** refusé (`CONFLICT`) sur une vente directe (livrée en entier, sans pointage) et sur un document annulé ; même valeur renvoyée : aucune écriture. **T4** : même statut, succès sans écriture ; « Annuler » n'est pas un statut cible (T5). **T6** et suppressions de fiche client ou de lot : une entité déjà absente est un **succès** `{ deleted: false }` (renvoi après coupure).
+- **T13** reçoit des changements `{ documentId, from, to }` (`null` = sans lot) : rattacher, retirer, déplacer, unitaire ou en masse. Le lot doit être ouvert **des deux côtés** (un document ne sort pas non plus d'un lot clos, 06 S01) ; un document dont le lot courant n'est pas `from` est refusé (`CONFLICT`), jamais déplacé en silence (01 §4.4) ; déjà à `to` : sans effet ; tout ou rien.
+- **Mémoire de prix (N8).** Apprend des lignes non offertes créées ou dont le parfum, la contenance, le prix, le coût ou le taux change ; un coût ou un taux absent de la ligne n'efface pas celui qui est mémorisé.
+- **Idempotence élargie** : `createCustomerAction` et `createBatchAction` acceptent un `id` facultatif (création en ligne S10, S11).
+- **Clients.** Conflit de numéro nommé à la création comme à la modification ; suppression : fiche verrouillée `FOR UPDATE`, refus « Impossible : 2 commandes en cours. Livre-les ou annule-les d'abord. », puis `documents/writer.freezeCustomerName` recopie le **dernier** nom de la fiche dans le snapshot des documents liés avant le `SetNull` (06 E14 : ils « restent affichés sous son nom »).
+- **Lots.** Clôturer et supprimer prennent le lot `FOR UPDATE` (un rattachement en `FOR SHARE` attend) ; refus de suppression chiffré : « Impossible : 12 documents et 3 dépenses rattachés. Clôture-le plutôt. », ou « Impossible : ce lot a un historique de dépenses. Clôture-le plutôt. » si toutes ont été supprimées.
 
 ### 3.5 Le sort des routes REST
 
@@ -532,10 +569,11 @@ Correspondance avec l'existant :
 | `batches`, `batches/[id]`, `/assign`, `/assign-orders`, `/candidates`, `/order-candidates`, `/expenses`, `/expenses/[expenseId]` | Actions `batches`, `assignDocumentsToBatchAction` ; candidats par RSC sous `?assigner=1` |
 | `customers`, `customers/[id]`, `customers/search` | Actions `customers` ; RSC ; `GET /api/admin/search?scope=customers` |
 | `perfumes`, `perfumes/[id]` (GET, PUT, PATCH, DELETE), `perfumes/[id]/pricing` | Actions `catalogue` ; RSC ; tarifs dans `GET /api/admin/picker` |
+| `perfumes/[id]/media` (GET, POST dépôt ou réordonnancement), `perfumes/[id]/media/[mediaId]` (DELETE) — ajoutées en production le 10/09/2026 | RSC de la fiche parfum (galerie) ; `addPerfumeMediaAction`, `reorderPerfumeMediaAction`, `removePerfumeMediaAction` |
 | `brands`, `brands/[id]` | Actions `catalogue` |
 | `catalogue` (dont `mode=picker`) | RSC `catalogue/queries` ; `GET /api/admin/picker` |
 | `treasury/pockets` | RSC (poches passées en props aux formulaires) |
-| `storage/sign` | `createImageUploadUrlAction` |
+| `storage/sign` (dont `scope: "story"` + `perfumeId`, 10/09/2026) | `createImageUploadUrlAction` (`usage`) |
 | `login`, `logout` | `loginAction`, `logoutAction` |
 | `session` | Supprimée (plus de rôle à relire côté client) |
 | `health` + `ADMIN_DASHBOARD_SECRET` | Supprimées (02 §4.7) |
@@ -676,6 +714,7 @@ Transposition exacte de 03 §4.2 (« une table n'a qu'un point d'INSERT/UPDATE d
 | `Batch`, `BatchExpense` | `src/server/batches/writer.ts` | actions `batches` |
 | `Brand`, `Perfume` (hors `stock`), `PerfumePricing` | `src/server/catalogue/writer.ts` (`upsertPricing` compris) | actions `catalogue` ; writer `documents` pour l'apprentissage des tarifs (N8) |
 | `Perfume.stock` | `src/server/catalogue/stock.ts` (`setStock`, `applyDeliveredDeltas`) | `setPerfumeStockAction` ; writer `documents` (T1–T6) |
+| `PerfumeMedia` (visuels story) ; objets du bucket sous `stories/<parfum>/` | `src/server/catalogue/media.ts` (lignes) ; `src/server/catalogue/storage.ts` (objets, après commit) | `addPerfumeMediaAction`, `reorderPerfumeMediaAction`, `removePerfumeMediaAction` ; `deletePerfumeAction` (chemins lus avant le DELETE, cascade en base, objets retirés après commit) |
 | `Customer` | `src/server/customers/writer.ts` | actions `customers` ; `createDocumentAction` (création en ligne) |
 | `Setting` | `src/server/settings/writer.ts` (`updateSettings`, `rememberPocket`) | `updateSettingsAction` ; writers `payments` et `batches` (poche par défaut, N2) |
 | `AdminUser` | `src/server/auth/writer.ts` | `loginAction` ; `scripts/create-admin.ts` |
@@ -909,7 +948,7 @@ Correspondance des champs (`documentBalance(lines, payments)`) : `total`, `paid`
 
 ### 7.2 Fin de la purge : « replié » est une requête
 
-La purge « éphémère » (01 §3.1, `orderPurge.ts`) disparaît sous toute forme. **Il n'y a ni tâche d'archivage ni colonne d'archive** : un document « replié » est un prédicat de lecture — `DELIVERED` avec `due = 0`, ou `CANCELLED` (03 §4.4). Les listes chargent ces groupes repliés à la demande et paginés (§15). Rien ne vieillit en base, rien ne s'efface, aucun job ne peut échouer en silence.
+La purge « éphémère » (01 §3.1, `orderPurge.ts`) disparaît sous toute forme — la production l'a déjà retirée le 10/09/2026 (`3291428`), en la remplaçant par une fenêtre de visibilité de 48 h sur les commandes livrées (01 §3.11) : même intention, sans rien effacer, ce que la refonte obtient par le segment « Livrées » de E10 (06). **Il n'y a ni tâche d'archivage ni colonne d'archive** : un document « replié » est un prédicat de lecture — `DELIVERED` avec `due = 0`, ou `CANCELLED` (03 §4.4). Les listes chargent ces groupes repliés à la demande et paginés (§15). Rien ne vieillit en base, rien ne s'efface, aucun job ne peut échouer en silence.
 
 ### 7.3 Tâches explicites
 
@@ -920,7 +959,7 @@ Toute maintenance est un **script lancé à la main**, jamais un effet de requê
 | `scripts/create-admin.ts` | Créer ou réinitialiser le compte (identifiant, mot de passe) | `AdminUser` |
 | `scripts/migration/reprise.ts` | Reprise de 03 §7, `--dry-run` par défaut (ROLLBACK final + rapport) | Oui, une transaction |
 | `scripts/check-invariants.ts` | Invariants de 03 §5.7 (Σ payé = Σ mouvements `PAYMENT`, transferts à deux jambes de somme nulle, poches archivées à solde nul, contraintes restées `NOT VALID`) | Non |
-| `scripts/storage-orphans.ts` | Images du bucket `catalog` non référencées par `Brand` / `Perfume` ; `--apply` pour supprimer | Stockage seulement |
+| `scripts/storage-orphans.ts` | Objets du bucket `catalog` non référencés par `Brand` / `Perfume` (`image`, `imageLight`) / `PerfumeMedia` (`path`) ; `--apply` pour supprimer. Un objet sous `stories/<parfum>/` sans ligne `PerfumeMedia` est un orphelin (dépôt abandonné, ou suppression d'objet échouée après commit) | Stockage seulement |
 | `node scripts/build-admin-pwa-assets.mjs` | Icônes et splash (CLAUDE.md) | Fichiers |
 
 **Pas de cron en v1.** Le jour où une tâche planifiée écrira (notifications push, N10, v2), elle sera une route `POST` nommée, protégée par un secret de cron, inscrite dans la liste fermée du §3.5 — jamais un GET.
@@ -1148,12 +1187,14 @@ Côté domaine, `src/domain/errors.ts` fournit `DomainError(code, message, field
 | Tag | Porte sur | Invalidé quand un de ces modèles est écrit |
 |---|---|---|
 | `gestion` | Toute donnée métier de la gestion : documents, lignes, paiements, mouvements, poches, lots, dépenses, clients, réglages, et tous les chiffres | `SaleDocument`, `SaleLine`, `Payment`, `CashMovement`, `Pocket`, `Batch`, `BatchExpense`, `Customer`, `Setting` — **et** `Brand`, `Perfume`, `PerfumePricing` (le stock et les liens vers les parfums apparaissent dans les écrans de gestion) |
-| `admin-catalogue` | Instantané catalogue admin, version et contenu du sélecteur, alertes de stock | `Brand`, `Perfume` (dont `stock`), `PerfumePricing` |
+| `admin-catalogue` | Instantané catalogue admin (dont le nombre de visuels story par parfum), version et contenu du sélecteur, alertes de stock | `Brand`, `Perfume` (dont `stock`), `PerfumePricing`, `PerfumeMedia` |
 | `public-catalogue` | Catalogue de la vitrine (contrat 01 §5, **nom inchangé**) | `Brand`, `Perfume` (dont `stock`), `PerfumePricing` |
 
 **Pourquoi un seul tag de gestion.** L'audit a relevé huit appels à un tag attaché à aucun cache, des ventes qui oubliaient d'invalider les chiffres, une clé de cache bumpée à la main quatre fois (01 §4.3, §4.9). La finesse des tags n'achète rien à ce volume (un commerce individuel, un opérateur) et chaque tag fin est une occasion d'oubli. Un seul tag, invalidé automatiquement, ne peut pas être oublié. Coût : une écriture recalcule aussi des lectures qu'elle n'a pas touchées — une requête agrégée, quelques millisecondes.
 
 `src/server/cache/tags.ts` importe `PUBLIC_CATALOGUE_CACHE_TAG` et `ADMIN_CATALOGUE_CACHE_TAG` depuis `src/lib/catalogue-service.ts` : les noms du contrat vitrine ne sont jamais redéfinis.
+
+**`PerfumeMedia` n'invalide pas la vitrine.** La vitrine ne lit pas les visuels story (03 §6.1) : une écriture de `PerfumeMedia` seule invalide `gestion` et `admin-catalogue` (`updateTag`), **sans** `revalidateAdminCatalogue()` — déposer une planche story ne recalcule pas le catalogue public. Une action qui écrit aussi `Brand`, `Perfume` ou `PerfumePricing` (suppression d'un parfum) déclenche l'invalidation vitrine par ces modèles-là.
 
 ### 10.2 Écriture : invalidation déduite des modèles écrits
 
@@ -1250,6 +1291,8 @@ Lecture : `src/domain/stock.ts` expose `stockStatus(stock: number | null): "untr
 
 Tests (`tests/db/stock.test.ts`) : vente directe décrémente ; pointage partiel puis retour arrière ; annulation restitue ; changement de parfum sur une ligne livrée ; plancher avec réserve ; non suivi intact ; réglage absolu concurrent d'une livraison (sérialisés par le verrou de ligne).
 
+*Mise en œuvre J5.* `stock.ts` reprend lui-même le verrou `FOR UPDATE` des parfums (rang 4, le dernier : toujours permis, sans effet s'il est déjà détenu) avant de relire le stock ; il n'exige donc pas que l'action l'ait pris. Il expose en plus `stockReserves(tx, deltas)`, qui calcule les réserves sans écrire : T4 les passe en `extraReserves` de `assertTransition`, T1 et T2 les vérifient avant toute écriture. Des deltas qui s'annulent sur un même parfum n'écrivent rien. L'annulation (T5) est éprouvée à J6 ; J5 éprouve la restitution par la suppression (T6) et le retrait d'une ligne livrée (T2).
+
 ---
 
 ## 12. Contrat vitrine et catalogue
@@ -1263,7 +1306,14 @@ Le contrat de 01 §5 et 03 §6 est honoré tel quel ; l'architecture l'isole.
 - **`Perfume.id`** : séquence PostgreSQL, plus jamais `max(id)+1` (01 §5.3).
 - **Cascade de masquage** (T14) : `setBrandVisibilityAction` passe les parfums en `DRAFT` dans la même transaction.
 - **Suppression** d'un parfum ou d'une marque : les lignes de documents gardent leur snapshot (`SetNull`) ; les images sont supprimées du bucket **après** le commit, en best-effort journalisé ; les orphelins résiduels relèvent de `scripts/storage-orphans.ts`.
-- **Images** : `createImageUploadUrlAction` rend une URL signée (chemin `perfumes/<uuid>.webp` ou `brands/<uuid>.webp` dans le bucket `catalog`) ; conversion WebP côté client dans `src/features/catalogue/components/image-convert.ts` — recadrage portrait 1024×1536 pour un parfum, **jamais pour un logo de marque** (proportions intouchables, règle projet) ; l'auto-save après upload sur fiche existante est conservé (`updatePerfumeAction` sans stock).
+- **Images** : `createImageUploadUrlAction` rend une URL signée (chemin `perfumes/<uuid>.webp` ou `brands/<uuid>.webp` dans le bucket `catalog`) ; conversion WebP côté client dans `src/features/catalogue/components/image-convert.ts` — recadrage portrait 1024×1536 pour un parfum, **jamais pour un logo de marque** (proportions intouchables, règle projet : le logo est seulement plafonné à 1024 px sur le grand côté, comme le fait la production depuis `12e2327`) ; l'auto-save après upload sur fiche existante est conservé (`updatePerfumeAction` sans stock). Extensions acceptées : jpg, png, webp, gif, **heic, heif** (appareil photo de l'iPhone), avif — le navigateur convertit en WebP avant l'envoi.
+- **Visuels story (`PerfumeMedia`, 03 §3)** — capacité de la production (`77985aa`, `b8d015c`, `3707715`), reconduite telle quelle dans ses règles :
+  - **Chemin décidé par le serveur, jamais cru du client.** `createImageUploadUrlAction({ usage: "story", perfumeId })` fabrique `stories/<perfumeId>/<horodatage>-<aléa>.<ext>` (nom d'origine jeté) ; `addPerfumeMediaAction` refuse tout chemin qui n'a pas exactement ce préfixe ou qui contient `..`, et **recalcule** l'URL publique depuis le chemin (l'URL n'est pas une entrée). Raison : `path` finit dans la suppression d'objet le jour où le visuel est retiré — un chemin arbitraire offrirait la suppression de n'importe quel objet du bucket, l'image catalogue d'un autre parfum comprise.
+  - **Rang et plafond côté serveur** : `sortOrder` = dernier rang + 1, calculé dans la transaction (deux dépôts simultanés ne prennent pas le même rang) ; 24 visuels au plus par parfum.
+  - **Suppression de l'objet après le commit.** `removePerfumeMediaAction` supprime la ligne, **puis**, une fois la transaction validée, l'objet à son `path` (best-effort journalisé : une ligne supprimée avec un objet resté est un orphelin pour `scripts/storage-orphans.ts`, jamais un geste refusé). `deletePerfumeAction` lit les chemins des visuels **avant** le DELETE (la cascade les efface en base) et retire les objets après le commit. Rien n'est supprimé du bucket dans une transaction qui pourrait être annulée.
+  - **Préparation côté client, jamais de recadrage** : `prepareStoryImage` (dans `image-convert.ts`) plafonne le grand côté à 1920 px, convertit en WebP (HEIC compris), refuse au-delà de 12 Mo avant tout envoi ; une planche 9:16 n'est jamais recadrée en 2:3 (elle perdrait le nom du parfum et les notes). Plusieurs fichiers partent l'un après l'autre ; un échec n'arrête pas les suivants, le bilan est dit.
+  - **Récupération** (pattern `MediaGallery`, 05 §3.2) : partage natif avec fichier (`navigator.canShare({ files })` → feuille de partage iOS : Snapchat, Photos), sinon téléchargement d'un blob de même origine ; fermer la feuille de partage (`AbortError`) n'enchaîne pas sur le téléchargement ; aucun `window.open` après un `await` (bloqué par Safari) — l'échec s'affiche avec un lien réel « Ouvrir dans un onglet ».
+  - **Lecture** : la fiche parfum (E16) charge la galerie ; l'instantané admin porte le nombre de visuels par parfum (pastille de la liste E15). La vitrine n'en lit rien.
 - Aucun fichier de la vitrine n'importe `src/server`, `src/features`, `src/ui` ou `src/app-shell` (test `layers`).
 
 ---
@@ -1417,7 +1467,7 @@ Ils lisent les fichiers sources (glob + expressions régulières, sans dépendan
 | `layers.test.ts` | Règles d'import du §1.3, dont registres vitrine / admin disjoints |
 | `money-imports.test.ts` | `decimal.js-light` importé seulement par `src/domain/money.ts` ; pas de `Prisma.Decimal` hors `src/server/db/**` |
 | `cache-calls.test.ts` | `unstable_cache` seulement dans `cached.ts` ; `updateTag`, `revalidateTag`, `revalidatePath` seulement dans `invalidate.ts` |
-| `routes-builders.test.ts` | Chaque constructeur de `src/app-shell/routes.ts` correspond à un `page.tsx` ; aucune URL `/admin/…` littérale hors `routes.ts`, `navigation.ts`, `next.config.mjs` |
+| `routes-builders.test.ts` | Chaque constructeur de `src/app-shell/routes.ts` correspond à un `page.tsx` (écran provisoire ou livré ; un écran à venir n'en a pas) ; toute page de `app/admin` est dans l'inventaire ; aucune URL `/admin/…` littérale dans les couches d'interface hors `routes.ts` et `navigation.ts` (§2.2) |
 | `navigation.test.ts` (conservé, `src/app-shell/__tests__`) | 5 onglets, toute page rattachée à un onglet, parents cohérents avec l'onglet actif |
 | `tokens-sync.test.ts` | `tokens.ts` ↔ `globals.admin.css` (05 §2) |
 | `offline-page.test.ts` | `public/admin-offline.html` autonome (§14.4) — en attente (`todo`) jusqu'à J16, s'active dès que le fichier existe |
@@ -1443,14 +1493,17 @@ Les triggers, CHECK, la vue et les fonctions de période de 03 n'existent qu'en 
 | `invariants.test.ts` | Requêtes de 03 §5.7 vertes après chaque scénario |
 | `periods.test.ts` | `nurea_period_start/end` = `src/domain/periods.ts` autour des changements d'heure |
 | `stock.test.ts` | §11 |
+| `catalogue-media.test.ts` (J11) | Visuels story (§12) : chemin hors `stories/<parfum>/` ou avec `..` refusé ; URL recalculée ; rang calculé sous dépôts concurrents ; 25e visuel refusé ; retrait : suppression d'objet appelée **après** le commit et jamais sur une transaction annulée ; suppression du parfum : chemins lus avant le DELETE |
+| `constraints.test.ts` | CHECK de 03 §4.9 (contenances 10/50/80 : 30 et 100 refusés) ; `PerfumeMedia_path_key` ; cascade `Perfume` → `PerfumeMedia` |
 | `invalidation.test.ts` | Modèles écrits enregistrés, y compris en transaction (§10.2) |
-| `reprise.test.ts` | `scripts/migration/reprise.ts` sur un jeu de données « ancien schéma » reproduisant les cas A, B, C de 03 §7.5 et les cas particuliers de 03 §7.7 : V1–V7 vertes ; écart injecté ⇒ ROLLBACK intégral ; contract appliqué ensuite malgré des lignes qui violent un CHECK (contraintes restées `NOT VALID`, V8) — détail en 07 J2 |
+| `reprise.test.ts` | `scripts/migration/reprise.ts` sur un jeu de données « ancien schéma » (production du 10/09/2026 comprise : contenances 10/50/80, `PerfumeMedia`) reproduisant les cas A, B, C de 03 §7.5 et les cas particuliers de 03 §7.7 : V1–V7 vertes ; écart injecté ⇒ ROLLBACK intégral ; contract appliqué ensuite malgré des lignes qui violent un CHECK (contraintes restées `NOT VALID`, V8) ; visuels story conservés (V11) — détail en 07 J2 |
 | `perf.test.ts` | §15 |
 
 ### 16.4 Parcours de bout en bout (`e2e/parcours/`)
 
 - **Connexion réelle** : `e2e/global-setup.ts` migre la base de test, applique `e2e/fixtures/seed.ts`, crée le compte par `scripts/create-admin.ts`, se connecte **par l'écran** et enregistre le `storageState` réutilisé par tous les tests, `test:layout` compris (fin du JWT forgé couplé au format interne, 01 §4.7).
 - **Budget de taps** : `e2e/helpers/tap.ts` compte les interactions ; chaque parcours vérifie l'objectif de 02 §2.
+- *Mise en œuvre J4.* **Aucun `.env` n'est lu** par `playwright.config.ts` (ils pointent sur la production) : l'app est lancée par Playwright avec `DATABASE_URL`/`DIRECT_URL` sur la base e2e (`E2E_DATABASE_URL`, défaut `postgresql://nurea:nurea@localhost:54329/nurea_test_e2e`), un `ADMIN_JWT_SECRET` de test, et Supabase, Resend et Fraganty neutralisés — Next ne remplace jamais une variable déjà posée. `global-setup` **recrée** la base (UTF-8 ; hôte local et nom `nurea_test…` exigés, comme `tests/db/global-setup.ts`), la migre (`prisma migrate deploy`), la remplit, crée par `scripts/create-admin.ts` le compte principal et deux comptes `verrou-e2e-<projet>` (le blocage après 5 échecs ne touche jamais le compte principal), se connecte par l'écran et enregistre la session dans `test-results/.auth/gerant.json` (ignoré par Git, vidé à chaque exécution). Serveur : `next dev` par défaut, les écrans de `e2e/routes.ts` compilés d'avance par `global-setup` (une compilation en cours recharge les pages ouvertes par les autres tests) ; `E2E_SERVER=start` sert un build existant, **projet Desktop seulement** (en production le cookie de session est `Secure`, que WebKit refuse sur `http://localhost`). Un serveur déjà lancé n'est réutilisé qu'avec `E2E_REUSE_SERVER=1`. `E2E_REMOTE=1` : ni base ni serveur ; `PLAYWRIGHT_BASE_URL`, `E2E_ADMIN_USERNAME`, `E2E_ADMIN_PASSWORD` exigés ; blocage éprouvé seulement avec `E2E_VERROU_USERNAME`. `e2e/environnement.spec.ts` vérifie bandeau et suffixe « (essai) » selon `NUREA_ENV` du lanceur ; `e2e/parcours/connexion.spec.ts`, les critères de connexion de 07 J4.
 
 | Parcours | Tâche (02 §2) | Assertions |
 |---|---|---|
@@ -1498,7 +1551,7 @@ Ajouts à l'existant, sans toucher aux réglages de la vitrine : `headers()` (§
 | `typecheck`, `lint`, `test` | Existants ; `test` exécute les projets `unit` et `arch` |
 | `test:db` | Migration de `TEST_DATABASE_URL` puis projet `db` |
 | `test:layout` | Inchangé : `playwright test layout-invariants --project=Desktop --workers=2` |
-| `test:e2e` | `playwright test parcours --project=Mobile` |
+| `test:e2e` | `playwright test parcours environnement --project=Mobile` (J4 : `environnement.spec.ts`, bandeau de préproduction et manifeste) |
 | `verify` | `typecheck && lint && test && test:db` |
 | `admin:create-user` | `tsx --conditions=react-server scripts/create-admin.ts` (sans rôle ; garde d'hôte `--confirm-host`) |
 | `migration:reprise` | `scripts/migration/reprise.ts` (`--dry-run` par défaut) |

@@ -6,6 +6,7 @@
  * seul `horodatages` diffère.
  */
 import fs from "node:fs";
+import type { Visuels } from "./visuels";
 
 export const FORMAT_REFERENCE = "nurea-reference/1";
 
@@ -51,6 +52,8 @@ export interface Comptages {
   Brand: number;
   Perfume: number;
   PerfumePricing: number;
+  /** Visuels story (table conservée en place, V5 et V11). */
+  PerfumeMedia: number;
   paires: number;
   orderItemsHorsPaires: number;
 }
@@ -80,6 +83,8 @@ export interface Mesures {
     margeNetteAncienne: string;
   };
   vitrine: Vitrine;
+  /** Visuels story `PerfumeMedia` : nombre et empreinte, recalculés après le contract (V11). */
+  visuels: Visuels;
 }
 
 export interface Reference {

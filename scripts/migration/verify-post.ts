@@ -10,6 +10,8 @@
  * - C1–C5 recalculés contre la référence (forme finale : `kind`, dates `timestamptz`), avec V1–V4 ;
  * - invariants de 03 §5.7 (V6 : pièces, signes, contre-passations, transferts, poches archivées ; V7) ;
  * - V9 en base : parfums publiés, cartes gamme, marques Explorer = référence ;
+ * - V11 : visuels story `PerfumeMedia` toujours dans public, nombre et empreinte = référence (la table
+ *   est conservée en place ; seule sa date est passée en timestamptz par le contract) ;
  * - C6 informatif.
  * Écrit `verification.json` et `verification.md` (dossier relatif rangé sous migration-artifacts/<date>/).
  * Code non nul au moindre écart.
@@ -33,6 +35,7 @@ import {
   type Controle,
 } from "./lib/controles";
 import { lireReference, type Reference } from "./lib/reference-format";
+import { mesurerVisuels } from "./lib/visuels";
 import { comptagesVitrine } from "./lib/vitrine";
 import { hostOf } from "../lib/garde-hote";
 
@@ -119,6 +122,32 @@ async function verifier(db: Sql, reference: Reference, hote: string): Promise<Ve
     ok: ecartsVitrine.length === 0,
     valeurs: { ...vitrine },
     ecarts: ecartsVitrine,
+  });
+
+  const { enPlace } = await premiere<{ enPlace: boolean }>(
+    db,
+    `SELECT to_regclass('public."PerfumeMedia"') IS NOT NULL AND to_regclass('legacy."PerfumeMedia"') IS NULL AS "enPlace"`,
+  );
+  const visuels = enPlace ? await mesurerVisuels(db) : null;
+  const visuelsAttendus = reference.mesures.visuels;
+  const ecartsVisuels: Record<string, unknown>[] = [];
+  if (!visuels) {
+    ecartsVisuels.push({ regle: `"PerfumeMedia" absente de public, ou déplacée dans legacy` });
+  } else {
+    if (visuels.nombre !== visuelsAttendus.nombre) {
+      ecartsVisuels.push({ regle: "nombre de visuels", reference: visuelsAttendus.nombre, base: visuels.nombre });
+    }
+    if (visuels.empreinte !== visuelsAttendus.empreinte) {
+      ecartsVisuels.push({ regle: "empreinte des visuels (une ligne a changé)", reference: visuelsAttendus.empreinte, base: visuels.empreinte });
+    }
+  }
+  controles.push({
+    code: "V11",
+    libelle: "Visuels story (PerfumeMedia) conservés dans public : nombre et empreinte = référence",
+    bloquant: true,
+    ok: ecartsVisuels.length === 0,
+    valeurs: { nombre: visuels?.nombre ?? "absente", empreinte: visuels?.empreinte ?? "absente" },
+    ecarts: ecartsVisuels,
   });
 
   controles.sort((a, b) => (a.code < b.code ? -1 : a.code > b.code ? 1 : 0));

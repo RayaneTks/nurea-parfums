@@ -13,7 +13,9 @@
  * - commande READY sans vente : `confirmedAt` = premier `paidAt` DEPOSIT/BALANCE, sinon `orderedAt` ;
  * - commande DELIVERED sans vente : même règle, bornée par `deliveredAt` — l'engagement ne peut pas
  *   suivre la livraison, règle que 03 §7.7 écrit pour les paires (décision J2, documentée en 03 §7.7) ;
- *   `deliveredAt` = `Order.deliveredAt`, sinon `deliveryAt`, sinon `updatedAt` ;
+ *   `deliveredAt` = `Order.deliveredAt`, sinon `updatedAt` — JAMAIS `deliveryAt`, qui est la livraison
+ *   PRÉVUE : une commande livrée en avance serait datée dans le futur (erreur corrigée en production
+ *   par `20260910160000_fix_delivered_at_backfill`, commit 9e0b5d8) ;
  * - paire (quel que soit le statut de la commande) : premier `paidAt` DEPOSIT/BALANCE s'il précède
  *   `soldAt`, sinon `soldAt` ; `deliveredAt` = `soldAt` ;
  * - vente sans commande : `orderedAt` = `confirmedAt` = `deliveredAt` = `soldAt` ;
@@ -50,8 +52,8 @@ export async function etape3cDocuments(ctx: Contexte): Promise<void> {
   const colonnesDocument = `(id, origin, status, "customerId", "customerName", "customerContact", "batchId", "orderedAt",
      "expectedDeliveryAt", "expectedDeliveryHasTime", "confirmedAt", "deliveredAt", "cancelledAt", notes, "createdAt", "updatedAt")`;
 
-  // Commandes sans vente.
-  const livraison = `COALESCE(o."deliveredAt", o."deliveryAt", o."updatedAt")`;
+  // Commandes sans vente. Livraison réelle, sinon dernière modification ; la date prévue n'en est pas une.
+  const livraison = `COALESCE(o."deliveredAt", o."updatedAt")`;
   await tx.$executeRawUnsafe(`
     INSERT INTO "SaleDocument" ${colonnesDocument}
     SELECT o.id, 'ORDER',
@@ -207,7 +209,7 @@ async function listesR4Documents(ctx: Contexte): Promise<void> {
       `SELECT l.id AS ligne, l."documentId" AS document, ${nomClient} AS client, l."perfumeName" AS parfum,
               l."brandName" AS marque, l."volumeMl" AS "volumeMl"
        ${ligneAvecDocument}
-       WHERE l."volumeMl" IS NULL OR l."volumeMl" NOT IN (30, 50, 100)
+       WHERE l."volumeMl" IS NULL OR l."volumeMl" NOT IN (10, 50, 80)
        ORDER BY l.id COLLATE "C"`,
     )),
   );
@@ -260,7 +262,7 @@ async function listesR4Documents(ctx: Contexte): Promise<void> {
          UNION ALL SELECT 'perfume_publish_image_ck', id::text FROM "Perfume"
          WHERE NOT (status::text = 'DRAFT' OR btrim(image) <> '')
          UNION ALL SELECT 'pricing_volume_ck', "perfumeId"::text || ':' || "volumeMl"::text FROM "PerfumePricing"
-         WHERE NOT ("volumeMl" IN (30, 50, 100))
+         WHERE NOT ("volumeMl" IN (10, 50, 80))
          UNION ALL SELECT 'pricing_amounts_ck', "perfumeId"::text || ':' || "volumeMl"::text FROM "PerfumePricing"
          WHERE NOT ("defaultUnitPriceEur" >= 0 AND ("defaultUnitCostDzd" IS NULL OR "defaultUnitCostDzd" >= 0)
                     AND ("defaultExchangeRate" IS NULL OR "defaultExchangeRate" > 0))

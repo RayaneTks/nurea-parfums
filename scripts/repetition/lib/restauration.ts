@@ -3,10 +3,12 @@
  *
  * 1. `recreerBase` : DROP puis CREATE DATABASE en UTF-8 (des migrations héritées contiennent des
  *    caractères absents de WIN1252), collation "C" ;
- * 2. `appliquerAncienSchema` : chaque dossier de `prisma/migrations/` jusqu'à
- *    `20260901120000_retire_gestion_v2` inclus (les deux dossiers « socle » compris), un par un :
- *    `prisma db execute` puis `prisma migrate resolve --applied` — jamais `migrate deploy`, qui
- *    enchaînerait l'expand et le contract ;
+ * 2. `appliquerAncienSchema` : chaque dossier de `prisma/migrations/` qui PRÉCÈDE `…_refonte_expand`
+ *    (les deux dossiers « socle » compris, et les migrations ordinaires de la production jusqu'à
+ *    `20260910160000_fix_delivered_at_backfill` : visuels story `PerfumeMedia`, contenances 10/50/80),
+ *    un par un : `prisma db execute` puis `prisma migrate resolve --applied` — jamais `migrate deploy`,
+ *    qui enchaînerait l'expand et le contract. La borne se lit dans le dépôt, jamais en dur : une
+ *    migration ordinaire ajoutée en production avant la bascule y entre d'elle-même ;
  * 3. `chargerInstantane` : dans UNE transaction, lignes insérées par
  *    `INSERT INTO "<t>" (<colonnes>) SELECT <colonnes> FROM json_populate_recordset(NULL::"<t>", $1::json)`
  *    (équivalent ensembliste de json_populate_record, par paquets), tables dans l'ordre des clés
@@ -21,11 +23,21 @@ import { assertCibleLocale, urlMaintenance } from "./garde-cible";
 import { lignesDeTable, type Manifeste } from "./instantane";
 import { lancerPrisma } from "./processus";
 
-export const DERNIERE_MIGRATION_ANCIENNE = "20260901120000_retire_gestion_v2";
 const USAGE = "Restauration de répétition";
 
+/** Dossiers de l'ancien schéma : tous ceux qui précèdent l'expand de la refonte, dans l'ordre. */
 export function dossiersAncienSchema(): string[] {
-  return listMigrationFolders().filter((nom) => nom <= DERNIERE_MIGRATION_ANCIENNE);
+  const dossiers = listMigrationFolders();
+  const expand = dossiers.filter((nom) => nom.endsWith("_refonte_expand"));
+  if (expand.length !== 1) {
+    throw new Error(`${USAGE} : un et un seul dossier …_refonte_expand attendu dans prisma/migrations (trouvés : ${expand.length}).`);
+  }
+  return dossiers.filter((nom) => nom < (expand[0] as string));
+}
+
+/** Dernier dossier de l'ancien schéma (aujourd'hui `20260910160000_fix_delivered_at_backfill`). */
+export function derniereMigrationAncienne(): string {
+  return dossiersAncienSchema().at(-1) as string;
 }
 
 export async function recreerBase(url: string): Promise<void> {

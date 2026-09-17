@@ -7,6 +7,8 @@
 **Docs amont** : `docs/refonte/00-README.md` (cadre, invariants), `docs/refonte/01-AUDIT-EXISTANT.md` (carte fonctionnelle §3, bugs §4, modèle §4.8, calculs §4.9, contrat vitrine §5), `docs/refonte/02-VISION-PRODUIT.md` (décision structurante §4, périmètre v1, nouveautés N1–N11 §5, vocabulaire §6), `prisma/schema.prisma` (schéma actuel).
 **Docs aval** : `04-ARCHITECTURE.md` (modules d'écriture, transactions, garde), `06-ECRANS-PARCOURS.md` (gestes qui s'appuient sur ce modèle), `07-PLAN-EXECUTION.md` (jalons de bascule, exécution du script de reprise).
 
+**Écart intégré le 17/09/2026.** Ce document a d'abord été écrit sur l'ancien `main` local (`47aaad4`) ; la production tournait déjà sur `origin/main` (`9e0b5d8`), qui porte trois migrations de plus, appliquées en production le 10/09/2026 : `20260910120000_real_volumes_10_50_80` (contenances réelles **10 / 50 / 80 ml**, 30 → 10 et 100 → 80 traduits, défaut 80 ; rattrapage de `Order.deliveredAt`), `20260910140000_perfume_media` (table **`PerfumeMedia`** des visuels story) et `20260910160000_fix_delivered_at_backfill` (la date rattrapée était la date PRÉVUE). Elles sont intégrées : dossiers ajoutés avant l'expand, `PerfumeMedia` au MCD (§2) et au MLD (§3), règle de contenance 10/50/80 partout (§3, §4.9, §7.7), `PerfumeMedia` conservée en place à la reprise (§7.4, V5 et V11 de §7.8), date de livraison reprise sans jamais lire la date prévue (§7.7). Inventaire complet de l'écart : 01 §3.11.
+
 **Directive qui gouverne l'arbitrage** : la priorité n°1 du client est la **praticité** — le modèle doit rendre l'app simple à utiliser *et* simple à faire évoluer, pas élégant sur le papier ; la migration des données réelles doit être sûre. La sécurité est secondaire (02 §7).
 
 **Conventions de lecture.** Les noms d'entités et de colonnes sont en anglais (comme l'existant et le code) ; les libellés d'écran sont en français (fixés en 06). Les chiffres s'écrivent **Encaissé / À encaisser / Marge nette / Trésorerie**, sans synonyme.
@@ -70,7 +72,8 @@ La v2 (01 §4.8) créait six tables françaises alimentées par **copie** sur un
 |---|---|
 | `Brand` | Marque : mode « Sélection » (`CURATED`) ou « Gamme complète » (`COMPLETE`), statut de publication, logo bi-thème, `slug` public stable. |
 | `Perfume` | Parfum du catalogue : visuel bi-thème, mise en avant, statut, stock (`NULL` = non suivi). |
-| `PerfumePricing` | Mémoire de saisie par (parfum, volume) : prix, coût DZD, taux. Pré-remplit les lignes. |
+| `PerfumePricing` | Mémoire de saisie par (parfum, contenance 10 / 50 / 80 ml) : prix, coût DZD, taux. Pré-remplit les lignes. |
+| `PerfumeMedia` | Visuel story d'un parfum (planche 9:16 prête à publier) : chemin dans le bucket (décidé par le serveur), URL, dimensions, poids, ordre. Rangé sur la fiche parfum, **jamais lu par la vitrine** ; `Perfume.image` reste seul juge de la publication. Table née en production le 10/09/2026, conservée telle quelle. |
 
 **Gestion**
 
@@ -95,6 +98,7 @@ La v2 (01 §4.8) créait six tables françaises alimentées par **copie** sur un
 |---|---|---|---|
 | `Brand` → `Perfume` | 1 — 0..N | Cascade | Règle métier existante conservée (02 §4.5) ; l'historique est protégé par les snapshots des lignes. |
 | `Perfume` → `PerfumePricing` | 1 — 0..3 | Cascade | Mémoire de saisie, sans valeur historique. |
+| `Perfume` → `PerfumeMedia` | 1 — 0..24 | Cascade | Un visuel story n'a pas de sens sans son parfum. Les **objets du bucket** ne suivent pas la cascade : le module catalogue lit leurs chemins avant la suppression et les retire **après le commit** (04 §12). Plafond de 24 par parfum : règle serveur. |
 | `Perfume` → `SaleLine` | 0..1 — 0..N | SetNull | La ligne garde son snapshot : supprimer un parfum ne rend plus l'historique illisible. |
 | `Customer` → `SaleDocument` | 0..1 — 0..N | SetNull | L'historique survit à la fiche ; le nom reste en snapshot. |
 | `Batch` → `SaleDocument` | 0..1 — 0..N | **Restrict** | Un lot qui porte des documents ne disparaît pas (02 §4.4). |
@@ -144,7 +148,8 @@ Règles (le domaine pur `canTransition` de l'existant est conservé, états reno
 ```mermaid
 erDiagram
     BRAND ||--o{ PERFUME : "regroupe"
-    PERFUME ||--o{ PERFUME_PRICING : "mémorise un prix par volume"
+    PERFUME ||--o{ PERFUME_PRICING : "mémorise un prix par contenance"
+    PERFUME ||--o{ PERFUME_MEDIA : "range ses visuels story"
     PERFUME |o--o{ SALE_LINE : "est vendu dans"
     CUSTOMER |o--o{ SALE_DOCUMENT : "achète"
     BATCH |o--o{ SALE_DOCUMENT : "regroupe"
@@ -204,6 +209,13 @@ erDiagram
         decimal openingBalance
         boolean archived
         boolean isSystem
+    }
+    PERFUME_MEDIA {
+        string id PK
+        int perfumeId FK "Cascade"
+        string path "unique, stories/<parfum>/…"
+        string url "recalculée depuis path"
+        int sortOrder
     }
 ```
 
@@ -294,6 +306,8 @@ model Perfume {
   updatedAt  DateTime          @updatedAt @db.Timestamptz(3)
   lines      SaleLine[]
   pricings   PerfumePricing[]
+  /// Visuels story (galerie de la fiche parfum), distincts de image / imageLight.
+  media      PerfumeMedia[]
 
   @@unique([brandId, name])
   @@index([status])
@@ -305,7 +319,7 @@ model Perfume {
 /// Préférence, jamais source d'un chiffre. Apprend à chaque ligne non offerte (N8) et depuis la fiche parfum.
 model PerfumePricing {
   perfumeId           Int
-  /// Volume du flacon en ml. CHECK ∈ (30, 50, 100).
+  /// Contenance du flacon en ml. CHECK ∈ (10, 50, 80) — contenances réelles (30 → 10 et 100 → 80 traduits en production le 10/09/2026).
   volumeMl            Int
   /// Dernier prix de vente retenu (€).
   defaultUnitPriceEur Decimal  @db.Decimal(10, 2)
@@ -317,6 +331,32 @@ model PerfumePricing {
   perfume             Perfume  @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
 
   @@id([perfumeId, volumeMl])
+}
+
+/// Visuel story d'un parfum (planche 9:16 prête à publier) : rangé sur la fiche parfum, récupéré par le partage natif.
+/// Jamais lu par la vitrine ; `Perfume.image` reste seul juge de la publication. Né en production le 10/09/2026
+/// (`20260910140000_perfume_media`), conservé tel quel par la refonte (reste dans `public`, jamais dans `legacy`).
+model PerfumeMedia {
+  id        String   @id @default(cuid())
+  perfumeId Int
+  /// Cascade : les lignes suivent le parfum ; les objets du bucket sont retirés par le module catalogue APRÈS le commit.
+  perfume   Perfume  @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
+  /// Chemin DANS le bucket, décidé par le serveur : exactement `stories/<perfumeId>/<horodatage>-<aléa>.<ext>`.
+  /// Seule clé de suppression de l'objet : jamais reçu tel quel du client.
+  path      String   @unique
+  /// URL publique, recalculée par le serveur depuis `path` (jamais reçue du client).
+  url       String
+  /// Libellé libre (« Story 9:16 », « Fond clair »…). Optionnel.
+  label     String?
+  /// Dimensions en pixels et poids en octets du fichier déposé (plafonné à 1920 px, jamais recadré).
+  width     Int
+  height    Int
+  bytes     Int
+  /// Ordre dans la galerie, le plus petit d'abord ; calculé par le serveur (jamais reçu du client).
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([perfumeId, sortOrder])
 }
 
 // ═════════════════════════════ Clients ═══════════════════════════════════════
@@ -428,7 +468,8 @@ model SaleLine {
   brandName         String?
   /// Snapshot de l'URL du visuel.
   imageUrl          String?
-  /// Volume du flacon en ml. CHECK ∈ (30, 50, 100) pour toute écriture ; NULL toléré sur des lignes migrées.
+  /// Contenance du flacon en ml. CHECK ∈ (10, 50, 80) pour toute écriture ; défaut de saisie 80 (règle serveur,
+  /// `DEFAULT_VOLUME_ML`). NULL, ou une contenance héritée 30/100 non traduite, toléré sur des lignes reprises.
   volumeMl          Int?
   /// CHECK >= 1.
   quantity          Int          @default(1)
@@ -641,6 +682,8 @@ model AdminUser {
 - **La vue `DocumentBalance` n'est pas déclarée** dans `schema.prisma` (les vues Prisma sont en préversion en 6.19) : elle est créée par migration SQL et lue par `$queryRaw` typé dans le module de calcul unique (§5.7).
 - **Identifiants** : texte partout sauf `Perfume.id` (entier lu par la vitrine). Les créations sensibles au double tap (document, paiement, dépense) reçoivent un **identifiant texte fourni par le client (UUID v4, `crypto.randomUUID()`, 04 §3.6)** ; une seconde soumission retrouve la ligne ou échoue sur la clé primaire et est traitée comme un succès. `@default(cuid())` ne sert qu'aux créations serveur (reprise, scripts, lignes créées par un writer).
 - **Migrations uniquement** : `prisma db push` n'est plus jamais utilisé sur la base de production (il ignorerait CHECK, triggers et vue et a déjà produit un drift — 01 §4.8).
+- **Contenances** : l'offre réelle est **10 / 50 / 80 ml** (`SaleLine.volumeMl`, `PerfumePricing.volumeMl`, CHECK §4.9) ; la contenance proposée par défaut à la saisie est **80 ml** (`DEFAULT_VOLUME_ML`, `src/domain/sale-line.ts`, appliquée par le contrat de saisie d'une ligne neuve). Aucune valeur par défaut **en base** : un INSERT sans contenance qui contournerait le contrat est refusé par `line_volume_ck`, et une ligne existante n'est jamais réécrite à 80 en silence. Les anciennes valeurs 30 et 100 désignaient les mêmes flacons ; la production les a traduites le 10/09/2026 (`20260910120000_real_volumes_10_50_80`). Une valeur héritée qui subsisterait n'est **pas** retraduite par la reprise : elle est listée (R4) et demandée au premier geste (§4.3, §7.7).
+- **`PerfumeMedia`** : pas de contrainte SQL propre au-delà de la clé primaire, de l'unicité de `path` et de la FK ; la forme du chemin (`stories/<perfumeId>/…`), l'URL recalculée, l'ordre calculé et le plafond de 24 visuels sont des règles serveur du module catalogue (04 §12). Pas de `updatedAt` : un visuel ne se modifie pas, il se remplace (retrait puis dépôt) ; seul son rang change.
 
 ---
 
@@ -665,7 +708,7 @@ Emplacements indicatifs selon la convention du repo `src/server/<domaine>/` ; l'
 | `BatchExpense` + son `CashMovement` ; contre-passation d'une dépense ; `Batch` | module **lots** | créer, renommer, clôturer, rouvrir, supprimer un lot vide ; ajouter ou supprimer une dépense |
 | `CashMovement` de nature `TRANSFER`, `ADJUSTMENT`, `SUPPLIER` et leurs contre-passations ; `Pocket` | module **trésorerie** | créer, renommer, archiver une poche ; supprimer une poche sans mouvement ; transfert ; répartir le non attribué ; ajustement ; paiement fournisseur ; annuler un mouvement manuel |
 | L'INSERT physique dans `CashMovement` | une seule fonction bas niveau du module **trésorerie**, appelée par les trois modules ci-dessus avec la nature qui leur appartient | — |
-| `Brand`, `Perfume` (hors deltas de stock), réglage absolu du stock, `PerfumePricing` depuis la fiche | module **catalogue** | CRUD, visibilité, mise en avant, tarifs, stock |
+| `Brand`, `Perfume` (hors deltas de stock), réglage absolu du stock, `PerfumePricing` depuis la fiche, `PerfumeMedia` (et les objets du bucket qu'elle référence) | module **catalogue** | CRUD, visibilité, mise en avant, tarifs, stock ; visuels story : déposer, réordonner, retirer |
 | `Customer` | module **clients** | créer (dont inline), modifier, supprimer |
 | `Setting` (taux, poche par défaut) | module **réglages** | écran Réglages |
 | `AdminUser` | module **auth** | connexion, backoff |
@@ -695,7 +738,7 @@ Chaque ligne ci-dessous est **une** `prisma.$transaction(async (tx) => …)` int
 
 Les écritures d'une seule ligne (ajustement, paiement fournisseur, création ou suppression d'une poche sans mouvement, création de lot, de client, réglages) sont atomiques par nature. Les invalidations de cache (tags) partent **après** le commit.
 
-**Lignes reprises hors des règles de ligne.** Une contrainte restée `NOT VALID` (§4.9) est quand même vérifiée par PostgreSQL à **chaque mise à jour** de la ligne, quelle que soit la colonne modifiée. Une ligne reprise au volume nul ou hors 30/50/100, un don à prix non nul, un coût DZD sans taux ferait donc échouer T2, T3, T4, T4b et T5 au moment d'écrire `deliveredQuantity`. Règle : **toute transaction qui met à jour une `SaleLine` confronte d'abord chaque ligne touchée aux règles de ligne** (même fonction pure que les CHECK, `src/domain`) et, sur une ligne reprise fautive, lève `VALIDATION` **avant toute écriture**, en nommant la donnée à compléter et la ligne (« Choisis le volume de Sauvage (ligne reprise sans volume) pour continuer. », « Mets le prix de la ligne offerte à 0 € ou décoche Offert. », « Indique le taux de la ligne Sauvage. ») ; l'écran ouvre la fiche document en édition sur cette ligne (06 S01), et le geste passe une fois la ligne corrigée (T2). Ces lignes sont listées en R4 (§7.8) pour être corrigées d'avance.
+**Lignes reprises hors des règles de ligne.** Une contrainte restée `NOT VALID` (§4.9) est quand même vérifiée par PostgreSQL à **chaque mise à jour** de la ligne, quelle que soit la colonne modifiée. Une ligne reprise au volume nul ou hors 10/50/80 (dont une contenance héritée 30 ou 100 restée non traduite), un don à prix non nul, un coût DZD sans taux ferait donc échouer T2, T3, T4, T4b et T5 au moment d'écrire `deliveredQuantity`. Règle : **toute transaction qui met à jour une `SaleLine` confronte d'abord chaque ligne touchée aux règles de ligne** (même fonction pure que les CHECK, `src/domain`) et, sur une ligne reprise fautive, lève `VALIDATION` **avant toute écriture**, en nommant la donnée à compléter et la ligne (« Choisis le volume de Sauvage (ligne reprise sans volume) pour continuer. », « Mets le prix de la ligne offerte à 0 € ou décoche Offert. », « Indique le taux de la ligne Sauvage. ») ; l'écran ouvre la fiche document en édition sur cette ligne (06 S01), et le geste passe une fois la ligne corrigée (T2). Ces lignes sont listées en R4 (§7.8) pour être corrigées d'avance.
 
 ### 4.4 Supprimer, annuler, contre-passer
 
@@ -710,8 +753,9 @@ Les écritures d'une seule ligne (ajustement, paiement fournisseur, création ou
 | Mouvement manuel (transfert, ajustement, paiement fournisseur) | Annuler | Contre-passation (les deux jambes d'un transfert, nouveau `transferGroupId`). |
 | Poche | Supprimer si non système et sans aucun mouvement (poche créée par erreur ; son solde d'ouverture sort alors de la Trésorerie, la confirmation le dit) ; sinon Archiver | DELETE (`deletePocketAction`, 04 §3.4) ; FK `Restrict` dès qu'un mouvement existe ; `Setting.defaultPocketId` repasse à NULL (`SetNull`) ; archivage à solde nul (T15). |
 | Lot | Supprimer si aucun document rattaché et aucune dépense **n'a jamais été saisie** (une dépense supprimée garde sa pièce contre-passée) ; sinon Clôturer | FK `Restrict` (02 §4.4). |
-| Client | Supprimer (refus si un document `PENDING` ou `CONFIRMED` lui est lié) | `SetNull` sur les documents ; snapshots conservés. |
-| Parfum, marque | Supprimer (règle métier existante) | Lignes en `SetNull` avec snapshot ; tarifs en cascade ; invalidation vitrine. |
+| Client | Supprimer (refus si un document `PENDING` ou `CONFIRMED` lui est lié) | `SetNull` sur les documents ; leur snapshot de nom reprend d'abord le **dernier** nom de la fiche (renommée après le lien, elle resterait sinon affichée sous l'ancien), dans la même transaction. |
+| Parfum, marque | Supprimer (règle métier existante) | Lignes en `SetNull` avec snapshot ; tarifs et visuels story en cascade ; chemins des visuels lus **avant** le DELETE, objets retirés du bucket **après** le commit (un échec de stockage ne rétablit rien : l'objet orphelin est journalisé) ; invalidation vitrine. |
+| Visuel story | Retirer (confirmation) | DELETE de la ligne `PerfumeMedia`, puis, après le commit, suppression de l'objet à son `path` (jamais à un chemin reçu du client). |
 | **Toute lecture** | — | N'écrit jamais rien. La purge « éphémère » n'existe plus sous aucune forme. |
 
 ### 4.5 Liens durs : fin des liens souples relevés par l'audit
@@ -768,8 +812,9 @@ ALTER TABLE "Perfume" ADD CONSTRAINT perfume_publish_image_ck
   CHECK (status = 'DRAFT' OR btrim(image) <> '') NOT VALID;
 ALTER TABLE "Perfume" ADD CONSTRAINT perfume_stock_ck
   CHECK (stock IS NULL OR stock >= 0) NOT VALID;
+-- Contenances réelles 10 / 50 / 80 ml (30 → 10 et 100 → 80 traduits en production le 10/09/2026).
 ALTER TABLE "PerfumePricing" ADD CONSTRAINT pricing_volume_ck
-  CHECK ("volumeMl" IN (30, 50, 100)) NOT VALID;
+  CHECK ("volumeMl" IN (10, 50, 80)) NOT VALID;
 ALTER TABLE "PerfumePricing" ADD CONSTRAINT pricing_amounts_ck
   CHECK ("defaultUnitPriceEur" >= 0
      AND ("defaultUnitCostDzd"  IS NULL OR "defaultUnitCostDzd"  >= 0)
@@ -787,9 +832,10 @@ ALTER TABLE "SaleLine" ADD CONSTRAINT line_quantity_ck  CHECK (quantity >= 1) NO
 ALTER TABLE "SaleLine" ADD CONSTRAINT line_delivered_ck CHECK ("deliveredQuantity" BETWEEN 0 AND quantity) NOT VALID;
 ALTER TABLE "SaleLine" ADD CONSTRAINT line_price_ck     CHECK ("unitPriceEur" >= 0) NOT VALID;
 ALTER TABLE "SaleLine" ADD CONSTRAINT line_gift_ck      CHECK (NOT "isGift" OR "unitPriceEur" = 0) NOT VALID;
--- Toute écriture exige un volume valide ; les lignes migrées sans volume restent lisibles (contrainte NOT VALID).
+-- Toute écriture exige une contenance réelle ; les lignes reprises sans volume, ou à une contenance héritée
+-- 30/100 non traduite, restent lisibles (contrainte NOT VALID, listées en R4).
 ALTER TABLE "SaleLine" ADD CONSTRAINT line_volume_ck
-  CHECK ("volumeMl" IS NOT NULL AND "volumeMl" IN (30, 50, 100)) NOT VALID;
+  CHECK ("volumeMl" IS NOT NULL AND "volumeMl" IN (10, 50, 80)) NOT VALID;
 -- "exchangeRate" IS NOT NULL explicite : un CHECK évalué à NULL est satisfait, et
 -- `"exchangeRate" > 0` vaut NULL quand le taux manque (coût DZD sans taux accepté sinon).
 ALTER TABLE "SaleLine" ADD CONSTRAINT line_cost_ck
@@ -1124,13 +1170,14 @@ La vitrine (`app/(shop)`) ne lit la base qu'à travers `src/lib/catalogue-servic
 | `Brand.status` | Oui (filtre `PUBLISHED`) | Type `BrandVisibilityStatus` → `PublicationStatus`, valeurs identiques | Aucun sur les données (les littéraux `"PUBLISHED"` compilent) ; précaution de bascule en §6.3 |
 | `Brand.perfumes` (relation) | Oui (comptage du panneau Explorer) | Inchangé | Aucun |
 | `PerfumePricing`, documents, paiements, clients, lots, poches, réglages | Jamais | — | Invisibles du public, comme aujourd'hui |
+| `PerfumeMedia` (visuels story) | Jamais (la vitrine ne lit que `image` / `imageLight`) | Conservée en place ; `createdAt` en `timestamptz` | Aucun. Un parfum sans `image` reste `DRAFT` même s'il porte des visuels story. Ses objets vivent dans le même bucket `catalog`, sous `stories/<parfum>/`, séparés des visuels du catalogue (`perfumes/…`) |
 
 Filtres de visibilité inchangés (`status = PUBLISHED`, marque `PUBLISHED`, nom et visuel non vides, re-filtre JS des visuels legacy). Plafond de mise en avant à 2 inchangé.
 
 ### 6.2 Lecture et invalidation
 
 - **Un point de lecture** (`getCachedCatalogue`, cache `public-catalogue`) et **un point d'invalidation** (`revalidateAdminCatalogue()` : tags `public-catalogue` + `admin-catalogue`) : reconduits tels quels.
-- Déclencheurs : toute mutation `Brand` / `Perfume` / `PerfumePricing` (module catalogue) **et** toute écriture qui modifie `Perfume.stock` (T1–T6), équivalent exact des créations/suppressions de vente d'aujourd'hui (01 §5.2).
+- Déclencheurs : toute mutation `Brand` / `Perfume` / `PerfumePricing` (module catalogue) **et** toute écriture qui modifie `Perfume.stock` (T1–T6), équivalent exact des créations/suppressions de vente d'aujourd'hui (01 §5.2). Déposer, réordonner ou retirer un visuel story (`PerfumeMedia`) n'invalide que les lectures de la gestion (fiche parfum, pastille de la liste du catalogue) : la vitrine ne lit pas cette table.
 - Les triggers d'écriture seule ne portent que sur `Payment`, `BatchExpense`, `CashMovement` : aucune table lue par la vitrine n'en porte.
 
 ### 6.3 Précautions de bascule côté vitrine
@@ -1175,7 +1222,7 @@ SELECT o.id, o.status,
 FROM "Order" o;
 ```
 
-S'y ajoutent : ancien Encaissé global (formule de `revenueSummary`), ancien À encaisser (formule de `listOutstanding`), comptages par table, et les trois comptages de la vitrine (parfums publiés, cartes gamme, marques Explorer) par les requêtes exactes de `catalogue-service.ts`.
+S'y ajoutent : ancien Encaissé global (formule de `revenueSummary`), ancien À encaisser (formule de `listOutstanding`), comptages par table (`PerfumeMedia` comprise), les trois comptages de la vitrine (parfums publiés, cartes gamme, marques Explorer) par les requêtes exactes de `catalogue-service.ts`, et le **nombre et l'empreinte des visuels story** (md5 de toutes les colonnes de `PerfumeMedia`, date en millisecondes, lignes triées par id : `scripts/migration/lib/visuels.ts`), recalculés après le contract (V11).
 
 ### 7.3 Ordre des étapes
 
@@ -1185,7 +1232,7 @@ S'y ajoutent : ancien Encaissé global (formule de `revenueSummary`), ancien À 
 | **1. Gel** | Gestion en maintenance (vitrine en ligne) ; `pg_dump` ; référence §7.2. | Dump restaurable vérifié. |
 | **2. Migration `expand`** (additive) | Crée schéma `legacy`, enums et tables neuves (`SaleDocument`, `SaleLine`, `Payment`, `Setting`), colonnes nouvelles **nullables** sur les tables en place (`CashMovement.kindV2` — enum `CashMovementKindV2`, renommé `CashMovementKind` au contract —, `CashMovement.reversesId`, `BatchExpense.movementId`, `AdminUser.failedLoginCount`, `AdminUser.lockedUntil`), table `legacy."MigrationMap"` (ancienne table, ancien id, nouvelle table, nouvel id, note ; noms de colonnes en 07 §2.2), table `legacy."MigrationReference"` (une ligne par référence insérée : `computedAt`, `host`, `reference` en `jsonb`). **Vue `DocumentBalance` et fonctions `nurea_period_start/end` (§5.1)**, créées dès l'expand pour que les assertions de la reprise (3i) lisent la définition canonique : la vue ne lit que les tables neuves et `CashMovement.id`/`amount`, que le contract ne modifie pas (PostgreSQL refuserait un `ALTER COLUMN … TYPE` sur une colonne lue par une vue — règle à tenir si le contract évolue). Ne touche aucune colonne lue par la vitrine. | Migration jouée à la main (`npm run migration:sql -- refonte_expand` : `prisma db execute` puis `prisma migrate resolve`, 07 §2.2) — jamais par `prisma migrate deploy`, qui enchaînerait `expand` et `contract` sans la reprise entre les deux ; la garde du build l'interdit (07 §2.3). |
 | **3. Reprise** (une transaction) | 3a poche système unique · 3b réglages · 3c documents et lignes (§7.4) · 3d paiements et mouvements (§7.5) · 3e dépenses (§7.6) · 3f mouvements manuels et écarts historiques (§7.6) · 3g compensation par poche (§7.6) · 3h stock · 3i **assertions bloquantes** (§7.8, forme « dans la transaction » : nature des mouvements lue dans `kindV2`) → COMMIT, sinon ROLLBACK. | Refuse de démarrer si `SaleDocument` n'est pas vide (rejouabilité sans doublon). |
-| **4. Migration `contract`** | `CashMovement` : `kindV2` remplace `kind` (ancien enum supprimé, `CashMovementKindV2` renommé `CashMovementKind`) ; copie `id, refType, refId, createdById` dans `legacy."CashMovementRef"` puis suppression de ces colonnes ; FK `Pocket` `Cascade → Restrict`. `BatchExpense` : copie `id, amount, occurredAt, countInCompta` dans `legacy."BatchExpenseRef"`, suppression, `movementId` NOT NULL, FK `Cascade → Restrict`. `AdminUser.role` supprimé. Catalogue : `Perfume.slug`, `Perfume.isPrivate` (+ index) supprimés, `stock` nullable, `Brand.status` en `PublicationStatus`, `BrandVisibilityStatus` supprimé, reliquats `Brand.assortment`/`positioning` et leurs enums supprimés s'ils existent (migration `20260326120000_brand_taxonomy`), `defaultExchangeRate` en `Decimal(10,4)`, séquence `Perfume.id` recalée. Toutes les dates en `timestamptz(3)` (`USING col AT TIME ZONE 'UTC'`), colonnes `updatedAt` sans valeur par défaut. CHECK (§4.9), triggers (§4.10) ; la vue et les fonctions (§5.1) existent depuis l'expand. Tables `Order`, `OrderItem`, `Sale`, `SaleItem`, `PaymentTransaction`, `AuditLog`, `ExternalImportSuggestion`, `AppSetting` : clés étrangères vers les tables restées dans `public` supprimées (`legacy` reste figé, `public` n'en dépend pas ; les clés internes à `legacy` sont gardées), colonnes enum castées en texte, déplacées dans `legacy` ; enums `OrderStatus`, `PaymentType`, `AdminRole` supprimés. | Refuse de s'exécuter si la reprise n'a pas eu lieu (mouvement sans `kindV2`, dépense sans `movementId`, `Order` ou `Sale` non vides avec `SaleDocument` vide). Une seule transaction ; chaque `VALIDATE CONSTRAINT` isolé dans son bloc `DO … EXCEPTION` (§4.9) : un échec laisse la contrainte `NOT VALID` sans annuler le contract ; échecs listés par V8, jamais masqués. |
+| **4. Migration `contract`** | `CashMovement` : `kindV2` remplace `kind` (ancien enum supprimé, `CashMovementKindV2` renommé `CashMovementKind`) ; copie `id, refType, refId, createdById` dans `legacy."CashMovementRef"` puis suppression de ces colonnes ; FK `Pocket` `Cascade → Restrict`. `BatchExpense` : copie `id, amount, occurredAt, countInCompta` dans `legacy."BatchExpenseRef"`, suppression, `movementId` NOT NULL, FK `Cascade → Restrict`. `AdminUser.role` supprimé. Catalogue : `Perfume.slug`, `Perfume.isPrivate` (+ index) supprimés, `stock` nullable, `Brand.status` en `PublicationStatus`, `BrandVisibilityStatus` supprimé, reliquats `Brand.assortment`/`positioning` et leurs enums supprimés s'ils existent (migration `20260326120000_brand_taxonomy`), `defaultExchangeRate` en `Decimal(10,4)`, séquence `Perfume.id` recalée ; `PerfumeMedia` **laissée en place dans `public`** (seul `createdAt` converti) ; CHECK de contenance sur 10 / 50 / 80. Toutes les dates en `timestamptz(3)` (`USING col AT TIME ZONE 'UTC'`), colonnes `updatedAt` sans valeur par défaut. CHECK (§4.9), triggers (§4.10) ; la vue et les fonctions (§5.1) existent depuis l'expand. Tables `Order`, `OrderItem`, `Sale`, `SaleItem`, `PaymentTransaction`, `AuditLog`, `ExternalImportSuggestion`, `AppSetting` : clés étrangères vers les tables restées dans `public` supprimées (`legacy` reste figé, `public` n'en dépend pas ; les clés internes à `legacy` sont gardées), colonnes enum castées en texte, déplacées dans `legacy` ; enums `OrderStatus`, `PaymentType`, `AdminRole` supprimés. | Refuse de s'exécuter si la reprise n'a pas eu lieu (mouvement sans `kindV2`, dépense sans `movementId`, `Order` ou `Sale` non vides avec `SaleDocument` vide). Une seule transaction ; chaque `VALIDATE CONSTRAINT` isolé dans son bloc `DO … EXCEPTION` (§4.9) : un échec laisse la contrainte `NOT VALID` sans annuler le contract ; échecs listés par V8, jamais masqués. |
 | **5. Mise en ligne** | Promotion de la build préconstruite ; `revalidateAdminCatalogue()` ; V9 vitrine ; `npm run test:layout` ; parcours de fumée (V10) ; revue du gérant ; fin de maintenance. | Échec ⇒ retour arrière §7.9. |
 | **6. J+30** | Migration de nettoyage : `DROP SCHEMA legacy CASCADE`. | Aucune requête de l'app ne lit `legacy` (vérifiable par recherche dans le code). |
 
@@ -1195,7 +1242,8 @@ S'y ajoutent : ancien Encaissé global (formule de `revenueSummary`), ancien À 
 |---|---|---|
 | `Brand` | `Brand` (en place) | Enum de statut converti (valeurs identiques) ; `slug` inchangé. |
 | `Perfume` | `Perfume` (en place) | `slug`, `isPrivate` supprimés ; stock : §7.7 ; séquence recalée. |
-| `PerfumePricing` | en place | Taux élargi en `Decimal(10,4)`, sans perte. |
+| `PerfumePricing` | en place | Taux élargi en `Decimal(10,4)`, sans perte. Contenances déjà traduites en production (10 / 50 / 80) ; une contenance hors règle restante laisserait `pricing_volume_ck` `NOT VALID`, **non admise** par V8 : la répétition s'arrête et le gérant tranche (07 §2.6). |
+| `PerfumeMedia` | en place, **dans `public`** | Aucune ligne lue ni écrite par la reprise ; jamais déplacée dans `legacy` ; `createdAt` en `timestamptz`. Comptée par V5, nombre et empreinte vérifiés après le contract (V11). |
 | `Customer`, `Batch` | en place | Dates en `timestamptz`. |
 | `Pocket` | en place | Doublons de poche système fusionnés (§7.7). |
 | `AppSetting` | `Setting` (id 1) | `exchangeRateDzdEur` → `defaultExchangeRate` (277 si absent ou illisible) ; `defaultPocketId` NULL. |
@@ -1283,9 +1331,9 @@ Sont **créés** : les mouvements des paiements qui n'en avaient pas (étape 1),
 ### 7.7 Autres cas particuliers
 
 - **Ventes sans client** : ni `customerId` ni `customerName` → document sans client (« client de passage » à l'écran). Aucune fiche n'est rattachée par ressemblance de nom : un lien inventé serait pire qu'un lien absent.
-- **Horodatages reconstitués** (règle écrite, listée au rapport) : `confirmedAt` d'une commande `READY`/`DELIVERED` **sans vente** = premier `paidAt` d'un DEPOSIT ou BALANCE, sinon `orderedAt` ; `confirmedAt` d'une **paire** (document né `DELIVERED`, **quel que soit le statut de la commande**, y compris `PENDING` ou `CANCELLED`) = premier `paidAt` d'un DEPOSIT ou BALANCE de la commande s'il précède `Sale.soldAt`, sinon `Sale.soldAt` (l'engagement ne peut pas suivre la livraison) ; `confirmedAt` d'une vente sans commande = `soldAt` (§7.4) ; `deliveredAt` d'une commande `DELIVERED` sans vente = `Order.deliveredAt` (champ rempli une seule fois par la migration `20260701090000`) sinon `deliveryAt` sinon `updatedAt` ; `cancelledAt` = `updatedAt`. **Précision J2** : pour une commande `DELIVERED` sans vente, `confirmedAt` est borné par son `deliveredAt` (une commande soldée après livraison est engagée au plus tard à la livraison) — même principe que pour les paires.
+- **Horodatages reconstitués** (règle écrite, listée au rapport) : `confirmedAt` d'une commande `READY`/`DELIVERED` **sans vente** = premier `paidAt` d'un DEPOSIT ou BALANCE, sinon `orderedAt` ; `confirmedAt` d'une **paire** (document né `DELIVERED`, **quel que soit le statut de la commande**, y compris `PENDING` ou `CANCELLED`) = premier `paidAt` d'un DEPOSIT ou BALANCE de la commande s'il précède `Sale.soldAt`, sinon `Sale.soldAt` (l'engagement ne peut pas suivre la livraison) ; `confirmedAt` d'une vente sans commande = `soldAt` (§7.4) ; `deliveredAt` d'une commande `DELIVERED` sans vente = `Order.deliveredAt` sinon `updatedAt` — **jamais `deliveryAt`**, qui est la livraison **prévue** : une commande livrée en avance serait datée dans le futur (erreur commise puis corrigée en production : `20260910120000_real_volumes_10_50_80` avait rempli `deliveredAt` depuis `deliveryAt`, `20260910160000_fix_delivered_at_backfill` a remis `updatedAt` sur ces lignes ; depuis le 10/09/2026 l'ancienne app écrit `deliveredAt` sur les trois chemins qui livrent) ; `cancelledAt` = `updatedAt`. **Précision J2** : pour une commande `DELIVERED` sans vente, `confirmedAt` est borné par son `deliveredAt` (une commande soldée après livraison est engagée au plus tard à la livraison) — même principe que pour les paires.
 - **Lignes sans nom** (lignes catalogue d'une commande dont le parfum a été supprimé, sans snapshot — bug 01 §4.5) : `perfumeName = « Hors catalogue »`, le libellé que l'app affichait déjà ; listées.
-- **Volumes** : `SaleItem.volumeMl` NULL et volumes hors 30/50/100 conservés tels quels (la contrainte reste `NOT VALID`, §4.9) ; listés. Aucun volume n'est deviné. PostgreSQL vérifiant la contrainte à chaque mise à jour de la ligne, **tout geste qui la touche** — modifier (T2), pointer (T3), livrer (T4), défaire (T4b), **annuler (T5)** — est d'abord refusé en `VALIDATION` par la garde des lignes reprises (§4.3), qui demande le volume ; le geste passe une fois le volume choisi.
+- **Volumes** : la production a traduit ses contenances le 10/09/2026 (30 → 10, 100 → 80) ; les lignes à 10, 50 ou 80 ml sont conformes. `SaleItem.volumeMl` NULL et contenances hors 10/50/80 — dont une contenance héritée 30 ou 100 qui aurait échappé à la traduction (réécrite depuis par un repli `?? 100` de l'ancienne app, ou restaurée d'une sauvegarde) — sont conservés tels quels (la contrainte reste `NOT VALID`, §4.9) ; listés. Aucun volume n'est deviné, ni retraduit par la reprise. PostgreSQL vérifiant la contrainte à chaque mise à jour de la ligne, **tout geste qui la touche** — modifier (T2), pointer (T3), livrer (T4), défaire (T4b), **annuler (T5)** — est d'abord refusé en `VALIDATION` par la garde des lignes reprises (§4.3), qui demande le volume ; le geste passe une fois le volume choisi.
 - **Coûts inconnus** : `unitCost = 0` et `unitCostDzd` NULL → `unitCostEur = NULL` (« coût à compléter »), au lieu d'un 0 qui gonfle la Marge nette. **Paires** : si la ligne de vente a perdu son coût au pont (01 §2.3 n°7), il est repris de l'`OrderItem` apparié (même `perfumeId`, même volume, première ligne non encore appariée) avec son coût DZD et son taux ; chaque enrichissement est listé. **Précision J2** : « perdu » = `unitCost = 0` et `unitCostDzd` NULL ; l'appariement se fait rang pour rang dans l'ordre des identifiants (toutes les lignes de vente de même parfum et volume sont appariées, pas seulement celles au coût perdu) ; l'enrichissement n'a lieu que si la ligne de commande a elle-même un coût ; une ligne hors catalogue (`perfumeId` NULL) n'est jamais appariée, faute de critère sûr (elle reste « coût à compléter »).
 - **Dons à prix non nul** (`isGift` avec prix > 0, accepté par les anciennes routes) : conservés (les normaliser changerait le total et le dû de référence, V2 et V4) ; `line_gift_ck` reste `NOT VALID` ; listés pour décision du gérant. Même garde que les volumes (§4.3) : un geste qui touche la ligne demande d'abord de mettre le prix à 0 € ou de décocher « Offert ». Idem pour une ligne au coût DZD sans taux (`line_cost_ck`) : le taux est demandé.
 - **Stock** : `stock > 0` conservé ; `stock ≤ 0` → NULL (« non suivi ») — l'audit montre que 0 signifiait le plus souvent « non suivi » (fausses alertes massives) et un négatif ne peut être qu'une dérive. Perte assumée : une vraie rupture devient « non suivi » ; la liste est au rapport, le gérant remet 0 en un geste sur les quelques références qu'il suit réellement. **Précision J2** : l'expand ne rend pas `Perfume.stock` nullable ; l'étape 3h lève donc elle-même `NOT NULL` dans sa transaction (le `DROP NOT NULL` du contract devient sans effet). La conversion doit précéder le contract, sinon `perfume_stock_ck` resterait `NOT VALID` à cause des stocks négatifs. La vitrine ne lit jamais `stock` (§6.1).
@@ -1305,7 +1353,7 @@ Sont **créés** : les mouvements des paiements qui n'en avaient pas (étape 1),
 | V2 | Pour chaque document issu d'une vente : `due` (vue) = dû de référence de la vente. |
 | V3 | Pour chaque commande sans vente : `due` = `max(0, total − payé net)` de référence ; À encaisser global (nouvelle définition) = À encaisser de référence. |
 | V4 | Σ lignes de chaque document = total de référence (`totalRevenue` pour une vente, Σ `OrderItem` pour une commande). |
-| V5 | Comptages : documents = commandes + ventes − paires ; lignes = `OrderItem` hors paires + `SaleItem` ; chaque `PaymentTransaction` a son `Payment` ; chaque `CashMovement` historique est dans exactement une catégorie (§7.6). |
+| V5 | Comptages : documents = commandes + ventes − paires ; lignes = `OrderItem` hors paires + `SaleItem` ; chaque `PaymentTransaction` a son `Payment` ; chaque `CashMovement` historique est dans exactement une catégorie (§7.6) ; tables en place (`Customer`, `Batch`, `Brand`, `Perfume`, `PerfumePricing`, `PerfumeMedia`…) = référence. |
 | V6 | Intégrité du ledger (mêmes règles que les triggers, appliquées aux lignes reprises) : chaque paiement a un mouvement `PAYMENT` de signe cohérent ; aucun mouvement `PAYMENT` ou `EXPENSE` sans pièce ; contre-passations cohérentes ; groupes de transfert à 2 jambes de somme nulle ; aucune poche archivée à solde non nul. |
 | V7 | Cohérence statut / horodatages (règles des CHECK `doc_*_ck`). |
 
@@ -1316,7 +1364,7 @@ Sont **créés** : les mouvements des paiements qui n'en avaient pas (étape 1),
 | R1 | Encaissé global : ancienne définition vs nouvelle ; écart **entièrement décomposé** (paiements sur commandes en attente ou annulées, trop-perçus, reprises). Un résidu non expliqué est traité comme bloquant. |
 | R2 | Marge nette globale ancienne vs nouvelle (coûts inconnus, enrichissements, arrondi unitaire des coûts). |
 | R3 | Écarts historiques par poche (motif, montant, date, origine) ; décomposition de la compensation. |
-| R4 | Listes d'arbitrage : documents « écart à arbitrer », lignes « Hors catalogue » reconstituées, volumes atypiques, dons à prix non nul, coûts DZD sans taux (ces trois listes : lignes qu'un geste obligera à compléter, §4.3), paires dont la commande n'était pas livrée (horodatages reconstitués, §7.7), coûts enrichis, coûts inconnus, stocks passés à NULL, liens client et lot récupérés, caches d'acompte divergents, contraintes restées `NOT VALID`. |
+| R4 | Listes d'arbitrage : documents « écart à arbitrer », lignes « Hors catalogue » reconstituées, contenances hors 10/50/80 (absentes, atypiques ou héritées 30/100), dons à prix non nul, coûts DZD sans taux (ces trois listes : lignes qu'un geste obligera à compléter, §4.3), paires dont la commande n'était pas livrée (horodatages reconstitués, §7.7), coûts enrichis, coûts inconnus, stocks passés à NULL, liens client et lot récupérés, caches d'acompte divergents, contraintes restées `NOT VALID`. |
 
 **Après la migration de contrat et la mise en ligne** :
 
@@ -1324,6 +1372,7 @@ Sont **créés** : les mouvements des paiements qui n'en avaient pas (étape 1),
 |---|---|
 | V8 | Toutes les contraintes validées, ou listées en R4 avec leurs lignes : `SELECT conrelid::regclass, conname FROM pg_constraint WHERE contype = 'c' AND NOT convalidated` ne renvoie que des contraintes dont les lignes fautives figurent en R4 (volumes, dons à prix non nul, coûts sans taux). |
 | V9 | Vitrine : après `revalidateAdminCatalogue()`, mêmes nombres de parfums publiés, de cartes gamme et de marques Explorer que la référence. |
+| V11 | Visuels story : `PerfumeMedia` toujours dans `public` (absente de `legacy`), même nombre et même empreinte (toutes colonnes, date en millisecondes) que la référence §7.2. Exécutée par `migration:verify`, avec V8 et V9. |
 | V10 | `npm run test:layout` vert ; parcours de fumée sur la base migrée : vente directe avec « Reçu maintenant », commande avec acompte, livraison partielle puis complète, encaissement d'une créance, annulation d'un paiement, dépense de lot puis suppression, transfert — chiffres des écrans égaux aux requêtes §5. |
 
 ### 7.9 Retour arrière
@@ -1359,6 +1408,7 @@ Aligné sur 02 §4.8. « Déplacé » signifie que la donnée survit ailleurs, s
 | `Sale.totalRevenue`, `totalCost`, `totalMargin` ; `SaleItem.lineRevenue`, `lineCost`, `lineMargin` | Simplifier (une définition) | Dérivés : `DocumentBalance` |
 | `OrderItem/SaleItem.perfumeSnapshot` (Json) | Fusionner | → colonnes `perfumeName`, `brandName`, `imageUrl` |
 | `OrderItem/SaleItem.unitCost` | — | → `SaleLine.unitCostEur` (NULL = inconnu) |
+| `OrderItem.volumeMl @default(80)` (défaut en base, 100 avant le 10/09/2026) | — | → `SaleLine.volumeMl` sans défaut en base ; contenance proposée à la saisie : `DEFAULT_VOLUME_ML` = 80 (`src/domain/sale-line.ts`) |
 | `Order.deliveryAt` | — | Renommé `SaleDocument.expectedDeliveryAt` |
 | `Sale.orderId` | Fusionner | Sans objet |
 | `PaymentTransaction.recordedById` | Abandonner | Supprimé |
@@ -1388,7 +1438,7 @@ Aligné sur 02 §4.8. « Déplacé » signifie que la donnée survit ailleurs, s
 
 | Élément | Remplacé par |
 |---|---|
-| Purge « éphémère » (`orderPurge.ts`, suppression J+1 sur GET) | Rien ne s'efface ; documents soldés et annulés repliés |
+| Purge « éphémère » (`orderPurge.ts`, suppression J+1 sur GET — déjà retirée de l'ancienne app le 10/09/2026, `3291428`, au profit d'une fenêtre de 48 h) | Rien ne s'efface ; documents soldés et annulés repliés |
 | Pont `?fromOrder` et re-création d'une vente | Transition d'état + encaissement sur le même document |
 | Suppression des mouvements « pour contre-passer » (`reverseMovementsFor`) | Contre-passation par mouvement opposé (`reversesId`) |
 | Import d'historique permanent (`backfillTreasuryAction`) | Script de reprise one-shot (§7) |

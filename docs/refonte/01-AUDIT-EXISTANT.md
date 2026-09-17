@@ -4,6 +4,8 @@
 
 **Date : 17 septembre 2026.**
 
+> **Écart intégré le 17/09/2026 — à lire d'abord.** L'audit (et toute la conception `docs/refonte/`) a été conduit sur le `main` **local** d'alors, `47aaad4`. La production tournait déjà sur `origin/main` (`9e0b5d8`, devenu depuis le `main` local), qui porte **11 commits de plus** (82 fichiers, ≈ 3 400 lignes, 10/09/2026) : contenances réelles 10 / 50 / 80 ml, visuels story par parfum, section « À rattacher » des lots, recherche étendue, fenêtre de 48 h des livrées à la place de la purge, et une série de correctifs. Les §2 à §6 décrivent l'état audité (`47aaad4`) ; **§3.11 inventorie l'écart**, commit par commit, avec l'effet de chaque changement sur la refonte. Ses capacités nouvelles font partie de la liste de non-régression au même titre que le reste du §3.
+
 Ce document est la **mémoire complète de l'audit de « Nuréa Gestion »** (PWA admin iOS de Nuréa Parfums) avant sa refonte. Il consigne, domaine par domaine, tout ce que l'app fait aujourd'hui, chaque bug relevé et contre-vérifié, chaque incohérence, chaque friction UX, chaque dette technique — et chaque force à préserver. Rien de ce qui suit n'est résumé au point d'être perdu : ce document doit permettre de retrouver n'importe quel constat de l'audit sans rouvrir le code.
 
 Il est le **premier document de la série `docs/refonte/`** :
@@ -77,7 +79,7 @@ Tout ce que l'app **fait** aujourd'hui. C'est la **liste de non-régression** de
 ### 3.1 Commandes
 
 - Liste groupée par urgence (En retard / Aujourd'hui / À traiter / À venir / Livrées / Annulées) avec compteurs, filtre segmenté Tout/En attente/À traiter/Livrées synchronisé à l'URL, plafonnée à 200 lignes (`src/server/orders/queries.ts:87-195`).
-- Création : client lié (`Customer`) ou nom libre, lignes catalogue ou hors-catalogue (`perfumeSnapshot`), volume 30/50/100, don (`isGift`, prix forcé à 0), coût DZD + taux de change, note par ligne, date de livraison et notes repliées (`OrderForm`).
+- Création : client lié (`Customer`) ou nom libre, lignes catalogue ou hors-catalogue (`perfumeSnapshot`), volume 10/50/80 (30/50/100 avant le 10/09/2026), don (`isGift`, prix forcé à 0), coût DZD + taux de change, note par ligne, date de livraison et notes repliées (`OrderForm`).
 - Acompte initial optionnel à la création → `PaymentTransaction` DEPOSIT + passage direct en READY (`src/server/orders/actions.ts:41-96`).
 - Mémoire de prix serveur `PerfumePricing` (upsert par parfum+volume) + pré-remplissage prix/coût/taux au choix du parfum et au changement de volume ; mémoire locale du dernier taux (`useLastExchangeRate`).
 - Cycle de statuts par SegmentedControl : garde domaine `canTransition` qui n'interdit plus rien mais retourne des « réserves » affichées en ConfirmDialog (`src/domain/order-status.ts`) ; auto-transition PENDING→READY au premier acompte seulement si le verdict est sans réserve (`paymentActions.ts:78-103`).
@@ -89,11 +91,11 @@ Tout ce que l'app **fait** aujourd'hui. C'est la **liste de non-régression** de
 - Rattachement aux lots : BatchPicker sur fiche (si statut ≠ PENDING/CANCELLED) via PATCH `{batchId}`, et assignation en masse côté lot limitée aux READY/DELIVERED sans vente.
 - Partage du récap client (Web Share), marge estimée (coût DZD/taux) sur fiche et sur le form, édition inline du nom client.
 - Créances commandes agrégées dans l'écran Encaisser (`collectAction` → BALANCE) et dans la compta (`confirmedOrdersFinancials`, exclut les commandes déjà vendues).
-- Purge « éphémère » côté REST legacy : commandes CANCELLED supprimées, livrées supprimées à J+1 du jour de livraison — déclenchée uniquement par les GET de l'API legacy (`orderPurge.ts`).
+- Purge « éphémère » côté REST legacy : commandes CANCELLED supprimées, livrées supprimées à J+1 du jour de livraison — déclenchée uniquement par les GET de l'API legacy (`orderPurge.ts`). *Retirée de la production le 10/09/2026, remplacée par une fenêtre de visibilité de 48 h : §3.11.*
 
 ### 3.2 Vendre / Encaisser
 
-- Vente directe multi-lignes : picker catalogue (recherche sans accents, parfums déjà au ticket exclus) + volume 30/50/100, stepper quantité, prix €, coût DZD, taux de change par ligne.
+- Vente directe multi-lignes : picker catalogue (recherche sans accents, parfums déjà au ticket exclus) + volume 10/50/80 (30/50/100 avant le 10/09/2026), stepper quantité, prix €, coût DZD, taux de change par ligne.
 - Pré-remplissage prix/coût/taux depuis `PerfumePricing` (clé perfumeId+volumeMl) à l'ajout d'une ligne et à chaque changement de volume (fetch `/api/admin/perfumes/[id]/pricing`).
 - Mémorisation du dernier taux de change utilisé en localStorage (défaut 277) pour préremplir les lignes suivantes.
 - Dons (`isGift`) : toggle par ligne qui force le prix à 0, affiche « Offert », garde le coût en perte ; persisté sur `SaleItem.isGift`.
@@ -116,7 +118,7 @@ Tout ce que l'app **fait** aujourd'hui. C'est la **liste de non-régression** de
 - Liste en trois sections : « Commandes en cours » (READY/DELIVERED sans vente, reste dû en avant), « Lots » (groupes par batch, OPEN d'abord), « Hors lot » (groupes par client) — chaque groupe repliable avec Encaissé + badge À encaisser.
 - Recherche client (`?q=`, debounce 200 ms) affichée seulement au-delà de 6 groupes ; refetch client via GET `/api/admin/compta`.
 - Graphe « Encaissé par semaine » (recharts, 8 semaines, encaissé = totalRevenue − remainingDue) rendu sous la liste, masqué pendant une recherche.
-- `TicketSheet` (deep link `?sale=<id>`) : consultation/édition d'une vente — nom inline, contact, lot (BatchPicker PATCH `{batchId}`), paiement (champ « restera à encaisser »), lignes (volume 30/50/100, qté, prix €, coût DZD, taux), partage du reçu (Web Share), suppression avec ConfirmDialog.
+- `TicketSheet` (deep link `?sale=<id>`) : consultation/édition d'une vente — nom inline, contact, lot (BatchPicker PATCH `{batchId}`), paiement (champ « restera à encaisser »), lignes (volume 10/50/80 — 30/50/100 avant le 10/09/2026 —, qté, prix €, coût DZD, taux), partage du reçu (Web Share), suppression avec ConfirmDialog.
 - Export CSV des ventes pour le comptable (BOM Excel, séparateur ;) via `/api/admin/compta/export`, filtre `?period` géré côté serveur.
 - Vue Trésorerie : total toutes poches, alerte rouge « X € non attribué » ouvrant la répartition, liste des poches avec soldes calculés (openingBalance + Σ mouvements), 5 sheets d'action : créer poche, transfert, répartir le non attribué, ajustement signé, paiement fournisseur.
 - Journal des mouvements groupés par mois (repli/dépli, net mensuel signé, libellé résolu « Vente · Fares » avec lien vers l'origine vente/commande/lot), 30 derniers mouvements.
@@ -154,7 +156,7 @@ Tout ce que l'app **fait** aujourd'hui. C'est la **liste de non-régression** de
 - Normalisation orthographique des noms : casse de titre à la française, sigles préservés (MYSLF, YSL), mots-outils, doctrine « on ne recasse que ce dont on est sûr » (`src/lib/nommage.ts`).
 - Dédoublonnage des marques par clé insensible à la casse, aux accents et à la ponctuation (`cleNom`) : création à la volée depuis le BrandPicker, résolution par nom côté serveur (`src/lib/admin/resoudMarque.ts`).
 - Verrous de publication en cascade : un parfum n'est publiable que s'il a une image, que sa marque est PUBLISHED et en mode CURATED ; marque COMPLETE sans logo forcée DRAFT ; passage d'une marque en COMPLETE ou DRAFT force tous ses parfums en DRAFT.
-- Grille tarifaire `PerfumePricing` par (parfum, volume 30/50/100) : prix € de vente, coût DZD, taux de change ; upsert/delete par server actions, éditée en slot dans la fiche parfum (`PerfumePricingPanel.tsx`, `src/server/pricing/actions.ts`).
+- Grille tarifaire `PerfumePricing` par (parfum, volume 10/50/80 — 30/50/100 avant le 10/09/2026) : prix € de vente, coût DZD, taux de change ; upsert/delete par server actions, éditée en slot dans la fiche parfum (`PerfumePricingPanel.tsx`, `src/server/pricing/actions.ts`).
 - Pré-remplissage des formulaires vente/commande/compta via GET `/api/admin/perfumes/[id]/pricing?volumeMl=` (`SellPageClient`, `OrderForm`, `TicketItemsList`).
 - Suivi de stock : saisie manuelle sur la fiche (clampée ≥0), décrément à la création de vente, restitution à la suppression de vente, badges Rupture/Stock bas dans la liste, alerte tableau de bord, filtre « Stock bas ».
 - Snapshot catalogue admin en cache (unstable_cache, tag admin-catalogue) partagé entre la page RSC et `/api/admin/catalogue`, avec `mode=picker` allégé pour le sélecteur de vente.
@@ -204,7 +206,7 @@ Tout ce que l'app **fait** aujourd'hui. C'est la **liste de non-régression** de
 - Catalogue bi-registre : `Brand` + `Perfume` avec statut de publication, mode de catalogue (CURATED/COMPLETE), images dark/light, mise en avant (isFeatured plafonné), stock.
 - Mémoire de prix serveur `PerfumePricing` par (parfum, volume) qui pré-remplit les formulaires commande/vente.
 - Fichier clients `Customer` (téléphone E.164 unique, Snapchat, WhatsApp, adresse) lié aux commandes et ventes en SetNull.
-- Pipeline commandes `Order`/`OrderItem` : 4 statuts, acompte initial, lignes multi-volumes (30/50/100), dons (isGift), coût d'achat en DZD + taux de change figés par ligne, livraison partielle par ligne (deliveredQuantity), lignes hors-catalogue via snapshot JSON.
+- Pipeline commandes `Order`/`OrderItem` : 4 statuts, acompte initial, lignes multi-volumes (10/50/80 ; 30/50/100 avant le 10/09/2026), dons (isGift), coût d'achat en DZD + taux de change figés par ligne, livraison partielle par ligne (deliveredQuantity), lignes hors-catalogue via snapshot JSON.
 - Ledger de paiements `PaymentTransaction` (DEPOSIT/BALANCE/REFUND) par commande, avec cache dénormalisé `depositPaid`/`depositAmount` et auto-transition PENDING→READY au premier acompte.
 - Tickets de vente `Sale`/`SaleItem` : totaux et marges figés ligne à ligne, snapshot parfum JSON, reste dû scalaire (`remainingDue`), lien optionnel 1-1 vers la commande d'origine.
 - Lots fournisseur `Batch` regroupant commandes et ventes d'un même envoi, avec dépenses logistiques `BatchExpense` déduites de la Marge nette.
@@ -237,6 +239,62 @@ Tout ce que l'app **fait** aujourd'hui. C'est la **liste de non-régression** de
 - Sélecteur partagé commande/vente (`CustomerField`) : combobox plein écran en Sheet, clients proposés avant toute frappe, ou « Client de passage, sans fiche » (nom libre, sans fiche créée).
 - Recherche globale : palette de commandes → jusqu'à 6 clients → fiche.
 - Ardoise dérivée à la volée (jamais stockée) : Σ lignes − Σ paiements sur commandes actives.
+
+### 3.11 Écart intégré le 17/09/2026 (`47aaad4..9e0b5d8`)
+
+Onze commits de `origin/main`, mis en production le 10/09/2026, absents de la base de l'audit (`git log --oneline 47aaad4..main`). Trois migrations les accompagnent, **déjà appliquées en production** et désormais présentes dans le dépôt de la refonte avant l'expand : `20260910120000_real_volumes_10_50_80`, `20260910140000_perfume_media`, `20260910160000_fix_delivered_at_backfill` (03 en-tête, 07 §2.1).
+
+**Classement.** (a) **capacité nouvelle** : entre dans la liste de non-régression ; (b) **règle métier modifiée** : la refonte s'y aligne ; (c) **correctif d'un bug de l'existant** : soit rendu impossible par la conception (où), soit repris en règle.
+
+#### 3.11.1 Capacités nouvelles (non-régression)
+
+- **Visuels story par parfum** (`PerfumeMedia`, `77985aa`) : galerie sur la fiche parfum (chemin bucket, URL, dimensions, poids, ordre) ; dépôt de plusieurs fichiers, HEIC/HEIF acceptés, préparation sans recadrage (1920 px au plus) ; visionneuse plein écran ; récupération par le **partage natif avec fichier** (Snapchat, Photos), à défaut téléchargement d'un blob ; retrait avec suppression de l'objet du bucket ; plafond de 24 par parfum ; pastille du nombre de visuels sur la liste du catalogue ; visuels supprimés du bucket avec leur parfum (`3707715`). Jamais lus par la vitrine ; `image` reste seul juge de la publication.
+- **« À rattacher »** (`521e086`) : section en tête de `/admin/lots` listant les commandes non annulées **et** les ventes sans lot, livrées comprises, avec sélecteur de lot par ligne et recherche débouncée (250 ms, `b8d015c`) ; jamais tronquée en silence (100 lignes + compte).
+- **Recherche étendue** (`9a28437`, `521e086`) : compta, commandes et « À rattacher » cherchent dans le nom et le contact du client, le téléphone, les notes, le lot, le parfum, la marque et les articles hors catalogue (instantané JSON) ; plusieurs mots = tous ; variante sans accents ; une recherche traverse la fenêtre de 48 h des livrées (`3707715`).
+- **Fenêtre de visibilité de 48 h** (`9a28437`, `3291428`) : une commande livrée quitte la liste des commandes 48 h après sa livraison réelle, **sans être supprimée** ; la compta la garde, statut modifiable compris. Remplace la purge sur GET.
+- **Commande en attente rattachable à un lot**, appartenance affichée sur la fiche du lot quel que soit le statut, montants au périmètre confirmé (`521e086`) ; lot non supprimable tant qu'une commande non annulée y est rattachée (`521e086`, `3707715`).
+- **Contenances réelles 10 / 50 / 80 ml**, défaut 80, source unique `src/domain/volumes.ts` (`9a28437`, `3707715`, `9e0b5d8`).
+- **Création directe d'une commande « à traiter » sans acompte** (`3291428`).
+
+#### 3.11.2 Commit par commit
+
+| Commit | Changement | Classe | Effet sur la refonte |
+|---|---|---|---|
+| `9a28437` fix(commandes) : le statut cesse de se refuser, les contenances disent vrai | PATCH qui refusait « à traiter » sans acompte alors que le domaine l'avait abandonné (règle en deux exemplaires) | (c) | Impossible : une seule pile d'écriture, un seul `canTransition` (04 §3.1, 03 §2.3). |
+| | `Order.deliveredAt` enfin écrit par les trois chemins de livraison, rattrapage des livrées | (b) | `SaleDocument.deliveredAt` posé par la seule transition + CHECK `doc_delivered_at_ck` (03 §2.3, §4.9) ; reprise : `Order.deliveredAt`, sinon `updatedAt` (03 §7.7). |
+| | Fenêtre de 48 h des livrées | (a) | Segment « Livrées » de E10 (06), 02 §4.1. |
+| | Contenances 10 / 50 / 80, défaut 80, héritées traduites (30 → 10, 100 → 80), contenance inconnue conservée | (b) | CHECK `line_volume_ck` / `pricing_volume_ck` sur 10/50/80 (03 §4.9), `VOLUMES_ML` et `DEFAULT_VOLUME_ML` (`src/domain/sale-line.ts`) ; une valeur hors règle est listée à la reprise et demandée au premier geste (03 §4.3, §7.7), jamais réécrite. |
+| | Quatre écrans qui repliaient une contenance inconnue sur 100 ml | (c) | Impossible : contrat de saisie explicite, garde des lignes reprises (03 §4.3). |
+| | Recherche compta (client seul) et commandes (aucune) | (a) | 06 E10 zone 3, E03 zone 4 (A22). |
+| `3291428` fix(gestion) : la confirmation redevient visible, et ne ment plus | `.admin-theme` repeignait voile et carte des portails | (c) | **Pas rendu impossible : la branche J4a porte le même défaut** — règle ajoutée 05 §2 (« à appliquer »). |
+| | `ConfirmDialog` : texte en dur menteur, erreur en toast inerte, `busy` inopérant, corps non défilant, focus | (c) | Texte par appelant et focus sur « Annuler » déjà dans la branche ; **erreur dans la boîte et corps défilant à ajouter** (05 §3.2). |
+| | `orderPurge` supprimait sur GET | (c) | Impossible : aucune lecture n'écrit (04 §7). |
+| | Deux boutons vers « livrée » aux règles différentes | (c) | Impossible : un seul contrôle de statut (06 S01), T4. |
+| | Refus de créer « à traiter » sans acompte | (c) | Aucun refus : `PENDING → CONFIRMED` sans acompte est une réserve confirmable, jamais un refus (03 §2.3, critère de J5) ; une commande naît `PENDING` (ou `CONFIRMED` avec acompte sans réserve) et se confirme par le segment de S01 puis la confirmation de la réserve. |
+| | Fiche ignorant les données fraîches après acompte ; liste non rafraîchie ; `deliveredAt` laissé par la suppression d'une vente ; filet hors thème ; toast derrière le clavier | (c) | Impossible : lecture de ses écritures (04 §10.2), document unique (plus de vente à supprimer sous une commande), CHECK de statut ; toast au-dessus du clavier (05 §3.1). |
+| `521e086` feat(lots) : voir ce qui n'appartient à aucun lot | Section « À rattacher » | (a) | 06 E05 zone 0 (A21), PC-08 variante. |
+| | Encaisser une commande rattachée faisait sortir son argent du lot (vente née sans `batchId`) | (c) | Impossible : un seul document, qui garde son lot (02 §4.4). |
+| | Commande en attente rattachable ; appartenance affichée, montants au confirmé | (b) | 06 E06 zone 3, S13 (tous statuts) ; chiffres du lot au périmètre engagé (03 §5). |
+| | Lot ne contenant que des commandes supprimé sans avertissement | (c) | Impossible : FK `Restrict` lot → documents (03 §2.2). |
+| | Sheets d'assignation : effet dépendant de `onError` (cases effacées, boucle de requêtes) ; toast « mis à jour » sans effet | (c) | Impossible : candidats par RSC sous `?assigner=1` (04 §2.3) ; règle ajoutée : le toast dit ce qui a été appliqué (06 S13). |
+| | Recherche hors catalogue sans `mode: insensitive` ; champ de compta disparu ; résultats repliés ; focus perdu | (c) | Snapshot typé (`SaleLine.perfumeName`, 03 §3) ; règles d'écran 06 E03 zone 4 et E10 zone 3. |
+| `77985aa` feat(catalogue) : les visuels story vivent enfin à côté du parfum | Modèle `PerfumeMedia`, galerie, partage natif, HEIC, stockage rangé par usage, suppression des objets | (a) + (b) | 03 §2–§3 (`PerfumeMedia`), §7.4 (conservée) ; 04 §12 ; 05 `MediaGallery` (J11) ; 06 E16 zone 7, PC-13. |
+| `12e2327` fix(gestion) : plus de double encaissement, de logo mutilé, de filet muet | Double tap sur « Encaisser » : deux ventes | (c) | Impossible : identifiant fourni par le client + `isLoading` (04 §3.6). |
+| | Logo recadré en 2:3 | (c) | Déjà la règle (02 §4.5, 05 `ImageField kind="logo"`). |
+| | Filet d'information non portalisé : de travers et intapable sous une sheet | (c) | **Défaut présent dans la branche** — règle ajoutée 05 §3.1 (« à appliquer »). |
+| | Confirmations qui disent vrai (« sans retour possible » / « filet 5 s ») | (c) | 06 S18. |
+| `b8d015c` fix(visuels) : le serveur ne croit plus le client sur le chemin de stockage | `path` exigé sous `stories/<parfum>/`, URL recalculée | (b) | 04 §3.4 (`addPerfumeMediaAction`), §12. |
+| | Recherche « À rattacher » débouncée | (c) | 06 E05 zone 0 (250 ms). |
+| `d433e18` fix(compta) : un lot n'a plus deux montants selon l'écran | Commandes rattachées dans le total du lot en compta | (c) | Impossible : pas de montant d'en-tête de lot en compta, une seule fonction de chiffres par lot (02 §4.3, 06 E03). |
+| `3707715` fix(gestion) : revue adversaire | Neuf lignes créées à 100 ml en dur ; routes REST acceptant l'hérité sans le traduire | (c) | Impossible : `DEFAULT_VOLUME_ML` unique, contrat de saisie (04 §3.4). |
+| | Correctif de suppression de vente appliqué à une action morte | (c) | Sans objet : code mort non reconduit. |
+| | Rattrapage daté avec `deliveryAt` (date prévue) | (b) | Règle de reprise corrigée (03 §7.7, `3c-documents.ts`) et cas de test (`tests/db/fixtures/reprise/jeu.ts`, cas 26). |
+| | VIEWER autorisé à ajouter / supprimer des visuels | (c) | Sans objet : rôles abandonnés (02 §4.7). |
+| | Recherche dans « Livrées » limitée à 48 h ; « Retirer » invisible ; `window.open` bloqué par Safari ; téléchargement après fermeture du partage ; visuels abandonnés à la suppression du parfum ; commande annulée rendant un lot indestructible ; commande en attente affichée « Livrée » ; `tokens.ts` contredisant la feuille | (c) | 06 E10 zone 3 ; 05 `MediaGallery` ; 04 §12 ; 06 E06 zone 3 ; libellés de statut du document unique ; test `tokens-sync` (05 §2). |
+| `f5c6f7b` chore(migration) : rend la traduction des contenances rattrapable | Tables de trace de la traduction | (b) | Jamais exécutées (retirées par `9e0b5d8`) ; la reprise de la refonte ne traduit rien et garde `legacy` 30 jours (03 §7.9). |
+| `d0a56d9` Merge : panel admin | Fusion des neuf commits précédents | — | Aucun changement propre. |
+| `9e0b5d8` fix(migration) : la date de livraison rattrapée était la date PRÉVUE | Nouvelle migration corrigeant `deliveredAt` ; migration appliquée remise à l'identique ; README de retour arrière des contenances | (b) | Trois migrations ajoutées avant l'expand (07 §2.1) ; reprise : jamais `deliveryAt` (03 §7.7). |
+| | Trois derniers `?? 100` (dont le reçu client) | (c) | Impossible : reçu et récap lus sur `SaleLine.volumeMl` (06 S09, §7.13). |
 
 ---
 
@@ -639,14 +697,14 @@ Tout ce que l'app **fait** aujourd'hui. C'est la **liste de non-régression** de
 
 ### 4.5 Catalogue (parfums, marques, mise en avant, prix de référence, images)
 
-**Rôle.** Le domaine Catalogue est le référentiel produit de Nuréa : il gère les marques (mode Sélection ou Gamme complète), les parfums (fiche, visuels dark/light, visibilité, stock, mise en avant) et les prix de référence par volume (30/50/100 ml) qui pré-remplissent commandes, ventes et compta. C'est aussi la source unique de la vitrine publique : chaque mutation invalide les caches public et admin.
+**Rôle.** Le domaine Catalogue est le référentiel produit de Nuréa : il gère les marques (mode Sélection ou Gamme complète), les parfums (fiche, visuels dark/light, visibilité, stock, mise en avant) et les prix de référence par volume (10/50/80 ml ; 30/50/100 ml avant le 10/09/2026) qui pré-remplissent commandes, ventes et compta. C'est aussi la source unique de la vitrine publique : chaque mutation invalide les caches public et admin.
 
 **Parcours implémentés.**
 
 - Consulter le catalogue : onglet Catalogue → CataloguePage (RSC, vérifie le JWT, lit le snapshot en cache) → CatalogueClient hydrate 3 onglets ; le titre défile, seule la barre recherche+chips reste épinglée ; les chips n'apparaissent que si elles discriminent (comptes différents) ; listes virtualisées, ligne entière = ouvrir la fiche, œil à droite = bascule visibilité.
 - Créer un parfum : bouton « + Parfum » → `/admin/perfumes/new` → choisir/créer la marque dans le BrandPicker (recherche accent-insensible ; « Créer la marque » seulement si aucune équivalente ; l'API peut rendre une existante avec notice) → saisir nom + stock → uploader l'image (crop portrait WebP, upload direct Supabase) → si marque COMPLETE, dialog « Enregistrer quand même » puis création forcée en DRAFT → POST → retour `/admin/catalogue`.
 - Éditer un parfum : tap sur la ligne → `/admin/perfumes/[id]/edit` → la fiche se charge côté client (GET API), la grille de prix est chargée côté serveur et passée en slot → chaque upload d'image déclenche un PUT auto-save immédiat → le CTA sticky « Enregistrer » envoie le PUT complet et revient au catalogue → suppression via bouton texte rouge + ConfirmDialog → DELETE hard.
-- Régler les prix : dans la fiche parfum, 3 sous-cartes 30/50/100 ml (Prix €, Coût DZD, Taux) → un bouton « Enregistrer » apparaît par volume modifié (dirty) → server action upsert + toast ; « Retirer » supprime la ligne de ce volume — indépendant du CTA principal du formulaire.
+- Régler les prix : dans la fiche parfum, 3 sous-cartes 10/50/80 ml (30/50/100 ml avant le 10/09/2026) (Prix €, Coût DZD, Taux) → un bouton « Enregistrer » apparaît par volume modifié (dirty) → server action upsert + toast ; « Retirer » supprime la ligne de ce volume — indépendant du CTA principal du formulaire.
 - Créer/éditer une marque : `/admin/brands/new|[id]/edit` → nom seul suffit (normalisé serveur) ; choix du mode par cartes radio (Sélection / Gamme complète) ; logo + variante claire optionnels sauf COMPLETE où le logo est requis (sinon Visibilité verrouillée DRAFT) → POST/PATCH → retour `/admin/catalogue?tab=brands` ; supprimer avertit « tous ses parfums seront supprimés ».
 - Basculer la visibilité depuis la liste : tap œil → gardes client (marque DRAFT → toast « Rends d'abord la marque visible » ; marque COMPLETE → toast explicatif) → mise à jour optimiste → PATCH { status } → rollback + message serveur si refus (dont refus sans image).
 - Mettre en avant : onglet « En avant » → 2 emplacements (remplis ou « Emplacement libre » en pointillés) → la liste des candidats réutilise la recherche → tap = PATCH { isFeatured: true } (refus au-delà de 2, client et serveur) → X sur un emplacement pour retirer ; la vitrine affiche ces parfums en tête d'accueil (s'ils sont PUBLISHED).
@@ -1127,7 +1185,7 @@ Tout ce que l'app **fait** aujourd'hui. C'est la **liste de non-régression** de
 - transfer() écrit les deux jambes en un seul createMany atomique lié par transferGroupId — le seul endroit du domaine où l'écriture double est réellement insécable.
 - listOutstanding unifie les deux modèles de dette (Sale.remainingDue et commandes partiellement payées) en une seule action d'encaissement plafonnée au dû, triée par ancienneté — le commentaire (`collect/queries.ts:5-15`) raconte honnêtement le problème résolu.
 - La performance est travaillée et surtout expliquée : agrégats SQL en un aller-retour (FILTER, monthSummary), unstable_cache par tags + react.cache par rendu, anti-N+1 par résolution batch dans listMovements, avec commentaires chiffrés (~140 ms/aller-retour) qui justifient chaque choix.
-- Les gardes serveur sont systématiques sur les routes vivantes : montants ≥ 0, remainingDue ≤ total, volumes 30/50/100, encaissement plafonné au dû, epsilon d'arrondi — la validation ne fait jamais confiance au client pour les totaux.
+- Les gardes serveur sont systématiques sur les routes vivantes : montants ≥ 0, remainingDue ≤ total, volumes 10/50/80 (30/50/100 avant le 10/09/2026), encaissement plafonné au dû, epsilon d'arrondi — la validation ne fait jamais confiance au client pour les totaux.
 - L'auto-transition PENDING→READY refuse d'avaler une réserve du guard (`paymentActions.ts:90-99`) : le commentaire sur « une transition automatique n'a personne à qui montrer un avertissement » est un raisonnement produit à conserver tel quel.
 - reverseMovementsFor offre une réversibilité uniforme par référence souple, réutilisée à l'identique pour ventes, dépenses et paiements annulés.
 
