@@ -264,7 +264,8 @@ nurea-parfums/
     │   │   ├── define-read-route.ts  defineReadRoute (§3.5)
     │   │   ├── errors.ts             Traduction exceptions → ActionError (§9.3)
     │   │   ├── error-messages.ts     Messages par contrainte SQL et par code Prisma
-    │   │   └── log.ts                Une ligne JSON par action (nom, code, durée, référence)
+    │   │   ├── log.ts                Une ligne JSON par action (nom, code, durée, référence)
+    │   │   └── maintenance.ts        Page et réponses 503 du mode maintenance (A-11), servies par proxy.ts
     │   ├── db/
     │   │   ├── client.ts             Client Prisma étendu (enregistrement des modèles écrits, §10.2)
     │   │   ├── transaction.ts        inTransaction (§4.1)
@@ -368,6 +369,8 @@ Redirections permanentes dans `next.config.mjs` (`redirects()`), dans cet ordre 
 
 Les identifiants de documents sont conservés par la migration (03 §7.4) : une ancienne fiche commande reste joignable. Le paramètre `?sale=` de l'ancienne compta n'est pas repris.
 
+*Mise en œuvre J3 (`next.config.mjs`, `ADMIN_REDIRECTS`).* Ordre effectif : (1) compléments de 06 §1.6 conditionnés par la query (`has`), placés **avant** la règle générique `ordres` qui les masquerait ; (2) le tableau ci-dessus ; (3) les adresses de document de l'amendement A-3 (`/admin/commandes/nouvelle` → `/admin/vendre?mode=commande`, `/admin/commandes/:id[/modifier]` → `/admin/commandes?doc=:id[&edition=1]`, idem `compta/ventes`). Les règles se chaînent : `/admin/ordres/abc` → `/admin/commandes/abc` → `/admin/commandes?doc=abc` (308 puis 308, vérifié sur un build de production). Deux comportements de Next à connaître : la query d'origine est **recopiée** dans la destination (`/admin/ordres?filter=ready` aboutit à `?filter=ready&filtre=confirmees` ; le paramètre mort est ignoré par la page) ; en conséquence `/admin/compta?sale=<id>` n'a pas de règle (elle bouclerait) et la page ignore simplement `sale`. `tests/architecture/redirects.test.ts` rejoue chaque règle avec les fonctions de correspondance de Next et vérifie que toute destination appartient à l'inventaire de 06 §1.2, avec des paramètres que la route reconnaît, sans boucle.
+
 ### 2.4 Ce qui disparaît du code
 
 | Existant | Devenir |
@@ -463,6 +466,7 @@ Règles :
 - Une action ne lit pas via `queries.ts` : elle lit dans sa transaction (`tx.db`), sur des lignes verrouillées.
 - Une action renvoie le minimum utile à l'écran (id, URL canonique, solde du document) ; le reste arrive par le RSC rafraîchi.
 - Le succès peut porter une `notice` (« Cette marque existait déjà : elle a été sélectionnée. ») affichée en toast d'information — elle n'emprunte plus jamais le canal d'erreur (bug 01 §4.5).
+- *Mise en œuvre J3.* `withNotice(data, notice)` est exporté par `define-action.ts` ; `logAction({ action, startedAt, error?, cause? })` journalise aussi les refus de validation ; le détail technique (SQLSTATE, contrainte, pile) n'est écrit que pour `UNEXPECTED`, `UNAVAILABLE` et les CHECK. `defineReadRoute(name, handler)` : le handler rend ses données (`Cache-Control: private, no-store`), `reply(data, { cacheControl })` pour un en-tête choisi (sélecteur versionné), ou une `Response` (export CSV) ; statut HTTP déduit du code (`SESSION_EXPIRED` ⇒ 401, `NOT_FOUND` ⇒ 404, `UNAVAILABLE` ⇒ 503…).
 
 ### 3.4 Inventaire des actions
 
@@ -597,7 +601,7 @@ import { isRetryable, isIdempotentReplayConflict } from "@/server/core/errors";
 
 export type Tx = {
   /** Seul accès base d'un writer. */
-  readonly db: Prisma.TransactionClient;
+  readonly db: DbTransaction;   // client transactionnel du client ÉTENDU (§10.2), pas Prisma.TransactionClient (J3)
   /** Horloge unique de la transaction (horodatages, dates de valeur par défaut). */
   readonly now: Date;
   /** Verrous en ordre canonique (§4.2). */
@@ -631,6 +635,7 @@ export async function inTransaction<T>(work: (tx: Tx) => Promise<T>): Promise<T>
 - **Jamais rejouées** : erreurs de validation, contraintes, `NeedsConfirmation`, erreurs de programmation.
 - Les triggers différés de 03 §4.10 s'exécutent au `COMMIT` : un writer fautif (paiement sans mouvement, contre-passation incohérente) fait échouer la transaction entière — rien n'est écrit.
 - Rien de ce qui suit le `COMMIT` ne peut faire échouer l'action : les effets de bord externes (suppression d'images Supabase) sont en `try/catch` journalisé, après la transaction.
+- *Mise en œuvre J3.* L'imbrication est détectée par un `AsyncLocalStorage` propre à `transaction.ts` (erreur de programmation). Budgets indépendants : deux rejeux pour conflit ou interblocage, un rejeu d'idempotence. Le rejeu d'idempotence vaut pour tout `P2002` portant sur la seule colonne `id` (ailleurs qu'aux trois créations idempotentes, l'id vient de `cuid()` et ne se croise jamais). Éprouvé par `tests/db/transactions.test.ts` : deux envois croisés du même id ⇒ une ligne, deux succès, trois tentatives ; interblocage provoqué ⇒ les deux transactions aboutissent.
 
 ### 4.2 Verrous et ordre canonique
 
@@ -656,6 +661,7 @@ await tx.lock({
 - **Tout mouvement verrouille sa poche au moins en partage** (`insertMovement` vérifie que le verrou est détenu) : un mouvement ne peut pas entrer dans une poche en cours d'archivage (T15 prend `FOR UPDATE`).
 - Verrou exclusif de poche requis quand une sortie peut rendre « Non attribué » négatif — **T5** (remboursements à l'annulation), T8 (y compris composé dans T4b), T11, T12 — : le contrôle « Non attribué ≥ 0 » se fait sur la ligne verrouillée. La même garde vaut pour toute autre sortie qui viserait « Non attribué » (dépense T9, ajustement, paiement fournisseur ; règle de 03 §4.9). `deliverAndCollectAction`, `collectAllAction` et T1 n'écrivent que des entrées : verrou partagé.
 - Un document **neuf** (T1) ne se verrouille pas : aucune autre transaction ne le voit.
+- *Mise en œuvre J3.* `tx.lock(…)` rend les lignes réellement verrouillées (`{ documents, batches, pockets, perfumes: { id, stock }[] }` : un id absent n'y figure pas, le stock relu sert `applyDeliveredDeltas`) ; `batches` accepte `{ update, share }` comme `pockets` ; un id demandé dans les deux modes est pris `FOR UPDATE` ; `tx.lock.held(catégorie, id)` rend le mode détenu (`insertMovement` vérifiera le verrou de poche). Un appel sans rien à verrouiller ne change pas le rang atteint.
 
 ### 4.3 Propriété des tables
 
@@ -952,6 +958,8 @@ import { SESSION_COOKIE, renewIfStale, sessionCookieOptions, verifySessionToken 
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  if (isGestionInMaintenance()) return maintenanceResponse(pathname);   // A-11 : 503 HTML ou JSON, sans base
+  if (pathname === "/api/admin" || pathname.startsWith("/api/admin/")) return NextResponse.next();
   const headers = new Headers(request.headers);
   headers.set("x-nurea-admin-route", "1");
   const pass = () => NextResponse.next({ request: { headers } });
@@ -959,7 +967,7 @@ export async function proxy(request: NextRequest) {
   if (pathname === "/admin/login") return pass();
 
   const token = request.cookies.get(SESSION_COOKIE)?.value;
-  const session = token ? await verifySessionToken(token) : null;
+  const session = token ? await verifySessionToken(token) : null;     // ConfigurationError ⇒ 503 texte
   if (!session) {
     // Un appel d'action n'est jamais redirigé : defineAction répond SESSION_EXPIRED proprement.
     if (request.headers.has("next-action")) return pass();
@@ -973,10 +981,12 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
-export const config = { matcher: ["/admin", "/admin/:path*"] };
+export const config = { matcher: ["/admin", "/admin/:path*", "/api/admin/:path*"] };
 ```
 
-Le JWT est **vérifié** (signature, expiration) et non plus seulement présent (bug haute 01 §4.7). Le matcher ne couvre ni `/api/admin/*` (les routes répondent elles-mêmes en JSON) ni la vitrine. Un en-tête `x-nurea-admin-route` forgé sur la vitrine n'altère que le rendu du navigateur qui l'envoie (01 §4.7, impact nul) : non traité.
+Le JWT est **vérifié** (signature, algorithme HS256, expiration) et non plus seulement présent (bug haute 01 §4.7). Le matcher couvre `/api/admin/*` **pour le seul mode maintenance** (amendement A-11) : hors maintenance, ces routes ne sont ni redirigées ni marquées, elles répondent elles-mêmes en JSON (`defineReadRoute`). La vitrine n'est pas couverte.
+
+*Mise en œuvre J3.* La page 503 est servie depuis la constante `MAINTENANCE_HTML` de `src/server/core/maintenance.ts` (sur Vercel, le proxy ne lit pas `public/`) ; `public/admin-maintenance.html` en est la copie exacte, joignable en direct, et `tests/architecture/maintenance-page.test.ts` vérifie l'égalité et l'autonomie. Réponses `Cache-Control: no-store`, `Retry-After: 300` ; `/api/admin/*` reçoit un `ActionResult` `UNAVAILABLE` réessayable. Vérifié sur un build de production : `/admin`, `/admin/login` et `/api/admin/orders` ⇒ 503, `/` et `/marque` ⇒ 200. Un en-tête `x-nurea-admin-route` forgé sur la vitrine n'altère que le rendu du navigateur qui l'envoie (01 §4.7, impact nul) : non traité.
 
 ### 8.4 `requireSession`, appliqué par construction
 
@@ -1027,6 +1037,14 @@ Aucune requête ni action ne peut s'exporter sans passer par ces fabriques (test
 - **Succès** : cookie posé, `ok` avec la destination ; le client fait `router.replace(retour)` — `retour` n'est accepté que s'il désigne, une fois résolu sur la même origine, `/admin` ou un chemin sous `/admin/` (ni `//`, ni `/\`, ni URL absolue, ni `/admin/login`) ; sinon la destination est `/admin`, sans erreur de validation. `/admin` seul doit passer : c'est le `retour` que pose `proxy.ts` pour l'Accueil. Implémentation : `safeReturnPath` de `src/contracts/auth.ts`, appliqué par le schéma `loginInput`.
 - **`logoutAction`** : écran Réglages ; efface le cookie, redirige vers la connexion.
 - **Expiration en cours de saisie** : brouillon sauvé, retour à la connexion avec `retour`, brouillon restauré au retour (§3.7) ; le message « Ta session a expiré » est enfin affiché (paramètres morts de l'existant, 01 §4.7).
+
+*Précisions de mise en œuvre (J3, `src/server/auth/`).*
+- **Codes** : identifiants refusés ⇒ `VALIDATION` (message indifférencié, sans champ désigné, pour ne pas dire lequel est faux) ; verrou actif ⇒ `CONFLICT` « Trop d'essais. Réessaie dans N min. » (minutes restantes arrondies au-dessus).
+- **Pendant un verrou, un essai n'est ni vérifié ni compté** (même avec le bon mot de passe) : marteler ne prolonge pas l'attente. Le compteur ne progresse qu'à l'essai qui suit l'expiration, d'où la suite 1, 2, 4, 8, 15, 15 min aux 5ᵉ à 10ᵉ échecs.
+- Le compte est lu `FOR UPDATE` : deux essais simultanés comptent deux échecs. L'échec est écrit **dans** la transaction et le refus levé **après** son `COMMIT` (un refus levé dedans serait annulé par le `ROLLBACK`).
+- **Compatibilité du jeton** : `verifySessionToken` ignore la revendication `role` des jetons émis par l'existant et rogne le secret comme lui ; il rend `{ userId, username, issuedAt }` et `renewIfStale` prend ce résultat. Vérifié : `src/server/auth/__tests__/token.test.ts` et `tests/db/login.test.ts`.
+- **Page provisoire** : `app/admin/login/page.tsx` + `LoginForm.tsx` (formulaire nu branché sur `loginAction`) servent les critères de J3 et sont remplacés par E18 à J4.
+- `scripts/create-admin.ts` écrit par `src/server/auth/writer.ts` dans `inTransaction` ; il se lance avec `tsx --conditions=react-server` (les modules serveur importent `server-only`) et refuse la production sans `--confirm-host` (garde d'hôte de 07 §1.3).
 
 ### 8.6 Hygiène, écrite une fois
 
@@ -1106,6 +1124,8 @@ Côté domaine, `src/domain/errors.ts` fournit `DomainError(code, message, field
 | Trigger `nurea_*` (écriture seule, cohérence pièce ↔ mouvement) | message commençant par « Nuréa : » | `UNEXPECTED` | Générique + référence ; journalisé en erreur : un writer a enfreint une règle d'or |
 | `LockOrderError`, toute autre exception | — | `UNEXPECTED` | Générique + référence |
 
+*Formes réelles relevées sur Prisma 6.19 (J3, éprouvées par `tests/db/errors.test.ts`).* `P2002` porte `meta.modelName` et `meta.target` (champs) ; `P2003` porte `meta.constraint` — une contrainte **de la table écrite** signale une ligne visée disparue (`NOT_FOUND` de l'entité visée), sinon une suppression bloquée (`CONFLICT`) ; `P2025` porte `meta.modelName`. Un CHECK et un trigger n'ont **pas** de code Prisma : ils arrivent en `PrismaClientUnknownRequestError` (trigger différé : au `COMMIT`), le SQLSTATE et le nom de contrainte se lisent dans le texte ; une requête `$queryRaw` en échec arrive en `P2010` avec le SQLSTATE dans `meta.code` (interblocage `40P01` compris). Les messages « {nom} » et « {Marque} » ci-dessus restent ceux des writers, qui cherchent la fiche avant d'écrire (J10, J11) ; la traduction de dernier recours, sans contexte, dit « Ce numéro est déjà celui d'une autre fiche client : ouvre-la plutôt que d'en créer une. ». Un `ConfigurationError` (secret absent) devient `UNAVAILABLE` « Configuration serveur incomplète : ADMIN_JWT_SECRET. ».
+
 ### 9.4 Rédaction des messages
 
 - Une phrase en français direct, tutoiement comme l'existant : **ce qui bloque + le geste qui débloque** (« Rends d'abord la marque X visible »).
@@ -1164,6 +1184,16 @@ export const db = prisma.$extends({
 - Les écritures `$executeRaw` étant interdites dans le code applicatif (§4.3), l'extension voit toutes les écritures.
 - **Critères de vérification** (le mécanisme repose sur deux comportements de bibliothèques, donc testés) : `tests/db/invalidation.test.ts` prouve que les écritures faites dans `inTransaction` sont enregistrées ; `e2e/parcours/lecture-de-ses-ecritures.spec.ts` prouve qu'après un encaissement la tuile Encaissé de l'Accueil affiche le nouveau montant sans rechargement. Si l'un échoue au jalon 0 (07) : repli sur des appels explicites `tx.touch("gestion" | "catalogue")` dans les writers (vérifiables par le test d'ownership) et/ou sur `revalidateTag(tag, { expire: 0 })`, comportement éprouvé de l'existant.
 
+**Résultats des vérifications (jalon J3, 17 septembre 2026 ; Next 16.2.1, Prisma 6.19.2, PostgreSQL 15 local).**
+
+| Vérification | Résultat | Preuve |
+|---|---|---|
+| **V-lib-1** — l'extension `$allOperations` enregistre, via `AsyncLocalStorage`, les modèles écrits dans un `$transaction` interactif | **Validée.** Aucun repli. | `tests/db/invalidation.test.ts` : `create`, `updateMany`, `upsert` dans `inTransaction` ⇒ `Batch`, `Brand`, `Customer`, `Perfume` enregistrés, lecture exclue ; écritures d'une transaction annulée enregistrées aussi ; deux unités de travail concurrentes isolées ; rien hors unité de travail ; `defineAction` ⇒ `updateTag("gestion")` pour un modèle de gestion, `gestion` + `admin-catalogue` + `revalidateAdminCatalogue()` pour un modèle du catalogue, rien pour une action sans écriture. |
+| **V-lib-2** — une server action qui appelle `updateTag` renvoie la page déjà rafraîchie, sans `router.refresh()` | **Validée** sur un build de production (`next build` puis `next start`), dans un navigateur. Aucun repli. | Preuve jetable (retirée après coup) : une page `force-dynamic` affichait un compteur lu par `defineQuery(cached(…, "gestion", …))` ; deux actions fabriquées par `defineAction` incrémentaient le compteur en mémoire, l'une en inscrivant une écriture dans l'unité de travail (⇒ `updateTag("gestion")` par `invalidateWrittenModels`), l'autre non. Action sans écriture : la page garde la valeur cachée (0) alors que le serveur est à 1. Action avec écriture : la page affiche 2 et une nouvelle heure de lecture, dans le **même document** (marqueur JavaScript conservé, une seule entrée de navigation, seul trafic : le `POST` de l'action). |
+| Reste à éprouver au jalon J8 | — | `e2e/parcours/lecture-de-ses-ecritures.spec.ts` : la même propriété sur un vrai écran et une vraie base (encaissement ⇒ tuile Encaissé de l'Accueil), écran rendu en streaming sous `Block` (la preuve J3 rendait la valeur hors `Suspense`), et l'invalidation `admin-catalogue` vue par la page du catalogue. |
+
+*Limite connue de l'enregistrement.* Prisma appelle `$allOperations` pour le modèle **de tête** d'une requête : une écriture imbriquée (`saleDocument.create({ data: { lines: { create } } })`) n'inscrit que `SaleDocument`. Sans effet tant que les deux familles de tags ne se mélangent pas dans une même requête : **un writer n'imbrique jamais une écriture du catalogue (`Brand`, `Perfume`, `PerfumePricing`) dans une écriture de gestion, ni l'inverse** — il appelle la fonction du writer propriétaire (§4.3), ce qui est déjà la règle. `AdminUser` n'invalide rien (aucune lecture cachée) ; un modèle absent de `tags.ts` invalide `gestion` par défaut.
+
 ### 10.3 Lecture : `cached()`
 
 ```ts
@@ -1182,7 +1212,7 @@ export function cached<A extends readonly (string | number | null)[], R extends 
 }
 ```
 
-- **`BUILD_ID` en tête de clé** (`VERCEL_DEPLOYMENT_ID`, à défaut `VERCEL_GIT_COMMIT_SHA`, à défaut `local`) : le cache de données Vercel survit aux déploiements ; un changement de forme d'un résultat ne peut plus servir l'ancienne forme. Fin des clés « -v4 » bumpées à la main.
+- **`BUILD_ID` en tête de clé** (`VERCEL_DEPLOYMENT_ID`, à défaut `VERCEL_GIT_COMMIT_SHA`, à défaut `local`) : le cache de données Vercel survit aux déploiements ; un changement de forme d'un résultat ne peut plus servir l'ancienne forme. Fin des clés « -v4 » bumpées à la main. *Mise en œuvre J3* : les arguments entrent dans la clé par `JSON.stringify` et non `String` (`null` et `"null"` restent deux clés).
 - **`daily`** pour tout ce qui dépend du jour (en retard, ce mois, Encaissé du jour) : la clé change à minuit, heure de Paris.
 - **Filet de 60 s** sur `gestion` (valeur de l'existant) : même si une invalidation manquait, l'écart est borné. Le catalogue garde l'invalidation par tag seule, comme aujourd'hui.
 - **Le résultat est un DTO JSON** (`MoneyString`, dates ISO) : `unstable_cache` sérialise, un `Decimal` ou une `Date` ne survivraient pas.
@@ -1390,7 +1420,12 @@ Ils lisent les fichiers sources (glob + expressions régulières, sans dépendan
 | `routes-builders.test.ts` | Chaque constructeur de `src/app-shell/routes.ts` correspond à un `page.tsx` ; aucune URL `/admin/…` littérale hors `routes.ts`, `navigation.ts`, `next.config.mjs` |
 | `navigation.test.ts` (conservé, `src/app-shell/__tests__`) | 5 onglets, toute page rattachée à un onglet, parents cohérents avec l'onglet actif |
 | `tokens-sync.test.ts` | `tokens.ts` ↔ `globals.admin.css` (05 §2) |
-| `offline-page.test.ts` | `public/admin-offline.html` autonome (§14.4) |
+| `offline-page.test.ts` | `public/admin-offline.html` autonome (§14.4) — en attente (`todo`) jusqu'à J16, s'active dès que le fichier existe |
+| `vocabulaire.test.ts` (07 J3) | Chaînes littérales et texte JSX de `src/features`, `src/ui`, `src/app-shell`, `src/server/export` (hors tests) : aucun terme interdit, mots entiers, « CA » sensible à la casse |
+| `redirects.test.ts` (07 J3) | Chaque règle de `redirects()` aboutit, sans boucle, à une route de 06 §1.2 avec des paramètres reconnus ; les adresses de travail ne sont jamais redirigées (§2.3) |
+| `maintenance-page.test.ts` (A-11) | `public/admin-maintenance.html` = page servie par `proxy.ts`, autonome ; 503 HTML ou JSON (§8.3) |
+
+*Mise en œuvre J3.* Chaque test d'architecture contient un auto-contrôle (une violation écrite en dur doit être détectée), et chacun a été vu échouer sur une violation réelle introduite puis retirée. Écarts assumés : `cache-calls` admet `unstable_cache` dans `src/lib/catalogue-service.ts` (point de lecture du contrat vitrine, §12, qui reste où il est) ; `table-ownership` tolère l'écriture de `Brand` par `src/lib/admin/resoudMarque.ts` jusqu'à son déplacement dans `src/server/catalogue/` (J11) ; `route-handlers` liste en `todo` les routes de la liste fermée pas encore livrées ; `server-actions` exige en plus que `"use server"` soit la première instruction et interdit `defineAction` hors d'un `actions.ts` ; `layers` vérifie aussi l'`import "server-only"` de tête de chaque fichier de `src/server`. Les tests de `src/app-shell` sont écrits dès maintenant et deviennent effectifs avec le shell (J4).
 
 ### 16.3 Intégration sur base réelle (`tests/db/`)
 
@@ -1399,7 +1434,9 @@ Les triggers, CHECK, la vue et les fonctions de période de 03 n'existent qu'en 
 | Fichier | Contenu |
 |---|---|
 | `transactions/t01-create-document.test.ts` … `t15-archive-pocket.test.ts` | Un fichier par transaction de 03 §4.3 : cas nominal, gardes (plafonds, lot clos, poche archivée, réserves), atomicité (erreur injectée au milieu ⇒ rien d'écrit) |
-| `concurrency.test.ts` | Deux encaissements simultanés dépassant le dû ⇒ un succès, un `CONFLICT` ; deux transferts depuis « Non attribué » ⇒ jamais négatif ; double création même id ⇒ une ligne, deux succès ; ordre de verrous violé ⇒ `LockOrderError` |
+| `concurrency.test.ts` | Deux encaissements simultanés dépassant le dû ⇒ un succès, un `CONFLICT` ; deux transferts depuis « Non attribué » ⇒ jamais négatif (J6). *Livrés à J3 dans `transactions.test.ts`* : double création même id ⇒ une ligne, deux succès ; ordre de verrous violé ⇒ `LockOrderError` ; interblocage rejoué |
+| `login.test.ts` (J3) | Message indifférencié ; backoff 1, 2, 4, 8, 15, 15 min puis remise à zéro ; essais simultanés comptés ; `retour` sans redirection ouverte ; jeton de l'existant accepté |
+| `errors.test.ts` (J3) | `toActionError` sur les erreurs réelles de Prisma et PostgreSQL (§9.3) |
 | `triggers.test.ts` | `DELETE` / `UPDATE` de `Payment`, `CashMovement`, `BatchExpense` refusés ; mouvement `PAYMENT` sans paiement refusé au `COMMIT` ; contre-passation incohérente refusée ; annulation d'un remboursement : paiement d'entrée (BALANCE) sur un mouvement positif qui contre-passe le REFUND accepté, `Payment` REFUND sur un mouvement positif refusé |
 | `chiffres-parity.test.ts` | Vue `DocumentBalance` = jumeau TS ; composite = appels individuels ; Σ groupé = total |
 | `chiffres-definitions.test.ts` | Scénarios de 02 §6 : acompte sur commande annulée compté dans l'Encaissé ; `PENDING` hors À encaisser ; trop-perçu ne compensant pas une autre dette ; dépense supprimée sortie de sa période ; en retard dès 00:00 Paris |
@@ -1463,7 +1500,7 @@ Ajouts à l'existant, sans toucher aux réglages de la vitrine : `headers()` (§
 | `test:layout` | Inchangé : `playwright test layout-invariants --project=Desktop --workers=2` |
 | `test:e2e` | `playwright test parcours --project=Mobile` |
 | `verify` | `typecheck && lint && test && test:db` |
-| `admin:create-user` | `scripts/create-admin.ts` (sans rôle) |
+| `admin:create-user` | `tsx --conditions=react-server scripts/create-admin.ts` (sans rôle ; garde d'hôte `--confirm-host`) |
 | `migration:reprise` | `scripts/migration/reprise.ts` (`--dry-run` par défaut) |
 | `check:invariants` | `scripts/check-invariants.ts` |
 | Supprimés | `db:push`, `db:sync` (jamais de `db push` : il ignorerait CHECK, triggers et vue — 03 §3), `db:seed-migrate` |
