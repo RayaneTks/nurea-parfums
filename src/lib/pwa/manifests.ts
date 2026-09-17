@@ -48,11 +48,16 @@ export function getShopWebManifest(): MetadataRoute.Manifest {
   };
 }
 
-export function getAdminWebManifest(): MetadataRoute.Manifest {
+/**
+ * `nameSuffix` : « (essai) » en préproduction (07 §1.3, garde-fou 6), fourni par la route du
+ * manifeste — l'icône installée depuis la préproduction dit « Nuréa Gestion (essai) ».
+ */
+export function getAdminWebManifest(options: { nameSuffix?: string } = {}): MetadataRoute.Manifest {
+  const suffix = options.nameSuffix ?? "";
   return {
     id: new URL("/admin", SITE_URL).toString(),
-    name: `${SITE_NAME} — Gestion`,
-    short_name: "Nuréa Gestion",
+    name: `${SITE_NAME} — Gestion${suffix}`,
+    short_name: `Nuréa Gestion${suffix}`,
     description: "Espace d’administration : commandes, catalogue, comptabilité et vente.",
     start_url: "/admin",
     scope: "/admin",

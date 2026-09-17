@@ -76,7 +76,7 @@ Branche de travail : **`refonte/integration`** (la production reste sur `main`, 
 | J1 Schéma, migrations, retrait | ✅ | Schéma cible, expand/contract, 72 tests base, ancienne gestion retirée de la branche. |
 | J2 Reprise des données | ✅ | Scripts + test des cas tordus. **Répétition n°1 sur la copie réelle (17/09) : verte de bout en bout** — Trésorerie 1 546,00 € = 1 546,00 € ; Encaissé 2 050,00 € = 2 050,00 € (résidu 0,00 €) ; À encaisser 825,00 € = 825,00 € ; Marge nette 1 097,40 € → 1 097,39 € (arrondi d'une ligne historique, règle 03 §4.8). Les 281 stocks à 0 passent en « non suivi » (décision n°5 confirmée : aucun stock n'était réellement suivi). |
 | J3 Socle | ✅ | Domaine pur, contrats, defineAction/Query, transactions, cache, session, proxy, redirections, tests d'architecture. V-lib-1 et V-lib-2 validées. |
-| J4 Design system + shell | 🔄 design system ✅ ; shell en cours | 4 correctifs venus de la production à appliquer au design system (05, « à appliquer »). |
+| J4 Design system + shell | 🔄 design system ✅ ; shell, connexion et harnais d'écran ✅ (à relire) | Shell : 5 onglets et mémoire d'onglet, retour qui restitue le parent, palette (cadre), toasts, filet « Annuler », service viewport unique, bandeau de préproduction ; E18 définitif ; 5 racines d'onglet provisoires. `npm run test:layout` 46/46, `npm run test:e2e` 19/19. **Reste** : 4 correctifs venus de la production à appliquer au design system (05, « à appliquer ») ; job CI `layout`. |
 | J5 Moteur documents, stock, clients, lots | ✅ | T1 sans paiement, T2, T3, T4, T6, T13 testées sur base réelle. |
 | J6 Moteur de l'argent | 🔄 en cours | — |
 | Écart avec `origin/main` | ✅ intégré | 11 commits de production (contenances 10/50/80, visuels story, « À rattacher »…) : 01 §3.11. |

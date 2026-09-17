@@ -643,6 +643,9 @@ J1 retire l'ancienne gestion de la branche (elle ne compile plus contre le nouve
 - [ ] Préproduction : bandeau « Essai — ces données seront effacées » visible ; le manifeste (`/api/pwa/admin`) porte le nom suffixé « (essai) » ; en local sans `NUREA_ENV=preprod`, ni bandeau ni suffixe.
 - [ ] `rg -n "#[0-9A-Fa-f]{3,8}\b" src/ui src/app-shell src/features` ne trouve aucune couleur hors `src/design/` (05 §2 : aucune valeur en dur).
 - [ ] Écart du 17/09/2026 : `tokens-sync` échoue si la règle `.admin-theme` déclare un `background` ; `npm run test:layout` : une `ConfirmDialog` ouverte depuis une sheet imbriquée est au-dessus d'elle, son voile est translucide et sa carte blanche ; le toast « Annuler » affiché au-dessus d'une sheet ouverte répond au tap ; une `ConfirmDialog` dont l'action échoue reste ouverte avec le message.
+
+*Mise en œuvre de la partie shell (17/09/2026, avant la reprise de l'écart).* Les **cinq** racines d'onglet ont une page provisoire (titre + `EmptyState` « Écran livré au jalon Jn ») pour que la barre d'onglets soit navigable : Accueil J14, Commandes J8, Vendre J9, Clients J10, Catalogue J11 — `test:layout` les couvre toutes. `routes.ts` porte l'état de chaque écran (à venir, provisoire, livré) : un jalon d'écran passe son écran en « livré » et l'ajoute à `e2e/routes.ts` (la spec échoue sinon). Le harnais lance l'app en `next dev` (base e2e, secret de test, aucun `.env`) ; `E2E_SERVER=start` sert un build pour le projet Desktop seulement — le cookie `Secure` de production est refusé par WebKit sur `http://localhost`. Invariants ajoutés : un seul `primary` par écran ou sheet, libellé d'onglet jamais tronqué ; corrigés : texte `sr-only` n'est pas « rogné », une rangée étendue par pseudo-élément (`ListRow`) est une cible de la taille de la rangée. Détails : 04 §2.2 et §16.4, 05 §3.4, 06 §1.4, §1.5, E18 et S17.
+
 ---
 
 ### 3.2 Phase 2 — L'argent

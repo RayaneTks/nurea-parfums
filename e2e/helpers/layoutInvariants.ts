@@ -113,6 +113,8 @@ export async function collectLayoutViolations(page: Page): Promise<{
       for (const el of Array.from(document.querySelectorAll("*"))) {
         if (el.children.length > 0) continue;
         if (!isRendered(el)) continue;
+        // Texte réservé aux lecteurs d'écran (`sr-only`) : rogné exprès, jamais vu.
+        if (isVisuallyHidden(el)) continue;
         if (!(el.textContent ?? "").trim()) continue;
         const s = getComputedStyle(el);
         if (s.overflow !== "hidden" && s.overflowX !== "hidden") continue;
@@ -154,6 +156,29 @@ export async function collectLayoutViolations(page: Page): Promise<{
         }
       }
 
+      // ─── Une seule action primaire par écran ou par sheet ───────────────
+      /*
+       * 05 §3.1 et §5.4 : « un seul primary visible par écran ». L'écran d'une part, chaque sheet ou
+       * dialogue ouvert d'autre part (sa couche a son propre CTA). Un bouton se déclare par
+       * `data-variant`, posé par la primitive `Button`.
+       */
+      const primaryLayers = new Map<Element | null, Element[]>();
+      for (const el of Array.from(document.querySelectorAll('[data-variant="primary"]'))) {
+        if (!isRendered(el) || isVisuallyHidden(el)) continue;
+        const layer = el.closest('[role="dialog"], [role="alertdialog"], [data-vaul-drawer]');
+        primaryLayers.set(layer, [...(primaryLayers.get(layer) ?? []), el]);
+      }
+      for (const [layer, buttons] of primaryLayers) {
+        if (buttons.length <= 1) continue;
+        violations.push({
+          rule: "plusieurs-primary",
+          detail: `${buttons.length} boutons primary visibles ${layer ? "dans la même sheet" : "sur l'écran"} (${buttons
+            .map((b) => `« ${(b.textContent ?? "").trim().slice(0, 30)} »`)
+            .join(", ")}) : une seule action principale.`,
+          selector: layer ? describe(layer) : "écran",
+        });
+      }
+
       // ─── Cibles tactiles ────────────────────────────────────────────────
       const interactive = Array.from(
         document.querySelectorAll(
@@ -164,7 +189,17 @@ export async function collectLayoutViolations(page: Page): Promise<{
       for (const el of interactive) {
         if (!isRendered(el) || isVisuallyHidden(el)) continue;
         if (el.closest("[data-touch-exempt]")) continue;
-        const r = el.getBoundingClientRect();
+        /*
+         * Zone étendue par pseudo-élément (anatomie de `ListRow`, 05 §3.1) : le lien ou le bouton ne
+         * contient que le texte, et son `::after` absolu couvre toute la rangée. La cible réelle est
+         * alors le bloc contenant de ce pseudo-élément.
+         */
+        const after = getComputedStyle(el, "::after");
+        const extended =
+          after.content !== "none" && after.position === "absolute" && el instanceof HTMLElement && el.offsetParent
+            ? el.offsetParent
+            : null;
+        const r = (extended ?? el).getBoundingClientRect();
         const min = Math.min(r.width, r.height);
         const size = `Cible de ${Math.round(r.width)}×${Math.round(r.height)}px`;
         if (min < touchFail) {
@@ -246,7 +281,7 @@ export async function collectBottomOcclusion(page: Page): Promise<Violation[]> {
  * Simule l'ouverture du clavier iOS.
  *
  * Le vrai clavier ne rétrécit pas le viewport de mise en page : il n'est
- * visible que par `visualViewport`, que `ViewportSync` reporte dans
+ * visible que par `visualViewport`, que le service viewport du shell reporte dans
  * `--admin-vh` et `--admin-keyboard-inset`. Forcer ces deux variables
  * reproduit fidèlement la contrainte que subit la mise en page.
  */
