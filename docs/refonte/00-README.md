@@ -65,6 +65,28 @@ refonte en lisant cette série.
    27 incohérences relevées dont 7 bloquantes, toutes corrigées dans les docs.
 5. **Exécuter** — à démarrer : suivre `07-PLAN-EXECUTION.md` à partir de J0.
 
+## Avancement de la construction
+
+Branche de travail : **`refonte/integration`** (la production reste sur `main`, intacte).
+
+| Jalon | État | Commit / remarque |
+|---|---|---|
+| J0 Chantier | ✅ partie locale | React 19, Vitest en projets, CI, garde d'hôte, amendements A-1…A-13. **Reste** : projet Supabase de préproduction + variables Vercel *Preview* (compte du gérant requis) ; V-lib-3 (pooler) en attente de la préproduction. |
+| L1 / L2 sur `main` | ✅ prêts, non fusionnés | Branche `fix/vitrine-slug-maintenance` (worktree `../nurea-fix`), vérifiés en local. À fusionner dans `main` avant la bascule. |
+| J1 Schéma, migrations, retrait | ✅ | Schéma cible, expand/contract, 72 tests base, ancienne gestion retirée de la branche. |
+| J2 Reprise des données | 🔄 en cours | — |
+| J3 Socle | 🔄 domaine pur ✅ ; serveur en cours | — |
+| J4 Design system + shell | 🔄 design system ✅ ; shell à faire | — |
+| J5 → J16 | ⏳ | — |
+
+**Base de données locale des tests.** Docker Desktop ne démarre pas sur ce poste. Les tests
+sur base réelle tournent sur un PostgreSQL 15 embarqué (paquet npm `embedded-postgres`,
+port `54329`, `nurea`/`nurea`). `TEST_DATABASE_URL=postgresql://nurea:nurea@localhost:54329/nurea_test npm run test:db`
+recrée la base de test en UTF-8 à chaque exécution (uniquement si l'hôte est local).
+**Règle vitale** : `.env` et `.env.local` pointent sur la production et Prisma charge `.env`
+tout seul — toute commande Prisma reçoit une `DATABASE_URL` **et** une `DIRECT_URL` locales
+explicites ; jamais `npm run build` sans `NUREA_SKIP_MIGRATE_DEPLOY=1` et une URL factice.
+
 ## Reprendre le travail (passation)
 
 Pour un agent ou un développeur qui arrive sur le chantier :
