@@ -23,6 +23,7 @@ import {
 } from "../money";
 
 const NNBSP = "\u202F";
+const MINUS_SIGN = "\u2212";
 
 /** Montant de test lu comme en base : exact, signé. */
 const E = (text: string): Eur => eurFromDb(text);
@@ -184,11 +185,12 @@ describe("money — arithmétique", () => {
 });
 
 describe("money — affichage", () => {
-  it("compact arrondit à l'euro, signed marque les positifs", () => {
-    expect(formatEur(E("1234.50"), { compact: true })).toBe(`1${NNBSP}235${NNBSP}€`);
+  it("compact masque les centimes nuls sans jamais arrondir, signed marque les positifs", () => {
+    expect(formatEur(E("1234.00"), { compact: true })).toBe(`1${NNBSP}234${NNBSP}€`);
+    expect(formatEur(E("1234.50"), { compact: true })).toBe(`1${NNBSP}234,50${NNBSP}€`);
+    expect(formatEur(E("-0.40"), { compact: true })).toBe(`${MINUS_SIGN}0,40${NNBSP}€`);
     expect(formatEur(E("12.00"), { signed: true })).toBe(`+12,00${NNBSP}€`);
     expect(formatEur(eur.zero, { signed: true })).toBe(`0,00${NNBSP}€`);
-    expect(formatEur(E("-0.40"), { compact: true })).toBe(`0${NNBSP}€`);
   });
 
   it("spokenEur lit les euros puis les centimes", () => {

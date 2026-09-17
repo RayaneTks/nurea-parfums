@@ -2,53 +2,42 @@
 
 import { useId, type ReactNode } from "react";
 
-type FormFieldProps = {
-  label: string;
-  /** Indique champ obligatoire (étoile rouge à droite du label). */
-  required?: boolean;
-  /** Aide affichée sous le champ (gris). */
-  hint?: ReactNode;
-  /** Message d'erreur (rouge, prioritaire sur hint). */
-  error?: ReactNode;
-  /**
-   * Identifiant cible du label. Si non fourni, génère un id et le passe via
-   * la fonction render `children`. Le composant input/select/textarea doit
-   * recevoir l'id pour que le label l'associe correctement.
-   */
-  htmlFor?: string;
-  /**
-   * Soit un ReactNode statique (input avec id géré manuellement),
-   * soit une render-function qui reçoit l'id + describedBy auto.
-   */
-  children: ReactNode | ((args: { id: string; "aria-describedby"?: string }) => ReactNode);
+export type FieldControlProps = {
+  id: string;
+  "aria-describedby"?: string;
+  "aria-invalid"?: true;
 };
 
-/**
- * Wrapper standard label + child + hint/error.
- *
- * Utile quand le composant enfant n'a pas déjà ses props label/hint/error
- * intégrées (custom select, switch, file picker, etc.). Pour `Input` /
- * `Textarea` qui supportent ces props nativement, utilise les props
- * directement plutôt que ce wrapper.
- */
-export function FormField({
-  label,
-  required = false,
-  hint,
-  error,
-  htmlFor,
-  children,
-}: FormFieldProps) {
+type FormFieldProps = {
+  label: string;
+  /** Astérisque après le libellé. */
+  required?: boolean;
+  /** Aide sous le champ. */
+  hint?: ReactNode;
+  /**
+   * Message d'erreur, prioritaire sur l'aide : actionnable et en français
+   * (« 80,00 € au maximum », « Ce numéro est déjà celui de Lina. »).
+   */
+  error?: ReactNode;
+  /** Identifiant du contrôle quand il n'est pas passé par la fonction enfant. */
+  htmlFor?: string;
+  /**
+   * Fonction qui reçoit `id`, `aria-describedby` et `aria-invalid` à étaler sur
+   * le contrôle (`<Input {...field} />`) — c'est ce qui relie libellé, message
+   * et bordure d'erreur. Un nœud simple suppose `htmlFor`.
+   */
+  children: ReactNode | ((field: FieldControlProps) => ReactNode);
+};
+
+/** Champ labellisé (05 §3.2) : LE seul chemin pour un libellé, une aide, une erreur. */
+export function FormField({ label, required = false, hint, error, htmlFor, children }: FormFieldProps) {
   const autoId = useId();
   const fieldId = htmlFor ?? autoId;
-  const helpId = error ? `${fieldId}-err` : hint ? `${fieldId}-hint` : undefined;
+  const messageId = error ? `${fieldId}-error` : hint ? `${fieldId}-hint` : undefined;
 
   return (
-    <div>
-      <label
-        htmlFor={fieldId}
-        className="mb-1.5 block text-[13px] font-medium text-[var(--admin-text-muted)]"
-      >
+    <div className="flex flex-col">
+      <label htmlFor={fieldId} className="admin-type-caption mb-1.5 font-medium text-[var(--admin-text-muted)]">
         {label}
         {required ? (
           <span className="ml-0.5 text-[var(--admin-danger)]" aria-hidden>
@@ -57,14 +46,14 @@ export function FormField({
         ) : null}
       </label>
       {typeof children === "function"
-        ? children({ id: fieldId, "aria-describedby": helpId })
+        ? children({ id: fieldId, "aria-describedby": messageId, "aria-invalid": error ? true : undefined })
         : children}
       {error ? (
-        <p id={helpId} className="mt-1.5 text-[12px] font-medium text-[var(--admin-danger)]">
+        <p id={messageId} className="admin-type-caption mt-1.5 font-medium text-[var(--admin-danger)]">
           {error}
         </p>
       ) : hint ? (
-        <p id={helpId} className="mt-1.5 text-[12px] text-[var(--admin-text-subtle)]">
+        <p id={messageId} className="admin-type-caption mt-1.5 text-[var(--admin-text-muted)]">
           {hint}
         </p>
       ) : null}

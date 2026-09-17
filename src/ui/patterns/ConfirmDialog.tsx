@@ -1,41 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Button } from "@/ui/primitives/Button";
-import { HStack, Stack } from "@/ui/primitives/Stack";
 import { cn } from "@/lib/utils";
+import { Button } from "../primitives/Button";
 
 type ConfirmDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Question directe : « Supprimer Fares ? », « Abandonner la saisie ? ». */
   title: string;
-  description?: string;
-  /** Texte du bouton de confirmation (defaut "Supprimer"). */
-  confirmLabel?: string;
-  /** Texte du bouton d'annulation (defaut "Annuler"). */
+  /**
+   * LA VÉRITÉ sur les conséquences : « Ses 12 documents sont conservés »,
+   * « Un remboursement est ajouté en face ». Aucune phrase par défaut — un
+   * « Cette action est irréversible » générique mentait quand l'annulation 5 s existe.
+   */
+  description?: ReactNode;
+  /** Verbe de l'action : « Supprimer », « Confirmer », « Abandonner ». */
+  confirmLabel: string;
   cancelLabel?: string;
-  /** "danger" rouge (defaut) ou "primary" pour confirms non-destructifs. */
-  tone?: "danger" | "primary";
-  /** @deprecated — sans effet, l'implémentation Radix passe par-dessus toute Sheet parente. */
-  nested?: boolean;
-  /** Handler async — la dialog reste ouverte pendant l'exécution. */
+  /** `danger` : destruction. `primary` : réserve à lever (cycle de statuts). */
+  tone: "danger" | "primary";
+  /**
+   * Exécutée bouton en attente (dialogue non fermable pendant ce temps). À
+   * l'appelant de fermer après succès — ou de laisser ouvert sur un refus.
+   */
   onConfirm: () => Promise<void> | void;
+  /** Troisième voie, moins forte : « Masquer plutôt ». */
+  alternative?: { label: string; onAction: () => void };
 };
 
+/**
+ * Confirmation bloquante (05 §3.2) — Radix Dialog, couche `modal` (80/81).
+ *
+ * Au-dessus d'une sheet (70/71) par son z-index ; au-dessus d'une sheet
+ * IMBRIQUÉE (même couche 80/81) par l'ordre de montage : le portail d'un
+ * dialogue est ajouté à `<body>` à son ouverture, donc APRÈS la sheet qui l'a
+ * ouvert, et à z-index égal le dernier monté l'emporte. Couvert par
+ * `npm run test:layout`.
+ *
+ * Posé en bas de l'écran, sous le pouce, comme une feuille d'action iOS :
+ * on confirme d'une main, sans remonter au centre.
+ */
 export function ConfirmDialog({
   open,
   onOpenChange,
   title,
   description,
-  confirmLabel = "Supprimer",
+  confirmLabel,
   cancelLabel = "Annuler",
-  tone = "danger",
+  tone,
   onConfirm,
+  alternative,
 }: ConfirmDialogProps) {
   const [busy, setBusy] = useState(false);
+  const cancelRef = useRef<HTMLButtonElement>(null);
 
-  const handleConfirm = async () => {
+  const confirm = async () => {
     if (busy) return;
     setBusy(true);
     try {
@@ -46,67 +67,60 @@ export function ConfirmDialog({
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={(o) => (busy ? null : onOpenChange(o))}>
+    <Dialog.Root open={open} onOpenChange={(next) => (busy ? undefined : onOpenChange(next))}>
       <Dialog.Portal>
         <Dialog.Overlay
-          className="admin-theme fixed inset-0 bg-black/50 backdrop-blur-sm"
-          style={{ zIndex: 90 }}
+          className={cn(
+            "admin-theme fixed inset-0 z-[var(--admin-z-modal-backdrop)] bg-[var(--admin-overlay)]",
+            "motion-safe:data-[state=open]:animate-in motion-safe:data-[state=open]:fade-in motion-safe:data-[state=open]:[animation-duration:var(--admin-duration-slow)]",
+          )}
         />
         <Dialog.Content
-          aria-describedby={description ? undefined : undefined}
-          onOpenAutoFocus={(e) => e.preventDefault()}
+          {...(description ? {} : { "aria-describedby": undefined })}
+          // Focus initial sur « Annuler », jamais sur l'action : une touche
+          // Entrée réflexe ne supprime rien.
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            cancelRef.current?.focus();
+          }}
           className={cn(
-            "admin-theme fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-            "w-[calc(100vw-2rem)] max-w-[400px] rounded-[20px]",
-            "bg-[var(--admin-surface)] outline-none shadow-[var(--admin-shadow-lg)]",
+            "admin-theme fixed inset-x-0 z-[var(--admin-z-modal)] mx-auto w-[calc(100%-2rem)] outline-none",
+            "rounded-[var(--admin-radius-xl)] bg-[var(--admin-surface)] shadow-[shadow:var(--admin-shadow-xl)]",
+            "motion-safe:data-[state=open]:animate-in motion-safe:data-[state=open]:fade-in motion-safe:data-[state=open]:slide-in-from-bottom-4",
+            "motion-safe:data-[state=open]:[animation-duration:var(--admin-duration-slow)] motion-safe:data-[state=open]:[animation-timing-function:var(--admin-easing-default)]",
           )}
-          style={{ zIndex: 91 }}
+          style={{
+            maxWidth: "calc(var(--admin-app-max-width) - 2rem)",
+            bottom: "calc(var(--admin-space-4) + var(--admin-safe-area-bottom) + var(--admin-keyboard-inset, 0px))",
+          }}
         >
-          <div className="px-5 pt-5">
-            <Dialog.Title className="text-[17px] font-semibold leading-tight text-[var(--admin-text)]">
-              {title}
-            </Dialog.Title>
+          <div className="px-5 pb-4 pt-5">
+            <Dialog.Title className="admin-type-h3 text-[var(--admin-text)]">{title}</Dialog.Title>
             {description ? (
-              <Dialog.Description className="mt-1 text-[13px] text-[var(--admin-text-muted)]">
+              <Dialog.Description className="admin-type-body mt-1.5 text-[var(--admin-text-muted)]">
                 {description}
               </Dialog.Description>
             ) : null}
           </div>
 
-          <div className="px-5 pt-3">
-            <Stack gap={2}>
-              <p className="text-[13px] leading-relaxed text-[var(--admin-text-muted)]">
-                {tone === "danger"
-                  ? "Cette action est irréversible."
-                  : "Merci de confirmer."}
-              </p>
-            </Stack>
-          </div>
-
-          <div
-            className="mt-4 px-4 pb-4 pt-3"
-            style={{ borderTop: "1px solid var(--admin-border)" }}
-          >
-            <HStack gap={2}>
-              <Button
-                variant="ghost"
-                size="lg"
-                fullWidth
-                onClick={() => onOpenChange(false)}
-                disabled={busy}
-              >
-                {cancelLabel}
+          <div className="flex flex-col gap-2 border-t border-[var(--admin-border)] p-3">
+            <Button
+              variant={tone === "danger" ? "danger" : "primary"}
+              size="lg"
+              fullWidth
+              isLoading={busy}
+              onClick={() => void confirm()}
+            >
+              {confirmLabel}
+            </Button>
+            {alternative ? (
+              <Button variant="secondary" size="lg" fullWidth disabled={busy} onClick={alternative.onAction}>
+                {alternative.label}
               </Button>
-              <Button
-                variant={tone === "danger" ? "danger" : "primary"}
-                size="lg"
-                fullWidth
-                isLoading={busy}
-                onClick={() => void handleConfirm()}
-              >
-                {confirmLabel}
-              </Button>
-            </HStack>
+            ) : null}
+            <Button ref={cancelRef} variant="ghost" size="lg" fullWidth disabled={busy} onClick={() => onOpenChange(false)}>
+              {cancelLabel}
+            </Button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

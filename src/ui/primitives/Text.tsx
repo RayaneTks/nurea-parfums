@@ -1,46 +1,28 @@
-import type { ElementType, ReactNode, CSSProperties } from "react";
-import { typography, type TypographyVariantName } from "@/design/tokens";
+import type { CSSProperties, ElementType, ReactNode } from "react";
+import type { TypographyRoleName } from "@/design/tokens";
 import { cn } from "@/lib/utils";
-
-type TextColor =
-  | "default"
-  | "muted"
-  | "subtle"
-  | "accent"
-  | "success"
-  | "warning"
-  | "danger"
-  | "inherit";
+import { toneClass, typeClass, type TextTone } from "./typography";
 
 type TextAlign = "left" | "center" | "right";
 
 type TextProps = {
-  variant?: TypographyVariantName;
-  color?: TextColor;
+  /** Rôle typographique (05 §2.2). Défaut `body`. */
+  variant?: TypographyRoleName;
+  tone?: TextTone;
   align?: TextAlign;
   as?: ElementType;
-  /** Tabular numerals (montants, dates). */
+  /** Chiffres tabulaires : montants, compteurs, heures. */
   numeric?: boolean;
-  /** Affiche ... si trop long. */
+  /** Une ligne, ellipse — jamais un mot coupé net. */
   truncate?: boolean;
-  /** Lignes max avant clamp (truncate multi-ligne). */
+  /** Lignes max avant ellipse. */
   clamp?: 1 | 2 | 3;
-  /** Uppercase + tracking pour eyebrows / labels. */
+  /** Capitales — libellés de chiffres en `micro`. */
   uppercase?: boolean;
+  id?: string;
   children: ReactNode;
   className?: string;
   style?: CSSProperties;
-};
-
-const colorClass: Record<TextColor, string> = {
-  default: "text-[var(--admin-text)]",
-  muted: "text-[var(--admin-text-muted)]",
-  subtle: "text-[var(--admin-text-subtle)]",
-  accent: "text-[var(--admin-accent)]",
-  success: "text-[var(--admin-success)]",
-  warning: "text-[var(--admin-warning)]",
-  danger: "text-[var(--admin-danger)]",
-  inherit: "",
 };
 
 const alignClass: Record<TextAlign, string> = {
@@ -55,34 +37,28 @@ const clampClass: Record<NonNullable<TextProps["clamp"]>, string> = {
   3: "line-clamp-3",
 };
 
+/** Texte par rôle. Toute taille de texte de l'app passe par un rôle. */
 export function Text({
   variant = "body",
-  color = "default",
+  tone = "default",
   align,
   as,
   numeric = false,
   truncate = false,
   clamp,
   uppercase = false,
+  id,
   children,
   className,
   style,
 }: TextProps) {
   const Tag: ElementType = as ?? (variant === "micro" ? "span" : "p");
-  const t = typography[variant];
-
-  const inlineStyle: CSSProperties = {
-    fontSize: t.size,
-    fontWeight: t.weight,
-    lineHeight: t.lineHeight,
-    letterSpacing: t.tracking,
-    ...style,
-  };
-
   return (
     <Tag
+      id={id}
       className={cn(
-        colorClass[color],
+        typeClass[variant],
+        toneClass[tone],
         align ? alignClass[align] : null,
         numeric ? "tnum" : null,
         truncate ? "truncate" : null,
@@ -90,7 +66,7 @@ export function Text({
         uppercase ? "uppercase" : null,
         className,
       )}
-      style={inlineStyle}
+      style={style}
     >
       {children}
     </Tag>

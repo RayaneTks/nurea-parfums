@@ -1,106 +1,106 @@
-"use client";
-
+import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-type ListRowProps = {
-  /** Slot gauche : Avatar, icône, thumbnail. */
+type ListRowBase = {
+  /** Slot gauche : Avatar, vignette, icône, Checkbox. */
   leading?: ReactNode;
-  /** Texte principal — string (interprété en font-medium 15px) ou ReactNode pour custom. */
+  /** Texte principal : une chaîne (body 500, ellipse) ou un nœud composé. */
   primary: ReactNode;
-  /** Texte secondaire sous le primary (caption). */
+  /** Légende sous le principal (caption, ellipse). */
   secondary?: ReactNode;
-  /** Slot droit : montant, badge, etc. */
+  /**
+   * Slot droit : UN montant `.tnum` OU UN badge, pas les deux (05 §5.4). Peut
+   * porter un contrôle (bouton œil, bouton-montant) : il reste tapable
+   * indépendamment de la rangée.
+   */
   trailing?: ReactNode;
-  /** Affiche un chevron si tap-to-navigate. */
+  /** Chevron de navigation. */
   chevron?: boolean;
-  /** Navigation : si fourni → wrap dans <Link>. */
-  href?: string;
-  /** onClick handler — exclusif avec href. */
-  onClick?: () => void;
-  /** Désactive interactivité. */
   disabled?: boolean;
-  /** ariaLabel pour accessibilité. */
+  /** Nom accessible de la zone pressable, quand le texte seul ne suffit pas. */
   ariaLabel?: string;
   className?: string;
 };
 
-function ListRowInner({
-  leading,
-  primary,
-  secondary,
-  trailing,
-  chevron,
-}: Pick<ListRowProps, "leading" | "primary" | "secondary" | "trailing" | "chevron">) {
-  return (
+type ListRowProps =
+  | (ListRowBase & { href: string; onClick?: never })
+  | (ListRowBase & { onClick: () => void; href?: never })
+  | (ListRowBase & { href?: never; onClick?: never });
+
+/*
+ * Anatomie : la zone pressable (lien ou bouton) ne contient que le texte, et
+ * s'étend à toute la rangée par un pseudo-élément. `leading` et `trailing`
+ * restent HORS du lien : un bouton dans un lien est du HTML invalide, et le
+ * bouton-montant d'une créance ou l'œil d'un parfum doivent rester tapables
+ * sans ouvrir la fiche. Ces deux slots laissent passer le doigt vers la rangée,
+ * sauf sur leurs propres contrôles.
+ */
+const slotClass =
+  "relative shrink-0 pointer-events-none [&_a]:pointer-events-auto [&_button]:pointer-events-auto [&_input]:pointer-events-auto";
+
+/** Ligne de liste standard : 56 px minimum, deux lignes de texte au plus. */
+export function ListRow(props: ListRowProps) {
+  const { leading, primary, secondary, trailing, chevron, disabled, ariaLabel, className } = props;
+  const href = "href" in props ? props.href : undefined;
+  const onClick = "onClick" in props ? props.onClick : undefined;
+  const interactive = (href !== undefined || onClick !== undefined) && !disabled;
+
+  const text = (
     <>
-      {leading ? <span className="shrink-0">{leading}</span> : null}
-      <span className="flex min-w-0 flex-1 flex-col">
-        {typeof primary === "string" ? (
-          <span className="block truncate text-[15px] font-medium text-[var(--admin-text)] leading-tight">
-            {primary}
-          </span>
-        ) : (
-          primary
-        )}
-        {secondary ? (
-          <span className="block truncate text-[13px] text-[var(--admin-text-muted)] mt-0.5">
-            {secondary}
-          </span>
-        ) : null}
-      </span>
-      {trailing ? <span className="shrink-0">{trailing}</span> : null}
-      {chevron ? (
-        <ChevronRight
-          size={16}
-          className="shrink-0 text-[var(--admin-text-subtle)]"
-          aria-hidden
-        />
+      {typeof primary === "string" ? (
+        <span className="admin-type-body block truncate font-medium text-[var(--admin-text)]">{primary}</span>
+      ) : (
+        primary
+      )}
+      {secondary ? (
+        <span className="admin-type-caption mt-0.5 block truncate text-[var(--admin-text-muted)]">{secondary}</span>
       ) : null}
     </>
   );
-}
 
-export function ListRow(props: ListRowProps) {
-  const { href, onClick, disabled, ariaLabel, className } = props;
-  const isInteractive = (href !== undefined || onClick !== undefined) && !disabled;
-
-  const baseCn = cn(
-    "flex items-center gap-3 px-3 py-3 min-h-[56px]",
-    isInteractive ? "tap-scale active:bg-[var(--admin-surface-muted)]" : null,
-    isInteractive
-      ? "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)] rounded-[12px]"
-      : null,
-    disabled ? "opacity-50" : null,
-    className,
+  const pressClass = cn(
+    "admin-row-press flex min-w-0 flex-1 flex-col text-left",
+    "after:absolute after:inset-0 after:content-['']",
+    "focus-visible:outline-none",
   );
 
-  if (href && isInteractive) {
-    return (
-      <Link href={href} prefetch aria-label={ariaLabel} className={baseCn}>
-        <ListRowInner {...props} />
-      </Link>
-    );
-  }
-
-  if (onClick && isInteractive) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        aria-label={ariaLabel}
-        className={cn(baseCn, "w-full text-left")}
-      >
-        <ListRowInner {...props} />
-      </button>
-    );
-  }
-
   return (
-    <div className={baseCn} aria-label={ariaLabel}>
-      <ListRowInner {...props} />
+    <div
+      className={cn(
+        "relative flex min-h-[56px] items-center gap-3 rounded-[var(--admin-radius-md)] px-3 py-2",
+        interactive
+          ? cn(
+              "[transition-property:transform,background-color] [transition-duration:var(--admin-duration-fast)] [transition-timing-function:var(--admin-easing-default)]",
+              "has-[.admin-row-press:active]:bg-[var(--admin-surface-muted)]",
+              "motion-safe:has-[.admin-row-press:active]:scale-[var(--admin-press-scale)]",
+              "has-[.admin-row-press:focus-visible]:ring-4 has-[.admin-row-press:focus-visible]:ring-[var(--admin-accent-ring)]",
+              "mouse-hover:bg-[var(--admin-surface-alt)]",
+            )
+          : null,
+        disabled ? "opacity-50" : null,
+        className,
+      )}
+    >
+      {leading ? <span className={slotClass}>{leading}</span> : null}
+
+      {interactive && href !== undefined ? (
+        <Link href={href} prefetch aria-label={ariaLabel} className={pressClass}>
+          {text}
+        </Link>
+      ) : interactive && onClick !== undefined ? (
+        <button type="button" onClick={onClick} aria-label={ariaLabel} className={pressClass}>
+          {text}
+        </button>
+      ) : (
+        <span className="flex min-w-0 flex-1 flex-col">{text}</span>
+      )}
+
+      {trailing ? <span className={slotClass}>{trailing}</span> : null}
+      {chevron ? (
+        <ChevronRight size={16} className="shrink-0 text-[var(--admin-text-subtle)]" aria-hidden />
+      ) : null}
     </div>
   );
 }
