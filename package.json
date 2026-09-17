@@ -18,7 +18,7 @@
     "test": "vitest run --project unit --project arch",
     "test:db": "vitest run --project db",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test parcours environnement --project=Mobile",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "typecheck": "tsc --noEmit",
