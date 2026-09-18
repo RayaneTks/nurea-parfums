@@ -27,6 +27,21 @@ const SERVER_STUB = `module.exports = new Proxy({}, {
   get: (_t, name) => () => { throw new Error("Banc : action serveur « " + String(name) + " » indisponible (affichage seulement)."); },
 });`;
 
+/**
+ * `process`, borné au bundle du banc.
+ *
+ * Les briques réelles passent par `next/link` et `next/navigation` ; leurs modules lisent
+ * `process.env.__NEXT_DEV_SERVER` et consorts **au chargement**. Dans une page Next, le bundler a
+ * remplacé ces lectures ; ici, esbuild n'en remplace qu'une (`NODE_ENV`) et le script injecté levait
+ * `ReferenceError: process is not defined` AVANT de poser son global — le banc ne montait pas, et le
+ * test ne disait que « élément introuvable ».
+ *
+ * Le faux `process` est passé en PARAMÈTRE de l'IIFE : il n'existe que dans la portée du bundle. Le
+ * poser sur `window` changerait le comportement de l'app sous test (des bibliothèques lisent
+ * `typeof process` pour se croire côté serveur).
+ */
+const PROCESS_SHIM = "{ env: {}, nextTick: (fn) => queueMicrotask(fn), emit: () => false, platform: 'browser', version: '' }";
+
 const stubServerActions = {
   name: "banc-stub-actions-serveur",
   setup(build: { onResolve: Function; onLoad: Function }) {
@@ -48,6 +63,8 @@ function compile(root: string, entry: string): Promise<string> {
     target: "es2020",
     jsx: "automatic",
     define: { "process.env.NODE_ENV": JSON.stringify("production") },
+    banner: { js: "(function (process) {" },
+    footer: { js: `})(${PROCESS_SHIM});` },
     plugins: [stubServerActions],
     logLevel: "silent",
   }).then((result) => {
@@ -63,13 +80,42 @@ function rootOf(testInfo: TestInfo): string {
   return path.dirname(testInfo.config.configFile ?? path.join(process.cwd(), "playwright.config.ts"));
 }
 
-/** Monte une scène d'un banc dans la page courante (déjà chargée : sa feuille admin s'y applique). */
+/**
+ * Monte une scène d'un banc dans la page courante (déjà chargée : sa feuille admin s'y applique).
+ *
+ * Les erreurs du navigateur pendant l'injection sont collectées et jointes à l'échec : un `?.mount()`
+ * optionnel avalait silencieusement le cas « le bundle a levé avant de poser son global », et le test
+ * ne disait plus que « élément introuvable », quinze secondes plus tard, sans la cause.
+ */
 async function mount(page: Page, testInfo: TestInfo, entry: string, global: string, scene: string): Promise<void> {
-  await page.addScriptTag({ content: await compile(rootOf(testInfo), entry) });
-  await page.evaluate(
-    ({ key, name }) => (window as unknown as Record<string, { mount: (s: string) => void }>)[key]?.mount(name),
-    { key: global, name: scene },
-  );
+  const problems: string[] = [];
+  const onConsole = (message: { type: () => string; text: () => string }) => {
+    if (message.type() === "error") problems.push(message.text());
+  };
+  const onPageError = (error: Error) => problems.push(`${error.name}: ${error.message}`);
+  page.on("console", onConsole);
+  page.on("pageerror", onPageError);
+  try {
+    await page.addScriptTag({ content: await compile(rootOf(testInfo), entry) });
+    const posted = await page.evaluate(
+      ({ key, name }) => {
+        const banc = (window as unknown as Record<string, { mount: (s: string) => void } | undefined>)[key];
+        if (!banc) return false;
+        banc.mount(name);
+        return true;
+      },
+      { key: global, name: scene },
+    );
+    if (!posted) {
+      throw new Error(
+        `Banc ${entry} : le script injecté n'a pas posé « window.${global} ».` +
+          (problems.length > 0 ? `\nErreurs du navigateur :\n  ${problems.join("\n  ")}` : ""),
+      );
+    }
+  } finally {
+    page.off("console", onConsole);
+    page.off("pageerror", onPageError);
+  }
 }
 
 /** Banc des couches (05 §2.7) : sheets, filet « Annuler », confirmation en échec. */
