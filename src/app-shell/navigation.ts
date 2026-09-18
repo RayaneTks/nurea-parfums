@@ -62,7 +62,7 @@ export const ADMIN_TABS: readonly AdminTab[] = [
     label: "Clients",
     icon: Users,
     match: (p) => under(p, "/admin/clients", "/admin/encaisser"),
-    filterParams: ["q"],
+    filterParams: ["q", "pages"],
   },
   {
     id: "catalogue",
