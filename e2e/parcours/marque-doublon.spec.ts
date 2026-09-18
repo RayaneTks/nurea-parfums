@@ -1,10 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 import { routes } from "../../src/app-shell/routes";
 import { waitForHydration } from "../helpers/hydration";
+import { storedImage, storedKeys, transparentPng } from "../helpers/images";
 
 /**
  * Dédoublonnage des marques (02 §4.5 ; 06 S05, E17 ; 07 J11) : « louis vuitton » désigne « Louis Vuitton »
  * déjà au catalogue, avec une notice `info` — jamais une bannière d'erreur, jamais une seconde marque.
+ * La marque est créée avec un logo transparent : converti en WebP par le serveur, sans recadrage.
  */
 
 async function openShell(page: Page, url: string) {
@@ -17,13 +19,27 @@ const drawer = (page: Page) => page.locator('[data-vaul-drawer][data-state="open
 test("« louis vuitton » sélectionne Louis Vuitton existante avec une notice info, sans doublon", async ({ page }, testInfo) => {
   testInfo.setTimeout(120_000);
 
-  // 1. La marque existe (E17, création par l'écran).
+  // 1. La marque existe (E17, création par l'écran), avec son logo transparent.
+  const brandKeysBefore = new Set((await storedKeys()).filter((key) => key.startsWith("catalog/brands/")));
   await openShell(page, routes.nouvelleMarque());
   await waitForHydration(page.getByLabel("Nom de la marque", { exact: true }));
   await page.getByLabel("Nom de la marque", { exact: true }).fill("Louis Vuitton");
+  const chooser = page.waitForEvent("filechooser");
+  await page.getByRole("button", { name: "Importer", exact: true }).first().tap();
+  await (await chooser).setFiles(await transparentPng("logo-lv.png", 800, 800));
+  await expect(page.getByRole("button", { name: "Remplacer", exact: true }).first()).toBeVisible({ timeout: 30_000 });
   await page.getByRole("button", { name: "Ajouter la marque", exact: true }).tap();
   await expect(page).toHaveURL((url) => url.pathname === "/admin/catalogue" && url.searchParams.get("tab") === "marques", { timeout: 30_000 });
   await expect(page.getByRole("link", { name: "Louis Vuitton", exact: true })).toBeVisible();
+
+  // Logo converti par le serveur (04 §12, décision du 17/09/2026) : WebP avec alpha, jamais recadré, original supprimé.
+  const logos = (await storedKeys()).filter((key) => key.startsWith("catalog/brands/") && !brandKeysBefore.has(key));
+  expect(logos).toHaveLength(1);
+  const [logoKey] = logos as [string];
+  expect(logoKey).toMatch(/^catalog\/brands\/\d{13}-[0-9a-f]{8}\.webp$/);
+  expect(await storedImage(logoKey)).toEqual({ format: "webp", width: 800, height: 800, hasAlpha: true });
+  const logoStamp = /(\d{13}-[0-9a-f]{8})\.webp$/.exec(logoKey)?.[1] as string;
+  await expect.poll(async () => (await storedKeys()).filter((key) => key.startsWith(`catalog/tmp/brands/${logoStamp}.`))).toEqual([]);
 
   // 2. E17 : retaper le nom autrement ne crée rien — notice « existe déjà » et CTA qui ouvre l'existante.
   await openShell(page, routes.nouvelleMarque());

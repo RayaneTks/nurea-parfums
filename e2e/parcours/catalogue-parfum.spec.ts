@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { routes } from "../../src/app-shell/routes";
 import { waitForHydration } from "../helpers/hydration";
-import { png, storedKeys } from "../helpers/images";
+import { png, storedImage, storedKeys, tiffNamedPng } from "../helpers/images";
 import { countTaps } from "../helpers/tap";
 
 /**
@@ -20,6 +20,7 @@ const drawer = (page: Page) => page.locator('[data-vaul-drawer][data-state="open
 test("PC-07 : un parfum créé avec sa photo, depuis l'Accueil, en 9 taps au plus et moins de 90 s", async ({ page }, testInfo) => {
   testInfo.setTimeout(150_000);
   const photo = await png("IMG_4021.png", 1200, 1600);
+  const perfumeKeysBefore = new Set((await storedKeys()).filter((key) => key.startsWith("catalog/perfumes/")));
   await openShell(page, routes.accueil());
   const taps = countTaps(page);
   const started = Date.now();
@@ -59,7 +60,14 @@ test("PC-07 : un parfum créé avec sa photo, depuis l'Accueil, en 9 taps au plu
   // Visible d'emblée (visuel présent, Dior visible), tarif mémorisé, photo au stockage (faux, local).
   await expect(page.getByRole("switch", { name: /Visible sur la vitrine/ })).toHaveAttribute("aria-checked", "true");
   await expect(page.getByText("80 ml", { exact: true })).toBeVisible();
-  expect((await storedKeys()).some((key) => /^catalog\/perfumes\/\d{13}-[0-9a-f]{8}\.(webp|png)$/.test(key))).toBe(true);
+  // Converti par le serveur (04 §12, décision du 17/09/2026) : un vrai WebP portrait, l'original temporaire supprimé.
+  const created = (await storedKeys()).filter((key) => key.startsWith("catalog/perfumes/") && !perfumeKeysBefore.has(key));
+  expect(created).toHaveLength(1);
+  const [finalKey] = created as [string];
+  expect(finalKey).toMatch(/^catalog\/perfumes\/\d{13}-[0-9a-f]{8}\.webp$/);
+  expect(await storedImage(finalKey)).toEqual({ format: "webp", width: 1024, height: 1536, hasAlpha: false });
+  const stampOf = /(\d{13}-[0-9a-f]{8})\.webp$/.exec(finalKey)?.[1] as string;
+  await expect.poll(async () => (await storedKeys()).filter((key) => key.startsWith(`catalog/tmp/perfumes/${stampOf}.`))).toEqual([]);
 
   taps.expectAtMost(9);
   expect(elapsed).toBeLessThan(90_000);
@@ -99,8 +107,12 @@ test("sans visuel : enregistré masqué, publication refusée avec le message du
   await page.getByLabel("Prix du 80 ml", { exact: true }).fill("95");
   await page.getByRole("button", { name: "Ajouter au catalogue", exact: true }).tap();
 
+  // La notice part avec le succès de l'action, avant que E16 ne soit rendue : on l'attend d'abord (le toast
+  // ne dure que trois secondes).
+  await expect(
+    page.locator("[data-admin-toast]").getByText("Égoïste ajouté, masqué : ajoute un visuel pour publier ce parfum."),
+  ).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole("heading", { level: 1, name: "Égoïste" })).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText("Égoïste ajouté, masqué : ajoute un visuel pour publier ce parfum.")).toBeVisible();
   const visibility = page.getByRole("switch", { name: /Visible sur la vitrine/ });
   await expect(visibility).toHaveAttribute("aria-checked", "false");
   await expect(visibility).toHaveAttribute("aria-disabled", "true");
@@ -112,4 +124,19 @@ test("sans visuel : enregistré masqué, publication refusée avec le message du
   await eye.tap();
   await expect(page.locator("[data-admin-toast]").getByText(refusal)).toBeVisible();
   await expect(page.getByRole("button", { name: "Rendre Égoïste visible", exact: true })).toHaveAttribute("aria-pressed", "false");
+});
+
+test("original illisible par le serveur : refusé dans le champ avec sa raison, et « Réessayer »", async ({ page }) => {
+  await openShell(page, routes.nouveauParfum());
+  const importer = page.getByRole("button", { name: "Importer", exact: true }).first();
+  await waitForHydration(importer);
+  const chooser = page.waitForEvent("filechooser");
+  await importer.tap();
+  await (await chooser).setFiles(await tiffNamedPng("scan.png"));
+
+  // Le serveur convertit d'après les OCTETS, pas d'après l'extension : la raison remonte jusqu'au champ, et
+  // « Réessayer » renvoie le même fichier. (Que l'original temporaire soit supprimé est éprouvé sur la base :
+  // `tests/db/catalogue-media.test.ts`, « original illisible … original supprimé ».)
+  await expect(page.getByText("Envoi impossible — format illisible")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("button", { name: "Réessayer", exact: true })).toBeVisible();
 });

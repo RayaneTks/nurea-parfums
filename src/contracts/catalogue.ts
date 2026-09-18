@@ -6,8 +6,9 @@
  * - Le stock n'est JAMAIS dans la fiche (01 §4.5, 04 §11) : `updatePerfumeInput` n'a pas de clé
  *   `stock`, une clé reçue en trop est ignorée ; le réglage absolu passe par `setPerfumeStockInput`.
  * - Les chemins de stockage sont décidés par le serveur (04 §12) : l'écran demande un envoi pour un
- *   usage et une extension, jamais pour un chemin ; un visuel story ne se range que sous
- *   `stories/<perfumeId>/`, et son URL publique n'est pas une entrée.
+ *   usage et une extension, jamais pour un chemin ; l'original part sous `tmp/`, le serveur le convertit
+ *   en WebP à son chemin définitif (décision du 17/09/2026) ; un visuel story ne se range que sous
+ *   `stories/<perfumeId>/`, et ni son URL publique ni ses dimensions ne sont des entrées.
  *
  * Messages de publication : `src/domain/publication.ts` (mêmes phrases à l'écran et au serveur).
  */
@@ -262,9 +263,13 @@ export type UpdateBrandInput = z.input<typeof updateBrandInput>;
 export type UpdateBrandData = z.output<typeof updateBrandInput>;
 export type SetBrandVisibilityData = z.output<typeof setBrandVisibilityInput>;
 
-// ── Envoi d'images (URL signée, chemin décidé par le serveur) ──────────────────
+// ── Envoi d'images (original sur un chemin temporaire, WebP converti par le serveur) ──
 
-/** Extensions acceptées : l'appareil photo de l'iPhone produit du HEIC (converti en WebP avant l'envoi). */
+/**
+ * Extensions d'un ORIGINAL envoyé par l'appareil. Le serveur convertit tout en WebP (décision du
+ * 17/09/2026 : iOS Safari ne sait pas encoder le WebP) ; l'extension ne sert qu'à nommer l'original
+ * temporaire, le format réel est lu dans les octets.
+ */
 export const IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "gif", "heic", "heif", "avif"] as const;
 export type ImageExtension = (typeof IMAGE_EXTENSIONS)[number];
 
@@ -272,8 +277,26 @@ export type ImageExtension = (typeof IMAGE_EXTENSIONS)[number];
 export const IMAGE_USAGES = ["parfum", "logo", "story"] as const;
 export type ImageUsage = (typeof IMAGE_USAGES)[number];
 
+/** Usages convertis puis rendus par URL (le formulaire enregistre l'URL) ; `story` est rangé par `addPerfumeMediaInput`. */
+export const CATALOGUE_IMAGE_USAGES = ["parfum", "logo"] as const satisfies readonly ImageUsage[];
+
+/**
+ * Dossier des originaux en attente de conversion : `tmp/<dossier définitif>/<horodatage>-<aléa>.<ext>`.
+ * Rien ne les référence ; l'action de conversion les supprime, `scripts/storage-orphans.ts` retire ceux
+ * de plus de 24 h (conversion jamais demandée).
+ */
+export const UPLOAD_FOLDER = "tmp";
+
+/** Poids maximal d'un original (photo d'iPhone comprise) : refusé par l'appareil, revérifié par le serveur. */
+export const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
+
 export const IMAGE_EXTENSION_MESSAGE = "Format non autorisé : jpg, png, webp, gif, heic, heif ou avif.";
 export const STORY_NEEDS_PERFUME_MESSAGE = "Enregistre d'abord le parfum pour lui ajouter des visuels story.";
+export const UPLOAD_PATH_MESSAGE = "Cette image ne vient pas d'un envoi de la gestion : envoie-la à nouveau.";
+export const IMAGE_NOT_RECEIVED_MESSAGE = "Cette image n'est pas arrivée au stockage : envoie-la à nouveau.";
+export const IMAGE_UNREADABLE_MESSAGE = "Format illisible : envoie une photo JPEG, PNG, WebP, GIF ou HEIC.";
+export const IMAGE_TOO_HEAVY_MESSAGE = "Cette image dépasse 12 Mo : envoie une version plus légère.";
+export const IMAGE_TOO_LARGE_MESSAGE = "Cette image dépasse 100 millions de pixels : envoie une version plus petite.";
 
 const isImageExtension = (value: string): value is ImageExtension =>
   (IMAGE_EXTENSIONS as readonly string[]).includes(value);
@@ -306,38 +329,86 @@ export type CreateImageUploadUrlData = z.output<typeof createImageUploadUrlInput
 
 const OBJECT_STAMP = /^\d{13}-[0-9a-f]{8}$/;
 
-/**
- * Le chemin d'un objet, fabriqué par le serveur : `<dossier>/<horodatage ms>-<8 hexa>.<ext>` (forme de la
- * production depuis `77985aa`). `stamp` est fourni par `storage.ts` (horloge et aléa), pour que la forme
- * et sa vérification (`isStoryPathOf`) vivent au même endroit.
- */
-export function buildObjectPath(
-  input: { usage: ImageUsage; perfumeId?: number; extension: ImageExtension },
-  stamp: string,
-): string {
-  if (!OBJECT_STAMP.test(stamp)) throw new RangeError(`buildObjectPath : horodatage-aléa attendu, reçu « ${stamp} »`);
-  switch (input.usage) {
+/** Dossier définitif d'un usage : `perfumes`, `brands` ou `stories/<perfumeId>`. */
+function imageFolder(usage: ImageUsage, perfumeId: number | undefined): string {
+  switch (usage) {
     case "parfum":
-      return `perfumes/${stamp}.${input.extension}`;
+      return "perfumes";
     case "logo":
-      return `brands/${stamp}.${input.extension}`;
+      return "brands";
     case "story": {
-      if (input.perfumeId === undefined || PerfumeId.safeParse(input.perfumeId) === null) {
-        throw new RangeError("buildObjectPath : un visuel story appartient à un parfum");
+      if (perfumeId === undefined || PerfumeId.safeParse(perfumeId) === null) {
+        throw new RangeError("imageFolder : un visuel story appartient à un parfum");
       }
-      return `stories/${input.perfumeId}/${stamp}.${input.extension}`;
+      return `stories/${perfumeId}`;
     }
     default: {
-      const _exhaustive: never = input.usage;
+      const _exhaustive: never = usage;
       return _exhaustive;
     }
   }
 }
 
+/**
+ * Le chemin temporaire de l'ORIGINAL, fabriqué par le serveur : `tmp/<dossier>/<horodatage ms>-<8 hexa>.<ext>`
+ * (horodatage-aléa de la production depuis `77985aa`). `stamp` est fourni par `storage.ts` (horloge et
+ * aléa), pour que la forme et ses vérifications (`parseUploadPath`, `isStoryPathOf`) vivent au même endroit.
+ */
+export function buildUploadPath(
+  input: { usage: ImageUsage; perfumeId?: number; extension: ImageExtension },
+  stamp: string,
+): string {
+  if (!OBJECT_STAMP.test(stamp)) throw new RangeError(`buildUploadPath : horodatage-aléa attendu, reçu « ${stamp} »`);
+  return `${UPLOAD_FOLDER}/${imageFolder(input.usage, input.perfumeId)}/${stamp}.${input.extension}`;
+}
+
+/** Un original envoyé, tel que son chemin le décrit. */
+export type UploadedOriginal = {
+  path: string;
+  usage: ImageUsage;
+  /** Parfum d'un visuel story ; `null` pour un visuel de parfum ou un logo. */
+  perfumeId: number | null;
+  stamp: string;
+  extension: ImageExtension;
+};
+
+const UPLOAD_PATH = new RegExp(
+  `^${UPLOAD_FOLDER}/(perfumes|brands|stories/([1-9]\\d{0,9}))/(\\d{13}-[0-9a-f]{8})\\.(${IMAGE_EXTENSIONS.join("|")})$`,
+);
+
+/**
+ * L'original désigné par ce chemin s'il a EXACTEMENT la forme que le serveur délivre, sinon `null` (autre
+ * dossier, `..`, sous-dossier, requête, extension inconnue). Seule porte d'entrée d'une lecture ou d'une
+ * suppression d'original : un chemin arbitraire offrirait la lecture et la suppression de n'importe quel objet.
+ */
+export function parseUploadPath(path: string): UploadedOriginal | null {
+  const match = UPLOAD_PATH.exec(path);
+  if (!match) return null;
+  const [, folder, perfume, stamp, extension] = match as unknown as [string, string, string | undefined, string, ImageExtension];
+  if (folder === "perfumes") return { path, usage: "parfum", perfumeId: null, stamp, extension };
+  if (folder === "brands") return { path, usage: "logo", perfumeId: null, stamp, extension };
+  const perfumeId = PerfumeId.safeParse(Number(perfume));
+  return perfumeId === null ? null : { path, usage: "story", perfumeId, stamp, extension };
+}
+
+/** Vrai si `path` est un original délivré pour cet usage (et ce parfum, pour un visuel story). */
+export function isUploadFor(path: string, usage: ImageUsage, perfumeId?: number): boolean {
+  const original = parseUploadPath(path);
+  return original !== null && original.usage === usage && (usage !== "story" || original.perfumeId === perfumeId);
+}
+
+/**
+ * Chemin définitif du WebP converti : même dossier, même horodatage-aléa, extension `webp`. Déterministe :
+ * renvoyer la même demande réécrit le même objet, jamais un second (idempotence).
+ */
+export function convertedImagePath(original: UploadedOriginal): string {
+  return `${imageFolder(original.usage, original.perfumeId ?? undefined)}/${original.stamp}.webp`;
+}
+
 const STORY_FILE = new RegExp(`^\\d{13}-[0-9a-f]{8}\\.(${IMAGE_EXTENSIONS.join("|")})$`);
 
 /**
- * Vrai si `path` est exactement un chemin que le serveur a pu délivrer pour un visuel story de ce parfum :
+ * Vrai si `path` est exactement un chemin définitif de visuel story de ce parfum :
  * `stories/<perfumeId>/<horodatage>-<aléa>.<ext>`, sans `..` ni sous-dossier. Raison : ce chemin finit un
  * jour dans une suppression d'objet (04 §12).
  */
@@ -346,16 +417,29 @@ export function isStoryPathOf(perfume: number, path: string): boolean {
   return !path.includes("..") && path.startsWith(prefix) && STORY_FILE.test(path.slice(prefix.length));
 }
 
+/**
+ * E19 visuel, E17 logo : l'original envoyé sous `tmp/` devient un WebP (portrait 1024 × 1536 pour un
+ * parfum ; logo jamais recadré), dont l'URL publique est rendue au formulaire, qui l'enregistre.
+ */
+export const convertImageInput = z
+  .object({
+    usage: z.enum(CATALOGUE_IMAGE_USAGES),
+    source: z.string().trim().max(300, UPLOAD_PATH_MESSAGE),
+  })
+  .superRefine((input, ctx) => {
+    if (!isUploadFor(input.source, input.usage)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["source"], message: UPLOAD_PATH_MESSAGE });
+    }
+  });
+
+export type ConvertImageData = z.output<typeof convertImageInput>;
+
 // ── Visuels story ──────────────────────────────────────────────────────────────
 
 export const MAX_MEDIA_PER_PERFUME = 24;
 export const MAX_MEDIA_MESSAGE = `Maximum ${MAX_MEDIA_PER_PERFUME} visuels par parfum. Supprime-en un avant d'en ajouter.`;
-/** Plafond de `prepareStoryImage` (04 §12) : le serveur refuse ce que l'appareil n'aurait pas dû envoyer. */
-export const MAX_STORY_BYTES = 12 * 1024 * 1024;
 export const STORY_PATH_MESSAGE = "Ce visuel ne vient pas d'un envoi de cette fiche : ajoute-le à nouveau depuis la fiche du parfum.";
 export const MEDIA_NOT_FOUND_MESSAGE = "Ce visuel n'existe plus. Recharge la fiche du parfum.";
-
-const DIMENSION_MESSAGE = "Les dimensions de ce visuel sont illisibles : prépare-le à nouveau puis renvoie-le.";
 
 const mediaLabel = z
   .string()
@@ -364,23 +448,20 @@ const mediaLabel = z
   .nullable()
   .transform((value) => (value === "" ? null : value));
 
-/** Ranger un visuel déposé (E16 zone 7) : chemin vérifié, URL recalculée, rang calculé, jamais reçus. */
+/**
+ * Ranger un visuel déposé (E16 zone 7) : `source` est l'original envoyé sous `tmp/stories/<perfumeId>/`,
+ * vérifié strictement ; le serveur le convertit en WebP (1920 px au plus, jamais recadré), en lit les
+ * dimensions et le poids, recalcule l'URL et le rang — rien de tout cela n'est reçu.
+ */
 export const addPerfumeMediaInput = z
   .object({
     perfumeId,
-    path: z.string().trim().max(300, STORY_PATH_MESSAGE),
+    source: z.string().trim().max(300, STORY_PATH_MESSAGE),
     label: optionalText(80),
-    width: z.number({ invalid_type_error: DIMENSION_MESSAGE }).int(DIMENSION_MESSAGE).positive(DIMENSION_MESSAGE).max(20_000, DIMENSION_MESSAGE),
-    height: z.number({ invalid_type_error: DIMENSION_MESSAGE }).int(DIMENSION_MESSAGE).positive(DIMENSION_MESSAGE).max(20_000, DIMENSION_MESSAGE),
-    bytes: z
-      .number({ invalid_type_error: DIMENSION_MESSAGE })
-      .int(DIMENSION_MESSAGE)
-      .positive(DIMENSION_MESSAGE)
-      .max(MAX_STORY_BYTES, "Ce visuel dépasse 12 Mo : prépare-le à nouveau avant de l'envoyer."),
   })
   .superRefine((input, ctx) => {
-    if (!isStoryPathOf(input.perfumeId, input.path)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["path"], message: STORY_PATH_MESSAGE });
+    if (!isUploadFor(input.source, "story", input.perfumeId)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["source"], message: STORY_PATH_MESSAGE });
     }
   });
 
@@ -435,12 +516,21 @@ export type BrandDeletion = { id: string; deleted: boolean; perfumes: number };
 export type StockSetting = { id: number; stock: number | null; stockStatus: StockStatus };
 
 export type ImageUploadTicket = {
-  /** Chemin dans le bucket, décidé par le serveur ; à renvoyer tel quel à `addPerfumeMediaAction`. */
+  /**
+   * Chemin TEMPORAIRE de l'original (`tmp/…`), décidé par le serveur ; à renvoyer tel quel comme `source`
+   * à `convertImageAction` ou `addPerfumeMediaAction`.
+   */
   path: string;
   signedUrl: string;
   token: string;
-  /** URL publique de l'objet une fois envoyé (visuel du parfum ou logo de la marque). */
-  publicUrl: string;
+};
+
+/** Le WebP écrit à son chemin définitif (visuel du parfum ou logo) : URL à enregistrer sur la fiche. */
+export type ConvertedImage = {
+  url: string;
+  width: number;
+  height: number;
+  bytes: number;
 };
 
 export type PerfumeMediaItem = {

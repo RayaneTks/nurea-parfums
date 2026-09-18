@@ -11,9 +11,9 @@ import {
   failingAfterWrite,
   freshStart,
   loadCatalogueServer,
+  sendOriginal,
   stamp,
   storageFake,
-  storyPath,
   type CatalogueServer,
 } from "./support/catalogue";
 
@@ -430,10 +430,10 @@ async function saleWith(lines: { perfumeId: number; perfumeName: string; brandNa
   });
 }
 
+/** Un visuel story déposé comme par l'écran : original envoyé sous tmp/, converti et rangé par le serveur. */
 async function addStory(perfumeId: number) {
-  return expectOk(
-    await server.actions.addPerfumeMediaAction({ perfumeId, path: storyPath(perfumeId), width: 1080, height: 1920, bytes: 400_000 }),
-  );
+  const source = await sendOriginal(server, { usage: "story", perfumeId });
+  return expectOk(await server.actions.addPerfumeMediaAction({ perfumeId, source }));
 }
 
 describe("suppressions : historique lisible, objets retirés après le commit (04 §12, 03 §4.4)", () => {
@@ -566,8 +566,9 @@ describe("stock et invalidation (04 §10, §11)", () => {
     );
 
     let mediaId = "";
+    const source = await sendOriginal(server, { usage: "story", perfumeId });
     await expectMedia("addPerfumeMedia", async () => {
-      const result = await server.actions.addPerfumeMediaAction({ perfumeId, path: storyPath(perfumeId), width: 1080, height: 1920, bytes: 1 });
+      const result = await server.actions.addPerfumeMediaAction({ perfumeId, source });
       if (result.ok) mediaId = result.data.id;
       return result;
     });
@@ -581,17 +582,22 @@ describe("stock et invalidation (04 §10, §11)", () => {
     cache.calls.length = 0;
     expectOk(await server.actions.createImageUploadUrlAction({ usage: "story", perfumeId, extension: "HEIC" }));
     expect(cache.calls).toEqual([]);
+    // Conversion d'un visuel de parfum ou d'un logo : un objet écrit, rien en base, rien à invalider.
+    const logoSource = await sendOriginal(server, { usage: "logo" });
+    cache.calls.length = 0;
+    expectOk(await server.actions.convertImageAction({ usage: "logo", source: logoSource }));
+    expect(cache.calls).toEqual([]);
 
     await expectCatalogue("deletePerfume", () => server.actions.deletePerfumeAction({ id: perfumeId }));
     await expectCatalogue("deleteBrand", () => server.actions.deleteBrandAction({ id: brandId }));
   });
 
-  it("URL signée : chemin fabriqué par le serveur, jamais pour un parfum absent", async () => {
+  it("URL signée : chemin temporaire de l'original fabriqué par le serveur, jamais pour un parfum absent", async () => {
     const dior = await brand("Dior");
     const sauvage = await perfume(dior.id, "Sauvage");
     const ticket = expectOk(await server.actions.createImageUploadUrlAction({ usage: "story", perfumeId: sauvage.id, extension: "IMG_0042.HEIC" }));
-    expect(ticket.path).toMatch(new RegExp(`^stories/${sauvage.id}/\\d{13}-[0-9a-f]{8}\\.heic$`));
-    expect(ticket.publicUrl).toBe(`${OWNED}${ticket.path}`);
+    expect(ticket.path).toMatch(new RegExp(`^tmp/stories/${sauvage.id}/\\d{13}-[0-9a-f]{8}\\.heic$`));
+    expect(Object.keys(ticket).sort()).toEqual(["path", "signedUrl", "token"]);
     expect(storageFake.clients.every((url) => url === "https://projet-essai-j11.supabase.co")).toBe(true);
     expectError(await server.actions.createImageUploadUrlAction({ usage: "story", perfumeId: 424242, extension: "webp" }), "NOT_FOUND");
     expect(storageFake.signed).toEqual([ticket.path]);
@@ -700,7 +706,7 @@ describe("lectures du catalogue (04 §12, §15)", () => {
     expect(second.version).not.toBe(first.version);
     expect(second.perfumes.find((p) => p.id === sauvage.id)?.pricing.map((p) => p.volumeMl)).toEqual([50]);
 
-    expectOk(await server.actions.addPerfumeMediaAction({ perfumeId: sauvage.id, path: storyPath(sauvage.id), width: 1, height: 1, bytes: 1 }));
+    await addStory(sauvage.id);
     expect((await server.queries.pickerCatalogue()).version).toBe(second.version);
   });
 });

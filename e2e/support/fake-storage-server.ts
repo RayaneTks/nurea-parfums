@@ -7,9 +7,13 @@
  * `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:<E2E_STORAGE_PORT>` et une clé fictive : aucune requête ne
  * peut partir vers Supabase, et l'envoi direct navigateur → stockage par URL signée est réellement éprouvé.
  *
- * Il parle les quatre routes de l'API Storage que la gestion utilise (storage-js 2.x) :
+ * Il parle les routes de l'API Storage que la gestion utilise (storage-js 2.x) :
  * - `POST /storage/v1/object/upload/sign/<bucket>/<chemin>` → `{ url: "/object/upload/sign/…?token=…" }` ;
- * - `PUT  /storage/v1/object/upload/sign/<bucket>/<chemin>?token=…` : le fichier (jeton vérifié) ;
+ * - `PUT  /storage/v1/object/upload/sign/<bucket>/<chemin>?token=…` : l'ORIGINAL envoyé par le navigateur,
+ *   sous `tmp/` (jeton vérifié) ;
+ * - `GET|HEAD /storage/v1/object/<bucket>/<chemin>` (authentifié) : le serveur relit l'original à convertir ;
+ *   objet absent : HTTP 400 `{ statusCode: "404" }`, comme l'API réelle ;
+ * - `POST /storage/v1/object/<bucket>/<chemin>` (authentifié, `x-upsert`) : le serveur écrit le WebP converti ;
  * - `GET  /storage/v1/object/public/<bucket>/<chemin>` : l'objet, avec CORS (partage natif, vignettes) ;
  * - `DELETE /storage/v1/object/<bucket>` `{ prefixes }` ; `POST /storage/v1/object/list/<bucket>` (orphelins).
  * Et, pour les assertions des tests : `GET /__fake/objects` (clés présentes), `GET /health`.
@@ -137,6 +141,28 @@ const server = createServer(async (req, res) => {
         return { name, id: isFolder ? null : randomUUID(), metadata: isFolder ? null : {} };
       });
       return send(res, 200, entries);
+    }
+
+    // Accès authentifié du SERVEUR (clé de service) : lecture de l'original, écriture du WebP converti.
+    const authenticated = /^\/storage\/v1\/object\/(?!(?:public|upload|list|sign|info|authenticated)\/)([A-Za-z0-9_-]+\/.+)$/.exec(route);
+    if (authenticated && ["GET", "HEAD", "POST"].includes(req.method ?? "")) {
+      if (!/^Bearer \S+/.test(req.headers.authorization ?? "")) return send(res, 401, { statusCode: "401", message: "Clé de service absente" });
+      const key = objectKey(authenticated[1] as string);
+      if (!key) return send(res, 400, { statusCode: "400", message: "Chemin refusé" });
+      if (req.method === "POST") {
+        const exists = existsSync(filePath(key));
+        if (exists && req.headers["x-upsert"] !== "true") return send(res, 400, { statusCode: "409", error: "Duplicate", message: "The resource already exists" });
+        const body = await readBody(req);
+        mkdirSync(path.dirname(filePath(key)), { recursive: true });
+        writeFileSync(filePath(key), body);
+        return send(res, 200, { Key: key, Id: randomUUID() });
+      }
+      if (!existsSync(filePath(key))) return send(res, 400, { statusCode: "404", error: "not_found", message: "Object not found" });
+      const extension = key.slice(key.lastIndexOf(".") + 1).toLowerCase();
+      cors(res);
+      res.writeHead(200, { "Content-Type": CONTENT_TYPES[extension] ?? "application/octet-stream", "Cache-Control": "no-store" });
+      res.end(req.method === "HEAD" ? undefined : readFileSync(filePath(key)));
+      return;
     }
 
     return send(res, 404, { message: `Route inconnue du faux stockage : ${req.method} ${route}` });

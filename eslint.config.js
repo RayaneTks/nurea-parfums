@@ -25,6 +25,8 @@ const config = [
       "dist/**",
       ".next/**",
       "node_modules/**",
+      // Copies de travail des agents (worktrees) : leurs sources et leur .next ne sont pas ce dépôt.
+      ".claude/**",
       "playwright-report/**",
       "test-results/**",
       "eslint.config.js",

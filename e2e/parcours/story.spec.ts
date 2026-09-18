@@ -2,13 +2,14 @@ import { expect, test, type Page } from "@playwright/test";
 import { routes } from "../../src/app-shell/routes";
 import { seedPerfumeId } from "../fixtures/seed";
 import { waitForHydration } from "../helpers/hydration";
-import { heic, png, storedKeys, unreadableHeic } from "../helpers/images";
+import { heic, png, storedImage, storedKeys, unreadableHeic } from "../helpers/images";
 import { countTaps } from "../helpers/tap";
 
 /**
  * PC-13 — Visuels story d'un parfum (06 E16 zone 7 ; 05 §3.2 `MediaGallery` ; 07 J11) : dépôt de plusieurs
- * images dont un HEIC, un fichier illisible refusé sans arrêter les autres, ordre, libellé, partage natif
- * avec fichier (simulé) — feuille fermée = aucun téléchargement —, retrait qui supprime l'objet.
+ * images dont un HEIC, convertis en WebP par le serveur (décision du 17/09/2026), un fichier illisible
+ * refusé sans arrêter les autres, ordre, libellé, partage natif avec fichier (simulé) — feuille fermée =
+ * aucun téléchargement —, retrait qui supprime l'objet.
  */
 
 const ASAD = seedPerfumeId("Asad");
@@ -68,6 +69,13 @@ test("déposer, ranger, nommer, partager et retirer les visuels story d'un parfu
   const deposited = await thumbnailSources(page);
   const storyKeys = (await storedKeys()).filter((key) => key.startsWith(`catalog/stories/${ASAD}/`));
   expect(storyKeys).toHaveLength(2);
+  // Convertis par le serveur (décision du 17/09/2026) : de vrais WebP, jamais recadrés — la planche 1080 × 1920
+  // telle quelle, la photo 1440 × 2560 (JPEG de repli de l'appareil) plafonnée à 1080 × 1920 — et plus aucun original.
+  for (const key of storyKeys) {
+    expect(key).toMatch(new RegExp(`^catalog/stories/${ASAD}/\\d{13}-[0-9a-f]{8}\\.webp$`));
+    expect(await storedImage(key)).toEqual({ format: "webp", width: 1080, height: 1920, hasAlpha: false });
+  }
+  await expect.poll(async () => (await storedKeys()).filter((key) => key.startsWith(`catalog/tmp/stories/${ASAD}/`))).toEqual([]);
 
   // Un fichier illisible est refusé, avec sa raison, sans rien ajouter.
   const add = page.getByRole("button", { name: "Ajouter des visuels", exact: true });
@@ -78,6 +86,7 @@ test("déposer, ranger, nommer, partager et retirer les visuels story d'un parfu
   await (await chooser).setFiles([unreadableHeic("capture.heic")]);
   await expect(page.locator("[data-admin-toast]").getByText("Aucun visuel ajouté · 1 refusé : format illisible")).toBeVisible({ timeout: 30_000 });
   await expect(thumbnails(page)).toHaveCount(2);
+  await expect.poll(async () => (await storedKeys()).filter((key) => key.startsWith(`catalog/tmp/stories/${ASAD}/`))).toEqual([]);
 
   // Ordre : le premier passe après le second.
   await thumbnails(page).first().tap();
@@ -103,7 +112,8 @@ test("déposer, ranger, nommer, partager et retirer les visuels story d'un parfu
   await expect.poll(async () => (await probe(page)).shares.length).toBe(1);
   const [shared] = (await probe(page)).shares;
   expect(shared?.names).toHaveLength(1);
-  expect(shared?.names[0]).toMatch(/^nurea-lattafa-asad-story-fond-clair\.(webp|jpg)$/);
+  expect(shared?.names[0]).toBe("nurea-lattafa-asad-story-fond-clair.webp");
+  expect(shared?.types[0]).toBe("image/webp");
   taps.expectAtMost(2);
 
   // Feuille de partage fermée (AbortError) : rien ne se passe, aucun téléchargement de repli.

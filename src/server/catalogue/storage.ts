@@ -1,23 +1,37 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import {
-  buildObjectPath,
+  IMAGE_NOT_RECEIVED_MESSAGE,
+  IMAGE_TOO_HEAVY_MESSAGE,
+  MAX_IMAGE_BYTES,
+  UPLOAD_PATH_MESSAGE,
+  buildUploadPath,
+  convertedImagePath,
+  parseUploadPath,
   type CreateImageUploadUrlData,
   type ImageUploadTicket,
+  type ImageUsage,
 } from "@/contracts/catalogue";
+import { DomainError } from "@/domain/errors";
+import { imageDimensions, toWebp } from "@/server/catalogue/webp";
 import { logEvent } from "@/server/core/log";
 import { inTransaction, type Tx } from "@/server/db/transaction";
 import { ConfigurationError } from "@/server/env";
 
 /**
- * Seul fichier qui parle au stockage d'images Supabase (04 §4.3, §12) : URL signée d'envoi, URL publique,
- * suppression d'objets. Remplace `src/lib/supabase/adminStorage.ts`.
+ * Seul fichier qui parle au stockage d'images Supabase (04 §4.3, §12) : URL signée d'envoi, lecture de
+ * l'original, écriture du WebP converti, URL publique, suppression d'objets. Remplace
+ * `src/lib/supabase/adminStorage.ts`.
  *
- * Trois règles, écrites ici une fois :
+ * Quatre règles, écrites ici une fois :
  * 1. **Le chemin est décidé par le serveur** selon l'usage (`perfumes/`, `brands/`, `stories/<parfum>/`) ;
  *    le nom de fichier de l'appareil est jeté, seule l'extension survit.
- * 2. **L'URL publique se recalcule** depuis le chemin : elle n'est jamais reçue du client.
- * 3. **On ne supprime qu'après le COMMIT, et seulement ce qui est à nous** : une URL qui ne commence pas
+ * 2. **L'appareil envoie l'original, le serveur écrit le WebP** (décision du 17/09/2026) : l'original part
+ *    sous `tmp/<dossier>/<horodatage>-<aléa>.<ext>` par URL signée ; `convertUpload` le lit, le convertit
+ *    (`webp.ts`) et écrit `<dossier>/<horodatage>-<aléa>.webp` — chemin déterministe : renvoyer la même
+ *    demande réécrit le même objet. L'action enregistre l'URL, PUIS supprime l'original (`thenRemoveUpload`).
+ * 3. **L'URL publique se recalcule** depuis le chemin : elle n'est jamais reçue du client.
+ * 4. **On ne supprime qu'après le COMMIT, et seulement ce qui est à nous** : une URL qui ne commence pas
  *    EXACTEMENT par `${NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${SUPABASE_STORAGE_BUCKET}/` n'est
  *    jamais supprimée (07 §1.3, garde-fou 2) — la préproduction référence les visuels de la production dans
  *    sa copie de la base, elle ne doit pas pouvoir les effacer. Une suppression qui échoue est journalisée,
@@ -81,19 +95,101 @@ function objectStamp(): string {
 }
 
 /**
- * URL signée d'envoi direct navigateur → Supabase (le serveur ne relaie jamais les octets). Le chemin
- * rendu est celui qu'il faudra renvoyer pour ranger un visuel story ; l'URL publique sert au visuel du
- * catalogue ou au logo.
+ * URL signée d'envoi direct navigateur → Supabase de l'ORIGINAL, sous `tmp/` (le serveur de Next ne relaie
+ * jamais les octets de l'appareil : une action serveur a un corps plafonné). Le chemin rendu est la `source`
+ * à renvoyer pour la conversion.
  */
 export async function createImageUpload(input: CreateImageUploadUrlData): Promise<ImageUploadTicket> {
-  const path = buildObjectPath(input, objectStamp());
-  const publicUrl = publicUrlOf(path);
+  const path = buildUploadPath(input, objectStamp());
   // `upsert` : un renvoi du même envoi (réseau coupé après l'écriture) ne doit pas échouer ; le chemin est neuf.
   const { data, error } = await storageBucket().createSignedUploadUrl(path, { upsert: true });
   if (error || !data) {
     throw new Error(`Stockage : URL signée refusée pour ${path} (${error?.message ?? "réponse vide"})`);
   }
-  return { path, signedUrl: data.signedUrl, token: data.token, publicUrl };
+  return { path, signedUrl: data.signedUrl, token: data.token };
+}
+
+/** Objet absent : l'API Storage répond 404, ou 400 avec `statusCode: "404"` selon sa version. */
+function isMissingObject(error: unknown): boolean {
+  const { status, statusCode } = (error ?? {}) as { status?: unknown; statusCode?: unknown };
+  return status === 404 || statusCode === "404" || statusCode === 404 || statusCode === "not_found";
+}
+
+/**
+ * Octets d'un objet de NOTRE bucket (le client est lié au bucket configuré), ou `null` s'il n'y est pas.
+ * Au-delà de 12 Mo : `VALIDATION`, avant toute conversion.
+ */
+async function readObject(path: string): Promise<Buffer | null> {
+  const { data, error } = await storageBucket().download(path);
+  if (error || !data) {
+    if (isMissingObject(error)) return null;
+    throw new Error(`Stockage : lecture refusée pour ${path} (${error instanceof Error ? error.message : "réponse vide"})`);
+  }
+  if (data.size > MAX_IMAGE_BYTES) throw new DomainError("VALIDATION", IMAGE_TOO_HEAVY_MESSAGE, "source");
+  return Buffer.from(await data.arrayBuffer());
+}
+
+/** Écrit (ou réécrit à l'identique) un objet converti. Le chemin porte un horodatage-aléa : contenu immuable. */
+async function writeObject(path: string, bytes: Buffer, contentType: string): Promise<void> {
+  const { error } = await storageBucket().upload(path, bytes, { contentType, upsert: true, cacheControl: "31536000" });
+  if (error) throw new Error(`Stockage : écriture refusée pour ${path} (${error.message})`);
+}
+
+/** Le WebP écrit à son chemin définitif, et ce qu'il faut en ranger en base. */
+export type StoredImage = { path: string; url: string; width: number; height: number; bytes: number };
+
+/**
+ * Convertit l'original `source` (chemin `tmp/…` délivré pour cet usage) en WebP et l'écrit à son chemin
+ * définitif. N'écrit rien en base : l'action enregistre l'URL dans sa transaction, puis supprime l'original.
+ *
+ * Idempotent : le chemin définitif se déduit de `source`. Renvoyer la même demande réécrit le même objet ;
+ * si l'original est déjà supprimé (demande déjà servie, réponse perdue), le WebP en place est rendu tel quel.
+ * Refus `VALIDATION` (champ `source`) : chemin d'une autre forme — rien n'est lu —, original jamais arrivé,
+ * plus de 12 Mo, format illisible.
+ */
+export async function convertUpload(source: string, usage: ImageUsage): Promise<StoredImage> {
+  const original = parseUploadPath(source);
+  if (original === null || original.usage !== usage) throw new DomainError("VALIDATION", UPLOAD_PATH_MESSAGE, "source");
+  const path = convertedImagePath(original);
+  const url = publicUrlOf(path);
+
+  const bytes = await readObject(original.path);
+  if (bytes === null) {
+    const stored = await readObject(path);
+    if (stored === null) throw new DomainError("VALIDATION", IMAGE_NOT_RECEIVED_MESSAGE, "source");
+    return { path, url, ...(await imageDimensions(stored)), bytes: stored.length };
+  }
+  const webp = await toWebp(bytes, usage);
+  await writeObject(path, webp.data, "image/webp");
+  return { path, url, width: webp.width, height: webp.height, bytes: webp.bytes };
+}
+
+/**
+ * Supprime un original `tmp/…` ; tout autre chemin est ignoré. Ne lève jamais : un original resté est
+ * retiré par `scripts/storage-orphans.ts` au-delà de 24 h.
+ */
+export async function removeUpload(source: string): Promise<void> {
+  const original = parseUploadPath(source);
+  if (original === null) return;
+  try {
+    const { error } = await storageBucket().remove([original.path]);
+    if (error) throw error;
+  } catch (cause) {
+    logEvent("error", "storage.remove.upload", { reason: describe(cause), orphans: [original.path] });
+  }
+}
+
+/**
+ * Le geste qui consomme un original (conversion, puis enregistrement de l'URL dans sa transaction), puis
+ * la suppression de cet original — que le geste ait abouti ou non : un original n'est jamais réutilisé
+ * (« Réessayer » renvoie le fichier). Un renvoi de la même demande reste servi (`convertUpload`).
+ */
+export async function thenRemoveUpload<T>(source: string, work: () => Promise<T>): Promise<T> {
+  try {
+    return await work();
+  } finally {
+    await removeUpload(source);
+  }
 }
 
 /**

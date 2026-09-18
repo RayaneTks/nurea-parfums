@@ -3,26 +3,27 @@
 import { useCallback } from "react";
 import type { ImageUploadTicket } from "@/contracts/catalogue";
 import { useAction } from "@/app-shell/hooks/useAction";
-import { createImageUploadUrlAction } from "@/server/catalogue/actions";
+import { convertImageAction, createImageUploadUrlAction } from "@/server/catalogue/actions";
 import type { ImageCrop } from "@/ui/patterns/ImageField";
-import { convertCatalogueImage, prepareStoryImage, type PreparedImage } from "./image-convert";
+import { prepareUpload, refusalReason, uploadExtension } from "./image-convert";
 
 /**
- * Envoi d'une image au stockage (04 §12) : préparée sur l'appareil (`image-convert.ts`), puis envoyée
- * directement au bucket par l'URL signée que rend le serveur — qui décide seul du chemin. Le serveur ne
- * relaie jamais les octets.
+ * Envoi d'une image (04 §12 ; décision du 17/09/2026) : l'appareil envoie l'ORIGINAL directement au bucket,
+ * sur le chemin temporaire signé par le serveur (le serveur de Next ne relaie jamais les octets) ; une
+ * action serveur le convertit ensuite en WebP à son chemin définitif. Seul le HEIC est d'abord converti en
+ * JPEG sur l'appareil (`image-convert.ts`). Le geste de l'utilisateur ne change pas.
  */
 
 export const UPLOAD_REFUSED = "envoi refusé par le stockage";
 
-async function putToSignedUrl(ticket: ImageUploadTicket, prepared: PreparedImage): Promise<void> {
+async function putToSignedUrl(ticket: ImageUploadTicket, file: File): Promise<void> {
   let response: Response;
   try {
     response = await fetch(ticket.signedUrl, {
       method: "PUT",
-      body: prepared.file,
+      body: file,
       headers: {
-        "Content-Type": prepared.file.type,
+        "Content-Type": file.type || "application/octet-stream",
         Authorization: `Bearer ${ticket.token}`,
         "x-upsert": "true",
       },
@@ -33,40 +34,45 @@ async function putToSignedUrl(ticket: ImageUploadTicket, prepared: PreparedImage
   if (!response.ok) throw new Error(response.status === 413 ? "fichier trop lourd pour le stockage" : UPLOAD_REFUSED);
 }
 
-export type StoryUpload = { path: string; width: number; height: number; bytes: number };
+/** De quoi ranger un visuel story (`addPerfumeMediaAction`) : l'original envoyé, chemin décidé par le serveur. */
+export type StoryUpload = { source: string };
+
+type UploadTarget = { usage: "parfum" | "logo" } | { usage: "story"; perfumeId: number };
 
 export function useImageUpload() {
-  const { run } = useAction(createImageUploadUrlAction, { errors: "inline" });
+  const { run: requestTicket } = useAction(createImageUploadUrlAction, { errors: "inline" });
+  const { run: convert } = useAction(convertImageAction, { errors: "inline" });
 
-  const ticketFor = useCallback(
-    async (input: Parameters<typeof createImageUploadUrlAction>[0]): Promise<ImageUploadTicket> => {
-      const result = await run(input);
-      if (!result.ok) throw new Error(result.error.message);
-      return result.data;
+  /** Prépare puis envoie l'original ; rend son chemin temporaire. */
+  const sendOriginal = useCallback(
+    async (file: File, target: UploadTarget): Promise<string> => {
+      const original = await prepareUpload(file);
+      const ticket = await requestTicket({ ...target, extension: uploadExtension(original) });
+      if (!ticket.ok) throw new Error(ticket.error.fields?.extension ?? ticket.error.fields?.perfumeId ?? ticket.error.message);
+      await putToSignedUrl(ticket.data, original);
+      return ticket.data.path;
     },
-    [run],
+    [requestTicket],
   );
 
-  /** Visuel de parfum ou logo : rend l'URL publique de l'objet envoyé. */
+  /** Visuel de parfum (portrait) ou logo (jamais recadré) : rend l'URL publique du WebP converti. */
   const uploadCatalogueImage = useCallback(
     async (file: File, options: { crop: ImageCrop }): Promise<string> => {
-      const prepared = await convertCatalogueImage(file, options.crop);
-      const ticket = await ticketFor({ usage: options.crop === "none" ? "logo" : "parfum", extension: prepared.file.name });
-      await putToSignedUrl(ticket, prepared);
-      return ticket.publicUrl;
+      const usage = options.crop === "none" ? "logo" : "parfum";
+      const source = await sendOriginal(file, { usage });
+      const result = await convert({ usage, source });
+      if (!result.ok) throw new Error(refusalReason(result.error));
+      return result.data.url;
     },
-    [ticketFor],
+    [sendOriginal, convert],
   );
 
-  /** Planche story : rend de quoi la ranger (`addPerfumeMediaAction`), chemin décidé par le serveur. */
+  /** Planche story : l'original envoyé, que `addPerfumeMediaAction` convertit et range. */
   const uploadStory = useCallback(
-    async (file: File, perfumeId: number): Promise<StoryUpload> => {
-      const prepared = await prepareStoryImage(file);
-      const ticket = await ticketFor({ usage: "story", perfumeId, extension: prepared.file.name });
-      await putToSignedUrl(ticket, prepared);
-      return { path: ticket.path, width: prepared.width, height: prepared.height, bytes: prepared.file.size };
-    },
-    [ticketFor],
+    async (file: File, perfumeId: number): Promise<StoryUpload> => ({
+      source: await sendOriginal(file, { usage: "story", perfumeId }),
+    }),
+    [sendOriginal],
   );
 
   return { uploadCatalogueImage, uploadStory };

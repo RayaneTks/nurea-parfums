@@ -31,6 +31,9 @@ export default defineConfig({
             "src/**/*.test.tsx",
             "src/**/__tests__/**/*.ts",
             "src/**/__tests__/**/*.tsx",
+            // Fonctions pures des tâches explicites (`scripts/storage-orphans.ts`) : le script ne
+            // s'exécute que lancé par son chemin, ses fonctions restent donc testables ici.
+            "scripts/**/__tests__/**/*.ts",
           ],
           exclude: ["node_modules", ".next", "e2e", "tests"],
         },
