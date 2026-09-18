@@ -60,6 +60,7 @@ import { periodStart } from "@/domain/periods";
 import { storedLineViolation, type VolumeMl } from "@/domain/sale-line";
 import { insufficientStock } from "@/domain/stock";
 import { BATCH_NOT_FOUND } from "@/server/batches/writer";
+import { marqueEquivalente } from "@/server/catalogue/resoudMarque";
 import * as catalogueStock from "@/server/catalogue/stock";
 import { upsertPricing } from "@/server/catalogue/writer";
 import * as customersWriter from "@/server/customers/writer";
@@ -311,8 +312,26 @@ async function readPerfumeSnapshots(tx: Tx, ids: readonly number[]): Promise<Map
   return snapshots;
 }
 
-function offCatalogSnapshot(item: Extract<LineItem, { kind: "offCatalog" }>, imageUrl: string | null = null): Snapshot {
-  return { perfumeId: null, isOffCatalog: true, perfumeName: item.name, brandName: item.brandName ?? null, imageUrl };
+type OffCatalogItem = Extract<LineItem, { kind: "offCatalog" }>;
+
+/**
+ * Marque d'un article hors catalogue (06 S05) : si une marque équivalente est au catalogue (`cleNom` : casse,
+ * accents, ponctuation), la ligne en prend l'orthographe — « lattafa » devient « Lattafa ». Lecture seule
+ * (`resoudMarque`) : aucune marque n'est créée par une vente.
+ */
+async function readOffCatalogBrands(tx: Tx, items: readonly (LineItem | undefined)[]): Promise<Map<string, string>> {
+  const typed = unique(items.flatMap((item) => (item?.kind === "offCatalog" && item.brandName ? [item.brandName] : [])));
+  const resolved = new Map<string, string>();
+  for (const name of typed) {
+    const existing = await marqueEquivalente(tx.db, name);
+    if (existing) resolved.set(name, existing.name);
+  }
+  return resolved;
+}
+
+function offCatalogSnapshot(item: OffCatalogItem, brands: ReadonlyMap<string, string>, imageUrl: string | null = null): Snapshot {
+  const brandName = item.brandName ? (brands.get(item.brandName) ?? item.brandName) : null;
+  return { perfumeId: null, isOffCatalog: true, perfumeName: item.name, brandName, imageUrl };
 }
 
 type LineAmounts = { unitPriceEur: Eur; unitCostDzd: Dzd | null; exchangeRate: Rate | null };
@@ -411,10 +430,11 @@ export async function createDocument(
 
   const catalogueIds = unique(input.lines.flatMap((line) => (line.item.kind === "catalogue" ? [line.item.perfumeId] : [])));
   const perfumes = await readPerfumeSnapshots(tx, catalogueIds);
+  const brands = await readOffCatalogBrands(tx, input.lines.map((line) => line.item));
   const lines = input.lines.map((line, position) => ({
     line,
     position,
-    snapshot: line.item.kind === "catalogue" ? (perfumes.get(line.item.perfumeId) as Snapshot) : offCatalogSnapshot(line.item),
+    snapshot: line.item.kind === "catalogue" ? (perfumes.get(line.item.perfumeId) as Snapshot) : offCatalogSnapshot(line.item, brands),
     amounts: amountsOf(line),
   }));
 
@@ -554,6 +574,7 @@ async function planLines(
     ),
   );
   const perfumes = await readPerfumeSnapshots(tx, snapshotIds);
+  const brands = await readOffCatalogBrands(tx, lines.map((line) => line.item));
 
   const documentDelivered = doc.status === "DELIVERED";
   const deltas: catalogueStock.DeliveredDelta[] = [];
@@ -564,7 +585,7 @@ async function planLines(
     const existing = existingById.get(line.id) ?? null;
     let snapshot: Snapshot;
     if (!line.item) snapshot = existing as StoredLine;
-    else if (line.item.kind === "offCatalog") snapshot = offCatalogSnapshot(line.item, existing?.imageUrl ?? null);
+    else if (line.item.kind === "offCatalog") snapshot = offCatalogSnapshot(line.item, brands, existing?.imageUrl ?? null);
     else if (existing && existing.perfumeId === line.item.perfumeId) snapshot = existing;
     else snapshot = perfumes.get(line.item.perfumeId) as Snapshot;
     snapshot = {

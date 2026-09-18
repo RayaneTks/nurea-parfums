@@ -54,7 +54,7 @@ export const ROUTE_SPECS = {
     params: ["mode", "client", "parfum", "depuis"],
     shell: true,
     jalon: "J9",
-    etat: "provisoire",
+    etat: "livree",
   }),
   clients: spec({ screen: "E12", pattern: "/admin/clients", params: ["q", "pages"], shell: true, jalon: "J10", etat: "livree" }),
   encaisser: spec({ screen: "E13", pattern: "/admin/encaisser", params: ["anciennete", "q"], shell: true, jalon: "J8", etat: "livree" }),
