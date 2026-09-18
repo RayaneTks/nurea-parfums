@@ -68,7 +68,7 @@ test("Sheet de transfert depuis une poche, clavier ouvert sur le montant", async
     await p.getByRole("button", { name: "Transférer", exact: true }).last().tap();
     const sheet = p.locator('[data-vaul-drawer][data-state="open"]').last();
     await expect(sheet.locator("[data-movement-sheet]")).toBeVisible();
-    await sheet.getByRole("button", { name: "Compte pro", exact: true }).tap();
+    await sheet.getByRole("group", { name: "Vers" }).getByRole("button", { name: "Compte pro", exact: true }).tap();
     const input = sheet.getByLabel("Montant", { exact: true });
     await input.fill("300");
     await p.waitForTimeout(400);
