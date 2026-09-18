@@ -5,7 +5,14 @@ import type { ImageUploadTicket } from "@/contracts/catalogue";
 import { useAction } from "@/app-shell/hooks/useAction";
 import { convertImageAction, createImageUploadUrlAction } from "@/server/catalogue/actions";
 import type { ImageCrop } from "@/ui/patterns/ImageField";
-import { prepareUpload, refusalReason, uploadExtension } from "./image-convert";
+
+/**
+ * Le code de conversion (décodage HEIC, canevas, ré-encodage JPEG) n'arrive qu'au PREMIER envoi
+ * d'image (04 §15 règle 11) : il ne pèse sur aucun écran, pas même la fiche parfum qu'on ouvre pour
+ * lire un prix. `import()` plutôt que `next/dynamic` : ce n'est pas un composant, c'est du code
+ * appelé dans un geste déjà asynchrone — l'attente se confond avec la lecture du fichier.
+ */
+const imageConvert = () => import("./image-convert");
 
 /**
  * Envoi d'une image (04 §12 ; décision du 17/09/2026) : l'appareil envoie l'ORIGINAL directement au bucket,
@@ -46,6 +53,7 @@ export function useImageUpload() {
   /** Prépare puis envoie l'original ; rend son chemin temporaire. */
   const sendOriginal = useCallback(
     async (file: File, target: UploadTarget): Promise<string> => {
+      const { prepareUpload, uploadExtension } = await imageConvert();
       const original = await prepareUpload(file);
       const ticket = await requestTicket({ ...target, extension: uploadExtension(original) });
       if (!ticket.ok) throw new Error(ticket.error.fields?.extension ?? ticket.error.fields?.perfumeId ?? ticket.error.message);
@@ -61,7 +69,7 @@ export function useImageUpload() {
       const usage = options.crop === "none" ? "logo" : "parfum";
       const source = await sendOriginal(file, { usage });
       const result = await convert({ usage, source });
-      if (!result.ok) throw new Error(refusalReason(result.error));
+      if (!result.ok) throw new Error((await imageConvert()).refusalReason(result.error));
       return result.data.url;
     },
     [sendOriginal, convert],

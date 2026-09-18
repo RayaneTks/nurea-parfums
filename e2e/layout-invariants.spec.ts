@@ -195,6 +195,8 @@ test.describe("Invariants d'affichage — gestion", () => {
         <div role="dialog"><button data-variant="primary">Enregistrer</button></div>
         <div style="position:relative;height:56px"><button id="rangee" style="height:20px">Nouvelle vente</button></div>
         <button style="height:20px">Petit</button>
+        <button id="sans-nom" style="height:44px;width:44px"><svg width="20" height="20" aria-hidden="true"></svg></button>
+        <button style="height:44px;width:44px" aria-label="Fermer"><svg width="20" height="20" aria-hidden="true"></svg></button>
         <style>#rangee::after{content:"";position:absolute;inset:0}</style>
         <span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Recherche au lecteur d'écran</span>
         <nav data-tabbar><a href="#"><span></span><span style="display:block;width:30px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Commandes</span></a></nav>
@@ -208,6 +210,8 @@ test.describe("Invariants d'affichage — gestion", () => {
     expect(about("cible-tactile", "Petit")).toHaveLength(1);
     // Texte `sr-only` : jamais « rogné ».
     expect(violations.filter((v) => v.rule === "texte-rogne")).toEqual([]);
+    // Nom accessible (J16) : le bouton à icône seule sans libellé est relevé, celui qui a `aria-label` non.
+    expect(violations.filter((v) => v.rule === "sans-nom-accessible").map((v) => v.selector)).toEqual(["button#sans-nom"]);
     expect((await collectTabLabelTruncation(page)).map((v) => v.selector)).toEqual(["onglet « Commandes »"]);
   });
 
@@ -306,7 +310,13 @@ test.describe("Invariants d'affichage — gestion", () => {
               // Fin de l'animation d'entrée (260 ms) avant le toucher suivant ou la mesure.
               await page.waitForTimeout(450);
             }
-            dialog = page.locator(sheet.open.layer === "drawer" ? '[data-vaul-drawer][data-state="open"]' : "[data-media-viewer]").last();
+            const LAYER = {
+              drawer: '[data-vaul-drawer][data-state="open"]',
+              viewer: "[data-media-viewer]",
+              // S18 : `ConfirmDialog` est un dialogue Radix (bande `modal`), jamais une sheet vaul.
+              dialog: "[data-confirm-dialog]",
+            } as const;
+            dialog = page.locator(LAYER[sheet.open.layer]).last();
             await expect(dialog).toBeVisible();
           }
 
