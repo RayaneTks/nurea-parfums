@@ -104,6 +104,21 @@ recrée la base de test en UTF-8 à chaque exécution (uniquement si l'hôte est
 tout seul — toute commande Prisma reçoit une `DATABASE_URL` **et** une `DIRECT_URL` locales
 explicites ; jamais `npm run build` sans `NUREA_SKIP_MIGRATE_DEPLOY=1` et une URL factice.
 
+## Essais disponibles (18/09/2026)
+
+| Essai | Adresse | Données | Compte |
+|---|---|---|---|
+| **En ligne** (aperçu Vercel de `refonte/integration`) | `https://nurea-parfums-git-refonte-integration-rayanetks-7861s-projects.vercel.app/admin` — protégé par l'authentification Vercel (lien de partage de 24 h à régénérer par `vercel` ou le tableau de bord) | **Fictives** : base Neon `nurea-repetition` créée via la place de marché Vercel, jeu `e2e/fixtures/seed.ts` (20 parfums, 56 clients, 36 documents) | `essai` |
+| **Local** | `http://localhost:3000/admin` (et l'IP du poste sur le réseau local, pour l'iPhone) | **Réelles**, migrées : base locale `nurea_repetition`, instantané du 17/09 rejoué par `repetition:refresh` | `essai` |
+
+**Variables d'environnement de l'aperçu.** Les variables *Preview* du projet Vercel pointaient sur la
+**base de production** : tout aperçu aurait écrit dans les vraies données. Elles sont désormais
+surchargées **au niveau de la branche** `refonte/integration` (base Neon, secret de session distinct,
+`SUPABASE_STORAGE_BUCKET=catalog-essai` — aucun visuel de production ne peut être supprimé,
+`NUREA_ENV=preprod` pour le bandeau « Essai »). La garde du build a été éprouvée en vrai : le premier
+déploiement de la branche, encore branché sur la production, **a échoué** au build avec le message
+attendu, sans rien appliquer.
+
 ## Reprendre le travail (passation)
 
 Pour un agent ou un développeur qui arrive sur le chantier :
