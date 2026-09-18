@@ -88,7 +88,8 @@ Branche de travail : **`refonte/integration`** (la production reste sur `main`, 
 | J11 Catalogue | ✅ | Serveur `95fdc3c`, écrans `c888f65`, conversion WebP côté serveur `6ec8885` (l'iPhone n'encode pas le WebP : le serveur convertit, 0,4 s pour 12 Mpx ; garde de chemin, refus explicités). Réglage Supabase à faire avant la bascule : critère G9 de 07 §1.5. |
 | J12 Compta, Trésorerie, Journal | ✅ | `b38588e` — E03 deux vues, E04 journal par mois, S14–S16, S19, S21, export CSV. Chaque chiffre confronté à sa requête canonique (en base et en e2e) ; Σ « Encaissé » du CSV = `encaisse(période)`. test:layout 270, e2e 46. |
 | J13 Lots | 🔄 en cours (copie isolée) | — |
-| J14 → J16 | ⏳ | — |
+| J14 Accueil, Récap du jour, Statistiques | ✅ (copie isolée) | E01 définitif (8 zones streamées, chaque alerte ouvre exactement l'ensemble comptée), E02 et E07, cartes « Nouveautés » et « Pour commencer ». `tableauDeBord()` porte l'Encaissé du jour ; les lectures non monétaires vivent dans `src/server/stats/`. Amendements J14-1 à J14-9 dans 07 J14 — dont **E02, la zone 4 et les cartes remontées de J15 à J14** (sans elles, « bilan du jour en 1 tap » et le vide de première utilisation n'existent pas). Taps : récap du jour 0/1, compta du mois 1, répartir 2. `tableauDeBord()` 4,4 ms sur ×10. Défaut corrigé au passage : collision d'identifiants du jeu e2e entre J10 et J12, qui empêchait tout démarrage de la suite. |
+| J15 → J16 | ⏳ | J15 allégé de trois éléments (livrés à J14). |
 | Fusion `main` | ✅ | `9b371e2` — écart déjà intégré (01 §3.11), arbre de la refonte conservé. |
 
 **Base de données locale des tests.** Docker Desktop ne démarre pas sur ce poste. Les tests
@@ -131,7 +132,10 @@ exécuté** (pas de Postgres local lors de la conception) : il s'éprouve en J1�
 Le client a délégué les arbitrages (« travaille en autonomie, fais les choix,
 qu'ils soient clairs et intuitifs »). Ces points sont donc **décidés** le
 17/09/2026 et font foi ; on ne les resoumet pas. Ils modifient des habitudes :
-la carte « Nouveautés » de l'Accueil (06 E01) les explique au premier lancement.
+la carte « Nouveautés » de l'Accueil (06 E01) les explique au premier lancement
+— **elle est livrée** (J14) et reprend les six lignes du tableau ci-dessous qui
+changent un geste (1, 2, 4, 5, 6 ; la 1 en deux lignes : onglets, puis chiffres
+qui ouvrent la compta).
 Un retour d'usage du gérant en préproduction peut les amender, dans le doc cité.
 
 | # | Décision | Ce qui change pour lui | Où |

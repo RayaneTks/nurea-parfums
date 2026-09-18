@@ -8,7 +8,7 @@ Quand le fichier est vide, il est supprimé. (Une documentation qui ment est un 
 1. **04 §6.2, API** — arguments simples (pas d'objet), pour la clé de cache de §8.4 : `encaisse(periode = "all", batchId = null, customerId = null)`, `aEncaisser(batchId, customerId)`, `margeNette(periode, batchId)`, `documentBalance(...ids)`. La période voyage comme une clé texte (`src/contracts/chiffres.ts`) : `all`, `month`, `month@AAAA-MM-JJ`, `month-1`, `<instant ISO>/<instant ISO>` ; `periodFromParams({ periode, ref })` lit l'URL.
 2. **04 §6.2 et §6.6 ; 06 E03 zone 3** — `encaisseParSemaine(8)` devient `encaisseSerie(periode)` : par jour pour une semaine (et un jour), par semaine pour un mois, par mois pour une année et pour Tout ; chaque point est coupé aux bornes de la période et la somme des points égale l'Encaissé ; Tout va du mois du premier paiement au mois courant ; un intervalle libre est refusé.
 3. **04 §6.2, ajouts** — `encaisseParPoche(periode)` (E02) ; `coutACompleter(periode, batchId)` (compteur E01, filtre E03, S19) ; `documentsDeLaPeriode(periode)` (E03 zone 5, A-7) ; `margeNette` rend aussi `encaisse` et `unknownCostCount` (S19) ; `tresorerie(fraicheur: "cache" | "instant")` (« instant » pour les formulaires, 04 §10.4) ; `chiffresParLot(periode = "all")` rend `{ batchId, encaisse, aEncaisser, margeNette }` (sans compteur de documents, laissé à J13) ; `aEncaisserParClient()` ne couvre que les fiches liées.
-4. **04 §6.3** — chiffres de `tableauDeBord()` en une requête ; alertes de stock lues en parallèle depuis `catalogue.stockAlerts()` sous leur propre cache ; le composite rend aussi `stock` et `month` (bornes du mois compté). **À trancher en J14** : le bloc « Aujourd'hui » de E01 (Encaissé du jour, ventes et commandes du jour, à livrer aujourd'hui/demain) n'est pas dans le composite ; les compteurs « à livrer » dépendent du filtre de J8.
+4. **04 §6.3** — chiffres de `tableauDeBord()` en une requête ; alertes de stock lues en parallèle depuis `catalogue.stockAlerts()` sous leur propre cache ; le composite rend aussi `stock` et `month` (bornes du mois compté). ~~**À trancher en J14**~~ : **tranché à J14 et reporté dans 04 §6.3 et §6.6** — l'**Encaissé du jour** entre dans le composite (c'est un chiffre : amendement J14-2 de 07) ; les **comptes** du bloc « Aujourd'hui » (ventes, commandes prises, à livrer aujourd'hui/demain) n'y entrent pas et vivent dans `src/server/stats/accueilComptes()` (J14-3), qui emploie les mêmes expressions de bornes que les filtres `aujourdhui`/`demain` de la liste Commandes.
 5. **04 §6.5** — « maintenant » = horloge du serveur passée au SQL, qui calcule les bornes en Europe/Paris ; la clé de cache du jour et les bornes SQL partagent une seule horloge.
 6. **03 §5.5** — ordre des poches : `isSystem, sortOrder, name, id` (« Non attribué » en dernier).
 7. **03 §5.8** — clé de regroupement des créances : `fiche:<customerId>`, sinon `nom:` + lower(btrim(nom saisi)) (ignore casse et espaces autour, pas les accents) ; `ageDays` et `isOld` calculés en SQL.
@@ -56,6 +56,24 @@ Quand le fichier est vide, il est supprimé. (Une documentation qui ment est un 
 11. **04 §16.4** — harnais e2e : préchauffage de `/api/admin/search` et `/api/admin/picker` ; cas de sheets par suite de taps ; `PLAYWRIGHT_PORT`, `E2E_STORAGE_PORT`, `E2E_DATABASE_URL` pour isoler deux suites en parallèle.
 12. **06 S18** — annulation d'un paiement : « Elle reste confirmée/livrée : X resteront à encaisser. »
 13. **07 J7→J8** — `perf.test.ts` importe désormais la vraie requête `ordersListSql` (première page 1,81 ms sur ×10).
+
+## Depuis J14 (Accueil, Récap du jour, Statistiques) — 18/09/2026
+
+Les neuf amendements du jalon sont **déjà reportés** dans 07 J14 (tableau « Amendements du jalon »), 04 §0.1,
+§6.3 et §6.6, et 06 E01, E02, E07 et §1.2. Il ne reste ici que ce qui touche d'AUTRES jalons :
+
+1. **07 J13 (Lots)** — quand E05/E06 passent en « livrée », le bloc « Lots ouverts » de E01 apparaît tout seul
+   (`isNavigable`, amendement J14-4) : vérifier au passage que la rangée mène bien à E06 et que « Marge nette du
+   lot » se lit à 0 tap (critère PC-08 de J14, aujourd'hui non vérifiable).
+2. **07 J15 (Réglages)** — même chose pour la rangée « Réglages » de E01 quand E08 arrive.
+3. **07 J15** — J15 est allégé de trois éléments livrés à J14 (carte « Nouveautés », récap du jour, carte « Pour
+   commencer ») : sa charge restante est plus faible qu'annoncé.
+4. **05 §3.2 `KpiTile`** — la tuile `value` (compteur) sert le pipeline de E01 (« En attente 2 ») : elle n'a pas
+   de variante « compteur seul sans montant » documentée, on emploie `value` avec un nombre. Rien à changer, à
+   noter dans l'inventaire.
+5. **Règle de code à inscrire dans 05** — un attribut `data-*` posé sur une brique de `src/ui` est
+   **silencieusement perdu** (les props sont typées et fermées, et TypeScript ne contrôle pas un attribut JSX à
+   trait d'union) : tout marqueur de test se pose sur une balise DOM enveloppante. Deux heures perdues à J14.
 
 ## Polissage UX observé sur captures (J16)
 
