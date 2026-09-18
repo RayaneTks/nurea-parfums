@@ -277,7 +277,14 @@ test.describe("Invariants d'affichage — gestion", () => {
             dialog = page.locator("[data-command-palette]");
             await expect(dialog).toBeVisible();
             // Le champ du dialogue, et non le bouton « Rechercher » du header qui porte le même nom.
-            await expect(dialog.getByLabel("Rechercher", { exact: true })).toBeFocused();
+            const field = dialog.getByLabel("Rechercher", { exact: true });
+            await expect(field).toBeFocused();
+            if (sheet.query) {
+              // Résultats et actions de résultat (S17, A16) : la frappe est débouncée de 200 ms côté palette.
+              await field.fill(sheet.query);
+              await expect(dialog.locator("h2, h3").first()).toBeVisible();
+              await page.waitForTimeout(700);
+            }
           } else {
             const taps = typeof sheet.open.tap === "string" || sheet.open.tap instanceof RegExp ? [sheet.open.tap] : sheet.open.tap;
             for (const [index, name] of taps.entries()) {

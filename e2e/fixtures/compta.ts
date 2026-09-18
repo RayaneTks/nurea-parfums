@@ -16,15 +16,20 @@ import { parisDayKey, parseParisDayKey } from "../../src/domain/periods";
 
 const uuid = (n: number) => `e2e0d0c0-0000-4000-8000-${String(n).padStart(12, "0")}`;
 
+/**
+ * Rangs 70+ : les documents de `e2e/fixtures/documents.ts` occupent 1…60 sous le MÊME motif d'identifiant.
+ * Les rangs 40 à 43, choisis à J12, sont entrés en collision avec les fiches client de J10 (`noraSale`…) à la
+ * fusion des deux jalons — le seed échouait sur la clé primaire. Corrigé à J15.
+ */
 export const COMPTA_DOCS = {
   /** Vente directe payée, rattachée au lot « Commande de mars ». */
-  sale: uuid(40),
+  sale: uuid(70),
   /** Commande confirmée par un acompte, coût à compléter. */
-  unknownCost: uuid(41),
+  unknownCost: uuid(71),
   /** Vente directe encaissée sans poche : l'argent attend dans « Non attribué ». */
-  unassigned: uuid(42),
+  unassigned: uuid(72),
   /** Vente à crédit du mois M-5, soldée le mois suivant : un mois à coûts sans Encaissé (S19 sans pourcentage). */
-  credit: uuid(43),
+  credit: uuid(73),
 } as const;
 
 export const COMPTA_PASSING = {

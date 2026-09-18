@@ -4,6 +4,7 @@
 import type { ReceivableDTO } from "@/contracts/chiffres";
 import { foldText } from "@/contracts/search";
 import { eur, eurFromWire, formatEur, toWire, type MoneyString } from "@/domain/money";
+import type { CollectTarget } from "@/features/documents/components/document-model";
 import { formatDate } from "@/ui/patterns/date-format";
 
 export type ReceivableGroup = {
@@ -54,6 +55,22 @@ export function filterGroups(groups: readonly ReceivableGroup[], q: string): Rec
     const name = foldText(group.name);
     return terms.every((term) => name.includes(term));
   });
+}
+
+/**
+ * Une créance telle que S02 la reçoit (06 S02) : E13, la fiche client et l'action « Encaisser xx € » de la
+ * recherche globale (A16) passent tous par ici — un seul libellé, une seule forme.
+ */
+export function targetOfReceivable(item: ReceivableDTO): CollectTarget {
+  return {
+    id: item.documentId,
+    origin: item.origin,
+    status: item.status,
+    label: receivableTitle(item),
+    total: item.total,
+    paid: item.paid,
+    due: item.due,
+  };
 }
 
 /** « Vente du 3 août », « Commande livrée le 2 sept. », « Commande du 12 sept. » (06 E13 zone 5). */

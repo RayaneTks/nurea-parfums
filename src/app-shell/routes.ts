@@ -46,7 +46,7 @@ export const ROUTE_SPECS = {
   lot: spec({ screen: "E06", pattern: "/admin/lots/[id]", params: ["assigner"], shell: true, jalon: "J13", etat: "a-venir" }),
   nouveauLot: spec({ screen: "E21", pattern: "/admin/lots/nouveau", params: [], shell: true, jalon: "J13", etat: "a-venir" }),
   statistiques: spec({ screen: "E07", pattern: "/admin/statistiques", params: ["periode", "ref"], shell: true, jalon: "J14", etat: "a-venir" }),
-  reglages: spec({ screen: "E08", pattern: "/admin/reglages", params: [], shell: true, jalon: "J15", etat: "a-venir" }),
+  reglages: spec({ screen: "E08", pattern: "/admin/reglages", params: [], shell: true, jalon: "J15", etat: "livree" }),
   commandes: spec({ screen: "E10", pattern: "/admin/commandes", params: ["vue", "filtre", "q", "pages"], shell: true, jalon: "J8", etat: "livree" }),
   vendre: spec({
     screen: "E11",
