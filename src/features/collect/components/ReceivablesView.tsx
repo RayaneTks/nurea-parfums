@@ -150,14 +150,17 @@ export function ReceivablesView({
         />
       ) : (
         groups.map((group) => (
+          // `data-receivable-group` : l'alerte « n clients à relancer » de l'Accueil compte des GROUPES
+          // (03 §5.8) et son parcours vérifie qu'elle en ouvre exactement n (07 J14).
+          <div key={group.key} data-receivable-group={group.key}>
           <ReceivableGroupSection
-            key={group.key}
             group={group}
             onOpen={(id) => sheet.open(id)}
             onCollect={(item) => collect.show({ variant: "solde", groupKey: group.key, documentIds: [item.documentId] })}
             onCollectAll={() => collect.show({ variant: "tout", groupKey: group.key, documentIds: group.items.map((item) => item.documentId) })}
             onRelance={() => relance.show(group)}
           />
+          </div>
         ))
       )}
 

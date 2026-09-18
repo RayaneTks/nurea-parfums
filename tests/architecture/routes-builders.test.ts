@@ -49,7 +49,7 @@ describe("constructeurs d'URL (04 §2.2)", () => {
       lots: routes.lots(),
       lot: routes.lot("lot_1", { assigner: true }),
       nouveauLot: routes.nouveauLot(),
-      statistiques: routes.statistiques({ periode: "annee", ref: "2026-01-01" }),
+      statistiques: routes.statistiques({ periode: "annee", ref: "2026-01-01", pages: 2 }),
       reglages: routes.reglages(),
       commandes: routes.commandes({ vue: "livrees", filtre: "retard", q: "fa" }),
       vendre: routes.vendre({ mode: "commande", client: "cus_1", parfum: 12, depuis: "doc_1" }),
