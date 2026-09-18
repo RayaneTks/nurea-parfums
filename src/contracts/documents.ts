@@ -679,3 +679,48 @@ export type RecentlySoldDTO = {
   /** ISO 8601 : date du dernier document. */
   soldAt: string;
 };
+
+// ── Lectures : pré-remplissage du composeur (E11, A-9) ─────────────────────────
+
+/** Un client tel que le composeur le pose (06 E11 zone 4) : nom et contact en légende. */
+export type ComposerCustomerDTO = { id: string; fullName: string; contact: string | null };
+
+/**
+ * Une ligne reprise par « Refaire » (06 E11 : lignes, client, lot s'il est encore ouvert — jamais paiements,
+ * livraison ni notes). Une ligne dont le parfum a été supprimé depuis revient hors catalogue, sous son nom.
+ */
+export type ComposerSourceLineDTO = {
+  perfumeId: number | null;
+  perfumeName: string;
+  brandName: string | null;
+  imageUrl: string | null;
+  /** Contenance réelle, ou null (ligne reprise hors règle : « Choisir le volume »). */
+  volumeMl: VolumeMl | null;
+  quantity: number;
+  unitPriceEur: MoneyString;
+  isGift: boolean;
+  /** Dinars, chaîne décimale exacte, ou null. */
+  unitCostDzd: string | null;
+  /** Taux, chaîne décimale exacte, ou null. */
+  exchangeRate: string | null;
+};
+
+/**
+ * Paramètres d'URL du composeur lus et vérifiés par le serveur (06 §1.2, E11) : `client` (fiche posée), `parfum`
+ * (ligne ajoutée), `depuis` (« Refaire » / « Revendre »). Un identifiant illisible ou disparu vaut `null`.
+ */
+export type ComposerPrefillDTO = {
+  customer: ComposerCustomerDTO | null;
+  perfume: { id: number; name: string; brandName: string; image: string } | null;
+  source: {
+    id: string;
+    origin: DocumentOrigin;
+    /** Fiche liée (nom vivant), sinon nom et contact saisis. */
+    customer: ComposerCustomerDTO | null;
+    customerName: string | null;
+    customerContact: string | null;
+    /** Le lot, seulement s'il est encore ouvert. */
+    batch: { id: string; name: string } | null;
+    lines: ComposerSourceLineDTO[];
+  } | null;
+};

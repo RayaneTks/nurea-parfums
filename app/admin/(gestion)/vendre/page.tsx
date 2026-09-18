@@ -1,12 +1,21 @@
 import type { Metadata } from "next";
-import { ROUTE_SPECS } from "@/app-shell/routes";
 import { firstParam, type PageSearchParams } from "@/features/documents";
-import { EcranProvisoire } from "../_provisoire/EcranProvisoire";
+import { SellPage, parseSellParams } from "@/features/sell";
 
-// PROVISOIRE (07 J4) — E11 composeur Vendre définitif au jalon J9.
+// E11 — Composeur Vendre (06 E11, 07 J9).
 export const metadata: Metadata = { title: "Vendre" };
 
-export default async function VendrePage({ searchParams }: { searchParams: PageSearchParams }) {
+export default async function Page({ searchParams }: { searchParams: PageSearchParams }) {
   const params = await searchParams;
-  return <EcranProvisoire titre="Vendre" jalon={ROUTE_SPECS.vendre.jalon} docId={firstParam(params.doc)} />;
+  return (
+    <SellPage
+      params={parseSellParams({
+        mode: firstParam(params.mode),
+        client: firstParam(params.client),
+        parfum: firstParam(params.parfum),
+        depuis: firstParam(params.depuis),
+      })}
+      docId={firstParam(params.doc)}
+    />
+  );
 }
