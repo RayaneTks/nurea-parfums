@@ -31,7 +31,7 @@ const INVENTORY: Record<string, { params: string[]; shell: boolean }> = {
   "/admin/journee": { params: ["jour"], shell: true },
   "/admin/compta": { params: ["vue", "periode", "ref", "q", "filtre"], shell: true },
   "/admin/compta/journal": { params: ["mois", "poche"], shell: true },
-  "/admin/lots": { params: [], shell: true },
+  "/admin/lots": { params: ["q", "pages"], shell: true },
   "/admin/lots/[id]": { params: ["assigner"], shell: true },
   "/admin/lots/nouveau": { params: [], shell: true },
   "/admin/statistiques": { params: ["periode", "ref"], shell: true },

@@ -12,6 +12,7 @@ export { FormSection } from "./FormSection";
 export { CollapsibleSection } from "./CollapsibleSection";
 export { SelectSheet, type SelectOption, type SelectCreateContext } from "./SelectSheet";
 export { ConfirmDialog } from "./ConfirmDialog";
+export { LinkButton } from "./LinkButton";
 export { ErrorBanner } from "./ErrorBanner";
 export { InlineNameEditor } from "./InlineNameEditor";
 export { ImageField, type ImageKind, type ImageCrop } from "./ImageField";

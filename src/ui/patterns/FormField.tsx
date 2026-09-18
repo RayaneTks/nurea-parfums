@@ -44,7 +44,7 @@ export function FormField({ label, required = false, hint, error, htmlFor, child
       <span className="admin-type-caption mb-1.5 flex items-baseline font-medium text-[var(--admin-text-muted)]">
         <label htmlFor={fieldId}>{label}</label>
         {required ? (
-          <span className="ml-0.5 text-[var(--admin-danger)]" aria-hidden>
+          <span className="admin-type-caption ml-0.5 font-medium text-[var(--admin-danger)]" aria-hidden>
             *
           </span>
         ) : null}

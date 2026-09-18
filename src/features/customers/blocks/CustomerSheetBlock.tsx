@@ -1,6 +1,6 @@
 import { Undo2 } from "lucide-react";
 import { routes } from "@/app-shell/routes";
-import { LinkButton } from "@/features/catalogue/components/LinkButton";
+import { LinkButton } from "@/ui/patterns/LinkButton";
 import { aEncaisser, aEncaisserDetail } from "@/server/chiffres";
 import { customerSheet } from "@/server/customers/queries";
 import { activePockets } from "@/server/treasury/queries";

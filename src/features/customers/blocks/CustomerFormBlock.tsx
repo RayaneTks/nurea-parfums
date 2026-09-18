@@ -1,6 +1,6 @@
 import { Undo2 } from "lucide-react";
 import { routes } from "@/app-shell/routes";
-import { LinkButton } from "@/features/catalogue/components/LinkButton";
+import { LinkButton } from "@/ui/patterns/LinkButton";
 import { customerDirectory, customerForm } from "@/server/customers/queries";
 import { EmptyState } from "@/ui/primitives/EmptyState";
 import { CustomerForm } from "../components/CustomerForm";

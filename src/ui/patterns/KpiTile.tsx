@@ -67,10 +67,19 @@ export function KpiTile(props: KpiTileProps) {
     className,
   );
 
-  if (!href) return <div className={surface}>{body}</div>;
+  // `data-kpi-tile` : repère de test, comme `data-money-tile` sur les tuiles de la fiche document.
+  // Sans lui, une assertion portée sur la grille entière passe sur la MAUVAISE tuile — et masque
+  // exactement ce qu'elle prétend vérifier (relevé à J13 : « Coûts d'achat » lu pour « Marge nette »).
+  if (!href)
+    return (
+      <div className={surface} data-kpi-tile={label}>
+        {body}
+      </div>
+    );
 
   return (
     <Link
+      data-kpi-tile={label}
       href={href}
       prefetch
       className={cn(

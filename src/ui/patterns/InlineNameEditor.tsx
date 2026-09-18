@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, Pencil, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "../primitives/Button";
@@ -21,6 +21,13 @@ type InlineNameEditorProps = {
   disabled?: boolean;
   /** « Renommer le lot ». */
   ariaLabel?: string;
+  /**
+   * Niveau de titre qui ENVELOPPE le nom, quand ce nom est le titre de l'écran (E06 : le lot lui-même).
+   * Sans lui, l'écran n'a aucun titre dans l'arbre d'accessibilité — le nom n'est qu'un bouton, et la
+   * navigation par titres de VoiceOver le saute. `variant` ne fait que la typographie ; ce sont deux
+   * choses distinctes, et une sheet (S01) n'en a pas besoin : son titre est celui de la sheet.
+   */
+  headingLevel?: 1 | 2 | 3;
   className?: string;
 };
 
@@ -36,6 +43,7 @@ export function InlineNameEditor({
   placeholder = "Sans nom",
   disabled = false,
   ariaLabel = "Modifier le nom",
+  headingLevel,
   className,
 }: InlineNameEditorProps) {
   const [editing, setEditing] = useState(false);
@@ -78,8 +86,19 @@ export function InlineNameEditor({
     }
   }, [draft, valid, shown, onSave]);
 
+  /**
+   * Le titre enveloppe les DEUX états : le plan de l'écran ne disparaît pas le temps d'un renommage.
+   * `h1`/`h2`/`h3` en dur plutôt qu'une balise calculée : Tailwind et le lecteur de code les voient.
+   */
+  const heading = (content: ReactNode) => {
+    if (headingLevel === 1) return <h1 className="min-w-0">{content}</h1>;
+    if (headingLevel === 2) return <h2 className="min-w-0">{content}</h2>;
+    if (headingLevel === 3) return <h3 className="min-w-0">{content}</h3>;
+    return content;
+  };
+
   if (editing) {
-    return (
+    return heading(
       <div className={cn("flex min-w-0 items-center gap-1", className)}>
         <input
           ref={inputRef}
@@ -110,12 +129,12 @@ export function InlineNameEditor({
         <Button variant="ghost" size="sm" iconOnly ariaLabel="Annuler" onClick={cancel}>
           <X size={18} />
         </Button>
-      </div>
+      </div>,
     );
   }
 
   const empty = shown.trim().length === 0;
-  return (
+  return heading(
     <button
       type="button"
       onClick={() => {
@@ -145,6 +164,6 @@ export function InlineNameEditor({
         // Visible au doigt : au tactile, pas de survol pour révéler l'affordance.
         <Pencil size={14} className="shrink-0 text-[var(--admin-text-subtle)]" aria-hidden />
       ) : null}
-    </button>
+    </button>,
   );
 }

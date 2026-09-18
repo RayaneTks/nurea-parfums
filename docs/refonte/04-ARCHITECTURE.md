@@ -522,6 +522,7 @@ Chaque action correspond à un geste de 02 et, pour les écritures multi-tables,
 | payments | `refundAction` | T8 | Rembourser (sortie datée du jour) |
 | batches | `createBatchAction`, `updateBatchAction`, `setBatchStatusAction`, `deleteBatchAction` | — | Créer, renommer / date prévue / notes, clôturer / rouvrir, supprimer un lot vide |
 | batches | `addBatchExpenseAction` | T9 | Ajouter une dépense (datable) |
+| batches | `updateBatchExpenseAction` | — | Libellé et notes d'une dépense (**ajoutée à J13** : 06 E06 zone 4 « Modifier » et S12 en mode modification l'exigeaient, cet inventaire l'avait oubliée). Rien d'autre n'est modifiable — le trigger `batch_expense_append_only` ne laisse passer que `label` et `notes` ; le libellé du **mouvement** suit, sinon le journal (E04) garderait l'ancien nom de la même dépense. Une dépense contre-passée ne se renomme plus (`CONFLICT`). |
 | batches | `deleteBatchExpenseAction` | T10 | Supprimer une dépense (contre-passation) |
 | treasury | `createPocketAction`, `updatePocketAction` | — | Créer, renommer, réordonner |
 | treasury | `archivePocketAction` | T15 | Archiver (solde nul) |

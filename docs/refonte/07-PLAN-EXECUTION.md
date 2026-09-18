@@ -853,6 +853,33 @@ Ordre choisi : d'abord ce que le gérant fait **chaque jour sur un objet existan
 - [ ] `npm run test:layout` : E05 (ouverts et clos, zone « À rattacher » vide et pleine), E06, E21 clavier ouvert, S12 clavier ouvert, S13 par `?assigner=1`.
 - [ ] « À rattacher » (écart du 17/09/2026) : une commande livrée sans lot et une vente directe sans lot y figurent, une commande annulée non ; rattacher en **3 taps** fait quitter la ligne et la fait apparaître sur E06 ; rattacher à un lot clos est impossible (S07 ne le propose pas, le serveur refuse) ; une commande en attente rattachée apparaît sur E06 sans entrer dans « À encaisser » du lot ; un lot portant une commande annulée affiche celle-ci (repliée) et la raison de la suppression refusée.
 
+**Écarts relevés et amendés en livrant J13** (07 §3.0.2 : aucun « on verra plus tard »).
+
+| # | Écart | Reporté dans |
+|---|---|---|
+| J13-1 | E05 prend `q` et `pages` : la zone « À rattacher » est paginée EN BASE, un filtre local ne verrait que la première page et le compte affiché mentirait. `routes.lots({ q, pages })`. | 06 §1.2, `routes.ts`, `redirects.test.ts` |
+| J13-2 | Zone 0 **bornée à 4 lignes** + « Afficher les N autres », puis « Afficher plus ». À 100 lignes d'emblée, la liste des lots — le sujet de l'écran — tombait très loin sous le pli. Compte exact conservé, « 4 affichés sur 17 » affiché, 3 taps préservés. | 06 E05 zone 0 |
+| J13-3 | Le titre de l'écran est rendu **avant** la zone 0 (qui reste au-dessus des *listes* de lots) : sinon une liste sans nom ouvrait la page et le titre arrivait en retard (05 §5.1). | 06 E05 zone 0 |
+| J13-4 | Légende « créé en **septembre** », datée hors année en cours. « créé en sept. » ne disait pas de quel septembre. | 06 E05 zone 1 |
+| J13-5 | Le nombre de documents d'un lot compte **tout** le rattaché, annulés compris : le même nombre que le refus de suppression (05 §5.4). | 06 E05 zone 1 |
+| J13-6 | Vide de départ de E05 : `EmptyState done` qui nomme « Nouveau lot » au lieu d'un second bouton (05 §5.3). | 06 E05 États |
+| J13-7 | Tuile « À encaisser » de E06 : ton `warning` seulement si non nulle. | 06 E06 zone 2 |
+| J13-8 | Tuile « Marge nette » sans `href` : **S19 arrive à J12**. À reprendre quand S19 existe. | 06 E06 zone 2 |
+| J13-9 | S13 : pas de « N ignorés » — T13 est tout-ou-rien, un document modifié entre-temps fait refuser l'enregistrement entier. Le toast distingue « enregistrés » et « déjà à jour ». | 06 S13 |
+| J13-10 | S13 : recherche filtrée **sur l'appareil** (candidats du RSC) et pied effacé pendant la frappe (sheet écrasée à 320 px). | 06 S13 |
+| J13-11 | `updateBatchExpenseAction` ajoutée : 06 E06 zone 4 et S12 l'exigeaient, l'inventaire des actions l'avait oubliée. | 04 §3.4 |
+
+**Briques partagées de `src/ui` touchées à J13** (à relire au jalon suivant qui y passe) :
+
+- `FormField` : l'astérisque de `required` sort du `<label>`. Dans le libellé, il entrait dans le **texte** du champ (« Montant* ») : le champ devenait introuvable par son nom, pour un lecteur d'écran comme pour `test:layout`. `aria-hidden` n'y suffisait pas. Rendu visuel inchangé.
+- `InlineNameEditor` : prop `headingLevel`. E06 n'avait **aucun `h1`** — le nom du lot n'était qu'un bouton, et la navigation par titres le sautait. Sans la prop, comportement inchangé (S01 ne l'utilise pas).
+- `KpiTile` : attribut `data-kpi-tile="<libellé>"`, comme `data-money-tile` de la fiche document.
+- `LinkButton` **déplacé** de `src/features/catalogue/components/` vers `src/ui/patterns/` : le catalogue et les lots en ont besoin, et un second jeu de composants hors de `src/ui` est interdit (CLAUDE.md). Trois imports du catalogue mis à jour.
+- `BatchPicker` (S07, `src/features/documents/components/`) : props `nested` et `allowNone`. La rangée « Lot » de E05 l'ouvre en premier rang et sans « Sans lot » (le document n'en a pas). **Une seule S07**, deux contextes.
+- `src/server/batches/refusal.ts` : `batchDeletionRefusal` sort du writer pour que la fiche affiche **le texte même** que le serveur lève — une lecture ne peut pas importer un writer (04 §1.3).
+
+**Piège à ne pas reproduire** : un composant client qui importe le baril `@/features/documents` tire `DocumentSheetSlot`, composant serveur, et tout `src/server` avec lui dans le paquet de l'appareil ; le build échoue sur `node:async_hooks`. S07 s'importe par son chemin direct.
+
 #### J14 — Accueil et Statistiques · **M**
 
 **Dépend de** : J9, J10, J11, J12, J13.
