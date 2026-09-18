@@ -1,4 +1,5 @@
 import "server-only";
+import type { ReceivableDTO } from "@/contracts/chiffres";
 import {
   RECENT_CUSTOMERS_LIMIT,
   SEARCH_GROUP_LIMIT,
@@ -18,9 +19,10 @@ import { formatPhoneNational, phoneSearchDigits } from "@/domain/phone";
 import { cleNom } from "@/lib/nommage";
 import { cached } from "@/server/cache/cached";
 import { adminCatalogue } from "@/server/catalogue/queries";
-import { aEncaisserParClient } from "@/server/chiffres";
+import { aEncaisserDetail, aEncaisserParClient } from "@/server/chiffres";
 import { defineQuery } from "@/server/core/define-query";
 import { db } from "@/server/db/client";
+import { activePockets } from "@/server/treasury/queries";
 
 /**
  * Recherche à la frappe (04 §3.5, §15 règle 10 ; 06 §4.4 S17, S06) : clients, documents et parfums filtrés sur
@@ -159,9 +161,12 @@ export const searchAdmin = defineQuery(async (q: string, scope: SearchScope): Pr
   const wants = (target: SearchScope) => scope === "all" || scope === target;
 
   const needCustomers = wants("customers") && (matcher !== null || scope === "customers");
-  const [customers, dues, documents, catalogue] = await Promise.all([
+  // Les créances ne servent qu'aux actions de résultat de S17 (portée `all`, A16) : un sélecteur S06 ne les lit pas.
+  const needReceivables = needCustomers && scope === "all" && matcher !== null;
+  const [customers, dues, receivables, documents, catalogue] = await Promise.all([
     needCustomers ? cachedCustomers() : Promise.resolve([] as CustomerEntry[]),
     needCustomers ? aEncaisserParClient() : Promise.resolve({} as Record<string, MoneyString>),
+    needReceivables ? aEncaisserDetail() : Promise.resolve([] as ReceivableDTO[]),
     matcher && wants("documents") ? cachedDocuments() : Promise.resolve([] as DocumentEntry[]),
     matcher && wants("perfumes") ? adminCatalogue() : Promise.resolve(null),
   ]);
@@ -171,6 +176,9 @@ export const searchAdmin = defineQuery(async (q: string, scope: SearchScope): Pr
     fullName: entry.fullName,
     contact: entry.contact,
     due: dues[entry.id] ?? null,
+    // Déjà triées des plus anciennes aux plus récentes par `aEncaisserDetail()` : « Tout encaisser » les
+    // solde dans cet ordre (06 S02, A-5).
+    receivables: receivables.filter((item) => item.customerId === entry.id),
   });
 
   if (!matcher) {
@@ -180,6 +188,7 @@ export const searchAdmin = defineQuery(async (q: string, scope: SearchScope): Pr
       documents: EMPTY,
       perfumes: EMPTY,
       recentCustomers: scope === "customers" ? customers.slice(0, RECENT_CUSTOMERS_LIMIT).map(customerHit) : [],
+      pockets: [],
     };
   }
 
@@ -194,9 +203,14 @@ export const searchAdmin = defineQuery(async (q: string, scope: SearchScope): Pr
     matcher,
   );
 
+  const customerGroup = group(foundCustomers, limit, customerHit);
+  // Les poches ne se lisent que si une action « Encaisser xx € » va vraiment s'afficher : hors cache
+  // (`activePockets`), c'est une lecture de soldes qu'une frappe ordinaire ne doit pas payer.
+  const pockets = customerGroup.items.some((hit) => hit.receivables.length > 0) ? await activePockets() : [];
+
   return {
     q,
-    customers: group(foundCustomers, limit, customerHit),
+    customers: customerGroup,
     documents: group(foundDocuments, limit, (entry): DocumentHitDTO => ({
       id: entry.id,
       origin: entry.origin,
@@ -215,5 +229,6 @@ export const searchAdmin = defineQuery(async (q: string, scope: SearchScope): Pr
       stockStatus: perfume.stockStatus,
     })),
     recentCustomers: [],
+    pockets,
   };
 });

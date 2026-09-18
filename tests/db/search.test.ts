@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { catalogueLine, expectInvariants, loadMoneyServer, type MoneyServer } from "./transactions/support/argent";
+import { catalogueLine, expectInvariants, loadMoneyServer, seedPocket, seedSystemPocket, type MoneyServer } from "./transactions/support/argent";
 import { expectOk, freshStart, newId, seedCustomer, seedPerfume } from "./transactions/support/harness";
 
 /**
@@ -85,6 +85,66 @@ describe("S17 — clients", () => {
     expect(recents.recentCustomers[0]?.id).toBe(withDocument.id);
     expect((await server.search.searchAdmin("c", "all")).customers.total).toBe(0);
     expect((await server.search.searchAdmin("", "all")).recentCustomers).toEqual([]);
+  });
+});
+
+describe("S17 — action « Encaisser xx € » d'un résultat client (A16, 07 J15)", () => {
+  it("le résultat porte ses créances, les plus anciennes d'abord, et les poches du moment accompagnent la réponse", async () => {
+    await seedSystemPocket(server.prisma);
+    const bank = await seedPocket(server.prisma, { name: "Banque", kind: "BANK" });
+    const perfume = await seedPerfume(server.prisma);
+    const nora = await seedCustomer(server.prisma, { fullName: "Nora Belkacem" });
+
+    // Deux créances engagées, la plus ancienne d'abord : « Tout encaisser » les solde dans cet ordre.
+    const older = newId();
+    const newer = newId();
+    for (const [id, price] of [
+      [older, "100"],
+      [newer, "60"],
+    ] as const) {
+      expectOk(
+        await server.documents.createDocumentAction({
+          id,
+          origin: "DIRECT_SALE",
+          customer: { kind: "linked", customerId: nora.id },
+          lines: [catalogueLine(perfume.id, { unitPriceEur: price })],
+          payments: [{ id: newId(), amount: "20", pocketId: bank.id }],
+        }),
+      );
+    }
+
+    const results = await server.search.searchAdmin("nora", "all");
+    const [hit] = results.customers.items;
+    expect(hit?.due).toBe("120.00");
+    expect(hit?.receivables.map((item) => [item.documentId, item.due])).toEqual([
+      [older, "80.00"],
+      [newer, "40.00"],
+    ]);
+    // Les poches sont là pour que S02 s'ouvre sans aller-retour, « Non attribué » en dernier.
+    expect(results.pockets.map((pocket) => pocket.name)).toEqual(["Banque", "Non attribué"]);
+  });
+
+  it("aucune créance, ou une portée de sélecteur : ni créances ni poches — la frappe ne paie pas ces lectures", async () => {
+    await seedSystemPocket(server.prisma);
+    await seedPocket(server.prisma, { name: "Espèces" });
+    const perfume = await seedPerfume(server.prisma);
+    const elise = await seedCustomer(server.prisma, { fullName: "Élise Martin" });
+    expectOk(
+      await server.documents.createDocumentAction({
+        id: newId(),
+        origin: "DIRECT_SALE",
+        customer: { kind: "linked", customerId: elise.id },
+        lines: [catalogueLine(perfume.id, { unitPriceEur: "100" })],
+        payments: [{ id: newId(), amount: "100", pocketId: null }],
+      }),
+    );
+    const soldee = await server.search.searchAdmin("elise", "all");
+    expect(soldee.customers.items[0]).toMatchObject({ due: null, receivables: [] });
+    expect(soldee.pockets).toEqual([]);
+
+    const picker = await server.search.searchAdmin("elise", "customers");
+    expect(picker.customers.items[0]?.receivables).toEqual([]);
+    expect(picker.pockets).toEqual([]);
   });
 });
 

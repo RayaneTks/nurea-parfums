@@ -51,6 +51,8 @@ export type SheetCase = {
    * Plusieurs touchers : une sheet ouverte depuis une autre (fiche `?doc=` → menu → S03), dans l'ordre.
    */
   open: "search" | { tap: string | RegExp | readonly OpenStep[]; role?: "button" | "link"; layer: "drawer" | "viewer" };
+  /** `open: "search"` : saisie tapée dans la palette après l'ouverture (résultats et actions de S17). */
+  query?: string;
   keyboardFields?: string[];
   /** Stockage local posé avant le chargement (brouillon du composeur). */
   storage?: Record<string, string>;
@@ -318,11 +320,17 @@ export const SCREENS: ScreenCase[] = [
     shell: true,
     keyboardFields: ["Nom du lot"],
   },
+
+  // J15 — Réglages (06 E08) : les cinq sections, clavier ouvert sur le taux (07 J15, `test:layout` E08).
+  { screen: "E08", route: "reglages", label: "réglages", url: routes.reglages(), shell: true, keyboardFields: ["Taux DZD par défaut"] },
 ];
 
 export const SHEETS: SheetCase[] = [
   { sheet: "S17", label: "recherche ouverte", url: routes.accueil(), open: "search", keyboardFields: ["Rechercher"] },
   { sheet: "S17", label: "recherche ouverte hors racine", url: routes.clients({ q: "fa" }), open: "search", keyboardFields: ["Rechercher"] },
+  // J15 — actions de résultat (A16) : le bouton « Encaisser xx € » d'un client, le bouton « Vendre » d'un parfum.
+  { sheet: "S17", label: "résultats clients avec « Encaisser »", url: routes.accueil(), open: "search", query: "nora", keyboardFields: ["Rechercher"] },
+  { sheet: "S17", label: "résultats parfums avec « Vendre »", url: routes.accueil(), open: "search", query: "sauvage", keyboardFields: ["Rechercher"] },
   {
     sheet: "S05",
     label: "sélecteur de marque depuis le formulaire parfum",
@@ -456,6 +464,21 @@ export const SHEETS: SheetCase[] = [
     label: "Ordre des poches",
     url: routes.compta({ vue: "tresorerie" }),
     open: { tap: "Ordre", layer: "drawer" },
+  },
+
+  // J15 — les deux sheets des Réglages (06 E08 zones 1 et 3) : S07 variante poche, S21 rattachée à E08.
+  {
+    sheet: "S07",
+    label: "poche par défaut depuis les Réglages",
+    url: routes.reglages(),
+    open: { tap: /^Poche par défaut : /, layer: "drawer" },
+    keyboardFields: ["Rechercher une poche"],
+  },
+  {
+    sheet: "S21",
+    label: "Ordre des poches depuis les Réglages",
+    url: routes.reglages(),
+    open: { tap: "Ordre des poches", layer: "drawer" },
   },
 
   // J9 — sheets du composeur (06 S05 hors catalogue, S06 + client de passage, S07, S08).

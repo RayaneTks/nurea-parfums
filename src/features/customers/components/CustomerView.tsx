@@ -14,9 +14,9 @@ import type { PocketSummary } from "@/contracts/treasury";
 import { eurFromWire, formatEur, type MoneyString } from "@/domain/money";
 import { formatPhoneNational } from "@/domain/phone";
 import { pendingRemovals } from "@/features/catalogue/components/pending-removals";
-import { receivableTitle, recapText, relanceText } from "@/features/collect/components/collect-model";
+import { recapText, relanceText, targetOfReceivable } from "@/features/collect/components/collect-model";
 import { RelanceSheet } from "@/features/collect/components/RelanceSheet";
-import { CollectSheet, type CollectTarget } from "@/features/documents/components/CollectSheet";
+import { CollectSheet } from "@/features/documents/components/CollectSheet";
 import { useDocumentSheetNavigation } from "@/features/documents/components/useDocumentSheetNavigation";
 import { usePulse } from "@/features/documents/components/usePulse";
 import { useTransientSheet } from "@/features/documents/components/useTransientSheet";
@@ -54,16 +54,6 @@ type CustomerViewProps = {
   receivables: readonly ReceivableDTO[];
   pockets: readonly PocketSummary[];
 };
-
-const targetOf = (item: ReceivableDTO): CollectTarget => ({
-  id: item.documentId,
-  origin: item.origin,
-  status: item.status,
-  label: receivableTitle(item),
-  total: item.total,
-  paid: item.paid,
-  due: item.due,
-});
 
 /** « Ses 12 documents sont conservés… » : la vérité sur la suppression (06 S18, 01 §4.10). */
 function deletionDescription(count: number): string {
@@ -315,7 +305,7 @@ export function CustomerView({ sheet, aEncaisser, receivables, pockets }: Custom
           onClose={collect.hide}
           variant={receivables.length >= 2 ? "tout" : "solde"}
           customerName={customer.fullName}
-          targets={receivables.map(targetOf)}
+          targets={receivables.map(targetOfReceivable)}
           pockets={pockets}
         />
       ) : null}

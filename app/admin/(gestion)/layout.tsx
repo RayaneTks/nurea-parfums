@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { AdminShell } from "@/app-shell/AdminShell";
 import { isPreprod } from "@/app-shell/preprod";
 import { routes } from "@/app-shell/routes";
+import { PaletteCollectHost } from "@/features/collect/components/PaletteCollectHost";
 import { SessionExpired, requireSession } from "@/server/auth/session";
 
 /**
@@ -17,5 +18,11 @@ export default async function GestionLayout({ children }: { children: ReactNode 
     if (error instanceof SessionExpired) redirect(routes.connexion());
     throw error;
   }
-  return <AdminShell preprod={isPreprod()}>{children}</AdminShell>;
+  // `paletteSheets` : les sheets qu'une action de la recherche globale ouvre sur l'écran courant (06 §4.4,
+  // A16). C'est le layout qui les monte — le shell n'importe aucun écran (04 §1.3).
+  return (
+    <AdminShell preprod={isPreprod()} paletteSheets={<PaletteCollectHost />}>
+      {children}
+    </AdminShell>
+  );
 }

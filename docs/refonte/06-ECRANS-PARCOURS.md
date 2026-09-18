@@ -90,8 +90,8 @@ Les adresses sont celles fixées par `docs/refonte/04-ARCHITECTURE.md` §2.1 et 
 | E04 | `/admin/compta/journal` | `(gestion)/compta/journal/page.tsx` — **ajout à 04 §2.1** | Accueil | `/admin/compta?vue=tresorerie` « Trésorerie » | `mois=AAAA-MM`, `poche=<id>`, `doc` | lien « Tout le journal » de E03, « Voir tout » de S14 |
 | E05 | `/admin/lots` | `(gestion)/lots/page.tsx` | Accueil | `/admin` « Accueil » | `q`, `pages` (recherche et pages de la zone 0, J13), `doc` | en-tête « Lots ouverts » et lien « Tous les lots » de E01 |
 | E06 | `/admin/lots/[id]` | `(gestion)/lots/[id]/page.tsx` | Accueil | `/admin/lots` « Lots » | `assigner=1` (ouvre S13, 04 §2.1), `doc` | ligne de lot (E01, E05), en-tête de section lot (E03), rangée « Lot » de S01, création (E21) |
-| E07 | `/admin/statistiques` | `(gestion)/statistiques/page.tsx` | Accueil | `/admin` « Accueil » | `periode`, `ref`, `pages` (« Afficher plus », ajouté à J14), `doc` | en-tête « Top parfums » de E01 |
-| E08 | `/admin/reglages` | `(gestion)/reglages/page.tsx` | Accueil | `/admin` « Accueil » | — | rangée « Réglages » de E01 |
+| E07 | `/admin/statistiques` | `(gestion)/statistiques/page.tsx` | Accueil | `/admin` « Accueil » | `periode`, `ref`, `pages` (« Afficher plus », ajouté à J14), `doc` | en-tête « Top parfums » et lien « Tout le classement » de E01 |
+| E08 | `/admin/reglages` | `(gestion)/reglages/page.tsx` | Accueil | `/admin` « Accueil » | `doc` | rangée « Réglages » de E01 ; « Aller à › Réglages » (S17) |
 | E09 | *(pas de route)* | `public/admin-offline.html` (04 §14.4) | — | — | — | service worker, quand une navigation échoue |
 | E10 | `/admin/commandes` | `(gestion)/commandes/page.tsx` | Commandes | — (racine) | `vue=a-livrer\|livrees\|annulees` (défaut `a-livrer`), `filtre=retard\|aujourdhui\|demain\|en-attente\|confirmees`, `q`, `doc`, `edition=1` | onglet ; alertes et tuiles de E01 |
 | E11 | `/admin/vendre` | `(gestion)/vendre/page.tsx` | Vendre | — (racine) | `mode=vente\|commande` (défaut `vente`), `client=<id>`, `parfum=<id>`, `depuis=<documentId>` | onglet ; « Nouvelle commande » (E10, E14) ; « Vendre à … » (E14) ; « Revendre » (E14) ; « Refaire » (S01) ; « Vendre » (E16, S17) |
@@ -862,6 +862,17 @@ flowchart TD
 - **Composants** : `PageScaffold`, `FormSection`, `ListRow`, `Input`, `SelectSheet`, `ConfirmDialog`, `Toast`.
 - **Données** : `Setting` (`defaultPocketId`, `defaultExchangeRate`), `Pocket`, `AdminUser.username`.
 
+*Mise en œuvre J15* (`src/features/settings/**`, `app/admin/(gestion)/reglages/page.tsx`). Précisions tranchées en construisant :
+
+- **Un seul bloc streamé** (`SettingsBlock`) : les trois lectures en parallèle (`getSettings()`, `activePockets()`, `requireSession()`), squelette de rangées aux proportions du contenu. Aucune action principale, donc aucun `StickyAction`.
+- **Poche par défaut** : la rangée écrit le nom de la poche, et **« Non attribué » quand aucune n'est choisie** (`defaultPocketId = NULL` : c'est bien ce qui sera proposé) — jamais une rangée vide. La sheet est S07 variante poche : poches actives hors « Non attribué », solde en légende. Choisir la poche déjà choisie n'écrit rien. Vide (aucune poche rangée) : « Aucune poche rangée · Crée une poche depuis la Trésorerie… » — S16 vit sur E03, pas ici.
+- **Taux DZD** : champ contrôlé, suffixe « DA pour 1 € », **enregistré quand on quitte le champ** (jamais à chaque frappe : une valeur à moitié tapée n'est pas un réglage). Une saisie illisible affiche le message du contrat sous le champ (`RATE_MESSAGE`) et n'envoie rien ; une saisie qui redit le taux enregistré n'envoie rien non plus. L'écran relit la saisie avec **la fonction du contrat** (`parseRateInput`) : il ne valide jamais autrement que le serveur.
+- **Ordre des poches** (zone 3) : la rangée n'apparaît **qu'à partir de deux poches rangées** — ranger une seule poche ne veut rien dire (05 §5.3), et c'est déjà la condition d'affichage de « Ordre » sur E03. S21 est la même sheet, rattachée ici.
+- **« Rechercher une mise à jour »** : rangée **présente et inerte**, verrouillée avec sa raison (« L'app te prévient quand une version est prête. ») ; le geste se branche à J16 avec le service worker rendu. Jamais un contrôle muet qui ne fait rien (05 §3.1).
+- **Version** : `BUILD_ID` (`VERCEL_DEPLOYMENT_ID`, à défaut `VERCEL_GIT_COMMIT_SHA`, à défaut `local`).
+- **Déconnexion** : `ConfirmDialog` par `useConfirm()`, l'écriture confirmée est `logoutAction` — qui **redirige** (04 §3.3) : en cas de succès Next navigue et l'appel ne rend aucun résultat ; un refus s'affiche DANS la boîte.
+- **Fiche document** : E08 reçoit `?doc=` comme toute page du shell (A-3) — un lien `?doc=` ne doit jamais rester muet ici non plus.
+
 #### E09 — Page hors ligne · `public/admin-offline.html` (pas de route)
 
 - **But.** Dire honnêtement que le réseau manque, sans perdre le travail en cours.
@@ -1354,6 +1365,8 @@ Toutes les confirmations de l'app, en un seul endroit : leur description **dit l
 - **Composants** : `Sheet`, `ListRow`, `Button` (icône).
 - **Données** : `Pocket.sortOrder` ; `updatePocketAction({ id, position })`, où `position` est le rang voulu (à partir de 0) parmi les poches **actives hors « Non attribué »**, qui reste en dernier : le serveur renumérote toutes ces poches en une transaction (ordre total, sans trou) ; une poche archivée n'a pas de rang.
 
+*Mise en œuvre J12, rattachement J15.* Deux ouvertures : « Ordre » de E03 vue Trésorerie, et la rangée « Ordre des poches » de E08 — toutes deux conditionnées à **deux poches rangées au moins**. Les quatre états : *contenu* la liste ordonnée ; *chargement* aucun (les poches arrivent en props, déjà lues par l'écran) ; *erreur d'écriture* ordre restauré + toast ; *vide* une ligne calme (« Aucune poche à ranger. »), inatteignable par les deux ouvertures — elle ne sert que si une poche est archivée depuis un autre écran.
+
 ### 3.8 Éléments transitoires
 
 | Élément | Où | Contenu | Règle |
@@ -1422,6 +1435,7 @@ Règles (05 §4.2, bornées ici) : une action au plus par côté ; **le glisseme
 - **Enchaînement avec une sheet** : S17 est un dialogue (z 92), au-dessus des sheets (z 70/71, imbriquées 80/81). Toute action qui ouvre une sheet — « Encaisser 80 € » d'un client (S02 Tout encaisser), « Nouvelle dépense » (S07 puis S12), un document (S01) — **ferme d'abord la palette**, puis ouvre la sheet sur l'écran courant, sans changer d'onglet ; la sheet n'est jamais rendue sous la palette. Une action qui navigue (« Vendre », client, parfum, lot) ferme la palette en naviguant.
 - **Sélection** : un document ouvre **S01 sur l'écran courant** (l'onglet ne change pas) ; un client ouvre E14 ; un parfum ouvre E16 **en consultation** ; un lot (parmi les récents) ouvre E06 ; « Voir les N résultats » ouvre la liste filtrée (`/admin/clients?q=`, `/admin/catalogue?q=`).
 - **États** : *aucun résultat* : « Rien ne correspond à « … » » + « Créer le client « … » » et « Créer le parfum « … » » ; *erreur* : `ErrorBanner` « Recherche indisponible — Réessayer » ; *hors ligne* : récents et « Créer » restent disponibles.
+- *Mise en œuvre J15 (actions de résultat, A16).* « Encaisser xx € » n'apparaît que si le client a une créance **et** que ses créances sont connues ; le bouton **remplace** le montant à droite de la rangée (un montant OU un bouton, jamais les deux — 05 §5.4) et il dit lui-même le montant. « Vendre » n'apparaît pas sur un parfum en **rupture** : le badge passe devant, on ne propose pas de vendre ce qu'on n'a plus ; un parfum masqué garde son « Vendre » et porte « Masqué » en légende. Les deux boutons restent tapables indépendamment de la rangée (`ListRow`). **Aucune sixième route** (04 §3.5) : les créances du client et les poches du moment arrivent **avec les résultats de recherche** (`CustomerHitDTO.receivables`, `SearchResultsDTO.pockets`), lues seulement quand un résultat porte une créance — S02 s'ouvre donc sans aller-retour, sans attente au tap. Le shell n'important aucun écran (04 §1.3), la palette porte la **demande** (`src/app-shell/PaletteActions.tsx`) et un hôte du registre `features` (`PaletteCollectHost`, monté par le layout de `(gestion)`) rend la sheet.
 - *Mise en œuvre J4 (cadre seulement, `src/app-shell/CommandPalette.tsx`).* Dialogue plein écran Radix, bande `commandPalette` (05 §2.7), champ focalisé à l'ouverture, « Fermer » à droite du champ. « Créer » et « Aller à » ne listent que les écrans déjà livrés (`isNavigable` de `routes.ts`) : un raccourci ne mène jamais à une page absente, chaque entrée apparaît au jalon de son écran. Dès 2 caractères, avant J8 : une ligne calme dit que la recherche arrive au jalon J8.
 - **Données** : `Customer`, `SaleDocument` (+ `Customer.fullName`, `customerName`), `Perfume`, `Brand` — instantanés en mémoire côté serveur (04 §15, règle 10) ; le bouton « Encaisser » d'un client lit `aEncaisserParClient()`.
 
