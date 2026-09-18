@@ -8,10 +8,12 @@ import type {
   CreateBatchData,
   SetBatchStatusData,
   UpdateBatchData,
+  UpdateBatchExpenseData,
 } from "@/contracts/batches";
 import { futureDateMessage, valueDateOf } from "@/contracts/treasury";
 import { DomainError } from "@/domain/errors";
 import { eur, eurFromDb, eurFromWire, toWire } from "@/domain/money";
+import { batchDeletionRefusal } from "@/server/batches/refusal";
 import type { Tx } from "@/server/db/transaction";
 import * as settingsWriter from "@/server/settings/writer";
 import * as movements from "@/server/treasury/movements";
@@ -77,24 +79,6 @@ export async function setBatchStatus(tx: Tx, input: SetBatchStatusData): Promise
   const current = await tx.db.batch.findUniqueOrThrow({ where: { id: input.id }, select: SELECT });
   if (current.status === input.status) return summary(current);
   return summary(await tx.db.batch.update({ where: { id: input.id }, data: { status: input.status }, select: SELECT }));
-}
-
-const plural = (n: number, one: string, many: string) => `${n} ${n > 1 ? many : one}`;
-
-/** Pourquoi un lot ne se supprime pas (06 E06), ou null s'il est vide de toute histoire. */
-export function batchDeletionRefusal(counts: { documents: number; expenses: number; activeExpenses: number }): string | null {
-  const { documents, expenses, activeExpenses } = counts;
-  if (documents > 0 && activeExpenses > 0) {
-    return `Impossible : ${plural(documents, "document", "documents")} et ${plural(activeExpenses, "dépense", "dépenses")} rattachés. Clôture-le plutôt.`;
-  }
-  if (documents > 0) {
-    return `Impossible : ${plural(documents, "document rattaché", "documents rattachés")}. Clôture-le plutôt.`;
-  }
-  if (activeExpenses > 0) {
-    return `Impossible : ${plural(activeExpenses, "dépense rattachée", "dépenses rattachées")}. Clôture-le plutôt.`;
-  }
-  if (expenses > 0) return "Impossible : ce lot a un historique de dépenses. Clôture-le plutôt.";
-  return null;
 }
 
 /**
@@ -190,6 +174,32 @@ export async function addBatchExpense(tx: Tx, input: AddBatchExpenseData): Promi
   });
   await settingsWriter.rememberPocket(tx, pocketId);
   return expenseSummary(created);
+}
+
+/**
+ * Modifier une dépense (06 E06 zone 4, S12 en modification) : SEULS le libellé et les notes — le trigger
+ * `batch_expense_append_only` refuse tout le reste, et la sheet le dit avant qu'on essaie. Le libellé du
+ * mouvement suit : sans cela le journal (E04) garderait l'ancien nom de la même dépense.
+ * Un appel sans changement rend la dépense telle quelle ; une dépense supprimée ne se renomme plus.
+ */
+export async function updateBatchExpense(tx: Tx, input: UpdateBatchExpenseData): Promise<BatchExpenseSummary> {
+  const found = await findExpense(tx, input.id);
+  if (!found) throw new DomainError("NOT_FOUND", EXPENSE_NOT_FOUND);
+  await tx.lock({ batches: { share: [found.batchId] } });
+  const current = (await findExpense(tx, input.id)) as ExpenseRow;
+  if (current.movement.reversedBy !== null) {
+    throw new DomainError("CONFLICT", "Cette dépense a été supprimée : elle ne se modifie plus.");
+  }
+  const data = {
+    ...(input.label !== undefined ? { label: input.label } : {}),
+    ...(input.notes !== undefined ? { notes: input.notes } : {}),
+  };
+  if (Object.keys(data).length === 0) return expenseSummary(current);
+  const updated = await tx.db.batchExpense.update({ where: { id: input.id }, data, select: EXPENSE_SELECT });
+  if (input.label !== undefined && input.label !== current.label) {
+    await movements.setMovementLabel(tx, current.movement.id, input.label);
+  }
+  return expenseSummary(updated);
 }
 
 /**

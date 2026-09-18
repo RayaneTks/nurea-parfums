@@ -1,6 +1,7 @@
 import { ROUTE_SPECS, routes, withSheet, type RouteName } from "../src/app-shell/routes";
 import { SESSION_HINT_COOKIE } from "../src/app-shell/session-hint";
 import { formatEur, parseEurInput } from "../src/domain/money";
+import { BATCHES } from "./fixtures/batches";
 import { DOCS, PASSING } from "./fixtures/documents";
 import { SEED, seedPerfumeId } from "./fixtures/seed";
 
@@ -121,6 +122,45 @@ export const SCREENS: ScreenCase[] = [
   { screen: "E19", route: "modifierParfum", label: "modifier un parfum", url: routes.modifierParfum(SAUVAGE), shell: true, keyboardFields: PERFUME_FIELDS },
   { screen: "E17", route: "nouvelleMarque", label: "nouvelle marque", url: routes.nouvelleMarque(), shell: true, keyboardFields: ["Nom de la marque"] },
   { screen: "E17", route: "modifierMarque", label: "modifier une marque", url: routes.modifierMarque(DIOR), shell: true, keyboardFields: ["Nom de la marque"] },
+  // J13 — Lots (06 E05, E06, E21 ; 07 J13 : ouverts et clos, « À rattacher » vide et pleine, clavier ouvert).
+  {
+    screen: "E05",
+    route: "lots",
+    label: "ouverts et clos, « À rattacher » pleine, recherche clavier ouvert",
+    url: routes.lots(),
+    shell: true,
+    keyboardFields: ["Rechercher un document à rattacher"],
+  },
+  { screen: "E05", route: "lots", label: "« À rattacher » vide de filtre", url: routes.lots({ q: "introuvable" }), shell: true },
+  { screen: "E05", route: "lots", label: "« À rattacher » dépliée par « Afficher plus »", url: routes.lots({ pages: 2 }), shell: true },
+  {
+    screen: "E06",
+    route: "lot",
+    label: "lot ouvert : documents, annulés, dépense, notes",
+    url: routes.lot(SEED.batch.id),
+    shell: true,
+    keyboardFields: ["Notes"],
+  },
+  {
+    // S13 est une sheet ADRESSABLE (06 §1.3) : elle s'éprouve comme la fiche document, par son URL.
+    screen: "E06",
+    route: "lot",
+    label: "S13 ouverte par ?assigner=1",
+    url: withSheet(routes.lot(SEED.batch.id), { assigner: true }),
+    shell: true,
+    waitFor: "[data-assign-sheet]",
+    keyboardFields: ["Rechercher un document"],
+  },
+  { screen: "E06", route: "lot", label: "lot clos et vide", url: routes.lot(BATCHES.closed.id), shell: true },
+  { screen: "E06", route: "lot", label: "lot introuvable", url: routes.lot("ce2elotfantome0000000000"), shell: true },
+  {
+    screen: "E21",
+    route: "nouveauLot",
+    label: "nouveau lot, clavier ouvert sur le nom",
+    url: routes.nouveauLot(),
+    shell: true,
+    keyboardFields: ["Nom du lot"],
+  },
 ];
 
 export const SHEETS: SheetCase[] = [
@@ -189,6 +229,35 @@ export const SHEETS: SheetCase[] = [
     url: routes.encaisser(),
     open: { tap: "Relancer", layer: "drawer" },
     keyboardFields: ["Message"],
+  },
+  // J13 — S12 et S13 (06 §1.8 : S13 ouverte par `?assigner=1` sur E06 ; S12 clavier ouvert sur le montant).
+  {
+    sheet: "S12",
+    label: "Ajouter une dépense depuis la fiche du lot",
+    url: routes.lot(SEED.batch.id),
+    open: { tap: "Ajouter une dépense", layer: "drawer" },
+    keyboardFields: ["Libellé", "Montant"],
+  },
+  {
+    sheet: "S12",
+    label: "Modifier une dépense (libellé et notes seuls)",
+    url: routes.lot(SEED.batch.id),
+    open: { tap: [/^Actions : Transport du /, "Modifier"], layer: "drawer" },
+    keyboardFields: ["Libellé"],
+  },
+  {
+    sheet: "S13",
+    label: "Rattacher des documents, ouverte par l'action de section",
+    url: routes.lot(SEED.batch.id),
+    open: { tap: "Rattacher", layer: "drawer" },
+    keyboardFields: ["Rechercher un document"],
+  },
+  {
+    sheet: "S07",
+    label: "Sélecteur de lot depuis la rangée « Lot » de « À rattacher »",
+    url: routes.lots(),
+    open: { tap: /^Choisir le lot de /, layer: "drawer" },
+    keyboardFields: ["Chercher ou nommer un lot"],
   },
 ];
 

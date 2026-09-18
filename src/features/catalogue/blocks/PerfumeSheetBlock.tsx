@@ -2,7 +2,7 @@ import { Undo2 } from "lucide-react";
 import { routes } from "@/app-shell/routes";
 import { perfumeSheet } from "@/server/catalogue/queries";
 import { EmptyState } from "@/ui/primitives/EmptyState";
-import { LinkButton } from "../components/LinkButton";
+import { LinkButton } from "@/ui/patterns/LinkButton";
 import { PerfumeView } from "../components/PerfumeView";
 
 /** E16 — fiche en consultation ; un parfum supprimé depuis ailleurs n'est pas une erreur, c'est un vide. */
