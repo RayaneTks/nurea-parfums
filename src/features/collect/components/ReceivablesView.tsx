@@ -8,7 +8,7 @@ import { isNavigable, routes } from "@/app-shell/routes";
 import type { ReceivableDTO } from "@/contracts/chiffres";
 import type { PocketSummary } from "@/contracts/treasury";
 import { eur, eurFromWire, formatEur, type MoneyString } from "@/domain/money";
-import { CollectSheet, type CollectTarget, type CollectVariant } from "@/features/documents/components/CollectSheet";
+import { CollectSheet, type CollectVariant } from "@/features/documents/components/CollectSheet";
 import { useDocumentSheetNavigation } from "@/features/documents/components/useDocumentSheetNavigation";
 import { useTransientSheet } from "@/features/documents/components/useTransientSheet";
 import { ListSection } from "@/ui/patterns/ListSection";
@@ -29,6 +29,7 @@ import {
   receivableCaption,
   receivableTitle,
   relanceText,
+  targetOfReceivable,
   type ReceivableGroup,
 } from "./collect-model";
 import { RelanceSheet } from "./RelanceSheet";
@@ -38,16 +39,6 @@ const SEARCH_THRESHOLD = 6;
 const SEARCH_DEBOUNCE_MS = 200;
 
 type CollectSubject = { variant: CollectVariant; groupKey: string; documentIds: string[] };
-
-const targetOf = (item: ReceivableDTO): CollectTarget => ({
-  id: item.documentId,
-  origin: item.origin,
-  status: item.status,
-  label: receivableTitle(item),
-  total: item.total,
-  paid: item.paid,
-  due: item.due,
-});
 
 /**
  * E13 — À encaisser (06 E13) : un groupe par client, plus anciennes créances d'abord ; bouton-montant (S02) et
@@ -102,7 +93,7 @@ export function ReceivablesView({
 
   const byDocument = useMemo(() => new Map(receivables.map((item) => [item.documentId, item])), [receivables]);
   const subject = collect.subject;
-  const targets = subject ? subject.documentIds.map((id) => byDocument.get(id)).filter((item): item is ReceivableDTO => !!item).map(targetOf) : [];
+  const targets = subject ? subject.documentIds.map((id) => byDocument.get(id)).filter((item): item is ReceivableDTO => !!item).map(targetOfReceivable) : [];
   const subjectGroup = subject ? allGroups.find((group) => group.key === subject.groupKey) : undefined;
 
   const clear = () => {

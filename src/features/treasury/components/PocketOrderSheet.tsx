@@ -18,6 +18,11 @@ import { movedOrder, ownPockets } from "./treasury-model";
  * S21 — Ordre des poches (06 S21) : « Monter » / « Descendre » de 44 px (pas de glisser-déposer, 05 §4.2),
  * enregistrement immédiat (`updatePocketAction({ id, position })`, le serveur renumérote) ; ordre affiché
  * aussitôt, restauré si le serveur refuse (toast de `useAction`). « Non attribué » reste en dernier, hors liste.
+ *
+ * Les quatre états (05 §5.1) : *contenu* la liste ordonnée ; *chargement* aucun (les poches arrivent en props,
+ * déjà lues par l'écran) ; *erreur d'écriture* ordre restauré + toast ; *vide* une ligne calme — ses deux
+ * ouvertures (E03 vue Trésorerie, E08) ne proposent « Ordre » qu'à partir de deux poches rangées, ce vide
+ * n'arrive donc que si une poche est archivée depuis un autre écran.
  */
 export function PocketOrderSheet({ open, onClose, pockets }: { open: boolean; onClose: () => void; pockets: readonly PocketSummary[] }) {
   useShellSheet(open, onClose);
@@ -47,6 +52,11 @@ export function PocketOrderSheet({ open, onClose, pockets }: { open: boolean; on
         <Text variant="caption" tone="muted">
           Cet ordre est celui des poches proposées à l&apos;encaissement. « Non attribué » reste en dernier.
         </Text>
+        {order.length === 0 ? (
+          <Text variant="body" tone="muted">
+            Aucune poche à ranger.
+          </Text>
+        ) : (
         <Card padding={0}>
           {order.map((pocket, index) => (
             <div key={pocket.id}>
@@ -72,6 +82,7 @@ export function PocketOrderSheet({ open, onClose, pockets }: { open: boolean; on
             </div>
           ))}
         </Card>
+        )}
       </div>
     </Sheet>
   );

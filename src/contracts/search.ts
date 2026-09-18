@@ -15,6 +15,8 @@ import type { DocumentOrigin, DocumentStatus } from "@/domain/document-status";
 import type { MoneyString } from "@/domain/money";
 import type { PublicationStatus } from "@/domain/publication";
 import type { StockStatus } from "@/domain/stock";
+import type { ReceivableDTO } from "./chiffres";
+import type { PocketSummary } from "./treasury";
 
 export const SEARCH_SCOPES = ["all", "customers", "documents", "perfumes"] as const;
 export type SearchScope = (typeof SEARCH_SCOPES)[number];
@@ -91,6 +93,14 @@ export type CustomerHitDTO = {
   contact: string | null;
   /** À encaisser de la fiche (`aEncaisserParClient`), null s'il est nul. */
   due: MoneyString | null;
+  /**
+   * Action de résultat « Encaisser xx € » (S17, amendement A16) : les créances de la fiche, les plus
+   * anciennes d'abord — exactement celles de l'écran À encaisser (`aEncaisserDetail`), filtrées sur elle.
+   * Vide quand le client ne doit rien, et dans toute portée autre que `all` (aucune action de résultat n'y
+   * est rendue). Portées ici plutôt que par une sixième route (04 §3.5, liste fermée) : la palette ouvre
+   * S02 SANS aller-retour, donc sans attente au tap (06 §4.4).
+   */
+  receivables: readonly ReceivableDTO[];
 };
 
 export type DocumentHitDTO = {
@@ -127,4 +137,10 @@ export type SearchResultsDTO = {
    * Saisie vide, portée `customers` : les 8 clients au document le plus récent (S06 « Récents ») ; vide sinon.
    */
   recentCustomers: CustomerHitDTO[];
+  /**
+   * Poches actives du moment (ordre choisi, « Non attribué » en dernier), pour la sheet S02 qu'ouvre
+   * « Encaisser xx € ». Lues SEULEMENT quand un résultat client porte une créance : une frappe qui ne
+   * trouve personne à encaisser ne paie pas la lecture des soldes.
+   */
+  pockets: readonly PocketSummary[];
 };

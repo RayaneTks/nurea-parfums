@@ -8,6 +8,7 @@ import { FeedbackProvider } from "./FeedbackProvider";
 import { DRAFT_KEYS } from "./hooks/draft-store";
 import { useDraftPresence } from "./hooks/useDraft";
 import { useUrlState } from "./hooks/useUrlState";
+import { PaletteActionsProvider } from "./PaletteActions";
 import {
   allowsPullToRefresh,
   hasActiveFilters,
@@ -31,6 +32,12 @@ import { ViewportService } from "./ViewportService";
 type AdminShellProps = {
   /** `NUREA_ENV=preprod`, lu par le layout côté serveur (07 §1.3, garde-fou 6). */
   preprod?: boolean;
+  /**
+   * Sheets que la palette ouvre sur l'écran courant (06 §4.4, A16) : rendues À CÔTÉ de la palette, jamais
+   * sous elle. Un emplacement plutôt qu'un import — le shell ne dépend d'aucun écran (04 §1.3) ; c'est le
+   * layout de `(gestion)` qui y monte `PaletteCollectHost`.
+   */
+  paletteSheets?: ReactNode;
   children: ReactNode;
 };
 
@@ -42,13 +49,17 @@ type AdminShellProps = {
  * Rail de 430 px centré, hauteurs en `100 %` (jamais `100dvh`, qui casse le `position: fixed` de la
  * tab bar en PWA iOS). Les écrans ne rendent que leur contenu, dans `PageScaffold`.
  */
-export function AdminShell({ preprod = false, children }: AdminShellProps) {
+export function AdminShell({ preprod = false, paletteSheets, children }: AdminShellProps) {
   return (
     <FeedbackProvider>
       <UndoProvider>
         <SheetRegistryProvider>
           <ShellNavigationProvider>
-            <ShellFrame preprod={preprod}>{children}</ShellFrame>
+            <PaletteActionsProvider>
+              <ShellFrame preprod={preprod} paletteSheets={paletteSheets}>
+                {children}
+              </ShellFrame>
+            </PaletteActionsProvider>
           </ShellNavigationProvider>
         </SheetRegistryProvider>
       </UndoProvider>
@@ -58,7 +69,7 @@ export function AdminShell({ preprod = false, children }: AdminShellProps) {
 
 const DRAFT_BADGE: TabBadge = { label: "brouillon en cours" };
 
-function ShellFrame({ preprod, children }: { preprod: boolean; children: ReactNode }) {
+function ShellFrame({ preprod, paletteSheets, children }: { preprod: boolean; paletteSheets?: ReactNode; children: ReactNode }) {
   const pathname = usePathname() ?? "";
   const { navigate, scrollRoot, onLocation } = useShellNavigation();
   const sheets = useSheetRegistry();
@@ -145,6 +156,7 @@ function ShellFrame({ preprod, children }: { preprod: boolean; children: ReactNo
       </div>
       <TabBar onTabPress={pressTab} badges={hasDraft ? { vendre: DRAFT_BADGE } : undefined} />
       <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+      {paletteSheets}
     </div>
   );
 }

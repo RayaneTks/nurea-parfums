@@ -24,6 +24,11 @@ import { parisDayKey, parseParisDayKey } from "../../src/domain/periods";
  */
 const uuid = (n: number) => `e2e0d0c0-0000-4000-8000-${String(n).padStart(12, "0")}`;
 
+/**
+ * Rangs 70+ : les documents de `e2e/fixtures/documents.ts` occupent 1…60 sous le MÊME motif d'identifiant.
+ * Les rangs 40 à 43, choisis à J12, sont entrés en collision avec les fiches client de J10 (`noraSale`…) à la
+ * fusion des deux jalons — le seed échouait sur la clé primaire. Corrigé à J15.
+ */
 export const COMPTA_DOCS = {
   /** Vente directe payée, rattachée au lot « Commande de mars ». */
   sale: uuid(60),

@@ -60,7 +60,7 @@ export const ROUTE_SPECS = {
     jalon: "J14",
     etat: "livree",
   }),
-  reglages: spec({ screen: "E08", pattern: "/admin/reglages", params: [], shell: true, jalon: "J15", etat: "a-venir" }),
+  reglages: spec({ screen: "E08", pattern: "/admin/reglages", params: ["doc"], shell: true, jalon: "J15", etat: "livree" }),
   commandes: spec({ screen: "E10", pattern: "/admin/commandes", params: ["vue", "filtre", "q", "pages"], shell: true, jalon: "J8", etat: "livree" }),
   vendre: spec({
     screen: "E11",
