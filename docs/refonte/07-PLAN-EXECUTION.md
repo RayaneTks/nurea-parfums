@@ -165,6 +165,7 @@ La bascule se déclenche quand **toutes** les conditions ci-dessous sont vraies 
 | G6 | Listes d'arbitrage R4 relues avec le gérant ; aucun cas « à investiguer » ouvert | Compte rendu d'arbitrage (hors dépôt) |
 | G7 | Build de la refonte **sans accès base** vérifiée (§2.3, critère de J16) | Sortie de commande |
 | G8 | Créneau choisi par le gérant, hors activité (jour de fermeture ou soirée), et **pas** la nuit du changement d'heure (24→25 octobre 2026) ; fenêtre réservée = 2 × la durée mesurée en répétition générale | Agenda |
+| G9 | **Bucket `catalog` (Supabase) : types d'origine autorisés** — la conversion WebP se fait désormais côté serveur, l'appareil envoie son fichier d'origine sous `tmp/`. Le bucket doit accepter `image/jpeg`, `image/png`, `image/webp`, `image/gif`, `image/heic`, `image/heif` jusqu'à 12 Mo (il n'acceptait que `image/webp`). **Réglage à faire par le gérant dans la console Supabase.** | Envoi d'une photo JPEG depuis un iPhone en préproduction, visuel WebP affiché sur la fiche |
 
 ### 1.6 Procédure du jour J
 
