@@ -37,6 +37,12 @@ export const DOCS = {
   toutC: uuid(27),
   offline: uuid(28),
   lecture: uuid(29),
+  // ── Composeur Vendre (07 J9) ─────────────────────────────────────────────────
+  /** Ventes les plus récentes du jeu : Asad et J'adore en tête de « Vendus récemment » (N7). */
+  recentAsad: uuid(40),
+  recentJadore: uuid(41),
+  /** Vente d'une fiche liée, rattachée au lot ouvert : l'origine de « Refaire » (A-9). */
+  refaire: uuid(42),
 } as const;
 
 /** Noms des clients de passage des parcours : chacun désigne une seule ligne dans les listes. */
@@ -79,6 +85,13 @@ type DocumentSpec = {
   lines: LineSpec[];
   payments?: PaymentSpec[];
   notes?: string;
+  /**
+   * Document le plus récent du jeu (07 J9) : tous ses instants valent `recentInstant()` — après les documents datés
+   * de midi, pour tenir « Vendus récemment » quel que soit l'heure de l'exécution.
+   */
+  recent?: boolean;
+  /** Rattaché au lot ouvert du jeu. */
+  batch?: boolean;
 };
 
 const cost = (value: string) => ({ cost: value });
@@ -281,7 +294,52 @@ export const DOCUMENT_SPECS: DocumentSpec[] = [
     lines: [{ perfume: "Sauvage", volumeMl: 50, quantity: 1, price: "150", ...cost("15000") }],
     payments: [{ kind: "DEPOSIT", amount: "50", pocket: "bank", day: -3 }],
   },
+  // ── Composeur Vendre (07 J9) ─────────────────────────────────────────────────
+  {
+    id: DOCS.recentAsad,
+    origin: "DIRECT_SALE",
+    status: "DELIVERED",
+    customer: { passing: "Nour Belkacem" },
+    ordered: 0,
+    confirmed: 0,
+    delivered: 0,
+    recent: true,
+    lines: [{ perfume: "Asad", volumeMl: 80, quantity: 1, delivered: 1, price: "120", ...cost("22000") }],
+    payments: [{ kind: "BALANCE", amount: "120", pocket: "cash", day: 0 }],
+  },
+  {
+    id: DOCS.recentJadore,
+    origin: "DIRECT_SALE",
+    status: "DELIVERED",
+    customer: { passing: "Nour Belkacem" },
+    ordered: 0,
+    confirmed: 0,
+    delivered: 0,
+    recent: true,
+    lines: [{ perfume: "J'adore", volumeMl: 80, quantity: 1, delivered: 1, price: "150", ...cost("26000") }],
+    payments: [{ kind: "BALANCE", amount: "150", pocket: "cash", day: 0 }],
+  },
+  {
+    id: DOCS.refaire,
+    origin: "DIRECT_SALE",
+    status: "DELIVERED",
+    customer: { linked: "Élise" },
+    ordered: -15,
+    confirmed: -15,
+    delivered: -15,
+    batch: true,
+    lines: [
+      { perfume: "Yara", volumeMl: 50, quantity: 2, delivered: 2, price: "60", ...cost("9000") },
+      { perfume: "N°5", volumeMl: 80, quantity: 1, delivered: 1, price: "140", ...cost("25000") },
+    ],
+    payments: [{ kind: "BALANCE", amount: "260", pocket: "bank", day: -15 }],
+  },
 ];
+
+/** Instant des documents « récents » du jeu : une minute après midi (Paris), ou après maintenant si l'on est plus tard. */
+export function recentInstant(now: Date = new Date()): Date {
+  return new Date(Math.max(now.getTime(), parisNoon(0, now).getTime()) + 60_000);
+}
 
 /** Midi, heure de Paris, du jour décalé de `offset` jours : jamais à cheval sur minuit. */
 export function parisNoon(offset: number, now: Date = new Date()): Date {
@@ -304,12 +362,16 @@ export type SeedDocumentsContext = {
   customers: Record<string, string>;
   perfumeId: (name: string) => number;
   brandOf: (name: string) => string | null;
+  /** Le lot ouvert du jeu (documents `batch: true`). */
+  batchId: string;
 };
 
 export async function seedDocuments(db: PrismaClient, ctx: SeedDocumentsContext): Promise<void> {
+  const recent = recentInstant();
   for (const spec of DOCUMENT_SPECS) {
     const linked = "linked" in spec.customer ? ctx.customers[spec.customer.linked] : undefined;
     if ("linked" in spec.customer && !linked) throw new Error(`Seed e2e : client inconnu « ${spec.customer.linked} ».`);
+    const at = (day: number) => (spec.recent ? recent : parisNoon(day));
     await db.$transaction(async (tx) => {
       await tx.saleDocument.create({
         data: {
@@ -318,11 +380,12 @@ export async function seedDocuments(db: PrismaClient, ctx: SeedDocumentsContext)
           status: spec.status,
           customerId: linked ?? null,
           customerName: "passing" in spec.customer ? spec.customer.passing : null,
-          orderedAt: parisNoon(spec.ordered),
+          batchId: spec.batch ? ctx.batchId : null,
+          orderedAt: at(spec.ordered),
           expectedDeliveryAt: spec.expected === undefined || spec.expected === null ? null : parisMidnight(spec.expected),
-          confirmedAt: spec.confirmed === undefined ? null : parisNoon(spec.confirmed),
-          deliveredAt: spec.delivered === undefined ? null : parisNoon(spec.delivered),
-          cancelledAt: spec.cancelled === undefined ? null : parisNoon(spec.cancelled),
+          confirmedAt: spec.confirmed === undefined ? null : at(spec.confirmed),
+          deliveredAt: spec.delivered === undefined ? null : at(spec.delivered),
+          cancelledAt: spec.cancelled === undefined ? null : at(spec.cancelled),
           notes: spec.notes ?? null,
           lines: {
             create: spec.lines.map((line, position) => {
@@ -349,7 +412,7 @@ export async function seedDocuments(db: PrismaClient, ctx: SeedDocumentsContext)
       });
       for (const payment of spec.payments ?? []) {
         const movement = await tx.cashMovement.create({
-          data: { pocketId: ctx.pockets[payment.pocket], amount: payment.amount, kind: "PAYMENT", occurredAt: parisNoon(payment.day) },
+          data: { pocketId: ctx.pockets[payment.pocket], amount: payment.amount, kind: "PAYMENT", occurredAt: at(payment.day) },
         });
         await tx.payment.create({ data: { documentId: spec.id, kind: payment.kind, movementId: movement.id } });
       }

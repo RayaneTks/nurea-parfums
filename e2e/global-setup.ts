@@ -147,6 +147,11 @@ async function warmUp(page: import("@playwright/test").Page): Promise<void> {
   // Routes de lecture appelées à la frappe (07 J8) : compilées d'avance, sinon la première recherche attend la compilation.
   await page.request.get("/api/admin/search?scope=all&q=pr", { timeout: 180_000 });
   await page.request.get("/api/admin/picker", { timeout: 180_000 });
+  /*
+   * Le préchauffage a VISITÉ le composeur avec ses paramètres (`?parfum=`, `?depuis=`) : le brouillon qu'il a posé
+   * sur l'appareil partirait dans le `storageState` de tous les tests, qui s'ouvriraient sur un ticket en cours.
+   */
+  await page.evaluate(() => localStorage.clear());
 }
 
 async function expectCookie(context: import("@playwright/test").BrowserContext, name: string): Promise<void> {
