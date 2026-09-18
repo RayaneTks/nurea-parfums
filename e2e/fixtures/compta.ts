@@ -14,17 +14,25 @@ import { parisDayKey, parseParisDayKey } from "../../src/domain/periods";
  * Les transferts éprouvent deux poches dédiées, « Coffre » et « Compte pro » (`e2e/fixtures/seed.ts`).
  */
 
+/**
+ * Même espace d'identifiants que `documents.ts` : les deux jeux écrivent dans la MÊME base. Les numéros 60+
+ * sont réservés à la Compta.
+ *
+ * Défaut corrigé à J14 : J10 (fiches client) et J12 (Compta) avaient tous deux pris 40–43 dans leurs branches,
+ * et la collision n'apparaissait qu'une fois les deux fusionnées — `seedCompta` échouait alors sur
+ * « Unique constraint failed on the fields: (id) », donc AUCUN test e2e ne pouvait démarrer.
+ */
 const uuid = (n: number) => `e2e0d0c0-0000-4000-8000-${String(n).padStart(12, "0")}`;
 
 export const COMPTA_DOCS = {
   /** Vente directe payée, rattachée au lot « Commande de mars ». */
-  sale: uuid(40),
+  sale: uuid(60),
   /** Commande confirmée par un acompte, coût à compléter. */
-  unknownCost: uuid(41),
+  unknownCost: uuid(61),
   /** Vente directe encaissée sans poche : l'argent attend dans « Non attribué ». */
-  unassigned: uuid(42),
+  unassigned: uuid(62),
   /** Vente à crédit du mois M-5, soldée le mois suivant : un mois à coûts sans Encaissé (S19 sans pourcentage). */
-  credit: uuid(43),
+  credit: uuid(63),
 } as const;
 
 export const COMPTA_PASSING = {
@@ -50,8 +58,23 @@ function monthDayNoon(months: number, day: number): Date {
   return new Date((parseParisDayKey(key) as Date).getTime() + 12 * 60 * 60 * 1000);
 }
 
+/** Clé « AAAA-MM-JJ » de ce jour du mois décalé. */
+const monthDayKey = (months: number, day: number) => `${monthStart(months).slice(0, 8)}${String(day).padStart(2, "0")}`;
+
 /** Mois des chiffres de la Compta : il y a deux mois. `ref` de l'écran et « AAAA-MM ». */
-export const COMPTA_MONTH = { offset: -2, ref: () => `${monthStart(-2).slice(0, 8)}10`, key: () => monthStart(-2).slice(0, 7) };
+export const COMPTA_MONTH = {
+  offset: -2,
+  ref: () => monthDayKey(-2, 10),
+  key: () => monthStart(-2).slice(0, 7),
+  /** Jour à ventes, paiements dans deux poches et acompte : le récap du jour de E02 (J14). */
+  busyDay: () => monthDayKey(-2, 10),
+};
+
+/**
+ * Jour où RIEN n'est arrivé (J14, E02 « Rien d'enregistré ce jour-là. ») : le 20 du mois des chiffres — seuls
+ * les 10 et 12 y portent des documents et des mouvements.
+ */
+export const EMPTY_DAY = () => monthDayKey(-2, 20);
 
 /** Mois du journal à 45 mouvements : il y a trois mois. */
 export const JOURNAL_MONTH = { offset: -3, key: () => monthStart(-3).slice(0, 7) };
