@@ -440,6 +440,7 @@ async function verify(): Promise<void> {
   expect(dashboard).toEqual({
     month: { from: month.from.toISOString(), to: month.to.toISOString() },
     encaisseMois: await chiffres.encaisse("month"),
+    encaisseJour: await chiffres.encaisse("day"),
     margeNetteMois: await chiffres.margeNette("month"),
     aEncaisser: total,
     tresorerie: { total: tresorerie.total, unassigned: tresorerie.unassigned },

@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { ROUTE_SPECS } from "@/app-shell/routes";
+import { AccueilPage } from "@/features/dashboard";
 import { firstParam, type PageSearchParams } from "@/features/documents";
-import { EcranProvisoire } from "./_provisoire/EcranProvisoire";
 
-// PROVISOIRE (07 J4) — E01 Accueil définitif au jalon J14.
+// E01 — Accueil (06 E01, 07 J14). Remplace l'écran provisoire de J4.
 export const metadata: Metadata = { title: "Accueil" };
 
-export default async function AccueilPage({ searchParams }: { searchParams: PageSearchParams }) {
+export default async function Page({ searchParams }: { searchParams: PageSearchParams }) {
   const params = await searchParams;
-  return <EcranProvisoire titre="Accueil" jalon={ROUTE_SPECS.accueil.jalon} docId={firstParam(params.doc)} />;
+  return <AccueilPage docId={firstParam(params.doc)} />;
 }

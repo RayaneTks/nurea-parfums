@@ -5,9 +5,10 @@ import { phoneDigitVariants, searchTerms } from "@/contracts/search";
 import { freshStart, loadServer, type Server } from "./transactions/support/harness";
 
 /**
- * Garde-fou de performance (04 §15 ; 07 J7) : sur un jeu de données à 10 × le volume réel, généré, les requêtes de
- * `tableauDeBord()`, de `aEncaisserDetail()` et de la première page des commandes s'exécutent en moins de 50 ms
- * (temps d'exécution SQL d'`EXPLAIN ANALYZE`). Au-delà, la vue `DocumentBalance` se discute (index, matérialisation).
+ * Garde-fou de performance (04 §15 ; 07 J7, J14) : sur un jeu de données à 10 × le volume réel, généré, les
+ * requêtes de `tableauDeBord()`, de `aEncaisserDetail()`, de la première page des commandes et des lectures de
+ * l'Accueil (comptes, classement, lots ouverts, récap du jour) s'exécutent en moins de 50 ms (temps d'exécution
+ * SQL d'`EXPLAIN ANALYZE`). Au-delà, la vue `DocumentBalance` se discute (index, matérialisation).
  *
  * Volume réel (copie migrée du 17/09/2026) : 35 documents, 60 lignes, 29 paiements, 73 mouvements, 6 poches,
  * 29 clients, 3 lots, 73 marques, 281 parfums, aucune dépense. × 10, avec 30 dépenses pour que le fragment des
@@ -32,6 +33,7 @@ let server: Server;
 let chiffres: typeof import("@/server/chiffres");
 let sql: typeof import("@/server/chiffres/sql");
 let documentsSql: typeof import("@/server/documents/sql");
+let statsSql: typeof import("@/server/stats/sql");
 let Prisma: typeof PrismaNamespace;
 
 /** Le jeu × 10, en SQL, dans UNE transaction (les triggers différés vérifient pièces et mouvements au COMMIT). */
@@ -144,6 +146,7 @@ beforeAll(async () => {
   chiffres = await import("@/server/chiffres");
   sql = await import("@/server/chiffres/sql");
   documentsSql = await import("@/server/documents/sql");
+  statsSql = await import("@/server/stats/sql");
   Prisma = (await import("@prisma/client")).Prisma;
   await server.prisma.$transaction(async (tx) => {
     for (const statement of GENERATE) await tx.$executeRawUnsafe(statement);
@@ -172,13 +175,20 @@ describe("performance des chiffres sur 10 × le volume réel (04 §15)", () => {
     expect((await chiffres.aEncaisserDetail()).length).toBeGreaterThan(50);
   });
 
-  it(`tableauDeBord(), aEncaisserDetail() et la première page des commandes : exécution SQL < ${BUDGET_MS} ms`, async () => {
+  it(`tableauDeBord(), aEncaisserDetail(), la première page des commandes et les lectures de l'Accueil (J14) : exécution SQL < ${BUDGET_MS} ms`, async () => {
     const now = new Date();
     const measures = {
       tableauDeBord: await explain(sql.tableauDeBordSql(now)),
       aEncaisserDetail: await explain(sql.receivablesSql(now)),
       premierePageCommandes: await explain(firstOrdersPageSql(now)),
       premierePageCommandesRecherche: await explain(firstOrdersPageSql(now, "client parfum")),
+      // J14 — les deux autres requêtes de l'Accueil : ses comptes (zone 4, vide de départ, lots) et le
+      // classement du mois (zone 8). L'Accueil ne paie que ces trois allers-retours, plus les lots.
+      accueilComptes: await explain(statsSql.accueilComptesSql(now)),
+      classementDuMois: await explain(statsSql.classementSql({ kind: "calendar", unit: "month", ref: null, offset: 0 }, now, 5)),
+      classementDepuisToujours: await explain(statsSql.classementSql({ kind: "all" }, now, 20)),
+      lotsOuverts: await explain(statsSql.lotsOuvertsSql(3)),
+      recapDuJour: await explain(statsSql.documentsDuJourSql(null, now)),
     };
     // La requête mesurée est bien celle de l'écran : elle rend la première page de la vue.
     const rows = await server.prisma.$queryRaw<{ id: string; totalCount: number }[]>(firstOrdersPageSql(now));

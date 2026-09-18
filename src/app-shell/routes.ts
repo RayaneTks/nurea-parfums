@@ -31,8 +31,10 @@ const spec = (s: RouteSpec) => s;
 
 /** Inventaire de 06 §1.2, une entrée par constructeur (mêmes clés que `routes`). */
 export const ROUTE_SPECS = {
-  accueil: spec({ screen: "E01", pattern: "/admin", params: [], shell: true, jalon: "J14", etat: "provisoire" }),
-  journee: spec({ screen: "E02", pattern: "/admin/journee", params: ["jour"], shell: true, jalon: "J15", etat: "a-venir" }),
+  accueil: spec({ screen: "E01", pattern: "/admin", params: [], shell: true, jalon: "J14", etat: "livree" }),
+  // E02 était prévu à J15 (07 §3.4) ; livré à J14 avec le bloc « Aujourd'hui » de E01, sans quoi le récap du
+  // jour n'a aucun chemin d'accès et PC-09 (« bilan du jour en 1 tap ») ne tient pas. 07 J14 amendé.
+  journee: spec({ screen: "E02", pattern: "/admin/journee", params: ["jour"], shell: true, jalon: "J14", etat: "livree" }),
   compta: spec({
     screen: "E03",
     pattern: "/admin/compta",
@@ -50,7 +52,14 @@ export const ROUTE_SPECS = {
   lots: spec({ screen: "E05", pattern: "/admin/lots", params: ["q", "pages"], shell: true, jalon: "J13", etat: "livree" }),
   lot: spec({ screen: "E06", pattern: "/admin/lots/[id]", params: ["assigner"], shell: true, jalon: "J13", etat: "livree" }),
   nouveauLot: spec({ screen: "E21", pattern: "/admin/lots/nouveau", params: [], shell: true, jalon: "J13", etat: "livree" }),
-  statistiques: spec({ screen: "E07", pattern: "/admin/statistiques", params: ["periode", "ref"], shell: true, jalon: "J14", etat: "a-venir" }),
+  statistiques: spec({
+    screen: "E07",
+    pattern: "/admin/statistiques",
+    params: ["periode", "ref", "pages"],
+    shell: true,
+    jalon: "J14",
+    etat: "livree",
+  }),
   reglages: spec({ screen: "E08", pattern: "/admin/reglages", params: [], shell: true, jalon: "J15", etat: "a-venir" }),
   commandes: spec({ screen: "E10", pattern: "/admin/commandes", params: ["vue", "filtre", "q", "pages"], shell: true, jalon: "J8", etat: "livree" }),
   vendre: spec({
@@ -146,7 +155,9 @@ export const routes = {
     build("/admin/lots", q ? { ...q, pages: q.pages && q.pages > 1 ? q.pages : undefined } : q),
   lot: (id: string, q?: { assigner?: boolean }) => build(`/admin/lots/${segment(id)}`, q),
   nouveauLot: () => "/admin/lots/nouveau",
-  statistiques: (q?: { periode?: Periode; ref?: string }) => build("/admin/statistiques", q),
+  /** « Afficher plus » du classement : `pages` pages de 20 lignes ; 1 ne s'écrit pas (06 E07). */
+  statistiques: (q?: { periode?: Periode; ref?: string; pages?: number }) =>
+    build("/admin/statistiques", q ? { ...q, pages: q.pages && q.pages > 1 ? q.pages : undefined } : q),
   reglages: () => "/admin/reglages",
   commandes: (q?: {
     vue?: "a-livrer" | "livrees" | "annulees";
