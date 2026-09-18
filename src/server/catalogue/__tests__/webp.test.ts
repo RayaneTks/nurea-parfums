@@ -184,7 +184,13 @@ describe("couleur, formats, idempotence", () => {
 });
 
 describe("temps de conversion", () => {
-  it("photo synthétique de 12 Mpx (4000 × 3000, JPEG) : chaque usage sous 2 s", async () => {
+  /*
+   * Le seuil est large À DESSEIN. Sur une machine au repos la conversion tient en ~0,2 à 1,2 s (les mesures
+   * partent dans la console à chaque exécution) ; sous charge — plusieurs suites en parallèle, ou un agent de
+   * construction — elle dépasse deux secondes sans qu'aucune régression n'existe. Un test qui échoue au gré de
+   * la charge finit ignoré : celui-ci ne mord que sur un changement d'ordre de grandeur, la vraie régression.
+   */
+  it("photo synthétique de 12 Mpx (4000 × 3000, JPEG) : aucune conversion ne dérive en ordre de grandeur", async () => {
     let seed = 7;
     const noise = () => ((seed = (seed * 1_103_515_245 + 12_345) & 0x7fffffff) / 0x7fffffff - 0.5) * 40;
     const clamp = (value: number) => Math.max(0, Math.min(255, Math.round(value)));
@@ -201,6 +207,6 @@ describe("temps de conversion", () => {
       timings[usage] = Math.round(performance.now() - started);
     }
     console.info(`Conversion WebP d'une photo de 12 Mpx (${Math.round(photo.length / 1024)} Ko) :`, timings);
-    for (const [usage, ms] of Object.entries(timings)) expect(ms, usage).toBeLessThan(2_000);
+    for (const [usage, ms] of Object.entries(timings)) expect(ms, usage).toBeLessThan(8_000);
   });
 });
