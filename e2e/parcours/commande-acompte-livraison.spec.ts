@@ -75,9 +75,17 @@ test("PC-05 puis PC-04 : acompte depuis la fiche (3 taps), pointage d'une ligne 
   // Retour à la liste, puis l'Accueil : le parcours de livraison part de l'app ouverte sur l'Accueil.
   await fiche.getByRole("button", { name: "Fermer", exact: true }).tap();
   await expect(fiche).toBeHidden();
-  // En `next dev`, l'indicateur des outils de Next recouvre le premier onglet : le clic lui est remis directement.
-  await tab(page, "Accueil").dispatchEvent("click");
-  await expect(page.getByRole("heading", { level: 1, name: "Accueil" })).toBeVisible();
+  // `doc` doit avoir quitté l'adresse : tant qu'il y est, un tap sur l'onglet ferme la sheet au lieu de naviguer.
+  await expect.poll(() => new URL(page.url()).searchParams.has("doc")).toBe(false);
+  /*
+   * En `next dev`, l'indicateur des outils de Next recouvre le premier onglet : le clic lui est remis directement.
+   * Et juste après la fermeture d'une sheet, le premier tap peut encore être lu comme « ferme la sheet » : on le
+   * rejoue jusqu'à l'Accueil, sans recharger la page (le marqueur de non-rechargement doit survivre).
+   */
+  await expect(async () => {
+    await tab(page, "Accueil").dispatchEvent("click");
+    await expect(page.getByRole("heading", { level: 1, name: "Accueil" })).toBeVisible({ timeout: 5_000 });
+  }).toPass({ timeout: 60_000 });
 
   // PC-04 cas B — livrer avec un solde : 4 taps depuis l'Accueil.
   const livrer = countTaps(page);
