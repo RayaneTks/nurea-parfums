@@ -1,6 +1,8 @@
 import { ROUTE_SPECS, routes, withSheet, type RouteName } from "../src/app-shell/routes";
 import { SESSION_HINT_COOKIE } from "../src/app-shell/session-hint";
+import { figurePeriodLabel } from "../src/contracts/compta";
 import { formatEur, parseEurInput } from "../src/domain/money";
+import { COMPTA_DOCS, COMPTA_MONTH, JOURNAL_MONTH } from "./fixtures/compta";
 import { DOCS, PASSING } from "./fixtures/documents";
 import { SEED, seedEntityId, seedPerfumeId } from "./fixtures/seed";
 
@@ -72,6 +74,12 @@ const DOCUMENT_SHEET_CASES: ScreenCase[] = ([
   ...entry,
 }));
 
+/** J12 — mois des chiffres de la Compta (ventes, dépense, coût à compléter) et poche « Banque » du journal. */
+const COMPTA_REF = COMPTA_MONTH.ref();
+const BANK = SEED.pockets[2].id;
+/** Nom accessible de la rangée « Marge nette · <mois> » (06 E03 zone 2 → S19). */
+export const margeNetteRow = (ref: string | null) => `Marge nette · ${figurePeriodLabel("mois", ref)} : voir le détail`;
+
 /** Champs du formulaire parfum éprouvés un par un, clavier ouvert (07 J11 : « clavier ouvert sur chaque champ »). */
 const PERFUME_FIELDS = ["Nom du parfum", "Prix du 80 ml", "Coût du 80 ml en dinars", "Taux du 80 ml"];
 
@@ -134,6 +142,41 @@ export const SCREENS: ScreenCase[] = [
   { screen: "E13", route: "encaisser", label: "À encaisser", url: routes.encaisser(), shell: true },
   { screen: "E13", route: "encaisser", label: "Plus de 30 jours, recherche clavier ouvert", url: routes.encaisser({ anciennete: 30, q: "ya" }), shell: true, keyboardFields: ["Rechercher un client"] },
   ...DOCUMENT_SHEET_CASES,
+  // J12 — Compta (06 E03 : deux vues, période « Tout », filtre, recherche clavier ouvert) et Journal (E04).
+  { screen: "E03", route: "compta", label: "vue Ventes, mois courant", url: routes.compta(), shell: true },
+  { screen: "E03", route: "compta", label: "vue Ventes, mois passé avec dépense et coût à compléter", url: routes.compta({ ref: COMPTA_REF }), shell: true },
+  { screen: "E03", route: "compta", label: "vue Ventes, période Tout", url: routes.compta({ periode: "tout" }), shell: true },
+  { screen: "E03", route: "compta", label: "vue Ventes, période Jour", url: routes.compta({ periode: "jour" }), shell: true },
+  { screen: "E03", route: "compta", label: "vue Ventes, semaine", url: routes.compta({ periode: "semaine" }), shell: true },
+  { screen: "E03", route: "compta", label: "vue Ventes, année", url: routes.compta({ periode: "annee" }), shell: true },
+  {
+    screen: "E03",
+    route: "compta",
+    label: "filtre « Coût à compléter » venu d'un lien, période Tout",
+    url: routes.compta({ periode: "tout", filtre: "cout-a-completer" }),
+    shell: true,
+  },
+  {
+    screen: "E03",
+    route: "compta",
+    label: "recherche clavier ouvert",
+    url: routes.compta({ periode: "tout", q: "sa" }),
+    shell: true,
+    keyboardFields: ["Rechercher un document"],
+  },
+  { screen: "E03", route: "compta", label: "vide de recherche", url: routes.compta({ periode: "tout", q: "introuvable" }), shell: true },
+  { screen: "E03", route: "compta", label: "vue Trésorerie", url: routes.compta({ vue: "tresorerie" }), shell: true },
+  {
+    screen: "E03",
+    route: "compta",
+    label: "fiche d'une vente ouverte depuis la Compta",
+    url: withSheet(routes.compta({ ref: COMPTA_REF }), { doc: COMPTA_DOCS.sale }),
+    shell: true,
+    waitFor: "[data-document-sheet]",
+  },
+  { screen: "E04", route: "journal", label: "journal du mois courant", url: routes.journal(), shell: true },
+  { screen: "E04", route: "journal", label: "mois à 45 mouvements", url: routes.journal({ mois: JOURNAL_MONTH.key() }), shell: true },
+  { screen: "E04", route: "journal", label: "filtré sur une poche", url: routes.journal({ poche: BANK }), shell: true },
   { screen: "E11", route: "vendre", label: "Vendre provisoire", url: routes.vendre(), shell: true },
   ...CUSTOMER_SCREENS,
   // J11 — Catalogue (06 §3.5, 07 J11 : trois onglets, filtres actifs, fiches, formulaires clavier ouvert).
@@ -241,6 +284,54 @@ export const SHEETS: SheetCase[] = [
     url: routes.client(customerId("Nora")),
     open: { tap: `Encaisser ${euros("160")}`, layer: "drawer" },
     keyboardFields: ["Montant encaissé"],
+  },
+
+  // J12 — Compta et Trésorerie (07 J12 : S15 clavier ouvert, S16, S19 ; S14 et S21).
+  {
+    sheet: "S19",
+    label: "Détail de la Marge nette d'un mois avec dépense et coût à compléter",
+    url: routes.compta({ ref: COMPTA_REF }),
+    open: { tap: margeNetteRow(COMPTA_REF), layer: "drawer" },
+  },
+  {
+    sheet: "S15",
+    label: "Nouveau mouvement (Transfert)",
+    url: routes.compta({ vue: "tresorerie" }),
+    open: { tap: "Nouveau mouvement", layer: "drawer" },
+    keyboardFields: ["Montant"],
+  },
+  {
+    sheet: "S15",
+    label: "Répartir le non attribué",
+    url: routes.compta({ vue: "tresorerie" }),
+    open: { tap: "Répartir", layer: "drawer" },
+    keyboardFields: ["Montant"],
+  },
+  {
+    sheet: "S14",
+    label: "Poche Coffre",
+    url: routes.compta({ vue: "tresorerie" }),
+    open: { tap: "Poche Coffre", layer: "drawer" },
+  },
+  {
+    sheet: "S14 → S15",
+    label: "Transférer depuis la poche Banque, clavier ouvert",
+    url: routes.compta({ vue: "tresorerie" }),
+    open: { tap: ["Poche Banque", "Transférer"], layer: "drawer" },
+    keyboardFields: ["Montant"],
+  },
+  {
+    sheet: "S16",
+    label: "Nouvelle poche",
+    url: routes.compta({ vue: "tresorerie" }),
+    open: { tap: "Nouvelle poche", layer: "drawer" },
+    keyboardFields: ["Nom de la poche", "Solde d'ouverture"],
+  },
+  {
+    sheet: "S21",
+    label: "Ordre des poches",
+    url: routes.compta({ vue: "tresorerie" }),
+    open: { tap: "Ordre", layer: "drawer" },
   },
 ];
 

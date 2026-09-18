@@ -1,6 +1,9 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
+import type { Period } from "@/contracts/chiffres";
+import type { ComptaFilter } from "@/contracts/compta";
 import type { OrderFilter, OrderView } from "@/contracts/documents";
+import { coutACompleterSql, documentsDeLaPeriodeSql } from "@/server/chiffres/sql";
 import { containsPattern, foldSql } from "@/server/search/fold";
 
 /**
@@ -41,7 +44,12 @@ function haystackSql(): Prisma.Sql {
     (SELECT string_agg(concat_ws(' ', l."perfumeName", l."brandName", l.note), ' ') FROM "SaleLine" l WHERE l."documentId" = d.id))`);
 }
 
-function searchSql(search: OrdersSearch): Prisma.Sql {
+/**
+ * Condition de la recherche étendue (06 E10 zone 3), à poser après un `WHERE` : partagée par la liste Commandes et
+ * les documents de la Compta (E03 zone 4 : « mêmes champs et mêmes règles »). Alias attendus : `d` (document),
+ * `c` (fiche client), `bt` (lot), et la jointure latérale `s` de `documentSearchLateralSql`.
+ */
+export function documentSearchSql(search: OrdersSearch): Prisma.Sql {
   const hasTerms = search.terms.length > 0;
   const hasPhone = (search.phone?.length ?? 0) > 0;
   if (!hasTerms && !hasPhone) return Prisma.empty;
@@ -60,7 +68,8 @@ function searchSql(search: OrdersSearch): Prisma.Sql {
   return Prisma.sql`AND ((${words}) OR (${phone}))`;
 }
 
-function searchLateralSql(search: OrdersSearch): Prisma.Sql {
+/** Jointure latérale `s` (texte plié, chiffres du contact) de la recherche étendue ; vide sans recherche. */
+export function documentSearchLateralSql(search: OrdersSearch): Prisma.Sql {
   if (search.terms.length === 0 && (search.phone?.length ?? 0) === 0) return Prisma.empty;
   return Prisma.sql`
     CROSS JOIN LATERAL (
@@ -154,9 +163,9 @@ export function ordersListSql(query: OrdersListQuery): Prisma.Sql {
       JOIN "DocumentBalance" b ON b."documentId" = d.id
       LEFT JOIN "Customer" c ON c.id = d."customerId"
       LEFT JOIN "Batch" bt ON bt.id = d."batchId"
-      ${searchLateralSql(search)}
+      ${documentSearchLateralSql(search)}
       WHERE d.origin = 'ORDER' AND d.status IN ${VIEW_STATUSES[view]}
-      ${searchSql(search)}
+      ${documentSearchSql(search)}
     ),
     chips AS (
       SELECT count(*) FILTER (WHERE v.status = 'PENDING')::int AS "enAttente",
@@ -217,6 +226,66 @@ export function ordersCountsSql(): Prisma.Sql {
     FROM "SaleDocument" d
     WHERE d.origin = 'ORDER'`;
 }
+
+// ── Documents de la période (Compta, 06 E03 zone 5) ────────────────────────────
+
+/**
+ * Le périmètre de la liste de la Compta, par la définition qui le compte (A-7) : les documents de la période
+ * (`documentsDeLaPeriodeSql` : un paiement ou un engagement dans la période) ou, sous le filtre « coût à
+ * compléter », exactement les coûts comptés 0 € dans la Marge nette de la période (`coutACompleterSql`).
+ */
+export function comptaScopeSql(query: { period: Period; now: Date; filter: ComptaFilter | null }): Prisma.Sql {
+  return query.filter === "cout-a-completer"
+    ? coutACompleterSql({ period: query.period, now: query.now })
+    : documentsDeLaPeriodeSql(query.period, query.now);
+}
+
+/**
+ * Les documents du périmètre, recherche étendue appliquée (mêmes champs et règles que E10), avec ce que la ligne
+ * affiche : client, titre, articles, total et dû lus dans la vue `DocumentBalance`, lot. Ordre : lots ouverts
+ * (le plus récent d'abord), lots clos, puis hors lot ; dans une section, du plus récent au plus ancien.
+ */
+export function comptaDocumentsSql(query: { period: Period; now: Date; filter: ComptaFilter | null; search: OrdersSearch }): Prisma.Sql {
+  const { search } = query;
+  return Prisma.sql`
+    WITH perimetre AS (${comptaScopeSql(query)})
+    SELECT d.id, d.origin::text AS origin, d.status::text AS status, d."orderedAt",
+           COALESCE(c."fullName", d."customerName") AS "customerName",
+           b.total::text AS total, b.due::text AS due, b."hasUnknownCost",
+           bt.id AS "batchId", bt.name AS "batchName", bt.status::text AS "batchStatus",
+           lignes."itemCount"
+    FROM perimetre p
+    JOIN "SaleDocument" d ON d.id = p."documentId"
+    JOIN "DocumentBalance" b ON b."documentId" = d.id
+    LEFT JOIN "Customer" c ON c.id = d."customerId"
+    LEFT JOIN "Batch" bt ON bt.id = d."batchId"
+    ${documentSearchLateralSql(search)}
+    CROSS JOIN LATERAL (
+      SELECT COALESCE(SUM(l.quantity), 0)::int AS "itemCount" FROM "SaleLine" l WHERE l."documentId" = d.id
+    ) lignes
+    WHERE true ${documentSearchSql(search)}
+    ORDER BY (bt.id IS NULL), (bt.status = 'CLOSED'), bt."createdAt" DESC, bt.id, d."orderedAt" DESC, d.id DESC`;
+}
+
+/** Nombre de documents du périmètre, recherche non comprise (la recherche s'affiche au-delà de 6). */
+export function comptaScopeCountSql(query: { period: Period; now: Date; filter: ComptaFilter | null }): Prisma.Sql {
+  return Prisma.sql`SELECT count(*)::int AS n FROM (${comptaScopeSql(query)}) p`;
+}
+
+export type ComptaDocumentRow = {
+  id: string;
+  origin: "ORDER" | "DIRECT_SALE";
+  status: "PENDING" | "CONFIRMED" | "DELIVERED" | "CANCELLED";
+  orderedAt: Date;
+  customerName: string | null;
+  total: string;
+  due: string;
+  hasUnknownCost: boolean;
+  batchId: string | null;
+  batchName: string | null;
+  batchStatus: "OPEN" | "CLOSED" | null;
+  itemCount: number;
+};
 
 /**
  * « Vendus récemment » (N7) : les derniers parfums distincts vendus (documents non annulés, lignes non

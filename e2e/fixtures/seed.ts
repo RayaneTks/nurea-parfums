@@ -1,4 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
+import { seedCompta } from "./compta";
 import { seedDocuments } from "./documents";
 
 /**
@@ -29,6 +30,9 @@ export const SEED = {
     { id: seedEntityId("pochenonattribue"), name: "Non attribué", kind: "UNASSIGNED", isSystem: true, sortOrder: 0 },
     { id: seedEntityId("pocheespeces"), name: "Espèces", kind: "CASH", isSystem: false, sortOrder: 1 },
     { id: seedEntityId("pochebanque"), name: "Banque", kind: "BANK", isSystem: false, sortOrder: 2 },
+    // J12 — poches dédiées aux transferts (`transfert.spec.ts`) : personne d'autre n'y écrit, leurs soldes se vérifient au centime.
+    { id: seedEntityId("pochecoffre"), name: "Coffre", kind: "CASH", isSystem: false, sortOrder: 3, openingBalance: "500" },
+    { id: seedEntityId("pochecomptepro"), name: "Compte pro", kind: "BANK", isSystem: false, sortOrder: 4 },
   ],
   brands: [
     // `key` : référence des parfums ci-dessous ; `id` : l'identifiant en base, à la forme d'un cuid.
@@ -93,7 +97,7 @@ export function seedPerfumeId(name: (typeof SEED.perfumes)[number][1]): number {
 
 export async function seedE2e(db: PrismaClient): Promise<void> {
   await db.pocket.createMany({
-    data: SEED.pockets.map((p) => ({ ...p, kind: p.kind, openingBalance: "0" })),
+    data: SEED.pockets.map((p) => ({ ...p, kind: p.kind, openingBalance: "openingBalance" in p ? p.openingBalance : "0" })),
   });
   await db.setting.create({ data: { id: 1, defaultExchangeRate: "277", defaultPocketId: SEED.pockets[1].id } });
   await db.brand.createMany({
@@ -153,5 +157,13 @@ export async function seedE2e(db: PrismaClient): Promise<void> {
     customers: Object.fromEntries(SEED.customers.map((c) => [c.fullName.split(" ")[0] as string, c.id])),
     perfumeId: (name) => seedPerfumeId(name as (typeof SEED.perfumes)[number][1]),
     brandOf: (name) => SEED.brands.find((b) => b.key === SEED.perfumes.find((p) => p[1] === name)?.[0])?.name ?? null,
+  });
+  // Ventes, dépense, non attribué et journal des écrans de la Compta (J12) : `compta.ts`.
+  await seedCompta(db, {
+    image: IMAGE,
+    pockets: { cash: SEED.pockets[1].id, bank: SEED.pockets[2].id, unassigned: SEED.pockets[0].id },
+    customers: Object.fromEntries(SEED.customers.map((c) => [c.fullName.split(" ")[0] as string, c.id])),
+    batchId: SEED.batch.id,
+    perfumeId: (name) => seedPerfumeId(name as (typeof SEED.perfumes)[number][1]),
   });
 }
