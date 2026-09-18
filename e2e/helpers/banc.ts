@@ -48,6 +48,10 @@ function compile(root: string, entry: string): Promise<string> {
     target: "es2020",
     jsx: "automatic",
     define: { "process.env.NODE_ENV": JSON.stringify("production") },
+    // `define` ne remplace que l'expression exacte : les internes de Next atteints par `next/image`
+    // (vignette du catalogue) lisent d'autres `process.env.*` et faisaient lever « process is not
+    // defined » au chargement du banc. Un `process` minimal suffit — le bench n'exécute que du rendu.
+    banner: { js: "globalThis.process = globalThis.process || { env: { NODE_ENV: 'production' } };" },
     plugins: [stubServerActions],
     logLevel: "silent",
   }).then((result) => {
