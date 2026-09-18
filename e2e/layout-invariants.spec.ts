@@ -54,6 +54,16 @@ async function addCookies(context: BrowserContext, screen: ScreenCase, baseURL: 
   await context.addCookies(screen.cookies.map((c) => ({ ...c, domain: hostname })));
 }
 
+/** Stockage local posé avant le premier chargement seulement (brouillon du composeur, 06 §1.8). */
+async function addStorage(page: Page, storage: Record<string, string> | undefined) {
+  if (!storage) return;
+  await page.addInitScript((entries) => {
+    if (sessionStorage.getItem("__e2e-storage")) return;
+    sessionStorage.setItem("__e2e-storage", "1");
+    for (const [key, value] of Object.entries(entries)) localStorage.setItem(key, value);
+  }, storage);
+}
+
 /** Ouvre l'écran et attend qu'il soit vivant (hydraté, blocs posés). */
 async function open(page: Page, url: string, shell: boolean): Promise<void> {
   const response = await page.goto(url, { waitUntil: "load" });
@@ -230,6 +240,7 @@ test.describe("Invariants d'affichage — gestion", () => {
 
           test(`${screen.url} respecte les invariants`, async ({ page, context, baseURL }) => {
             await addCookies(context, screen, baseURL);
+            await addStorage(page, screen.storage);
             await open(page, screen.url, screen.shell);
             await settle(page, screen.waitFor);
             const { violations, warnings } = await screenViolations(page);
@@ -241,6 +252,7 @@ test.describe("Invariants d'affichage — gestion", () => {
           fields.forEach((field, index) => {
             test(`clavier ouvert sur « ${field} »`, async ({ page, context, baseURL }) => {
               await addCookies(context, screen, baseURL);
+              await addStorage(page, screen.storage);
               await open(page, screen.url, screen.shell);
               await settle(page, screen.waitFor);
               await simulateKeyboard(page, KEYBOARD);
@@ -257,6 +269,7 @@ test.describe("Invariants d'affichage — gestion", () => {
 
       for (const sheet of SHEETS) {
         test(`${sheet.sheet} — ${sheet.label}, clavier ouvert`, async ({ page }) => {
+          await addStorage(page, sheet.storage);
           await open(page, sheet.url, true);
           let dialog;
           if (sheet.open === "search") {
@@ -268,6 +281,12 @@ test.describe("Invariants d'affichage — gestion", () => {
           } else {
             const taps = typeof sheet.open.tap === "string" || sheet.open.tap instanceof RegExp ? [sheet.open.tap] : sheet.open.tap;
             for (const [index, name] of taps.entries()) {
+              if (typeof name === "object" && !(name instanceof RegExp)) {
+                // Saisie dans la sheet ouverte (« lattafa oud » dans S05) : la couche du dessus, portée en dernier.
+                await page.getByLabel(name.fill, { exact: true }).last().fill(name.text);
+                await page.waitForTimeout(300);
+                continue;
+              }
               // Toucher suivant : le contrôle est dans la sheet ouverte par le précédent, portée APRÈS l'écran dans le DOM.
               const matches = page.getByRole(sheet.open.role ?? "button", { name, exact: true });
               const trigger = index === 0 ? matches.first() : matches.last();

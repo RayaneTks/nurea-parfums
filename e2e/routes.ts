@@ -1,6 +1,7 @@
 import { ROUTE_SPECS, routes, withSheet, type RouteName } from "../src/app-shell/routes";
 import { SESSION_HINT_COOKIE } from "../src/app-shell/session-hint";
 import { formatEur, parseEurInput } from "../src/domain/money";
+import { composerDraft, storedDraft } from "./fixtures/composer";
 import { DOCS, PASSING } from "./fixtures/documents";
 import { SEED, seedPerfumeId } from "./fixtures/seed";
 
@@ -25,7 +26,12 @@ export type ScreenCase = {
   cookies?: { name: string; value: string; path: string }[];
   /** Sélecteur attendu avant la mesure (contenu d'une sheet adressable, rendu après l'hydratation). */
   waitFor?: string;
+  /** Stockage local posé avant le chargement (brouillon du composeur, 06 §1.8). */
+  storage?: Record<string, string>;
 };
+
+/** Un geste d'ouverture : toucher un contrôle (nom accessible exact), ou saisir dans un champ (libellé exact). */
+export type OpenStep = string | RegExp | { fill: string; text: string };
 
 export type SheetCase = {
   /** Sheet ou dialogue de 06 (S17…). */
@@ -38,8 +44,10 @@ export type SheetCase = {
    * (nom accessible exact) puis la couche attendue (`drawer` : sheet vaul ; `viewer` : visionneuse).
    * Plusieurs touchers : une sheet ouverte depuis une autre (fiche `?doc=` → menu → S03), dans l'ordre.
    */
-  open: "search" | { tap: string | RegExp | readonly (string | RegExp)[]; role?: "button" | "link"; layer: "drawer" | "viewer" };
+  open: "search" | { tap: string | RegExp | readonly OpenStep[]; role?: "button" | "link"; layer: "drawer" | "viewer" };
   keyboardFields?: string[];
+  /** Stockage local posé avant le chargement (brouillon du composeur). */
+  storage?: Record<string, string>;
 };
 
 const SAUVAGE = seedPerfumeId("Sauvage");
@@ -104,7 +112,53 @@ export const SCREENS: ScreenCase[] = [
   { screen: "E13", route: "encaisser", label: "À encaisser", url: routes.encaisser(), shell: true },
   { screen: "E13", route: "encaisser", label: "Plus de 30 jours, recherche clavier ouvert", url: routes.encaisser({ anciennete: 30, q: "ya" }), shell: true, keyboardFields: ["Rechercher un client"] },
   ...DOCUMENT_SHEET_CASES,
-  { screen: "E11", route: "vendre", label: "Vendre provisoire", url: routes.vendre(), shell: true },
+  // J9 — Composeur Vendre (06 E11 ; §1.8 : brouillon d'une ligne en mode Vente puis Commande, clavier sur le prix).
+  { screen: "E11", route: "vendre", label: "composeur vide, grille des récents", url: routes.vendre(), shell: true, waitFor: "[data-recent-tile]" },
+  {
+    screen: "E11",
+    route: "vendre",
+    label: "brouillon d'une ligne en mode Vente",
+    url: routes.vendre(),
+    shell: true,
+    waitFor: "[data-composer-cta]",
+    storage: storedDraft(composerDraft({ mode: "vente" })),
+    keyboardFields: ["Prix de Asad", "Reçu maintenant"],
+  },
+  {
+    screen: "E11",
+    route: "vendre",
+    label: "brouillon d'une ligne en mode Commande, client posé",
+    url: routes.vendre(),
+    shell: true,
+    waitFor: "[data-composer-cta]",
+    storage: storedDraft(composerDraft({ mode: "commande", customer: "Fares" })),
+    keyboardFields: ["Prix de Asad", "Acompte", "Coût en dinars de Asad"],
+  },
+  {
+    screen: "E11",
+    route: "vendre",
+    label: "Nouvelle commande, rien de saisi",
+    url: routes.vendre({ mode: "commande" }),
+    shell: true,
+    waitFor: "[data-composer-cta]",
+  },
+  {
+    screen: "E11",
+    route: "vendre",
+    label: "bandeau de reprise (brouillon en cours, « Vendre » d'un parfum)",
+    url: routes.vendre({ parfum: SAUVAGE }),
+    shell: true,
+    waitFor: "[data-resume-banner]",
+    storage: storedDraft(composerDraft({ mode: "vente", quantity: 2 })),
+  },
+  {
+    screen: "E11",
+    route: "vendre",
+    label: "« Refaire » : lignes, client et lot repris",
+    url: routes.vendre({ depuis: DOCS.refaire }),
+    shell: true,
+    waitFor: "[data-composer-cta]",
+  },
   { screen: "E12", route: "clients", label: "Clients provisoire", url: routes.clients(), shell: true },
   // J11 — Catalogue (06 §3.5, 07 J11 : trois onglets, filtres actifs, fiches, formulaires clavier ouvert).
   { screen: "E15", route: "catalogue", label: "onglet Parfums", url: routes.catalogue(), shell: true, keyboardFields: ["Rechercher dans le catalogue"] },
@@ -189,6 +243,53 @@ export const SHEETS: SheetCase[] = [
     url: routes.encaisser(),
     open: { tap: "Relancer", layer: "drawer" },
     keyboardFields: ["Message"],
+  },
+  // J9 — sheets du composeur (06 S05 hors catalogue, S06 + client de passage, S07, S08).
+  {
+    sheet: "S05",
+    label: "sélecteur de parfum du composeur, recherche clavier ouvert",
+    url: routes.vendre(),
+    open: { tap: "Rechercher un parfum", layer: "drawer" },
+    keyboardFields: ["Parfum ou marque"],
+  },
+  {
+    sheet: "S05",
+    label: "sous-formulaire « Hors catalogue »",
+    url: routes.vendre(),
+    open: {
+      tap: ["Rechercher un parfum", { fill: "Parfum ou marque", text: "lattafa oud" }, "Hors catalogue : « lattafa oud »"],
+      layer: "drawer",
+    },
+    keyboardFields: ["Nom du parfum", "Marque"],
+  },
+  {
+    sheet: "S06",
+    label: "client depuis « Nouvelle commande »",
+    url: routes.vendre({ mode: "commande" }),
+    open: { tap: "Choisir le client", layer: "drawer" },
+    keyboardFields: ["Nom, téléphone, Snap"],
+  },
+  {
+    sheet: "S06",
+    label: "client de passage : nom et contact",
+    url: routes.vendre({ mode: "commande" }),
+    open: { tap: ["Choisir le client", /^Client de passage/], layer: "drawer" },
+    keyboardFields: ["Nom du client", "Contact"],
+  },
+  {
+    sheet: "S07",
+    label: "lot depuis le composeur",
+    url: routes.vendre({ mode: "commande" }),
+    open: { tap: "Lot : Commande de mars", layer: "drawer" },
+    keyboardFields: ["Chercher ou nommer un lot"],
+  },
+  {
+    sheet: "S08",
+    label: "plusieurs poches",
+    url: routes.vendre(),
+    storage: storedDraft(composerDraft({ mode: "vente" })),
+    open: { tap: "Plusieurs poches…", layer: "drawer" },
+    keyboardFields: ["Espèces", "Banque"],
   },
 ];
 

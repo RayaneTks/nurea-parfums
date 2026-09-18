@@ -105,6 +105,9 @@ export async function seedE2e(db: PrismaClient): Promise<void> {
     data: [
       { perfumeId: sauvage.id, volumeMl: 80, defaultUnitPriceEur: "120", defaultUnitCostDzd: "22000", defaultExchangeRate: "277" },
       { perfumeId: sauvage.id, volumeMl: 50, defaultUnitPriceEur: "85", defaultUnitCostDzd: "15000", defaultExchangeRate: "277" },
+      // Composeur (07 J9) : les deux parfums vendus le plus récemment ont leur mémoire de prix du 80 ml (N8).
+      { perfumeId: seedPerfumeId("Asad"), volumeMl: 80, defaultUnitPriceEur: "120", defaultUnitCostDzd: "22000", defaultExchangeRate: "277" },
+      { perfumeId: seedPerfumeId("J'adore"), volumeMl: 80, defaultUnitPriceEur: "150", defaultUnitCostDzd: "26000", defaultExchangeRate: "277" },
     ],
   });
   const ids = await db.perfume.findMany({ select: { id: true, name: true } });
@@ -138,5 +141,6 @@ export async function seedE2e(db: PrismaClient): Promise<void> {
     customers: Object.fromEntries(SEED.customers.map((c) => [c.fullName.split(" ")[0] as string, c.id])),
     perfumeId: (name) => seedPerfumeId(name as (typeof SEED.perfumes)[number][1]),
     brandOf: (name) => SEED.brands.find((b) => b.key === SEED.perfumes.find((p) => p[1] === name)?.[0])?.name ?? null,
+    batchId: SEED.batch.id,
   });
 }
