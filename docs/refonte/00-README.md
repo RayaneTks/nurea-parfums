@@ -1,8 +1,10 @@
 # Refonte Nuréa Gestion — Dossier pilote
 
-> **Statut** : **construction en cours** sur `refonte/integration` — fondations, moteurs, chiffres (J0–J7),
-> Commandes et fiche document (J8), Catalogue (J11) livrés ; Vendre (J9), Clients (J10), Compta (J12) en cours ;
-> reprise des données répétée avec succès sur la copie réelle. Démarré le 17 septembre 2026.
+> **Statut** : **J0 à J15 livrés et fusionnés** dans `refonte/integration` ; **J16 en cours**
+> (polissage, PWA, performance, accessibilité, documentation et recette). La reprise des données
+> a été répétée avec succès sur la copie réelle. Démarré le 17 septembre 2026.
+> **Il reste, avant la bascule, des actions qui n'appartiennent pas à l'exécutant** : voir
+> « Ce qui reste avant la bascule » plus bas.
 > **Objet** : refonte complète, from scratch, de l'application de gestion (`/admin`),
 > dite « Nuréa Gestion ». La vitrine publique (`app/(shop)`) n'est **pas** dans le
 > périmètre, mais ses dépendances aux tables partagées sont une contrainte dure.
@@ -53,6 +55,7 @@ refonte en lisant cette série.
 | `05-DESIGN-SYSTEM.md` | Design system : tokens, primitives, patterns, motion, a11y — hérité de l'existant, consolidé. | ✅ |
 | `06-ECRANS-PARCOURS.md` | Architecture d'information, navigation, spec écran par écran avec états (vide/chargement/erreur) et gestes. | ✅ |
 | `07-PLAN-EXECUTION.md` | Ordre de construction, jalons vérifiables, stratégie de bascule et de migration, critères d'acceptation. | ✅ |
+| `08-RECETTE.md` | **La recette**, à passer avec le gérant avant la bascule : les 141 capacités de 01 §3, où chacune vit désormais, et comment elle est vérifiée (nom du test, ou geste exact). Plus les parcours chronométrés et ce qui exige la préproduction ou son iPhone. | ✅ ouvert (J16) |
 
 ## Méthode
 
@@ -89,8 +92,8 @@ Branche de travail : **`refonte/integration`** (la production reste sur `main`, 
 | J12 Compta, Trésorerie, Journal | ✅ | `b38588e` — E03 deux vues, E04 journal par mois, S14–S16, S19, S21, export CSV. Chaque chiffre confronté à sa requête canonique (en base et en e2e) ; Σ « Encaissé » du CSV = `encaisse(période)`. test:layout 270, e2e 46. |
 | J13 Lots | ✅ | `7fffb10` — E05 (zone « À rattacher »), E06, E21, S13 unique, dépenses datables. Marge d'un lot 2 taps, dépense 4 taps, ranger un document 3 taps. Trois bugs trouvés au passage (chiffre du lot toujours à zéro, paquet client qui embarquait le serveur, libellé de champ pollué par l'astérisque). |
 | J14 Accueil, récap du jour, statistiques | ✅ | E01 définitif (zones streamées, chaque alerte ouvre exactement l'ensemble qu'elle compte), E02, E07, cartes « Nouveautés » et « Pour commencer » (remontées de J15). `tableauDeBord()` à 4,4 ms sur dix fois le volume réel. Récap du jour lisible à 0 tap, détaillé en 1 ; compta du mois en 1 tap. Défaut hérité corrigé : collision d'identifiants du jeu e2e (J10/J12) qui empêchait toute la suite de démarrer. |
-| J15 Réglages et nouveautés | ✅ 1re partie | E08 Réglages (poche par défaut, taux DZD, ordre des poches S21, version, déconnexion) et actions rapides dans la recherche (« Encaisser xx € », « Vendre »). Cartes « Nouveautés » et « Pour commencer », récap du jour, relances : livrés à J14. **Reste** : relectures de textes (gabarit de relance, carte « Nouveautés », confirmations) — tranchées par l'agent, à confronter à l'usage en préproduction. |
-| J16 Polissage, PWA, recette | ⏳ | — |
+| J15 Réglages et nouveautés | ✅ | `5d89ae7` — E08 Réglages (poche par défaut, taux DZD, ordre des poches S21, version, déconnexion) et actions rapides dans la recherche (« Encaisser xx € », « Vendre »). Cartes « Nouveautés » et « Pour commencer », récap du jour, relances : livrés à J14. **Reste** : relectures de textes (gabarit de relance, carte « Nouveautés », confirmations) — tranchées par l'agent, à confronter à l'usage en préproduction (08 §1c). |
+| J16 Polissage, PWA, recette | ⏳ en cours | Deux chantiers en parallèle. **PWA / perf / a11y** : service worker rendu par route et versionné par déploiement, page hors ligne autonome, carte d'installation, dépendances sans importeur retirées, budgets de perception. **Documentation et recette** : `CLAUDE.md`, `docs/admin/PRODUCT.md`, `docs/admin/DESIGN.md` remis au niveau du code, `08-RECETTE.md` ouvert (146 lignes), `tests/architecture/documentation.test.ts` qui échoue si un terme de l'ancienne gestion reparaît dans la doc. |
 | Fusion `main` | ✅ | `9b371e2` — écart déjà intégré (01 §3.11), arbre de la refonte conservé. |
 
 **Base de données locale des tests.** Docker Desktop ne démarre pas sur ce poste. Les tests
@@ -105,15 +108,36 @@ explicites ; jamais `npm run build` sans `NUREA_SKIP_MIGRATE_DEPLOY=1` et une UR
 
 Pour un agent ou un développeur qui arrive sur le chantier :
 
-1. Lire **ce document**, puis `02-VISION-PRODUIT.md` en entier (30 min) — c'est
-   le « pourquoi » de toutes les décisions techniques.
-2. Lire `07-PLAN-EXECUTION.md` §0 et §3.0 (conventions communes des jalons).
-3. Ouvrir le jalon en cours ; ne lire les docs 03–06 **qu'aux sections que le
+1. **`git fetch` d'abord**, et comparer à `origin/main` : la branche locale peut être
+   en retard. La branche de travail est `refonte/integration` ; la production reste
+   sur `main`, intacte.
+2. Lire **`CLAUDE.md`** (il décrit l'app telle qu'elle est aujourd'hui, pas celle
+   d'avant), puis **ce document**, puis `02-VISION-PRODUIT.md` en entier (30 min) —
+   c'est le « pourquoi » de toutes les décisions techniques.
+3. Lire `07-PLAN-EXECUTION.md` §0 et §3.0 (conventions communes des jalons).
+4. Ouvrir le jalon en cours ; ne lire les docs 03–06 **qu'aux sections que le
    jalon cite**. 01 sert de référence (bugs, non-régression), pas de lecture suivie.
-4. **Règle d'or** : si un jalon remet en cause une décision, on amende d'abord le
-   document amont concerné, puis on code. Une documentation qui ment est un bug.
-5. Après tout jalon d'UI : `npm run test:layout`. Après tout jalon d'argent : les
+5. **Règle d'or** : si un jalon remet en cause une décision, on amende d'abord le
+   document amont concerné, puis on code. Une documentation qui ment est un bug —
+   `tests/architecture/documentation.test.ts` en fait un bug qui échoue.
+6. Après tout jalon d'UI : `npm run test:layout`. Après tout jalon d'argent : les
    tests de parité des chiffres et la reprise rejouée sur copie (07 §2.4).
+7. Avant de dire « terminé » : `npm run verify`, et la ligne correspondante de
+   `08-RECETTE.md` §3 doit nommer un test qui **existe**.
+
+**Où trouver quoi, sans lire toute la série :**
+
+| Question | Document |
+|---|---|
+| Comment est fait le dépôt ? quelles commandes ? | `CLAUDE.md` |
+| Que faisait l'app d'avant ? | `01` §3 (carte fonctionnelle) |
+| Pourquoi cette décision ? | `02` §4 (capacité par capacité) |
+| Quelle table, quelle contrainte ? | `03` |
+| Quelle couche, quelle transaction, quel cache ? | `04` |
+| Quel jeton, quelle primitive ? | `05` (et `src/design/tokens.ts`, la source) |
+| À quoi ressemble l'écran E__ ou la sheet S__ ? | `06` §3 |
+| Dans quel ordre construire ? | `07` §3 |
+| Est-ce vérifié, et par quoi ? | **`08` §3** |
 
 **Points ouverts laissés à l'exécutant** (marqués dans 07) : vérifier que la build
 ne touche pas la base ; essayer `vercel deploy --skip-domain` + `promote` en J16 ;
@@ -127,6 +151,46 @@ visuels story, « À rattacher », recherche étendue, fenêtre de 48 h, correct
 effet sur la refonte : `01-AUDIT-EXISTANT.md` §3.11 ; chaque document amendé porte une note
 « Écart intégré le 17/09/2026 » en tête. Le SQL de 03 (CHECK, triggers, vue) a été relu mais **pas
 exécuté** (pas de Postgres local lors de la conception) : il s'éprouve en J1–J2.
+
+## Ce qui reste avant la bascule
+
+Deux colonnes, parce que deux personnes. **L'exécutant ne peut rien faire de la
+colonne de gauche** : elle demande le compte Supabase et le compte Vercel du gérant,
+son iPhone, ou son jugement. Tant qu'elle n'est pas faite, la bascule ne peut pas
+être datée — ce n'est pas une question d'avancement du code.
+
+### Ce qui appartient au gérant
+
+| # | Action | Pourquoi lui | Bloque |
+|---|---|---|---|
+| G-1 | **Créer le projet Supabase de préproduction** et y charger une copie des données réelles | Son compte, sa facturation | Tout §5.1 de `08` : répétition générale, invalidation du cache, budgets de perception, PWA installée |
+| G-2 | **Renseigner les variables Vercel *Preview*** (`DATABASE_URL`, `DIRECT_URL`, `ADMIN_JWT_SECRET`, clés Supabase) vers ce projet | Son compte Vercel | Le déploiement de préproduction |
+| G-3 | **Réglage G9 du bucket `catalog`** : autoriser les formats d'origine (HEIC, PNG, JPEG) en dépôt | Console Supabase, son compte | Le dépôt d'un visuel depuis l'iPhone (NR-5.6, NR-11.1) |
+| G-4 | **Prêter son iPhone**, une demi-journée, pour la recette | C'est son modèle, son réseau, son doigt | Les 16 parcours chronométrés et les 6 gestes de `08` §1a |
+| G-5 | **Relire les textes** : gabarit de relance, carte « Nouveautés », confirmations S18 | Il est le seul à savoir s'il enverrait ce message | `08` §1c |
+| G-6 | **Relire le rapport de reprise** (relecture n°2, 07 §2.6), chiffre par chiffre | Il est le seul à savoir si le nombre est le bon | `08` §1c, et le feu vert de bascule |
+| G-7 | **Choisir le créneau de bascule** — une heure creuse, sans vente en cours | Son activité | B12 |
+| G-8 | **Donner le feu vert** (B12) après la recette | — | La bascule |
+
+### Ce qui appartient à l'exécutant
+
+| # | Action | État |
+|---|---|---|
+| E-1 | Finir J16 : PWA (service worker par route, page hors ligne, carte d'installation), performance, accessibilité | ⏳ en cours |
+| E-2 | Documentation du dépôt au niveau du code + `08-RECETTE.md` | ✅ J16 |
+| E-3 | Fusionner `fix/vitrine-slug-maintenance` (L1 / L2) dans `main` avant la bascule | ⏳ prête, non fusionnée |
+| E-4 | Job CI `layout` (reste de J4) | ⏳ |
+| E-5 | Répétition générale sur la préproduction, dès que G-1 et G-2 sont faits | ⏳ bloqué par G-1 |
+| E-6 | Essayer `vercel deploy --skip-domain` puis `promote` (point ouvert de 07) | ⏳ bloqué par G-2 |
+| E-7 | Vérifier que la build ne touche pas la base (point ouvert de 07) | ⏳ |
+| E-8 | Passer la recette `08` avec le gérant, remplir la feuille de passage §6 | ⏳ bloqué par G-1, G-4 |
+| E-9 | Après la bascule : jalon N — supprimer le schéma `legacy`, retirer les scripts de migration, poser le tag `bascule-<date>` | ⏳ |
+
+**Critère d'arrêt.** « Prêt à basculer » (07 §6.1) demande G1–G8 **et** la recette `08`
+passée : les 146 lignes vues, les parcours « bascule » tenus, la répétition générale
+verte. Une case non cochée n'interdit pas de basculer — elle interdit de basculer
+**sans le dire** : toute case laissée vide s'inscrit en `08` §6, avec sa raison et le
+nom de qui l'a tranchée.
 
 ## Décisions qui changent le quotidien du gérant — tranchées
 
