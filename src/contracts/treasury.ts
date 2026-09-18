@@ -252,13 +252,31 @@ export type JournalEntry = MovementSummary & {
   pocketName: string;
   /** Mouvement qui annule celui-ci, s'il existe (la paire se replie à l'écran). */
   reversedById: string | null;
-  payment: { id: string; kind: "DEPOSIT" | "BALANCE" | "REFUND"; documentId: string; customerName: string | null } | null;
+  /** Transfert : poche de l'autre jambe (« Transfert vers Banque », « Transfert depuis Espèces »). */
+  counterpartPocketName: string | null;
+  payment: {
+    id: string;
+    kind: "DEPOSIT" | "BALANCE" | "REFUND";
+    documentId: string;
+    documentOrigin: "ORDER" | "DIRECT_SALE";
+    customerName: string | null;
+  } | null;
   expense: { id: string; label: string; batchId: string; batchName: string } | null;
+};
+
+/** Fiche d'une poche (06 S14) : ses derniers mouvements et leur nombre total (0 : la poche se supprime). */
+export type PocketActivity = {
+  pocketId: string;
+  movementCount: number;
+  /** Les plus récents d'abord, tous mois confondus. */
+  recent: JournalEntry[];
 };
 
 export type MonthlyJournal = {
   /** « 2026-09 ». */
   month: string;
+  /** Poche filtrée (`?poche=`), `null` : toutes. */
+  pocketId: string | null;
   /** ISO 8601, bornes `[from, to[` du mois en Europe/Paris. */
   from: string;
   to: string;

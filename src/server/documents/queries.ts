@@ -11,6 +11,14 @@ import {
   type OrdersListDTO,
   type RecentlySoldDTO,
 } from "@/contracts/documents";
+import { parsePeriod, type PeriodKey } from "@/contracts/chiffres";
+import {
+  COMPTA_FILTERS,
+  COMPTA_SEARCH_MAX_LENGTH,
+  type ComptaDocumentSectionDTO,
+  type ComptaDocumentsDTO,
+  type ComptaFilter,
+} from "@/contracts/compta";
 import { phoneDigitVariants, searchTerms } from "@/contracts/search";
 import { isTextId } from "@/domain/ids";
 import { dzdFromDb, eur, eurFromDb, eurFromWire, percentOf, rateFromDb, toDb, toWire, type MoneyString } from "@/domain/money";
@@ -19,7 +27,15 @@ import { cached } from "@/server/cache/cached";
 import { documentBalance } from "@/server/chiffres";
 import { defineQuery } from "@/server/core/define-query";
 import { db } from "@/server/db/client";
-import { ordersCountsSql, ordersListSql, recentlySoldSql, type OrdersListRow } from "@/server/documents/sql";
+import {
+  comptaDocumentsSql,
+  comptaScopeCountSql,
+  ordersCountsSql,
+  ordersListSql,
+  recentlySoldSql,
+  type ComptaDocumentRow,
+  type OrdersListRow,
+} from "@/server/documents/sql";
 
 /**
  * Lectures du module documents pour les écrans (04 §2.1) : fiche document (S01), liste Commandes (E10),
@@ -260,6 +276,66 @@ export const ordersList = defineQuery(
     return cachedOrdersList(params.vue, params.filtre, params.q, params.pages);
   },
 );
+
+// ── Documents de la période (Compta, E03 zone 5) ───────────────────────────────
+
+function comptaSections(rows: readonly ComptaDocumentRow[]): ComptaDocumentSectionDTO[] {
+  const sections = new Map<string, ComptaDocumentSectionDTO>();
+  for (const row of rows) {
+    const key = row.batchId ? `lot:${row.batchId}` : "hors-lot";
+    let section = sections.get(key);
+    if (!section) {
+      section = {
+        key,
+        batch: row.batchId ? { id: row.batchId, name: row.batchName ?? "", status: row.batchStatus ?? "OPEN" } : null,
+        rows: [],
+      };
+      sections.set(key, section);
+    }
+    section.rows.push({
+      id: row.id,
+      origin: row.origin,
+      status: row.status,
+      customerName: row.customerName,
+      orderedAt: row.orderedAt.toISOString(),
+      itemCount: row.itemCount,
+      total: money(row.total),
+      due: money(row.due),
+      hasUnknownCost: row.hasUnknownCost,
+    });
+  }
+  return [...sections.values()];
+}
+
+const cachedComptaDocuments = cached(
+  "documents.comptaDocuments",
+  "gestion",
+  async (periode: PeriodKey, q: string, filtre: ComptaFilter | null): Promise<ComptaDocumentsDTO> => {
+    const period = parsePeriod(periode);
+    if (!period) throw new TypeError(`Compta : période illisible « ${periode} ».`);
+    const now = new Date();
+    const scope = { period, now, filter: filtre };
+    const [rows, [count]] = await Promise.all([
+      db.$queryRaw<ComptaDocumentRow[]>(
+        comptaDocumentsSql({ ...scope, search: { terms: searchTerms(q), phone: phoneDigitVariants(q) } }),
+      ),
+      db.$queryRaw<{ n: number }[]>(comptaScopeCountSql(scope)),
+    ]);
+    return { periode, q, filtre, scopeCount: count?.n ?? 0, total: rows.length, sections: comptaSections(rows) };
+  },
+  { daily: true },
+);
+
+/**
+ * E03 zone 5 — les documents de la période (paiement ou engagement dans la période, `documentsDeLaPeriode`), ou
+ * sous `filtre=cout-a-completer` ceux de `coutACompleter` ; recherche étendue de E10 ; groupés par lot puis hors
+ * lot. Cache `gestion` à la clé du jour (les bornes « ce mois » changent à minuit, Paris).
+ */
+export const comptaDocuments = defineQuery((periode: PeriodKey, q: string | null = null, filtre: string | null = null) => {
+  const query = (q ?? "").trim().slice(0, COMPTA_SEARCH_MAX_LENGTH);
+  const filter = (COMPTA_FILTERS as readonly string[]).includes(filtre ?? "") ? (filtre as ComptaFilter) : null;
+  return cachedComptaDocuments(periode, query, filter);
+});
 
 // ── Vendus récemment (N7) ──────────────────────────────────────────────────────
 
