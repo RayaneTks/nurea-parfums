@@ -111,7 +111,12 @@ function Scene({ scene }: { scene: AccueilScene }) {
   return (
     <FeedbackProvider>
       <UndoProvider>
-        <div className="flex flex-col gap-4 px-4 pt-3" data-banc-accueil={scene}>
+        {/*
+          Mêmes classes que la zone de contenu de `PageScaffold` (05 §3.2), `admin-page-bottom-pad`
+          compris : sans la réserve basse, la rangée « Réglages » finit sous la barre d'onglets et le
+          banc signale une violation que l'écran réel n'a pas.
+        */}
+        <div className="admin-page-bottom-pad flex flex-col gap-4 px-4 pt-3" data-banc-accueil={scene}>
           <SectionHeader title="Accueil" />
           <ContextCards state={first} steps={LINKS.steps} />
           {scene === "vide-de-depart" ? null : (
