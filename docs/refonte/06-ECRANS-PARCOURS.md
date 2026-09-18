@@ -88,9 +88,9 @@ Les adresses sont celles fixées par `docs/refonte/04-ARCHITECTURE.md` §2.1 et 
 | E02 | `/admin/journee` | `(gestion)/journee/page.tsx` | Accueil | `/admin` « Accueil » | `jour=AAAA-MM-JJ` (défaut : aujourd'hui, Europe/Paris), `doc` | bloc « Aujourd'hui » de E01 |
 | E03 | `/admin/compta` | `(gestion)/compta/page.tsx` | Accueil | `/admin` « Accueil » | `vue=ventes\|tresorerie` (défaut `ventes`), `periode=jour\|semaine\|mois\|annee\|tout` (défaut `mois`), `ref=AAAA-MM-JJ`, `q`, `filtre=cout-a-completer`, `doc`, `edition=1` | tuiles « Encaissé · <mois> » et « Trésorerie », alertes « non attribués » et « coût à compléter » de E01 |
 | E04 | `/admin/compta/journal` | `(gestion)/compta/journal/page.tsx` — **ajout à 04 §2.1** | Accueil | `/admin/compta?vue=tresorerie` « Trésorerie » | `mois=AAAA-MM`, `poche=<id>`, `doc` | lien « Tout le journal » de E03, « Voir tout » de S14 |
-| E05 | `/admin/lots` | `(gestion)/lots/page.tsx` | Accueil | `/admin` « Accueil » | — | lien « Tous les lots » de E01 |
+| E05 | `/admin/lots` | `(gestion)/lots/page.tsx` | Accueil | `/admin` « Accueil » | — | en-tête « Lots ouverts » de E01 |
 | E06 | `/admin/lots/[id]` | `(gestion)/lots/[id]/page.tsx` | Accueil | `/admin/lots` « Lots » | `assigner=1` (ouvre S13, 04 §2.1), `doc` | ligne de lot (E01, E05), en-tête de section lot (E03), rangée « Lot » de S01, création (E21) |
-| E07 | `/admin/statistiques` | `(gestion)/statistiques/page.tsx` | Accueil | `/admin` « Accueil » | `periode`, `ref` | lien « Tout le classement » de E01 |
+| E07 | `/admin/statistiques` | `(gestion)/statistiques/page.tsx` | Accueil | `/admin` « Accueil » | `periode`, `ref`, `pages` (« Afficher plus », ajouté à J14), `doc` | en-tête « Top parfums » de E01 |
 | E08 | `/admin/reglages` | `(gestion)/reglages/page.tsx` | Accueil | `/admin` « Accueil » | — | rangée « Réglages » de E01 |
 | E09 | *(pas de route)* | `public/admin-offline.html` (04 §14.4) | — | — | — | service worker, quand une navigation échoue |
 | E10 | `/admin/commandes` | `(gestion)/commandes/page.tsx` | Commandes | — (racine) | `vue=a-livrer\|livrees\|annulees` (défaut `a-livrer`), `filtre=retard\|aujourdhui\|demain\|en-attente\|confirmees`, `q`, `doc`, `edition=1` | onglet ; alertes et tuiles de E01 |
@@ -711,7 +711,7 @@ flowchart TD
   1. **Header du shell** : logo, bouton « Rechercher » (S17).
   2. **Carte contextuelle** (une seule à la fois, par priorité) :
      - « Installer l'app » — Safari iOS hors mode standalone (consigne Partager → Sur l'écran d'accueil), ou invite `beforeinstallprompt` sur les autres navigateurs ; fermable, fermeture mémorisée sur l'appareil ;
-     - « Nouveautés » — affichée jusqu'à fermeture après la bascule vers la refonte, trois lignes : « Clients a son onglet : À encaisser est dedans. » · « La compta s'ouvre en touchant tes chiffres ci-dessous. » · « Vente et commande : même écran, bascule en haut. » ; bouton « J'ai compris » ;
+     - « Nouveautés » — affichée jusqu'à fermeture après la bascule vers la refonte. *Livrée à J14 (amendement J14-1 de 07), avec **six** lignes plutôt que trois : les six changements d'habitude tranchés dans `00-README.md` (« Décisions qui changent le quotidien du gérant »), pas seulement les trois premiers — onglets, chiffres qui s'ouvrent, document unique, « Reçu maintenant », stock non suivi, définitions redéfinies.* Bouton « J'ai compris » ; fermeture mémorisée sur l'appareil (`localStorage`, clé dans `src/contracts/stats.ts`) ;
      - « Pour commencer » — vide de départ (PC-12) : trois étapes cochées automatiquement (« Créer tes poches » → S16, « Ajouter un parfum » → E19 en création, « Faire une vente » → E11).
   3. **« À faire »** (`ListSection`, rendue seulement si une rangée existe ; chaque rangée ouvre **exactement** l'ensemble compté) :
      - « 3 commandes en retard » → `/admin/commandes?filtre=retard` ;
@@ -720,17 +720,17 @@ flowchart TD
      - « 2 documents au coût à compléter » → `/admin/compta?periode=tout&filtre=cout-a-completer` ;
      - « 1 parfum en rupture » → `/admin/catalogue?tab=parfums&stock=rupture` ;
      - « 3 parfums en stock bas » → `/admin/catalogue?tab=parfums&stock=bas` (deux rangées distinctes : « Stock bas » vaut 1 à 3, la rupture 0 — lexique §1.7 — et chaque lien ouvre exactement ce qu'il compte).
-  4. **« Aujourd'hui · jeudi 17 septembre › »** (`Card`, en-tête cliquable → E02) : « Encaissé aujourd'hui » (`h2`), légende « 3 ventes · 1 commande prise » ; rangées « À livrer aujourd'hui · 2 » → `/admin/commandes?filtre=aujourdhui` et « À livrer demain · 3 » → `?filtre=demain` (masquées à 0).
+  4. **« Aujourd'hui · jeudi 17 septembre › »** (`Card`, en-tête cliquable → E02) : « Encaissé aujourd'hui » (`h2`), légende « 3 ventes · 1 commande prise » ; rangées « À livrer aujourd'hui · 2 » → `/admin/commandes?filtre=aujourdhui` et « À livrer demain · 3 » → `?filtre=demain` (masquées à 0). *Amendement J14-10* : la carte **reste** sur une journée sans rien — elle est la seule porte vers E02 — et dit alors « Rien encore aujourd'hui. » au lieu d'un « 0 € ».
   5. **Argent** : `KpiTile` dominante « Encaissé · septembre » (`display`) avec la ligne « Marge nette · septembre 1 240 € · 38 % » → `/admin/compta?vue=ventes&periode=mois` ; `KpiTile` « À encaisser » → E13 ; `KpiTile` « Trésorerie » → `/admin/compta?vue=tresorerie`.
   6. **« Commandes à livrer »** : deux tuiles de compteur « En attente 2 » → `?filtre=en-attente` et « Confirmées 5 » → `?filtre=confirmees` (une tuile à 0 disparaît ; le bloc disparaît si les deux valent 0).
-  7. **« Lots ouverts »** (3 au plus, les plus récents) : ligne « Commande de mars », légende « arrivée prévue 3 oct. · 12 documents », à droite « Marge nette du lot » (`Money`) → E06 ; lien « Tous les lots » → E05. Aucun lot ouvert : rangée « Créer un lot » → E21 (si aucun lot n'existe) ou « Aucun lot ouvert · Tous les lots ».
-  8. **« Top parfums · septembre »** (5 lignes : rang, nom, marque, « 12 flacons ») ; lien « Tout le classement » → E07. Bloc absent s'il n'y a eu aucune vente ce mois-ci.
-  9. **Rangée « Réglages »** → E08.
+  7. **« Lots ouverts »** (3 au plus, les plus récents) : ligne « Commande de mars », légende « arrivée prévue 3 oct. · 12 documents », à droite « Marge nette du lot » (`Money`) → E06 ; **l'en-tête du bloc EST le lien « Tous les lots »** → E05 (`ListSection href`, amendement J14-5 de 07 : un seul chemin visible vers une destination, §5.3 de 05). Aucun lot ouvert : rangée « Créer un lot » → E21 (si aucun lot n'a jamais existé) ou « Aucun lot ouvert. ». *Bloc rendu seulement quand E05/E06 existent (J13) — amendement J14-4.*
+  8. **« Top parfums · septembre »** (5 lignes : rang, vignette, nom, marque, « 12 flacons ») ; **l'en-tête du bloc EST le lien « Tout le classement »** → E07 (même amendement J14-5). Bloc absent s'il n'y a eu aucune vente ce mois-ci.
+  9. **Rangée « Réglages »** → E08. *Rendue seulement quand E08 existe (J15) — amendement J14-4 : un raccourci vers une page absente est un cul-de-sac.*
 - **Action principale** : aucune — écran de lecture ; chaque chiffre est un lien vers son écran d'action.
 - **Actions secondaires** : « Répartir » ; fermeture des cartes.
 - **Gestes** : tap ; pull-to-refresh.
 - **États.**
-  - *Chargement* : les blocs 3 et 4 partagent un `Suspense` (une requête agrégée, la plus rapide de l'écran **→ 04**) dont le squelette est celui du bloc 4 ; les blocs 5 à 8 sont dans des `Suspense` imbriqués sous lui et ne se révèlent qu'après lui : seuls des squelettes peuvent se déplacer, jamais un contenu déjà rendu ; le bloc 5 a son squelette exact (3 tuiles) ; les blocs 6 à 8, conditionnels, n'ont pas de squelette.
+  - *Chargement* : les blocs 2, 3 et 4 partagent un `Suspense` (deux requêtes parallèles, les plus rapides de l'écran : le composite des chiffres et les comptes de l'Accueil **→ 04**) dont le squelette est celui du bloc 4 ; les blocs 5 à 8 sont dans des `Suspense` imbriqués sous lui et ne se révèlent qu'après lui : seuls des squelettes peuvent se déplacer, jamais un contenu déjà rendu ; le bloc 5 a son squelette exact (3 tuiles), **fallback de son propre `Suspense`, donc rendu à la place définitive du bloc Argent** (amendement J14-6 de 07 : c'est ce qui rend vraie la mesure « aucun décalage ») ; les blocs 6 à 8, conditionnels, n'ont pas de squelette.
   - *Vide de départ* (aucun document, aucun parfum) : carte « Pour commencer » + rangée Réglages ; blocs 3 à 8 absents.
   - *Rien à faire* : bloc 3 absent (bonne nouvelle silencieuse).
   - *Erreur* : `ErrorBanner` par bloc (« Chiffres indisponibles — Réessayer »).
@@ -743,7 +743,7 @@ flowchart TD
 - **Zones.**
   1. Navigateur de date : « ‹ jeudi 17 septembre › » (« › » désactivé sur aujourd'hui).
   2. **« Encaissé »** du jour (`display`) + une ligne par poche (« Espèces 180 € », « Banque 60 € »), remboursements déduits.
-  3. **« Documents du jour »** (`ListSection`) : ventes directes, commandes prises, commandes livrées ce jour ; ligne : client, « Vente · 2 articles » / « Commande prise » / « Commande livrée », à droite « À encaisser » (`warning`) si dû, sinon « Total » → S01.
+  3. **« Documents du jour »** (`ListSection`) : ventes directes, commandes prises, commandes livrées ce jour ; ligne : client, « Vente · 2 articles » / « Commande prise » / « Commande livrée », à droite « À encaisser » (`warning`) si dû, sinon « Total » → S01. *Précisé à J14* : **une rangée par document** — une commande prise ET livrée le même jour se raconte par son fait le plus avancé (« Commande livrée »), et une vente directe, livrée dans l'instant, reste « Vente ». Les documents **annulés** n'y figurent pas (ils ont leur vue, E10).
   4. **« À livrer le lendemain »** : commandes `PENDING`/`CONFIRMED` prévues le jour suivant → S01.
   5. **« À relancer »** : clients qui portent une créance ancienne (`creancesAnciennes()`, 03 §5.8 : même ensemble que l'alerte de E01), avec le montant → E14.
 - **Action principale** : « Partager le récap » (`StickyAction`, `ShareButton`) — texte : date ; Encaissé total et par poche ; nombre de ventes et de commandes ; livraisons du lendemain (noms) ; relances (nombre de clients, montant). Masquée si la journée est vide.
@@ -841,7 +841,7 @@ flowchart TD
 - **Gestes** : tap ; pull-to-refresh.
 - **États** : *chargement* : `SkeletonList` ; *vide* : « Aucune vente sur cette période. » ; *erreur* : `ErrorBanner`.
 - **Composants** : `PageScaffold`, `Chip`, `ListRow`, `Badge`, `Button` (`ghost`).
-- **Données** : Σ `SaleLine.quantity` des lignes non offertes des documents engagés dont `confirmedAt` est dans la période, groupé par `perfumeId` (sinon par `perfumeName` normalisé : hors catalogue, ou parfum supprimé depuis ; badge « Hors catalogue » seulement si `isOffCatalog`) ; nom vivant du parfum, à défaut le snapshot (**→ 04**). Le classement se fait **en unités** : aucun montant sommé hors du vocabulaire canonique.
+- **Données** : Σ `SaleLine.quantity` des lignes non offertes des documents engagés dont `confirmedAt` est dans la période, groupé par `perfumeId` (sinon par `perfumeName` normalisé : hors catalogue, ou parfum supprimé depuis ; badge « Hors catalogue » seulement si `isOffCatalog` — posé quand TOUTES les lignes du groupe le portent) ; nom vivant du parfum, à défaut le snapshot. `src/server/stats/` (amendement J14-3 de 07 : un compte d'unités n'est pas un chiffre du vocabulaire canonique). Le classement se fait **en unités** : aucun montant sommé hors du vocabulaire canonique. *Amendement J14-7* : un parfum **non publié ou masqué n'est pas exclu** du classement — l'existant le retirait (01 §4.6) et son total ne correspondait plus aux ventes.
 
 #### E08 — Réglages · `/admin/reglages`
 
