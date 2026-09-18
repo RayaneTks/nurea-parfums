@@ -83,12 +83,14 @@ Branche de travail : **`refonte/integration`** (la production reste sur `main`, 
 | Écart avec `origin/main` | ✅ intégré | 11 commits de production (contenances 10/50/80, visuels story, « À rattacher »…) : 01 §3.11. |
 | J7 Les chiffres | ✅ | `129d4c4` — une définition SQL par chiffre, parité au centime avec le jumeau TS, < 5 ms sur ×10 ; sur la copie réelle : Trésorerie 1 546,00 €, Encaissé 2 050,00 €, À encaisser 825,00 € = rapport de reprise. |
 | J8 Fiche document, Commandes, encaissement | ✅ | `c888f65` — fiche en sheet `?doc=`, E10, E13, S02–S04, recherche globale ; taps : acompte 3, solde 2, pointer 1, encaisser une créance 4 depuis l'Accueil. test:layout 204, e2e 34. |
-| J9 Vendre | 🔄 finalisation (copie isolée) | Composeur commité dans sa branche, vérifications à reprendre. |
+| J9 Vendre | ✅ | `e51bce9` — composeur unique (bascule Vente / Commande), hors catalogue, client de passage, « Reçu maintenant », carte de confirmation (Voir · Reçu · Annuler), brouillon qui survit à la coupure. **Vente simple : 3 taps, 2,2 s** (objectif 8 taps / 20 s) ; commande avec acompte 9 taps. |
 | J10 Clients | ✅ | `c7396e9` — E12 liste sectionnée et paginée, E14 fiche (dû, historique, contact direct), E20 formulaire (téléphone normalisé, doublon nommé), relance et récap partageables. Même montant dû en liste, dans À encaisser et sur la fiche. test:layout 288, e2e 39. |
 | J11 Catalogue | ✅ | Serveur `95fdc3c`, écrans `c888f65`, conversion WebP côté serveur `6ec8885` (l'iPhone n'encode pas le WebP : le serveur convertit, 0,4 s pour 12 Mpx ; garde de chemin, refus explicités). Réglage Supabase à faire avant la bascule : critère G9 de 07 §1.5. |
 | J12 Compta, Trésorerie, Journal | ✅ | `b38588e` — E03 deux vues, E04 journal par mois, S14–S16, S19, S21, export CSV. Chaque chiffre confronté à sa requête canonique (en base et en e2e) ; Σ « Encaissé » du CSV = `encaisse(période)`. test:layout 270, e2e 46. |
-| J13 Lots | 🔄 en cours (copie isolée) | — |
-| J14 → J16 | ⏳ | — |
+| J13 Lots | ✅ | `7fffb10` — E05 (zone « À rattacher »), E06, E21, S13 unique, dépenses datables. Marge d'un lot 2 taps, dépense 4 taps, ranger un document 3 taps. Trois bugs trouvés au passage (chiffre du lot toujours à zéro, paquet client qui embarquait le serveur, libellé de champ pollué par l'astérisque). |
+| J14 Accueil, récap du jour, statistiques | 🔄 en cours (copie isolée) | — |
+| J15 Réglages et nouveautés | 🔄 en cours (copie isolée) | Réglages, ordre des poches, déconnexion, actions de recherche. |
+| J16 Polissage, PWA, recette | ⏳ | — |
 | Fusion `main` | ✅ | `9b371e2` — écart déjà intégré (01 §3.11), arbre de la refonte conservé. |
 
 **Base de données locale des tests.** Docker Desktop ne démarre pas sur ce poste. Les tests
