@@ -1,4 +1,7 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
+import { NEWS_SEEN_KEY } from "../src/contracts/stats";
+import { ACCUEIL_SCENES, ACCUEIL_TEXTS, BANC_ACCUEIL } from "./fixtures/accueil-contrat";
+import { mountAccueil } from "./helpers/banc";
 import { waitForHydration } from "./helpers/hydration";
 import {
   collectBottomOcclusion,
@@ -312,6 +315,50 @@ test.describe("Invariants d'affichage — gestion", () => {
             const found = await collectKeyboardViolations(page, KEYBOARD);
             expect(found, format(`${sheet.sheet} @ ${viewport.width} px, clavier sur « ${field} »`, found)).toEqual([]);
           }
+        });
+      }
+
+      /**
+       * Les trois états de E01 (06 E01 « États », J14). Le jeu e2e porte des documents et des alertes de
+       * stock : le VIDE DE PREMIÈRE UTILISATION et le cas « tout va bien » (rien à faire) sont
+       * inatteignables depuis la base. Le banc `e2e/fixtures/accueil.tsx` monte les vrais composants avec
+       * leurs données, dans `/admin`, sous la feuille admin réelle.
+       */
+      for (const scene of ACCUEIL_SCENES) {
+        test(`E01 — état « ${scene} » respecte les invariants`, async ({ page }, testInfo) => {
+          // La carte « Nouveautés » a la priorité sur celle de la scène (06 E01 zone 2 : UNE carte à la fois) :
+          // on la ferme, sinon aucune scène ne montre sa propre carte. Elle a son cas à elle, sur la vraie page.
+          await addStorage(page, { [NEWS_SEEN_KEY]: "1" });
+          await open(page, routes.accueil(), true);
+          await mountAccueil(page, testInfo, scene, BANC_ACCUEIL);
+          await expect(page.locator(`[data-banc-accueil="${scene}"]`)).toBeVisible();
+          await page.waitForTimeout(400);
+
+          if (scene === "vide-de-depart") {
+            // L'Accueil ORIENTE : la carte « Pour commencer », pas une colonne de zéros (05 §5.1).
+            await expect(page.getByText(ACCUEIL_TEXTS.pourCommencer, { exact: true })).toBeVisible();
+            await expect(page.locator("[data-money-block]")).toHaveCount(0);
+            await expect(page.locator("[data-alerts]")).toHaveCount(0);
+            await expect(page.locator("[data-today-block]")).toHaveCount(0);
+          }
+          if (scene === "tout-va-bien") {
+            // Rien à faire : le bloc « À faire » n'existe pas — la bonne nouvelle est silencieuse.
+            await expect(page.locator("[data-alerts]")).toHaveCount(0);
+            await expect(page.locator("[data-pipeline]")).toHaveCount(0);
+            await expect(page.locator("[data-top-perfumes]")).toHaveCount(0);
+            await expect(page.locator("[data-money-block]")).toBeVisible();
+          }
+          if (scene === "nominal") {
+            await expect(page.locator("[data-alerts]")).toBeVisible();
+            await expect(page.locator("[data-money-block]")).toBeVisible();
+            await expect(page.locator("[data-pipeline]")).toBeVisible();
+            await expect(page.locator("[data-open-batches]")).toBeVisible();
+            await expect(page.locator("[data-top-perfumes]")).toBeVisible();
+          }
+
+          const { violations, warnings } = await screenViolations(page);
+          if (warnings.length > 0) console.warn(format(`E01 « ${scene} » @ ${viewport.width} px (avertissements)`, warnings));
+          expect(violations, format(`E01 « ${scene} » @ ${viewport.width} px`, violations)).toEqual([]);
         });
       }
 

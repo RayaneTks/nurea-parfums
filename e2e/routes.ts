@@ -2,7 +2,8 @@ import { ROUTE_SPECS, routes, withSheet, type RouteName } from "../src/app-shell
 import { SESSION_HINT_COOKIE } from "../src/app-shell/session-hint";
 import { figurePeriodLabel } from "../src/contracts/compta";
 import { formatEur, parseEurInput } from "../src/domain/money";
-import { COMPTA_DOCS, COMPTA_MONTH, JOURNAL_MONTH } from "./fixtures/compta";
+import { NEWS_SEEN_KEY } from "../src/contracts/stats";
+import { COMPTA_DOCS, COMPTA_MONTH, EMPTY_DAY, JOURNAL_MONTH } from "./fixtures/compta";
 
 import { composerDraft, storedDraft } from "./fixtures/composer";
 import { DOCS, PASSING } from "./fixtures/documents";
@@ -89,6 +90,9 @@ const BANK = SEED.pockets[2].id;
 /** Nom accessible de la rangée « Marge nette · <mois> » (06 E03 zone 2 → S19). */
 export const margeNetteRow = (ref: string | null) => `Marge nette · ${figurePeriodLabel("mois", ref)} : voir le détail`;
 
+/** Témoin de la carte « Nouveautés » déjà fermée : l'Accueil se mesure sans elle (J14, 06 E01 zone 2). */
+const NEWS_SEEN: Record<string, string> = { [NEWS_SEEN_KEY]: "1" };
+
 /** Champs du formulaire parfum éprouvés un par un, clavier ouvert (07 J11 : « clavier ouvert sur chaque champ »). */
 const PERFUME_FIELDS = ["Nom du parfum", "Prix du 80 ml", "Coût du 80 ml en dinars", "Taux du 80 ml"];
 
@@ -100,10 +104,14 @@ const customerId = (firstName: string) => {
 };
 
 /**
- * Champs du formulaire client éprouvés un par un, clavier ouvert (07 J10 : « E20 clavier ouvert »). « Nom* » : le
- * libellé d'un champ requis porte son astérisque (`FormField required`), que `getByLabel` lit avec le texte.
+ * Champs du formulaire client éprouvés un par un, clavier ouvert (07 J10 : « E20 clavier ouvert »).
+ *
+ * « Nom », sans astérisque : `FormField` place l'astérisque HORS du `<label>` (« le texte du libellé reste
+ * exactement le libellé — celui qu'un test d'écran vise »). J10 avait écrit « Nom* », ce qui marchait avec le
+ * `FormField` de l'époque ; depuis la correction du design system, `getByLabel("Nom*")` ne trouve plus rien et
+ * ces quatre cas de `test:layout` échouaient sur un `focus()` en timeout. Corrigé à J14.
  */
-const CUSTOMER_FIELDS = ["Nom*", "Téléphone", "Snap", "WhatsApp", "Adresse", "Notes"];
+const CUSTOMER_FIELDS = ["Nom", "Téléphone", "Snap", "WhatsApp", "Adresse", "Notes"];
 
 /** J10 — Clients (06 E12, E14, E20) : liste et ses états, fiche dans chacun de ses cas, formulaire clavier ouvert. */
 const CUSTOMER_SCREENS: ScreenCase[] = [
@@ -140,7 +148,26 @@ export const SCREENS: ScreenCase[] = [
     keyboardFields: ["Identifiant", "Mot de passe"],
     cookies: [{ name: SESSION_HINT_COOKIE, value: "1", path: "/admin" }],
   },
-  { screen: "E01", route: "accueil", label: "Accueil provisoire", url: routes.accueil(), shell: true },
+  // J14 — Accueil définitif (06 E01), Récap du jour (E02) et Statistiques (E07).
+  // La carte « Nouveautés » est fermée pour ces cas (elle a sa propre mesure) : le stockage porte son témoin.
+  { screen: "E01", route: "accueil", label: "cas nominal, carte Nouveautés fermée", url: routes.accueil(), shell: true, storage: NEWS_SEEN },
+  { screen: "E01", route: "accueil", label: "carte « Nouveautés » au premier lancement", url: routes.accueil(), shell: true },
+  {
+    screen: "E01",
+    route: "accueil",
+    label: "fiche document ouverte au-dessus de l'Accueil",
+    url: withSheet(routes.accueil(), { doc: DOCS.saleDue }),
+    shell: true,
+    storage: NEWS_SEEN,
+    waitFor: "[data-document-sheet]",
+  },
+  { screen: "E02", route: "journee", label: "récap d'aujourd'hui", url: routes.journee(), shell: true },
+  { screen: "E02", route: "journee", label: "récap d'un jour à ventes et poches", url: routes.journee({ jour: COMPTA_MONTH.busyDay() }), shell: true },
+  { screen: "E02", route: "journee", label: "récap d'un jour vide", url: routes.journee({ jour: EMPTY_DAY() }), shell: true },
+  { screen: "E07", route: "statistiques", label: "classement du mois", url: routes.statistiques(), shell: true },
+  { screen: "E07", route: "statistiques", label: "classement d'un mois à ventes, deux pages", url: routes.statistiques({ ref: COMPTA_REF, pages: 2 }), shell: true },
+  { screen: "E07", route: "statistiques", label: "classement depuis toujours", url: routes.statistiques({ periode: "tout" }), shell: true },
+  { screen: "E07", route: "statistiques", label: "période sans vente", url: routes.statistiques({ periode: "jour", ref: EMPTY_DAY() }), shell: true },
   // J8 — Commandes, À encaisser, fiche document (06 E10, E13, S01 ; §1.8 : les six cas de la fiche, édition clavier ouvert).
   { screen: "E10", route: "commandes", label: "vue À livrer, recherche clavier ouvert", url: routes.commandes(), shell: true, keyboardFields: ["Rechercher une commande"] },
   { screen: "E10", route: "commandes", label: "À livrer, filtre « En retard » venu d'un lien", url: routes.commandes({ filtre: "retard" }), shell: true },
@@ -235,7 +262,6 @@ export const SCREENS: ScreenCase[] = [
     shell: true,
     waitFor: "[data-composer-cta]",
   },
-  { screen: "E12", route: "clients", label: "Clients provisoire", url: routes.clients(), shell: true },
   // J11 — Catalogue (06 §3.5, 07 J11 : trois onglets, filtres actifs, fiches, formulaires clavier ouvert).
   { screen: "E15", route: "catalogue", label: "onglet Parfums", url: routes.catalogue(), shell: true, keyboardFields: ["Rechercher dans le catalogue"] },
   { screen: "E15", route: "catalogue", label: "Parfums, filtre stock bas venu d'un lien", url: routes.catalogue({ stock: "bas" }), shell: true },
