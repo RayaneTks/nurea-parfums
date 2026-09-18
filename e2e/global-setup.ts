@@ -149,6 +149,12 @@ async function warmUp(page: import("@playwright/test").Page): Promise<void> {
   await page.request.get("/api/admin/picker", { timeout: 180_000 });
   // Export CSV (07 J12) : la route est compilée d'avance, sinon le premier « Exporter » attend la compilation.
   await page.request.get("/api/admin/export/compta", { timeout: 180_000 });
+
+  /*
+   * Le préchauffage a VISITÉ le composeur avec ses paramètres (`?parfum=`, `?depuis=`) : le brouillon qu'il a posé
+   * sur l'appareil partirait dans le `storageState` de tous les tests, qui s'ouvriraient sur un ticket en cours.
+   */
+  await page.evaluate(() => localStorage.clear());
 }
 
 async function expectCookie(context: import("@playwright/test").BrowserContext, name: string): Promise<void> {

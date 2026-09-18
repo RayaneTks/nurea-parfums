@@ -3,6 +3,8 @@ import {
   ORDERS_PAGE_SIZE,
   ORDER_URGENCIES,
   parseOrdersParams,
+  type ComposerCustomerDTO,
+  type ComposerPrefillDTO,
   type DocumentLineDTO,
   type DocumentPaymentDTO,
   type DocumentSheetDTO,
@@ -22,6 +24,7 @@ import {
 import { phoneDigitVariants, searchTerms } from "@/contracts/search";
 import { isTextId } from "@/domain/ids";
 import { dzdFromDb, eur, eurFromDb, eurFromWire, percentOf, rateFromDb, toDb, toWire, type MoneyString } from "@/domain/money";
+import { formatPhoneNational } from "@/domain/phone";
 import { isVolumeMl } from "@/domain/sale-line";
 import { cached } from "@/server/cache/cached";
 import { documentBalance } from "@/server/chiffres";
@@ -366,3 +369,99 @@ const cachedRecentlySold = cached("documents.recentlySold", "gestion", async ():
 
 /** « Vendus récemment » (N7) : S05 en tête, E11 (J9). 8 parfums, dernière contenance et dernier prix. */
 export const recentlySold = defineQuery(() => cachedRecentlySold());
+
+// ── Pré-remplissage du composeur (E11, A-9) ────────────────────────────────────
+
+const CUSTOMER_SELECT = { id: true, fullName: true, phoneE164: true, snapchat: true } as const;
+
+type CustomerRow = { id: string; fullName: string; phoneE164: string | null; snapchat: string | null };
+
+/** « 06 12 34 56 78 », à défaut « @fares.b » : la légende du client, comme dans la recherche (S06). */
+function composerCustomer(row: CustomerRow | null): ComposerCustomerDTO | null {
+  if (!row) return null;
+  return {
+    id: row.id,
+    fullName: row.fullName,
+    contact: row.phoneE164 ? formatPhoneNational(row.phoneE164) : row.snapchat ? `@${row.snapchat}` : null,
+  };
+}
+
+/** Un identifiant de parfum lisible dans l'URL (`?parfum=12`), sinon null. */
+function perfumeIdParam(value: string | null): number | null {
+  if (!value || !/^\d{1,9}$/.test(value)) return null;
+  const id = Number(value);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
+
+/**
+ * E11 — ce que les paramètres d'URL du composeur désignent (06 E11 « Paramètres d'URL », A-9) : la fiche client de
+ * `client`, le parfum de `parfum`, et pour `depuis` (« Refaire », « Revendre ») les lignes, le client et le lot
+ * encore ouvert du document d'origine — jamais ses paiements, sa livraison ni ses notes. Lu à l'instant (un
+ * formulaire d'écriture, 04 §10.4) ; un identifiant illisible ou disparu rend `null`, sans erreur.
+ */
+export const composerPrefill = defineQuery(
+  async (client: string | null = null, parfum: string | null = null, depuis: string | null = null): Promise<ComposerPrefillDTO> => {
+    const perfumeId = perfumeIdParam(parfum);
+    const [customer, perfume, source] = await Promise.all([
+      client && isTextId(client) ? db.customer.findUnique({ where: { id: client }, select: CUSTOMER_SELECT }) : null,
+      perfumeId === null
+        ? null
+        : db.perfume.findUnique({ where: { id: perfumeId }, select: { id: true, name: true, image: true, brand: { select: { name: true } } } }),
+      depuis && isTextId(depuis)
+        ? db.saleDocument.findUnique({
+            where: { id: depuis },
+            select: {
+              id: true,
+              origin: true,
+              customerName: true,
+              customerContact: true,
+              customer: { select: CUSTOMER_SELECT },
+              batch: { select: { id: true, name: true, status: true } },
+              lines: {
+                orderBy: [{ position: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+                select: {
+                  perfumeId: true,
+                  perfumeName: true,
+                  brandName: true,
+                  imageUrl: true,
+                  volumeMl: true,
+                  quantity: true,
+                  unitPriceEur: true,
+                  isGift: true,
+                  unitCostDzd: true,
+                  exchangeRate: true,
+                },
+              },
+            },
+          })
+        : null,
+    ]);
+
+    return {
+      customer: composerCustomer(customer),
+      perfume: perfume ? { id: perfume.id, name: perfume.name, brandName: perfume.brand.name, image: perfume.image } : null,
+      source: source
+        ? {
+            id: source.id,
+            origin: source.origin,
+            customer: composerCustomer(source.customer),
+            customerName: source.customerName,
+            customerContact: source.customerContact,
+            batch: source.batch?.status === "OPEN" ? { id: source.batch.id, name: source.batch.name } : null,
+            lines: source.lines.map((line) => ({
+              perfumeId: line.perfumeId,
+              perfumeName: line.perfumeName,
+              brandName: line.brandName,
+              imageUrl: line.imageUrl,
+              volumeMl: isVolumeMl(line.volumeMl) ? line.volumeMl : null,
+              quantity: line.quantity,
+              unitPriceEur: money(line.unitPriceEur),
+              isGift: line.isGift,
+              unitCostDzd: line.unitCostDzd === null ? null : toDb(dzdFromDb(line.unitCostDzd)),
+              exchangeRate: rateOrNull(line.exchangeRate),
+            })),
+          }
+        : null,
+    };
+  },
+);

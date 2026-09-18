@@ -62,7 +62,12 @@ test("recherche : s'ouvre au tap, focalise le champ, mène à « Nouvelle comman
 
   await taps.tap(palette.getByRole("button", { name: "Nouvelle commande" }));
   await expect(palette).toBeHidden();
-  await expect.poll(() => pathAndQuery(page)).toBe(routes.vendre({ mode: "commande" }));
+  /*
+   * Le composeur consomme `mode=commande` dans son brouillon puis le retire de l'adresse (06 E11 « Paramètres
+   * d'URL », J9) : ce qui se vérifie ici, c'est l'écran atteint — onglet Vendre, bascule sur « Commande ».
+   */
+  await expect.poll(() => new URL(page.url()).pathname).toBe(routes.vendre());
+  await expect(page.getByRole("radio", { name: "Commande" })).toHaveAttribute("aria-checked", "true");
   await expect(tab(page, "Vendre")).toHaveAttribute("aria-current", "page");
   taps.expectAtMost(2);
 });

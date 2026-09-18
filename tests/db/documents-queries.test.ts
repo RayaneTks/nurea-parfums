@@ -326,6 +326,71 @@ describe("N7 et S07 — vendus récemment, lots ouverts", () => {
     expect(recent.map((item) => [item.name, item.volumeMl, item.unitPriceEur])).toEqual([["Libre", 50, "85.00"]]);
   });
 
+  it("E11 — les paramètres du composeur : client, parfum, et « Refaire » d'un document (A-9)", async () => {
+    const fares = await seedCustomer(server.prisma, { fullName: "Fares Benali", phoneE164: "+33612345678" });
+    const lina = await seedCustomer(server.prisma, { fullName: "Lina Haddad" });
+    const sauvage = await seedPerfume(server.prisma, { name: "Sauvage", brand: "Dior" });
+    const batch = await seedBatch(server.prisma, { name: "Commande de mars" });
+    const source = await order({
+      lines: [
+        catalogueLine(sauvage.id, { volumeMl: 80, quantity: 2, unitPriceEur: "120", unitCostDzd: "22000", exchangeRate: "277", note: "Coffret" }),
+        { item: { kind: "offCatalog", name: "Khamrah", brandName: "Lattafa" }, volumeMl: 50, quantity: 1, unitPriceEur: "45" },
+      ],
+      customer: { kind: "linked", customerId: fares.id },
+      batchId: batch.id,
+      notes: "Livrer après 18 h",
+      expectedDeliveryAt: new Date(Date.now() + DAY),
+      received: [{ amount: "60", pocketId: null }],
+    });
+
+    // `client` et `parfum` : la fiche et le parfum que l'URL désigne, avec de quoi les afficher tout de suite.
+    const posed = await server.queries.composerPrefill(lina.id, String(sauvage.id));
+    expect(posed.customer).toEqual({ id: lina.id, fullName: "Lina Haddad", contact: null });
+    expect(posed.perfume).toMatchObject({ id: sauvage.id, name: "Sauvage", brandName: "Dior" });
+    expect(posed.source).toBeNull();
+    expect((await server.queries.composerPrefill(fares.id)).customer?.contact).toBe("06 12 34 56 78");
+
+    // `depuis` : lignes, client et lot ouvert ; jamais les paiements, la livraison ni les notes du document d'origine.
+    const { source: repeated } = await server.queries.composerPrefill(null, null, source);
+    expect(repeated).toMatchObject({ id: source, origin: "ORDER", batch: { id: batch.id, name: "Commande de mars" } });
+    expect(repeated?.customer).toMatchObject({ id: fares.id, fullName: "Fares Benali" });
+    expect(repeated?.lines).toEqual([
+      {
+        perfumeId: sauvage.id,
+        perfumeName: "Sauvage",
+        brandName: "Dior",
+        imageUrl: "https://cdn.example/sauvage.webp",
+        volumeMl: 80,
+        quantity: 2,
+        unitPriceEur: "120.00",
+        isGift: false,
+        unitCostDzd: "22000.00",
+        exchangeRate: "277.00",
+      },
+      {
+        perfumeId: null,
+        perfumeName: "Khamrah",
+        brandName: "Lattafa",
+        imageUrl: null,
+        volumeMl: 50,
+        quantity: 1,
+        unitPriceEur: "45.00",
+        isGift: false,
+        unitCostDzd: null,
+        exchangeRate: null,
+      },
+    ]);
+    expect(Object.keys(repeated ?? {})).not.toContain("payments");
+
+    // Lot clos : il n'est pas repris (un document ne se rattache pas à un lot clos, 03 §4.3 T13).
+    expectOk(await server.batches.setBatchStatusAction({ id: batch.id, status: "CLOSED" }));
+    expect((await server.queries.composerPrefill(null, null, source))?.source?.batch).toBeNull();
+
+    // Un identifiant illisible ou disparu ne casse rien : le composeur s'ouvre vierge.
+    expect(await server.queries.composerPrefill("pas-un-id", "0", "pas-un-id")).toEqual({ customer: null, perfume: null, source: null });
+    expect(await server.queries.composerPrefill(newId(), "999999", newId())).toEqual({ customer: null, perfume: null, source: null });
+  });
+
   it("lots ouverts, le plus récent en tête", async () => {
     await seedBatch(server.prisma, { name: "Ancien" });
     await seedBatch(server.prisma, { name: "Clos", status: "CLOSED" });
