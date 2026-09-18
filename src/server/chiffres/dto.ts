@@ -225,6 +225,7 @@ export type DashboardRow = {
   monthFrom: Date;
   monthTo: Date;
   encaisseMois: string;
+  encaisseJour: string;
   margeNetteMois: MargeNetteJson;
   aEncaisser: string;
   tresorerieTotal: string;
@@ -245,6 +246,7 @@ export function tableauDeBordDto(rows: readonly DashboardRow[]): DashboardFigure
   return {
     month: { from: iso(row.monthFrom), to: iso(row.monthTo) },
     encaisseMois: money(row.encaisseMois),
+    encaisseJour: money(row.encaisseJour),
     margeNetteMois: margeNetteDto(row.margeNetteMois),
     aEncaisser: money(row.aEncaisser),
     tresorerie: { total: money(row.tresorerieTotal), unassigned: money(row.tresorerieUnassigned) },

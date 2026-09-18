@@ -186,7 +186,18 @@ export function CatalogueLists({ catalogue }: { catalogue: AdminCatalogue }) {
           }
         />
       ) : (
-        <RowList items={shown} itemKey={(perfume) => perfume.id} label="Parfums" render={(perfume) => <PerfumeRow perfume={perfume} />} />
+        <RowList
+          items={shown}
+          itemKey={(perfume) => perfume.id}
+          label="Parfums"
+          render={(perfume) => (
+            // `data-perfume-row` : les alertes « en rupture » et « en stock bas » de l'Accueil comptent des
+            // parfums, et leur lien ouvre exactement ceux-là — le parcours de J14 compare les deux nombres.
+            <div data-perfume-row={perfume.id}>
+              <PerfumeRow perfume={perfume} />
+            </div>
+          )}
+        />
       )}
     </div>
   );

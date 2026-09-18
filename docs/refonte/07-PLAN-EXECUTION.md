@@ -645,7 +645,7 @@ J1 retire l'ancienne gestion de la branche (elle ne compile plus contre le nouve
 - [ ] `rg -n "#[0-9A-Fa-f]{3,8}\b" src/ui src/app-shell src/features` ne trouve aucune couleur hors `src/design/` (05 §2 : aucune valeur en dur).
 - [ ] Écart du 17/09/2026 : `tokens-sync` échoue si la règle `.admin-theme` déclare un `background` ; `npm run test:layout` : une `ConfirmDialog` ouverte depuis une sheet imbriquée est au-dessus d'elle, son voile est translucide et sa carte blanche ; le toast « Annuler » affiché au-dessus d'une sheet ouverte répond au tap ; une `ConfirmDialog` dont l'action échoue reste ouverte avec le message.
 
-*Mise en œuvre de la partie shell (17/09/2026, avant la reprise de l'écart).* Les **cinq** racines d'onglet ont une page provisoire (titre + `EmptyState` « Écran livré au jalon Jn ») pour que la barre d'onglets soit navigable : Accueil J14, Commandes J8, Vendre J9, Clients J10, Catalogue J11 — `test:layout` les couvre toutes. `routes.ts` porte l'état de chaque écran (à venir, provisoire, livré) : un jalon d'écran passe son écran en « livré » et l'ajoute à `e2e/routes.ts` (la spec échoue sinon). Le harnais lance l'app en `next dev` (base e2e, secret de test, aucun `.env`) ; `E2E_SERVER=start` sert un build pour le projet Desktop seulement — le cookie `Secure` de production est refusé par WebKit sur `http://localhost`. Invariants ajoutés : un seul `primary` par écran ou sheet, libellé d'onglet jamais tronqué ; corrigés : texte `sr-only` n'est pas « rogné », une rangée étendue par pseudo-élément (`ListRow`) est une cible de la taille de la rangée. Détails : 04 §2.2 et §16.4, 05 §3.4, 06 §1.4, §1.5, E18 et S17.
+*Mise en œuvre de la partie shell (17/09/2026, avant la reprise de l'écart).* Les **cinq** racines d'onglet ont une page provisoire (titre + `EmptyState` « Écran livré au jalon Jn ») pour que la barre d'onglets soit navigable : Accueil J14, Commandes J8, Vendre J9, Clients J10, Catalogue J11 — `test:layout` les couvre toutes. `routes.ts` porte l'état de chaque écran (à venir, provisoire, livré) : un jalon d'écran passe son écran en « livré » et l'ajoute à `e2e/routes.ts` (la spec échoue sinon). *À J14, l'Accueil était la dernière page provisoire : `EcranProvisoire` n'a plus d'appelant et a été retiré — plus aucun écran n'est « provisoire ».* Le harnais lance l'app en `next dev` (base e2e, secret de test, aucun `.env`) ; `E2E_SERVER=start` sert un build pour le projet Desktop seulement — le cookie `Secure` de production est refusé par WebKit sur `http://localhost`. Invariants ajoutés : un seul `primary` par écran ou sheet, libellé d'onglet jamais tronqué ; corrigés : texte `sr-only` n'est pas « rogné », une rangée étendue par pseudo-élément (`ListRow`) est une cible de la taille de la rangée. Détails : 04 §2.2 et §16.4, 05 §3.4, 06 §1.4, §1.5, E18 et S17.
 
 ---
 
@@ -885,18 +885,37 @@ Ordre choisi : d'abord ce que le gérant fait **chaque jour sur un objet existan
 **Dépend de** : J9, J10, J11, J12, J13.
 
 **Contenu.**
-- **E01** définitif (remplace la page provisoire de J4) : bloc « À faire » (chaque rangée ouvre exactement l'ensemble compté), bloc Argent (« Encaissé · (mois) » dominant avec Marge nette, tuiles À encaisser et Trésorerie), « Commandes à livrer », « Lots ouverts », « Top parfums · (mois) », rangée « Réglages » ; structure de `Suspense` de 06 E01 ; un seul aller-retour pour les chiffres (`tableauDeBord()`). Les zones 2 (cartes contextuelles) et 4 (« Aujourd'hui ») arrivent à J15.
+- **E01** définitif (remplace la page provisoire de J4) : bloc « À faire » (chaque rangée ouvre exactement l'ensemble compté), bloc Argent (« Encaissé · (mois) » dominant avec Marge nette, tuiles À encaisser et Trésorerie), « Commandes à livrer », « Lots ouverts », « Top parfums · (mois) », rangée « Réglages » ; structure de `Suspense` de 06 E01 ; un seul aller-retour pour les chiffres (`tableauDeBord()`).
+- **E02** Récap du jour, et la zone 4 de E01 (« Aujourd'hui »).
 - **E07** Statistiques (période, classement en unités, badge « Hors catalogue », « Afficher plus »).
+- Carte « Nouveautés » (E01 zone 2) et carte « Pour commencer » (vide de départ).
 - Redirection `/admin/stats/top-parfums`.
 - e2e : `lecture-de-ses-ecritures.spec.ts`, `accueil.spec.ts`.
+
+**Amendements du jalon (18/09/2026).** Décidés et appliqués pendant J14 ; ce document fait foi.
+
+| # | Amendement | Pourquoi |
+|---|---|---|
+| J14-1 | **E02, la zone 4 de E01 (« Aujourd'hui ») et les cartes de la zone 2 passent de J15 à J14.** §3.4 les listait en J15. | Sans la zone 4, E02 n'a aucun chemin d'accès et l'objectif « bilan du jour en 1 tap » (02 §2, PC-09) ne tient pas ; sans la carte « Pour commencer », le **vide de première utilisation** exigé par 05 §5.1 n'existe pas. Le reste de J15 (Réglages, relances, « Achète souvent », actions dans la recherche) est inchangé. |
+| J14-2 | `tableauDeBord()` porte aussi **`encaisseJour`** (Encaissé du jour). 04 §6.3 amendé. | La zone 4 arrive à J14 : son Encaissé est un chiffre, il vient donc du composite — l'Accueil tient son « un seul aller-retour pour les chiffres » au lieu d'en payer un second. Le test de parité couvre le nouveau champ. |
+| J14-3 | Les lectures **non monétaires** de l'Accueil vivent dans `src/server/stats/` (`accueilComptes`, `classementParfums`, `recapDuJour`, `lotsOuverts`), pas dans `src/server/chiffres/`. | Un compte d'unités ou de documents n'est pas un chiffre du vocabulaire canonique (02 §6) ; `chiffres/` reste l'unique implémentation des définitions d'argent (04 §6.1). L'Accueil paie **deux** allers-retours (composite + comptes), plus lots et classement dans leurs propres blocs. |
+| J14-4 | Les blocs **« Lots ouverts » (zone 7) et la rangée « Réglages » (zone 9) ne sont rendus que si leur écran existe** (`isNavigable`, `src/app-shell/routes.ts`). | E05/E06 arrivent à J13 et E08 à J15 : un chiffre qui mène à une page inexistante est pire que son absence. Les blocs apparaissent d'eux-mêmes quand ces jalons passent leur écran en « livrée » — rien à modifier dans E01. |
+| J14-5 | Le lien de sortie des blocs 7 et 8 est l'**en-tête cliquable** de la section (`ListSection href`), au lieu d'un titre muet doublé d'un lien « Tous les lots » / « Tout le classement ». | Un seul chemin visible vers une destination (05 §5.3), et le geste reste à 1 tap. |
+| J14-6 | Le **squelette du bloc Argent n'est pas dans le squelette du premier bloc** : il est le fallback de son propre `Suspense` imbriqué. 06 E01 « États » précisé. | C'est ce qui rend vraie la mesure du critère : le squelette du bloc Argent apparaît à la place DÉFINITIVE du bloc Argent, donc positions et tailles sont identiques entre squelette et contenu. |
+| J14-7 | Le classement **n'exclut plus** un parfum non publié ou masqué (l'existant le retirait, 01 §4.6). | Le total affiché ne correspondait plus aux ventes. 06 E07 ne demandait pas cette exclusion. |
+| J14-8 | Les états **« vide de première utilisation »** et **« tout va bien »** de E01 sont éprouvés par `npm run test:layout` sur un **banc** (`e2e/fixtures/accueil.tsx`), pas sur la page. | Le jeu e2e est partagé et porte documents et alertes de stock : ces deux états sont inatteignables depuis la base. Le banc monte les VRAIS composants sous la feuille admin réelle, aux trois largeurs. |
+| J14-10 | La carte « Aujourd'hui » (E01 zone 4) **reste rendue même sur une journée sans rien** : elle n'affiche alors pas « 0 € » mais « Rien encore aujourd'hui. », et garde son chevron. | Elle est la SEULE porte vers E02 : la masquer à zéro rendait le récap du jour injoignable un matin sans vente, et « bilan du jour en 1 tap » (PC-09) faux une partie de la journée. 05 §5.3 fait disparaître « une tuile à zéro **sans enjeu** » — ici le zéro porte un chemin. Les deux rangées de livraison, elles, restent masquées à 0. |
+| J14-11 | Le parcours e2e de PC-11 s'arrête **avant** le second tap (« Ranger … ») : il prouve qu'il ne reste qu'un geste, sans écrire. | « Non attribué » est une poche **unique**, partagée par toute la suite : la vider fait échouer `transfert.spec.ts`, qui éprouve son plancher et a besoin d'un solde non nul. L'écriture est éprouvée par `tests/db/transactions/t11-transfer.test.ts` et par `transfert.spec.ts`. Leçon générale : **un parcours e2e ne consomme pas un singleton partagé du jeu de données.** |
+| J14-9 | **Défaut corrigé hors périmètre** : `e2e/fixtures/documents.ts` (J10) et `e2e/fixtures/compta.ts` (J12) avaient tous deux pris les identifiants 40–43. La collision n'apparaissait qu'une fois les deux branches fusionnées et faisait échouer le seed entier — donc toute la suite e2e. La Compta passe en 60+, et `tests/architecture/e2e-fixtures.test.ts` interdit le doublon. | Un critère de §3.0.1 (« `npm run test:e2e` vert ») n'était plus vérifiable sur `refonte/integration`. |
 
 **Critères d'acceptation.**
 - [ ] `lecture-de-ses-ecritures.spec.ts` : après un encaissement, retour à l'Accueil ⇒ « Encaissé · (mois) » augmenté du montant, sans rechargement manuel.
 - [ ] Pour chaque rangée de « À faire », le nombre affiché = nombre de lignes de l'écran ouvert (retard ; clients à relancer = groupes de E13 filtré par `creancesAnciennes()` ; coût à compléter ; rupture ; stock bas — ruptures et stocks bas comptés et ouverts séparément).
-- [ ] PC-02 complet depuis l'Accueil : **3 taps** ; PC-09 compta du mois : **1 tap** ; PC-08 marge du lot lisible à **0 tap** ; PC-11 répartir depuis l'alerte : **2 taps**.
+- [ ] PC-02 complet depuis l'Accueil : **3 taps** ; PC-09 récap du jour à **0 tap**, détaillé en **1** ; compta du mois : **1 tap** ; PC-08 marge du lot lisible à **0 tap** (quand E06 existe, J13) ; PC-11 répartir depuis l'alerte : **2 taps**.
 - [ ] Pas de décalage de mise en page à l'arrivée des données : positions et tailles du bloc Argent identiques entre squelette et contenu (mesure Playwright des boîtes englobantes), y compris un jour sans vente dans le mois.
-- [ ] Base vide (seed minimal sans document) : blocs 3 à 8 absents, aucune erreur.
-- [ ] `npm run test:layout` : E01 (avec données et vide), E07.
+- [ ] Base vide (seed minimal sans document) : blocs 3 à 8 absents, aucune erreur — l'Accueil oriente par la carte « Pour commencer ».
+- [ ] `npm run test:layout` : E01 (vide de première utilisation, cas nominal, cas « tout va bien »), E02, E07.
+- [ ] `EXPLAIN ANALYZE` de `tableauDeBord()` et des lectures de l'Accueil < 50 ms sur le volume ×10 (`tests/db/perf.test.ts`).
 - [ ] `rg -n "Écran livré au jalon" src app` ne renvoie rien.
 
 **Fin de J14 = date cible de bascule** (§1.1) : la bascule peut être planifiée dès que J16 est accepté ; J15 se découpe selon la colonne « Requis avant bascule ».
@@ -914,17 +933,17 @@ Les nouveautés **intégrées à un geste quotidien** (N1, N2, N7, N8, N9, A1–
 | Élément | Source | Contenu | Requis avant bascule |
 |---|---|---|---|
 | Réglages | N3, E08, S21 | Poche par défaut, taux DZD par défaut, ordre des poches, version, « Rechercher une mise à jour » (branché à J16), « Se déconnecter » | **Oui** : sans lui, le taux par défaut n'est plus modifiable (l'existant mémorisait le dernier taux) et la déconnexion n'existe pas |
-| Carte « Nouveautés » | A13, E01 zone 2 | Trois lignes de 06 E01, « J'ai compris », mémorisée sur l'appareil | **Oui** : les onglets changent le jour J (Clients devient un onglet, la compta s'ouvre par les chiffres) |
-| Récap du jour | N4, A18, E01 zone 4, E02 | Bloc « Aujourd'hui » ; écran E02 navigable ; « Partager le récap » | Non |
+| ~~Carte « Nouveautés »~~ | A13, E01 zone 2 | **Livrée à J14** (amendement J14-1) : six lignes, « J'ai compris », mémorisée sur l'appareil | — |
+| ~~Récap du jour~~ | N4, A18, E01 zone 4, E02 | **Livré à J14** (amendement J14-1) : bloc « Aujourd'hui », écran E02, « Partager le récap » | — |
 | Relancer / Partager le récap | N5, N6, S09 | Boutons dans E13, E14, alerte « à relancer » de E01 ; gabarit unique relu avec le gérant | Non |
 | « Achète souvent » et « Revendre » | A8, E14 | Trois parfums les plus achetés, « Revendre » → `?client=&parfum=` | Non |
 | Actions dans la recherche | A16, S17 | « Encaisser xx € » sur un client, « Vendre » sur un parfum | Non |
-| Carte « Pour commencer » | A13, PC-12 | Trois étapes cochées automatiquement sur base vide | Non (le gérant a déjà des données) |
+| ~~Carte « Pour commencer »~~ | A13, PC-12 | **Livrée à J14** (amendement J14-1) : trois étapes cochées automatiquement sur base vide | — |
 
 **Critères d'acceptation.**
 - [ ] `session.spec.ts` complété : « Se déconnecter » depuis E08 ⇒ E18 ; le brouillon de vente reste sur l'appareil.
 - [ ] Changer la poche par défaut dans E08 ⇒ elle est pré-sélectionnée dans E11 et S02 ; changer le taux ⇒ proposé sur une ligne sans tarif mémorisé.
-- [ ] PC-06 : fiche client en **2 taps**, message de relance prêt en **4 taps** ; PC-09 : récap du jour lisible à 0 tap, détaillé en 1, partagé en 2 ; PC-12 : sur base vide, première vente enregistrée en suivant la carte « Pour commencer » (`e2e/parcours/premiere-utilisation.spec.ts`).
+- [ ] PC-06 : fiche client en **2 taps**, message de relance prêt en **4 taps** ; PC-12 : sur base vide, première vente enregistrée en suivant la carte « Pour commencer » (`e2e/parcours/premiere-utilisation.spec.ts`). *(PC-09 est tenu à J14, amendement J14-1.)*
 - [ ] Relectures avec le gérant faites (06 §8.3) : gabarit de relance S09, textes de la carte « Nouveautés », textes des confirmations S18 ; corrections intégrées.
 - [ ] `npm run test:layout` : E02, E08, S09, S21 ; E01 avec chaque carte contextuelle.
 

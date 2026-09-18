@@ -14,6 +14,10 @@ import { parisDayKey, parseParisDayKey } from "../../src/domain/periods";
  */
 
 /** Identifiants UUID v4 fixes : les adresses `?doc=` de `e2e/routes.ts` s'écrivent avant toute base. */
+/**
+ * Identifiants du jeu e2e. Espace PARTAGÉ avec `compta.ts`, qui écrit dans la même base : ce fichier tient
+ * les numéros 1–59, la Compta les 60+. Un doublon fait échouer le seed entier (défaut corrigé à J14).
+ */
 const uuid = (n: number) => `e2e0d0c0-0000-4000-8000-${String(n).padStart(12, "0")}`;
 
 export const DOCS = {
@@ -37,6 +41,8 @@ export const DOCS = {
   toutC: uuid(27),
   offline: uuid(28),
   lecture: uuid(29),
+  /** J14 — créance encaissée par le parcours de l'Accueil : personne d'autre n'y touche. */
+  accueil: uuid(30),
   // ── J10 — fiches client dédiées ──────────────────────────────────────────────
   /** Nora Belkacem : une vente ancienne à 100 € dus et une commande confirmée à 60 € dus (160 € à encaisser). */
   noraSale: uuid(40),
@@ -63,6 +69,8 @@ export const PASSING = {
   tout: "Sofia Amrani",
   offline: "Paul Girard",
   lecture: "Adam Cherki",
+  /** J14 — le client dont la créance est encaissée depuis l'Accueil. */
+  accueil: "Imane Belaid",
 } as const;
 
 type LineSpec = {
@@ -301,6 +309,18 @@ export const DOCUMENT_SPECS: DocumentSpec[] = [
     expected: 4,
     lines: [{ perfume: "Sauvage", volumeMl: 50, quantity: 1, price: "150", ...cost("15000") }],
     payments: [{ kind: "DEPOSIT", amount: "50", pocket: "bank", day: -3 }],
+  },
+  {
+    // J14 — une créance de 70 € encaissée depuis l'Accueil : elle prouve que « Encaissé · (mois) » suit
+    // l'écriture sans rechargement. Aucun autre parcours n'y touche.
+    id: DOCS.accueil,
+    origin: "DIRECT_SALE",
+    status: "DELIVERED",
+    customer: { passing: PASSING.accueil },
+    ordered: -6,
+    confirmed: -6,
+    delivered: -6,
+    lines: [{ perfume: "Shalimar", volumeMl: 50, quantity: 1, delivered: 1, price: "70", ...cost("12000") }],
   },
   // ── J10 — fiches client ────────────────────────────────────────────────────
   {

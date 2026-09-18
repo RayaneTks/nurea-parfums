@@ -88,8 +88,8 @@ Branche de travail : **`refonte/integration`** (la production reste sur `main`, 
 | J11 Catalogue | ✅ | Serveur `95fdc3c`, écrans `c888f65`, conversion WebP côté serveur `6ec8885` (l'iPhone n'encode pas le WebP : le serveur convertit, 0,4 s pour 12 Mpx ; garde de chemin, refus explicités). Réglage Supabase à faire avant la bascule : critère G9 de 07 §1.5. |
 | J12 Compta, Trésorerie, Journal | ✅ | `b38588e` — E03 deux vues, E04 journal par mois, S14–S16, S19, S21, export CSV. Chaque chiffre confronté à sa requête canonique (en base et en e2e) ; Σ « Encaissé » du CSV = `encaisse(période)`. test:layout 270, e2e 46. |
 | J13 Lots | ✅ | `7fffb10` — E05 (zone « À rattacher »), E06, E21, S13 unique, dépenses datables. Marge d'un lot 2 taps, dépense 4 taps, ranger un document 3 taps. Trois bugs trouvés au passage (chiffre du lot toujours à zéro, paquet client qui embarquait le serveur, libellé de champ pollué par l'astérisque). |
-| J14 Accueil, récap du jour, statistiques | 🔄 en cours (copie isolée) | — |
-| J15 Réglages et nouveautés | 🔄 en cours (copie isolée) | Réglages, ordre des poches, déconnexion, actions de recherche. |
+| J14 Accueil, récap du jour, statistiques | ✅ | E01 définitif (zones streamées, chaque alerte ouvre exactement l'ensemble qu'elle compte), E02, E07, cartes « Nouveautés » et « Pour commencer » (remontées de J15). `tableauDeBord()` à 4,4 ms sur dix fois le volume réel. Récap du jour lisible à 0 tap, détaillé en 1 ; compta du mois en 1 tap. Défaut hérité corrigé : collision d'identifiants du jeu e2e (J10/J12) qui empêchait toute la suite de démarrer. |
+| J15 Réglages et nouveautés | 🔄 en cours (copie isolée) | Allégé de trois éléments livrés à J14 : Réglages, ordre des poches, déconnexion, actions rapides de la recherche. |
 | J16 Polissage, PWA, recette | ⏳ | — |
 | Fusion `main` | ✅ | `9b371e2` — écart déjà intégré (01 §3.11), arbre de la refonte conservé. |
 
@@ -133,7 +133,10 @@ exécuté** (pas de Postgres local lors de la conception) : il s'éprouve en J1�
 Le client a délégué les arbitrages (« travaille en autonomie, fais les choix,
 qu'ils soient clairs et intuitifs »). Ces points sont donc **décidés** le
 17/09/2026 et font foi ; on ne les resoumet pas. Ils modifient des habitudes :
-la carte « Nouveautés » de l'Accueil (06 E01) les explique au premier lancement.
+la carte « Nouveautés » de l'Accueil (06 E01) les explique au premier lancement
+— **elle est livrée** (J14) et reprend les six lignes du tableau ci-dessous qui
+changent un geste (1, 2, 4, 5, 6 ; la 1 en deux lignes : onglets, puis chiffres
+qui ouvrent la compta).
 Un retour d'usage du gérant en préproduction peut les amender, dans le doc cité.
 
 | # | Décision | Ce qui change pour lui | Où |

@@ -53,7 +53,7 @@
 | A-9 | « Refaire » / « Revendre » pré-remplissent le composeur (`?depuis=`, `?client=`, `?parfum=`) ; `duplicateDocumentAction` n'est pas créée. | §3.4 |
 | A-11 | Scripts : `build` passe par `scripts/migration/migrate-deploy-guarded.ts` jusqu'à la bascule (07 §2.3) ; scripts `migration:*` et `repetition:refresh` (07 §2.2) ; mode maintenance `NUREA_GESTION_MAINTENANCE=1` dans `proxy.ts` (503 statique pour `/admin/*`, 503 JSON pour `/api/admin/*`) ; bandeau « Essai — ces données seront effacées » quand `NUREA_ENV=preprod`. | §8.3, §17.3 |
 | A-12 | Note par ligne (`SaleLine.note`) éditable dans le composeur et la fiche document. | §3.4 |
-| A-13 | `tableauDeBord()` : Encaissé et Marge nette **du mois**, À encaisser, Trésorerie ; pas d'Encaissé depuis toujours ni de tuile « Ce mois ». | §6.3, §6.6 |
+| A-13 | `tableauDeBord()` : Encaissé et Marge nette **du mois**, À encaisser, Trésorerie ; pas d'Encaissé depuis toujours ni de tuile « Ce mois ». **Amendé à J14** (J14-2 de 07) : le composite porte aussi l'Encaissé **du jour** — le bloc « Aujourd'hui » est passé à J14, et son chiffre vient du même aller-retour. | §6.3, §6.6 |
 
 ---
 
@@ -939,7 +939,7 @@ interface Chiffres {
 
 ### 6.3 Un aller-retour pour l'Accueil
 
-`tableauDeBord()` exécute **une** requête qui assemble les fragments en CTE : Encaissé du mois, Marge nette du mois (valeur, pourcentage, coût inconnu), À encaisser (à date), Trésorerie totale et « Non attribué », nombre en retard, et les compteurs de l'Accueil (06 E01 : clients à relancer selon `creancesAnciennes`, documents au coût à compléter, commandes en attente et confirmées). **Pas d'Encaissé depuis toujours** : l'Accueil ne montre qu'un Encaissé, daté du mois (arbitrage n°13 de 06, amendement A-13 de 07) ; le total historique se lit dans la Compta, période « Tout ». Le test `chiffres-parity` vérifie que chaque champ du composite est égal à l'appel individuel correspondant, sur plusieurs jeux de données. Les blocs de l'Accueil (argent, alertes, pipeline) partagent ce résultat par `react.cache` : le premier bloc paie l'aller-retour, les autres le lisent en mémoire.
+`tableauDeBord()` exécute **une** requête qui assemble les fragments en CTE : Encaissé du mois, **Encaissé du jour** (bloc « Aujourd'hui » de 06 E01 zone 4 ; ajouté à J14, amendement J14-2 de 07), Marge nette du mois (valeur, pourcentage, coût inconnu), À encaisser (à date), Trésorerie totale et « Non attribué », nombre en retard, et les compteurs de l'Accueil (06 E01 : clients à relancer selon `creancesAnciennes`, documents au coût à compléter, commandes en attente et confirmées). **Pas d'Encaissé depuis toujours** : l'Accueil ne montre qu'un Encaissé, daté du mois (arbitrage n°13 de 06, amendement A-13 de 07) ; le total historique se lit dans la Compta, période « Tout ». Le test `chiffres-parity` vérifie que chaque champ du composite est égal à l'appel individuel correspondant, sur plusieurs jeux de données. Les blocs de l'Accueil (argent, alertes, pipeline) partagent ce résultat par `react.cache` : le premier bloc paie l'aller-retour, les autres le lisent en mémoire.
 
 ### 6.4 Le jumeau TypeScript et le test de parité
 
@@ -958,6 +958,10 @@ Correspondance des champs (`documentBalance(lines, payments)`) : `total`, `paid`
 |---|---|---|
 | Accueil — bloc argent | Encaissé du mois (dominant), Marge nette du mois (+ %), À encaisser, Trésorerie | `tableauDeBord()` |
 | Accueil — alertes, pipeline | en retard, non attribué, clients à relancer, coût à compléter | `tableauDeBord()` (+ `catalogue.stockAlerts()`, §11) |
+| Accueil — bloc « Aujourd'hui » (J14) | Encaissé du jour | `tableauDeBord()` (`encaisseJour`) |
+| Accueil — comptes du jour, vide de départ, lots (J14) | ventes et commandes prises du jour, à livrer aujourd'hui et demain, poches / parfums / documents / lots existants | `stats.accueilComptes()` — **aucun montant** (amendement J14-3 de 07) |
+| Accueil et Statistiques — classement (J14) | unités vendues par parfum sur la période | `stats.classementParfums()` — en UNITÉS (06 E07) |
+| Accueil — « Lots ouverts » (J14) | Marge nette de chaque lot ouvert | `stats.lotsOuverts()`, qui lit `chiffresParLot()` |
 | Commandes — groupe « En retard » | en retard | `enRetard()` : même prédicat, le lien de l'alerte ouvre exactement cet ensemble |
 | Récap de journée (N4) | Encaissé du jour | `encaisse({ period: { unit: "day" } })` |
 | Compta — vue Ventes | Encaissé, Marge nette (période choisie), À encaisser (à date : un encours, sans période) | `encaisse`, `margeNette`, `aEncaisser` |

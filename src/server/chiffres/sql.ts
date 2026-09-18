@@ -378,14 +378,17 @@ function commandesALivrerRowsSql(): Prisma.Sql {
 
 /**
  * Le composite de l'Accueil, en UNE requête : Encaissé et Marge nette du mois (jamais d'Encaissé depuis
- * toujours), À encaisser et Trésorerie à date, et les compteurs de E01 — chacun par le fragment de sa définition.
+ * toujours), Encaissé du jour (bloc « Aujourd'hui », 06 E01 zone 4), À encaisser et Trésorerie à date, et les
+ * compteurs de E01 — chacun par le fragment de sa définition.
  */
 export function tableauDeBordSql(now: Date): Prisma.Sql {
   const month: Period = { kind: "calendar", unit: "month", ref: null, offset: 0 };
+  const day: Period = { kind: "calendar", unit: "day", ref: null, offset: 0 };
   const all: Period = { kind: "all" };
   const { from, to } = boundsSql(month, now);
   return Prisma.sql`
     WITH encaisse_mois AS (SELECT COALESCE(SUM(e.amount), 0) AS v FROM (${encaisseRowsSql({ period: month, now })}) e),
+    encaisse_jour AS (SELECT COALESCE(SUM(e.amount), 0) AS v FROM (${encaisseRowsSql({ period: day, now })}) e),
     couts_mois AS (
       SELECT COALESCE(SUM(c.cost), 0) AS v, count(*) FILTER (WHERE c."hasUnknownCost") AS inconnus
       FROM (${coutsRowsSql({ period: month, now })}) c
@@ -410,6 +413,7 @@ export function tableauDeBordSql(now: Date): Prisma.Sql {
     )
     SELECT ${from} AS "monthFrom", ${to} AS "monthTo",
            encaisse_mois.v::numeric(12,2)::text AS "encaisseMois",
+           encaisse_jour.v::numeric(12,2)::text AS "encaisseJour",
            ${margeNetteObjectSql({
              encaisse: Prisma.sql`encaisse_mois.v`,
              couts: Prisma.sql`couts_mois.v`,
@@ -424,6 +428,6 @@ export function tableauDeBordSql(now: Date): Prisma.Sql {
            cout_a_completer.n AS "coutACompleter",
            commandes.en_attente AS "commandesEnAttente",
            commandes.confirmees AS "commandesConfirmees"
-    FROM encaisse_mois, couts_mois, depenses_mois, a_encaisser, tresorerie, en_retard, a_relancer,
+    FROM encaisse_mois, encaisse_jour, couts_mois, depenses_mois, a_encaisser, tresorerie, en_retard, a_relancer,
          cout_a_completer, commandes`;
 }
