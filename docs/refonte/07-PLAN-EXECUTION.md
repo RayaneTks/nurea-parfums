@@ -1074,7 +1074,7 @@ Ces vérifications ne sont pas des critères d'un jalon : elles s'exécutent **t
 ### 6.2 Checklist technique finale
 
 - [ ] `npm run verify`, `npm run build`, `npm run test:layout`, `npm run test:e2e` verts sur `main`.
-- [ ] Tests d'architecture de 04 §16.2 **et** ceux ajoutés ici (`document-sheet`, `css-registers`, `vocabulaire`) verts.
+- [ ] Tests d'architecture de 04 §16.2 **et** ceux ajoutés ici (`document-sheet`, `css-registers`, `vocabulaire`, `documentation`) verts.
 - [ ] `npm run check:invariants -- --confirm-host <hôte prod>` vert.
 - [ ] `find app/api/admin -name route.ts` ne liste que `search`, `picker` et `export/compta` ; `app/api/pwa/admin/route.ts` et `app/admin-sw.js/route.ts` existent (liste fermée de 04 §3.5).
 - [ ] `rg -n "\"use server\"" src app` ne trouve que `src/server/*/actions.ts` et `src/actions/contact.ts`.
@@ -1087,13 +1087,19 @@ Ces vérifications ne sont pas des critères d'un jalon : elles s'exécutent **t
 
 Chaque capacité de 01 §3 (**§3.11 compris** : écart du 17/09/2026, lignes NR-11.x) est **présente** (vérifiée à l'endroit indiqué) ou **abandonnée** par une décision de 02 §4 (citée). « e2e » renvoie aux fichiers de `e2e/parcours/`, « db » à `tests/db/`. La colonne « Vu » est cochée pendant la recette de J16, en préproduction, avec le gérant.
 
+> **Ce tableau est la CONCEPTION ; la recette exécutable est `08-RECETTE.md` §3.** Écrit avant les jalons, il annonçait des noms de tests que la construction a parfois placés ailleurs. 08 reprend les 141 lignes de 01 §3 une à une, en nommant le test **qui existe**, et le geste exact là où aucun test ne peut voir. Trois écarts relevés à J16 sont corrigés ci-dessous ; les autres renvois de ce tableau ont été confrontés au dépôt et sont justes.
+>
+> - **NR-11.11 manquait.** La septième capacité de 01 §3.11.1 — *créer directement une commande confirmée sans acompte* (`3291428`) — n'avait pas de ligne : après NR-11.6, le tableau enchaînait sur deux correctifs de §3.11.2. La ligne est ajoutée ci-dessous.
+> - **`commande-saisie` n'existe pas.** Le parcours est dans `e2e/parcours/commande-acompte-livraison.spec.ts` (« PC-03 : commande avec acompte créée par le composeur en 9 taps »). Corrigé ici et en §6.4.
+> - **`premiere-utilisation` n'existe pas.** PC-12 n'a pas de test e2e : la carte « Pour commencer » est livrée (J14) et sa présence vérifiée, mais le parcours se chronomètre à la main (08 §1c). Son seuil est « terminé », pas « bascule » : il ne bloque pas.
+
 **3.1 Commandes**
 
 | # | Capacité (01 §3.1) | Dans la refonte | Preuve | Jalon | Vu |
 |---|---|---|---|---|---|
 | NR-1.1 | Liste groupée par urgence, compteurs, filtre segmenté dans l'URL | E10 : sections En retard · Aujourd'hui · Demain · Cette semaine · Plus tard · Sans date, compteurs, `vue` et `filtre` | e2e `commande-acompte-livraison` ; `test:layout` E10 | J8 | [ ] |
 | NR-1.2 | Liste plafonnée à 200 lignes | Simplifiée (02 §4.1) : « Afficher plus » qui ajoute, recherche client ou parfum, vues Livrées / Annulées | e2e (60 commandes seedées) | J8 | [ ] |
-| NR-1.3 | Création : client lié ou libre, catalogue ou hors catalogue, contenances 10/50/80 (80 par défaut ; 30/50/100 avant le 10/09/2026), don, coût DZD + taux, **note par ligne**, livraison, notes | E11 mode Commande, S05, S06 ; note par ligne (A-12) | e2e `commande-saisie` ; db `t01` | J9 | [ ] |
+| NR-1.3 | Création : client lié ou libre, catalogue ou hors catalogue, contenances 10/50/80 (80 par défaut ; 30/50/100 avant le 10/09/2026), don, coût DZD + taux, **note par ligne**, livraison, notes | E11 mode Commande, S05, S06 ; note par ligne (A-12) | e2e `commande-acompte-livraison` (PC-03) ; db `t01` | J9 | [ ] |
 | NR-1.4 | Acompte initial ⇒ commande confirmée | E11 « Acompte » avec poche ; T1 né `CONFIRMED` sans réserve, **avec** mouvement de Trésorerie | db `t01` ; e2e | J6, J9 | [ ] |
 | NR-1.5 | Mémoire de prix serveur, pré-remplissage prix/coût/taux, dernier taux | `PerfumePricing` apprenant (N8), taux par défaut dans Réglages | db `t01` ; e2e `vente-directe`, `reglages` | J9, J15 | [x] |
 | NR-1.6 | Cycle de statuts à réserves confirmables ; confirmation automatique au premier acompte sans réserve | S01 zone 2, S18 ; `document-status.ts` | unit `document-status` ; db `t04`, `t07` | J5, J8 | [ ] |
@@ -1281,11 +1287,12 @@ Chaque capacité de 01 §3 (**§3.11 compris** : écart du 17/09/2026, lignes NR
 | NR-11.7 | Commande en attente rattachable ; appartenance au lot visible quel que soit le statut ; lot non supprimable tant qu'un document y est rattaché | E06 zone 3, S13 ; FK `Restrict` | critère de J13 ; db `t13` | J5, J13 | [ ] |
 | NR-11.8 | Contenances réelles 10 / 50 / 80 ml, 80 par défaut ; contenance inconnue jamais réécrite | CHECK 10/50/80, `DEFAULT_VOLUME_ML`, garde des lignes reprises | db `constraints`, `reprise` ; unit `sale-line` | J1, J2, J5 | [ ] |
 | NR-11.9 | Date de livraison réelle d'une commande (jamais la date prévue) | `SaleDocument.deliveredAt` par la transition ; reprise : `Order.deliveredAt` sinon `updatedAt` | db `reprise` (cas 26), `t04` | J2, J5 | [ ] |
-| NR-11.10 | Confirmation lisible et honnête ; filet « Annuler » tapable sous une sheet | 05 §2, §2.7, §3.1, §3.2 (reprise de l'écart) | critère de J4 ; `test:layout` | J4 | [ ] |
+| NR-11.10 | Confirmation lisible et honnête ; filet « Annuler » tapable sous une sheet | 05 §2, §2.7, §3.1, §3.2 (reprise de l'écart) | e2e `couches` ; `test:layout` | J4 | [ ] |
+| NR-11.11 | **Création directe d'une commande « confirmée » sans acompte** (`3291428`) — ligne ajoutée à J16 | E11 mode Commande : `PENDING → CONFIRMED` sans acompte est une **réserve confirmable**, jamais un refus (03 §2.3) | unit `document-status` ; db `t04`, `t01` | J5, J9 | [ ] |
 
 ### 6.4 Parcours chronométrés (06 §2)
 
-**Protocole de mesure.** iPhone du gérant, PWA **installée** depuis la préproduction, Wi-Fi coupé (réseau cellulaire 4G), base jumelle fraîche, mémoires pré-remplies comme en usage réel (poche par défaut, tarifs, lot ouvert). Le gérant exécute ; l'exécutant enregistre l'écran (enregistrement iOS) et compte les taps sur la vidéo ; chronomètre du premier tap au retour visuel de l'écriture (carte de confirmation, toast ou pulse). Un essai d'échauffement, puis trois essais ; la **médiane** est retenue. En parallèle, `e2e/helpers/tap.ts` vérifie automatiquement le nombre de taps à chaque PR.
+**Protocole de mesure.** iPhone du gérant, PWA **installée** depuis la préproduction, Wi-Fi coupé (réseau cellulaire 4G), base jumelle fraîche, mémoires pré-remplies comme en usage réel (poche par défaut, tarifs, lot ouvert). Le gérant exécute ; l'exécutant enregistre l'écran (enregistrement iOS) et compte les taps sur la vidéo ; chronomètre du premier tap au retour visuel de l'écriture (carte de confirmation, toast ou pulse). Un essai d'échauffement, puis trois essais ; la **médiane** est retenue. En parallèle, `e2e/helpers/tap.ts` vérifie automatiquement le nombre de taps à chaque PR. **Les mesures déjà obtenues au banc sont reportées dans `08-RECETTE.md` §4.3** ; c'est là que le gérant inscrit les siennes.
 
 **Règle d'acceptation.** Bloquant : nombre de taps ≤ **cible de 06** (déterministe, vérifié en e2e) **et** temps médian ≤ **objectif de 02 §2** (ou objectif décidé par 06 pour PC-10 à PC-12). Le temps cible de 06 est une visée : un dépassement de plus de 50 % est analysé et corrigé s'il vient de l'app (réseau lent, écran qui attend).
 
@@ -1294,7 +1301,7 @@ Chaque capacité de 01 §3 (**§3.11 compris** : écart du 17/09/2026, lignes NR
 | PC-01 Vente simple | ≤ 8 taps, < 20 s | 3 taps, ≈ 6 s | `vente-directe` | **bascule** |
 | PC-01 Vente à crédit partiel | < 20 s (tâche n°1) | 6 taps + saisie, ≈ 18 s | `vente-a-credit` | **bascule** |
 | PC-02 Encaisser une créance | ≤ 4 taps depuis l'Accueil, < 10 s | 3 taps, ≈ 6 s | `encaisser-creance` | **bascule** |
-| PC-03 Prendre une commande | ≤ 15 taps, < 60 s | 9 taps, ≈ 15 s | `commande-saisie` | **bascule** |
+| PC-03 Prendre une commande | ≤ 15 taps, < 60 s | 9 taps, ≈ 15 s | `commande-acompte-livraison` | **bascule** |
 | PC-04 Livrer (soldée / avec solde) | ≤ 3 taps (livraison complète) | 3 / 4 taps, ≈ 4–6 s | `commande-acompte-livraison` | **bascule** |
 | PC-04 Pointer une ligne | 2 taps par ligne depuis la fiche | 1 tap | `commande-acompte-livraison` | **bascule** |
 | PC-05 Paiement depuis la fiche | ≤ 5 taps | 2–3 taps | `commande-acompte-livraison` | **bascule** |
@@ -1304,7 +1311,7 @@ Chaque capacité de 01 §3 (**§3.11 compris** : écart du 17/09/2026, lignes NR
 | PC-09 Récap du jour / compta du mois | 1 tap / 2 taps | 0–1 tap / 1 tap | `accueil` | compta : **bascule** ; récap : terminé |
 | PC-10 Défaire une erreur | ≤ 3 taps (décision 06) | 1–3 taps | `annuler-paiement` | **bascule** |
 | PC-11 Répartir / transférer | ≤ 2 / ≤ 5 taps (décision 06) | 2 / 5 taps + saisie | `transfert` | **bascule** |
-| PC-12 Première utilisation | Première vente < 5 min (décision 06) | Carte « Pour commencer » | `premiere-utilisation` | terminé |
+| PC-12 Première utilisation | Première vente < 5 min (décision 06) | Carte « Pour commencer » | **aucun** — à chronométrer à la main (08 §1c) | terminé |
 | PC-13 Publier la story d'un parfum (écart du 17/09/2026) | 2 gestes une fois sur la fiche (décision 06) | 5 taps + saisie, ≈ 15 s depuis l'Accueil | `story` | **bascule** (capacité de production) |
 | PC-08 variante · Ranger un document sans lot (écart du 17/09/2026) | 3 taps (décision 06) | 3 taps | critère de J13 | **bascule** (capacité de production) |
 
@@ -1315,15 +1322,17 @@ Chaque capacité de 01 §3 (**§3.11 compris** : écart du 17/09/2026, lignes NR
 - [ ] Textes de la carte « Nouveautés » (J15).
 - [ ] Textes des confirmations S18 (J15).
 - [ ] Démonstration de chaque jalon d'écran (J8–J15) et retours intégrés.
+- [ ] **Recette `08-RECETTE.md` passée en entier** : §1 (24 gestes humains), §4 (16 parcours chronométrés), §3 (146 lignes cochées) — feuille de passage §6 remplie et signée.
 - [ ] Feu vert de bascule (B12).
 
 ### 6.6 Documentation à jour
 
-- [ ] `CLAUDE.md` et `docs/AGENTS.md` décrivent la structure réelle (04 §17.5) et les nouvelles commandes.
-- [ ] `docs/admin/PRODUCT.md` et `docs/admin/DESIGN.md` décrivent les écrans et onglets réels.
-- [ ] `docs/refonte/00-README.md` marque la série close et renvoie au tag `bascule-<date>`.
+- [x] `CLAUDE.md` décrit la structure réelle (04 §17.5), les routes françaises, `proxy.ts`, `src/contracts`, `src/server/chiffres`, le service worker rendu par route, les scripts et la base de test locale — **tenu par `tests/architecture/documentation.test.ts`**, qui échoue si un terme de l'ancienne gestion y reparaît ou si un repère vivant en disparaît (J16).
+- [x] `docs/admin/PRODUCT.md` et `docs/admin/DESIGN.md` décrivent les écrans, les cinq onglets et les jetons réels (J16). Le même test compare la liste des onglets de `navigation.ts` à celle des deux documents.
+- [x] `docs/refonte/08-RECETTE.md` : la recette, 146 lignes, à passer avec le gérant (J16).
+- [ ] `docs/refonte/00-README.md` marque la série close et renvoie au tag `bascule-<date>` — **après** la bascule.
 - [ ] Les amendements de §3.0.2 figurent dans 04 et 05 ; aucun document de la série ne contredit le code livré.
 
 ---
 
-*Fin du document 07 et de la série `docs/refonte/`. L'exécution commence par J0 ; elle se termine quand les deux seuils de §6.1 sont franchis.*
+*Fin du document 07. La série se poursuit par `08-RECETTE.md`, qui n'est pas un document de conception mais l'épreuve : les 141 capacités de 01 §3, où chacune vit et comment on sait qu'elle marche. L'exécution commence par J0 ; elle se termine quand les deux seuils de §6.1 sont franchis.*
