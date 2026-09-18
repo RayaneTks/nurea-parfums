@@ -37,14 +37,18 @@ export function FormField({ label, required = false, hint, error, htmlFor, child
 
   return (
     <div className="flex flex-col">
-      <label htmlFor={fieldId} className="admin-type-caption mb-1.5 font-medium text-[var(--admin-text-muted)]">
-        {label}
+      {/*
+       * L'astérisque vit HORS du `<label>` : le texte du libellé reste exactement le libellé — celui qu'un test
+       * d'écran vise (« Nom du parfum », jamais « Nom du parfum* ») et celui qu'annonce un lecteur d'écran.
+       */}
+      <span className="admin-type-caption mb-1.5 flex items-baseline font-medium text-[var(--admin-text-muted)]">
+        <label htmlFor={fieldId}>{label}</label>
         {required ? (
           <span className="ml-0.5 text-[var(--admin-danger)]" aria-hidden>
             *
           </span>
         ) : null}
-      </label>
+      </span>
       {typeof children === "function"
         ? children({ id: fieldId, "aria-describedby": messageId, "aria-invalid": error ? true : undefined })
         : children}

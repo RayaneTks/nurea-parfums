@@ -3,6 +3,8 @@
 import { Ban, Boxes, MoreHorizontal, UserPlus } from "lucide-react";
 import { useOptimistic, useState, useTransition } from "react";
 import { useConfirm, useToast } from "@/app-shell/FeedbackProvider";
+import { routes } from "@/app-shell/routes";
+import { useShellNavigation } from "@/app-shell/ShellNavigation";
 import { useUndo } from "@/app-shell/UndoProvider";
 import { useAction } from "@/app-shell/hooks/useAction";
 import { useUrlState } from "@/app-shell/hooks/useUrlState";
@@ -25,9 +27,7 @@ import { Avatar } from "@/ui/primitives/Avatar";
 import { Badge } from "@/ui/primitives/Badge";
 import { Button } from "@/ui/primitives/Button";
 import { Card } from "@/ui/primitives/Card";
-import { Chip } from "@/ui/primitives/Chip";
 import { FormField } from "@/ui/patterns/FormField";
-import { Input } from "@/ui/primitives/Input";
 import { ListRow } from "@/ui/primitives/ListRow";
 import { SegmentedControl } from "@/ui/primitives/SegmentedControl";
 import { Sheet } from "@/ui/primitives/Sheet";
@@ -38,6 +38,7 @@ import { CancelSheet } from "./CancelSheet";
 import { CollectSheet, type CollectTarget, type CollectVariant } from "./CollectSheet";
 import { CorrectPaymentSheet } from "./CorrectPaymentSheet";
 import { CustomerPicker } from "./CustomerPicker";
+import { DeliveryChips } from "./DeliveryChips";
 import { useCloseDocumentSheet, useSheetChrome } from "./DocumentSheetFrame";
 import {
   Noun,
@@ -109,6 +110,7 @@ function DocumentView({ doc, pockets, batches, onEdit }: DocumentViewProps) {
   const { showToast } = useToast();
   const confirm = useConfirm();
   const { scheduleDelete } = useUndo();
+  const { navigate } = useShellNavigation();
   const closeSheet = useCloseDocumentSheet();
   const collect = useTransientSheet<CollectVariant>();
   const cancel = useTransientSheet<"cancel" | "refund">();
@@ -409,6 +411,8 @@ function DocumentView({ doc, pockets, batches, onEdit }: DocumentViewProps) {
       <Sheet open={menuOpen} onOpenChange={setMenuOpen} nested size="auto" title="Actions" description={`${title} · ${name}`}>
         <Card padding={0}>
           <ListRow primary="Modifier les lignes" onClick={() => (setMenuOpen(false), onEdit())} />
+          {/* A-9 : « Refaire » pré-remplit le composeur (lignes, client, lot encore ouvert) pour relecture avant validation. */}
+          <ListRow primary="Refaire" onClick={() => (setMenuOpen(false), navigate(routes.vendre({ depuis: doc.id })))} />
           {doc.status !== "CANCELLED" ? (
             <ListRow
               primary={shareLabel}
@@ -597,13 +601,6 @@ function MoneyZone({ doc }: { doc: DocumentSheetDTO }) {
 
 // ── Zone 6 : infos ─────────────────────────────────────────────────────────────
 
-/** « 2026-09-17 » + 2 jours → « 2026-09-19 » (calendrier, jamais des millisecondes). */
-function shiftDayKey(key: string, days: number): string {
-  const [year, month, day] = key.split("-").map(Number) as [number, number, number];
-  const shifted = new Date(Date.UTC(year, month - 1, day + days));
-  return shifted.toISOString().slice(0, 10);
-}
-
 function InfosZone({
   doc,
   onLinkCustomer,
@@ -618,11 +615,8 @@ function InfosZone({
   const { showToast } = useToast();
   const update = useAction(updateDocumentAction);
   const [notes, setNotes] = useState(doc.notes ?? "");
-  const [choosing, setChoosing] = useState(false);
   const toDeliver = doc.origin === "ORDER" && (doc.status === "PENDING" || doc.status === "CONFIRMED");
 
-  const today = parisDayKey();
-  const plus = (days: number) => shiftDayKey(today, days);
   const chosenDay = doc.expectedDeliveryAt ? parisDayKey(new Date(doc.expectedDeliveryAt)) : null;
 
   const setDelivery = (day: string | null) => {
@@ -666,47 +660,7 @@ function InfosZone({
         )}
       </Card>
 
-      {toDeliver ? (
-        <div className="flex flex-col gap-2" role="group" aria-label="Livraison prévue">
-          <Text variant="caption" tone="muted" className="font-semibold">
-            Livraison prévue
-          </Text>
-          <div className="flex flex-wrap gap-2">
-            <Chip active={chosenDay === today} onClick={() => setDelivery(today)}>
-              Aujourd&apos;hui
-            </Chip>
-            <Chip active={chosenDay === plus(1)} onClick={() => setDelivery(plus(1))}>
-              Demain
-            </Chip>
-            <Chip active={chosenDay === plus(2)} onClick={() => setDelivery(plus(2))}>
-              Après-demain
-            </Chip>
-            <Chip active={choosing || (chosenDay !== null && ![today, plus(1), plus(2)].includes(chosenDay))} onClick={() => setChoosing(true)}>
-              {chosenDay !== null && ![today, plus(1), plus(2)].includes(chosenDay) ? formatDate(new Date(doc.expectedDeliveryAt as string), "day") : "Choisir…"}
-            </Chip>
-            {chosenDay !== null ? (
-              <Chip onClick={() => setDelivery(null)}>Sans date</Chip>
-            ) : null}
-          </div>
-          {choosing ? (
-            <FormField label="Date de livraison">
-              {(field) => (
-                <Input
-                  {...field}
-                  type="date"
-                  min={today}
-                  defaultValue={chosenDay ?? today}
-                  onChange={(e) => {
-                    if (!e.target.value) return;
-                    setChoosing(false);
-                    setDelivery(e.target.value);
-                  }}
-                />
-              )}
-            </FormField>
-          ) : null}
-        </div>
-      ) : null}
+      {toDeliver ? <DeliveryChips value={chosenDay} onChange={setDelivery} clearable /> : null}
 
       <FormField label="Notes">
         {(field) => (

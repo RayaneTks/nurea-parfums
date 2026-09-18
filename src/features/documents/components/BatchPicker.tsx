@@ -1,7 +1,7 @@
 "use client";
 
 import { Ban, Boxes } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useAction } from "@/app-shell/hooks/useAction";
 import type { BatchSummary } from "@/contracts/batches";
 import { newId } from "@/domain/ids";
@@ -24,15 +24,19 @@ type BatchPickerProps = {
   onOpenChange: (open: boolean) => void;
   batches: readonly BatchSummary[];
   value: string | null;
-  /** `null` : « Sans lot ». */
-  onSelect: (batchId: string | null) => void;
+  /** `null` : « Sans lot » ; le nom accompagne le lot choisi ou créé en ligne. */
+  onSelect: (batchId: string | null, name: string | null) => void;
+  /** Ouvert depuis une autre sheet (fiche document, défaut) ; le composeur l'ouvre depuis la page. */
+  nested?: boolean;
 };
 
 /**
  * S07 — Sélecteur de lot (06 S07) : « Sans lot », lots ouverts le plus récent en tête (« arrivée prévue 3 oct. »),
  * et S11 — « Nouveau lot » en ligne (le lot créé est posé sur le document).
  */
-export function BatchPicker({ open, onOpenChange, batches, value, onSelect }: BatchPickerProps) {
+export function BatchPicker({ open, onOpenChange, batches, value, onSelect, nested = true }: BatchPickerProps) {
+  // Lots créés en ligne (S11) : absents de `batches` jusqu'au rafraîchissement de l'écran.
+  const created = useRef(new Map<string, string>());
   const options = useMemo<SelectOption[]>(
     () =>
       batches.map((batch) => ({
@@ -48,11 +52,15 @@ export function BatchPicker({ open, onOpenChange, batches, value, onSelect }: Ba
     <SelectSheet
       open={open}
       onOpenChange={onOpenChange}
-      nested
+      nested={nested}
       title="Lot"
       options={options}
       value={value ?? NO_BATCH}
-      onSelect={(next) => onSelect(next === NO_BATCH ? null : next)}
+      onSelect={(next) =>
+        next === NO_BATCH
+          ? onSelect(null, null)
+          : onSelect(next, batches.find((batch) => batch.id === next)?.name ?? created.current.get(next) ?? null)
+      }
       listAllBeforeSearch
       searchPlaceholder="Chercher ou nommer un lot"
       header={
@@ -61,7 +69,7 @@ export function BatchPicker({ open, onOpenChange, batches, value, onSelect }: Ba
             leading={<Ban size={20} aria-hidden className="text-[var(--admin-text-muted)]" />}
             primary="Sans lot"
             onClick={() => {
-              onSelect(null);
+              onSelect(null, null);
               onOpenChange(false);
             }}
           />
@@ -70,18 +78,23 @@ export function BatchPicker({ open, onOpenChange, batches, value, onSelect }: Ba
       empty={{ title: (q) => (q ? `Aucun lot ouvert ne s'appelle « ${q} »` : "Aucun lot ouvert") }}
       onCreate={{
         label: (q) => (q ? `Nouveau lot « ${q} »` : "Nouveau lot"),
-        form: (ctx) => <BatchCreateForm ctx={ctx} />,
+        form: (ctx) => <BatchCreateForm ctx={ctx} onCreated={(batch) => created.current.set(batch.id, batch.name)} />,
       }}
     />
   );
 }
 
 /** S11 — Création de lot en ligne : nom, arrivée prévue (repliée). */
-function BatchCreateForm({ ctx }: { ctx: SelectCreateContext<string> }) {
+function BatchCreateForm({ ctx, onCreated }: { ctx: SelectCreateContext<string>; onCreated: (batch: { id: string; name: string }) => void }) {
   const [id] = useState(newId);
   const [name, setName] = useState(ctx.query);
   const [expected, setExpected] = useState("");
-  const create = useAction(createBatchAction, { onSuccess: (batch) => ctx.select(batch.id) });
+  const create = useAction(createBatchAction, {
+    onSuccess: (batch) => {
+      onCreated(batch);
+      ctx.select(batch.id);
+    },
+  });
   const fields = create.error?.fields ?? {};
   return (
     <div className="flex flex-col gap-4">

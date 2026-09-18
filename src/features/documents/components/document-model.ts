@@ -231,7 +231,16 @@ export function methodForPocket(pocket: PocketSummary | null): string | null {
  * Texte du récap (commande) ou du reçu (livrée, vente) : lignes, « Total », « Payé » RÉEL (la somme du ledger,
  * F-4.1-10), « À encaisser », livraison prévue.
  */
-export function shareText(doc: DocumentSheetDTO, kind: "recap" | "recu"): string {
+export type ShareableDocument = Pick<
+  DocumentSheetDTO,
+  "origin" | "status" | "orderedAt" | "expectedDeliveryAt" | "expectedDeliveryHasTime" | "customerName"
+> & {
+  customer: { fullName: string } | null;
+  lines: readonly Pick<DocumentSheetDTO["lines"][number], "perfumeName" | "brandName" | "volumeMl" | "quantity" | "unitPriceEur" | "isGift">[];
+  balance: Pick<DocumentSheetDTO["balance"], "total" | "paid" | "due">;
+};
+
+export function shareText(doc: ShareableDocument, kind: "recap" | "recu"): string {
   const lines = doc.lines.map((line) => `– ${line.perfumeName}${line.brandName ? ` (${line.brandName})` : ""} · ${lineCaption(line)}`);
   const due = eurFromWire(doc.balance.due);
   const out = [
