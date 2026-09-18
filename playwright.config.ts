@@ -23,6 +23,9 @@ import {
  * permettre) — une autre app sur le même port détournerait toute la suite en silence.
  */
 
+/** Parcours qui écrivent la ligne `Setting` unique (réglages de E08) : exécutés seuls, voir les projets. */
+const GLOBAL_SETTING_SPECS = /parcours[\\/]reglages\.spec\.ts$/;
+
 /** Variables de l'app lancée pour les tests : base e2e, secret de test, aucun service réel. */
 const serverEnv: Record<string, string> = {
   DATABASE_URL: E2E_DATABASE_URL,
@@ -60,8 +63,21 @@ export default defineConfig({
     video: "retain-on-failure",
   },
   projects: [
-    { name: "Mobile", use: { ...devices["iPhone 13"] } },
-    { name: "Desktop", use: { ...devices["Desktop Chrome"] } },
+    { name: "Mobile", use: { ...devices["iPhone 13"] }, testIgnore: GLOBAL_SETTING_SPECS },
+    /**
+     * Les parcours qui changent un réglage GLOBAL (la ligne `Setting` unique : poche proposée, taux par
+     * défaut, 06 E08) ne peuvent pas courir en même temps qu'un parcours qui lit cette poche — la moitié
+     * des CTA d'encaissement portent son nom. Projet à part, lancé par une SECONDE commande (`test:e2e`) :
+     * rien d'autre ne tourne pendant qu'il change le réglage, et il rend l'état d'origine en partant.
+     * (`dependencies` ferait entrer tout le projet « Mobile » dans l'exécution, filtre de fichiers ignoré.)
+     */
+    {
+      name: "Mobile-reglages",
+      use: { ...devices["iPhone 13"] },
+      testMatch: GLOBAL_SETTING_SPECS,
+      fullyParallel: false,
+    },
+    { name: "Desktop", use: { ...devices["Desktop Chrome"] }, testIgnore: GLOBAL_SETTING_SPECS },
   ],
   webServer: E2E_REMOTE
     ? undefined

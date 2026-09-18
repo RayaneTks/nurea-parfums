@@ -75,6 +75,9 @@ export const SEED = {
     // J10 — fiches dédiées aux parcours Clients (06 PC-06) : créances et relance ; suppression refusée puis acceptée.
     { id: seedEntityId("clientnora"), fullName: "Nora Belkacem", phoneE164: "+33611223344", snapchat: "nora.b", whatsappE164: "+33611223344" },
     { id: seedEntityId("clientrachid"), fullName: "Rachid Mansour", phoneE164: null, snapchat: "rachid.m", whatsappE164: null },
+    // J15 — fiche dédiée à l'action « Encaisser xx € » de la recherche globale (S17, A16) : personne d'autre
+    // n'encaisse sa créance, son dû se vérifie au centime.
+    { id: seedEntityId("clientdounia"), fullName: "Dounia Ferhat", phoneE164: "+33622334455", snapchat: null, whatsappE164: null },
   ],
   /**
    * Fiches sans document au-delà de la première page de E12 (50) : « Afficher plus » et la recherche qui repart de

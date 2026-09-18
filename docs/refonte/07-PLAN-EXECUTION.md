@@ -894,12 +894,20 @@ Les nouveautés **intégrées à un geste quotidien** (N1, N2, N7, N8, N9, A1–
 | Actions dans la recherche | A16, S17 | « Encaisser xx € » sur un client, « Vendre » sur un parfum | Non |
 | Carte « Pour commencer » | A13, PC-12 | Trois étapes cochées automatiquement sur base vide | Non (le gérant a déjà des données) |
 
+*Mise en œuvre J15, première partie (Réglages et actions de recherche).* Précisions tranchées en construisant :
+
+- **E08** vit dans `src/features/settings/**` (page RSC, un bloc streamé, une vue cliente, un modèle pur) ; `ROUTE_SPECS.reglages` passe à `livree`, ce qui fait apparaître « Aller à › Réglages » dans la palette (elle ne liste que les écrans livrés). Décisions d'écran : voir 06 E08 « Mise en œuvre J15 » (rangée « Ordre des poches » seulement à partir de deux poches rangées, taux enregistré à la sortie du champ, « Rechercher une mise à jour » présente et **inerte** jusqu'à J16, « Non attribué » écrit quand aucune poche n'est choisie).
+- **Actions de S17** : aucune sixième route HTTP (04 §3.5) — les créances et les poches voyagent avec les résultats de recherche. Le shell porte la demande (`src/app-shell/PaletteActions.tsx`), un hôte du registre `features` rend S02 (`PaletteCollectHost`, monté par le layout de `(gestion)`).
+- **Isolement des tests** : le parcours des Réglages écrit la ligne `Setting` **unique**, que la moitié des parcours d'encaissement lisent (le nom de la poche est dans leurs CTA). Il tourne dans son propre projet Playwright (`Mobile-reglages`, `playwright.config.ts`), lancé par une **seconde commande** de `npm run test:e2e` : rien d'autre ne tourne pendant qu'il change le réglage, et il rend l'état d'origine en partant.
+- **Correction d'un défaut de fusion** : `COMPTA_DOCS` (J12) et les fiches client de J10 (`noraSale`…) partageaient les rangs 40 à 43 du **même** motif d'identifiant — le seed e2e échouait sur la clé primaire depuis la fusion des deux jalons. `COMPTA_DOCS` passe aux rangs 70+.
+
 **Critères d'acceptation.**
-- [ ] `session.spec.ts` complété : « Se déconnecter » depuis E08 ⇒ E18 ; le brouillon de vente reste sur l'appareil.
-- [ ] Changer la poche par défaut dans E08 ⇒ elle est pré-sélectionnée dans E11 et S02 ; changer le taux ⇒ proposé sur une ligne sans tarif mémorisé.
+- [x] `session.spec.ts` complété : « Se déconnecter » depuis E08 ⇒ E18 ; le brouillon de vente reste sur l'appareil.
+- [x] Changer la poche par défaut dans E08 ⇒ elle est pré-sélectionnée dans E11 et S02 ; changer le taux ⇒ proposé sur une ligne sans tarif mémorisé (`e2e/parcours/reglages.spec.ts`).
+- [x] Actions de S17 (A16) : « Encaisser xx € » ouvre S02 sur l'écran courant sans changer d'onglet, « Vendre » ouvre le composeur pré-rempli (`e2e/parcours/recherche.spec.ts`).
 - [ ] PC-06 : fiche client en **2 taps**, message de relance prêt en **4 taps** ; PC-09 : récap du jour lisible à 0 tap, détaillé en 1, partagé en 2 ; PC-12 : sur base vide, première vente enregistrée en suivant la carte « Pour commencer » (`e2e/parcours/premiere-utilisation.spec.ts`).
 - [ ] Relectures avec le gérant faites (06 §8.3) : gabarit de relance S09, textes de la carte « Nouveautés », textes des confirmations S18 ; corrections intégrées.
-- [ ] `npm run test:layout` : E02, E08, S09, S21 ; E01 avec chaque carte contextuelle.
+- [ ] `npm run test:layout` : E02, E08, S09, S21 ; E01 avec chaque carte contextuelle. (E08, S07 variante poche et S21 depuis E08 couverts, avec le clavier ouvert sur le taux.)
 
 ---
 
@@ -1041,7 +1049,7 @@ Chaque capacité de 01 §3 (**§3.11 compris** : écart du 17/09/2026, lignes NR
 | NR-1.2 | Liste plafonnée à 200 lignes | Simplifiée (02 §4.1) : « Afficher plus » qui ajoute, recherche client ou parfum, vues Livrées / Annulées | e2e (60 commandes seedées) | J8 | [ ] |
 | NR-1.3 | Création : client lié ou libre, catalogue ou hors catalogue, contenances 10/50/80 (80 par défaut ; 30/50/100 avant le 10/09/2026), don, coût DZD + taux, **note par ligne**, livraison, notes | E11 mode Commande, S05, S06 ; note par ligne (A-12) | e2e `commande-saisie` ; db `t01` | J9 | [ ] |
 | NR-1.4 | Acompte initial ⇒ commande confirmée | E11 « Acompte » avec poche ; T1 né `CONFIRMED` sans réserve, **avec** mouvement de Trésorerie | db `t01` ; e2e | J6, J9 | [ ] |
-| NR-1.5 | Mémoire de prix serveur, pré-remplissage prix/coût/taux, dernier taux | `PerfumePricing` apprenant (N8), taux par défaut dans Réglages | db `t01` ; e2e `vente-directe` | J9, J15 | [ ] |
+| NR-1.5 | Mémoire de prix serveur, pré-remplissage prix/coût/taux, dernier taux | `PerfumePricing` apprenant (N8), taux par défaut dans Réglages | db `t01` ; e2e `vente-directe`, `reglages` | J9, J15 | [x] |
 | NR-1.6 | Cycle de statuts à réserves confirmables ; confirmation automatique au premier acompte sans réserve | S01 zone 2, S18 ; `document-status.ts` | unit `document-status` ; db `t04`, `t07` | J5, J8 | [ ] |
 | NR-1.7 | Paiements sur fiche (acompte, solde, poche, méthode, note), historique typé, annulation par contre-écriture | S01 zone 5, S02, S04 ; contre-passation `reversesId` | db `t07`, `t08` ; e2e `annuler-paiement` | J6, J8 | [ ] |
 | NR-1.8 | Livraison partielle par ligne (stepper, « Tout », clamp serveur, optimiste, badge « Partiel », « tout est livré ») | S01 zone 4 « Livré 1/3 », légende E10, segment « Livrée » mis en évidence quand tout est pointé | db `t03` ; e2e | J8 | [ ] |
@@ -1059,7 +1067,7 @@ Chaque capacité de 01 §3 (**§3.11 compris** : écart du 17/09/2026, lignes NR
 |---|---|---|---|---|---|
 | NR-2.1 | Vente multi-lignes, sélecteur sans accents, volumes, stepper, prix, coût DZD, taux par ligne | E11, S05 (un parfum déjà au ticket s'incrémente) | e2e `vente-directe` | J9 | [ ] |
 | NR-2.2 | Pré-remplissage à l'ajout et au changement de volume | E11 chips de volume, `GET /api/admin/picker` | e2e | J8, J9 | [ ] |
-| NR-2.3 | Dernier taux mémorisé (défaut 277) | Simplifié (02 §4.2) : `Setting.defaultExchangeRate` + tarifs appris | e2e Réglages | J9, J15 | [ ] |
+| NR-2.3 | Dernier taux mémorisé (défaut 277) | Simplifié (02 §4.2) : `Setting.defaultExchangeRate` + tarifs appris | e2e `reglages` | J9, J15 | [x] |
 | NR-2.4 | Dons (« Offert », prix 0, coût compté) | `GiftToggle`, `line_gift_ck`, décocher restaure le dernier prix | db `t01` ; e2e | J9 | [ ] |
 | NR-2.5 | Hors catalogue normalisé, rattachement de marque, détection « déjà au catalogue » | S05 sous-formulaire (`nommage.ts`, `resoudMarque`) | e2e | J9 | [ ] |
 | NR-2.6 | Client lié ou de passage + contact, snapshot | S06, S10 ; FK toujours propagée | db `t01` | J8, J9 | [ ] |
@@ -1139,7 +1147,7 @@ Chaque capacité de 01 §3 (**§3.11 compris** : écart du 17/09/2026, lignes NR
 | NR-6.3 | Alertes conditionnelles (retard, non attribué, stock) | E01 « À faire », liens vers l'ensemble compté | critère de J14 | J14 | [ ] |
 | NR-6.4 | Pipeline des commandes | E01 « Commandes à livrer » + « en retard » dans « À faire » | e2e | J14 | [ ] |
 | NR-6.5 | Raccourcis vers Clients, Lots, Statistiques | Onglet Clients ; bloc « Lots ouverts » ; lien « Tout le classement » | `navigation.test.ts` | J4, J14 | [ ] |
-| NR-6.6 | Palette : navigation, création, recherche globale | S17 (Radix), groupes « Créer » et « Aller à », résultats | e2e | J8, J15 | [ ] |
+| NR-6.6 | Palette : navigation, création, recherche globale | S17 (Radix), groupes « Créer » et « Aller à », résultats, actions de résultat (A16) | e2e `shell`, `recherche` | J8, J15 | [x] |
 | NR-6.7 | Header : logo sur racine, retour dérivé de la route, recherche | `AppHeader` | `navigation.test.ts` | J4 | [ ] |
 | NR-6.8 | Tab bar 5 onglets, Vendre accentué | Accueil · Commandes · Vendre · Clients · Catalogue | `navigation.test.ts` | J4 | [ ] |
 | NR-6.9 | Classement des parfums | E07 : période, unités, « Hors catalogue », « Afficher plus » | e2e | J14 | [ ] |
@@ -1156,7 +1164,7 @@ Chaque capacité de 01 §3 (**§3.11 compris** : écart du 17/09/2026, lignes NR
 | NR-7.4 | Root layout minimal sans CSS | Inchangé | arch `css-registers` | J1 | [ ] |
 | NR-7.5 | Garde des routes d'API | `defineReadRoute`, `defineAction`, `defineQuery` | arch `route-handlers` | J3 | [ ] |
 | NR-7.6 | `GET /api/admin/session` | **Supprimé** (plus de rôle, 04 §3.5) | arch `route-handlers` | J3 | [ ] |
-| NR-7.7 | Route de déconnexion (sans interface) | « Se déconnecter » dans E08 | e2e `session` | J15 | [ ] |
+| NR-7.7 | Route de déconnexion (sans interface) | « Se déconnecter » dans E08 | e2e `session` | J15 | [x] |
 | NR-7.8 | Journal d'audit | **Abandonné** (02 §4.7) | — | — | [ ] |
 | NR-7.9 | Sonde de santé + second secret | **Abandonnée** (02 §4.7) | arch `route-handlers` | J1 | [ ] |
 | NR-7.10 | Création de compte par CLI | `scripts/create-admin.ts` sans rôle | utilisé par `e2e/global-setup.ts` | J3 | [ ] |

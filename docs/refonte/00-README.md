@@ -88,7 +88,9 @@ Branche de travail : **`refonte/integration`** (la production reste sur `main`, 
 | J11 Catalogue | ✅ | Serveur `95fdc3c`, écrans `c888f65`, conversion WebP côté serveur `6ec8885` (l'iPhone n'encode pas le WebP : le serveur convertit, 0,4 s pour 12 Mpx ; garde de chemin, refus explicités). Réglage Supabase à faire avant la bascule : critère G9 de 07 §1.5. |
 | J12 Compta, Trésorerie, Journal | ✅ | `b38588e` — E03 deux vues, E04 journal par mois, S14–S16, S19, S21, export CSV. Chaque chiffre confronté à sa requête canonique (en base et en e2e) ; Σ « Encaissé » du CSV = `encaisse(période)`. test:layout 270, e2e 46. |
 | J13 Lots | 🔄 en cours (copie isolée) | — |
-| J14 → J16 | ⏳ | — |
+| J14 Accueil, Récap du jour, Statistiques | 🔄 en cours (copie isolée) | — |
+| J15 Nouveautés — 1re partie | 🔄 prête (copie isolée) | Réglages E08 (poche par défaut, taux DZD, ordre des poches S21, version, déconnexion), actions de résultat de la recherche (S17, A16). **Reste pour la 2e partie** : carte « Nouveautés », carte « Pour commencer », Récap du jour, Relancer/Partager, « Achète souvent »/« Revendre », relectures de textes avec le gérant. |
+| J16 | ⏳ | — |
 | Fusion `main` | ✅ | `9b371e2` — écart déjà intégré (01 §3.11), arbre de la refonte conservé. |
 
 **Base de données locale des tests.** Docker Desktop ne démarre pas sur ce poste. Les tests

@@ -13,7 +13,10 @@ import { parisDayKey, parseParisDayKey } from "../../src/domain/periods";
  * `cancelledAt` ⇔ annulé), quantités livrées bornées. Les dates sont relatives au jour de Paris de l'exécution.
  */
 
-/** Identifiants UUID v4 fixes : les adresses `?doc=` de `e2e/routes.ts` s'écrivent avant toute base. */
+/**
+ * Identifiants UUID v4 fixes : les adresses `?doc=` de `e2e/routes.ts` s'écrivent avant toute base. Le MÊME
+ * motif sert aux documents de la Compta (`compta.ts`, rangs 70+) : les rangs se partagent, sans collision.
+ */
 const uuid = (n: number) => `e2e0d0c0-0000-4000-8000-${String(n).padStart(12, "0")}`;
 
 export const DOCS = {
@@ -51,6 +54,10 @@ export const DOCS = {
   recentJadore: uuid(51),
   /** Vente d'une fiche liée, rattachée au lot ouvert : l'origine de « Refaire » (A-9). */
   refaire: uuid(52),
+
+  // ── Recherche globale (07 J15) ───────────────────────────────────────────────
+  /** Dounia Ferhat : une vente livrée à 70 € dus — la créance qu'encaisse l'action « Encaisser 70 € » de S17. */
+  rechercheEncaisser: uuid(60),
 } as const;
 
 /** Noms des clients de passage des parcours : chacun désigne une seule ligne dans les listes. */
@@ -387,6 +394,19 @@ export const DOCUMENT_SPECS: DocumentSpec[] = [
       { perfume: "N°5", volumeMl: 80, quantity: 1, delivered: 1, price: "140", ...cost("25000") },
     ],
     payments: [{ kind: "BALANCE", amount: "260", pocket: "bank", day: -15 }],
+  },
+  // J15 — la créance que l'action « Encaisser 70 € » de la recherche globale solde (S17, A16). Personne
+  // d'autre n'y touche : le dû se vérifie au centime après le geste.
+  {
+    id: DOCS.rechercheEncaisser,
+    origin: "DIRECT_SALE",
+    status: "DELIVERED",
+    customer: { linked: "Dounia" },
+    ordered: -20,
+    confirmed: -20,
+    delivered: -20,
+    lines: [{ perfume: "Mon Guerlain", volumeMl: 80, quantity: 1, delivered: 1, price: "100", ...cost("17000") }],
+    payments: [{ kind: "BALANCE", amount: "30", pocket: "cash", day: -20 }],
   },
 ];
 

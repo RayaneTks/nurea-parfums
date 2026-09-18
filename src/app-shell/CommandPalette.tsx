@@ -18,7 +18,7 @@ import {
 import { useRef, useState, type ReactNode } from "react";
 import type { CustomerHitDTO, DocumentHitDTO, PerfumeHitDTO, SearchResultsDTO } from "@/contracts/search";
 import { SEARCH_MIN_LENGTH } from "@/contracts/search";
-import { eur, eurFromWire, type MoneyString } from "@/domain/money";
+import { eur, eurFromWire, formatEur, type MoneyString } from "@/domain/money";
 import { cn } from "@/lib/utils";
 import { ErrorBanner } from "@/ui/patterns/ErrorBanner";
 import { ListSection } from "@/ui/patterns/ListSection";
@@ -33,6 +33,7 @@ import { SearchField } from "@/ui/primitives/SearchField";
 import { SkeletonList } from "@/ui/primitives/Skeleton";
 import { isToastTarget } from "@/ui/primitives/Toast";
 import { useReadRoute } from "./hooks/useReadRoute";
+import { usePaletteActions } from "./PaletteActions";
 import { isNavigable, routes, withSheet } from "./routes";
 import { useShellNavigation } from "./ShellNavigation";
 
@@ -79,13 +80,18 @@ function documentLabel(hit: DocumentHitDTO): string {
  * restitué à la fermeture), bande `commandPalette` au-dessus des sheets, champ focalisé à l'ouverture pour que le
  * clavier monte avec elle. Dès 2 caractères, la recherche à la frappe (debounce 200 ms, annulable) rend clients,
  * documents et parfums, par groupes de 6. Un document s'ouvre en fiche SUR L'ÉCRAN COURANT (la palette se ferme
- * d'abord) ; un parfum ouvre sa fiche ; une navigation ferme la palette. Les actions de résultat (« Encaisser »,
- * « Vendre ») arrivent au jalon J15.
+ * d'abord) ; un parfum ouvre sa fiche ; une navigation ferme la palette.
+ *
+ * Actions de résultat (A16, 07 J15) : « Encaisser xx € » sur un client qui doit de l'argent ferme la palette
+ * puis ouvre S02 « Tout encaisser » sur l'écran courant (`PaletteActions`, jamais rendue sous la palette) ;
+ * elle n'attend aucune requête : les créances et les poches sont arrivées avec les résultats ;
+ * « Vendre » sur un parfum ferme la palette EN NAVIGUANT vers le composeur pré-rempli (`?parfum=`).
  */
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { navigate } = useShellNavigation();
+  const { requestCollect } = usePaletteActions();
   const trimmed = query.trim();
   const searching = trimmed.length >= SEARCH_MIN_LENGTH;
   const read = useReadRoute<SearchResultsDTO>(open && searching ? searchUrl(trimmed) : null, { debounceMs: 200 });
@@ -125,16 +131,39 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       </Button>
     ) : undefined;
 
+  /**
+   * « Encaisser xx € » d'un résultat client (A16) : la palette se ferme D'ABORD, puis S02 « Tout encaisser »
+   * s'ouvre sur l'écran courant (06 §4.4). Le bouton reste tapable indépendamment de la rangée (`ListRow`).
+   */
+  const collect = (hit: CustomerHitDTO) => {
+    onOpenChange(false);
+    requestCollect({
+      customerId: hit.id,
+      customerName: hit.fullName,
+      receivables: hit.receivables,
+      pockets: read.data?.pockets ?? [],
+    });
+  };
+
   const customerRow = (hit: CustomerHitDTO) => {
     const client = routes.client(hit.id);
     const encaisser = routes.encaisser({ q: hit.fullName });
     // Fiche client livrée au jalon J10 ; en attendant, un client qui doit de l'argent mène à ses créances.
     const target = isNavigable(client) ? client : positive(hit.due) ? encaisser : null;
+    // Un montant OU un bouton, jamais les deux (05 §5.4) : le bouton porte le montant, il le dit lui-même.
+    const trailing =
+      positive(hit.due) && hit.receivables.length > 0 ? (
+        <Button variant="secondary" size="sm" onClick={() => collect(hit)}>
+          Encaisser {formatEur(eurFromWire(hit.due))}
+        </Button>
+      ) : positive(hit.due) ? (
+        <Money value={hit.due} tone="warning" bold />
+      ) : undefined;
     const common = {
       leading: <Avatar name={hit.fullName} size="md" />,
       primary: hit.fullName,
       secondary: hit.contact ?? undefined,
-      trailing: positive(hit.due) ? <Money value={hit.due} tone="warning" bold /> : undefined,
+      trailing,
     };
     return target ? <ListRow key={hit.id} {...common} onClick={() => go(target)} /> : <ListRow key={hit.id} {...common} />;
   };
@@ -156,22 +185,33 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     />
   );
 
-  const perfumeRow = (hit: PerfumeHitDTO) => (
-    <ListRow
-      key={hit.id}
-      leading={<Avatar name={hit.name} src={hit.image || null} size="md" />}
-      primary={hit.name}
-      secondary={hit.brandName}
-      trailing={
-        hit.stockStatus === "out" ? (
-          <Badge tone="danger">Rupture</Badge>
-        ) : hit.status === "DRAFT" ? (
-          <Badge>Masqué</Badge>
-        ) : undefined
-      }
-      onClick={() => go(routes.parfum(hit.id))}
-    />
-  );
+  /**
+   * « Vendre » d'un résultat parfum (A16) : navigation vers le composeur pré-rempli (`?parfum=`), ce qui
+   * ferme la palette. La rupture de stock passe devant : on ne propose pas de vendre ce qu'on n'a plus.
+   */
+  const perfumeRow = (hit: PerfumeHitDTO) => {
+    const vendre = routes.vendre({ parfum: hit.id });
+    const trailing =
+      hit.stockStatus === "out" ? (
+        <Badge tone="danger">Rupture</Badge>
+      ) : isNavigable(vendre) ? (
+        <Button variant="secondary" size="sm" onClick={() => go(vendre)} ariaLabel={`Vendre ${hit.name}`}>
+          Vendre
+        </Button>
+      ) : hit.status === "DRAFT" ? (
+        <Badge>Masqué</Badge>
+      ) : undefined;
+    return (
+      <ListRow
+        key={hit.id}
+        leading={<Avatar name={hit.name} src={hit.image || null} size="md" />}
+        primary={hit.name}
+        secondary={hit.status === "DRAFT" ? `${hit.brandName} · Masqué` : hit.brandName}
+        trailing={trailing}
+        onClick={() => go(routes.parfum(hit.id))}
+      />
+    );
+  };
 
   let body: ReactNode;
   if (!searching) {
