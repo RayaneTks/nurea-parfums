@@ -6,6 +6,7 @@ import {
   deleteBatchExpenseInput,
   deleteBatchInput,
   setBatchStatusInput,
+  updateBatchExpenseInput,
   updateBatchInput,
 } from "@/contracts/batches";
 import * as batchesWriter from "@/server/batches/writer";
@@ -35,6 +36,11 @@ export const deleteBatchAction = defineAction("batches.delete", deleteBatchInput
 /** T9 — Ajouter une dépense datée (S12). */
 export const addBatchExpenseAction = defineAction("batches.addExpense", addBatchExpenseInput, (input) =>
   inTransaction((tx) => batchesWriter.addBatchExpense(tx, input)),
+);
+
+/** Modifier le libellé et les notes d'une dépense (E06 « Modifier ») ; le reste est en écriture seule. */
+export const updateBatchExpenseAction = defineAction("batches.updateExpense", updateBatchExpenseInput, (input) =>
+  inTransaction((tx) => batchesWriter.updateBatchExpense(tx, input)),
 );
 
 /** T10 — Supprimer une dépense : contre-passation de son mouvement à sa date. */

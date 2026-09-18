@@ -37,14 +37,22 @@ export function FormField({ label, required = false, hint, error, htmlFor, child
 
   return (
     <div className="flex flex-col">
-      <label htmlFor={fieldId} className="admin-type-caption mb-1.5 font-medium text-[var(--admin-text-muted)]">
-        {label}
+      {/*
+        L'astérisque est DEHORS du `<label>` : dans le libellé, il entrerait dans le texte du champ
+        (« Montant* »), et le champ deviendrait introuvable par son nom — pour un lecteur d'écran
+        comme pour `npm run test:layout`, qui vise les champs par leur libellé exact. `aria-hidden`
+        n'y suffisait pas : le texte d'un `<label>` reste le texte du `<label>` (relevé à J13).
+      */}
+      <span className="mb-1.5 flex items-baseline">
+        <label htmlFor={fieldId} className="admin-type-caption font-medium text-[var(--admin-text-muted)]">
+          {label}
+        </label>
         {required ? (
-          <span className="ml-0.5 text-[var(--admin-danger)]" aria-hidden>
+          <span className="admin-type-caption ml-0.5 font-medium text-[var(--admin-danger)]" aria-hidden>
             *
           </span>
         ) : null}
-      </label>
+      </span>
       {typeof children === "function"
         ? children({ id: fieldId, "aria-describedby": messageId, "aria-invalid": error ? true : undefined })
         : children}

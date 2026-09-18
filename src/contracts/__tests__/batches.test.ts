@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type { ZodError } from "zod";
 import { fieldMessages } from "../zod-fr";
-import { addBatchExpenseInput, createBatchInput, deleteBatchExpenseInput, setBatchStatusInput, updateBatchInput } from "../batches";
+import {
+  MAX_UNBATCHED_PAGES,
+  addBatchExpenseInput,
+  createBatchInput,
+  deleteBatchExpenseInput,
+  parseBatchesParams,
+  setBatchStatusInput,
+  updateBatchExpenseInput,
+  updateBatchInput,
+} from "../batches";
 
 const ID = "5b0f3a1e-2c4d-4e6f-8a9b-0c1d2e3f4a5b";
 
@@ -63,5 +72,34 @@ describe("contrats des dépenses de lot", () => {
   it("suppression : une dépense reprise (`mig-dep-…`) reste désignable", () => {
     expect(deleteBatchExpenseInput.safeParse({ id: "mig-dep-cm0abc123def456ghi789jkl0" }).success).toBe(true);
     expect(deleteBatchExpenseInput.safeParse({ id: "../dépense" }).success).toBe(false);
+  });
+
+  it("modification : libellé et notes SEULS ; montant, date et poche sont en écriture seule", () => {
+    expect(updateBatchExpenseInput.parse({ id: EXPENSE_ID, label: " Douane ", notes: "" })).toEqual({
+      id: EXPENSE_ID,
+      label: "Douane",
+      notes: null,
+    });
+    // Un champ absent n'est pas touché ; un champ que le contrat ignore ne passe pas au writer.
+    expect(updateBatchExpenseInput.parse({ id: EXPENSE_ID })).toEqual({ id: EXPENSE_ID });
+    expect(updateBatchExpenseInput.parse({ id: EXPENSE_ID, amount: "90", pocketId: ID })).toEqual({ id: EXPENSE_ID });
+    expect(errors(updateBatchExpenseInput.safeParse({ id: EXPENSE_ID, label: "T" }))).toEqual({
+      label: "Indique le libellé de la dépense (Transport, Douane…).",
+    });
+  });
+});
+
+describe("paramètres d'écran de E05", () => {
+  it("saisie rognée et plafonnée, pagination bornée", () => {
+    expect(parseBatchesParams({})).toEqual({ q: "", pages: 1 });
+    expect(parseBatchesParams({ q: "  fares  ", pages: "3" })).toEqual({ q: "fares", pages: 3 });
+    expect(parseBatchesParams({ q: "x".repeat(200) }).q).toHaveLength(120);
+  });
+
+  it("une pagination illisible ou hors bornes revient à une valeur sûre", () => {
+    expect(parseBatchesParams({ pages: "0" }).pages).toBe(1);
+    expect(parseBatchesParams({ pages: "-2" }).pages).toBe(1);
+    expect(parseBatchesParams({ pages: "abc" }).pages).toBe(1);
+    expect(parseBatchesParams({ pages: "999" }).pages).toBe(MAX_UNBATCHED_PAGES);
   });
 });

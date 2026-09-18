@@ -41,7 +41,12 @@ function haystackSql(): Prisma.Sql {
     (SELECT string_agg(concat_ws(' ', l."perfumeName", l."brandName", l.note), ' ') FROM "SaleLine" l WHERE l."documentId" = d.id))`);
 }
 
-function searchSql(search: OrdersSearch): Prisma.Sql {
+/**
+ * Condition de la recherche étendue, à coller après un `WHERE` déjà ouvert (elle commence par `AND`).
+ * Exportée : E05 zone 0 et S13 cherchent sur les MÊMES champs que E10 (06 E05 zone 0, NR-11.5) — une
+ * seule écriture des règles, jamais une jumelle qui dérive.
+ */
+export function searchSql(search: OrdersSearch): Prisma.Sql {
   const hasTerms = search.terms.length > 0;
   const hasPhone = (search.phone?.length ?? 0) > 0;
   if (!hasTerms && !hasPhone) return Prisma.empty;
@@ -60,7 +65,11 @@ function searchSql(search: OrdersSearch): Prisma.Sql {
   return Prisma.sql`AND ((${words}) OR (${phone}))`;
 }
 
-function searchLateralSql(search: OrdersSearch): Prisma.Sql {
+/**
+ * Jointure latérale qui fabrique le texte cherché, attendue par `searchSql`. Les alias `d` (document),
+ * `c` (client) et `bt` (lot) doivent exister dans la requête appelante.
+ */
+export function searchLateralSql(search: OrdersSearch): Prisma.Sql {
   if (search.terms.length === 0 && (search.phone?.length ?? 0) === 0) return Prisma.empty;
   return Prisma.sql`
     CROSS JOIN LATERAL (
