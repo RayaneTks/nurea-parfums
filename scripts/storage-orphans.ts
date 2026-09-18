@@ -6,8 +6,14 @@
  * - `SaleLine.imageUrl` (la vignette gardée par l'historique d'une vente : un parfum supprimé laisse son
  *   visuel à ses lignes de documents, 02 §4.5) ;
  * - `PerfumeMedia.path` et `PerfumeMedia.url` (visuels story).
- * Tout autre objet est un orphelin : image envoyée puis formulaire abandonné, suppression d'objet échouée
- * après un commit (best-effort journalisé de `storage.ts`), visuel story sans ligne.
+ * Tout autre objet est un orphelin : image convertie puis formulaire abandonné, suppression d'objet échouée
+ * après un commit (best-effort journalisé de `storage.ts`), visuel story sans ligne (WebP écrit, rangement
+ * refusé ou en panne).
+ *
+ * Originaux temporaires (`tmp/…`, décision du 17/09/2026) : l'appareil y envoie l'original, le serveur le
+ * convertit en WebP puis le supprime. Rien ne les référence jamais ; un original de PLUS DE 24 H est un
+ * orphelin (envoi dont la conversion n'a jamais été demandée, suppression échouée), quel que soit
+ * `--min-age-hours` : une conversion ne dure que quelques secondes.
  *
  * Par défaut le script LISTE et ne supprime rien. `--apply` supprime les orphelins, par lots de 100.
  * Un objet plus récent que `--min-age-hours` (24 par défaut) n'est jamais compté : un envoi est peut-être
@@ -37,8 +43,13 @@ const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const USAGE =
   "Usage : DATABASE_URL=<url> NEXT_PUBLIC_SUPABASE_URL=<url> SUPABASE_SERVICE_ROLE_KEY=<clé> npx tsx scripts/storage-orphans.ts [--apply] [--min-age-hours 24] [--bucket catalog] [--confirm-host <hôte base>] [--confirm-storage-host <hôte stockage>]";
 
-/** Dossiers où la gestion range ses objets (04 §12). */
-const PREFIXES = ["perfumes", "brands", "stories"] as const;
+/** Dossier des originaux en attente de conversion (`UPLOAD_FOLDER` de `src/contracts/catalogue.ts`). */
+export const UPLOAD_FOLDER = "tmp";
+/** Âge au-delà duquel un original temporaire est un orphelin. */
+export const UPLOAD_MAX_AGE_HOURS = 24;
+
+/** Dossiers où la gestion range ses objets (04 §12), originaux temporaires compris. */
+const PREFIXES = ["perfumes", "brands", "stories", UPLOAD_FOLDER] as const;
 const PAGE = 1000;
 const REMOVE_BATCH = 100;
 
@@ -94,10 +105,18 @@ export function referencedPaths(references: { urls: readonly (string | null)[]; 
 
 export type StoredObject = { path: string; createdAt: Date | null };
 
-/** Orphelins : objets non référencés et assez anciens (un envoi récent est peut-être en cours). */
+/**
+ * Orphelins : objets non référencés et assez anciens (un envoi récent est peut-être en cours). Un original
+ * temporaire (`tmp/…`) n'est jamais référencé : il est orphelin au-delà de 24 h, quel que soit `minAgeHours`.
+ */
 export function findOrphans(objects: readonly StoredObject[], referenced: ReadonlySet<string>, now: Date, minAgeHours: number): StoredObject[] {
-  const limit = now.getTime() - minAgeHours * 3_600_000;
-  return objects.filter((object) => !referenced.has(object.path) && (object.createdAt === null || object.createdAt.getTime() <= limit));
+  const olderThan = (object: StoredObject, hours: number) =>
+    object.createdAt === null || object.createdAt.getTime() <= now.getTime() - hours * 3_600_000;
+  return objects.filter((object) =>
+    object.path.startsWith(`${UPLOAD_FOLDER}/`)
+      ? olderThan(object, UPLOAD_MAX_AGE_HOURS)
+      : !referenced.has(object.path) && olderThan(object, minAgeHours),
+  );
 }
 
 /**
@@ -197,7 +216,9 @@ async function main(): Promise<number> {
     const orphans = findOrphans(objects, referenced, new Date(), options.minAgeHours);
 
     console.info(`Bucket ${options.bucket} sur ${hostOf(STORAGE_URL)} : ${objects.length} objet(s), ${referenced.size} référence(s).`);
-    console.info(`${orphans.length} orphelin(s) de plus de ${options.minAgeHours} h :`);
+    console.info(
+      `${orphans.length} orphelin(s) de plus de ${options.minAgeHours} h (originaux ${UPLOAD_FOLDER}/ : plus de ${UPLOAD_MAX_AGE_HOURS} h) :`,
+    );
     for (const orphan of orphans) console.info(`  ${orphan.path}`);
 
     if (!options.apply) {

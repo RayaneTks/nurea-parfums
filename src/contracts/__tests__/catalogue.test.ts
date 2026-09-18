@@ -3,15 +3,20 @@ import type { ZodError } from "zod";
 import { fieldMessages } from "../zod-fr";
 import {
   IMAGE_EXTENSION_MESSAGE,
-  MAX_STORY_BYTES,
+  MAX_IMAGE_BYTES,
   STORY_NEEDS_PERFUME_MESSAGE,
   STORY_PATH_MESSAGE,
+  UPLOAD_PATH_MESSAGE,
   addPerfumeMediaInput,
-  buildObjectPath,
+  buildUploadPath,
+  convertImageInput,
+  convertedImagePath,
   createBrandInput,
   createImageUploadUrlInput,
   createPerfumeInput,
   isStoryPathOf,
+  isUploadFor,
+  parseUploadPath,
   pricingGridInput,
   reorderPerfumeMediaInput,
   setPerfumeStockInput,
@@ -155,12 +160,40 @@ describe("envoi d'images : chemin décidé par le serveur (04 §12)", () => {
     });
   });
 
-  it("chemins par usage, jamais le nom du client", () => {
-    expect(buildObjectPath({ usage: "parfum", extension: "webp" }, STAMP)).toBe(`perfumes/${STAMP}.webp`);
-    expect(buildObjectPath({ usage: "logo", extension: "png" }, STAMP)).toBe(`brands/${STAMP}.png`);
-    expect(buildObjectPath({ usage: "story", perfumeId: 12, extension: "webp" }, STAMP)).toBe(`stories/12/${STAMP}.webp`);
-    expect(() => buildObjectPath({ usage: "story", extension: "webp" }, STAMP)).toThrow(RangeError);
-    expect(() => buildObjectPath({ usage: "parfum", extension: "webp" }, "../x")).toThrow(RangeError);
+  it("original sous tmp/, par usage, jamais le nom du client ; WebP définitif au même horodatage", () => {
+    expect(buildUploadPath({ usage: "parfum", extension: "heic" }, STAMP)).toBe(`tmp/perfumes/${STAMP}.heic`);
+    expect(buildUploadPath({ usage: "logo", extension: "png" }, STAMP)).toBe(`tmp/brands/${STAMP}.png`);
+    expect(buildUploadPath({ usage: "story", perfumeId: 12, extension: "jpg" }, STAMP)).toBe(`tmp/stories/12/${STAMP}.jpg`);
+    expect(() => buildUploadPath({ usage: "story", extension: "webp" }, STAMP)).toThrow(RangeError);
+    expect(() => buildUploadPath({ usage: "parfum", extension: "webp" }, "../x")).toThrow(RangeError);
+
+    const story = parseUploadPath(`tmp/stories/12/${STAMP}.jpg`);
+    expect(story).toEqual({ path: `tmp/stories/12/${STAMP}.jpg`, usage: "story", perfumeId: 12, stamp: STAMP, extension: "jpg" });
+    expect(convertedImagePath(story as NonNullable<typeof story>)).toBe(`stories/12/${STAMP}.webp`);
+    const logo = parseUploadPath(`tmp/brands/${STAMP}.png`);
+    expect(logo && convertedImagePath(logo)).toBe(`brands/${STAMP}.webp`);
+    expect(isUploadFor(`tmp/perfumes/${STAMP}.heic`, "parfum")).toBe(true);
+    expect(isUploadFor(`tmp/perfumes/${STAMP}.heic`, "logo")).toBe(false);
+    expect(isUploadFor(`tmp/stories/12/${STAMP}.png`, "story", 13)).toBe(false);
+  });
+
+  it("parseUploadPath : exactement tmp/<dossier>/<horodatage>-<aléa>.<ext>, sinon rien", () => {
+    for (const path of [
+      `perfumes/${STAMP}.webp`,
+      `stories/12/${STAMP}.webp`,
+      `tmp/perfumes/../brands/${STAMP}.png`,
+      `tmp/perfumes/sub/${STAMP}.png`,
+      `tmp/stories/0/${STAMP}.png`,
+      `tmp/stories/012/${STAMP}.png`,
+      `tmp/stories/12/${STAMP}.svg`,
+      `tmp/stories/12/${STAMP}.PNG`,
+      `tmp/perfumes/${STAMP}.png?download=1`,
+      `/tmp/perfumes/${STAMP}.png`,
+      `tmp/autre/${STAMP}.png`,
+      "tmp/perfumes/photo.png",
+    ]) {
+      expect(parseUploadPath(path), path).toBeNull();
+    }
   });
 
   it("isStoryPathOf : exactement stories/<parfum>/<horodatage>-<aléa>.<ext>", () => {
@@ -179,19 +212,22 @@ describe("envoi d'images : chemin décidé par le serveur (04 §12)", () => {
     }
   });
 
-  it("addPerfumeMediaInput : chemin étranger refusé, dimensions et poids entiers positifs, 12 Mo au plus", () => {
-    const valid = { perfumeId: 12, path: `stories/12/${STAMP}.webp`, width: 1080, height: 1920, bytes: 480_000 };
+  it("addPerfumeMediaInput : l'original de CE parfum sous tmp/ ; URL, dimensions et poids ne sont pas des entrées", () => {
+    const valid = { perfumeId: 12, source: `tmp/stories/12/${STAMP}.heic`, label: null };
     expect(addPerfumeMediaInput.parse(valid)).toEqual(valid);
-    expect(errors(addPerfumeMediaInput.safeParse({ ...valid, path: `stories/13/${STAMP}.webp` }))).toEqual({
-      path: STORY_PATH_MESSAGE,
-    });
-    expect(Object.keys(errors(addPerfumeMediaInput.safeParse({ ...valid, width: 0, height: 1.5, bytes: MAX_STORY_BYTES + 1 })))).toEqual([
-      "width",
-      "height",
-      "bytes",
-    ]);
-    // L'URL n'est pas une entrée : une URL envoyée est ignorée.
-    expect("url" in addPerfumeMediaInput.parse({ ...valid, url: "https://ailleurs.example/x.webp" })).toBe(false);
+    for (const source of [`tmp/stories/13/${STAMP}.heic`, `stories/12/${STAMP}.webp`, `tmp/perfumes/${STAMP}.png`]) {
+      expect(errors(addPerfumeMediaInput.safeParse({ ...valid, source })), source).toEqual({ source: STORY_PATH_MESSAGE });
+    }
+    const parsed = addPerfumeMediaInput.parse({ ...valid, url: "https://ailleurs.example/x.webp", width: 1, height: 1, bytes: 1, path: "x" });
+    expect(Object.keys(parsed).sort()).toEqual(["label", "perfumeId", "source"]);
+  });
+
+  it("convertImageInput : visuel de parfum ou logo, original du même usage sous tmp/", () => {
+    expect(convertImageInput.parse({ usage: "logo", source: `tmp/brands/${STAMP}.png` })).toEqual({ usage: "logo", source: `tmp/brands/${STAMP}.png` });
+    expect(errors(convertImageInput.safeParse({ usage: "logo", source: `tmp/perfumes/${STAMP}.png` }))).toEqual({ source: UPLOAD_PATH_MESSAGE });
+    expect(errors(convertImageInput.safeParse({ usage: "parfum", source: `perfumes/${STAMP}.webp` }))).toEqual({ source: UPLOAD_PATH_MESSAGE });
+    expect(convertImageInput.safeParse({ usage: "story", source: `tmp/stories/12/${STAMP}.png` }).success).toBe(false);
+    expect(MAX_IMAGE_BYTES).toBe(12 * 1024 * 1024);
   });
 
   it("reorderPerfumeMediaInput : identifiants bien formés", () => {

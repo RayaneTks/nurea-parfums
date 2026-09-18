@@ -1,29 +1,34 @@
 import { describe, expect, it } from "vitest";
 import {
+  IMAGE_TOO_HEAVY_MESSAGE,
+  IMAGE_UNREADABLE_MESSAGE,
+  MAX_IMAGE_BYTES,
+  UPLOAD_PATH_MESSAGE,
+} from "@/contracts/catalogue";
+import {
+  HEIC_MAX_EDGE,
   IMAGE_REFUSALS,
-  LOGO_MAX_EDGE,
-  PERFUME_FRAME,
-  catalogueGeometry,
-  convertCatalogueImage,
   fitWithin,
+  isHeic,
   isImageFile,
-  portraitCover,
-  prepareStoryImage,
+  prepareUpload,
+  refusalReason,
+  uploadExtension,
   type DecodedImage,
-  type Geometry,
   type ImageCodec,
+  type Size,
 } from "../image-convert";
 
 /**
- * Préparation des images (07 J11, critère « un logo carré 800 × 800 converti garde un rapport 1:1 ») :
- * géométrie pure, et pipeline de conversion éprouvé avec un codec double (Node n'a ni canevas ni
- * `createImageBitmap`).
+ * Ce qui reste à l'appareil (04 §12, décision du 17/09/2026) : la conversion WebP est faite par le serveur.
+ * L'appareil refuse tôt (pas une image, plus de 12 Mo) et ne convertit que le HEIC, en JPEG entier (le
+ * `sharp` du serveur ne décode pas le HEVC). Codec double : Node n'a ni canevas ni `createImageBitmap`.
  */
 
 type FakeImage = DecodedImage & { closed: boolean };
 
-function fakeCodec(size: { width: number; height: number } | "illisible", encodes: readonly string[] = ["image/webp", "image/png", "image/jpeg"]) {
-  const drawn: Geometry[] = [];
+function fakeCodec(size: Size | "illisible", jpeg: "image/jpeg" | "image/png" | null = "image/jpeg") {
+  const drawn: Size[] = [];
   const images: FakeImage[] = [];
   const codec: ImageCodec<FakeImage> = {
     async decode() {
@@ -38,10 +43,9 @@ function fakeCodec(size: { width: number; height: number } | "illisible", encode
       images.push(image);
       return image;
     },
-    async encode(_image, geometry, _quality, type) {
-      drawn.push(geometry);
-      // Un moteur qui ne sait pas encoder le type demandé rend du PNG (comportement de Safari).
-      return new Blob([new Uint8Array(geometry.output.width % 7)], { type: encodes.includes(type) ? type : "image/png" });
+    async encodeJpeg(_image, output) {
+      drawn.push(output);
+      return jpeg === null ? null : new Blob([new Uint8Array(16)], { type: jpeg });
     },
   };
   return { codec, drawn, images };
@@ -49,81 +53,66 @@ function fakeCodec(size: { width: number; height: number } | "illisible", encode
 
 const file = (name: string, type: string, bytes = 1024) => new File([new Uint8Array(bytes)], name, { type });
 
-describe("géométrie", () => {
-  it("un logo carré 800 × 800 garde un rapport 1:1 : ni recadré ni agrandi", () => {
-    const geometry = catalogueGeometry("none", 800, 800);
-    expect(geometry.source).toEqual({ x: 0, y: 0, width: 800, height: 800 });
-    expect(geometry.output).toEqual({ width: 800, height: 800 });
-    expect(geometry.output.width / geometry.output.height).toBe(1);
+describe("préparation de l'original", () => {
+  it("JPEG, PNG, WebP, GIF : envoyés tels quels, sans décodage ni recadrage (le serveur convertit)", async () => {
+    for (const original of [file("IMG_0001.JPG", "image/jpeg"), file("Logo Dior.png", "image/png"), file("planche.webp", "image/webp"), file("a.gif", "image/gif")]) {
+      const { codec, images } = fakeCodec({ width: 800, height: 800 });
+      expect(await prepareUpload(original, codec)).toBe(original);
+      expect(images).toEqual([]);
+    }
   });
 
-  it("un logo large 1200 × 300 est plafonné à 1024 px, proportions intactes, aucun pixel rogné", () => {
-    const geometry = catalogueGeometry("none", 1200, 300);
-    expect(geometry.source).toEqual({ x: 0, y: 0, width: 1200, height: 300 });
-    expect(geometry.output).toEqual({ width: LOGO_MAX_EDGE, height: 256 });
-  });
-
-  it("un visuel de parfum est recadré au centre en portrait 1024 × 1536", () => {
-    const wide = portraitCover(3000, 3000);
-    expect(wide.output).toEqual(PERFUME_FRAME);
-    expect(wide.source).toEqual({ x: 500, y: 0, width: 2000, height: 3000 });
-    const tall = portraitCover(1000, 2000);
-    expect(tall.source).toEqual({ x: 0, y: 250, width: 1000, height: 1500 });
-  });
-
-  it("une planche story 1080 × 1920 n'est jamais recadrée ; 2160 × 3840 est ramenée à 1080 × 1920", () => {
-    expect(fitWithin(1080, 1920, 1920).output).toEqual({ width: 1080, height: 1920 });
-    const big = fitWithin(2160, 3840, 1920);
-    expect(big.source).toEqual({ x: 0, y: 0, width: 2160, height: 3840 });
-    expect(big.output).toEqual({ width: 1080, height: 1920 });
-  });
-});
-
-describe("conversion", () => {
-  it("logo 800 × 800 converti : fichier WebP de 800 × 800, image libérée", async () => {
-    const { codec, drawn, images } = fakeCodec({ width: 800, height: 800 });
-    const prepared = await convertCatalogueImage(file("Logo Dior.png", "image/png"), "none", codec);
-    expect(prepared.width / prepared.height).toBe(1);
-    expect([prepared.width, prepared.height]).toEqual([800, 800]);
-    expect(prepared.file.type).toBe("image/webp");
-    expect(prepared.file.name).toBe("Logo Dior.webp");
-    expect(drawn[0]?.source).toEqual({ x: 0, y: 0, width: 800, height: 800 });
+  it("HEIC (même sans type MIME) : JPEG de l'image entière, grand côté plafonné à 4096 px, image libérée", async () => {
+    const { codec, drawn, images } = fakeCodec({ width: 8064, height: 6048 });
+    const prepared = await prepareUpload(file("IMG_0001.HEIC", ""), codec);
+    expect([prepared.name, prepared.type]).toEqual(["IMG_0001.jpg", "image/jpeg"]);
+    expect(drawn).toEqual([{ width: HEIC_MAX_EDGE, height: 3072 }]);
     expect(images.every((image) => image.closed)).toBe(true);
+
+    const small = fakeCodec({ width: 1440, height: 2560 });
+    await prepareUpload(file("planche.heif", "image/heif"), small.codec);
+    expect(small.drawn).toEqual([{ width: 1440, height: 2560 }]);
   });
 
-  it("visuel de parfum : 1024 × 1536", async () => {
-    const { codec } = fakeCodec({ width: 4032, height: 3024 });
-    const prepared = await convertCatalogueImage(file("IMG_0001.HEIC", ""), "portrait", codec);
-    expect([prepared.width, prepared.height]).toEqual([1024, 1536]);
+  it("refus avant tout envoi, avec une raison courte : pas une image, plus de 12 Mo, HEIC illisible ou inconvertible", async () => {
+    await expect(prepareUpload(file("facture.pdf", "application/pdf"), fakeCodec({ width: 1, height: 1 }).codec)).rejects.toThrow(
+      IMAGE_REFUSALS.notAnImage,
+    );
+    const heavy = fakeCodec({ width: 1080, height: 1920 });
+    await expect(prepareUpload(file("planche.png", "image/png", MAX_IMAGE_BYTES + 1), heavy.codec)).rejects.toThrow(IMAGE_REFUSALS.tooHeavy);
+    expect(heavy.images).toEqual([]);
+    await expect(prepareUpload(file("capture.heic", "image/heic"), fakeCodec("illisible").codec)).rejects.toThrow(IMAGE_REFUSALS.unreadable);
+    const noJpeg = fakeCodec({ width: 800, height: 600 }, "image/png");
+    await expect(prepareUpload(file("capture.heic", "image/heic"), noJpeg.codec)).rejects.toThrow(IMAGE_REFUSALS.conversion);
+    expect(noJpeg.images.every((image) => image.closed)).toBe(true);
   });
 
-  it("HEIC accepté même sans type MIME ; un PDF est refusé avant tout décodage", () => {
+  it("reconnaît une image et un HEIC par le type ou par l'extension", () => {
     expect(isImageFile({ name: "IMG_0001.HEIC", type: "" })).toBe(true);
     expect(isImageFile({ name: "photo.heif", type: "application/octet-stream" })).toBe(true);
     expect(isImageFile({ name: "facture.pdf", type: "application/pdf" })).toBe(false);
+    expect(isHeic({ name: "photo", type: "image/heic" })).toBe(true);
+    expect(isHeic({ name: "photo.jpg", type: "image/jpeg" })).toBe(false);
   });
 
-  it("story : format illisible et fichier de plus de 12 Mo refusés avec une raison courte", async () => {
-    await expect(prepareStoryImage(file("planche.heic", "image/heic"), fakeCodec("illisible").codec)).rejects.toThrow(
-      IMAGE_REFUSALS.unreadable,
-    );
-    const heavy = file("planche.png", "image/png", 12 * 1024 * 1024 + 1);
-    const { codec, images } = fakeCodec({ width: 1080, height: 1920 });
-    await expect(prepareStoryImage(heavy, codec)).rejects.toThrow(IMAGE_REFUSALS.tooHeavy);
-    expect(images).toEqual([]);
+  it("extension de l'original : celle du nom si acceptée, sinon celle du type", () => {
+    expect(uploadExtension({ name: "IMG_0001.JPEG", type: "image/jpeg" })).toBe("jpeg");
+    expect(uploadExtension({ name: "photo", type: "image/png" })).toBe("png");
+    expect(uploadExtension({ name: "capture.bmp.webp", type: "" })).toBe("webp");
+    expect(uploadExtension({ name: "scan.tiff", type: "image/tiff" })).toBe("tiff");
   });
 
-  it("appareil sans encodeur WebP (Safari) : repli nommé et typé honnêtement, PNG au catalogue, JPEG en story", async () => {
-    const logo = await convertCatalogueImage(file("Logo.png", "image/png"), "none", fakeCodec({ width: 800, height: 800 }, ["image/png", "image/jpeg"]).codec);
-    expect([logo.file.name, logo.file.type, logo.width, logo.height]).toEqual(["Logo.png", "image/png", 800, 800]);
-    const story = await prepareStoryImage(file("planche.heic", "image/heic"), fakeCodec({ width: 1080, height: 1920 }, ["image/png", "image/jpeg"]).codec);
-    expect([story.file.name, story.file.type]).toEqual(["planche.jpg", "image/jpeg"]);
+  it("géométrie : plafond sans recadrage ni agrandissement", () => {
+    expect(fitWithin(1080, 1920, 4096)).toEqual({ width: 1080, height: 1920 });
+    expect(fitWithin(6048, 8064, 4096)).toEqual({ width: 3072, height: 4096 });
   });
+});
 
-  it("story 9:16 : dimensions conservées", async () => {
-    const { codec, drawn } = fakeCodec({ width: 1080, height: 1920 });
-    const prepared = await prepareStoryImage(file("sauvage-story.jpg", "image/jpeg"), codec);
-    expect([prepared.width, prepared.height]).toEqual([1080, 1920]);
-    expect(drawn[0]?.source).toEqual({ x: 0, y: 0, width: 1080, height: 1920 });
+describe("raison d'un refus du serveur", () => {
+  it("courte quand elle est connue, sinon le message (du champ source d'abord)", () => {
+    expect(refusalReason({ message: IMAGE_UNREADABLE_MESSAGE, fields: { source: IMAGE_UNREADABLE_MESSAGE } })).toBe(IMAGE_REFUSALS.unreadable);
+    expect(refusalReason({ message: IMAGE_TOO_HEAVY_MESSAGE })).toBe(IMAGE_REFUSALS.tooHeavy);
+    expect(refusalReason({ message: "Vérifie les champs signalés.", fields: { source: UPLOAD_PATH_MESSAGE } })).toBe(UPLOAD_PATH_MESSAGE);
+    expect(refusalReason({ message: "Maximum 24 visuels par parfum." })).toBe("Maximum 24 visuels par parfum.");
   });
 });

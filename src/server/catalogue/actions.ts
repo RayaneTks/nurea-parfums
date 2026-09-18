@@ -1,12 +1,16 @@
 "use server";
 import "server-only";
 import {
+  STORY_PATH_MESSAGE,
   addPerfumeMediaInput,
+  convertImageInput,
+  convertedImagePath,
   createBrandInput,
   createImageUploadUrlInput,
   createPerfumeInput,
   deleteBrandInput,
   deletePerfumeInput,
+  parseUploadPath,
   removePerfumeMediaInput,
   reorderPerfumeMediaInput,
   republishBrandPerfumesInput,
@@ -105,8 +109,12 @@ export const deleteBrandAction = defineAction("catalogue.deleteBrand", deleteBra
 );
 
 // ── Images et visuels story ────────────────────────────────────────────────────
+//
+// Décision du 17/09/2026 (04 §12) : l'appareil envoie l'ORIGINAL sous `tmp/` par URL signée ; une action
+// le convertit en WebP (`storage.convertUpload`), écrit le chemin définitif, l'URL est enregistrée, puis
+// l'original est supprimé. Le geste de l'utilisateur ne change pas.
 
-/** URL signée d'envoi direct (E19 visuel, E17 logo, E16 zone 7) : chemin décidé par le serveur. */
+/** URL signée d'envoi direct de l'original (E19 visuel, E17 logo, E16 zone 7) : chemin `tmp/…` décidé par le serveur. */
 export const createImageUploadUrlAction = defineAction(
   "catalogue.createImageUploadUrl",
   createImageUploadUrlInput,
@@ -122,19 +130,44 @@ export const createImageUploadUrlAction = defineAction(
   },
 );
 
-/** E16 zone 7 : ranger un visuel déposé. URL recalculée depuis le chemin vérifié, rang calculé, 24 au plus. */
+/**
+ * E19 visuel, E17 logo : l'original devient un WebP (portrait 1024 × 1536 ; logo jamais recadré), son URL
+ * est rendue au formulaire, qui l'enregistre (`createPerfumeAction`, `updatePerfumeAction`, actions de
+ * marque — la publication s'y décide, `publication.ts`). N'écrit rien en base ; l'original est supprimé.
+ */
+export const convertImageAction = defineAction("catalogue.convertImage", convertImageInput, (input) =>
+  storage.thenRemoveUpload(input.source, async () => {
+    const image = await storage.convertUpload(input.source, input.usage);
+    return { url: image.url, width: image.width, height: image.height, bytes: image.bytes };
+  }),
+);
+
+/**
+ * E16 zone 7 : ranger un visuel déposé. L'original est converti en WebP (1920 px au plus, jamais recadré),
+ * écrit sous `stories/<perfumeId>/`, rangé (URL recalculée, dimensions lues, rang calculé, 24 au plus) dans
+ * une transaction, PUIS l'original est supprimé. Renvoyer la même `source` rend le visuel déjà rangé.
+ */
 export const addPerfumeMediaAction = defineAction("catalogue.addPerfumeMedia", addPerfumeMediaInput, (input) =>
-  inTransaction((tx) =>
-    catalogueMedia.addMedia(tx, {
-      perfumeId: input.perfumeId,
-      path: input.path,
-      url: storage.publicUrlOf(input.path),
-      label: input.label ?? null,
-      width: input.width,
-      height: input.height,
-      bytes: input.bytes,
-    }),
-  ),
+  storage.thenRemoveUpload(input.source, async () => {
+    const original = parseUploadPath(input.source);
+    if (original === null) throw new DomainError("VALIDATION", STORY_PATH_MESSAGE, "source");
+    const path = convertedImagePath(original);
+    const existing = await inTransaction((tx) => catalogueMedia.mediaAtPathOrRoom(tx, { perfumeId: input.perfumeId, path }));
+    if (existing) return existing;
+
+    const image = await storage.convertUpload(input.source, "story");
+    return inTransaction((tx) =>
+      catalogueMedia.addMedia(tx, {
+        perfumeId: input.perfumeId,
+        path: image.path,
+        url: image.url,
+        label: input.label ?? null,
+        width: image.width,
+        height: image.height,
+        bytes: image.bytes,
+      }),
+    );
+  }),
 );
 
 /** Libellé libre d'un visuel story (« Story 9:16 », « Fond clair »). */

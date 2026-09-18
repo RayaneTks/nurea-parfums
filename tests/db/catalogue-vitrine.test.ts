@@ -5,8 +5,8 @@ import {
   expectOk,
   freshStart,
   loadCatalogueServer,
+  sendOriginal,
   stamp,
-  storyPath,
   type CatalogueServer,
 } from "./support/catalogue";
 
@@ -115,7 +115,7 @@ describe("contrat vitrine : mêmes cartes avant et après des écritures cohére
       }),
     );
     const story = expectOk(
-      await server.actions.addPerfumeMediaAction({ perfumeId: sauvage.id, path: storyPath(sauvage.id), width: 1080, height: 1920, bytes: 1 }),
+      await server.actions.addPerfumeMediaAction({ perfumeId: sauvage.id, source: await sendOriginal(server, { usage: "story", perfumeId: sauvage.id }) }),
     );
     expectOk(await server.actions.setPerfumeMediaLabelAction({ perfumeId: sauvage.id, mediaId: story.id, label: "Story" }));
     expectOk(await server.actions.removePerfumeMediaAction({ perfumeId: sauvage.id, mediaId: story.id }));

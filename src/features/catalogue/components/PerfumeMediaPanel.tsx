@@ -13,6 +13,7 @@ import {
 import { MediaGallery, type MediaItem } from "@/ui/patterns/MediaGallery";
 import { Card } from "@/ui/primitives/Card";
 import { depositSummary, storyFileName } from "./catalogue-model";
+import { refusalReason } from "./image-convert";
 import { useImageUpload } from "./useImageUpload";
 
 type PerfumeMediaPanelProps = {
@@ -28,8 +29,8 @@ export const REMOVE_MEDIA_DESCRIPTION =
 
 /**
  * « Visuels story · n » (06 E16 zone 7, PC-13) : les planches prêtes à publier, DISTINCTES du visuel du
- * catalogue — elles ne décident jamais de la visibilité. Dépôt multiple (HEIC compris), chaque fichier
- * préparé sur l'appareil (WebP, 1920 px, jamais recadré), envoyé par URL signée puis rangé ; un fichier
+ * catalogue — elles ne décident jamais de la visibilité. Dépôt multiple (HEIC compris), chaque original
+ * envoyé par URL signée puis converti et rangé par le serveur (WebP, 1920 px, jamais recadré) ; un fichier
  * refusé n'arrête pas les suivants, le bilan est dit en un toast.
  *
  * Les visuels viennent des props (fiche relue après chaque écriture) ; seuls un retrait et un
@@ -76,7 +77,7 @@ export function PerfumeMediaPanel({ perfumeId, perfumeName, brandName, media }: 
       try {
         const uploaded = await uploadStory(file, perfumeId);
         const result = await add.run({ perfumeId, ...uploaded });
-        if (!result.ok) throw new Error(result.error.message);
+        if (!result.ok) throw new Error(refusalReason(result.error));
         added += 1;
       } catch (cause) {
         refused.push(cause instanceof Error ? lowerFirst(cause.message.replace(/\.$/, "")) : "envoi impossible");

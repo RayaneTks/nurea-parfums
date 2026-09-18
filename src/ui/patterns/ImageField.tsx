@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ErrorBanner } from "./ErrorBanner";
 import { ImagePreview, type ImageFrame } from "./ImagePreview";
 
-/** `perfume` : recadrage portrait WebP. `logo` : proportions d'origine, JAMAIS recadré. */
+/** `perfume` : recadrage portrait WebP (par le serveur). `logo` : proportions d'origine, JAMAIS recadré. */
 export type ImageKind = "perfume" | "logo";
 
 /** Consigne transmise à l'envoi. Un logo n'a pas d'autre valeur possible que `none`. */
@@ -23,9 +23,9 @@ type ImageFieldProps = {
   value: string;
   onChange: (url: string) => void;
   /**
-   * Convertit (WebP), recadre selon `crop`, envoie par URL signée, renvoie
-   * l'URL publique. Fournie par la feature catalogue : `src/ui` ne connaît ni
-   * le stockage ni les actions (04 §1.3).
+   * Envoie le fichier par URL signée et renvoie l'URL publique du WebP que le SERVEUR en a tiré
+   * (recadré selon `crop`). Fournie par la feature catalogue : `src/ui` ne connaît ni le stockage
+   * ni les actions (04 §1.3).
    */
   upload: (file: File, options: { crop: ImageCrop }) => Promise<string>;
   /** Après un envoi réussi ou une suppression : l'enregistrement automatique (06 E19). */
@@ -54,7 +54,7 @@ export function ImageField({
   clearable = true,
 }: ImageFieldProps) {
   const [uploading, setUploading] = useState(false);
-  const [failed, setFailed] = useState<File | null>(null);
+  const [failed, setFailed] = useState<{ file: File; reason: string | null } | null>(null);
 
   const send = async (file: File) => {
     setUploading(true);
@@ -63,8 +63,11 @@ export function ImageField({
       const url = await upload(file, { crop: cropFor(kind) });
       onChange(url);
       onCommit?.(url);
-    } catch {
-      setFailed(file);
+    } catch (cause) {
+      // La raison vient de l'envoi (réseau) ou du serveur qui convertit (« format illisible »,
+      // « plus de 12 Mo ») : on la dit, un générique cacherait ce qu'il faut corriger (04 §9.4).
+      const reason = cause instanceof Error ? cause.message.trim().replace(/\.$/, "") : "";
+      setFailed({ file, reason: reason === "" ? null : reason });
     } finally {
       setUploading(false);
     }
@@ -89,7 +92,10 @@ export function ImageField({
             : undefined
         }
       />
-      <ErrorBanner message={failed ? "Envoi impossible" : null} onRetry={failed ? () => void send(failed) : undefined} />
+      <ErrorBanner
+        message={failed ? (failed.reason ? `Envoi impossible — ${failed.reason}` : "Envoi impossible") : null}
+        onRetry={failed ? () => void send(failed.file) : undefined}
+      />
     </div>
   );
 }

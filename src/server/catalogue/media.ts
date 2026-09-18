@@ -19,8 +19,10 @@ import type { Tx } from "@/server/db/transaction";
  *
  * Règles tenues ici, sous le verrou de la ligne `Perfume` (rang 4, 04 §4.2) : chemin exactement
  * `stories/<perfumeId>/…` (revérifié, même si le contrat l'a déjà fait), rang calculé (deux dépôts
- * simultanés ne prennent pas le même), 24 visuels au plus. Le retrait rend l'URL de l'objet : c'est
- * l'action qui le supprime du bucket, APRÈS le commit (`storage.commitThenRemoveObjects`).
+ * simultanés ne prennent pas le même), 24 visuels au plus. L'objet rangé est le WebP que le serveur a
+ * converti (`storage.convertUpload`) : chemin, URL, dimensions et poids viennent de lui. Le retrait rend
+ * l'URL de l'objet : c'est l'action qui le supprime du bucket, APRÈS le commit
+ * (`storage.commitThenRemoveObjects`).
  *
  * Accès par le client Prisma de la transaction (`tx.db.perfumeMedia`) : l'extension de
  * `src/server/db/client.ts` inscrit le modèle écrit dans l'unité de travail, d'où l'invalidation
@@ -77,24 +79,42 @@ function listRows(tx: Tx, perfumeId: number): Promise<MediaRow[]> {
   return tx.db.perfumeMedia.findMany({ where: { perfumeId }, orderBy: [...GALLERY_ORDER], select: MEDIA_SELECT });
 }
 
+/**
+ * Avant de convertir un original (seconde transaction à part, en lecture) : le visuel déjà rangé à ce chemin
+ * s'il existe (renvoi de la même demande : rien à convertir), sinon `null` — après avoir refusé un parfum
+ * disparu (`NOT_FOUND`) ou une galerie pleine (`CONFLICT`), pour ne pas convertir en vain. `addMedia`
+ * revérifie tout sous le verrou du parfum.
+ */
+export async function mediaAtPathOrRoom(tx: Tx, input: { perfumeId: number; path: string }): Promise<PerfumeMediaItem | null> {
+  if (!isStoryPathOf(input.perfumeId, input.path)) throw new DomainError("VALIDATION", STORY_PATH_MESSAGE, "source");
+  const perfume = await tx.db.perfume.findUnique({ where: { id: input.perfumeId }, select: { id: true } });
+  if (!perfume) throw new DomainError("NOT_FOUND", PERFUME_NOT_FOUND_MESSAGE);
+  const existing = await tx.db.perfumeMedia.findUnique({ where: { path: input.path }, select: MEDIA_SELECT });
+  if (existing) return toItem(existing); // le préfixe vérifié garantit qu'il s'agit du même parfum
+  const count = await tx.db.perfumeMedia.count({ where: { perfumeId: input.perfumeId } });
+  if (count >= MAX_MEDIA_PER_PERFUME) throw new DomainError("CONFLICT", MAX_MEDIA_MESSAGE);
+  return null;
+}
+
 export type NewMedia = {
   perfumeId: number;
-  /** Chemin rendu par `createImageUploadUrlAction({ usage: "story" })`. */
+  /** Chemin définitif du WebP converti (`storage.convertUpload`), sous `stories/<perfumeId>/`. */
   path: string;
-  /** URL recalculée par l'action depuis `path` (`storage.publicUrlOf`), jamais reçue du client. */
+  /** URL recalculée depuis `path` (`storage.publicUrlOf`), jamais reçue du client. */
   url: string;
   label: string | null;
+  /** Dimensions et poids du WebP écrit, lus par le serveur. */
   width: number;
   height: number;
   bytes: number;
 };
 
 /**
- * Range un visuel déposé à la fin de la galerie. Un second envoi du même chemin (double tap, « Réessayer »
- * après coupure) rend la ligne déjà rangée sans rien écrire.
+ * Range un visuel converti à la fin de la galerie. Un second envoi du même original (double tap, renvoi
+ * après coupure) désigne le même chemin définitif : la ligne déjà rangée est rendue sans rien écrire.
  */
 export async function addMedia(tx: Tx, input: NewMedia): Promise<PerfumeMediaItem> {
-  if (!isStoryPathOf(input.perfumeId, input.path)) throw new DomainError("VALIDATION", STORY_PATH_MESSAGE, "path");
+  if (!isStoryPathOf(input.perfumeId, input.path)) throw new DomainError("VALIDATION", STORY_PATH_MESSAGE, "source");
   await lockPerfume(tx, input.perfumeId);
 
   const existing = await tx.db.perfumeMedia.findUnique({ where: { path: input.path }, select: MEDIA_SELECT });
