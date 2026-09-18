@@ -27,14 +27,20 @@ import { Text } from "@/ui/primitives/Text";
 
 const NEWS_KEY = NEWS_SEEN_KEY;
 
-/** Les cinq changements d'habitude, dans l'ordre où ils se rencontrent (00-README, décisions 1, 2, 4, 5, 6). */
+/**
+ * Les six changements d'habitude, dans l'ordre où ils se rencontrent (00-README, décisions 1, 2, 4, 5 et 6 ;
+ * la 1 en deux lignes : les onglets, puis les chiffres qui ouvrent la compta).
+ *
+ * Espace fine insécable avant `»` et après `«` : sans elle, le guillemet fermant part seul à la ligne
+ * suivante sur un rail de 320 px (05 §2.2, typographie française).
+ */
 const NEWS: readonly string[] = [
-  "Cinq onglets : Clients a le sien, et « À encaisser » est dedans.",
+  "Cinq onglets : Clients a le sien, et « À encaisser » est dedans.",
   "La compta, la Trésorerie et les lots s'ouvrent en touchant tes chiffres ci-dessous.",
   "Vente et commande : même écran, bascule en haut — plus de re-saisie.",
-  "À la vente, tu saisis « Reçu maintenant » : le reste dû se calcule.",
-  "Un stock laissé vide n'est plus une rupture, il est « non suivi ».",
-  "Chaque chiffre a une seule définition : « en retard » dès le jour dépassé, Marge nette toujours après dépenses.",
+  "À la vente, tu saisis « Reçu maintenant » : le reste dû se calcule.",
+  "Un stock laissé vide n'est plus une rupture, il est « non suivi ».",
+  "Chaque chiffre a une seule définition : « en retard » dès le jour dépassé, Marge nette toujours après dépenses.",
 ];
 
 function readDismissed(key: string): boolean {
