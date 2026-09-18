@@ -14,6 +14,27 @@ import { BANC_GLOBAL, type Scene } from "../fixtures/couches-contrat";
 
 const compiled = new Map<string, Promise<string>>();
 
+/**
+ * Les actions serveur, remplacées par un bouchon dans le bundle du banc.
+ *
+ * Un composant client d'écran importe ses actions (`MovementSheet` → `@/server/treasury/actions`).
+ * Dans l'app, Next en fait une référence client et ne compile jamais le module pour le navigateur ;
+ * esbuild, lui, suit l'import et tombe sur `src/server/db/transaction.ts`, donc sur `node:async_hooks`
+ * — le banc ne compilait plus. Le bouchon garde les composants réels et rend toute action inerte : le
+ * banc n'éprouve que l'affichage, il n'écrit jamais. Un appel lève, au lieu d'échouer en silence.
+ */
+const SERVER_STUB = `module.exports = new Proxy({}, {
+  get: (_t, name) => () => { throw new Error("Banc : action serveur « " + String(name) + " » indisponible (affichage seulement)."); },
+});`;
+
+const stubServerActions = {
+  name: "banc-stub-actions-serveur",
+  setup(build: { onResolve: Function; onLoad: Function }) {
+    build.onResolve({ filter: /^@\/server\// }, (args: { path: string }) => ({ path: args.path, namespace: "banc-stub" }));
+    build.onLoad({ filter: /.*/, namespace: "banc-stub" }, () => ({ contents: SERVER_STUB, loader: "js" as const }));
+  },
+};
+
 function compile(root: string, entry: string): Promise<string> {
   const found = compiled.get(entry);
   if (found) return found;
@@ -27,6 +48,7 @@ function compile(root: string, entry: string): Promise<string> {
     target: "es2020",
     jsx: "automatic",
     define: { "process.env.NODE_ENV": JSON.stringify("production") },
+    plugins: [stubServerActions],
     logLevel: "silent",
   }).then((result) => {
     const output = result.outputFiles[0];
