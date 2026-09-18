@@ -3,7 +3,7 @@ import { routes } from "@/app-shell/routes";
 import { adminCatalogue, brandSheet } from "@/server/catalogue/queries";
 import { EmptyState } from "@/ui/primitives/EmptyState";
 import { BrandForm } from "../components/BrandForm";
-import { LinkButton } from "../components/LinkButton";
+import { LinkButton } from "@/ui/patterns/LinkButton";
 
 /** E17 — la marque à modifier (comptes des dialogues de cascade) et toutes les marques (dédoublonnage). */
 export async function BrandFormBlock({ id }: { id: string | null }) {

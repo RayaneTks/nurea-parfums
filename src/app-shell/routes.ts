@@ -42,9 +42,14 @@ export const ROUTE_SPECS = {
     etat: "livree",
   }),
   journal: spec({ screen: "E04", pattern: "/admin/compta/journal", params: ["mois", "poche"], shell: true, jalon: "J12", etat: "livree" }),
-  lots: spec({ screen: "E05", pattern: "/admin/lots", params: [], shell: true, jalon: "J13", etat: "a-venir" }),
-  lot: spec({ screen: "E06", pattern: "/admin/lots/[id]", params: ["assigner"], shell: true, jalon: "J13", etat: "a-venir" }),
-  nouveauLot: spec({ screen: "E21", pattern: "/admin/lots/nouveau", params: [], shell: true, jalon: "J13", etat: "a-venir" }),
+  /**
+   * `q` et `pages` : la recherche et la pagination de la zone 0 « À rattacher » (écart du 17/09/2026).
+   * Elles sont dans l'URL et non dans l'état du composant parce que la liste est paginée EN BASE : un
+   * filtre local ne verrait que les 100 premières lignes, et le compte affiché mentirait.
+   */
+  lots: spec({ screen: "E05", pattern: "/admin/lots", params: ["q", "pages"], shell: true, jalon: "J13", etat: "livree" }),
+  lot: spec({ screen: "E06", pattern: "/admin/lots/[id]", params: ["assigner"], shell: true, jalon: "J13", etat: "livree" }),
+  nouveauLot: spec({ screen: "E21", pattern: "/admin/lots/nouveau", params: [], shell: true, jalon: "J13", etat: "livree" }),
   statistiques: spec({ screen: "E07", pattern: "/admin/statistiques", params: ["periode", "ref"], shell: true, jalon: "J14", etat: "a-venir" }),
   reglages: spec({ screen: "E08", pattern: "/admin/reglages", params: [], shell: true, jalon: "J15", etat: "a-venir" }),
   commandes: spec({ screen: "E10", pattern: "/admin/commandes", params: ["vue", "filtre", "q", "pages"], shell: true, jalon: "J8", etat: "livree" }),
@@ -136,7 +141,9 @@ export const routes = {
     filtre?: "cout-a-completer";
   }) => build("/admin/compta", q),
   journal: (q?: { mois?: string; poche?: string }) => build("/admin/compta/journal", q),
-  lots: () => "/admin/lots",
+  /** `pages` : « Afficher plus » de la zone « À rattacher » ; 1 ne s'écrit pas. */
+  lots: (q?: { q?: string; pages?: number }) =>
+    build("/admin/lots", q ? { ...q, pages: q.pages && q.pages > 1 ? q.pages : undefined } : q),
   lot: (id: string, q?: { assigner?: boolean }) => build(`/admin/lots/${segment(id)}`, q),
   nouveauLot: () => "/admin/lots/nouveau",
   statistiques: (q?: { periode?: Periode; ref?: string }) => build("/admin/statistiques", q),

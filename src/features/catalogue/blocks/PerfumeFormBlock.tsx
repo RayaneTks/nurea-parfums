@@ -4,7 +4,7 @@ import { adminCatalogue, perfumeDuplicationDraft, perfumeSheet } from "@/server/
 import { getSettings } from "@/server/settings/queries";
 import { EmptyState } from "@/ui/primitives/EmptyState";
 import { recentBrandIds } from "../components/catalogue-model";
-import { LinkButton } from "../components/LinkButton";
+import { LinkButton } from "@/ui/patterns/LinkButton";
 import { PerfumeForm } from "../components/PerfumeForm";
 
 function NotFound() {

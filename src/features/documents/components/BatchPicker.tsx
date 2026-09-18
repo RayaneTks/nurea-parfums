@@ -26,15 +26,25 @@ type BatchPickerProps = {
   value: string | null;
   /** `null` : « Sans lot » ; le nom accompagne le lot choisi ou créé en ligne. */
   onSelect: (batchId: string | null, name: string | null) => void;
-  /** Ouvert depuis une autre sheet (fiche document, défaut) ; le composeur l'ouvre depuis la page. */
+  /**
+   * Ouvert depuis une autre sheet (la fiche document, S01) : bande imbriquée. Depuis un écran — le
+   * composeur, ou la rangée « Lot » de E05 zone 0 —, la sheet est de premier rang. UNE seule S07,
+   * deux contextes : la jumelle de la production, qui divergeait de celle-ci, n'existe plus (01 §4.4).
+   */
   nested?: boolean;
+  /**
+   * Rangée « Sans lot » (défaut). `false` quand le document n'a PAS de lot — la rangée « Lot » de E05
+   * zone 0 : « Sans lot » n'y discriminerait rien, et une option qui ne discrimine rien est du bruit
+   * (05 §5.3).
+   */
+  allowNone?: boolean;
 };
 
 /**
  * S07 — Sélecteur de lot (06 S07) : « Sans lot », lots ouverts le plus récent en tête (« arrivée prévue 3 oct. »),
  * et S11 — « Nouveau lot » en ligne (le lot créé est posé sur le document).
  */
-export function BatchPicker({ open, onOpenChange, batches, value, onSelect, nested = true }: BatchPickerProps) {
+export function BatchPicker({ open, onOpenChange, batches, value, onSelect, nested = true, allowNone = true }: BatchPickerProps) {
   // Lots créés en ligne (S11) : absents de `batches` jusqu'au rafraîchissement de l'écran.
   const created = useRef(new Map<string, string>());
   const options = useMemo<SelectOption[]>(
@@ -64,16 +74,18 @@ export function BatchPicker({ open, onOpenChange, batches, value, onSelect, nest
       listAllBeforeSearch
       searchPlaceholder="Chercher ou nommer un lot"
       header={
-        <Card padding={0}>
-          <ListRow
-            leading={<Ban size={20} aria-hidden className="text-[var(--admin-text-muted)]" />}
-            primary="Sans lot"
-            onClick={() => {
-              onSelect(null, null);
-              onOpenChange(false);
-            }}
-          />
-        </Card>
+        allowNone ? (
+          <Card padding={0}>
+            <ListRow
+              leading={<Ban size={20} aria-hidden className="text-[var(--admin-text-muted)]" />}
+              primary="Sans lot"
+              onClick={() => {
+                onSelect(null, null);
+                onOpenChange(false);
+              }}
+            />
+          </Card>
+        ) : undefined
       }
       empty={{ title: (q) => (q ? `Aucun lot ouvert ne s'appelle « ${q} »` : "Aucun lot ouvert") }}
       onCreate={{

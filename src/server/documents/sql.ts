@@ -45,11 +45,11 @@ function haystackSql(): Prisma.Sql {
 }
 
 /**
- * Condition de la recherche étendue (06 E10 zone 3), à poser après un `WHERE` : partagée par la liste Commandes et
- * les documents de la Compta (E03 zone 4 : « mêmes champs et mêmes règles »). Alias attendus : `d` (document),
- * `c` (fiche client), `bt` (lot), et la jointure latérale `s` de `documentSearchLateralSql`.
+ * Condition de la recherche étendue, à coller après un `WHERE` déjà ouvert (elle commence par `AND`).
+ * Exportée : E05 zone 0 et S13 cherchent sur les MÊMES champs que E10 (06 E05 zone 0, NR-11.5) — une
+ * seule écriture des règles, jamais une jumelle qui dérive.
  */
-export function documentSearchSql(search: OrdersSearch): Prisma.Sql {
+export function searchSql(search: OrdersSearch): Prisma.Sql {
   const hasTerms = search.terms.length > 0;
   const hasPhone = (search.phone?.length ?? 0) > 0;
   if (!hasTerms && !hasPhone) return Prisma.empty;
@@ -68,8 +68,11 @@ export function documentSearchSql(search: OrdersSearch): Prisma.Sql {
   return Prisma.sql`AND ((${words}) OR (${phone}))`;
 }
 
-/** Jointure latérale `s` (texte plié, chiffres du contact) de la recherche étendue ; vide sans recherche. */
-export function documentSearchLateralSql(search: OrdersSearch): Prisma.Sql {
+/**
+ * Jointure latérale qui fabrique le texte cherché, attendue par `searchSql`. Les alias `d` (document),
+ * `c` (client) et `bt` (lot) doivent exister dans la requête appelante.
+ */
+export function searchLateralSql(search: OrdersSearch): Prisma.Sql {
   if (search.terms.length === 0 && (search.phone?.length ?? 0) === 0) return Prisma.empty;
   return Prisma.sql`
     CROSS JOIN LATERAL (
@@ -163,9 +166,9 @@ export function ordersListSql(query: OrdersListQuery): Prisma.Sql {
       JOIN "DocumentBalance" b ON b."documentId" = d.id
       LEFT JOIN "Customer" c ON c.id = d."customerId"
       LEFT JOIN "Batch" bt ON bt.id = d."batchId"
-      ${documentSearchLateralSql(search)}
+      ${searchLateralSql(search)}
       WHERE d.origin = 'ORDER' AND d.status IN ${VIEW_STATUSES[view]}
-      ${documentSearchSql(search)}
+      ${searchSql(search)}
     ),
     chips AS (
       SELECT count(*) FILTER (WHERE v.status = 'PENDING')::int AS "enAttente",
@@ -259,11 +262,11 @@ export function comptaDocumentsSql(query: { period: Period; now: Date; filter: C
     JOIN "DocumentBalance" b ON b."documentId" = d.id
     LEFT JOIN "Customer" c ON c.id = d."customerId"
     LEFT JOIN "Batch" bt ON bt.id = d."batchId"
-    ${documentSearchLateralSql(search)}
+    ${searchLateralSql(search)}
     CROSS JOIN LATERAL (
       SELECT COALESCE(SUM(l.quantity), 0)::int AS "itemCount" FROM "SaleLine" l WHERE l."documentId" = d.id
     ) lignes
-    WHERE true ${documentSearchSql(search)}
+    WHERE true ${searchSql(search)}
     ORDER BY (bt.id IS NULL), (bt.status = 'CLOSED'), bt."createdAt" DESC, bt.id, d."orderedAt" DESC, d.id DESC`;
 }
 

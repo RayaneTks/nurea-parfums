@@ -46,7 +46,7 @@ describe("constructeurs d'URL (04 §2.2)", () => {
       journee: routes.journee({ jour: "2026-09-17" }),
       compta: routes.compta({ vue: "tresorerie", periode: "tout", ref: "2026-09-01", q: "fa", filtre: "cout-a-completer" }),
       journal: routes.journal({ mois: "2026-09", poche: "po_1" }),
-      lots: routes.lots(),
+      lots: routes.lots({ q: "fa", pages: 2 }),
       lot: routes.lot("lot_1", { assigner: true }),
       nouveauLot: routes.nouveauLot(),
       statistiques: routes.statistiques({ periode: "annee", ref: "2026-01-01" }),

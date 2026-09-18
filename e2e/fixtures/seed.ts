@@ -1,4 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
+import { seedBatches } from "./batches";
 import { seedCompta } from "./compta";
 import { seedDocuments } from "./documents";
 
@@ -153,13 +154,16 @@ export async function seedE2e(db: PrismaClient): Promise<void> {
   await db.batch.create({
     data: { ...SEED.batch, status: "OPEN", expectedAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) },
   });
+  const perfumeId = (name: string) => seedPerfumeId(name as (typeof SEED.perfumes)[number][1]);
+  const brandOf = (name: string) => SEED.brands.find((b) => b.key === SEED.perfumes.find((p) => p[1] === name)?.[0])?.name ?? null;
+
   // Commandes, ventes et paiements des écrans J8 (fiche document, Commandes, À encaisser) : `documents.ts`.
   await seedDocuments(db, {
     image: IMAGE,
     pockets: { cash: SEED.pockets[1].id, bank: SEED.pockets[2].id },
     customers: Object.fromEntries(SEED.customers.map((c) => [c.fullName.split(" ")[0] as string, c.id])),
-    perfumeId: (name) => seedPerfumeId(name as (typeof SEED.perfumes)[number][1]),
-    brandOf: (name) => SEED.brands.find((b) => b.key === SEED.perfumes.find((p) => p[1] === name)?.[0])?.name ?? null,
+    perfumeId,
+    brandOf,
     batchId: SEED.batch.id,
   });
   // Ventes, dépense, non attribué et journal des écrans de la Compta (J12) : `compta.ts`.
@@ -168,6 +172,14 @@ export async function seedE2e(db: PrismaClient): Promise<void> {
     pockets: { cash: SEED.pockets[1].id, bank: SEED.pockets[2].id, unassigned: SEED.pockets[0].id },
     customers: Object.fromEntries(SEED.customers.map((c) => [c.fullName.split(" ")[0] as string, c.id])),
     batchId: SEED.batch.id,
-    perfumeId: (name) => seedPerfumeId(name as (typeof SEED.perfumes)[number][1]),
+    perfumeId,
+  });
+  // Lots, documents rattachés et dépense des écrans J13 (E05, E06, S12, S13) : `batches.ts`.
+  await seedBatches(db, {
+    image: IMAGE,
+    pocketId: SEED.pockets[2].id,
+    marsBatchId: SEED.batch.id,
+    perfumeId,
+    brandOf,
   });
 }
