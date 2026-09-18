@@ -64,6 +64,23 @@ function margeNetteOf(batchId: string): Promise<string> {
   });
 }
 
+/**
+ * « Coûts d'achat » d'un lot : mêmes lignes que `coutsRowsSql` (03 §5.4) — documents ENGAGÉS,
+ * coût inconnu compté 0. Dérivé de la base, jamais recopié de l'écran : d'autres jalons rattachent
+ * des documents à ce même lot, et une valeur figée ici deviendrait fausse sans rien dire du sujet.
+ */
+function coutsOf(batchId: string, statuses = "('CONFIRMED','DELIVERED')"): Promise<string> {
+  return withE2eDb(async (db) => {
+    const [row] = await db.$queryRawUnsafe<{ couts: string }[]>(
+      `SELECT COALESCE(SUM(b.cost), 0)::numeric(12,2)::text AS couts
+       FROM "DocumentBalance" b
+       WHERE b."batchId" = $1 AND b.status IN ${statuses}`,
+      batchId,
+    );
+    return row?.couts ?? "0.00";
+  });
+}
+
 /** « À encaisser » d'un lot : les documents ENGAGÉS seulement (03 §5.3). */
 function aEncaisserOf(batchId: string): Promise<string> {
   return withE2eDb(async (db) => {
@@ -247,7 +264,12 @@ test("E06 : une commande en attente est listée hors des chiffres, une annulée 
   // Son total (110 €) n'entre ni dans « À encaisser » ni dans « Coûts d'achat » : elle n'est pas engagée.
   expect(await aEncaisserOf(MARS)).toBe("0.00");
   await expect(tile(page, "À encaisser")).toContainText(eurosCompact("0"));
-  await expect(tile(page, "Coûts d'achat")).toContainText(eurosCompact("100"));
+  // Le chiffre affiché est celui de la requête canonique…
+  const coutsEngages = await coutsOf(MARS);
+  await expect(tile(page, "Coûts d'achat")).toContainText(eurosCompact(coutsEngages));
+  // …et la commande en attente en est bien exclue : l'inclure changerait le total.
+  const coutsAvecEnAttente = await coutsOf(MARS, "('PENDING','CONFIRMED','DELIVERED')");
+  expect(Number(coutsAvecEnAttente)).toBeGreaterThan(Number(coutsEngages));
   await expect(tile(page, "Coûts d'achat")).not.toContainText("110");
 
   // L'annulée vit dans une sous-section repliée : sans elle, elle resterait rattachée et invisible.
