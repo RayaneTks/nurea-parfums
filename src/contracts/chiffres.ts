@@ -231,13 +231,16 @@ export type PocketEncaisseDTO = {
 };
 
 /**
- * L'Accueil en un aller-retour (04 §6.3, A-13) : Encaissé et Marge nette du mois, À encaisser et Trésorerie à
- * date — jamais d'Encaissé depuis toujours — et les compteurs de E01 ; alertes de stock du catalogue.
+ * L'Accueil en un aller-retour (04 §6.3, A-13) : Encaissé et Marge nette du mois, Encaissé du jour, À encaisser
+ * et Trésorerie à date — jamais d'Encaissé depuis toujours — et les compteurs de E01 ; alertes de stock du
+ * catalogue.
  */
 export type DashboardFiguresDTO = {
   /** Bornes du mois compté (ISO 8601) : « Encaissé · septembre ». */
   month: { from: string; to: string };
   encaisseMois: MoneyString;
+  /** Encaissé d'aujourd'hui (06 E01 zone 4 « Encaissé aujourd'hui », E02) : même définition, période du jour. */
+  encaisseJour: MoneyString;
   margeNetteMois: MargeNetteDTO;
   aEncaisser: MoneyString;
   tresorerie: { total: MoneyString; unassigned: MoneyString };
