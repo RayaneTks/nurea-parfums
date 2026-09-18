@@ -83,7 +83,9 @@ test("PC-06 : le dû d'un client en 2 taps depuis l'Accueil, la relance prête e
   expect(text?.match(/restants/g)).toHaveLength(2);
 });
 
-test("même montant partout : badge de la liste = groupe d'À encaisser = tuile de la fiche = SQL, pour trois clients", async ({ page }) => {
+test("même montant partout : badge de la liste = groupe d'À encaisser = tuile de la fiche = SQL, pour trois clients", async ({ page }, testInfo) => {
+  // Trois clients × trois écrans : neuf chargements complets, d'où le délai élargi.
+  testInfo.setTimeout(150_000);
   for (const fullName of ["Fares Benali", "Yanis Cherif", "Nora Belkacem"]) {
     const id = idOf(fullName);
     const due = await dueInSql(id);
