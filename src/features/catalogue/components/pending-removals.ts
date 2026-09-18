@@ -5,13 +5,14 @@ import { useSyncExternalStore } from "react";
 /**
  * Suppressions différées en cours (06 §4.3 : `ConfirmDialog` puis 5 s avec « Annuler »).
  *
- * Pendant ces 5 secondes l'écriture n'est pas partie : la liste du catalogue, où l'on vient d'être
+ * Pendant ces 5 secondes l'écriture n'est pas partie : la liste (catalogue, clients), où l'on vient d'être
  * renvoyé, montrerait encore la fiche qu'on vient de supprimer. Ce petit registre de session la masque
  * aussitôt ; « Annuler » ou un échec de l'écriture la rendent. Il vit hors des composants : il survit à la
  * navigation qui suit la confirmation.
  */
 
-export type RemovalKey = `parfum:${number}` | `marque:${string}`;
+/** Parfum et marque (E16, E17, E19) ; fiche client (E14 → E12, 06 E14). */
+export type RemovalKey = `parfum:${number}` | `marque:${string}` | `client:${string}`;
 
 let pending = new Set<RemovalKey>();
 const listeners = new Set<() => void>();

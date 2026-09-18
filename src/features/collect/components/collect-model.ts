@@ -97,3 +97,41 @@ export function relanceText(group: Pick<ReceivableGroup, "name" | "items" | "tot
     "Nuréa Parfums",
   ].join("\n");
 }
+
+/** Un document du récap sans créance (S09 « Partager le récap ») : ses montants de la vue, son statut. */
+export type RecapItem = {
+  origin: ReceivableDTO["origin"];
+  status: "PENDING" | "CONFIRMED" | "DELIVERED" | "CANCELLED";
+  orderedAt: string;
+  total: MoneyString;
+  /** Dû d'un document engagé ; null sinon. */
+  due: MoneyString | null;
+};
+
+/** « réglée », « en attente », « 60,00 € restants » : l'état d'un document dans le récap. */
+function recapState(item: RecapItem): string {
+  if (item.status === "PENDING") return "en attente";
+  const due = item.due === null ? null : eurFromWire(item.due);
+  return due !== null && eur.compare(due, eur.zero) > 0 ? `${formatEur(due)} restants` : "réglée";
+}
+
+/**
+ * S09 — Le gabarit du récap sans créance (06 S09, N6), à côté de celui de la relance : même salutation au nom
+ * enregistré, les derniers documents (« – Vente du 3 août : 120,00 €, réglée »), une formule. Le gérant retouche le
+ * texte s'il le souhaite.
+ */
+export function recapText(name: string, items: readonly RecapItem[], now: Date = new Date()): string {
+  const lines = items.map((item) => {
+    const noun = item.origin === "DIRECT_SALE" ? "Vente" : "Commande";
+    return `– ${noun} du ${formatDate(new Date(item.orderedAt), "short", now)} : ${formatEur(eurFromWire(item.total))}, ${recapState(item)}`;
+  });
+  return [
+    `Bonjour ${name},`,
+    "",
+    "Petit récapitulatif des derniers achats :",
+    ...lines,
+    "",
+    "Rien à régler pour le moment. Merci beaucoup, à très vite !",
+    "Nuréa Parfums",
+  ].join("\n");
+}
