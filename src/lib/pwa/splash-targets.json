@@ -1,0 +1,14 @@
+[
+  { "device": "iPhone 16 Pro Max", "w": 440, "h": 956, "r": 3 },
+  { "device": "iPhone 15/16 Plus, 14/15 Pro Max", "w": 430, "h": 932, "r": 3 },
+  { "device": "iPhone 12/13 Pro Max", "w": 428, "h": 926, "r": 3 },
+  { "device": "iPhone XS Max, 11 Pro Max", "w": 414, "h": 896, "r": 3 },
+  { "device": "iPhone XR, 11", "w": 414, "h": 896, "r": 2 },
+  { "device": "iPhone 8 Plus", "w": 414, "h": 736, "r": 3 },
+  { "device": "iPhone 16 Pro", "w": 402, "h": 874, "r": 3 },
+  { "device": "iPhone 14/15/16 Pro", "w": 393, "h": 852, "r": 3 },
+  { "device": "iPhone 12/13/14", "w": 390, "h": 844, "r": 3 },
+  { "device": "iPhone X/XS/11 Pro, 13 mini", "w": 375, "h": 812, "r": 3 },
+  { "device": "iPhone SE 2/3, 8", "w": 375, "h": 667, "r": 2 },
+  { "device": "iPhone 12/13 mini", "w": 360, "h": 780, "r": 3 }
+]

@@ -2,7 +2,8 @@
 export { AdminShell } from "./AdminShell";
 export { AppHeader } from "./AppHeader";
 export { Block, BLOCK_ERROR_MESSAGE } from "./Block";
-export { CommandPalette } from "./CommandPalette";
+// `CommandPalette` n'est PAS réexportée : elle est chargée à la demande par le shell (04 §15 règle 11),
+// et un ré-export statique la ramènerait dans le paquet de quiconque importe ce baril.
 export { FeedbackProvider, useConfirm, useToast, type ConfirmRequest, type ToastRequest } from "./FeedbackProvider";
 export * from "./hooks";
 export {

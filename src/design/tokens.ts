@@ -54,14 +54,26 @@ export const colors = {
    * Remplace les `text-white` en dur ; contraste ≥ 5:1 sur chacun des quatre.
    */
   onAccent: "#FFFFFF",
-  /** L'accompli : payé, soldé, livré. Jamais pour décorer. */
-  success: "#1E7D45",
-  successBg: "rgba(30, 125, 69, 0.10)",
+  /**
+   * L'accompli : payé, soldé, livré. Jamais pour décorer.
+   *
+   * #1B723F, corrigé à J16 (05 §6, « tout nouveau couple couleur/fond se vérifie »). #1E7D45 tenait
+   * 4,51:1 sur une carte blanche mais tombait à **4,06:1** dans son propre `success-bg` posé sur le
+   * fond de page — or c'est exactement un badge « Livré » de liste, en 11 px, lu en plein soleil.
+   * Assombri de 9 % : 4,66:1 dans le pire cas, 5,96:1 pour le blanc posé sur l'aplat.
+   */
+  success: "#1B723F",
+  successBg: "rgba(27, 114, 63, 0.10)",
   successSubtle: "rgba(47, 122, 80, 0.10)",
   successBorder: "rgba(47, 122, 80, 0.22)",
-  /** L'attente et le retard rattrapable. SEUL ton d'un montant non reçu. */
-  warning: "#A35B12",
-  warningBg: "rgba(163, 91, 18, 0.10)",
+  /**
+   * L'attente et le retard rattrapable. SEUL ton d'un montant non reçu.
+   *
+   * #965411, corrigé à J16 pour la même raison que `success` : #A35B12 tombait à 4,08:1 dans son
+   * `warning-bg` sur le fond de page (badge « En attente », montant « À encaisser »). 4,60:1 désormais.
+   */
+  warning: "#965411",
+  warningBg: "rgba(150, 84, 17, 0.10)",
   warningSubtle: "rgba(160, 102, 46, 0.10)",
   warningBorder: "rgba(160, 102, 46, 0.22)",
   /** L'anomalie et l'irréversible : erreur, suppression, créance > 30 j. */

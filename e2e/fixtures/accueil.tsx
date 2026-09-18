@@ -112,10 +112,10 @@ function Scene({ scene }: { scene: AccueilScene }) {
     <FeedbackProvider>
       <UndoProvider>
         {/*
-          Mêmes classes que la zone de contenu de `PageScaffold` (05 §3.2), `admin-page-bottom-pad`
-          compris : sans la réserve basse, la rangée « Réglages » finit sous la barre d'onglets et le
-          banc signale une violation que l'écran réel n'a pas.
-        */}
+         * Mêmes classes que le corps de `PageScaffold`, RÉSERVE BASSE COMPRISE : sans
+         * `admin-page-bottom-pad`, la dernière rangée du banc (« Réglages ») finit sous la tab bar et
+         * le contrôle « sous-la-barre-onglets » relève un défaut que le vrai écran n'a pas.
+         */}
         <div className="admin-page-bottom-pad flex flex-col gap-4 px-4 pt-3" data-banc-accueil={scene}>
           <SectionHeader title="Accueil" />
           <ContextCards state={first} steps={LINKS.steps} />
