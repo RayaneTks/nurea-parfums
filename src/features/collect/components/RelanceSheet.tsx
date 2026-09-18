@@ -10,10 +10,23 @@ import { Sheet } from "@/ui/primitives/Sheet";
 import { Textarea } from "@/ui/primitives/Textarea";
 
 /**
- * S09 — Relancer (06 S09, N5) : le message pré-rédigé, modifiable, envoyé par la feuille de partage iOS (repli :
- * copie + « Message copié »).
+ * S09 — Relancer / Partager le récap (06 S09, N5, N6) : le message pré-rédigé, modifiable, envoyé par la feuille de
+ * partage iOS (repli : copie + « Message copié »). Une seule sheet pour les deux gestes (arbitrage n°14) : le titre
+ * dit lequel (« Relancer · Fares », « Récap · Fares »).
  */
-export function RelanceSheet({ open, onClose, name, text }: { open: boolean; onClose: () => void; name: string; text: string }) {
+export function RelanceSheet({
+  open,
+  onClose,
+  name,
+  text,
+  title = `Relancer · ${name}`,
+}: {
+  open: boolean;
+  onClose: () => void;
+  name: string;
+  text: string;
+  title?: string;
+}) {
   const { showToast } = useToast();
   const [message, setMessage] = useState(text);
   useShellSheet(open, onClose);
@@ -24,7 +37,7 @@ export function RelanceSheet({ open, onClose, name, text }: { open: boolean; onC
       onOpenChange={(next) => {
         if (!next) onClose();
       }}
-      title={`Relancer · ${name}`}
+      title={title}
       size="auto"
     >
       <div className="flex flex-col gap-4">

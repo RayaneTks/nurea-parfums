@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ReceivableDTO } from "@/contracts/chiffres";
-import type { MoneyString } from "@/domain/money";
-import { ageLabel, countsLabel, filterGroups, groupReceivables, receivableCaption, receivableTitle, relanceText } from "../collect-model";
+import { eurFromWire, formatEur, type MoneyString } from "@/domain/money";
+import { ageLabel, countsLabel, filterGroups, groupReceivables, receivableCaption, receivableTitle, recapText, relanceText } from "../collect-model";
 
 const m = (value: string) => value as MoneyString;
 
@@ -56,5 +56,27 @@ describe("E13 — groupes par client", () => {
     expect(text.startsWith("Bonjour Fares,")).toBe(true);
     expect(text).toContain("Total à régler : 140,00 €");
     expect(text.match(/restants/g)).toHaveLength(2);
+  });
+
+  it("S09 sans créance : le récap des derniers documents, leur état, aucun total à régler", () => {
+    const now = new Date("2026-09-17T08:00:00.000Z");
+    const text = recapText(
+      "Élise Martin",
+      [
+        { origin: "DIRECT_SALE", status: "DELIVERED", orderedAt: "2026-08-03T10:00:00.000Z", total: m("120.00"), due: m("0.00") },
+        { origin: "ORDER", status: "PENDING", orderedAt: "2026-09-12T10:00:00.000Z", total: m("90.00"), due: null },
+      ],
+      now,
+    );
+    expect(text.split("\n")).toEqual([
+      "Bonjour Élise Martin,",
+      "",
+      "Petit récapitulatif des derniers achats :",
+      `– Vente du 3 août : ${formatEur(eurFromWire(m("120.00")))}, réglée`,
+      `– Commande du 12 sept. : ${formatEur(eurFromWire(m("90.00")))}, en attente`,
+      "",
+      "Rien à régler pour le moment. Merci beaucoup, à très vite !",
+      "Nuréa Parfums",
+    ]);
   });
 });

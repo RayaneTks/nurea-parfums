@@ -62,12 +62,21 @@ export const SEED = {
     ["e2e-marque-lattafa", "Oud Mood", 0, true],
   ] as const,
   customers: [
-    { id: seedEntityId("clientfares"), fullName: "Fares Benali", phoneE164: "+33612345678", snapchat: "fares.b" },
-    { id: seedEntityId("clientlina"), fullName: "Lina Haddad", phoneE164: "+33698765432", snapchat: null },
-    { id: seedEntityId("clientelise"), fullName: "Élise Martin", phoneE164: null, snapchat: "elise.m" },
-    { id: seedEntityId("clientyanis"), fullName: "Yanis Cherif", phoneE164: "+33700000001", snapchat: null },
-    { id: seedEntityId("clientsarah"), fullName: "Sarah Kaci", phoneE164: null, snapchat: null },
+    // « 06 12 34 00 00 » : « 06 12 » le trouve ; « 06 12 34 56 78 » reste libre pour la création par l'écran (J10).
+    { id: seedEntityId("clientfares"), fullName: "Fares Benali", phoneE164: "+33612340000", snapchat: "fares.b", whatsappE164: null },
+    { id: seedEntityId("clientlina"), fullName: "Lina Haddad", phoneE164: "+33698765432", snapchat: null, whatsappE164: null },
+    { id: seedEntityId("clientelise"), fullName: "Élise Martin", phoneE164: null, snapchat: "elise.m", whatsappE164: null },
+    { id: seedEntityId("clientyanis"), fullName: "Yanis Cherif", phoneE164: "+33700000001", snapchat: null, whatsappE164: null },
+    { id: seedEntityId("clientsarah"), fullName: "Sarah Kaci", phoneE164: null, snapchat: null, whatsappE164: null },
+    // J10 — fiches dédiées aux parcours Clients (06 PC-06) : créances et relance ; suppression refusée puis acceptée.
+    { id: seedEntityId("clientnora"), fullName: "Nora Belkacem", phoneE164: "+33611223344", snapchat: "nora.b", whatsappE164: "+33611223344" },
+    { id: seedEntityId("clientrachid"), fullName: "Rachid Mansour", phoneE164: null, snapchat: "rachid.m", whatsappE164: null },
   ],
+  /**
+   * Fiches sans document au-delà de la première page de E12 (50) : « Afficher plus » et la recherche qui repart de
+   * la première page s'éprouvent sur une vraie deuxième page. Rangées sous « Z », après toutes les autres.
+   */
+  fillerCustomers: 48,
   batch: { id: seedEntityId("lotmars"), name: "Commande de mars" },
   /** Visuels story déjà rangés (06 E16 zone 7 « 3 visuels ») : sur Khamrah, servis par `public/`. */
   storyVisuals: { perfume: "Khamrah", count: 3 },
@@ -128,6 +137,12 @@ export async function seedE2e(db: PrismaClient): Promise<void> {
     })),
   });
   await db.customer.createMany({ data: SEED.customers.map((c) => ({ ...c })) });
+  await db.customer.createMany({
+    data: Array.from({ length: SEED.fillerCustomers }, (_, index) => {
+      const rank = String(index + 1).padStart(2, "0");
+      return { id: seedEntityId(`zoeclient${rank}`), fullName: `Zoé Client ${rank}` };
+    }),
+  });
   await db.batch.create({
     data: { ...SEED.batch, status: "OPEN", expectedAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) },
   });
