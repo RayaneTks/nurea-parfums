@@ -37,6 +37,13 @@ export const DOCS = {
   toutC: uuid(27),
   offline: uuid(28),
   lecture: uuid(29),
+  // ── J10 — fiches client dédiées ──────────────────────────────────────────────
+  /** Nora Belkacem : une vente ancienne à 100 € dus et une commande confirmée à 60 € dus (160 € à encaisser). */
+  noraSale: uuid(40),
+  noraOrder: uuid(41),
+  /** Rachid Mansour : une commande confirmée soldée (bloque la suppression) et une vente livrée payée. */
+  rachidOrder: uuid(42),
+  rachidSale: uuid(43),
 } as const;
 
 /** Noms des clients de passage des parcours : chacun désigne une seule ligne dans les listes. */
@@ -280,6 +287,51 @@ export const DOCUMENT_SPECS: DocumentSpec[] = [
     expected: 4,
     lines: [{ perfume: "Sauvage", volumeMl: 50, quantity: 1, price: "150", ...cost("15000") }],
     payments: [{ kind: "DEPOSIT", amount: "50", pocket: "bank", day: -3 }],
+  },
+  // ── J10 — fiches client ────────────────────────────────────────────────────
+  {
+    id: DOCS.noraSale,
+    origin: "DIRECT_SALE",
+    status: "DELIVERED",
+    customer: { linked: "Nora" },
+    ordered: -45,
+    confirmed: -45,
+    delivered: -45,
+    lines: [{ perfume: "Khamrah", volumeMl: 80, quantity: 1, delivered: 1, price: "150", ...cost("26000") }],
+    payments: [{ kind: "BALANCE", amount: "50", pocket: "cash", day: -45 }],
+  },
+  {
+    id: DOCS.noraOrder,
+    origin: "ORDER",
+    status: "CONFIRMED",
+    customer: { linked: "Nora" },
+    ordered: -10,
+    confirmed: -10,
+    expected: 5,
+    lines: [{ perfume: "Khamrah", volumeMl: 50, quantity: 1, price: "80", ...cost("13000") }],
+    payments: [{ kind: "DEPOSIT", amount: "20", pocket: "cash", day: -10 }],
+  },
+  {
+    id: DOCS.rachidOrder,
+    origin: "ORDER",
+    status: "CONFIRMED",
+    customer: { linked: "Rachid" },
+    ordered: -3,
+    confirmed: -3,
+    expected: 2,
+    lines: [{ perfume: "Asad", volumeMl: 50, quantity: 1, price: "60", ...cost("10000") }],
+    payments: [{ kind: "DEPOSIT", amount: "60", pocket: "cash", day: -3 }],
+  },
+  {
+    id: DOCS.rachidSale,
+    origin: "DIRECT_SALE",
+    status: "DELIVERED",
+    customer: { linked: "Rachid" },
+    ordered: -30,
+    confirmed: -30,
+    delivered: -30,
+    lines: [{ perfume: "Yara", volumeMl: 80, quantity: 1, delivered: 1, price: "90", ...cost("15000") }],
+    payments: [{ kind: "BALANCE", amount: "90", pocket: "bank", day: -30 }],
   },
 ];
 

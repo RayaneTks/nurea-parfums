@@ -1,7 +1,9 @@
 "use client";
 
-import { Ban, Boxes, MoreHorizontal, UserPlus } from "lucide-react";
+import { Ban, Boxes, ChevronRight, MoreHorizontal, UserPlus } from "lucide-react";
+import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
+import { isNavigable, routes } from "@/app-shell/routes";
 import { useConfirm, useToast } from "@/app-shell/FeedbackProvider";
 import { useUndo } from "@/app-shell/UndoProvider";
 import { useAction } from "@/app-shell/hooks/useAction";
@@ -161,6 +163,15 @@ function DocumentView({ doc, pockets, batches, onEdit }: DocumentViewProps) {
         return result.ok;
       }}
     />
+  ) : doc.customer && isNavigable(routes.client(doc.customer.id)) ? (
+    // Nom d'une fiche liée : sa fiche client (06 S01 zone 1, §1.3 — une navigation, l'onglet Clients).
+    <Link
+      href={routes.client(doc.customer.id)}
+      className="admin-hit-target tap-scale inline-flex max-w-full items-center gap-1 rounded-[var(--admin-radius-md)] text-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]"
+    >
+      <span className="truncate">{name}</span>
+      <ChevronRight size={16} aria-hidden className="shrink-0" />
+    </Link>
   ) : (
     name
   );

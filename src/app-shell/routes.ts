@@ -56,11 +56,11 @@ export const ROUTE_SPECS = {
     jalon: "J9",
     etat: "provisoire",
   }),
-  clients: spec({ screen: "E12", pattern: "/admin/clients", params: ["q"], shell: true, jalon: "J10", etat: "provisoire" }),
+  clients: spec({ screen: "E12", pattern: "/admin/clients", params: ["q", "pages"], shell: true, jalon: "J10", etat: "livree" }),
   encaisser: spec({ screen: "E13", pattern: "/admin/encaisser", params: ["anciennete", "q"], shell: true, jalon: "J8", etat: "livree" }),
-  client: spec({ screen: "E14", pattern: "/admin/clients/[id]", params: [], shell: true, jalon: "J10", etat: "a-venir" }),
-  modifierClient: spec({ screen: "E20", pattern: "/admin/clients/[id]/modifier", params: [], shell: true, jalon: "J10", etat: "a-venir" }),
-  nouveauClient: spec({ screen: "E20", pattern: "/admin/clients/nouveau", params: ["nom"], shell: true, jalon: "J10", etat: "a-venir" }),
+  client: spec({ screen: "E14", pattern: "/admin/clients/[id]", params: ["pages"], shell: true, jalon: "J10", etat: "livree" }),
+  modifierClient: spec({ screen: "E20", pattern: "/admin/clients/[id]/modifier", params: [], shell: true, jalon: "J10", etat: "livree" }),
+  nouveauClient: spec({ screen: "E20", pattern: "/admin/clients/nouveau", params: ["nom"], shell: true, jalon: "J10", etat: "livree" }),
   catalogue: spec({
     screen: "E15",
     pattern: "/admin/catalogue",
@@ -150,9 +150,13 @@ export const routes = {
   }) => build("/admin/commandes", q ? { ...q, pages: q.pages && q.pages > 1 ? q.pages : undefined } : q),
   vendre: (q?: { mode?: "vente" | "commande"; client?: string; parfum?: string | number; depuis?: string }) =>
     build("/admin/vendre", q),
-  clients: (q?: { q?: string }) => build("/admin/clients", q),
+  /** « Afficher plus » : `pages` pages de 50 fiches affichées ; 1 ne s'écrit pas. */
+  clients: (q?: { q?: string; pages?: number }) =>
+    build("/admin/clients", q ? { ...q, pages: q.pages && q.pages > 1 ? q.pages : undefined } : q),
   encaisser: (q?: { anciennete?: 30; q?: string }) => build("/admin/encaisser", q),
-  client: (id: string) => `/admin/clients/${segment(id)}`,
+  /** « Afficher plus » de l'historique : `pages` pages de 20 documents ; 1 ne s'écrit pas. */
+  client: (id: string, q?: { pages?: number }) =>
+    build(`/admin/clients/${segment(id)}`, q?.pages && q.pages > 1 ? { pages: q.pages } : undefined),
   modifierClient: (id: string) => `/admin/clients/${segment(id)}/modifier`,
   nouveauClient: (q?: { nom?: string }) => build("/admin/clients/nouveau", q),
   catalogue: (q?: {

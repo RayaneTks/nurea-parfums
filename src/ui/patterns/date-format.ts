@@ -65,6 +65,8 @@ export type DateFormat =
   | "long"
   /** « 17 septembre 2026 » — année toujours. */
   | "full"
+  /** « septembre 2026 » — année toujours (« Client depuis mars 2025 », 06 E14). */
+  | "month"
   /** « 14 h 32 » */
   | "time"
   /** « 17 sept. · 14 h 32 » */
@@ -102,6 +104,8 @@ export function formatDate(date: Date, format: DateFormat, now: Date = new Date(
       return `${WEEKDAYS[p.weekday] ?? ""} ${p.day} ${month}${year}`;
     case "full":
       return `${p.day} ${month} ${p.year}`;
+    case "month":
+      return `${month} ${p.year}`;
     case "time":
       return time(p);
     case "datetime":

@@ -1,9 +1,10 @@
 import "server-only";
-import type {
-  CreateCustomerData,
-  CustomerFieldsData,
-  CustomerSummary,
-  UpdateCustomerData,
+import {
+  customerDeletionBlock,
+  type CreateCustomerData,
+  type CustomerFieldsData,
+  type CustomerSummary,
+  type UpdateCustomerData,
 } from "@/contracts/customers";
 import { DomainError } from "@/domain/errors";
 import type { Tx } from "@/server/db/transaction";
@@ -100,13 +101,8 @@ export async function lockCustomer(tx: Tx, id: string): Promise<{ id: string; fu
  */
 export async function assertCustomerDeletable(tx: Tx, id: string): Promise<void> {
   const open = await tx.db.saleDocument.count({ where: { customerId: id, status: { in: ["PENDING", "CONFIRMED"] } } });
-  if (open === 0) return;
-  throw new DomainError(
-    "CONFLICT",
-    open === 1
-      ? "Impossible : 1 commande en cours. Livre-la ou annule-la d'abord."
-      : `Impossible : ${open} commandes en cours. Livre-les ou annule-les d'abord.`,
-  );
+  const reason = customerDeletionBlock(open);
+  if (reason !== null) throw new DomainError("CONFLICT", reason);
 }
 
 /** Suppression : les documents liés passent en `SetNull` et gardent leur snapshot de nom. */

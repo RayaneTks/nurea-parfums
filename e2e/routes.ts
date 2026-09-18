@@ -2,7 +2,7 @@ import { ROUTE_SPECS, routes, withSheet, type RouteName } from "../src/app-shell
 import { SESSION_HINT_COOKIE } from "../src/app-shell/session-hint";
 import { formatEur, parseEurInput } from "../src/domain/money";
 import { DOCS, PASSING } from "./fixtures/documents";
-import { SEED, seedPerfumeId } from "./fixtures/seed";
+import { SEED, seedEntityId, seedPerfumeId } from "./fixtures/seed";
 
 /**
  * Inventaire des écrans et des sheets LIVRÉS, consommé par `layout-invariants.spec.ts` (07 J4 ;
@@ -75,6 +75,36 @@ const DOCUMENT_SHEET_CASES: ScreenCase[] = ([
 /** Champs du formulaire parfum éprouvés un par un, clavier ouvert (07 J11 : « clavier ouvert sur chaque champ »). */
 const PERFUME_FIELDS = ["Nom du parfum", "Prix du 80 ml", "Coût du 80 ml en dinars", "Taux du 80 ml"];
 
+/** Fiches du jeu e2e par prénom (J10). */
+const customerId = (firstName: string) => {
+  const found = SEED.customers.find((customer) => customer.fullName.startsWith(`${firstName} `));
+  if (!found) throw new Error(`e2e/routes : client « ${firstName} » absent du jeu.`);
+  return found.id;
+};
+
+/**
+ * Champs du formulaire client éprouvés un par un, clavier ouvert (07 J10 : « E20 clavier ouvert »). « Nom* » : le
+ * libellé d'un champ requis porte son astérisque (`FormField required`), que `getByLabel` lit avec le texte.
+ */
+const CUSTOMER_FIELDS = ["Nom*", "Téléphone", "Snap", "WhatsApp", "Adresse", "Notes"];
+
+/** J10 — Clients (06 E12, E14, E20) : liste et ses états, fiche dans chacun de ses cas, formulaire clavier ouvert. */
+const CUSTOMER_SCREENS: ScreenCase[] = [
+  { screen: "E12", route: "clients", label: "liste A–Z, recherche clavier ouvert", url: routes.clients(), shell: true, keyboardFields: ["Rechercher un client"] },
+  { screen: "E12", route: "clients", label: "recherche « 06 12 »", url: routes.clients({ q: "06 12" }), shell: true },
+  { screen: "E12", route: "clients", label: "« Afficher plus » : deux pages", url: routes.clients({ pages: 2 }), shell: true },
+  { screen: "E12", route: "clients", label: "vide de filtre", url: routes.clients({ q: "introuvable" }), shell: true },
+  { screen: "E14", route: "client", label: "fiche avec créance, contacts, Achète souvent", url: routes.client(customerId("Nora")), shell: true },
+  { screen: "E14", route: "client", label: "fiche soldée : Partager le récap", url: routes.client(customerId("Élise")), shell: true },
+  { screen: "E14", route: "client", label: "fiche sans moyen de contact, commande en cours", url: routes.client(customerId("Sarah")), shell: true },
+  { screen: "E14", route: "client", label: "fiche sans document", url: routes.client(seedEntityId("zoeclient01")), shell: true },
+  { screen: "E14", route: "client", label: "fiche introuvable", url: routes.client(seedEntityId("clientinconnu")), shell: true },
+  { screen: "E20", route: "nouveauClient", label: "nouveau client", url: routes.nouveauClient(), shell: true, keyboardFields: CUSTOMER_FIELDS },
+  { screen: "E20", route: "nouveauClient", label: "nom pré-rempli, alerte d'homonyme", url: routes.nouveauClient({ nom: "fares benali" }), shell: true },
+  { screen: "E20", route: "modifierClient", label: "modifier une fiche", url: routes.modifierClient(customerId("Fares")), shell: true, keyboardFields: CUSTOMER_FIELDS },
+  { screen: "E20", route: "modifierClient", label: "fiche introuvable", url: routes.modifierClient(seedEntityId("clientinconnu")), shell: true },
+];
+
 export const SCREENS: ScreenCase[] = [
   {
     screen: "E18",
@@ -105,7 +135,7 @@ export const SCREENS: ScreenCase[] = [
   { screen: "E13", route: "encaisser", label: "Plus de 30 jours, recherche clavier ouvert", url: routes.encaisser({ anciennete: 30, q: "ya" }), shell: true, keyboardFields: ["Rechercher un client"] },
   ...DOCUMENT_SHEET_CASES,
   { screen: "E11", route: "vendre", label: "Vendre provisoire", url: routes.vendre(), shell: true },
-  { screen: "E12", route: "clients", label: "Clients provisoire", url: routes.clients(), shell: true },
+  ...CUSTOMER_SCREENS,
   // J11 — Catalogue (06 §3.5, 07 J11 : trois onglets, filtres actifs, fiches, formulaires clavier ouvert).
   { screen: "E15", route: "catalogue", label: "onglet Parfums", url: routes.catalogue(), shell: true, keyboardFields: ["Rechercher dans le catalogue"] },
   { screen: "E15", route: "catalogue", label: "Parfums, filtre stock bas venu d'un lien", url: routes.catalogue({ stock: "bas" }), shell: true },
@@ -189,6 +219,28 @@ export const SHEETS: SheetCase[] = [
     url: routes.encaisser(),
     open: { tap: "Relancer", layer: "drawer" },
     keyboardFields: ["Message"],
+  },
+  // J10 — depuis la fiche client (06 E14) : S09 dans ses deux gestes, S02 « Tout encaisser » du CTA.
+  {
+    sheet: "S09",
+    label: "Relancer depuis la fiche client",
+    url: routes.client(customerId("Nora")),
+    open: { tap: "Relancer", layer: "drawer" },
+    keyboardFields: ["Message"],
+  },
+  {
+    sheet: "S09",
+    label: "Partager le récap depuis la fiche client",
+    url: routes.client(customerId("Élise")),
+    open: { tap: "Partager le récap", layer: "drawer" },
+    keyboardFields: ["Message"],
+  },
+  {
+    sheet: "S02",
+    label: "Tout encaisser depuis la fiche client",
+    url: routes.client(customerId("Nora")),
+    open: { tap: `Encaisser ${euros("160")}`, layer: "drawer" },
+    keyboardFields: ["Montant encaissé"],
   },
 ];
 

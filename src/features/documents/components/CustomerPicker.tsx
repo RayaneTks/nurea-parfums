@@ -1,7 +1,9 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useToast } from "@/app-shell/FeedbackProvider";
+import { isNavigable, routes } from "@/app-shell/routes";
 import { useAction } from "@/app-shell/hooks/useAction";
 import { useReadRoute } from "@/app-shell/hooks/useReadRoute";
 import type { SearchResultsDTO } from "@/contracts/search";
@@ -82,6 +84,7 @@ export function CustomerPicker({ open, onOpenChange, onSelect, nested = true }: 
 /** S10 — création en ligne : nom (pré-rempli par la recherche), téléphone facultatif, alerte d'homonyme. */
 function CustomerCreateForm({ ctx, options }: { ctx: SelectCreateContext<string>; options: readonly SelectOption[] }) {
   const { showToast } = useToast();
+  const router = useRouter();
   const [id] = useState(newId);
   const [fullName, setFullName] = useState(ctx.query);
   const [phone, setPhone] = useState(/^[\d\s+.]+$/.test(ctx.query) ? ctx.query : "");
@@ -89,7 +92,13 @@ function CustomerCreateForm({ ctx, options }: { ctx: SelectCreateContext<string>
   const create = useAction(createCustomerAction, {
     errors: "inline",
     onSuccess: (customer) => {
-      showToast({ type: "success", message: `Fiche créée : ${customer.fullName}` });
+      const complete = routes.modifierClient(customer.id);
+      // « Compléter » (06 S10) : la fiche créée nom seul se complète en 1 tap (01 §4.10 : elle ne l'était jamais).
+      showToast({
+        type: "success",
+        message: `Fiche créée : ${customer.fullName}`,
+        ...(isNavigable(complete) ? { actionLabel: "Compléter", onAction: () => router.push(complete) } : {}),
+      });
       ctx.select(customer.id);
     },
   });

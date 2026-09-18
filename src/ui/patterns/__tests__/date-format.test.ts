@@ -12,6 +12,7 @@ describe("formatDate — Europe/Paris, typographie française", () => {
     expect(formatDate(at, "short", now)).toBe("17 sept.");
     expect(formatDate(at, "long", now)).toBe("jeudi 17 septembre");
     expect(formatDate(at, "full", now)).toBe("17 septembre 2026");
+    expect(formatDate(at, "month", now)).toBe("septembre 2026");
     expect(formatDate(at, "time", now)).toBe(`14${NBSP}h${NBSP}32`);
     expect(formatDate(at, "datetime", now)).toBe(`17 sept. · 14${NBSP}h${NBSP}32`);
   });
