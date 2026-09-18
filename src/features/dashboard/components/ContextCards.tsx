@@ -1,7 +1,8 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, Share, SquarePlus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { usePwaInstall } from "@/app-shell/pwa/install";
 import type { FirstRunDTO } from "@/contracts/stats";
 import { NEWS_SEEN_KEY, firstRunDone } from "@/contracts/stats";
 import { Button } from "@/ui/primitives/Button";
@@ -14,9 +15,12 @@ import { Text } from "@/ui/primitives/Text";
 /**
  * E01 zone 2 — la carte contextuelle, UNE seule à la fois, par priorité (06 E01) :
  *
- *  1. « Nouveautés » — les changements d'habitude tranchés le 17/09/2026 (00-README « Décisions qui
+ *  1. « Installer l'app » — tant que la gestion tourne dans un onglet : consigne de partage sur
+ *     Safari iOS, invite `beforeinstallprompt` ailleurs (04 §14.1, friction F-4.7-03). En premier
+ *     parce que tout le reste (plein écran, écran de lancement, hors ligne) en dépend.
+ *  2. « Nouveautés » — les changements d'habitude tranchés le 17/09/2026 (00-README « Décisions qui
  *     changent le quotidien du gérant »). Affichée jusqu'à « J'ai compris », puis plus jamais.
- *  2. « Pour commencer » — le vide de départ (PC-12) : trois étapes cochées automatiquement.
+ *  3. « Pour commencer » — le vide de départ (PC-12) : trois étapes cochées automatiquement.
  *
  * Fermeture mémorisée sur L'APPAREIL (`localStorage`) : elle ne concerne que ce téléphone, jamais la base
  * (rien à écrire côté serveur pour un accusé de lecture).
@@ -69,6 +73,7 @@ type ContextCardsProps = {
 export function ContextCards({ state, steps }: ContextCardsProps) {
   const [mounted, setMounted] = useState(false);
   const [newsSeen, setNewsSeen] = useState(true);
+  const install = usePwaInstall();
 
   useEffect(() => {
     setNewsSeen(readDismissed(NEWS_KEY));
@@ -76,6 +81,40 @@ export function ContextCards({ state, steps }: ContextCardsProps) {
   }, []);
 
   if (!mounted) return null;
+
+  if (install.mode) {
+    return (
+      <section aria-label="Installer l'app" data-card="installation">
+        <Card padding={4} className="flex flex-col gap-3">
+          <SectionHeader
+            level={2}
+            title="Installer l'app"
+            description="Sur l'écran d'accueil, elle s'ouvre en plein écran et démarre tout de suite."
+          />
+          {install.mode === "ios" ? (
+            /* Les deux icônes sont celles du menu iOS : c'est ce que l'œil cherche, pas le mot. */
+            <ol className="flex flex-col gap-2">
+              <li className="admin-type-body flex items-center gap-2 text-[var(--admin-text)]">
+                <Share size={18} aria-hidden className="shrink-0 text-[var(--admin-accent)]" />
+                <span className="min-w-0">Touche « Partager » en bas de Safari.</span>
+              </li>
+              <li className="admin-type-body flex items-center gap-2 text-[var(--admin-text)]">
+                <SquarePlus size={18} aria-hidden className="shrink-0 text-[var(--admin-accent)]" />
+                <span className="min-w-0">Choisis « Sur l&apos;écran d&apos;accueil ».</span>
+              </li>
+            </ol>
+          ) : (
+            <Button variant="secondary" fullWidth onClick={install.install}>
+              Installer
+            </Button>
+          )}
+          <Button variant="ghost" fullWidth onClick={install.dismiss}>
+            Ne plus proposer
+          </Button>
+        </Card>
+      </section>
+    );
+  }
 
   if (!newsSeen) {
     // Le marqueur de test vit sur une balise DOM : les props des briques de `src/ui` sont typées et fermées,

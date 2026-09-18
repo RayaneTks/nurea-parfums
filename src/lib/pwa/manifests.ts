@@ -69,11 +69,19 @@ export function getAdminWebManifest(options: { nameSuffix?: string } = {}): Meta
     lang: "fr",
     dir: "ltr",
     icons: adminIcons,
-    // Raccourcis d'appui long sur l'icône (Android / desktop ; ignoré par iOS).
+    /**
+     * Raccourcis d'appui long sur l'icône (Android / desktop ; ignorés par iOS), 04 §14.1 et 06 §1.6 :
+     * les trois gestes quotidiens, aux routes françaises livrées. Plus de `/admin/ordres` (redirigée,
+     * donc un aller-retour de plus à chaque lancement) ni de « À traiter », qui n'est pas du
+     * vocabulaire canonique (06 §1.7).
+     *
+     * `/admin/commandes/nouvelle` est l'adresse de la prise de commande (04 §2.3) ; elle est présentée
+     * par `/admin/vendre?mode=commande`, le raccourci garde l'adresse, pas la présentation.
+     */
     shortcuts: [
-      { name: "Encaisser une vente", short_name: "Vendre", url: "/admin/vendre" },
-      { name: "Nouvelle commande", short_name: "Commande", url: "/admin/ordres/new" },
-      { name: "Commandes à traiter", short_name: "À traiter", url: "/admin/ordres?filter=ready" },
+      { name: "Vendre", short_name: "Vendre", url: "/admin/vendre" },
+      { name: "Nouvelle commande", short_name: "Commande", url: "/admin/commandes/nouvelle" },
+      { name: "Encaisser", short_name: "Encaisser", url: "/admin/encaisser" },
     ],
   };
 }

@@ -1419,9 +1419,9 @@ Règles :
 
 - **Manifeste** `GET /api/pwa/admin` (`src/lib/pwa/manifests.ts`) : `id`, `start_url`, `scope` = `/admin`, `standalone`, portrait, `background_color` `#7B0B1D`, `theme_color` `#F2F2F7`, icônes 192/512 + maskable. Raccourcis mis à jour : Vendre `/admin/vendre`, Nouvelle commande `/admin/commandes/nouvelle`, Encaisser `/admin/encaisser`.
 - **Metadata** de `app/admin/layout.tsx` : noindex, `appleWebApp` (capable, titre « Nuréa Gestion », `statusBarStyle: "default"`), clé historique `apple-mobile-web-app-capable` (iOS < 17), `themeColor` `#F2F2F7` (heure iOS lisible), `viewportFit: "cover"`, zoom autorisé, `colorScheme: "light"`.
-- **12 splash iOS exacts** et icônes générés par `node scripts/build-admin-pwa-assets.mjs` dans `public/pwa/admin/`. Correction : la liste des cibles vit dans **un** fichier `src/lib/pwa/splash-targets.json`, lu par le script et par `admin-splash.ts` (fin du « doit rester aligné », 01 §4.7).
+- **12 splash iOS exacts** et icônes générés par `node scripts/build-admin-pwa-assets.mjs` dans `public/pwa/admin/`. Correction : la liste des cibles vit dans **un** fichier `src/lib/pwa/splash-targets.json`, lu par le script et par `admin-splash.ts` (fin du « doit rester aligné », 01 §4.7). *Précisé à J16* : le script est **idempotent** — il compare les octets avant d'écrire et ne touche à rien si rien n'a changé, sans quoi le critère « régénère à l'identique » ne serait pas vérifiable (`git status` montrait dix-sept binaires réécrits).
 - **Enregistrement** du service worker en production seulement, après `load`, désenregistrement automatique en développement.
-- **Carte d'installation** iOS dans le flux de l'Accueil, dismiss persisté (05 §3.4).
+- **Carte d'installation** dans le flux de l'Accueil, dismiss persisté (05 §3.4) : consigne de partage sur Safari iOS, invite `beforeinstallprompt` ailleurs (06 E01 zone 2). *Décidé à J16* : la carte est rendue par `ContextCards` (`src/features/dashboard/components/`), pas par un composant `PwaInstallHint` du shell comme l'annonçait 06 E01 « Composants » — c'est `ContextCards` qui arbitre « UNE carte à la fois, par priorité », et une seconde carte montée ailleurs par le shell rendrait cet arbitrage impossible à tenir. La détection (`beforeinstallprompt`, standalone, Safari iOS) reste dans le shell : `src/app-shell/pwa/install.ts`, `usePwaInstall()`.
 
 ### 14.2 Politique du service worker (inchangée dans son principe)
 
@@ -1441,7 +1441,8 @@ Règles :
 - Chaque déploiement change les octets du script : le navigateur installe la nouvelle version, qui **attend** (plus de `skipWaiting` inconditionnel).
 - Le registrar détecte la version en attente et affiche un toast discret « Nouvelle version prête » avec « Recharger » (message `skip-waiting` → `controllerchange` → rechargement). Ignoré, il s'applique au prochain lancement à froid — jamais de rechargement imposé en pleine vente.
 - À l'activation : suppression de tous les caches d'une autre version (les chunks des anciens déploiements ne s'accumulent plus), `clients.claim()`.
-- Test unitaire : le script rendu ne contient aucune règle de mise en cache de `/api/` ni de navigation, et se parse (`new Function`).
+- Test unitaire : le script rendu ne contient aucune règle de mise en cache de `/api/` ni de navigation, et se parse (`new Function`). *Précisé à J16* : le test ne lit pas le script, il l'**exécute** dans un faux `ServiceWorkerGlobalScope` (`src/app-shell/pwa/__tests__/service-worker.test.ts`) et éprouve la politique sur de vraies requêtes — un `cache.put` glissé dans la branche des navigations échoue là où une expression régulière passerait.
+- *Précisé à J16* — « jamais pendant une saisie » est une fonction pure, `screenIsQuiet()` (`src/app-shell/pwa/quiet.ts`) : un brouillon du composeur en cours, un champ focalisé ou une couche ouverte (sheet, dialogue, palette) repoussent le toast, qui est reproposé toutes les 4 s jusqu'à ce que l'écran soit calme.
 - CLAUDE.md (« `public/admin-sw.js` ») est mis à jour au jalon correspondant (07).
 
 ### 14.4 Page hors ligne autonome
@@ -1477,10 +1478,12 @@ Règles héritées de l'existant, mesurées et documentées par l'audit (01 §4.
 | 8 | **Vignettes ≤ 256 px**, qualité 60, `fetchPriority="low"` | srcset 1080/1920 évités | `nureaAdminThumbLoader` |
 | 9 | **Charges utiles versionnées** : sélecteur de ligne cachable par le navigateur tant que le catalogue ne change pas | N requêtes tarifaires unitaires, cache module jamais invalidé | `GET /api/admin/picker?v=` (§3.5) |
 | 10 | **Recherche sur instantanés en mémoire** : clients, parfums, documents récents filtrés par `cleNom` et normalisation téléphone, 6 résultats par groupe | Volumes < 10⁴ lignes : quelques millisecondes, insensible aux accents partout, sans extension SQL. À revoir au-delà de 10⁴ clients ou documents (`pg_trgm` + `unaccent`) | `src/server/search/queries.ts` |
-| 11 | **Chargement différé** du graphe (recharts), de la palette et du code de conversion d'image (`next/dynamic` / import au premier usage) | Bundle initial des écrans terrain | Features concernées |
+| 11 | **Chargement différé** du graphe, de la palette et du code de conversion d'image (`next/dynamic` / import au premier usage) | Bundle initial des écrans terrain | Features concernées ; vérifié par `tests/architecture/chargement-differe.test.ts` |
 | 12 | **Pas de N+1** : libellés du journal de Trésorerie résolus par jointures (FK réelles, 03 §4.5) | Résolution par lots de l'existant, simplifiée | `treasury/queries.ts` |
 | 13 | **Région** : fonctions Vercel `cdg1`, au plus près de la base | Commit `d1516f9` | `vercel.json` (inchangé) |
 | 14 | **Pool** : pas de `connection_limit=1` | Sérialiserait les blocs parallèles | `DATABASE_URL` (§4.5) |
+
+*Précisions de J16 sur la règle 11.* Le graphe n'utilise plus `recharts` du tout (SVG écrit à la main, 05 §7 n°23) : il reste différé parce que `BarChartCanvas` arrive par `next/dynamic`. La **palette** était montée en dur par le shell, donc présente sur tous les écrans ; elle est désormais montée au PREMIER appel (⌘K ou tap sur « Rechercher ») — un `dynamic()` rendu en permanence aurait cherché son morceau dès l'arrivée sur l'écran, ce qui ne diffère rien. La **conversion d'image** passe par un `import()` dans le geste d'envoi. Le contrôle est un parcours du graphe d'imports **statiques** depuis la coque et les quatre écrans terrain, pas une mesure de paquet : une mesure bouge à chaque montée de version de Next et ne nomme pas le fichier fautif.
 
 Garde-fous de performance :
 
