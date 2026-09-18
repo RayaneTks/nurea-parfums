@@ -49,12 +49,12 @@ html.admin-route-root,
   --admin-accent-subtle: rgba(123, 11, 29, 0.12);
   --admin-accent-ring: rgba(123, 11, 29, 0.30);
   --admin-on-accent: #FFFFFF;
-  --admin-success: #1E7D45;
-  --admin-success-bg: rgba(30, 125, 69, 0.10);
+  --admin-success: #1B723F;
+  --admin-success-bg: rgba(27, 114, 63, 0.10);
   --admin-success-subtle: rgba(47, 122, 80, 0.10);
   --admin-success-border: rgba(47, 122, 80, 0.22);
-  --admin-warning: #A35B12;
-  --admin-warning-bg: rgba(163, 91, 18, 0.10);
+  --admin-warning: #965411;
+  --admin-warning-bg: rgba(150, 84, 17, 0.10);
   --admin-warning-subtle: rgba(160, 102, 46, 0.10);
   --admin-warning-border: rgba(160, 102, 46, 0.22);
   --admin-danger: #B72938;

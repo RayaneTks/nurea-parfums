@@ -47,10 +47,13 @@ export type SheetCase = {
   url: string;
   /**
    * Ouvre la sheet sur l'écran chargé : la recherche du header, ou un toucher sur un contrôle de l'écran
-   * (nom accessible exact) puis la couche attendue (`drawer` : sheet vaul ; `viewer` : visionneuse).
+   * (nom accessible exact) puis la couche attendue (`drawer` : sheet vaul ; `viewer` : visionneuse ;
+   * `dialog` : `ConfirmDialog`, qui est un dialogue Radix et non une sheet — S18).
    * Plusieurs touchers : une sheet ouverte depuis une autre (fiche `?doc=` → menu → S03), dans l'ordre.
    */
-  open: "search" | { tap: string | RegExp | readonly OpenStep[]; role?: "button" | "link"; layer: "drawer" | "viewer" };
+  open:
+    | "search"
+    | { tap: string | RegExp | readonly OpenStep[]; role?: "button" | "link"; layer: "drawer" | "viewer" | "dialog" };
   /** `open: "search"` : saisie tapée dans la palette après l'ouverture (résultats et actions de S17). */
   query?: string;
   keyboardFields?: string[];
@@ -514,11 +517,45 @@ export const SHEETS: SheetCase[] = [
     keyboardFields: ["Nom du client", "Contact"],
   },
   {
+    // Le composeur propose le lot ouvert le plus récent : son NOM dépend du jeu e2e, pas de l'écran.
+    // Écrit en dur (« Commande de mars »), ce cas se cassait dès qu'un jalon ajoutait un lot plus récent.
     sheet: "S07",
     label: "lot depuis le composeur",
     url: routes.vendre({ mode: "commande" }),
-    open: { tap: "Lot : Commande de mars", layer: "drawer" },
+    open: { tap: /^Lot : /, layer: "drawer" },
     keyboardFields: ["Chercher ou nommer un lot"],
+  },
+  // J16 — les deux créations EN LIGNE (06 S10, S11) : elles n'avaient aucun cas, alors que ce sont les
+  // seules sheets à deux étages (un sous-formulaire dans un sélecteur, clavier ouvert par-dessus).
+  {
+    sheet: "S10",
+    label: "créer un client en ligne, depuis S06",
+    url: routes.vendre({ mode: "commande" }),
+    open: {
+      tap: ["Choisir le client", { fill: "Nom, téléphone, Snap", text: "yasmine kerrache" }, "Créer « yasmine kerrache »"],
+      layer: "drawer",
+    },
+    keyboardFields: ["Nom", "Téléphone"],
+  },
+  {
+    sheet: "S11",
+    label: "créer un lot en ligne, depuis S07",
+    url: routes.vendre({ mode: "commande" }),
+    // `SelectSheet` ne propose la création QUE pendant une recherche (écart avec 06 S07, qui la veut
+    // « en pied » de la liste) : on nomme d'abord le lot, ce qui est de toute façon le geste réel.
+    open: {
+      tap: [/^Lot : /, { fill: "Chercher ou nommer un lot", text: "commande de décembre" }, "Nouveau lot « commande de décembre »"],
+      layer: "drawer",
+    },
+    keyboardFields: ["Nom du lot"],
+  },
+  // J16 — S18 : la confirmation est un dialogue Radix posé en bas, pas une sheet. Elle a ses propres
+  // pièges d'affichage (description longue, clavier levé, boutons qui sortent de l'écran, 05 §3.2).
+  {
+    sheet: "S18",
+    label: "confirmation « Clôturer le lot », ouverte depuis le menu de E06",
+    url: routes.lot(SEED.batch.id),
+    open: { tap: ["Plus d'actions", "Clôturer le lot"], layer: "dialog" },
   },
   {
     sheet: "S08",

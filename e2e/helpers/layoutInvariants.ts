@@ -217,6 +217,72 @@ export async function collectLayoutViolations(page: Page): Promise<{
         }
       }
 
+      // ─── Nom accessible ─────────────────────────────────────────────────
+      /*
+       * 05 §6 : « aria-label sur les contrôles à icône seule », et le critère de 07 J16 « aucun
+       * contrôle sans nom accessible ». VoiceOver annonce « bouton » et rien d'autre quand le nom
+       * manque : le gérant, une main sur le guidon, n'a aucun moyen de savoir ce qu'il touche.
+       *
+       * La règle est éprouvée ÉCRAN PAR ÉCRAN parce que c'est là qu'elle se perd : la primitive
+       * `Button iconOnly` exige `ariaLabel` par son type, mais un `<button>` écrit à la main, un
+       * `ListRow` sans texte ou une icône seule dans une sheet passent entre les mailles.
+       *
+       * Approximation de l'algorithme accname, volontairement permissive : `aria-labelledby`,
+       * `aria-label`, `<label>` associé, texte propre (`sr-only` compris), `alt` d'une image,
+       * `<title>` d'un SVG, `placeholder`, `title`. Seul un contrôle qui n'a RIEN échoue.
+       */
+      const textOf = (el: Element | null): string => (el?.textContent ?? "").replace(/\s+/g, " ").trim();
+      const accessibleName = (el: Element): string => {
+        const labelledBy = el.getAttribute("aria-labelledby");
+        if (labelledBy) {
+          const referenced = labelledBy
+            .split(/\s+/)
+            .map((id) => textOf(document.getElementById(id)))
+            .filter(Boolean)
+            .join(" ");
+          if (referenced) return referenced;
+        }
+        const label = (el.getAttribute("aria-label") ?? "").trim();
+        if (label) return label;
+        const field = el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+        if (field.labels && field.labels.length > 0) {
+          const fromLabels = Array.from(field.labels).map(textOf).filter(Boolean).join(" ");
+          if (fromLabels) return fromLabels;
+        }
+        if (el.tagName === "INPUT") {
+          const input = el as HTMLInputElement;
+          if (["button", "submit", "reset"].includes(input.type) && input.value.trim()) return input.value.trim();
+        }
+        const own = textOf(el);
+        if (own) return own;
+        const alt = el.querySelector("img[alt]")?.getAttribute("alt")?.trim();
+        if (alt) return alt;
+        const svgTitle = textOf(el.querySelector("svg > title"));
+        if (svgTitle) return svgTitle;
+        const placeholder = (el.getAttribute("placeholder") ?? "").trim();
+        if (placeholder) return placeholder;
+        return (el.getAttribute("title") ?? "").trim();
+      };
+
+      const named = Array.from(
+        document.querySelectorAll(
+          'a[href], button:not(:disabled), input:not([type="hidden"]), select, textarea,' +
+            ' [role="button"], [role="link"], [role="option"], [role="radio"], [role="tab"],' +
+            ' [role="switch"], [role="checkbox"], [role="menuitem"]',
+        ),
+      );
+      for (const el of named) {
+        if (!isRendered(el)) continue;
+        // `aria-hidden` : le contrôle n'existe pas pour VoiceOver, il n'a pas de nom à porter.
+        if (el.closest('[aria-hidden="true"]')) continue;
+        if (accessibleName(el)) continue;
+        violations.push({
+          rule: "sans-nom-accessible",
+          detail: "Contrôle sans nom accessible : VoiceOver n'annoncerait que son rôle.",
+          selector: describe(el),
+        });
+      }
+
       return { violations, warnings };
     },
     { touchFail: TOUCH_FAIL_PX, touchWarn: TOUCH_WARN_PX },

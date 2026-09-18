@@ -1,9 +1,9 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState, type ReactNode } from "react";
 import { AppHeader } from "./AppHeader";
-import { CommandPalette } from "./CommandPalette";
 import { FeedbackProvider } from "./FeedbackProvider";
 import { DRAFT_KEYS } from "./hooks/draft-store";
 import { useDraftPresence } from "./hooks/useDraft";
@@ -21,6 +21,7 @@ import {
 } from "./navigation";
 import { PreprodBanner } from "./PreprodBanner";
 import { PullToRefresh } from "./PullToRefresh";
+import { ServiceWorkerRegistrar } from "./pwa/ServiceWorkerRegistrar";
 import { withoutSheet } from "./routes";
 import { markSessionHint } from "./session-hint";
 import { SheetRegistryProvider, useSheetRegistry } from "./SheetRegistry";
@@ -69,12 +70,31 @@ export function AdminShell({ preprod = false, paletteSheets, children }: AdminSh
 
 const DRAFT_BADGE: TabBadge = { label: "brouillon en cours" };
 
+/**
+ * La palette est montée par le shell, donc présente sur TOUS les écrans — mais elle n'est ouverte que
+ * par un geste (04 §15 règle 11). Son code (dialogue Radix, briques de résultat, formats de date et de
+ * montant) n'a rien à faire dans le paquet initial des écrans terrain : il arrive au premier ⌘K ou au
+ * premier tap sur « Rechercher ». `ssr: false` : elle n'existe que fermée tant qu'on ne la demande pas.
+ */
+const CommandPalette = dynamic(() => import("./CommandPalette").then((m) => m.CommandPalette), { ssr: false });
+
 function ShellFrame({ preprod, paletteSheets, children }: { preprod: boolean; paletteSheets?: ReactNode; children: ReactNode }) {
   const pathname = usePathname() ?? "";
   const { navigate, scrollRoot, onLocation } = useShellNavigation();
   const sheets = useSheetRegistry();
   const [searchOpen, setSearchOpen] = useState(false);
+  /*
+   * La palette n'est MONTÉE qu'au premier appel : un `dynamic()` rendu en permanence irait chercher
+   * son morceau dès l'arrivée sur l'écran, ce qui ne diffère rien du tout. Une fois montée, elle le
+   * reste — son animation de sortie a besoin de l'être.
+   */
+  const [paletteMounted, setPaletteMounted] = useState(false);
   const hasDraft = useDraftPresence(DRAFT_KEYS.vendre);
+
+  const togglePalette = useCallback((open?: boolean) => {
+    setPaletteMounted(true);
+    setSearchOpen((current) => open ?? !current);
+  }, []);
 
   // Une session valide est ouverte sur cet appareil : l'écran de connexion saura parler d'expiration.
   useEffect(() => markSessionHint(), []);
@@ -84,12 +104,12 @@ function ShellFrame({ preprod, paletteSheets, children }: { preprod: boolean; pa
     const onKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        setSearchOpen((open) => !open);
+        togglePalette();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [togglePalette]);
 
   const pressTab = useCallback(
     (tab: TabId) => {
@@ -138,11 +158,12 @@ function ShellFrame({ preprod, paletteSheets, children }: { preprod: boolean; pa
   return (
     <div className="admin-theme admin-paint admin-app-container">
       <ViewportService />
+      <ServiceWorkerRegistrar />
       <Suspense fallback={null}>
         <LocationTracker onLocation={onLocation} />
       </Suspense>
       {preprod ? <PreprodBanner /> : null}
-      <AppHeader onOpenSearch={() => setSearchOpen(true)} />
+      <AppHeader onOpenSearch={() => togglePalette(true)} />
       <div className="relative flex min-h-0 flex-1 flex-col">
         <NavigationProgress />
         <PullToRefresh scrollRef={scrollRoot} enabled={allowsPullToRefresh(pathname)} />
@@ -155,7 +176,7 @@ function ShellFrame({ preprod, paletteSheets, children }: { preprod: boolean; pa
         </div>
       </div>
       <TabBar onTabPress={pressTab} badges={hasDraft ? { vendre: DRAFT_BADGE } : undefined} />
-      <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+      {paletteMounted ? <CommandPalette open={searchOpen} onOpenChange={togglePalette} /> : null}
       {paletteSheets}
     </div>
   );

@@ -13,8 +13,10 @@ import {
 import { MediaGallery, type MediaItem } from "@/ui/patterns/MediaGallery";
 import { Card } from "@/ui/primitives/Card";
 import { depositSummary, storyFileName } from "./catalogue-model";
-import { refusalReason } from "./image-convert";
 import { useImageUpload } from "./useImageUpload";
+
+/** Même raison qu'en tête de `useImageUpload` : la conversion d'image n'arrive qu'au premier envoi (04 §15 règle 11). */
+const imageConvert = () => import("./image-convert");
 
 type PerfumeMediaPanelProps = {
   perfumeId: number;
@@ -77,7 +79,7 @@ export function PerfumeMediaPanel({ perfumeId, perfumeName, brandName, media }: 
       try {
         const uploaded = await uploadStory(file, perfumeId);
         const result = await add.run({ perfumeId, ...uploaded });
-        if (!result.ok) throw new Error(refusalReason(result.error));
+        if (!result.ok) throw new Error((await imageConvert()).refusalReason(result.error));
         added += 1;
       } catch (cause) {
         refused.push(cause instanceof Error ? lowerFirst(cause.message.replace(/\.$/, "")) : "envoi impossible");
