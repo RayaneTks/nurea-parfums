@@ -205,7 +205,7 @@ Le fil de reprise pour un agent qui arrive est `PASSATION.md`, à la racine.
 | E-2 | Documentation du dépôt au niveau du code + `08-RECETTE.md` | ✅ J16 |
 | E-3 | Fusionner `fix/vitrine-slug-maintenance` (L1 / L2) dans `main` avant la bascule | ⏳ prête, non fusionnée |
 | E-4 | Job CI `layout` (reste de J4) | ✅ job `ecrans` de `.github/workflows/refonte.yml` |
-| E-5 | Répétition générale sur la préproduction, dès que G-1 et G-2 sont faits | ⏳ bloqué par G-1 |
+| E-5 | Répétition générale | ✅ **pour la part « données »** (22/09, `07` §2.4) : procédure du jour J jouée commande par commande sur la copie des données réelles, retour arrière compris et bascule rejouée derrière. ⏳ **reste** : la jouer sur une préproduction aux données réelles (bloqué par G-1) et la part Vercel (B1, B9, B14, bloqué par G-2) |
 | E-6 | Essayer `vercel deploy --skip-domain` puis `promote` (point ouvert de 07) | ⏳ bloqué par G-2 |
 | E-7 | Vérifier que la build ne touche pas la base (point ouvert de 07) | ⏳ |
 | E-8 | Passer la recette `08` avec le gérant, remplir la feuille de passage §6 | ⏳ bloqué par G-1, G-4 |

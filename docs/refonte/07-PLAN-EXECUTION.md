@@ -367,6 +367,39 @@ Conséquences : en production avant la bascule, un build de la refonte échoue a
 
 **Ce que la répétition ne remplace pas** : `tests/db/reprise.test.ts` (J2) couvre des cas **construits** (A, B, C de 03 §7.5 et chaque cas particulier de 03 §7.7 et de §2.2), y compris ceux qui n'existent pas encore dans la copie réelle ; la répétition couvre ce que les données réelles contiennent **vraiment**.
 
+**Répétition générale du 22/09/2026 (J17), sur la copie des données réelles** — la procédure du jour J
+jouée avec **les commandes exactes de §1.6**, une par une, retour arrière compris. Cible : la base de
+répétition locale, restaurée depuis l'instantané de production du 17/09 (35 documents, 281 parfums,
+1 177 lignes).
+
+| Étape | Commande | Durée | Résultat |
+|---|---|---|---|
+| — | restauration de l'ancien monde (`repetition:refresh --sans-migration`) | 51,3 s | 19 tables, comptages = instantané |
+| B2b | `migration:instantane` | 1 s | 19 tables, empreintes SHA-256 |
+| B4 | `migration:reference` | 1 s | Trésorerie 1 546,00 € · Encaissé 2 050,00 € · À encaisser 825,00 € |
+| B5 | `migration:sql refonte_expand` | 3 s | appliquée et enregistrée |
+| B6 | `migration:reprise --apply` | 1 s | rapport R1–R4 |
+| B7 | `migration:sql refonte_contract` | 3 s | appliquée et enregistrée |
+| B8 | `migration:verify` | 1 s | **14 contrôles verts** (C1–C5, V1–V4, V6–V9, V11) |
+| §1.7 | `migration:rollback` | **52 s** | **R1–R5 verts**, référence recalculée identique au centime |
+| B4→B8 | la bascule **rejouée après le retour arrière** | 9 s | 14 contrôles verts ; `reference.json` et `rapport.json` **identiques** à ceux du premier passage (hors horodatages) |
+
+Trois enseignements :
+
+- **la fenêtre est courte, le retour arrière est le poste lourd** : 9 à 11 s pour toute la bascule des
+  données, contre 52 s pour le retour arrière — dont 51 s à rejouer les 24 dossiers de migration un par
+  un (le démarrage du CLI Prisma, ≈ 2,1 s par dossier). Sur Supabase, la latence réseau s'ajoute à
+  chaque aller-retour : ces durées sont un plancher, pas une prévision ;
+- **le retour arrière n'a besoin d'aucun fichier** : il a lu son bloc `mesures` dans
+  `legacy."MigrationReference"`, exactement comme il le fera le jour J ;
+- **une seconde tentative de bascule après un retour arrière fonctionne**, et rend au centime le même
+  rapport. C'est ce que garantit le `CREATE SCHEMA IF NOT EXISTS legacy` de l'expand (le retour arrière
+  vide `legacy` sans le supprimer) — sans cet amendement, la seconde tentative échouerait.
+
+**Ce que cette répétition générale ne couvre pas**, et qui appartient au gérant (§1.5, G-1/G-2) : le gel
+et la promotion Vercel (B1, B9, B14), l'étape B3b (tests joués à distance sur la préproduction), et les
+budgets de perception sur son iPhone. La préproduction en ligne existe mais porte des données fictives.
+
 ### 2.5 Vérifications chiffrées
 
 **Tolérance : 0,00 €.** La consigne « à l'euro près » est tenue au centime : tous les montants sont des `numeric` exacts à deux décimales (03 §4.8), un écart d'un centime est un défaut, pas un arrondi.
