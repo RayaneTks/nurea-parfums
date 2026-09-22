@@ -486,6 +486,18 @@ sur la révision exacte qui sera déployée, et passe aux 24 lignes de §1.
 - [ ] `npm run check:invariants -- --confirm-host <hôte de préproduction>`
 - [ ] Répétition générale de la reprise verte de bout en bout (07 §2.4)
 
+> **État au 22/09/2026 sur `refonte/integration`** (à refaire sur la révision du jour de la séance,
+> mais le préalable est tenu aujourd'hui) : `typecheck` et `lint` propres ; **808** unitaires et
+> d'architecture ; **487** sur base réelle ; **513** invariants d'affichage ; **93** parcours ;
+> répétition générale de 07 §2.4 verte, **retour arrière compris**. Chacun des noms de test cités
+> dans la colonne « Preuve » de §3 a été confronté au dépôt : **ils désignent tous un fichier qui
+> existe** (les autres mots entre accents graves de cette colonne sont des identifiants — en-tête,
+> paramètre d'URL, étiquette de cache, nom d'invariant —, pas des fichiers).
+>
+> Restent donc, pour la séance, **les gestes humains seuls** : §1(a), §1(b), §1(c) et les parcours
+> chronométrés de §4. Deux d'entre eux attendent encore le gérant (G-1 : une préproduction aux
+> **données réelles** — celle en ligne est fictive ; G-4 : son iPhone).
+
 **Puis, dans l'ordre :**
 
 - [ ] §1(a) — 6 gestes sur l'iPhone
