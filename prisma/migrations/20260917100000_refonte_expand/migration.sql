@@ -19,7 +19,10 @@
 BEGIN;
 
 -- ─── Schéma des anciennes tables et des traces de reprise ───────────────────────────
-CREATE SCHEMA legacy;
+-- IF NOT EXISTS : le retour arrière (07 §1.7) VIDE `legacy` sans le supprimer — ses droits par
+-- défaut restent posés. Une seconde tentative de bascule, après un retour arrière, retrouve donc un
+-- schéma `legacy` vide, et l'expand doit s'y appliquer tel quel.
+CREATE SCHEMA IF NOT EXISTS legacy;
 
 -- Correspondance ancienne ligne → nouvelle ligne (noms fixés par 07 §2.2).
 -- Une Sale fusionnée dans le document de sa commande : ('Sale', <Sale.id>, 'SaleDocument', <Order.id>, 'paire').

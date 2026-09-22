@@ -14,12 +14,15 @@
  *    (équivalent ensembliste de json_populate_record, par paquets), tables dans l'ordre des clés
  *    étrangères ; `_prisma_migrations` est REMPLACÉE par celle de la source (copie fidèle) ; puis
  *    séquences remises à niveau (`setval`) et comptages vérifiés.
- * Toutes les fonctions refusent une cible non locale, de production, ou mal nommée (garde-cible.ts).
+ * Toutes les fonctions passent par une garde de cible (garde-cible.ts), `assertCibleLocale` par
+ * défaut : elle refuse une cible non locale, de production, ou mal nommée. Le retour arrière
+ * (`scripts/migration/rollback.ts`) réutilise les étapes 2 et 3 sur la PRODUCTION et leur passe donc
+ * `gardeHoteConfirme(<hôte>)` — il ne détruit aucune base, il vide des schémas (07 §1.7).
  */
 import path from "node:path";
 import { ident, lignes, ouvrirBase } from "../../migration/lib/base";
 import { MIGRATIONS_DIR, listMigrationFolders } from "../../migration/lib/prisma-cli";
-import { assertCibleLocale, urlMaintenance } from "./garde-cible";
+import { assertCibleLocale, urlMaintenance, type Garde } from "./garde-cible";
 import { lignesDeTable, type Manifeste } from "./instantane";
 import { lancerPrisma } from "./processus";
 
@@ -63,8 +66,12 @@ export async function supprimerBase(url: string): Promise<void> {
   }
 }
 
-export function appliquerAncienSchema(url: string, journal: (ligne: string) => void = () => {}): void {
-  const cible = assertCibleLocale(url, USAGE);
+export function appliquerAncienSchema(
+  url: string,
+  journal: (ligne: string) => void = () => {},
+  garde: Garde = assertCibleLocale,
+): void {
+  const cible = garde(url, USAGE);
   for (const nom of dossiersAncienSchema()) {
     const fichier = path.join(MIGRATIONS_DIR, nom, "migration.sql");
     const execution = lancerPrisma(["db", "execute", "--schema", "prisma/schema.prisma", "--file", fichier], cible.url);
@@ -110,8 +117,13 @@ export interface BilanChargement {
   historiqueAbsent: string[];
 }
 
-export async function chargerInstantane(url: string, dossier: string, manifeste: Manifeste): Promise<BilanChargement> {
-  const cible = assertCibleLocale(url, USAGE);
+export async function chargerInstantane(
+  url: string,
+  dossier: string,
+  manifeste: Manifeste,
+  garde: Garde = assertCibleLocale,
+): Promise<BilanChargement> {
+  const cible = garde(url, USAGE);
   const db = await ouvrirBase(cible.url);
   try {
     const ordre = await ordreDesTables(db);
