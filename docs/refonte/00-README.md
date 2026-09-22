@@ -1,10 +1,11 @@
 # Refonte Nuréa Gestion — Dossier pilote
 
-> **Statut** : **J0 à J16 livrés et fusionnés** dans `refonte/integration` — suites complètes
-> vertes (808 unitaires, 473 sur base réelle, 513 invariants d'affichage, 79 parcours). Reste au
-> chantier : le **retour arrière** de la bascule et le parcours de première utilisation (J17, en
-> cours), puis la répétition générale. La reprise des données a été répétée avec succès sur la
-> copie réelle. Démarré le 17 septembre 2026.
+> **Statut** : **J0 à J17 livrés et fusionnés** dans `refonte/integration` — suites complètes
+> vertes (808 unitaires et d'architecture, 487 sur base réelle, 513 invariants d'affichage,
+> 93 parcours). Le **retour arrière** de la bascule est éprouvé, sur base de test comme sur la copie
+> des données réelles ; le parcours de **première utilisation** (PC-12) a son test de bout en bout.
+> Reste au chantier : la répétition générale, puis la recette avec le gérant. La reprise des données
+> a été répétée avec succès sur la copie réelle. Démarré le 17 septembre 2026.
 > **Il reste, avant la bascule, des actions qui n'appartiennent pas à l'exécutant** : voir
 > « Ce qui reste avant la bascule » plus bas. Fil de reprise d'un agent : `PASSATION.md` (racine).
 > **Objet** : refonte complète, from scratch, de l'application de gestion (`/admin`),
@@ -95,7 +96,8 @@ Branche de travail : **`refonte/integration`** (la production reste sur `main`, 
 | J13 Lots | ✅ | `7fffb10` — E05 (zone « À rattacher »), E06, E21, S13 unique, dépenses datables. Marge d'un lot 2 taps, dépense 4 taps, ranger un document 3 taps. Trois bugs trouvés au passage (chiffre du lot toujours à zéro, paquet client qui embarquait le serveur, libellé de champ pollué par l'astérisque). |
 | J14 Accueil, récap du jour, statistiques | ✅ | E01 définitif (zones streamées, chaque alerte ouvre exactement l'ensemble qu'elle compte), E02, E07, cartes « Nouveautés » et « Pour commencer » (remontées de J15). `tableauDeBord()` à 4,4 ms sur dix fois le volume réel. Récap du jour lisible à 0 tap, détaillé en 1 ; compta du mois en 1 tap. Défaut hérité corrigé : collision d'identifiants du jeu e2e (J10/J12) qui empêchait toute la suite de démarrer. |
 | J15 Réglages et nouveautés | ✅ | `5d89ae7` — E08 Réglages (poche par défaut, taux DZD, ordre des poches S21, version, déconnexion) et actions rapides dans la recherche (« Encaisser xx € », « Vendre »). Cartes « Nouveautés » et « Pour commencer », récap du jour, relances : livrés à J14. **Reste** : relectures de textes (gabarit de relance, carte « Nouveautés », confirmations) — tranchées par l'agent, à confronter à l'usage en préproduction (08 §1c). |
-| J16 Polissage, PWA, recette | 🔄 presque | **Fusionnés** : documentation du dépôt remise au niveau du code et `08-RECETTE.md` (146 capacités, 135 couvertes par un test, 24 gestes humains décrits) ; PWA (service worker rendu par route et versionné, page hors ligne autonome, carte d'installation, 12 écrans de lancement régénérés à l'identique), performance (`tableauDeBord()` 5,1 ms sur dix fois le volume), accessibilité outillée (aucun contrôle sans nom accessible sur 513 cas d'écran ; 34 couples de couleurs vérifiés, **deux corrigés** — les badges « Livré » et « À encaisser » tombaient à 4,06:1 dans leur fond teinté). **Reste** : retour arrière de la bascule et parcours de première utilisation (en cours), puis répétition générale et recette avec le gérant. |
+| J16 Polissage, PWA, recette | 🔄 presque | **Fusionnés** : documentation du dépôt remise au niveau du code et `08-RECETTE.md` (146 capacités, 135 couvertes par un test, 24 gestes humains décrits) ; PWA (service worker rendu par route et versionné, page hors ligne autonome, carte d'installation, 12 écrans de lancement régénérés à l'identique), performance (`tableauDeBord()` 5,1 ms sur dix fois le volume), accessibilité outillée (aucun contrôle sans nom accessible sur 513 cas d'écran ; 34 couples de couleurs vérifiés, **deux corrigés** — les badges « Livré » et « À encaisser » tombaient à 4,06:1 dans leur fond teinté). **Reste** : rien — le retour arrière et PC-12 sont passés à J17. |
+| J17 Retour arrière et première utilisation | ✅ | `669255f` — le travail de J17 était écrit et **jamais exécuté** : il l'est. `tests/db/rollback.test.ts` 14/14 (chaîne complète du jour J puis retour arrière, plus le cas de l'instantané altéré) après deux correctifs de requêtes de contrôle ; retour arrière rejoué sur la **copie des données réelles** — R1 à R5 verts, référence recalculée identique au centime (Trésorerie 1 546,00 €, Encaissé 2 050,00 €, À encaisser 825,00 €, vitrine 99/9/42), **51,4 s**. Deux manques comblés : `npm run migration:instantane` (le jour J n'avait aucune commande pour produire la source du retour arrière) et `e2e/parcours/premiere-utilisation.spec.ts` (PC-12, **16 taps, 13 s** sur base vide, harnais `Mobile-premiere`). 07 §1.6, §1.7, §2.2, §6.3, §6.4 et 08 §1c/§3 amendés : ils décrivaient un retour arrière en `pg_restore`/`psql` inexécutable sur ce poste, et disaient PC-12 sans test. |
 | Fusion `main` | ✅ | `9b371e2` — écart déjà intégré (01 §3.11), arbre de la refonte conservé. |
 
 **Base de données locale des tests.** Docker Desktop ne démarre pas sur ce poste. Les tests
