@@ -3,7 +3,44 @@
 > **Pour l'agent qui prend la suite.** Ce fichier est le point d'entrée : il dit où en est le
 > chantier, ce qui reste, comment travailler sur ce poste et quels pièges ont déjà coûté du
 > temps. La conception complète, elle, vit dans `docs/refonte/`.
-> Dernière mise à jour : 22 septembre 2026 (fin de J17).
+> Dernière mise à jour : 22 septembre 2026 — **la bascule est faite**.
+
+## 0. La bascule a eu lieu (22/09/2026, ~15 h 40)
+
+**La refonte est en production.** `main` la porte, la base de production est au schéma cible, et
+l'ancienne gestion n'est plus servie. Ce qui suit est l'état réel, pas un plan.
+
+| | |
+|---|---|
+| Tag de bascule | `bascule-2026-09-22` |
+| Dernier commit d'avant | tag `avant-refonte` (`f3c0344`) |
+| Déploiement de retour (P0) | `nurea-parfums-6zlbktll5` |
+| Instantané de retour arrière | `migration-artifacts/2026-09-22/bascule/instantane` (19 tables, 1 209 lignes) |
+| Durée de la migration | **20 s** — référence 2 s, expand 5 s, reprise 5 s, contract 5 s, vérifications 3 s |
+
+Chiffres, identiques au centime : Trésorerie **1 611,00 €**, Encaissé **2 185,00 €**,
+À encaisser **680,00 €**, Marge nette 1 253,56 € → **1 253,55 €** (un centime d'arrondi, `03` §4.8).
+Les quatorze contrôles chiffrés verts, les trois invariants de l'argent verts sur la production,
+les treize routes répondent comme attendu, la vitrine rend les mêmes comptages qu'avant
+(207 visuels, 108 entrées de marque).
+
+**Deux écarts au plan de `07` §1.6, assumés :**
+
+1. **Pas de gel (étape B1).** Le déploiement M — ancienne app en maintenance — n'a jamais abouti :
+   lancé depuis le worktree, il est d'abord parti créer un projet Vercel parasite (`nurea-fix`, à
+   supprimer), puis est resté bloqué 20 minutes à l'envoi. Le gérant étant le seul à écrire et
+   présent à ce moment, la fenêtre a été couverte par une consigne orale plutôt que par un 503. La
+   migration a duré 20 s.
+2. **Le schéma `legacy` est CONSERVÉ.** Le gérant a demandé de « virer les anciennes bases » ; c'est
+   le jalon N, prévu à **J+30**, et c'est le chemin de retour. Il se supprime en une commande le jour
+   où plus personne n'en veut.
+
+**Ce qui reste, et qui n'a pas été fait :** la recette de `08` (146 lignes) n'a pas été passée, les
+parcours chronométrés sur l'iPhone non plus. La bascule a été faite sur demande explicite du gérant,
+qui a maintenu sa décision après avoir été averti. À faire maintenant : la surveillance de `07` §1.8
+(`npm run check:invariants` chaque matin pendant sept jours, lecture des journaux Vercel), et les
+deux arbitrages déjà tranchés de `07` §1.8 à appliquer dans l'app (coût 0 € sur la ligne Grand Soir ;
+ne pas annuler l'écart historique de 100 € tout seul).
 
 ## 1. Le chantier en trois phrases
 
