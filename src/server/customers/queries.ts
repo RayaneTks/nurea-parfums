@@ -1,233 +1,185 @@
-import { prisma } from "@/lib/db/prisma";
-import Decimal from "decimal.js-light";
-
-export type CustomerListRow = {
-  id: string;
-  fullName: string;
-  phoneE164: string | null;
-  snapchat: string | null;
-  whatsappE164: string | null;
-  ordersCount: number;
-  /// Solde dû en € (positif = client doit, négatif = trop-perçu).
-  outstandingBalance: string;
-  lastOrderAt: string | null;
-};
-
-export type CustomerSearchRow = {
-  id: string;
-  fullName: string;
-  phoneE164: string | null;
-};
-
-export type CustomerDetail = CustomerListRow & {
-  address: string | null;
-  notes: string | null;
-  snapchat: string | null;
-  whatsappE164: string | null;
-  createdAt: string;
-};
-
-/**
- * Liste clients triée par nom, paginée par cursor (id).
- */
-export async function listCustomers(params: {
-  q?: string;
-  cursor?: string;
-  limit?: number;
-}): Promise<{ rows: CustomerListRow[]; nextCursor: string | null }> {
-  const limit = Math.max(1, Math.min(params.limit ?? 50, 100));
-  const where = params.q
-    ? {
-        OR: [
-          { fullName: { contains: params.q, mode: "insensitive" as const } },
-          { phoneE164: { contains: params.q, mode: "insensitive" as const } },
-          { snapchat: { contains: params.q, mode: "insensitive" as const } },
-        ],
-      }
-    : {};
-
-  const customers = await prisma.customer.findMany({
-    where,
-    take: limit + 1,
-    ...(params.cursor ? { cursor: { id: params.cursor }, skip: 1 } : {}),
-    orderBy: { fullName: "asc" },
-    select: {
-      id: true,
-      fullName: true,
-      phoneE164: true,
-      snapchat: true,
-      whatsappE164: true,
-      orders: {
-        select: {
-          id: true,
-          orderedAt: true,
-        },
-        orderBy: { orderedAt: "desc" },
-      },
-    },
-  });
-
-  const hasMore = customers.length > limit;
-  const sliced = hasMore ? customers.slice(0, limit) : customers;
-  const last = sliced[sliced.length - 1];
-  const nextCursor = hasMore && last ? last.id : null;
-
-  if (sliced.length === 0) return { rows: [], nextCursor };
-
-  const ids = sliced.map((c) => c.id);
-  const balances = await computeBalancesForCustomers(ids);
-
-  const rows: CustomerListRow[] = sliced.map((c) => ({
-    id: c.id,
-    fullName: c.fullName,
-    phoneE164: c.phoneE164,
-    snapchat: c.snapchat,
-    whatsappE164: c.whatsappE164,
-    ordersCount: c.orders.length,
-    outstandingBalance: balances.get(c.id) ?? "0.00",
-    lastOrderAt: c.orders[0]?.orderedAt.toISOString() ?? null,
-  }));
-
-  return { rows, nextCursor };
-}
+import "server-only";
+import {
+  CUSTOMERS_PAGE_SIZE,
+  CUSTOMER_HISTORY_PAGE_SIZE,
+  parseCustomersParams,
+  parsePages,
+  type CustomerDirectoryEntry,
+  type CustomerHistoryRowDTO,
+  type CustomerListRowDTO,
+  type CustomerSheetDTO,
+  type CustomerSummary,
+  type CustomersListDTO,
+  type FrequentPerfumeDTO,
+} from "@/contracts/customers";
+import { phoneDigitVariants, searchTerms } from "@/contracts/search";
+import { isEngaged } from "@/domain/document-status";
+import { isTextId } from "@/domain/ids";
+import { eurFromDb, toWire, type MoneyString } from "@/domain/money";
+import { formatPhoneNational } from "@/domain/phone";
+import { isVolumeMl } from "@/domain/sale-line";
+import { cached } from "@/server/cache/cached";
+import { aEncaisserParClient } from "@/server/chiffres";
+import { defineQuery } from "@/server/core/define-query";
+import {
+  customerHistorySql,
+  customerStatsSql,
+  customersListSql,
+  frequentPerfumesSql,
+  type CustomerHistoryRow,
+  type CustomerStatsRow,
+  type CustomersListRow,
+  type FrequentPerfumeRow,
+} from "@/server/customers/sql";
+import { db } from "@/server/db/client";
 
 /**
- * Clients les plus récemment actifs — proposés avant toute frappe.
+ * Lectures du module clients pour les écrans (06 E12, E14, E20 ; 04 §2.1). Le dû d'une fiche n'est JAMAIS calculé
+ * ici : il vient de `aEncaisserParClient()` (badge) et, sur la fiche, de `aEncaisser(null, id)` et
+ * `aEncaisserDetail()` appelés par le bloc — le même chiffre que l'écran À encaisser (02 §6, 04 §6).
  *
- * Un sélecteur qui n'affiche rien tant qu'on n'a pas tapé oblige à connaître
- * le nom exact avant de chercher, et pousse à recréer une fiche qui existe
- * déjà. Le tri est celui de la dernière commande, à défaut de la création.
+ * Cache `gestion` (invalidé par toute écriture, dont celles des fiches et des documents) : lire ses écritures
+ * relit la liste et la fiche à jour (04 §10.2).
  */
-export async function recentCustomers(limit = 8): Promise<CustomerSearchRow[]> {
-  return prisma.customer.findMany({
-    take: Math.max(1, Math.min(limit, 20)),
-    orderBy: [{ orders: { _count: "desc" } }, { createdAt: "desc" }],
-    select: { id: true, fullName: true, phoneE164: true },
-  });
+
+const money = (value: string): MoneyString => toWire(eurFromDb(value));
+
+const SUMMARY_SELECT = {
+  id: true,
+  fullName: true,
+  phoneE164: true,
+  whatsappE164: true,
+  snapchat: true,
+  address: true,
+  notes: true,
+} as const;
+
+/** « 06 12 34 56 78 », à défaut « @fares.b » : la légende d'une fiche dans une liste (06 E12). */
+function contactOf(row: { phoneE164: string | null; snapchat: string | null }): string | null {
+  if (row.phoneE164) return formatPhoneNational(row.phoneE164);
+  return row.snapchat ? `@${row.snapchat}` : null;
 }
+
+// ── E12 — Liste ────────────────────────────────────────────────────────────────
+
+const cachedCustomersList = cached(
+  "customers.list",
+  "gestion",
+  async (q: string, pages: number): Promise<CustomersListDTO> => {
+    const search = {
+      terms: searchTerms(q.replace(/(^|\s)@+/g, "$1")),
+      phone: phoneDigitVariants(q),
+    };
+    const [rows, all] = await Promise.all([
+      db.$queryRaw<CustomersListRow[]>(customersListSql({ search, limit: pages * CUSTOMERS_PAGE_SIZE })),
+      db.customer.count(),
+    ]);
+    const total = rows[0]?.total ?? 0;
+    return {
+      q,
+      pages,
+      rows: rows.map((row) => ({ id: row.id, fullName: row.fullName, letter: row.letter, contact: contactOf(row), due: null })),
+      total,
+      all,
+      hasMore: total > rows.length,
+    };
+  },
+);
 
 /**
- * Recherche pour autocomplete. Compact, max 20 résultats.
+ * E12 — une fenêtre de la liste A–Z (`pages` × 50 fiches), recherche nom / téléphone normalisé / Snap / WhatsApp
+ * appliquée, et le badge « X € dû » de chaque fiche. Arguments bruts de l'URL : `parseCustomersParams` les borne.
  */
-export async function searchCustomers(q: string, limit = 10): Promise<CustomerSearchRow[]> {
-  const normalized = q.trim();
-  if (normalized.length === 0) return [];
-  const rows = await prisma.customer.findMany({
-    where: {
-      OR: [
-        { fullName: { contains: normalized, mode: "insensitive" } },
-        { phoneE164: { contains: normalized, mode: "insensitive" } },
-        { snapchat: { contains: normalized, mode: "insensitive" } },
-      ],
-    },
-    take: Math.max(1, Math.min(limit, 20)),
-    orderBy: { fullName: "asc" },
-    select: { id: true, fullName: true, phoneE164: true },
-  });
-  return rows;
-}
+export const customersList = defineQuery(async (q: string | null = null, pages: string | null = null): Promise<CustomersListDTO> => {
+  const params = parseCustomersParams({ q, pages });
+  const [list, dues] = await Promise.all([cachedCustomersList(params.q, params.pages), aEncaisserParClient()]);
+  return { ...list, rows: list.rows.map((row): CustomerListRowDTO => ({ ...row, due: dues[row.id] ?? null })) };
+});
 
-export async function getCustomerById(id: string): Promise<CustomerDetail | null> {
-  const c = await prisma.customer.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      fullName: true,
-      phoneE164: true,
-      snapchat: true,
-      whatsappE164: true,
-      address: true,
-      notes: true,
-      createdAt: true,
-      orders: {
-        select: { id: true, orderedAt: true },
-        orderBy: { orderedAt: "desc" },
-      },
-    },
-  });
-  if (!c) return null;
+// ── E14 — Fiche ────────────────────────────────────────────────────────────────
 
-  const balances = await computeBalancesForCustomers([c.id]);
+const RECAP_LIMIT = 5;
+const FREQUENT_LIMIT = 3;
+
+function historyRow(row: CustomerHistoryRow): CustomerHistoryRowDTO {
   return {
-    id: c.id,
-    fullName: c.fullName,
-    phoneE164: c.phoneE164,
-    snapchat: c.snapchat,
-    whatsappE164: c.whatsappE164,
-    address: c.address,
-    notes: c.notes,
-    createdAt: c.createdAt.toISOString(),
-    ordersCount: c.orders.length,
-    outstandingBalance: balances.get(c.id) ?? "0.00",
-    lastOrderAt: c.orders[0]?.orderedAt.toISOString() ?? null,
+    id: row.id,
+    origin: row.origin,
+    status: row.status,
+    orderedAt: row.orderedAt.toISOString(),
+    itemCount: row.itemCount,
+    total: money(row.total),
+    due: isEngaged(row.status) ? money(row.due) : null,
   };
 }
 
-/**
- * Calcule solde dû par client (sum order totals des commandes actives - sum payments).
- *
- * Active = PENDING ou READY (pas DELIVERED, pas CANCELLED).
- *
- * Une commande livrée est considérée close (le BALANCE final aura été enregistré
- * comme PaymentTransaction avant la transition vers DELIVERED).
- */
-async function computeBalancesForCustomers(ids: readonly string[]): Promise<Map<string, string>> {
-  if (ids.length === 0) return new Map();
-
-  // Total commandé par client (sur commandes actives uniquement).
-  const orders = await prisma.order.findMany({
-    where: {
-      customerId: { in: [...ids] },
-      status: { in: ["PENDING", "READY"] },
-    },
-    select: {
-      id: true,
-      customerId: true,
-      items: { select: { unitPrice: true, quantity: true } },
-    },
-  });
-
-  const totalByCustomer = new Map<string, Decimal>();
-  const orderIdsByCustomer = new Map<string, string[]>();
-
-  for (const o of orders) {
-    if (!o.customerId) continue;
-    const subtotal = o.items.reduce<Decimal>((acc, it) => {
-      const price = new Decimal(it.unitPrice.toString());
-      return acc.plus(price.times(it.quantity));
-    }, new Decimal(0));
-
-    totalByCustomer.set(o.customerId, (totalByCustomer.get(o.customerId) ?? new Decimal(0)).plus(subtotal));
-    const list = orderIdsByCustomer.get(o.customerId) ?? [];
-    list.push(o.id);
-    orderIdsByCustomer.set(o.customerId, list);
-  }
-
-  // Total payé (DEPOSIT + BALANCE - REFUND) sur les commandes actives.
-  const allOrderIds = orders.map((o) => o.id);
-  const payments = allOrderIds.length
-    ? await prisma.paymentTransaction.findMany({
-        where: { orderId: { in: allOrderIds } },
-        select: { orderId: true, type: true, amount: true },
-      })
-    : [];
-
-  const paidByOrder = new Map<string, Decimal>();
-  for (const p of payments) {
-    const sign = p.type === "REFUND" ? -1 : 1;
-    const amount = new Decimal(p.amount.toString()).times(sign);
-    paidByOrder.set(p.orderId, (paidByOrder.get(p.orderId) ?? new Decimal(0)).plus(amount));
-  }
-
-  const result = new Map<string, string>();
-  for (const id of ids) {
-    const total = totalByCustomer.get(id) ?? new Decimal(0);
-    const orderIds = orderIdsByCustomer.get(id) ?? [];
-    const paid = orderIds.reduce<Decimal>(
-      (acc, oid) => acc.plus(paidByOrder.get(oid) ?? new Decimal(0)),
-      new Decimal(0),
-    );
-    result.set(id, total.minus(paid).toFixed(2));
-  }
-  return result;
+function frequentRow(row: FrequentPerfumeRow): FrequentPerfumeDTO {
+  return {
+    perfumeId: row.perfumeId,
+    name: row.name,
+    brandName: row.brandName,
+    times: row.times,
+    volumeMl: isVolumeMl(row.volumeMl) ? row.volumeMl : null,
+  };
 }
+
+const cachedCustomerSheet = cached(
+  "customers.sheet",
+  "gestion",
+  async (id: string, pages: number): Promise<CustomerSheetDTO | null> => {
+    const [customer, [stats], history, recap, frequent] = await Promise.all([
+      db.customer.findUnique({ where: { id }, select: { ...SUMMARY_SELECT, createdAt: true } }),
+      db.$queryRaw<CustomerStatsRow[]>(customerStatsSql(id)),
+      db.$queryRaw<CustomerHistoryRow[]>(customerHistorySql(id, { limit: pages * CUSTOMER_HISTORY_PAGE_SIZE })),
+      db.$queryRaw<CustomerHistoryRow[]>(customerHistorySql(id, { limit: RECAP_LIMIT, activeOnly: true })),
+      db.$queryRaw<FrequentPerfumeRow[]>(frequentPerfumesSql(id, FREQUENT_LIMIT)),
+    ]);
+    if (!customer) return null;
+    const { createdAt, ...summary } = customer;
+    const firstAt = stats?.firstAt ?? null;
+    const since = firstAt && firstAt < createdAt ? firstAt : createdAt;
+    const historyCount = stats?.historyCount ?? 0;
+    return {
+      customer: summary,
+      since: since.toISOString(),
+      documentCount: stats?.documentCount ?? 0,
+      historyCount,
+      lastPurchaseAt: stats?.lastPurchaseAt?.toISOString() ?? null,
+      openOrders: stats?.openOrders ?? 0,
+      history: { rows: history.map(historyRow), pages, hasMore: historyCount > history.length },
+      frequent: frequent.map(frequentRow),
+      recap: recap.map(historyRow),
+    };
+  },
+);
+
+/**
+ * E14 — la fiche d'un client : coordonnées, « client depuis », documents non annulés, dernier achat, commandes en
+ * cours (garde de suppression), historique complet par pages de 20, « Achète souvent », récap. `null` : identifiant
+ * illisible ou fiche supprimée (« Cette fiche n'existe plus »).
+ */
+export const customerSheet = defineQuery(async (id: string, pages: string | null = null): Promise<CustomerSheetDTO | null> => {
+  if (!isTextId(id)) return null;
+  return cachedCustomerSheet(id, parsePages(pages));
+});
+
+// ── E20 — Formulaire ───────────────────────────────────────────────────────────
+
+/** E20 en modification : la fiche telle qu'elle est en base, hors cache (on la modifie). `null` : supprimée. */
+export const customerForm = defineQuery(async (id: string): Promise<CustomerSummary | null> => {
+  if (!isTextId(id)) return null;
+  return db.customer.findUnique({ where: { id }, select: SUMMARY_SELECT });
+});
+
+const cachedDirectory = cached("customers.directory", "gestion", async (): Promise<CustomerDirectoryEntry[]> =>
+  db.customer.findMany({
+    orderBy: [{ fullName: "asc" }, { id: "asc" }],
+    select: { id: true, fullName: true, phoneE164: true, whatsappE164: true },
+  }),
+);
+
+/**
+ * E20 — toutes les fiches (nom, numéros) : l'alerte d'homonyme (« Fares Benali existe déjà ») et le numéro déjà
+ * pris se disent AVANT l'enregistrement ; le serveur garde le dernier mot (`assertPhoneFree`).
+ */
+export const customerDirectory = defineQuery(() => cachedDirectory());

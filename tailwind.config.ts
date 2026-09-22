@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import plugin from "tailwindcss/plugin";
 import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
@@ -38,46 +39,14 @@ export default {
           border: "var(--nurea-border)",
           "border-strong": "var(--nurea-border-strong)",
         },
-        /* Admin — app nuréa-admin (Vite) */
-        "nurea-bordeaux": "#7b0b1d",
-        "nurea-bordeaux-light": "#9d1c2e",
-        "ios-bg": "#f2f2f7",
-        "ios-card": "#ffffff",
-        admin: {
-          bg: "var(--admin-bg)",
-          surface: "var(--admin-surface)",
-          "surface-muted": "var(--admin-surface-muted)",
-          "surface-hover": "var(--admin-surface-hover)",
-          text: "var(--admin-text)",
-          muted: "var(--admin-text-muted)",
-          subtle: "var(--admin-text-subtle)",
-          border: "var(--admin-border)",
-          "border-hover": "var(--admin-border-hover)",
-          accent: "var(--admin-accent)",
-          "accent-hover": "var(--admin-accent-hover)",
-          "accent-subtle": "var(--admin-accent-subtle)",
-          "accent-ring": "var(--admin-accent-ring)",
-          cuivre: "var(--admin-cuivre)",
-          "cuivre-subtle": "var(--admin-cuivre-subtle)",
-          success: "var(--admin-success)",
-          "success-subtle": "var(--admin-success-subtle)",
-          "success-border": "var(--admin-success-border)",
-          warning: "var(--admin-warning)",
-          "warning-subtle": "var(--admin-warning-subtle)",
-          "warning-border": "var(--admin-warning-border)",
-          danger: "var(--admin-danger)",
-          "danger-subtle": "var(--admin-danger-subtle)",
-          "danger-border": "var(--admin-danger-border)",
-          info: "var(--admin-info)",
-          "info-subtle": "var(--admin-info-subtle)",
-          "info-border": "var(--admin-info-border)",
-        },
-      },
-      boxShadow: {
-        "admin-sm": "var(--admin-shadow-sm)",
-        "admin-md": "var(--admin-shadow-md)",
-        "admin-lg": "var(--admin-shadow-lg)",
-        "admin-xl": "var(--admin-shadow-xl)",
+        /*
+         * Gestion : AUCUNE valeur ici. Les composants de `src/ui` consomment les
+         * variables `--admin-*` par des valeurs arbitraires
+         * (`bg-[var(--admin-accent)]`), déclarées par `globals.admin.css` depuis
+         * `src/design/tokens.ts`. Un espace de noms `admin` et des hex en dur
+         * ici faisaient une troisième source de vérité, sans lecteur
+         * (docs/refonte/05-DESIGN-SYSTEM.md §2).
+         */
       },
       fontFamily: {
         serif: ["var(--font-serif)", "Georgia", "serif"],
@@ -101,5 +70,17 @@ export default {
       },
     },
   },
-  plugins: [tailwindcssAnimate],
+  plugins: [
+    tailwindcssAnimate,
+    /*
+     * Gestion — survol réservé à la souris (05 §4.1). Le `hover:` de Tailwind
+     * s'applique aussi au tactile, où l'état reste collé après le tap : sur
+     * iPhone, un bouton gardait sa teinte de survol jusqu'au tap suivant.
+     * `mouse-hover:` ne s'active que sous `(hover: hover) and (pointer: fine)`.
+     */
+    plugin(({ addVariant }) => {
+      addVariant("mouse-hover", "@media (hover: hover) and (pointer: fine) { &:hover }");
+      addVariant("group-mouse-hover", "@media (hover: hover) and (pointer: fine) { :merge(.group):hover & }");
+    }),
+  ],
 } satisfies Config;

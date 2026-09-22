@@ -1,35 +1,43 @@
 "use client";
 
-import type { ReactNode, CSSProperties } from "react";
-import { radius, space } from "@/design/tokens";
+import type { CSSProperties, KeyboardEvent, MouseEvent, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type CardTone = "surface" | "alt" | "accent" | "muted";
 
 type CardProps = {
   tone?: CardTone;
-  /** Padding interne (defaut 16). */
+  /** Padding interne sur la grille (défaut 4 = 16 px). `0` pour une liste bord à bord. */
   padding?: 0 | 2 | 3 | 4 | 5 | 6;
-  /** Si true, comportement bouton (hover + active). */
+  /** Comportement bouton : press scale, survol souris, clavier. Implicite avec `onClick`. */
   interactive?: boolean;
-  /** Affiche une ombre sm (defaut true). */
+  /** Ombre `sm` (défaut true). */
   elevated?: boolean;
-  /** Désactive border (par défaut visible). */
   borderless?: boolean;
-  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onClick?: (e: MouseEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>) => void;
+  ariaLabel?: string;
   children: ReactNode;
   className?: string;
   style?: CSSProperties;
-  ariaLabel?: string;
 };
 
-const toneStyles: Record<CardTone, { bg: string; border: string }> = {
-  surface: { bg: "var(--admin-surface)", border: "var(--admin-border)" },
-  alt: { bg: "var(--admin-surface-alt)", border: "var(--admin-border)" },
-  accent: { bg: "var(--admin-accent-bg)", border: "var(--admin-accent)" },
-  muted: { bg: "var(--admin-surface-muted)", border: "var(--admin-border)" },
+const toneClass: Record<CardTone, string> = {
+  surface: "bg-[var(--admin-surface)] border-[var(--admin-border)]",
+  alt: "bg-[var(--admin-surface-alt)] border-[var(--admin-border)]",
+  accent: "bg-[var(--admin-accent-bg)] border-[var(--admin-accent)]",
+  muted: "bg-[var(--admin-surface-muted)] border-[var(--admin-border)]",
 };
 
+const paddingClass: Record<NonNullable<CardProps["padding"]>, string> = {
+  0: "p-0",
+  2: "p-2",
+  3: "p-3",
+  4: "p-4",
+  5: "p-5",
+  6: "p-6",
+};
+
+/** Surface de regroupement (rayon `lg`). */
 export function Card({
   tone = "surface",
   padding = 4,
@@ -37,41 +45,44 @@ export function Card({
   elevated = true,
   borderless = false,
   onClick,
+  ariaLabel,
   children,
   className,
   style,
-  ariaLabel,
 }: CardProps) {
-  const t = toneStyles[tone];
   const isButton = interactive || onClick !== undefined;
-
   return (
     <div
       role={isButton ? "button" : undefined}
       tabIndex={isButton ? 0 : undefined}
       aria-label={ariaLabel}
       onClick={onClick}
-      onKeyDown={(e) => {
-        if (!isButton || !onClick) return;
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
-        }
-      }}
+      onKeyDown={
+        isButton && onClick
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick(e);
+              }
+            }
+          : undefined
+      }
       className={cn(
-        "relative overflow-hidden",
-        isButton ? "tap-scale cursor-pointer" : null,
-        isButton ? "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--admin-accent-ring)]" : null,
+        "relative overflow-hidden rounded-[var(--admin-radius-lg)]",
+        borderless ? "border-0" : "border",
+        toneClass[tone],
+        paddingClass[padding],
+        elevated ? "shadow-[shadow:var(--admin-shadow-sm)]" : null,
+        isButton
+          ? cn(
+              "tap-scale cursor-pointer",
+              "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
+              "mouse-hover:shadow-[shadow:var(--admin-shadow-md)]",
+            )
+          : null,
         className,
       )}
-      style={{
-        background: t.bg,
-        border: borderless ? "none" : `1px solid ${t.border}`,
-        borderRadius: radius.xl,
-        padding: padding === 0 ? 0 : space[padding],
-        boxShadow: elevated ? "var(--admin-shadow-sm)" : undefined,
-        ...style,
-      }}
+      style={style}
     >
       {children}
     </div>

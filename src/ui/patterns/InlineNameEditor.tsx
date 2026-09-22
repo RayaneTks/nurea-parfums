@@ -1,105 +1,105 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, Pencil, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "../primitives/Button";
+import { typeClass } from "../primitives/typography";
 
 type InlineNameEditorProps = {
   value: string;
-  onSave: (next: string) => Promise<void> | void;
-  /** Permet d'annuler avant save. */
-  onCancel?: () => void;
-  /** Min/max length pour validation. */
+  /**
+   * Enregistrement OPTIMISTE : le nouveau nom s'affiche aussitôt. Renvoyer
+   * `false` ou lever une erreur restaure l'ancien nom — le toast qui dit
+   * pourquoi est à la charge de l'appelant (`useAction`).
+   */
+  onSave: (next: string) => Promise<boolean | void> | boolean | void;
   minLength?: number;
   maxLength?: number;
-  /** Variant typographique du nom en mode view. */
   variant?: "h1" | "h2" | "h3" | "bodyEm";
-  /** Texte placeholder si valeur vide. */
   placeholder?: string;
-  /** Désactive l'édition. */
   disabled?: boolean;
-  /** ariaLabel pour le bouton d'édition. */
+  /** « Renommer le lot ». */
   ariaLabel?: string;
+  /**
+   * Niveau de titre qui ENVELOPPE le nom, quand ce nom est le titre de l'écran (E06 : le lot lui-même).
+   * Sans lui, l'écran n'a aucun titre dans l'arbre d'accessibilité — le nom n'est qu'un bouton, et la
+   * navigation par titres de VoiceOver le saute. `variant` ne fait que la typographie ; ce sont deux
+   * choses distinctes, et une sheet (S01) n'en a pas besoin : son titre est celui de la sheet.
+   */
+  headingLevel?: 1 | 2 | 3;
   className?: string;
 };
 
-const variantClass: Record<NonNullable<InlineNameEditorProps["variant"]>, string> = {
-  h1: "text-[28px] font-bold leading-[1.15] tracking-[-0.01em]",
-  h2: "text-[20px] font-semibold leading-tight",
-  h3: "text-[16px] font-semibold leading-snug",
-  bodyEm: "text-[15px] font-semibold leading-normal",
-};
-
 /**
- * Tap-to-edit pattern réutilisable : view ↔ edit avec save async.
- *
- * - View : texte + petit bouton pencil pour passer en edit.
- * - Edit : input + boutons check / x. Auto-focus, sélection texte.
- * - Submit : Entrée ou clic check. Cancel : Échap ou clic x.
- * - Si onSave throw → reste en mode edit, état error possible via parent.
+ * Tap sur le nom → champ ; Entrée ou ✓ enregistre, Échap ou ✕ annule (05 §3.2).
  */
 export function InlineNameEditor({
   value,
   onSave,
-  onCancel,
   minLength = 2,
   maxLength = 120,
   variant = "h2",
   placeholder = "Sans nom",
   disabled = false,
   ariaLabel = "Modifier le nom",
+  headingLevel,
   className,
 }: InlineNameEditorProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
-  const [saving, setSaving] = useState(false);
+  const [optimistic, setOptimistic] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  // La valeur du serveur fait foi dès qu'elle change.
   useEffect(() => {
-    if (!editing) setDraft(value);
-  }, [value, editing]);
+    setOptimistic(null);
+  }, [value]);
 
   useEffect(() => {
-    if (editing) {
-      requestAnimationFrame(() => {
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      });
-    }
+    if (!editing) return;
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    });
   }, [editing]);
 
-  const start = () => {
-    if (disabled) return;
-    setEditing(true);
-  };
+  const shown = optimistic ?? value;
+  const valid = draft.trim().length >= minLength && draft.trim().length <= maxLength;
 
   const cancel = useCallback(() => {
-    setDraft(value);
+    setDraft(shown);
     setEditing(false);
-    onCancel?.();
-  }, [value, onCancel]);
+  }, [shown]);
 
   const commit = useCallback(async () => {
-    const trimmed = draft.trim();
-    if (trimmed.length < minLength || trimmed.length > maxLength) {
-      return;
-    }
-    if (trimmed === value.trim()) {
-      setEditing(false);
-      return;
-    }
-    setSaving(true);
+    const next = draft.trim();
+    if (!valid) return;
+    setEditing(false);
+    if (next === shown.trim()) return;
+    setOptimistic(next);
     try {
-      await onSave(trimmed);
-      setEditing(false);
-    } finally {
-      setSaving(false);
+      const result = await onSave(next);
+      if (result === false) setOptimistic(null);
+    } catch {
+      setOptimistic(null);
     }
-  }, [draft, value, minLength, maxLength, onSave]);
+  }, [draft, valid, shown, onSave]);
+
+  /**
+   * Le titre enveloppe les DEUX états : le plan de l'écran ne disparaît pas le temps d'un renommage.
+   * `h1`/`h2`/`h3` en dur plutôt qu'une balise calculée : Tailwind et le lecteur de code les voient.
+   */
+  const heading = (content: ReactNode) => {
+    if (headingLevel === 1) return <h1 className="min-w-0">{content}</h1>;
+    if (headingLevel === 2) return <h2 className="min-w-0">{content}</h2>;
+    if (headingLevel === 3) return <h3 className="min-w-0">{content}</h3>;
+    return content;
+  };
 
   if (editing) {
-    return (
-      <div className={cn("flex min-w-0 items-center gap-2", className)}>
+    return heading(
+      <div className={cn("flex min-w-0 items-center gap-1", className)}>
         <input
           ref={inputRef}
           value={draft}
@@ -114,65 +114,56 @@ export function InlineNameEditor({
             }
           }}
           maxLength={maxLength}
+          enterKeyHint="done"
           aria-label={ariaLabel}
           className={cn(
-            "min-w-0 flex-1 rounded-[10px] border border-[var(--admin-accent)] bg-[var(--admin-surface)] px-2 py-1",
+            "min-w-0 flex-1 rounded-[var(--admin-radius-sm)] border border-[var(--admin-accent)] bg-[var(--admin-surface)] px-2 py-1",
             "text-[var(--admin-text)] outline-none ring-4 ring-[var(--admin-accent-ring)]",
-            variantClass[variant],
+            typeClass[variant],
           )}
         />
-        <button
-          type="button"
-          onClick={() => void commit()}
-          disabled={saving || draft.trim().length < minLength}
-          aria-label="Valider"
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--admin-accent)] text-white tap-scale disabled:opacity-40"
-        >
-          <Check size={16} />
-        </button>
-        <button
-          type="button"
-          onClick={cancel}
-          disabled={saving}
-          aria-label="Annuler"
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--admin-surface-muted)] text-[var(--admin-text-muted)] tap-scale"
-        >
-          <X size={16} />
-        </button>
-      </div>
+        {/* `text` et non `primary` : le seul bouton plein de l'écran reste son CTA. */}
+        <Button variant="text" size="sm" iconOnly ariaLabel="Enregistrer le nom" disabled={!valid} onClick={() => void commit()}>
+          <Check size={18} />
+        </Button>
+        <Button variant="ghost" size="sm" iconOnly ariaLabel="Annuler" onClick={cancel}>
+          <X size={18} />
+        </Button>
+      </div>,
     );
   }
 
-  const displayText = value.trim().length > 0 ? value : placeholder;
-  return (
+  const empty = shown.trim().length === 0;
+  return heading(
     <button
       type="button"
-      onClick={start}
+      onClick={() => {
+        if (disabled) return;
+        setDraft(shown);
+        setEditing(true);
+      }}
       disabled={disabled}
-      aria-label={ariaLabel}
+      aria-label={`${ariaLabel} : ${empty ? placeholder : shown}`}
       className={cn(
-        "group admin-hit-target min-w-0 max-w-full gap-1.5 rounded-[8px] text-left",
-        "tap-scale focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
-        disabled ? "cursor-default" : "cursor-text hover:bg-[var(--admin-surface-muted)] px-1.5 -mx-1.5",
+        "group tap-scale admin-hit-target -mx-1.5 min-w-0 max-w-full gap-1.5 rounded-[var(--admin-radius-sm)] px-1.5 text-left",
+        "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
+        disabled ? "cursor-default" : "mouse-hover:bg-[var(--admin-surface-hover)]",
         className,
       )}
     >
       <span
         className={cn(
           "min-w-0 truncate",
-          variantClass[variant],
-          value.trim().length === 0 ? "text-[var(--admin-text-subtle)]" : "text-[var(--admin-text)]",
+          typeClass[variant],
+          empty ? "text-[var(--admin-text-subtle)]" : "text-[var(--admin-text)]",
         )}
       >
-        {displayText}
+        {empty ? placeholder : shown}
       </span>
       {!disabled ? (
-        <Pencil
-          size={14}
-          className="shrink-0 text-[var(--admin-text-subtle)] opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100"
-          aria-hidden
-        />
+        // Visible au doigt : au tactile, pas de survol pour révéler l'affordance.
+        <Pencil size={14} className="shrink-0 text-[var(--admin-text-subtle)]" aria-hidden />
       ) : null}
-    </button>
+    </button>,
   );
 }

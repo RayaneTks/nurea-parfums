@@ -1,183 +1,147 @@
 "use client";
 
-import Image from "next/image";
-import { Loader2, Star, X } from "lucide-react";
-import { nureaAdminThumbLoader } from "@/lib/image/cappedImageLoader";
-import { WindowedList } from "@/ui/primitives/WindowedList";
+import { Star } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import type { AdminPerfumeRow } from "@/contracts/catalogue";
+import { canFeaturePerfume, FEATURED_LIMIT } from "@/domain/publication";
+import { useToast } from "@/app-shell/FeedbackProvider";
+import { useAction } from "@/app-shell/hooks/useAction";
+import { setPerfumeFeaturedAction } from "@/server/catalogue/actions";
+import { SectionHeader } from "@/ui/patterns/SectionHeader";
+import { Button } from "@/ui/primitives/Button";
+import { Card } from "@/ui/primitives/Card";
 import { EmptyState } from "@/ui/primitives/EmptyState";
-import { cn } from "@/lib/utils";
-import { FEATURED_LIMIT, type AdminPerfumeRow } from "../types";
+import { ListRow } from "@/ui/primitives/ListRow";
+import { WindowedList } from "@/ui/primitives/WindowedList";
+import { CatalogueThumb } from "./CatalogueThumb";
 
 type FeaturedPanelProps = {
-  featured: readonly AdminPerfumeRow[];
-  candidates: readonly AdminPerfumeRow[];
-  canEdit: boolean;
-  pendingIds: ReadonlySet<number>;
-  onToggle: (perfume: AdminPerfumeRow, nextFeatured: boolean) => void;
+  perfumes: readonly AdminPerfumeRow[];
+  /** Candidats filtrés par la recherche. */
+  words: readonly string[];
+  onClearSearch: () => void;
 };
 
-function Thumb({ perfume, size }: { perfume: AdminPerfumeRow; size: number }) {
-  return (
-    <span
-      className="relative shrink-0 overflow-hidden rounded-[10px] bg-[var(--admin-surface-muted)]"
-      style={{ width: size, height: size, border: "1px solid var(--admin-border)" }}
-    >
-      {perfume.image ? (
-        <Image
-          loader={nureaAdminThumbLoader}
-          src={perfume.image}
-          alt=""
-          width={size}
-          height={size}
-          sizes={`${size}px`}
-          quality={60}
-          fetchPriority="low"
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <span className="flex h-full w-full items-center justify-center text-[14px] font-bold text-[var(--admin-text-subtle)]">
-          {perfume.name[0]?.toUpperCase() ?? "?"}
-        </span>
-      )}
-    </span>
-  );
-}
-
 /**
- * Gestion des parfums mis en avant sur la page d'accueil vitrine.
- *
- * Deux emplacements matérialisés, remplis ou vides : l'ancienne version
- * affichait un compteur « 0/2 » puis une grille de tout le catalogue, sans
- * qu'on voie combien de places restaient ni pourquoi les cartes devenaient
- * inertes une fois la limite atteinte.
+ * « En avant » (06 E15 zone 5) : deux emplacements matérialisés, puis les candidats — parfums VISIBLES
+ * uniquement (un parfum masqué n'occupe jamais un emplacement, 01 §4.5). Tap = mettre en avant ;
+ * au-delà de deux, le refus du domaine en toast, sans aller-retour.
  */
-export function FeaturedPanel({
-  featured,
-  candidates,
-  canEdit,
-  pendingIds,
-  onToggle,
-}: FeaturedPanelProps) {
-  const slots = Array.from({ length: FEATURED_LIMIT }, (_, i) => featured[i] ?? null);
-  const isFull = featured.length >= FEATURED_LIMIT;
+export function FeaturedPanel({ perfumes, words, onClearSearch }: FeaturedPanelProps) {
+  const { showToast } = useToast();
+  const [optimistic, setOptimistic] = useState<ReadonlyMap<number, boolean>>(new Map());
+  const { run } = useAction(setPerfumeFeaturedAction, {
+    success: (data) => (data.isFeatured ? `${data.name} mis en avant` : `${data.name} retiré de la mise en avant`),
+  });
+
+  // Les props du serveur font foi dès qu'elles changent.
+  useEffect(() => setOptimistic(new Map()), [perfumes]);
+
+  const isFeatured = (perfume: AdminPerfumeRow) => optimistic.get(perfume.id) ?? perfume.isFeatured;
+  const featured = perfumes.filter(isFeatured);
+  const candidates = useMemo(
+    () =>
+      perfumes.filter(
+        (perfume) =>
+          perfume.status === "PUBLISHED" &&
+          !(optimistic.get(perfume.id) ?? perfume.isFeatured) &&
+          words.every((word) => perfume.searchKey.includes(word)),
+      ),
+    [perfumes, optimistic, words],
+  );
+
+  const toggle = async (perfume: AdminPerfumeRow, next: boolean) => {
+    if (next) {
+      const verdict = canFeaturePerfume(perfume, featured.length);
+      if (!verdict.ok) {
+        showToast({ type: "error", message: verdict.message });
+        return;
+      }
+    }
+    setOptimistic((previous) => new Map(previous).set(perfume.id, next));
+    const result = await run({ id: perfume.id, featured: next });
+    if (!result.ok) {
+      setOptimistic((previous) => {
+        const copy = new Map(previous);
+        copy.delete(perfume.id);
+        return copy;
+      });
+    }
+  };
+
+  const slots = Array.from({ length: FEATURED_LIMIT }, (_, index) => featured[index] ?? null);
 
   return (
     <div className="flex flex-col gap-4">
-      <section aria-label="Parfums mis en avant">
-        <h2 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--admin-text-muted)]">
-          Sur l&apos;accueil du site · {featured.length}/{FEATURED_LIMIT}
-        </h2>
-        {/* Une colonne : à 375 px, deux emplacements côte à côte rognaient les
-            noms de parfum au troisième caractère (« Afterno… »). */}
-        <div className="flex flex-col gap-2">
-          {slots.map((perfume, i) =>
-            perfume ? (
-              <div
-                key={perfume.id}
-                className="flex items-center gap-2 rounded-[14px] bg-[var(--admin-surface)] p-2 shadow-[var(--admin-shadow-sm)]"
-                style={{ border: "1px solid var(--admin-accent)" }}
-              >
-                <Thumb perfume={perfume} size={40} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[14px] font-semibold leading-tight text-[var(--admin-text)]">
-                    {perfume.name}
-                  </span>
-                  <span className="block truncate text-[12px] text-[var(--admin-text-subtle)]">
-                    {perfume.brand.name}
-                  </span>
-                </span>
-                {canEdit ? (
-                  <button
-                    type="button"
-                    disabled={pendingIds.has(perfume.id)}
-                    onClick={() => onToggle(perfume, false)}
-                    aria-label={`Retirer ${perfume.name} de la mise en avant`}
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--admin-text-subtle)] tap-scale hover:bg-[var(--admin-surface-muted)] disabled:opacity-50"
-                  >
-                    {pendingIds.has(perfume.id) ? (
-                      <Loader2 size={15} className="animate-spin" aria-hidden />
-                    ) : (
-                      <X size={15} aria-hidden />
-                    )}
-                  </button>
-                ) : null}
-              </div>
-            ) : (
-              <div
-                key={`slot-${i}`}
-                className="flex min-h-[56px] items-center justify-center gap-2 rounded-[14px] px-3"
-                style={{ border: "1.5px dashed var(--admin-border-strong)" }}
-              >
-                <Star size={15} className="text-[var(--admin-text-subtle)]" aria-hidden />
-                <span className="text-[13px] text-[var(--admin-text-subtle)]">
-                  Emplacement libre
-                </span>
-              </div>
-            ),
-          )}
-        </div>
+      <section className="flex flex-col gap-2" aria-label="Emplacements de la vitrine">
+        <SectionHeader level={2} title={`Sur la vitrine · ${featured.length}/${FEATURED_LIMIT}`} />
+        {slots.map((perfume, index) =>
+          perfume ? (
+            <Card key={perfume.id} padding={0} className="border-[var(--admin-accent)]">
+              <ListRow
+                leading={<CatalogueThumb src={perfume.imageLight ?? perfume.image} name={perfume.name} />}
+                primary={perfume.name}
+                secondary={perfume.brand.name}
+                trailing={
+                  <Button variant="text" size="sm" onClick={() => void toggle(perfume, false)} ariaLabel={`Retirer ${perfume.name} de la vitrine`}>
+                    Retirer
+                  </Button>
+                }
+              />
+            </Card>
+          ) : (
+            <div
+              key={`libre-${index}`}
+              className="flex min-h-[56px] items-center justify-center gap-2 rounded-[var(--admin-radius-lg)] border border-dashed border-[var(--admin-border-strong)] px-3"
+            >
+              <Star size={16} aria-hidden className="text-[var(--admin-text-subtle)]" />
+              <span className="admin-type-caption text-[var(--admin-text-muted)]">Emplacement libre</span>
+            </div>
+          ),
+        )}
       </section>
 
-      <section aria-label="Parfums à mettre en avant">
-        <h2 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--admin-text-muted)]">
-          {isFull ? "Retire un parfum pour en ajouter un autre" : "Choisir un parfum"}
-        </h2>
+      <section className="flex flex-col gap-2" aria-label="Parfums à mettre en avant">
+        <SectionHeader
+          level={2}
+          title="Parfums visibles"
+          description={featured.length >= FEATURED_LIMIT ? "Retire un parfum pour en mettre un autre en avant." : "Touche un parfum pour le mettre en avant."}
+        />
         {candidates.length === 0 ? (
-          <EmptyState
-            icon={Star}
-            title="Aucun parfum"
-            description="Ajuste la recherche pour trouver un parfum à mettre en avant."
-          />
+          words.length > 0 ? (
+            <EmptyState
+              title="Aucun parfum ne correspond"
+              action={
+                <Button variant="secondary" onClick={onClearSearch}>
+                  Effacer la recherche
+                </Button>
+              }
+            />
+          ) : (
+            <EmptyState done title="Aucun autre parfum visible à mettre en avant." />
+          )
         ) : (
-          <WindowedList
-            items={candidates}
-            itemKey={(p) => p.id}
-            estimateSize={60}
-            gap={8}
-            aria-label="Parfums disponibles"
-            renderItem={(perfume) => {
-              const pending = pendingIds.has(perfume.id);
-              const disabled = !canEdit || isFull || pending;
-              return (
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => onToggle(perfume, true)}
-                  aria-label={`Mettre ${perfume.name} en avant`}
-                  className={cn(
-                    "flex w-full min-w-0 items-center gap-3 rounded-[14px] bg-[var(--admin-surface)] p-2 text-left",
-                    "shadow-[var(--admin-shadow-sm)] admin-card-press",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--admin-accent-ring)]",
-                    disabled ? "opacity-45" : null,
-                  )}
-                  style={{ border: "1px solid var(--admin-border)" }}
-                >
-                  <Thumb perfume={perfume} size={40} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[14px] font-semibold leading-tight text-[var(--admin-text)]">
-                      {perfume.name}
-                    </span>
-                    <span className="block truncate text-[12px] text-[var(--admin-text-subtle)]">
-                      {perfume.brand.name}
-                    </span>
-                  </span>
-                  {pending ? (
-                    <Loader2
-                      size={17}
-                      className="mr-1.5 shrink-0 animate-spin text-[var(--admin-accent)]"
-                      aria-hidden
-                    />
-                  ) : (
-                    <Star
-                      size={17}
-                      className="mr-1.5 shrink-0 text-[var(--admin-accent)]"
-                      aria-hidden
-                    />
-                  )}
-                </button>
-              );
-            }}
-          />
+          <Card padding={0}>
+            <WindowedList
+              items={candidates}
+              itemKey={(perfume) => perfume.id}
+              estimateSize={57}
+              gap={0}
+              aria-label="Parfums visibles"
+              renderItem={(perfume, index) => (
+                <div className={index > 0 ? "border-t border-[var(--admin-border)]" : undefined}>
+                  <ListRow
+                    onClick={() => void toggle(perfume, true)}
+                    ariaLabel={`Mettre ${perfume.name} en avant`}
+                    leading={<CatalogueThumb src={perfume.imageLight ?? perfume.image} name={perfume.name} />}
+                    primary={perfume.name}
+                    secondary={perfume.brand.name}
+                    trailing={<Star size={18} aria-hidden className="text-[var(--admin-accent)]" />}
+                  />
+                </div>
+              )}
+            />
+          </Card>
         )}
       </section>
     </div>

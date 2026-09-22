@@ -113,6 +113,8 @@ export async function collectLayoutViolations(page: Page): Promise<{
       for (const el of Array.from(document.querySelectorAll("*"))) {
         if (el.children.length > 0) continue;
         if (!isRendered(el)) continue;
+        // Texte réservé aux lecteurs d'écran (`sr-only`) : rogné exprès, jamais vu.
+        if (isVisuallyHidden(el)) continue;
         if (!(el.textContent ?? "").trim()) continue;
         const s = getComputedStyle(el);
         if (s.overflow !== "hidden" && s.overflowX !== "hidden") continue;
@@ -154,6 +156,29 @@ export async function collectLayoutViolations(page: Page): Promise<{
         }
       }
 
+      // ─── Une seule action primaire par écran ou par sheet ───────────────
+      /*
+       * 05 §3.1 et §5.4 : « un seul primary visible par écran ». L'écran d'une part, chaque sheet ou
+       * dialogue ouvert d'autre part (sa couche a son propre CTA). Un bouton se déclare par
+       * `data-variant`, posé par la primitive `Button`.
+       */
+      const primaryLayers = new Map<Element | null, Element[]>();
+      for (const el of Array.from(document.querySelectorAll('[data-variant="primary"]'))) {
+        if (!isRendered(el) || isVisuallyHidden(el)) continue;
+        const layer = el.closest('[role="dialog"], [role="alertdialog"], [data-vaul-drawer]');
+        primaryLayers.set(layer, [...(primaryLayers.get(layer) ?? []), el]);
+      }
+      for (const [layer, buttons] of primaryLayers) {
+        if (buttons.length <= 1) continue;
+        violations.push({
+          rule: "plusieurs-primary",
+          detail: `${buttons.length} boutons primary visibles ${layer ? "dans la même sheet" : "sur l'écran"} (${buttons
+            .map((b) => `« ${(b.textContent ?? "").trim().slice(0, 30)} »`)
+            .join(", ")}) : une seule action principale.`,
+          selector: layer ? describe(layer) : "écran",
+        });
+      }
+
       // ─── Cibles tactiles ────────────────────────────────────────────────
       const interactive = Array.from(
         document.querySelectorAll(
@@ -164,7 +189,17 @@ export async function collectLayoutViolations(page: Page): Promise<{
       for (const el of interactive) {
         if (!isRendered(el) || isVisuallyHidden(el)) continue;
         if (el.closest("[data-touch-exempt]")) continue;
-        const r = el.getBoundingClientRect();
+        /*
+         * Zone étendue par pseudo-élément (anatomie de `ListRow`, 05 §3.1) : le lien ou le bouton ne
+         * contient que le texte, et son `::after` absolu couvre toute la rangée. La cible réelle est
+         * alors le bloc contenant de ce pseudo-élément.
+         */
+        const after = getComputedStyle(el, "::after");
+        const extended =
+          after.content !== "none" && after.position === "absolute" && el instanceof HTMLElement && el.offsetParent
+            ? el.offsetParent
+            : null;
+        const r = (extended ?? el).getBoundingClientRect();
         const min = Math.min(r.width, r.height);
         const size = `Cible de ${Math.round(r.width)}×${Math.round(r.height)}px`;
         if (min < touchFail) {
@@ -182,10 +217,134 @@ export async function collectLayoutViolations(page: Page): Promise<{
         }
       }
 
+      // ─── Nom accessible ─────────────────────────────────────────────────
+      /*
+       * 05 §6 : « aria-label sur les contrôles à icône seule », et le critère de 07 J16 « aucun
+       * contrôle sans nom accessible ». VoiceOver annonce « bouton » et rien d'autre quand le nom
+       * manque : le gérant, une main sur le guidon, n'a aucun moyen de savoir ce qu'il touche.
+       *
+       * La règle est éprouvée ÉCRAN PAR ÉCRAN parce que c'est là qu'elle se perd : la primitive
+       * `Button iconOnly` exige `ariaLabel` par son type, mais un `<button>` écrit à la main, un
+       * `ListRow` sans texte ou une icône seule dans une sheet passent entre les mailles.
+       *
+       * Approximation de l'algorithme accname, volontairement permissive : `aria-labelledby`,
+       * `aria-label`, `<label>` associé, texte propre (`sr-only` compris), `alt` d'une image,
+       * `<title>` d'un SVG, `placeholder`, `title`. Seul un contrôle qui n'a RIEN échoue.
+       */
+      const textOf = (el: Element | null): string => (el?.textContent ?? "").replace(/\s+/g, " ").trim();
+      const accessibleName = (el: Element): string => {
+        const labelledBy = el.getAttribute("aria-labelledby");
+        if (labelledBy) {
+          const referenced = labelledBy
+            .split(/\s+/)
+            .map((id) => textOf(document.getElementById(id)))
+            .filter(Boolean)
+            .join(" ");
+          if (referenced) return referenced;
+        }
+        const label = (el.getAttribute("aria-label") ?? "").trim();
+        if (label) return label;
+        const field = el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+        if (field.labels && field.labels.length > 0) {
+          const fromLabels = Array.from(field.labels).map(textOf).filter(Boolean).join(" ");
+          if (fromLabels) return fromLabels;
+        }
+        if (el.tagName === "INPUT") {
+          const input = el as HTMLInputElement;
+          if (["button", "submit", "reset"].includes(input.type) && input.value.trim()) return input.value.trim();
+        }
+        const own = textOf(el);
+        if (own) return own;
+        const alt = el.querySelector("img[alt]")?.getAttribute("alt")?.trim();
+        if (alt) return alt;
+        const svgTitle = textOf(el.querySelector("svg > title"));
+        if (svgTitle) return svgTitle;
+        const placeholder = (el.getAttribute("placeholder") ?? "").trim();
+        if (placeholder) return placeholder;
+        return (el.getAttribute("title") ?? "").trim();
+      };
+
+      const named = Array.from(
+        document.querySelectorAll(
+          'a[href], button:not(:disabled), input:not([type="hidden"]), select, textarea,' +
+            ' [role="button"], [role="link"], [role="option"], [role="radio"], [role="tab"],' +
+            ' [role="switch"], [role="checkbox"], [role="menuitem"]',
+        ),
+      );
+      for (const el of named) {
+        if (!isRendered(el)) continue;
+        // `aria-hidden` : le contrôle n'existe pas pour VoiceOver, il n'a pas de nom à porter.
+        if (el.closest('[aria-hidden="true"]')) continue;
+        if (accessibleName(el)) continue;
+        violations.push({
+          rule: "sans-nom-accessible",
+          detail: "Contrôle sans nom accessible : VoiceOver n'annoncerait que son rôle.",
+          selector: describe(el),
+        });
+      }
+
       return { violations, warnings };
     },
     { touchFail: TOUCH_FAIL_PX, touchWarn: TOUCH_WARN_PX },
   ) as Promise<{ violations: Violation[]; warnings: Violation[] }>;
+}
+
+/**
+ * Couches peintes (05 §2, correction de production `3291428`) : un voile reste translucide — on doit
+ * voir l'écran dont on vient — et la carte d'une sheet ou d'une confirmation garde sa surface.
+ *
+ * `.admin-theme` portait un fond et passait après les utilitaires : il repeignait voile et carte de
+ * chaque portail en gris opaque, et la confirmation devenait invisible (texte sur un mur uni). Un
+ * voile se déclare par `data-admin-overlay` (posé par `Sheet`, `ConfirmDialog`, la palette).
+ */
+export async function collectLayerPaintViolations(page: Page): Promise<Violation[]> {
+  return page.evaluate(() => {
+    const out: Violation[] = [];
+    const rendered = (el: Element) => {
+      const s = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      return s.display !== "none" && s.visibility !== "hidden" && r.width > 0 && r.height > 0;
+    };
+    const alpha = (color: string): number => {
+      if (color === "transparent") return 0;
+      const inner = /\(([^)]*)\)/.exec(color)?.[1] ?? "";
+      const parts = inner.split(/[\s,/]+/).filter(Boolean);
+      const last = parts.length >= 4 ? parts[parts.length - 1] : undefined;
+      if (last === undefined) return 1;
+      return last.endsWith("%") ? Number.parseFloat(last) / 100 : Number.parseFloat(last);
+    };
+
+    for (const overlay of Array.from(document.querySelectorAll("[data-admin-overlay]"))) {
+      if (!rendered(overlay)) continue;
+      const color = getComputedStyle(overlay).backgroundColor;
+      if (alpha(color) >= 1) {
+        out.push({
+          rule: "voile-opaque",
+          detail: `Voile peint en ${color} : l'écran dessous disparaît (fond repeint par une classe de thème ?).`,
+          selector: `voile ${overlay.tagName.toLowerCase()}`,
+        });
+      }
+    }
+
+    // Couleur de référence résolue par le navigateur, pour comparer à valeur calculée égale.
+    const probe = document.createElement("div");
+    probe.style.background = "var(--admin-surface)";
+    document.body.appendChild(probe);
+    const surface = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    for (const card of Array.from(document.querySelectorAll("[data-vaul-drawer], [data-confirm-dialog]"))) {
+      if (!rendered(card)) continue;
+      const color = getComputedStyle(card).backgroundColor;
+      if (color !== surface) {
+        out.push({
+          rule: "carte-sans-surface",
+          detail: `Carte peinte en ${color} au lieu de la surface (${surface}).`,
+          selector: card.hasAttribute("data-confirm-dialog") ? "confirmation" : "sheet",
+        });
+      }
+    }
+    return out;
+  }) as Promise<Violation[]>;
 }
 
 /**
@@ -226,6 +385,8 @@ export async function collectBottomOcclusion(page: Page): Promise<Violation[]> {
     for (const el of interactive) {
       if (tabBar.contains(el)) continue;
       if (el.closest("[data-sticky-action]")) continue;
+      // Une sheet (fiche `?doc=`, 07 J8) couvre la barre d'onglets (z 70/71, 05 §2.7) : ses contrôles ne sont pas dessous.
+      if (el.closest("[data-vaul-drawer]")) continue;
       if (getComputedStyle(el).position === "fixed") continue;
       const r = el.getBoundingClientRect();
       if (r.width <= 2 || r.height <= 2) continue;
@@ -246,7 +407,7 @@ export async function collectBottomOcclusion(page: Page): Promise<Violation[]> {
  * Simule l'ouverture du clavier iOS.
  *
  * Le vrai clavier ne rétrécit pas le viewport de mise en page : il n'est
- * visible que par `visualViewport`, que `ViewportSync` reporte dans
+ * visible que par `visualViewport`, que le service viewport du shell reporte dans
  * `--admin-vh` et `--admin-keyboard-inset`. Forcer ces deux variables
  * reproduit fidèlement la contrainte que subit la mise en page.
  */
@@ -305,7 +466,9 @@ export async function collectKeyboardViolations(
 
     // Une sheet ouverte doit garder une zone de contenu exploitable : c'est
     // exactement ce qui manquait au sélecteur de client, réduit à ~24 px.
-    const sheet = document.querySelector("[data-vaul-drawer]");
+    // Sheets empilées (S02 au-dessus de la fiche S01, 07 J8) : celle du dessus, portée en dernier, reçoit la saisie.
+    const openSheets = document.querySelectorAll('[data-vaul-drawer][data-state="open"]');
+    const sheet = openSheets.length > 0 ? openSheets[openSheets.length - 1] : document.querySelector("[data-vaul-drawer]");
     if (sheet && getComputedStyle(sheet).transform === "none") {
       // Elle doit aussi occuper la hauteur qui lui est allouée. Une sheet qui
       // épouse son contenu s'ouvre à mi-écran : la moitié haute est perdue et

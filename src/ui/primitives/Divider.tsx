@@ -1,26 +1,21 @@
 import { cn } from "@/lib/utils";
 
 type DividerProps = {
-  /** Mode hairline (defaut) ou full (épais). */
-  weight?: "hairline" | "regular";
-  /** Bleed = la barre traverse les paddings (utile dans Card / Sheet). */
+  /**
+   * Traverse le padding latéral de page ou de sheet (16 px) pour toucher les
+   * bords. Dans une carte `padding 0`, inutile : la carte est déjà bord à bord.
+   */
   bleed?: boolean;
   className?: string;
 };
 
-export function Divider({ weight = "hairline", bleed = false, className }: DividerProps) {
+/** Filet de 1 px. La séparation vient des filets, pas des ombres (05 §2.5). */
+export function Divider({ bleed = false, className }: DividerProps) {
   return (
     <div
       role="separator"
       aria-orientation="horizontal"
-      className={cn(
-        bleed ? "-mx-5" : null,
-        className,
-      )}
-      style={{
-        height: weight === "hairline" ? 1 : 2,
-        background: "var(--admin-border)",
-      }}
+      className={cn("h-px shrink-0 bg-[var(--admin-border)]", bleed ? "-mx-4" : null, className)}
     />
   );
 }

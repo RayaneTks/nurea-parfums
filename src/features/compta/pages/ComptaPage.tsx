@@ -1,73 +1,104 @@
-import { Suspense } from "react";
+import { Block } from "@/app-shell/Block";
+import { routes } from "@/app-shell/routes";
+import { PERIOD_PARAMS, type PeriodParam } from "@/contracts/chiffres";
+import {
+  comptaPeriodKey,
+  exportComptaUrl,
+  exportFileName,
+  exportRangeOf,
+  figurePeriodLabel,
+  journalNavigation,
+  parseJournalMonth,
+  periodNavigation,
+  seriesTitle,
+  type ComptaParams,
+  type ComptaView,
+} from "@/contracts/compta";
+import { DocumentSheetSlot } from "@/features/documents";
+import { TreasuryBlock } from "@/features/treasury/blocks/TreasuryBlocks";
+import { TreasurySkeleton } from "@/features/treasury/blocks/skeletons";
 import { PageScaffold } from "@/ui/patterns/PageScaffold";
-import { Heading } from "@/ui/primitives/Heading";
-import { Stack } from "@/ui/primitives/Stack";
-import { Skeleton, SkeletonList } from "@/ui/primitives/Skeleton";
-import { listSalesGroupedByCustomer } from "@/server/sales/queries";
-import { treasurySummary, listMovements } from "@/server/treasury/queries";
-import { ComptaWithTreasury } from "../components/ComptaWithTreasury";
-
-type ComptaPageProps = {
-  searchParams: Promise<{ q?: string }>;
-};
+import { SectionHeader } from "@/ui/patterns/SectionHeader";
+import { PeriodDocumentsBlock, SalesChartBlock, SalesFiguresBlock } from "../blocks/SalesBlocks";
+import { PeriodDocumentsSkeleton, SalesChartSkeleton, SalesFiguresSkeleton } from "../blocks/skeletons";
+import { ComptaViewSwitch, PeriodSelector } from "../components/ComptaControls";
+import { ExportButton } from "../components/ExportButton";
 
 /**
- * Squelette aux proportions de l'écran rendu : titre, bascule de vue, chiffres,
- * puis la liste. Il occupe la même place que le contenu, pour que l'arrivée des
- * données ne déplace rien.
+ * E03 — Compta (06 E03) : « Ventes | Trésorerie », période, « Exporter ». Titre, vue et période s'affichent tout
+ * de suite ; chiffres, graphe, documents et Trésorerie arrivent chacun dans leur bloc (squelette exact, erreur par
+ * bloc). Les paramètres sont lus par la page et passés aux blocs (04 §13.1 règle 3) ; `doc` ouvre la fiche document
+ * au-dessus (A-3). Écran de lecture : aucune action primaire.
  */
-function ComptaFallback() {
-  return (
-    <Stack gap={4}>
-      <div className="flex items-center justify-between gap-3">
-        <Heading level={1}>Compta</Heading>
-        <Skeleton width={160} height={36} className="rounded-full" />
-      </div>
-      <Skeleton height={52} className="rounded-[12px]" />
-      <Skeleton height={44} className="rounded-[12px]" />
-      <div className="grid grid-cols-2 gap-2">
-        <Skeleton height={86} className="rounded-[14px]" />
-        <Skeleton height={86} className="rounded-[14px]" />
-      </div>
-      <SkeletonList count={4} />
-    </Stack>
-  );
-}
+export function ComptaPage({ params, docId }: { params: ComptaParams; docId?: string }) {
+  const now = new Date();
+  const periodKey = comptaPeriodKey(params);
+  const period = figurePeriodLabel(params.periode, params.ref, now);
+  const navigation = periodNavigation(params.periode, params.ref, now);
+  const range = exportRangeOf(params, now);
+  const chartTitle = seriesTitle(params.periode);
+  const ref = params.ref ?? undefined;
 
-/**
- * Charge les données de la compta.
- *
- * Isolé dans son propre composant pour vivre sous une frontière `Suspense` :
- * la page attendait ses trois requêtes avant d'afficher quoi que ce soit, soit
- * plus de trois secondes d'écran vide alors que le premier pixel arrivait en
- * 50 ms. Le titre s'affiche désormais tout de suite, les chiffres suivent.
- */
-async function ComptaContent({ query }: { query: string }) {
-  const [data, treasury, movements] = await Promise.all([
-    listSalesGroupedByCustomer({ q: query }),
-    treasurySummary(),
-    listMovements({ limit: 30 }),
-  ]);
+  const viewHrefs: Record<ComptaView, string> = {
+    ventes: routes.compta({ periode: params.periode === "mois" ? undefined : params.periode, ref }),
+    tresorerie: routes.compta({ vue: "tresorerie" }),
+  };
+  const periodHrefs = Object.fromEntries(
+    (Object.keys(PERIOD_PARAMS) as PeriodParam[]).map((periode) => [periode, routes.compta({ periode: periode === "mois" ? undefined : periode })]),
+  ) as Record<PeriodParam, string>;
+  const withRef = (next: string | null) =>
+    routes.compta({ periode: params.periode === "mois" ? undefined : params.periode, ref: next ?? undefined, q: params.q || undefined, filtre: params.filtre ?? undefined });
 
   return (
-    <ComptaWithTreasury
-      sales={data}
-      initialQuery={query}
-      treasury={treasury}
-      movements={movements}
-    />
-  );
-}
+    <PageScaffold formScroll ariaLabel="Compta" docId={docId} sheet={<DocumentSheetSlot docId={docId} />}>
+      <SectionHeader
+        title="Compta"
+        action={params.vue === "ventes" ? <ExportButton url={exportComptaUrl(range)} fileName={exportFileName(range)} /> : undefined}
+      />
+      <ComptaViewSwitch value={params.vue} hrefs={viewHrefs} />
 
-export async function ComptaPage({ searchParams }: ComptaPageProps) {
-  const params = await searchParams;
-  const query = (params.q ?? "").trim();
-
-  return (
-    <PageScaffold padding={4} ariaLabel="Compta">
-      <Suspense key={query} fallback={<ComptaFallback />}>
-        <ComptaContent query={query} />
-      </Suspense>
+      {params.vue === "ventes" ? (
+        <>
+          <PeriodSelector
+            periode={params.periode}
+            hrefs={periodHrefs}
+            navigation={
+              navigation
+                ? {
+                    label: navigation.label,
+                    previousHref: withRef(navigation.previous.ref),
+                    nextHref: navigation.next ? withRef(navigation.next.ref) : null,
+                  }
+                : null
+            }
+          />
+          <Block fallback={<SalesFiguresSkeleton />} errorMessage="Chiffres indisponibles.">
+            <SalesFiguresBlock
+              periode={periodKey}
+              period={period}
+              collectHref={routes.encaisser()}
+              unknownCostHref={routes.compta({
+                periode: params.periode === "mois" ? undefined : params.periode,
+                ref,
+                q: params.q || undefined,
+                filtre: "cout-a-completer",
+              })}
+            />
+          </Block>
+          {chartTitle ? (
+            <Block fallback={<SalesChartSkeleton />} errorMessage="Graphe indisponible.">
+              <SalesChartBlock periode={periodKey} title={chartTitle} />
+            </Block>
+          ) : null}
+          <Block fallback={<PeriodDocumentsSkeleton />} errorMessage="Documents indisponibles.">
+            <PeriodDocumentsBlock periode={periodKey} q={params.q} filtre={params.filtre} />
+          </Block>
+        </>
+      ) : (
+        <Block fallback={<TreasurySkeleton />} errorMessage="Poches indisponibles.">
+          <TreasuryBlock monthLabel={journalNavigation(parseJournalMonth(null, now), now).figureLabel} />
+        </Block>
+      )}
     </PageScaffold>
   );
 }

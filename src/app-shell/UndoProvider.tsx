@@ -1,118 +1,91 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
-import { Toast } from "@/ui/primitives/Toast";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, type ReactNode } from "react";
+import { useToast } from "./FeedbackProvider";
 
-const UNDO_MS = 5000;
+/** Délai du filet « Annuler » (06 §4.3). */
+export const UNDO_DELAY_MS = 5000;
 
-type ScheduleArgs = {
-  /** Message affiché dans le toast (ex. « Commande supprimée »). */
+export type ScheduleDeleteArgs = {
+  /** « Commande supprimée », « Fares supprimé ». */
   message: string;
-  /** Action réelle exécutée si l'undo n'est pas déclenché (ex. fetch DELETE). */
+  /** L'écriture réelle, exécutée à la fin du délai (ou plus tôt, voir ci-dessous). */
   onCommit: () => void | Promise<void>;
-  /** Optionnel : restauration UI quand l'utilisateur annule (ex. router.refresh). */
+  /** Restauration de l'écran quand l'utilisateur annule. */
   onUndo?: () => void;
-  /** Optionnel : message d'erreur si onCommit échoue. */
+  /** Message du toast d'erreur si l'écriture échoue. */
   errorMessage?: string;
 };
 
-type UndoContextValue = {
-  scheduleDelete: (args: ScheduleArgs) => void;
-};
+type UndoValue = { scheduleDelete: (args: ScheduleDeleteArgs) => void };
 
-const UndoContext = createContext<UndoContextValue | null>(null);
+const UndoContext = createContext<UndoValue | null>(null);
 
 /**
- * Filet « Annuler » au niveau shell : suppression différée de 5 s.
+ * Suppression différée de 5 s avec « Annuler » (05 §3.4, 06 §4.3), passée par le canal de toasts du
+ * shell : un seul toast à la fois, et un nouveau geste (un autre toast) valide le précédent.
  *
- * - Survit aux navigations (monté dans AdminShell).
- * - Un seul undo en vol : programmer un nouveau commit l'éventuel précédent.
+ * - Survit aux navigations : monté par `AdminShell`.
+ * - Toast fermé, délai écoulé ou remplacé : l'écriture part tout de suite.
+ * - L'app passe en arrière-plan (iOS peut la tuer) : l'écriture part aussi — la suppression a été
+ *   confirmée, la perdre serait la surprise.
  */
 export function UndoProvider({ children }: { children: ReactNode }) {
-  const [pending, setPending] = useState<ScheduleArgs | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const timerRef = useRef<number | null>(null);
-  const pendingRef = useRef<ScheduleArgs | null>(null);
+  const { showToast, dismissToast } = useToast();
+  const pending = useRef<{ toastId: number; args: ScheduleDeleteArgs } | null>(null);
 
-  const clearTimer = () => {
-    if (timerRef.current !== null) {
-      window.clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
-  const commit = useCallback((args: ScheduleArgs) => {
-    Promise.resolve(args.onCommit()).catch(() => {
-      setError(args.errorMessage ?? "Action échouée.");
-    });
-  }, []);
+  const commit = useCallback(
+    (args: ScheduleDeleteArgs) => {
+      Promise.resolve()
+        .then(args.onCommit)
+        .catch(() => {
+          showToast({ type: "error", message: args.errorMessage ?? "La suppression n'a pas pu aboutir. Réessaie." });
+        });
+    },
+    [showToast],
+  );
 
   const scheduleDelete = useCallback(
-    (args: ScheduleArgs) => {
-      // Valide d'abord un éventuel undo encore en vol.
-      if (pendingRef.current) commit(pendingRef.current);
-      clearTimer();
-      pendingRef.current = args;
-      setPending(args);
-      timerRef.current = window.setTimeout(() => {
-        commit(args);
-        pendingRef.current = null;
-        setPending(null);
-        timerRef.current = null;
-      }, UNDO_MS);
+    (args: ScheduleDeleteArgs) => {
+      const entry = { toastId: 0, args };
+      entry.toastId = showToast({
+        type: "info",
+        message: args.message,
+        duration: UNDO_DELAY_MS,
+        actionLabel: "Annuler",
+        onAction: () => {
+          if (pending.current === entry) pending.current = null;
+          args.onUndo?.();
+        },
+        onDismiss: () => {
+          if (pending.current === entry) pending.current = null;
+          commit(args);
+        },
+      });
+      pending.current = entry;
     },
-    [commit],
+    [commit, showToast],
   );
 
-  const handleUndo = useCallback(() => {
-    clearTimer();
-    const args = pendingRef.current;
-    pendingRef.current = null;
-    setPending(null);
-    args?.onUndo?.();
-  }, []);
+  useEffect(() => {
+    const flush = (event: Event) => {
+      const leaving = event.type === "pagehide" || document.visibilityState === "hidden";
+      if (leaving && pending.current) dismissToast(pending.current.toastId);
+    };
+    document.addEventListener("visibilitychange", flush);
+    window.addEventListener("pagehide", flush);
+    return () => {
+      document.removeEventListener("visibilitychange", flush);
+      window.removeEventListener("pagehide", flush);
+    };
+  }, [dismissToast]);
 
-  const handleClose = useCallback(() => {
-    // Fermeture manuelle = valider tout de suite.
-    clearTimer();
-    const args = pendingRef.current;
-    pendingRef.current = null;
-    setPending(null);
-    if (args) commit(args);
-  }, [commit]);
-
-  useEffect(() => () => clearTimer(), []);
-
-  return (
-    <UndoContext.Provider value={{ scheduleDelete }}>
-      {children}
-      {pending ? (
-        <Toast
-          type="info"
-          message={pending.message}
-          duration={0}
-          actionLabel="Annuler"
-          onAction={handleUndo}
-          onClose={handleClose}
-        />
-      ) : null}
-      {error ? (
-        <Toast type="error" message={error} onClose={() => setError(null)} />
-      ) : null}
-    </UndoContext.Provider>
-  );
+  const value = useMemo(() => ({ scheduleDelete }), [scheduleDelete]);
+  return <UndoContext.Provider value={value}>{children}</UndoContext.Provider>;
 }
 
-export function useUndo(): UndoContextValue {
+export function useUndo(): UndoValue {
   const ctx = useContext(UndoContext);
-  if (!ctx) throw new Error("useUndo doit être utilisé dans <UndoProvider>.");
+  if (!ctx) throw new Error("useUndo : composant hors du shell (UndoProvider manquant).");
   return ctx;
 }

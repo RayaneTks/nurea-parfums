@@ -1,22 +1,12 @@
-import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin/requireAdmin";
-import { jsonFromPrismaGestionError } from "@/lib/gestion/prismaGestionError";
-import { globalSearch } from "@/server/search/queries";
+import { parseSearchParams } from "@/contracts/search";
+import { defineReadRoute } from "@/server/core/define-read-route";
+import { searchAdmin } from "@/server/search/queries";
 
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-
-export async function GET(request: Request) {
-  try {
-    const ctx = await requireAdmin(request);
-    if (ctx instanceof NextResponse) return ctx;
-
-    const url = new URL(request.url);
-    const q = url.searchParams.get("q") ?? "";
-    const result = await globalSearch(q);
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error("[api/admin/search][GET]", error);
-    return jsonFromPrismaGestionError(error, "Recherche indisponible.");
-  }
-}
+/**
+ * Recherche à la frappe (04 §3.5) : palette S17, sélecteur de client S06. Un GET annulable plutôt qu'une action :
+ * une frappe débouncée ne doit ni attendre la précédente ni retarder une écriture. Jamais mise en cache.
+ */
+export const GET = defineReadRoute("search", async (request) => {
+  const { q, scope } = parseSearchParams(request.nextUrl.searchParams);
+  return searchAdmin(q, scope);
+});
