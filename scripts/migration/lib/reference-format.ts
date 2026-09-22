@@ -89,7 +89,14 @@ export interface Mesures {
 
 export interface Reference {
   format: typeof FORMAT_REFERENCE;
-  horodatages: { calculeLe: string; hote: string };
+  horodatages: {
+    /** Instant auquel les mesures se rapportent : celui de la transaction, ou celui de `--instant`. */
+    calculeLe: string;
+    hote: string;
+    /** Vrai si `--instant` a été donné (contrôle du retour arrière, 07 §1.7) : les deux calculs
+     * comparés mesurent alors la même fenêtre de mois, et `mesures` ne dépend plus que des données. */
+    instantImpose?: true;
+  };
   mesures: Mesures;
 }
 

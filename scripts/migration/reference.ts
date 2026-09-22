@@ -1,7 +1,7 @@
 /**
  * Référence figée AVANT la reprise (docs/refonte/03-MODELE-DONNEES.md §7.2 ; 07-PLAN-EXECUTION.md §2.2, §2.5).
  *
- *   npm run migration:reference -- [--out <dossier>] [--confirm-host <hôte>]
+ *   npm run migration:reference -- [--out <dossier>] [--instant <ISO>] [--confirm-host <hôte>]
  *
  * Calcule sur l'ANCIEN schéma, avec les ANCIENNES formules recopiées en SQL :
  * - solde de chaque poche (archivées comprises), total des poches non archivées, non attribué (C1) ;
@@ -16,6 +16,11 @@
  * Lecture seule : une transaction REPEATABLE READ READ ONLY (toutes les mesures voient le même
  * instantané). Refuse de s'exécuter si la table "Order" n'existe plus dans public (déjà contractée).
  * Écrit `<dossier>/reference.json` (dossier relatif rangé sous migration-artifacts/<date>/).
+ *
+ * `--instant <ISO>` remplace `transaction_timestamp()` par l'instant donné : deux mesures informatives
+ * dépendent du calendrier (le mois courant et son Encaissé). Le retour arrière (§1.7) le passe pour
+ * recalculer la référence dans la MÊME fenêtre de mois que celle d'avant la bascule — `mesures` ne
+ * dépend alors plus que des données, et la comparaison peut être exacte au centime. Nulle part ailleurs.
  */
 import path from "node:path";
 import { centimes, euros } from "./lib/argent";
@@ -45,11 +50,17 @@ const REF_COMMANDES = `
   FROM "Order" o
   WHERE NOT EXISTS (SELECT 1 FROM "Sale" s WHERE s."orderId" = o.id)`;
 
-async function calculerReference(db: Sql, hote: string): Promise<Reference> {
-  const { calculeLe } = await premiere<{ calculeLe: string }>(
-    db,
-    `SELECT to_char(transaction_timestamp() AT TIME ZONE 'UTC', ${FORMAT_DATE}) || 'Z' AS "calculeLe"`,
-  );
+/** Format de `--instant` : celui que le script écrit lui-même (`FORMAT_DATE` + « Z »). */
+const FORMAT_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
+async function calculerReference(db: Sql, hote: string, instant?: string): Promise<Reference> {
+  const { calculeLe } =
+    instant === undefined
+      ? await premiere<{ calculeLe: string }>(
+          db,
+          `SELECT to_char(transaction_timestamp() AT TIME ZONE 'UTC', ${FORMAT_DATE}) || 'Z' AS "calculeLe"`,
+        )
+      : { calculeLe: instant };
 
   const comptages = await premiere<Comptages>(
     db,
@@ -164,7 +175,7 @@ async function calculerReference(db: Sql, hote: string): Promise<Reference> {
 
   return {
     format: FORMAT_REFERENCE,
-    horodatages: { calculeLe, hote },
+    horodatages: instant === undefined ? { calculeLe, hote } : { calculeLe, hote, instantImpose: true },
     mesures: {
       comptages,
       poches: parId(poches, (p) => p.id),
@@ -190,9 +201,13 @@ async function calculerReference(db: Sql, hote: string): Promise<Reference> {
 }
 
 async function main(): Promise<number> {
-  const args = lireArguments(process.argv.slice(2), { valeurs: ["--out", "--confirm-host"] });
+  const args = lireArguments(process.argv.slice(2), { valeurs: ["--out", "--confirm-host", "--instant"] });
   const url = lireCible(USAGE, args.valeurs.get("--confirm-host"));
   const dossier = resoudreSortie(args.valeurs.get("--out"));
+  const instant = args.valeurs.get("--instant");
+  if (instant !== undefined && !FORMAT_INSTANT.test(instant)) {
+    throw new ErreurUsage(`--instant attend un instant UTC à la milliseconde (2026-09-17T22:10:00.000Z), reçu « ${instant} ».`);
+  }
 
   const db = await ouvrirBase(url);
   try {
@@ -207,7 +222,7 @@ async function main(): Promise<number> {
     const reference = await db.$transaction(
       async (tx) => {
         await tx.$executeRawUnsafe(`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`);
-        return calculerReference(tx, hostOf(url));
+        return calculerReference(tx, hostOf(url), instant);
       },
       { maxWait: 10_000, timeout: 10 * 60_000 },
     );
