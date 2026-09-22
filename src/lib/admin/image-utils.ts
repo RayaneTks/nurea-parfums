@@ -2,9 +2,23 @@
  * Optimisation client-side avant upload :
  * - Conversion WebP
  * - Recadrage forcé 1024x1536 (portrait standard Nuréa)
- * - Compression maîtrisée (0.80)
+ * - Compression maîtrisée (voir `QUALITE_WEBP`)
  * - Génération d'un mini placeholder blur local (facultatif mais utile)
  */
+
+/**
+ * Qualité WebP des visuels déposés.
+ *
+ * Ce fichier annonçait « compression maîtrisée (0.80) » et encodait en réalité à **0,95**, avec
+ * un commentaire « augmentation de la qualité pour le luxe ». Le résultat tenait dans les
+ * chiffres : des flacons de **1 à 2,4 Mo** pour un cadre de 1024×1536, là où le même cadre
+ * tient en **~90 Ko**. À l'œil, sur un flacon, 0,82 et 0,95 sont indiscernables ; à la facture
+ * et au temps de chargement, il y a un facteur vingt.
+ *
+ * 0,82 est aussi la valeur retenue côté serveur par la refonte
+ * (`WEBP_QUALITY` de `src/server/catalogue/webp.ts`) : une seule qualité dans tout le dépôt.
+ */
+const QUALITE_WEBP = 0.82;
 
 export async function convertToWebp(
   file: File,
@@ -45,7 +59,7 @@ export async function convertToWebp(
     cctx.drawImage(bitmap, 0, 0, w, h);
     bitmap.close();
     const fitBlob = await new Promise<Blob | null>((resolve) =>
-      c.toBlob(resolve, "image/webp", 0.95),
+      c.toBlob(resolve, "image/webp", QUALITE_WEBP),
     );
     if (!fitBlob) return file;
     const fitName = file.name.replace(/\.[a-zA-Z0-9]+$/, "");
@@ -87,7 +101,7 @@ export async function convertToWebp(
   ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, targetW, targetH);
   
   const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, "image/webp", 0.95), // Augmentation de la qualité pour le luxe
+    canvas.toBlob(resolve, "image/webp", QUALITE_WEBP),
   );
   bitmap.close();
 
