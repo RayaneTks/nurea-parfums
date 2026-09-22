@@ -163,15 +163,15 @@ export function BatchView({ data, pockets }: { data: BatchSheetDTO; pockets: rea
         {/* `warning` est le ton d'un montant NON REÇU : à zéro, il n'y a rien à signaler (05 §3.3). */}
         <KpiTile label="À encaisser" amount={figures.aEncaisser} tone={carriesDue ? "warning" : "default"} />
         <KpiTile
-          label="Coûts d'achat"
+          label="Achat des parfums"
           amount={figures.margeNette.costs}
           hint={
             figures.margeNette.hasUnknownCost
-              ? `${figures.margeNette.unknownCostCount} au coût à compléter, comptés 0 €`
+              ? `${figures.margeNette.unknownCostCount} sans achat renseigné, comptés 0 €`
               : undefined
           }
         />
-        <KpiTile label="Dépenses" amount={figures.margeNette.expenses} />
+        <KpiTile label="Frais de lot" amount={figures.margeNette.expenses} />
       </div>
 
       {/* Zone 3 — tout ce qui est rattaché. */}
