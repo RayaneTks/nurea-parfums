@@ -1,6 +1,4 @@
-"use client";
-
-import type { ElementType, ReactNode, CSSProperties } from "react";
+import type { CSSProperties, ElementType, ReactNode } from "react";
 import { space, type SpaceToken } from "@/design/tokens";
 import { cn } from "@/lib/utils";
 
@@ -15,27 +13,20 @@ type BoxProps = {
   pr?: SpaceToken;
   mt?: SpaceToken;
   mb?: SpaceToken;
-  /** Si true, occupe tout l'espace dispo (flex:1). */
+  /** Occupe l'espace disponible (flex: 1). */
   flex?: boolean;
   children?: ReactNode;
   className?: string;
   style?: CSSProperties;
-  /** Forward des handlers natifs. */
-  onClick?: (e: React.MouseEvent<HTMLElement>) => void;
 };
 
-export function Box({
-  as,
-  p, px, py, pt, pb, pl, pr,
-  mt, mb,
-  flex,
-  children,
-  className,
-  style,
-  onClick,
-}: BoxProps) {
+/**
+ * Boîte d'espacement sur la grille 4 px. Pas de `onClick` : un élément
+ * tapable est un `Button`, une `ListRow` ou une `Card interactive`, qui portent
+ * rôle, clavier, press scale et cible de 44 px.
+ */
+export function Box({ as, p, px, py, pt, pb, pl, pr, mt, mb, flex, children, className, style }: BoxProps) {
   const Tag: ElementType = as ?? "div";
-
   const inlineStyle: CSSProperties = {
     ...(p !== undefined ? { padding: space[p] } : {}),
     ...(px !== undefined ? { paddingLeft: space[px], paddingRight: space[px] } : {}),
@@ -48,13 +39,8 @@ export function Box({
     ...(mb !== undefined ? { marginBottom: space[mb] } : {}),
     ...style,
   };
-
   return (
-    <Tag
-      className={cn(flex ? "flex-1 min-w-0" : null, className)}
-      style={inlineStyle}
-      onClick={onClick}
-    >
+    <Tag className={cn(flex ? "min-w-0 flex-1" : null, className)} style={inlineStyle}>
       {children}
     </Tag>
   );

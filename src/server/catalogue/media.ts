@@ -1,141 +1,214 @@
-import { prisma } from "@/lib/db/prisma";
+import "server-only";
+import {
+  MAX_MEDIA_MESSAGE,
+  MAX_MEDIA_PER_PERFUME,
+  MEDIA_NOT_FOUND_MESSAGE,
+  STORY_PATH_MESSAGE,
+  isStoryPathOf,
+  type PerfumeMediaItem,
+} from "@/contracts/catalogue";
+import { DomainError } from "@/domain/errors";
+import { newId } from "@/domain/ids";
+import type { Tx } from "@/server/db/transaction";
 
 /**
- * Visuels marketing d'un parfum — lecture et écriture.
+ * Seul fichier qui écrit `PerfumeMedia`, les visuels story d'un parfum (04 §4.3, §12 ; 03 §3).
  *
- * Ces planches ne servent pas la vitrine : elles servent la personne qui, à
- * 22 h, cherche le visuel d'un parfum pour le publier en story. Elles vivent
- * donc du côté gestion, rangées par parfum, et se retrouvent par le catalogue
- * plutôt qu'en faisant défiler quarante images d'une pellicule.
+ * Ces planches ne servent pas la vitrine : elles servent la personne qui, à 22 h, cherche le visuel d'un
+ * parfum pour le publier en story. Elles vivent donc du côté gestion, rangées sur la fiche du parfum.
+ *
+ * Règles tenues ici, sous le verrou de la ligne `Perfume` (rang 4, 04 §4.2) : chemin exactement
+ * `stories/<perfumeId>/…` (revérifié, même si le contrat l'a déjà fait), rang calculé (deux dépôts
+ * simultanés ne prennent pas le même), 24 visuels au plus. L'objet rangé est le WebP que le serveur a
+ * converti (`storage.convertUpload`) : chemin, URL, dimensions et poids viennent de lui. Le retrait rend
+ * l'URL de l'objet : c'est l'action qui le supprime du bucket, APRÈS le commit
+ * (`storage.commitThenRemoveObjects`).
+ *
+ * Accès par le client Prisma de la transaction (`tx.db.perfumeMedia`) : l'extension de
+ * `src/server/db/client.ts` inscrit le modèle écrit dans l'unité de travail, d'où l'invalidation
+ * `gestion` + `admin-catalogue` sans la vitrine (04 §10.1).
  */
 
-export type PerfumeMediaRow = {
+const MEDIA_SELECT = {
+  id: true,
+  url: true,
+  label: true,
+  width: true,
+  height: true,
+  bytes: true,
+  sortOrder: true,
+  createdAt: true,
+} as const;
+
+/** Ordre d'affichage de la galerie : rang, puis date de dépôt, puis identifiant (stable). */
+const GALLERY_ORDER = [{ sortOrder: "asc" }, { createdAt: "asc" }, { id: "asc" }] as const;
+
+type MediaRow = {
   id: string;
   url: string;
-  path: string;
-  label: string | null;
-  width: number;
-  height: number;
-  bytes: number;
-  sortOrder: number;
-  createdAt: string;
-};
-
-export type PerfumeMediaInput = {
-  url: string;
-  path: string;
-  label?: string | null;
-  width: number;
-  height: number;
-  bytes: number;
-};
-
-function toRow(m: {
-  id: string;
-  url: string;
-  path: string;
   label: string | null;
   width: number;
   height: number;
   bytes: number;
   sortOrder: number;
   createdAt: Date;
-}): PerfumeMediaRow {
+};
+
+export const PERFUME_NOT_FOUND_MESSAGE = "Ce parfum n'existe plus. Il a peut-être été supprimé depuis un autre écran.";
+
+function toItem(row: MediaRow): PerfumeMediaItem {
   return {
-    id: m.id,
-    url: m.url,
-    path: m.path,
-    label: m.label,
-    width: m.width,
-    height: m.height,
-    bytes: m.bytes,
-    sortOrder: m.sortOrder,
-    createdAt: m.createdAt.toISOString(),
+    id: row.id,
+    url: row.url,
+    label: row.label,
+    width: row.width,
+    height: row.height,
+    bytes: row.bytes,
+    sortOrder: row.sortOrder,
+    createdAt: row.createdAt.toISOString(),
   };
 }
 
-export async function listPerfumeMedia(perfumeId: number): Promise<PerfumeMediaRow[]> {
-  const rows = await prisma.perfumeMedia.findMany({
-    where: { perfumeId },
-    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-  });
-  return rows.map(toRow);
+/** Sérialise les écritures de la galerie d'un parfum ; `NOT_FOUND` si le parfum a disparu. */
+async function lockPerfume(tx: Tx, perfumeId: number): Promise<void> {
+  const { perfumes } = await tx.lock({ perfumes: [perfumeId] });
+  if (perfumes.length === 0) throw new DomainError("NOT_FOUND", PERFUME_NOT_FOUND_MESSAGE);
 }
 
-/** Combien de visuels par parfum, pour pastiller la liste du catalogue. */
-export async function countMediaByPerfume(): Promise<Map<number, number>> {
-  const rows = await prisma.perfumeMedia.groupBy({
-    by: ["perfumeId"],
-    _count: { _all: true },
-  });
-  return new Map(rows.map((r) => [r.perfumeId, r._count._all]));
+function listRows(tx: Tx, perfumeId: number): Promise<MediaRow[]> {
+  return tx.db.perfumeMedia.findMany({ where: { perfumeId }, orderBy: [...GALLERY_ORDER], select: MEDIA_SELECT });
 }
 
 /**
- * Ajoute un visuel à la fin de la galerie.
- *
- * `sortOrder` est calculé, jamais reçu du client : deux envois simultanés
- * depuis deux onglets s'attribueraient sinon le même rang, et la galerie
- * afficherait un ordre différent à chaque rechargement.
+ * Avant de convertir un original (seconde transaction à part, en lecture) : le visuel déjà rangé à ce chemin
+ * s'il existe (renvoi de la même demande : rien à convertir), sinon `null` — après avoir refusé un parfum
+ * disparu (`NOT_FOUND`) ou une galerie pleine (`CONFLICT`), pour ne pas convertir en vain. `addMedia`
+ * revérifie tout sous le verrou du parfum.
  */
-export async function addPerfumeMedia(
-  perfumeId: number,
-  input: PerfumeMediaInput,
-): Promise<PerfumeMediaRow> {
-  const last = await prisma.perfumeMedia.findFirst({
-    where: { perfumeId },
-    orderBy: { sortOrder: "desc" },
-    select: { sortOrder: true },
+export async function mediaAtPathOrRoom(tx: Tx, input: { perfumeId: number; path: string }): Promise<PerfumeMediaItem | null> {
+  if (!isStoryPathOf(input.perfumeId, input.path)) throw new DomainError("VALIDATION", STORY_PATH_MESSAGE, "source");
+  const perfume = await tx.db.perfume.findUnique({ where: { id: input.perfumeId }, select: { id: true } });
+  if (!perfume) throw new DomainError("NOT_FOUND", PERFUME_NOT_FOUND_MESSAGE);
+  const existing = await tx.db.perfumeMedia.findUnique({ where: { path: input.path }, select: MEDIA_SELECT });
+  if (existing) return toItem(existing); // le préfixe vérifié garantit qu'il s'agit du même parfum
+  const count = await tx.db.perfumeMedia.count({ where: { perfumeId: input.perfumeId } });
+  if (count >= MAX_MEDIA_PER_PERFUME) throw new DomainError("CONFLICT", MAX_MEDIA_MESSAGE);
+  return null;
+}
+
+export type NewMedia = {
+  perfumeId: number;
+  /** Chemin définitif du WebP converti (`storage.convertUpload`), sous `stories/<perfumeId>/`. */
+  path: string;
+  /** URL recalculée depuis `path` (`storage.publicUrlOf`), jamais reçue du client. */
+  url: string;
+  label: string | null;
+  /** Dimensions et poids du WebP écrit, lus par le serveur. */
+  width: number;
+  height: number;
+  bytes: number;
+};
+
+/**
+ * Range un visuel converti à la fin de la galerie. Un second envoi du même original (double tap, renvoi
+ * après coupure) désigne le même chemin définitif : la ligne déjà rangée est rendue sans rien écrire.
+ */
+export async function addMedia(tx: Tx, input: NewMedia): Promise<PerfumeMediaItem> {
+  if (!isStoryPathOf(input.perfumeId, input.path)) throw new DomainError("VALIDATION", STORY_PATH_MESSAGE, "source");
+  await lockPerfume(tx, input.perfumeId);
+
+  const existing = await tx.db.perfumeMedia.findUnique({ where: { path: input.path }, select: MEDIA_SELECT });
+  if (existing) return toItem(existing); // le préfixe vérifié garantit qu'il s'agit du même parfum
+
+  const gallery = await tx.db.perfumeMedia.aggregate({
+    where: { perfumeId: input.perfumeId },
+    _count: { _all: true },
+    _max: { sortOrder: true },
   });
-  const created = await prisma.perfumeMedia.create({
+  if (gallery._count._all >= MAX_MEDIA_PER_PERFUME) throw new DomainError("CONFLICT", MAX_MEDIA_MESSAGE);
+
+  const created = await tx.db.perfumeMedia.create({
     data: {
-      perfumeId,
-      url: input.url,
+      id: newId(),
+      perfumeId: input.perfumeId,
       path: input.path,
-      label: input.label?.trim() || null,
+      url: input.url,
+      label: input.label,
       width: input.width,
       height: input.height,
       bytes: input.bytes,
-      sortOrder: (last?.sortOrder ?? -1) + 1,
+      sortOrder: gallery._max.sortOrder === null ? 0 : gallery._max.sortOrder + 1,
     },
+    select: MEDIA_SELECT,
   });
-  return toRow(created);
+  return toItem(created);
+}
+
+/** Libellé libre ; `null` l'efface. Visuel absent (ou d'un autre parfum) : `NOT_FOUND`. */
+export async function setMediaLabel(
+  tx: Tx,
+  input: { perfumeId: number; mediaId: string; label: string | null },
+): Promise<PerfumeMediaItem> {
+  const { count } = await tx.db.perfumeMedia.updateMany({
+    where: { id: input.mediaId, perfumeId: input.perfumeId },
+    data: { label: input.label },
+  });
+  if (count === 0) throw new DomainError("NOT_FOUND", MEDIA_NOT_FOUND_MESSAGE);
+  const row = await tx.db.perfumeMedia.findUnique({ where: { id: input.mediaId }, select: MEDIA_SELECT });
+  if (!row) throw new DomainError("NOT_FOUND", MEDIA_NOT_FOUND_MESSAGE);
+  return toItem(row);
 }
 
 /**
- * Retire un visuel et rend le chemin de l'objet à effacer du bucket.
- *
- * Le chemin est rendu plutôt qu'effacé ici : la couche stockage n'a rien à
- * faire dans une requête de base, et l'appelant sait, lui, si la suppression
- * en base a bien eu lieu avant de toucher au fichier.
+ * Réordonne la galerie : les identifiants connus dans l'ordre reçu, puis ceux que l'écran n'a pas
+ * envoyés, dans leur ordre actuel ; un identifiant inconnu est ignoré. Rangs recompactés 0…n−1, seules
+ * les lignes dont le rang change sont écrites (24 au plus, sous le verrou du parfum).
  */
-export async function removePerfumeMedia(
-  perfumeId: number,
-  mediaId: string,
-): Promise<string | null> {
-  const media = await prisma.perfumeMedia.findFirst({
-    where: { id: mediaId, perfumeId },
-    select: { id: true, path: true },
-  });
-  if (!media) return null;
-  await prisma.perfumeMedia.delete({ where: { id: media.id } });
-  return media.path;
+export async function reorderMedia(
+  tx: Tx,
+  input: { perfumeId: number; orderedIds: readonly string[] },
+): Promise<PerfumeMediaItem[]> {
+  await lockPerfume(tx, input.perfumeId);
+  const rows = await listRows(tx, input.perfumeId);
+  const known = new Map(rows.map((row) => [row.id, row]));
+  const placed = new Set<string>();
+  for (const id of input.orderedIds) if (known.has(id)) placed.add(id);
+  const order = [...placed, ...rows.map((row) => row.id).filter((id) => !placed.has(id))];
+
+  const changes = order
+    .map((id, rank) => ({ id, rank }))
+    .filter(({ id, rank }) => known.get(id)?.sortOrder !== rank);
+  if (changes.length === 0) return rows.map(toItem);
+
+  for (const { id, rank } of changes) {
+    await tx.db.perfumeMedia.updateMany({ where: { id, perfumeId: input.perfumeId }, data: { sortOrder: rank } });
+  }
+  return (await listRows(tx, input.perfumeId)).map(toItem);
 }
 
-/** Réordonne la galerie. Les identifiants inconnus sont ignorés. */
-export async function reorderPerfumeMedia(
-  perfumeId: number,
-  orderedIds: readonly string[],
-): Promise<void> {
-  const known = await prisma.perfumeMedia.findMany({
-    where: { perfumeId },
-    select: { id: true },
+/**
+ * Retire un visuel : DELETE de la ligne, et l'URL de son objet rendue pour une suppression APRÈS le commit.
+ * Déjà absent : succès sans suppression d'objet (renvoi après coupure).
+ */
+export async function removeMedia(
+  tx: Tx,
+  input: { perfumeId: number; mediaId: string },
+): Promise<{ removed: boolean; url: string | null }> {
+  const where = { id: input.mediaId, perfumeId: input.perfumeId };
+  const row = await tx.db.perfumeMedia.findFirst({ where, select: { url: true } });
+  const { count } = await tx.db.perfumeMedia.deleteMany({ where });
+  return row && count > 0 ? { removed: true, url: row.url } : { removed: false, url: null };
+}
+
+/**
+ * URL des objets des visuels de ces parfums, à lire AVANT leur suppression : la cascade efface les lignes,
+ * après le DELETE plus personne ne saurait quels objets leur appartenaient.
+ */
+export async function mediaUrlsOfPerfumes(tx: Tx, perfumeIds: readonly number[]): Promise<string[]> {
+  if (perfumeIds.length === 0) return [];
+  const rows = await tx.db.perfumeMedia.findMany({
+    where: { perfumeId: { in: [...perfumeIds] } },
+    select: { url: true },
   });
-  const knownIds = new Set(known.map((m) => m.id));
-  const ops = orderedIds
-    .filter((id) => knownIds.has(id))
-    .map((id, index) =>
-      prisma.perfumeMedia.update({ where: { id }, data: { sortOrder: index } }),
-    );
-  if (ops.length > 0) await prisma.$transaction(ops);
+  return rows.map((row) => row.url);
 }

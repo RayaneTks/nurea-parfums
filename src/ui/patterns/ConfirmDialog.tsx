@@ -1,181 +1,180 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Button } from "@/ui/primitives/Button";
-import { HStack } from "@/ui/primitives/Stack";
+import { AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "../primitives/Button";
+import { isToastTarget } from "../primitives/Toast";
+
+/** Message affiché quand l'échec ne dit rien d'exploitable (rejet sans `Error`, message vide). */
+export const CONFIRM_FALLBACK_ERROR = "L'action n'a pas abouti. Rien n'a été modifié — réessaie.";
+
+/** Texte montré dans la boîte pour un rejet de `onConfirm` (05 §3.2). */
+export function confirmErrorMessage(cause: unknown): string {
+  return cause instanceof Error && cause.message.trim() ? cause.message : CONFIRM_FALLBACK_ERROR;
+}
 
 type ConfirmDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Question directe : « Supprimer Fares ? », « Abandonner la saisie ? ». */
   title: string;
   /**
-   * Ce que l'utilisateur doit savoir avant de valider — la conséquence réelle,
-   * écrite par l'appelant qui la connaît. Une boîte sans description ne dit
-   * rien de plus que son titre : c'est presque toujours le signe qu'il manque
-   * une phrase, pas que la phrase serait superflue.
+   * LA VÉRITÉ sur les conséquences : « Ses 12 documents sont conservés »,
+   * « Un remboursement est ajouté en face ». Aucune phrase par défaut — un
+   * « Cette action est irréversible » générique mentait quand l'annulation 5 s existe.
    */
-  description?: string;
-  /** Texte du bouton de confirmation (defaut "Supprimer"). */
-  confirmLabel?: string;
-  /** Texte du bouton d'annulation (defaut "Annuler"). */
+  description?: ReactNode;
+  /** Verbe de l'action : « Supprimer », « Confirmer », « Abandonner ». */
+  confirmLabel: string;
   cancelLabel?: string;
-  /** "danger" rouge (defaut) ou "primary" pour confirms non-destructifs. */
-  tone?: "danger" | "primary";
-  /** @deprecated — sans effet, l'implémentation Radix passe par-dessus toute Sheet parente. */
-  nested?: boolean;
+  /** `danger` : destruction. `primary` : réserve à lever (cycle de statuts). */
+  tone: "danger" | "primary";
   /**
-   * Handler de confirmation. **Rends une promesse** : la boîte reste ouverte et
-   * verrouillée tant qu'elle n'est pas résolue, et affiche l'erreur si elle
-   * rejette. Un handler qui rend `void` court sans surveillance — le bouton
-   * redevient tapable aussitôt et deux taps rapides envoient deux requêtes.
+   * L'écriture confirmée. **Rends une vraie promesse** (jamais une fonction qui lance un
+   * `startTransition` et rend `void`) : le bouton reste en attente et la boîte non fermable jusqu'à
+   * sa fin, un second tap est sans effet. À l'appelant de fermer après succès.
+   *
+   * **Échec : rejette avec une `Error` au message français** — il s'affiche DANS la boîte, qui reste
+   * ouverte, boutons réactivés (05 §3.2). Jamais de toast : sous une modale, Radix le rend inerte.
    */
   onConfirm: () => Promise<void> | void;
+  /** Troisième voie, moins forte : « Masquer plutôt ». */
+  alternative?: { label: string; onAction: () => void };
 };
 
+/**
+ * Confirmation bloquante (05 §3.2) — Radix Dialog, bande `modal` (90/91) : au-dessus des sheets
+ * (70/71) et des sheets imbriquées (80/81) par son z-index, jamais par l'ordre de montage des portails
+ * (05 §2.7) ; sous le toast (100).
+ *
+ * Posé en bas de l'écran, sous le pouce, comme une feuille d'action iOS :
+ * on confirme d'une main, sans remonter au centre.
+ */
 export function ConfirmDialog({
   open,
   onOpenChange,
   title,
   description,
-  confirmLabel = "Supprimer",
+  confirmLabel,
   cancelLabel = "Annuler",
-  tone = "danger",
+  tone,
   onConfirm,
+  alternative,
 }: ConfirmDialogProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Verrou synchrone : deux taps dans la même image ne lancent pas deux écritures.
+  const running = useRef(false);
   const cancelRef = useRef<HTMLButtonElement>(null);
 
-  // Une réouverture repart d'une ardoise propre : garder l'erreur du refus
-  // précédent la ferait passer pour celle de la tentative en cours.
+  // Une réouverture repart d'une ardoise propre : l'erreur d'hier passerait pour celle d'aujourd'hui.
   useEffect(() => {
     if (open) setError(null);
   }, [open]);
 
-  const handleConfirm = async () => {
-    if (busy) return;
+  const confirm = async () => {
+    if (running.current) return;
+    running.current = true;
     setBusy(true);
     setError(null);
     try {
       await onConfirm();
-    } catch (e) {
+    } catch (cause) {
       /*
-       * L'échec s'affiche DANS la boîte, pas à côté.
-       *
-       * Il partait en toast — lequel, tant qu'un dialogue modal est ouvert,
-       * vit dans le sous-arbre que Radix neutralise : ni annonçable, ni
-       * tapable, et effacé au bout de trois secondes. L'utilisateur voyait
-       * donc sa confirmation ne produire strictement rien, retapait, et
-       * recommençait. Le message doit être là où le regard est déjà.
+       * L'échec s'affiche DANS la boîte (correction de production `3291428`). Il partait en toast,
+       * c'est-à-dire dans le sous-arbre que la modale neutralise : ni lu par VoiceOver, ni tapable,
+       * effacé en 3 s. On voyait sa confirmation ne rien produire, on retapait. Le message doit être
+       * là où le regard est déjà.
        */
-      setError(e instanceof Error ? e.message : "L'action a échoué. Réessaie.");
+      setError(confirmErrorMessage(cause));
     } finally {
+      running.current = false;
       setBusy(false);
     }
   };
 
+  // Le toast passe au-dessus (05 §2.7) : le toucher n'est pas « cliquer à côté » de la boîte.
+  const keepOpenForToast = (event: { target: EventTarget | null; preventDefault: () => void }) => {
+    if (isToastTarget(event.target)) event.preventDefault();
+  };
+
   return (
-    <Dialog.Root open={open} onOpenChange={(o) => (busy ? null : onOpenChange(o))}>
+    <Dialog.Root open={open} onOpenChange={(next) => (busy ? undefined : onOpenChange(next))}>
       <Dialog.Portal>
         <Dialog.Overlay
-          className="admin-theme fixed inset-0 bg-black/50 backdrop-blur-sm"
-          style={{ zIndex: "var(--admin-z-modal-backdrop)" }}
+          data-admin-overlay
+          className={cn(
+            "admin-theme fixed inset-0 z-[var(--admin-z-modal-backdrop)] bg-[var(--admin-overlay)]",
+            "motion-safe:data-[state=open]:animate-in motion-safe:data-[state=open]:fade-in motion-safe:data-[state=open]:[animation-duration:var(--admin-duration-slow)]",
+          )}
         />
         <Dialog.Content
-          /*
-           * Le focus va sur « Annuler », et non nulle part.
-           *
-           * L'ancienne version annulait le focus automatique : sur iOS le
-           * clavier restait donc levé au-dessus de la boîte, recouvrant ses
-           * deux boutons, et les frappes continuaient d'alimenter le champ
-           * caché derrière le voile. Donner le focus à un bouton referme le
-           * clavier — et le donner au bouton le moins destructeur évite qu'une
-           * touche Entrée réflexe déclenche l'action.
-           */
+          {...(description ? {} : { "aria-describedby": undefined })}
+          data-confirm-dialog
+          // Focus initial sur « Annuler », jamais sur l'action : une touche Entrée réflexe ne supprime
+          // rien, et le focus pris par un bouton referme le clavier iOS qui recouvrait la boîte.
           onOpenAutoFocus={(e) => {
             e.preventDefault();
             cancelRef.current?.focus();
           }}
+          onPointerDownOutside={keepOpenForToast}
           className={cn(
-            "admin-theme fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-            "flex w-[calc(100vw-2rem)] max-w-[400px] flex-col overflow-hidden rounded-[20px]",
-            "bg-[var(--admin-surface)] outline-none shadow-[var(--admin-shadow-lg)]",
+            "admin-theme fixed inset-x-0 z-[var(--admin-z-modal)] mx-auto flex w-[calc(100%-2rem)] flex-col overflow-hidden outline-none",
+            "rounded-[var(--admin-radius-xl)] bg-[var(--admin-surface)] shadow-[shadow:var(--admin-shadow-xl)]",
+            "motion-safe:data-[state=open]:animate-in motion-safe:data-[state=open]:fade-in motion-safe:data-[state=open]:slide-in-from-bottom-4",
+            "motion-safe:data-[state=open]:[animation-duration:var(--admin-duration-slow)] motion-safe:data-[state=open]:[animation-timing-function:var(--admin-easing-default)]",
           )}
           style={{
-            zIndex: "var(--admin-z-modal)",
+            maxWidth: "calc(var(--admin-app-max-width) - 2rem)",
+            bottom: "calc(var(--admin-space-4) + var(--admin-safe-area-bottom) + var(--admin-keyboard-inset, 0px))",
             /*
-             * Le corps du texte défile, la barre de boutons non. Sans plafond,
-             * une description longue — trois réserves cumulées, du texte
-             * agrandi, un écran en paysage — poussait « Annuler / Confirmer »
-             * hors de l'écran, et le body de cette PWA ne défile pas : les
-             * boutons devenaient inatteignables, sans même une barre de
-             * défilement à rattraper.
+             * Le corps défile, les boutons non (05 §3.2). Sans plafond, une description longue (réserves
+             * cumulées, texte agrandi, clavier levé) poussait les boutons hors de l'écran — et le corps
+             * de cette PWA ne défile pas. Hauteur visible, moins la marge basse et une marge haute.
              */
-            maxHeight: "calc(var(--admin-vh, 100dvh) - 2rem)",
+            maxHeight:
+              "calc(var(--admin-vh, 100dvh) - var(--admin-space-4) * 2 - var(--admin-safe-area-bottom) - env(safe-area-inset-top, 0px))",
           }}
         >
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4 pt-5">
-            <Dialog.Title className="text-[17px] font-semibold leading-tight text-[var(--admin-text)]">
-              {title}
-            </Dialog.Title>
-            {/*
-              La description est rendue même vide : Radix avertit sinon à chaque
-              ouverture qu'aucune ne décrit la boîte, et un lecteur d'écran
-              n'annonce plus que le titre.
-            */}
-            <Dialog.Description
-              className={cn(
-                "mt-1.5 text-[13px] leading-relaxed text-[var(--admin-text-muted)]",
-                description ? null : "sr-only",
-              )}
-            >
-              {description ?? title}
-            </Dialog.Description>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4 pt-5 [-webkit-overflow-scrolling:touch]">
+            <Dialog.Title className="admin-type-h3 text-[var(--admin-text)]">{title}</Dialog.Title>
+            {description ? (
+              <Dialog.Description className="admin-type-body mt-1.5 text-[var(--admin-text-muted)]">
+                {description}
+              </Dialog.Description>
+            ) : null}
             {error ? (
-              <p
+              <div
                 role="alert"
-                className="mt-3 rounded-[10px] px-3 py-2 text-[13px] leading-snug"
-                style={{
-                  background: "var(--admin-danger-bg)",
-                  color: "var(--admin-danger)",
-                  border: "1px solid var(--admin-danger)",
-                }}
+                data-confirm-error
+                className="mt-3 flex items-start gap-2 rounded-[var(--admin-radius-md)] border border-[var(--admin-danger-border)] bg-[var(--admin-danger-bg)] px-3 py-2.5"
               >
-                {error}
-              </p>
+                <AlertCircle size={16} aria-hidden className="mt-0.5 shrink-0 text-[var(--admin-danger)]" />
+                <p className="admin-type-caption min-w-0 flex-1 font-medium text-[var(--admin-danger)]">{error}</p>
+              </div>
             ) : null}
           </div>
 
-          <div
-            className="shrink-0 px-4 pb-4 pt-3"
-            style={{ borderTop: "1px solid var(--admin-border)" }}
-          >
-            {/* `wrap` : à 320 px, « Enregistrer quand même » ne tient pas à côté
-                d'« Annuler » — les deux passent alors l'un sous l'autre plutôt
-                que de rogner leur libellé. */}
-            <HStack gap={2} wrap>
-              <Button
-                ref={cancelRef}
-                variant="ghost"
-                size="lg"
-                fullWidth
-                onClick={() => onOpenChange(false)}
-                disabled={busy}
-              >
-                {cancelLabel}
+          <div className="flex shrink-0 flex-col gap-2 border-t border-[var(--admin-border)] p-3">
+            <Button
+              variant={tone === "danger" ? "danger" : "primary"}
+              size="lg"
+              fullWidth
+              isLoading={busy}
+              onClick={() => void confirm()}
+            >
+              {confirmLabel}
+            </Button>
+            {alternative ? (
+              <Button variant="secondary" size="lg" fullWidth disabled={busy} onClick={alternative.onAction}>
+                {alternative.label}
               </Button>
-              <Button
-                variant={tone === "danger" ? "danger" : "primary"}
-                size="lg"
-                fullWidth
-                isLoading={busy}
-                onClick={() => void handleConfirm()}
-              >
-                {error ? "Réessayer" : confirmLabel}
-              </Button>
-            </HStack>
+            ) : null}
+            <Button ref={cancelRef} variant="ghost" size="lg" fullWidth disabled={busy} onClick={() => onOpenChange(false)}>
+              {cancelLabel}
+            </Button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

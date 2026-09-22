@@ -1,70 +1,50 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { eurFromWire, formatEur, spokenEur, type MoneyString } from "@/domain/money";
 import { Money } from "../Money";
 
-function render(node: React.ReactElement): string {
-  return renderToStaticMarkup(node);
-}
+const wire = (v: string) => v as MoneyString;
+const render = (node: React.ReactElement) => renderToStaticMarkup(node);
 
+/*
+ * Le formatage lui-même est testé par le module monétaire
+ * (src/domain/__tests__/money.test.ts). Ici : que `Money` n'en invente pas un
+ * second, et qu'il porte ce que 05 §3.2 et §6 exigent.
+ */
 describe("<Money />", () => {
-  it("formats number 1234.56 → 1 234,56 €", () => {
-    const html = render(<Money value={1234.56} />);
-    expect(html).toMatch(/1\s?234,56/);
-    expect(html).toMatch(/€/);
+  it("affiche exactement formatEur, depuis une MoneyString comme depuis un Eur", () => {
+    const expected = formatEur(eurFromWire(wire("1234.50")));
+    expect(render(<Money value={wire("1234.50")} />)).toContain(expected);
+    expect(render(<Money value={eurFromWire(wire("1234.50"))} />)).toContain(expected);
   });
 
-  it("accepts string with comma decimal", () => {
-    const html = render(<Money value="12,50" />);
-    expect(html).toMatch(/12,50/);
+  it("transmet compact et signed au module monétaire", () => {
+    const v = wire("50.00");
+    expect(render(<Money value={v} compact />)).toContain(formatEur(eurFromWire(v), { compact: true }));
+    expect(render(<Money value={v} signed />)).toContain(formatEur(eurFromWire(v), { signed: true }));
   });
 
-  it("renders 0,00 € for null/undefined", () => {
-    expect(render(<Money value={null} />)).toMatch(/0,00/);
-    expect(render(<Money value={undefined} />)).toMatch(/0,00/);
+  it("chiffres tabulaires, sans retour à la ligne", () => {
+    const html = render(<Money value={wire("12.00")} />);
+    expect(html).toMatch(/class="[^"]*\btnum\b/);
+    expect(html).toMatch(/whitespace-nowrap/);
   });
 
-  /*
-   * `compact` masque les centimes NULS, jamais des centimes réels.
-   *
-   * Il les arrondissait, et c'est une chose qu'on ne peut pas se permettre sur
-   * un écran où des montants s'additionnent à l'œil. La compta affiche
-   * « Encaissé = tant en ventes + tant en commandes » : avec deux composantes
-   * à 100,40 € arrondies, la ligne lit « 100 € + 100 € = 201 € », et le gérant
-   * cherche l'euro manquant. Un montant qu'on rapproche de son relevé bancaire
-   * ne s'arrondit pas.
-   */
-  it("compact masque les centimes nuls", () => {
-    const html = render(<Money value={1234} compact />);
-    expect(html).not.toMatch(/,00/);
-    expect(html).toMatch(/1\s?234/);
+  it("VoiceOver lit le montant en toutes lettres, le visuel lui est masqué", () => {
+    const v = wire("1234.50");
+    const html = render(<Money value={v} />);
+    expect(html).toContain(`<span class="sr-only">${spokenEur(eurFromWire(v))}</span>`);
+    expect(html).toMatch(/<span aria-hidden="true">/);
   });
 
-  it("compact garde les centimes réels", () => {
-    const html = render(<Money value={1234.56} compact />);
-    expect(html).toMatch(/1\s?234,56/);
+  it("warning est le ton d'un montant non reçu ; pas de ton automatique vert/rouge", () => {
+    expect(render(<Money value={wire("80.00")} tone="warning" />)).toContain("text-[var(--admin-warning)]");
+    // Un positif n'est pas vert par défaut (05 §2.1).
+    expect(render(<Money value={wire("80.00")} />)).toContain("text-[var(--admin-text)]");
+    expect(render(<Money value={wire("-80.00")} />)).not.toContain("--admin-danger");
   });
 
-  it("les composantes d'une somme restent additionnables", () => {
-    // Le cas qui a motivé la règle : deux moitiés et leur total.
-    const moitie = render(<Money value={100.4} compact />);
-    const total = render(<Money value={200.8} compact />);
-    expect(moitie).toMatch(/100,40/);
-    expect(total).toMatch(/200,80/);
-  });
-
-  it("signed adds + on positive", () => {
-    const html = render(<Money value={50} signed />);
-    expect(html).toMatch(/\+/);
-  });
-
-  it("negative shows minus", () => {
-    const html = render(<Money value={-30} />);
-    expect(html).toMatch(/−30,00|-30,00/);
-  });
-
-  it("auto tone picks success/danger/muted", () => {
-    expect(render(<Money value={10} tone="auto" />)).toMatch(/text-\[var\(--admin-success\)\]|success/);
-    expect(render(<Money value={-10} tone="auto" />)).toMatch(/text-\[var\(--admin-danger\)\]|danger/);
-    expect(render(<Money value={0} tone="auto" />)).toMatch(/text-\[var\(--admin-text-muted\)\]|muted/);
+  it("inherit laisse la couleur au parent (fonds pleins)", () => {
+    expect(render(<Money value={wire("1.00")} tone="inherit" />)).not.toMatch(/text-\[var/);
   });
 });

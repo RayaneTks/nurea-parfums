@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type ToastType = "success" | "error" | "info";
@@ -10,33 +10,45 @@ export type ToastType = "success" | "error" | "info";
 type ToastProps = {
   type?: ToastType;
   message: string;
+  /** Millisecondes avant fermeture (défaut 3 s ; 5 s pour un « Annuler »). `0` : reste affiché. */
   duration?: number;
   onClose: () => void;
-  /** Bouton d'action optionnel (ex. « Annuler »). */
+  /** Action unique : « Annuler », « Réessayer », « Recharger ». */
   actionLabel?: string;
   onAction?: () => void;
 };
 
-const iconByType = {
+const icon: Record<ToastType, ReactNode> = {
   success: <CheckCircle2 size={18} />,
   error: <AlertCircle size={18} />,
   info: <Info size={18} />,
 };
 
-const styleByType: Record<ToastType, { bg: string; fg: string; border: string }> = {
-  success: { bg: "var(--admin-success-bg)", fg: "var(--admin-success)", border: "var(--admin-success)" },
-  error: { bg: "var(--admin-danger-bg)", fg: "var(--admin-danger)", border: "var(--admin-danger)" },
-  info: { bg: "var(--admin-info-bg)", fg: "var(--admin-info)", border: "var(--admin-info)" },
+const toneClass: Record<ToastType, { border: string; icon: string }> = {
+  success: { border: "border-[var(--admin-success-border)]", icon: "text-[var(--admin-success)]" },
+  error: { border: "border-[var(--admin-danger-border)]", icon: "text-[var(--admin-danger)]" },
+  info: { border: "border-[var(--admin-info-border)]", icon: "text-[var(--admin-info)]" },
 };
 
-export function Toast({
-  type = "success",
-  message,
-  duration = 3000,
-  onClose,
-  actionLabel,
-  onAction,
-}: ToastProps) {
+/** Attribut posé sur le nœud du toast : les couches modales le reconnaissent (`isToastTarget`). */
+export const TOAST_ATTRIBUTE = "data-admin-toast";
+
+/**
+ * Un appui (ou un focus) venu du toast n'est pas une « interaction extérieure » pour la sheet, la
+ * confirmation ou la palette ouverte dessous : taper « Annuler » ne doit pas les fermer au passage.
+ * À passer à `onPointerDownOutside` / `onInteractOutside` de chaque couche Radix ou vaul.
+ */
+export function isToastTarget(target: EventTarget | null): boolean {
+  return typeof Element !== "undefined" && target instanceof Element && target.closest(`[${TOAST_ATTRIBUTE}]`) !== null;
+}
+
+/**
+ * Notification transitoire. Rendue par le provider du shell, UNE à la fois,
+ * au-dessus de la tab bar et du clavier (z `toast`) — jamais montée par une
+ * feature (05 §3.1). Une erreur de CHARGEMENT n'est jamais un toast seul :
+ * c'est un `ErrorBanner`.
+ */
+export function Toast({ type = "success", message, duration = 3000, onClose, actionLabel, onAction }: ToastProps) {
   useEffect(() => {
     if (duration <= 0) return;
     const t = setTimeout(onClose, duration);
@@ -44,64 +56,61 @@ export function Toast({
   }, [duration, onClose]);
 
   /*
-   * Le filet est PORTALISÉ vers `<body>`, et non rendu là où il est écrit.
+   * PORTALISÉ vers `<body>`, et non rendu là où il est écrit (05 §3.1, correction de production
+   * `12e2327`). Deux défauts constatés à l'écran : une sheet ouverte transforme le conteneur de
+   * l'app, et un descendant `position: fixed` s'ancre alors sur ce conteneur au lieu de la fenêtre
+   * (le toast part de travers) ; et toute couche modale (sheet, confirmation, palette) pose
+   * `pointer-events: none` sur `<body>` — le toast s'affichait par-dessus, mais ni sa croix ni
+   * « Annuler », seul recours contre une suppression, ne répondaient. `pointer-events: auto` l'en
+   * sort explicitement ; la bande `toast` le place au-dessus de toutes les couches.
    *
-   * Deux raisons, toutes deux constatées à l'écran. Une feuille ouverte
-   * applique une transformation au conteneur de l'application : un descendant
-   * `position: fixed` s'y ancre alors sur ce conteneur transformé et non sur la
-   * fenêtre — le filet partait se poser de travers. Et une couche modale pose
-   * `pointer-events: none` sur le corps du document : le filet s'affichait bien
-   * par-dessus la feuille, mais ne réagissait à aucun tap, ni sa croix, ni son
-   * bouton « Annuler » — le seul recours contre une suppression.
-   *
-   * `pointerEvents: auto` le sort explicitement de cette neutralisation.
+   * Avant l'hydratation `document` n'existe pas : rien n'est rendu plutôt qu'un balisage serveur que
+   * le client déplacerait aussitôt.
    */
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
 
-  const s = styleByType[type];
+  const tone = toneClass[type];
 
-  const node = (
+  return createPortal(
     <div
+      {...{ [TOAST_ATTRIBUTE]: "" }}
       role={type === "error" ? "alert" : "status"}
       aria-live={type === "error" ? "assertive" : "polite"}
       className={cn(
-        "admin-theme fixed left-1/2 -translate-x-1/2 z-[var(--admin-z-toast)]",
-        "flex items-start gap-3 rounded-[14px] px-4 py-3 shadow-[var(--admin-shadow-lg)]",
-        "max-w-[min(92vw,400px)] w-full",
-        "motion-safe:animate-in motion-safe:slide-in-from-bottom-4",
+        // `.admin-theme` : police et couleur du thème, le portail sortant du conteneur de l'app.
+        // Centré par marges, pas par translate : l'animation d'entrée réécrit
+        // `transform` et décalait le toast d'une demi-largeur pendant 260 ms.
+        "admin-theme pointer-events-auto fixed inset-x-0 z-[var(--admin-z-toast)] mx-auto flex w-[calc(100%-2rem)] items-center gap-3 py-1 pl-4 pr-1",
+        "rounded-[var(--admin-radius-lg)] border bg-[var(--admin-surface)] shadow-[shadow:var(--admin-shadow-md)]",
+        "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:[animation-duration:var(--admin-duration-slow)] motion-safe:[animation-timing-function:var(--admin-easing-default)]",
+        tone.border,
       )}
       style={{
-        /*
-         * Le clavier iOS pousse le filet, il ne le recouvre pas. Sans ce
-         * rattrapage — le même que `StickyAction` — toute erreur signalée
-         * pendant une saisie s'affichait derrière le clavier : « Montant > 0
-         * requis », « Nom requis », « Impossible de modifier le nom » étaient
-         * strictement invisibles, et l'utilisateur croyait son geste passé.
-         */
-        bottom:
-          "calc(max(var(--admin-tab-bar-height), var(--admin-keyboard-inset, 0px)) + 16px)",
-        background: "var(--admin-surface)",
-        border: `1px solid ${s.border}`,
+        maxWidth: "calc(var(--admin-app-max-width) - 2rem)",
+        bottom: "calc(max(var(--admin-tab-bar-height), var(--admin-keyboard-inset, 0px)) + var(--admin-space-4))",
+        // Aussi en ligne : la neutralisation de Radix est un style en ligne sur `<body>`.
         pointerEvents: "auto",
       }}
     >
-      <span style={{ color: s.fg }} aria-hidden className="shrink-0 mt-0.5">
-        {iconByType[type]}
+      <span aria-hidden className={cn("shrink-0", tone.icon)}>
+        {icon[type]}
       </span>
-      <p className="flex-1 text-[14px] leading-snug text-[var(--admin-text)]">{message}</p>
+      <p className="admin-type-body min-w-0 flex-1 py-2.5 text-[var(--admin-text)]">{message}</p>
       {/*
-        « Annuler » est souvent la dernière chance de rattraper une
-        suppression. Il faisait 29 px de haut, à douze pixels d'une croix qui,
-        elle, referme et laisse la suppression faite : deux cibles voisines,
-        l'une trop petite, aux conséquences opposées. La cible passe à 44 px et
-        l'écart entre les deux à 12 px.
+        « Annuler » est souvent la dernière chance de rattraper une écriture :
+        cible de 44 px, séparée de la croix — deux voisines aux effets opposés.
       */}
       {actionLabel && onAction ? (
         <button
           type="button"
           onClick={onAction}
-          className="admin-hit-target mr-3 shrink-0 self-center rounded-lg px-3 text-[14px] font-semibold text-[var(--admin-accent)] tap-scale hover:bg-[var(--admin-accent-bg)]"
+          className={cn(
+            "tap-scale admin-hit-target shrink-0 rounded-[var(--admin-radius-md)] px-3 admin-type-body font-semibold text-[var(--admin-accent)]",
+            "active:bg-[var(--admin-accent-bg)] mouse-hover:bg-[var(--admin-accent-bg)]",
+            "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
+          )}
         >
           {actionLabel}
         </button>
@@ -110,14 +119,15 @@ export function Toast({
         type="button"
         onClick={onClose}
         aria-label="Fermer"
-        className="-mr-1 shrink-0 inline-flex h-11 w-11 items-center justify-center rounded-full text-[var(--admin-text-subtle)] tap-scale hover:bg-[var(--admin-surface-muted)]"
+        className={cn(
+          "tap-scale inline-flex h-[var(--admin-touch-min)] w-[var(--admin-touch-min)] shrink-0 items-center justify-center rounded-[var(--admin-radius-md)]",
+          "text-[var(--admin-text-subtle)] active:bg-[var(--admin-surface-muted)] mouse-hover:bg-[var(--admin-surface-hover)]",
+          "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
+        )}
       >
         <X size={16} />
       </button>
-    </div>
+    </div>,
+    document.body,
   );
-
-  // Avant l'hydratation, `document` n'existe pas : on ne rend rien plutôt que
-  // de produire un balisage serveur que le client déplacerait aussitôt.
-  return mounted ? createPortal(node, document.body) : null;
 }

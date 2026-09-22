@@ -29,20 +29,32 @@ Tokens CSS sous `.admin-theme` (`globals.admin.css`). Ne pas réutiliser `--nure
 | `--admin-border-strong` | `rgba(0,0,0,0.14)` | Bordures emphase |
 | `--admin-text` | `#111114` | Texte principal |
 | `--admin-text-muted` | `#5f5862` | Labels secondaires |
-| `--admin-text-subtle` | `#8a828e` | Hints, placeholders |
+| `--admin-text-subtle` | `#726B75` | Hints, placeholders, et **les libellés de chiffres en capitales de 11 px**. 4,62:1 sur le fond de page, 5,15:1 sur une carte. L'ancien `#8A828E` plafonnait à 3,32:1 : illisible dehors. |
 | `--admin-accent` | `#7b0b1d` | **Bordeaux** — liens actifs, focus, indicateur tab |
 | `--admin-accent-hover` | `#8f1428` | Hover accent |
 | `--admin-accent-bg` | `rgba(123,11,29,0.08)` | Fond sélection légère |
 | `--admin-accent-subtle` | `rgba(123,11,29,0.12)` | Sélection texte |
-| `--admin-accent-ring` | `rgba(123,11,29,0.3)` | Anneaux focus alternatifs |
-| `--admin-cuivre` | `#b4895e` | Accent secondaire (rare) |
+| `--admin-accent-ring` | `rgba(123,11,29,0.30)` | Anneaux focus alternatifs |
+| `--admin-on-accent` | `#FFFFFF` | Texte et icône sur un aplat plein (accent, danger, success, warning) — remplace les `text-white` en dur, ≥ 5:1 sur chacun. |
 | `--admin-success` | `#1e7d45` | Validé, payé |
 | `--admin-warning` | `#a35b12` | Attention, retard |
 | `--admin-danger` | `#b72938` | Erreur, suppression |
 | `--admin-info` | `#3e5a7a` | Information neutre |
-| `--admin-overlay` | `rgba(26,18,21,0.38)` | Backdrop modals/sheets |
+| `--admin-overlay` | `rgba(26,18,21,0.38)` | Backdrop des sheets et des dialogues |
+| `--admin-viewer-backdrop` | `rgba(10,8,9,0.94)` | Visionneuse plein écran de `MediaGallery` — une image se juge sur du noir |
 
 Chaque état sémantique expose aussi `*-bg`, `*-subtle`, `*-border` pour badges et alertes.
+
+**Le bordeaux est le SEUL accent.** `success` marque l'accompli (payé, soldé, livré),
+`warning` l'attente et le retard rattrapable — seul ton d'un montant non reçu —,
+`danger` l'anomalie et l'irréversible, `info` le contexte neutre, rare. Aucun d'eux
+ne décore.
+
+**Ce tableau est une lecture, pas une source.** La source unique est
+`src/design/tokens.ts` ; `globals.admin.css` n'en est que l'exposition en `--admin-*`,
+et `tests/architecture/tokens-sync.test.ts` échoue dès qu'une variable diverge, manque,
+est déclarée deux fois, ou qu'une couleur, un rayon, une durée ou un z-index est écrit
+en dur dans `src/ui`.
 
 **PWA** :
 
@@ -74,12 +86,17 @@ font-feature-settings: "ss01", "cv11";
 | `h3` | 16px | 600 | Sous-sections |
 | `body` | 15px | 400 | Texte courant |
 | `bodyEm` | 15px | 600 | Emphase inline |
-| `caption` | 13px | 400 | Métadonnées |
-| `micro` | 11px | 500 | Labels tab bar (10px en UI) |
+| `field` | 16px | 400 | **Saisie** (input, textarea, select) : sous 16 px, iOS Safari zoome au focus |
+| `caption` | 13px | 400 | Métadonnées, secondary des lignes, messages sous un champ |
+| `micro` | 11px | 500 | Libellés de chiffres en capitales (`text-subtle`), badges |
 
 **Chiffres** : classe `.tnum` — tabular nums pour montants et compteurs.
 
-**Tab bar labels** : `text-[10px]`, `font-bold` actif / `font-medium` inactif.
+**Tab bar labels** : 10 px, `font-bold` actif / `font-medium` inactif.
+
+Chaque rôle a sa classe `.admin-type-<rôle>` dans la feuille — **jamais** de taille
+arbitraire dans un composant. Une taille en dur signale un rôle manquant : l'ajouter
+plutôt que le contourner.
 
 ## Spacing & Layout
 
@@ -91,7 +108,7 @@ Grille **4px** (`tokens.space`). Pas de breakpoints — calibré **320–430px**
 | `--admin-header-height` | `56px` | Header sticky |
 | `--admin-tab-bar-height` | `88px` | Hauteur tab bar, safe area incluse |
 | `--admin-touch-min` | `44px` | Cible tactile iOS HIG |
-| `--admin-scroll-bottom-pad` | `tab-bar + safe-area-bottom + 16px` | Padding bas listes |
+| `--admin-scroll-bottom-pad` | `tab-bar + 5rem` | Réserve basse des listes : tab bar **et** hauteur d'un CTA collant |
 | `--admin-sticky-cta-pad` | `0.75rem + safe-area + keyboard-inset` | Barres d'action fixes |
 | `--admin-keyboard-inset` | `0px` (dynamique) | Offset clavier virtuel |
 
@@ -101,9 +118,14 @@ Grille **4px** (`tokens.space`). Pas de breakpoints — calibré **320–430px**
   **pas** de `100dvh`, qui casse le `position: fixed` de la tab bar en PWA iOS.
 - Header sticky + `#admin-scroll-root.admin-shell-scroll` : zone de scroll unique.
 - `admin-page-bottom-pad` / `admin-form-scroll-pad` sur le contenu.
-- `ViewportSync` alimente `--admin-vh` depuis `visualViewport` (hauteur max des
-  sheets clavier ouvert) ; `useAdminKeyboardInset` alimente
-  `--admin-keyboard-inset` (CTA collants).
+- **Un seul écrivain** pour `--admin-vh`, `--admin-keyboard-inset` et
+  `--admin-vv-offset` : le service viewport du shell, qui les pose sur `<html>`
+  depuis `visualViewport`. Elles ne sont **jamais** déclarées dans la feuille — même
+  à `0px`, la déclaration sur `.admin-theme` masquerait la valeur du service pour tous
+  les descendants, et CTA et sheets passeraient sous le clavier iOS. Les lecteurs
+  donnent leur repli : `var(--admin-keyboard-inset, 0px)`.
+- Le pied de sheet ne compte **pas** l'inset clavier : il est déjà remonté par une
+  marge basse égale à l'inset ; le compter deux fois gonflait le pied de 340 px.
 
 **Desktop** : même rail 430px centré — pas d'expansion latérale.
 
@@ -136,11 +158,17 @@ Composant : `src/app-shell/TabBar.tsx`. Destinations : `src/app-shell/navigation
 
 | Label | Route | Match étendu |
 |-------|-------|--------------|
-| Accueil | `/admin` | + `/admin/clients`, `/admin/stats`, `/admin/reglages`, `/admin/offline` |
-| Commandes | `/admin/ordres` | préfixe |
+| Accueil | `/admin` | + `/admin/journee`, `/admin/compta`, `/admin/lots`, `/admin/statistiques`, `/admin/reglages` |
+| Commandes | `/admin/commandes` | préfixe |
 | Vendre | `/admin/vendre` | préfixe — traitement accentué (action la plus fréquente) |
-| Compta | `/admin/compta` | + `/admin/lots` |
-| Catalogue | `/admin/catalogue` | + `/admin/perfumes`, `/admin/brands` |
+| Clients | `/admin/clients` | + `/admin/encaisser` |
+| Catalogue | `/admin/catalogue` | préfixe (`parfums/*`, `marques/*`) |
+
+**Il n'y a plus d'onglet Compta.** On entre dans la compta, la Trésorerie et les lots
+**en touchant leur chiffre** sur l'Accueil : la compta se lit le soir, Clients et
+« À encaisser » se touchent toute la journée. La liste ci-dessus doit rester
+strictement égale à `ADMIN_TABS` — `tests/architecture/documentation.test.ts` et
+`src/app-shell/__tests__/navigation.test.ts` le vérifient.
 
 **Règle** : toute route `/admin/*` doit être rattachée à exactement un onglet via
 `ADMIN_TABS[].match`. Sans quoi la barre n'affiche aucun état actif.
@@ -158,19 +186,40 @@ rendent donc **jamais** leur propre lien retour.
 
 | Pattern | Notes |
 |---------|-------|
-| **Header** | `.admin-header-blur` — même blur que tab bar, `z-index: 40` |
-| **Sheets** | Vaul ; handle `.admin-sheet-handle` ; z 70–71 |
-| **Modals** | z 80–81 |
-| **Command palette** | z 90 ; `Cmd+K` |
-| **Toasts** | z 95 — au-dessus de tout |
+| **Header** | `.admin-header-blur` — même blur que tab bar |
+| **Sheets** | Vaul ; handle `.admin-sheet-handle` |
+| **Sheets imbriquées** | Bande propre : elles partageaient celle des modales, et l'ordre des portails décidait laquelle passait devant |
+| **Confirmations** | `ConfirmDialog` — texte fourni par l'appelant, focus sur « Annuler », erreur **dans la boîte** (jamais un toast inerte), corps défilant |
+| **Command palette** | `cmdk` ; `Cmd+K` ou bouton Rechercher |
+| **Toasts** | Portalisés vers `<body>`, au-dessus de tout — c'est souvent le toast qui explique pourquoi le reste ne répond pas |
 | **Cartes** | `.admin-card-press` / `.tap-scale` — `:active scale(0.97)` |
 | **Squelettes** | `.admin-skeleton` — pulse 1.6s |
 | **Sticky CTA** | `.admin-sticky-cta-spacer` pour home indicator |
 | **Progress nav** | `.admin-nav-route-progress` — barre indéterminée bordeaux |
 
-**Radius** (`tokens.radius`) : `sm` 8px, `lg` 14px (menus Plus), `full` pour handles.
+**Radius** (`tokens.radius`) : `xs` 6px (micro-éléments), `sm` 8px (champs internes),
+`md` 12px (**défaut des contrôles** : boutons, chips, steppers, segmented, champs),
+`lg` 14px (cartes, CTA `lg`), `xl` 18px (sheets, dialogues), `2xl` 22px (palette),
+`full` (pills, badges, poignées, avatars).
 
-**Ombres** : `--admin-shadow-sm` à `--admin-shadow-xl` — teint bordeaux légère.
+**Ombres** : `--admin-shadow-sm` à `--admin-shadow-xl` — teinte bordeaux légère.
+
+### Bandes d'empilement
+
+Une bande par couche, **jamais partagée** — l'ordre encode une hiérarchie
+d'interruption. Les valeurs vivent dans `tokens.zIndex` et aucun composant n'écrit un
+z-index littéral :
+
+| Couche | z |
+|---|---|
+| Backdrop de sheet / sheet | 70 / 71 |
+| Backdrop de sheet imbriquée / sheet imbriquée | 80 / 81 |
+| Backdrop de modale / modale | 90 / 91 |
+| Palette de commandes | 92 |
+| Toast | 100 |
+
+Le filet « Annuler » passe au-dessus d'une sheet ouverte, répond au doigt, et laisse
+la sheet ouverte (`e2e/parcours/couches.spec.ts`).
 
 ## Motion
 
@@ -179,8 +228,10 @@ rendent donc **jamais** leur propre lien retour.
 | `--admin-duration-fast` | `100ms` |
 | `--admin-duration-default` | `200ms` |
 | `--admin-duration-slow` | `260ms` |
-| `--admin-easing-default` | `cubic-bezier(0.16, 1, 0.3, 1)` |
-| `--admin-easing-sheet` | `cubic-bezier(0.32, 0.72, 0, 1)` |
+| `--admin-duration-pulse` | `450ms` — pulse de confirmation après une écriture réussie |
+| `--admin-duration-skeleton` | `1600ms` — seule animation autorisée au-delà de 400 ms |
+| `--admin-easing-default` | `cubic-bezier(0.16, 1, 0.3, 1)` (ease-out-expo) |
+| `--admin-easing-sheet` | `cubic-bezier(0.32, 0.72, 0, 1)` (ressort iOS) |
 
 - **Press** : `tap-scale` / `admin-card-press` → `scale(0.97)` ~100ms (Emil).
 - **Hover** : `.admin-lift` uniquement `@media (hover: hover) and (pointer: fine)`.
@@ -189,11 +240,11 @@ rendent donc **jamais** leur propre lien retour.
 
 ## Stack
 
-- Next.js 16 App Router, React 18, TypeScript
+- Next.js 16 App Router, React 19, TypeScript
 - Tailwind CSS + variables `--admin-*`
 - Radix primitives via `src/ui/primitives/*`
 - Lucide React (icônes)
-- Vaul (bottom sheets)
+- Vaul (bottom sheets), cmdk (palette), Recharts (chargé à la demande)
 - **Pas** de shadcn vitrine, **pas** de GFS Didot
 
 ## Theme Mode
@@ -213,6 +264,9 @@ rendent donc **jamais** leur propre lien retour.
 - Un badge d'état sur 100 % des lignes : n'afficher que l'état anormal.
 - Deux chemins visibles simultanément vers la même destination (raccourci +
   onglet).
+- Une barre de progression factice après navigation : elle mesure une attente
+  imaginaire (abandonnée, 02 §4.6).
+- Un composant de gestion écrit hors de `src/ui/*`.
 
 ## Invariants vérifiés automatiquement
 
@@ -238,7 +292,7 @@ npm run test:layout
 
 **Simulation du clavier** : le clavier iOS ne rétrécit pas le viewport de mise
 en page, seulement `visualViewport`. Les tests forcent `--admin-vh` et
-`--admin-keyboard-inset`, exactement ce que pose `ViewportSync` sur l'appareil.
+`--admin-keyboard-inset`, exactement ce que pose `ViewportService` sur l'appareil.
 
 **Écrire un écran qui passe** :
 
@@ -308,10 +362,13 @@ Une commande qui ne mène nulle part occupe une place et fait douter.
 | [`docs/admin/PRODUCT.md`](./PRODUCT.md) | Contexte produit, flows, contraintes PWA. |
 | [`src/design/globals.admin.css`](../../src/design/globals.admin.css) | Feuille CSS admin complète. |
 | [`src/design/tokens.ts`](../../src/design/tokens.ts) | Tokens TypeScript. |
-| [`src/app-shell/navigation.ts`](../../src/app-shell/navigation.ts) | Onglets et écrans parents — source de vérité de l'IA. |
+| [`src/app-shell/navigation.ts`](../../src/app-shell/navigation.ts) | Onglets et écrans parents — source de vérité de l'architecture d'information. |
+| [`src/app-shell/routes.ts`](../../src/app-shell/routes.ts) | Inventaire des écrans et constructeurs d'URL. |
 | [`src/app-shell/TabBar.tsx`](../../src/app-shell/TabBar.tsx) | Rendu de la navigation principale. |
-| [`public/admin-sw.js`](../../public/admin-sw.js) | Service worker (assets + repli hors ligne). |
+| [`src/app-shell/pwa/service-worker.ts`](../../src/app-shell/pwa/service-worker.ts) | Source du service worker, rendue par `app/admin-sw.js/route.ts`. |
 | [`scripts/build-admin-pwa-assets.mjs`](../../scripts/build-admin-pwa-assets.mjs) | Génération icônes + écrans de lancement iOS. |
 | [`src/app-shell/AdminShell.tsx`](../../src/app-shell/AdminShell.tsx) | Layout shell. |
-| [`app/admin/layout.tsx`](../../app/admin/layout.tsx) | Viewport, manifest, metadata PWA. |
+| [`app/admin/layout.tsx`](../../app/admin/layout.tsx) | Viewport, manifeste, metadata PWA. |
 | [`e2e/layout-invariants.spec.ts`](../../e2e/layout-invariants.spec.ts) | Invariants d'affichage, toutes routes × trois largeurs. |
+| [`tests/architecture/tokens-sync.test.ts`](../../tests/architecture/tokens-sync.test.ts) | Jetons, bandes d'empilement, valeurs en dur. |
+| [`docs/refonte/05-DESIGN-SYSTEM.md`](../refonte/05-DESIGN-SYSTEM.md) | Le design system de la refonte, en entier. |

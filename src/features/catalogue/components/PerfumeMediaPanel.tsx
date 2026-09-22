@@ -1,176 +1,154 @@
 "use client";
 
-import { useState } from "react";
-import { Card } from "@/ui/primitives/Card";
-import { Stack, HStack } from "@/ui/primitives/Stack";
-import { Toast, type ToastType } from "@/ui/primitives/Toast";
-import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
+import { useEffect, useState } from "react";
+import { MAX_MEDIA_MESSAGE, MAX_MEDIA_PER_PERFUME, type PerfumeMediaItem } from "@/contracts/catalogue";
+import { useConfirm, useToast } from "@/app-shell/FeedbackProvider";
+import { useAction } from "@/app-shell/hooks/useAction";
+import {
+  addPerfumeMediaAction,
+  removePerfumeMediaAction,
+  reorderPerfumeMediaAction,
+  setPerfumeMediaLabelAction,
+} from "@/server/catalogue/actions";
 import { MediaGallery, type MediaItem } from "@/ui/patterns/MediaGallery";
-import { prepareStoryImage, uploadStoryImage } from "@/lib/admin/image-utils";
-import type { PerfumeMediaRow } from "@/server/catalogue/media";
+import { Card } from "@/ui/primitives/Card";
+import { depositSummary, storyFileName } from "./catalogue-model";
+import { useImageUpload } from "./useImageUpload";
+
+/** Même raison qu'en tête de `useImageUpload` : la conversion d'image n'arrive qu'au premier envoi (04 §15 règle 11). */
+const imageConvert = () => import("./image-convert");
 
 type PerfumeMediaPanelProps = {
   perfumeId: number;
   perfumeName: string;
   brandName: string;
-  initial: PerfumeMediaRow[];
-  readOnly?: boolean;
+  media: readonly PerfumeMediaItem[];
 };
 
-/** « nurea-dior-sauvage-story » — reconnaissable dans une pellicule. */
-function slugify(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+export const REMOVE_MEDIA_TITLE = "Retirer ce visuel ?";
+export const REMOVE_MEDIA_DESCRIPTION =
+  "Il est supprimé de la fiche et du stockage, sans retour possible. Ton téléphone garde les copies déjà enregistrées.";
 
 /**
- * Les visuels marketing d'un parfum : les déposer, les revoir, les récupérer.
+ * « Visuels story · n » (06 E16 zone 7, PC-13) : les planches prêtes à publier, DISTINCTES du visuel du
+ * catalogue — elles ne décident jamais de la visibilité. Dépôt multiple (HEIC compris), chaque original
+ * envoyé par URL signée puis converti et rangé par le serveur (WebP, 1920 px, jamais recadré) ; un fichier
+ * refusé n'arrête pas les suivants, le bilan est dit en un toast.
  *
- * Le besoin est concret : au moment de publier une story, on cherchait la
- * planche du parfum dans une pellicule de quarante images, sans savoir si elle
- * y était encore. Elle vit désormais à côté de la fiche — là où l'on va déjà
- * pour vérifier un prix ou un stock — et se récupère en deux gestes.
- *
- * Ces visuels ne touchent PAS l'image du catalogue : celle-ci reste la seule
- * que la vitrine publie, et c'est elle, pas la galerie, qui décide de la
- * visibilité du parfum.
+ * Les visuels viennent des props (fiche relue après chaque écriture) ; seuls un retrait et un
+ * déplacement s'affichent avant la réponse, et se restaurent sur un refus.
  */
-export function PerfumeMediaPanel({
-  perfumeId,
-  perfumeName,
-  brandName,
-  initial,
-  readOnly = false,
-}: PerfumeMediaPanelProps) {
-  const [media, setMedia] = useState<PerfumeMediaRow[]>(initial);
+export function PerfumeMediaPanel({ perfumeId, perfumeName, brandName, media }: PerfumeMediaPanelProps) {
+  const { showToast } = useToast();
+  const confirm = useConfirm();
+  const { uploadStory } = useImageUpload();
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
-  const [toDelete, setToDelete] = useState<MediaItem | null>(null);
+  const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
+  const [order, setOrder] = useState<readonly string[] | null>(null);
 
-  const items: MediaItem[] = media.map((m) => ({
-    id: m.id,
-    url: m.url,
-    label: m.label,
-    width: m.width,
-    height: m.height,
-  }));
+  const add = useAction(addPerfumeMediaAction, { errors: "inline" });
+  const remove = useAction(removePerfumeMediaAction, { success: "Visuel retiré" });
+  const reorder = useAction(reorderPerfumeMediaAction);
+  const label = useAction(setPerfumeMediaLabelAction, { errors: "inline" });
 
-  const handleAdd = async (files: FileList) => {
+  // La fiche relue fait foi.
+  useEffect(() => {
+    setHidden(new Set());
+    setOrder(null);
+  }, [media]);
+
+  const byId = new Map(media.map((item) => [item.id, item]));
+  const visible = (order ?? media.map((item) => item.id))
+    .map((id) => byId.get(id))
+    .filter((item): item is PerfumeMediaItem => item !== undefined && !hidden.has(item.id));
+
+  const deposit = async (files: File[]) => {
+    const room = MAX_MEDIA_PER_PERFUME - visible.length;
+    if (room <= 0) {
+      showToast({ type: "error", message: MAX_MEDIA_MESSAGE });
+      return;
+    }
     setBusy(true);
-    /*
-     * Les fichiers partent l'un après l'autre, et un échec n'arrête pas les
-     * suivants : sur un téléphone, choisir cinq visuels et tout perdre parce
-     * que le troisième est un HEIC illisible serait la pire des réponses.
-     * On compte, et on dit ce qui est passé.
-     */
     let added = 0;
-    const errors: string[] = [];
-    for (const file of Array.from(files)) {
+    const refused: string[] = [];
+    for (const [index, file] of files.entries()) {
+      if (index >= room) {
+        refused.push(`maximum ${MAX_MEDIA_PER_PERFUME} visuels`);
+        continue;
+      }
       try {
-        const prepared = await prepareStoryImage(file);
-        const uploaded = await uploadStoryImage(perfumeId, prepared);
-        const res = await fetch(`/api/admin/perfumes/${perfumeId}/media`, {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(uploaded),
-        });
-        const json = (await res.json().catch(() => ({}))) as {
-          media?: PerfumeMediaRow;
-          error?: string;
-        };
-        if (!res.ok || !json.media) {
-          errors.push(json.error ?? "Enregistrement refusé.");
-          continue;
-        }
-        const row = json.media;
-        setMedia((prev) => [...prev, row]);
+        const uploaded = await uploadStory(file, perfumeId);
+        const result = await add.run({ perfumeId, ...uploaded });
+        if (!result.ok) throw new Error((await imageConvert()).refusalReason(result.error));
         added += 1;
-      } catch (e) {
-        errors.push(e instanceof Error ? e.message : "Envoi impossible.");
+      } catch (cause) {
+        refused.push(cause instanceof Error ? lowerFirst(cause.message.replace(/\.$/, "")) : "envoi impossible");
       }
     }
     setBusy(false);
-
-    if (errors.length === 0) {
-      setToast({
-        type: "success",
-        message: `${added} visuel${added > 1 ? "s ajoutés" : " ajouté"}.`,
-      });
-    } else {
-      setToast({
-        type: added > 0 ? "info" : "error",
-        message:
-          added > 0
-            ? `${added} visuel${added > 1 ? "s ajoutés" : " ajouté"}, ${errors.length} en échec : ${errors[0]}`
-            : errors[0]!,
-      });
-    }
+    showToast({ type: refused.length === 0 ? "success" : added > 0 ? "info" : "error", message: depositSummary(added, refused) });
   };
 
-  const handleDelete = async () => {
-    if (!toDelete) return;
-    const target = toDelete;
-    const res = await fetch(`/api/admin/perfumes/${perfumeId}/media/${target.id}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-    if (!res.ok) {
-      const json = (await res.json().catch(() => ({}))) as { error?: string };
-      throw new Error(json.error ?? "Suppression impossible.");
-    }
-    setMedia((prev) => prev.filter((m) => m.id !== target.id));
-    setToDelete(null);
-    setToast({ type: "success", message: "Visuel retiré." });
+  const askRemove = (item: MediaItem) => {
+    void confirm(
+      { title: REMOVE_MEDIA_TITLE, description: REMOVE_MEDIA_DESCRIPTION, confirmLabel: "Retirer", tone: "danger" },
+      async () => {
+        setHidden((previous) => new Set(previous).add(item.id));
+        const result = await remove.run({ perfumeId, mediaId: item.id });
+        if (!result.ok) {
+          setHidden((previous) => {
+            const next = new Set(previous);
+            next.delete(item.id);
+            return next;
+          });
+          throw new Error(result.error.message);
+        }
+      },
+    );
+  };
+
+  const move = async (item: MediaItem, direction: -1 | 1) => {
+    const ids = visible.map((entry) => entry.id);
+    const from = ids.indexOf(item.id);
+    const to = from + direction;
+    if (from < 0 || to < 0 || to >= ids.length) return;
+    const next = [...ids];
+    next.splice(from, 1);
+    next.splice(to, 0, item.id);
+    setOrder(next);
+    const result = await reorder.run({ perfumeId, orderedIds: next });
+    if (!result.ok) setOrder(null);
+  };
+
+  const rename = async (item: MediaItem, text: string) => {
+    const result = await label.run({ perfumeId, mediaId: item.id, label: text });
+    if (!result.ok) throw new Error(result.error.fields?.label ?? result.error.message);
   };
 
   return (
-    <>
-      <Card padding={3}>
-        <HStack justify="between" align="center" className="mb-3">
-          <h2 className="text-[14px] font-semibold text-[var(--admin-text)]">
-            Visuels story
+    <Card padding={4}>
+      <section className="flex flex-col gap-3" aria-labelledby="visuels-story-titre">
+        <div>
+          <h2 id="visuels-story-titre" className="admin-type-h3 tnum text-[var(--admin-text)]">
+            Visuels story · {visible.length}
           </h2>
-          <span className="text-[12px] tabular-nums text-[var(--admin-text-subtle)]">
-            {media.length}
-          </span>
-        </HStack>
-
-        <Stack gap={3}>
-          <MediaGallery
-            items={items}
-            fileNameFor={(item) =>
-              `nurea-${slugify(brandName)}-${slugify(perfumeName)}${
-                item.label ? `-${slugify(item.label)}` : ""
-              }`
-            }
-            onAdd={(files) => void handleAdd(files)}
-            onDelete={(item) => setToDelete(item)}
-            busy={busy}
-            readOnly={readOnly}
-            emptyHint="Dépose ici les planches prêtes à publier. Elles ne s'affichent pas sur le site : elles servent à retrouver et récupérer un visuel au moment de faire une story."
-          />
-        </Stack>
-      </Card>
-
-      <ConfirmDialog
-        open={toDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) setToDelete(null);
-        }}
-        title="Retirer ce visuel ?"
-        description="Le fichier est supprimé du stockage. Les visuels déjà publiés en story ne sont pas affectés."
-        confirmLabel="Retirer"
-        onConfirm={handleDelete}
-      />
-
-      {toast ? (
-        <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
-      ) : null}
-    </>
+          <p className="admin-type-caption mt-0.5 text-[var(--admin-text-muted)]">Pour tes stories. N&apos;apparaissent pas sur la vitrine.</p>
+        </div>
+        <MediaGallery
+          items={visible}
+          fileNameFor={(item) => storyFileName(brandName, perfumeName, item.label)}
+          onAdd={(files) => void deposit(files)}
+          onDelete={askRemove}
+          onMove={(item, direction) => void move(item, direction)}
+          onLabel={rename}
+          busy={busy}
+          emptyHint="Aucun visuel story"
+        />
+      </section>
+    </Card>
   );
+}
+
+function lowerFirst(text: string): string {
+  return text.charAt(0).toLowerCase() + text.slice(1);
 }

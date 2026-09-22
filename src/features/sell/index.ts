@@ -1,2 +1,3 @@
+// Écran Vendre (06 E11, composeur unique Vente | Commande). `app/admin/(gestion)/vendre/page.tsx` le monte.
 export { SellPage } from "./pages/SellPage";
-export { PerfumePicker, type PickerResult } from "./components/PerfumePicker";
+export { parseSellParams } from "./pages/params";

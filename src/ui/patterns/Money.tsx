@@ -1,50 +1,50 @@
+import { formatEur, spokenEur } from "@/domain/money";
 import { cn } from "@/lib/utils";
-import { formateEuros, nombre } from "./format";
+import { toEur, type MoneyValue } from "./money-value";
+
+export type MoneyTone = "default" | "muted" | "success" | "danger" | "warning" | "accent" | "inherit";
 
 type MoneyProps = {
-  value: number | string | null | undefined;
-  /** Si true, n'affiche pas les centimes (utile pour KPI compactes). */
+  value: MoneyValue;
+  /** Sans centimes : tuiles KPI uniquement (05 §2.2). */
   compact?: boolean;
-  /** Affiche le signe + si valeur positive. */
+  /** « + » devant un positif (mouvements, journal). */
   signed?: boolean;
   /**
-   * Couleur sémantique selon valeur. `inherit` laisse la couleur au parent —
-   * indispensable sur les fonds pleins (carte accent, badge) où les jetons de
-   * texte standards ne passeraient pas le contraste.
+   * `warning` est le SEUL ton d'un montant non reçu (« À encaisser »). Un
+   * positif n'est pas vert par défaut : `success` signale un événement, pas
+   * une valeur. `inherit` sur les fonds pleins.
    */
-  tone?: "default" | "muted" | "success" | "danger" | "warning" | "accent" | "auto" | "inherit";
-  /** Si true, montant gras. */
+  tone?: MoneyTone;
   bold?: boolean;
   className?: string;
 };
 
-const toneClass: Record<NonNullable<MoneyProps["tone"]>, string> = {
+const toneClass: Record<MoneyTone, string> = {
   default: "text-[var(--admin-text)]",
   muted: "text-[var(--admin-text-muted)]",
   success: "text-[var(--admin-success)]",
   danger: "text-[var(--admin-danger)]",
-  // « À encaisser » : ni bon ni mauvais, en attente. C'est la seule couleur
-  // admise pour un montant qu'on n'a pas encore reçu.
   warning: "text-[var(--admin-warning)]",
   accent: "text-[var(--admin-accent)]",
-  auto: "",
   inherit: "",
 };
 
+/**
+ * Affichage d'un montant (05 §3.2). N'appelle que `formatEur` et `spokenEur`
+ * (04 §5.3 règle 6) : même texte au serveur et sur l'iPhone, chiffres
+ * tabulaires, espace fine insécable.
+ *
+ * VoiceOver lit le montant en toutes lettres (« 1 234 euros 50 ») par un texte
+ * réservé aux lecteurs d'écran : un `aria-label` posé sur un `span` générique
+ * n'est pas lu de façon fiable.
+ */
 export function Money({ value, compact = false, signed = false, tone = "default", bold = false, className }: MoneyProps) {
-  const n = nombre(value);
-  // Toute la mise en forme passe par `format.ts` : c'est ce qui garantit qu'un
-  // montant a la même allure ici et dans un message ou un libellé.
-  const formatted = formateEuros(Math.abs(n), { compact });
-  const prefix = n < 0 ? "−" : signed && n > 0 ? "+" : "";
-
-  const resolvedTone: NonNullable<MoneyProps["tone"]> =
-    tone === "auto" ? (n > 0 ? "success" : n < 0 ? "danger" : "muted") : tone;
-
+  const amount = toEur(value);
   return (
-    <span className={cn("tnum whitespace-nowrap", toneClass[resolvedTone], bold ? "font-semibold" : null, className)}>
-      {prefix}
-      {formatted}
+    <span className={cn("tnum whitespace-nowrap", toneClass[tone], bold ? "font-semibold" : null, className)}>
+      <span aria-hidden>{formatEur(amount, { compact, signed })}</span>
+      <span className="sr-only">{spokenEur(amount)}</span>
     </span>
   );
 }

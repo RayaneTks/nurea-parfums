@@ -1,422 +1,342 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { useMemo, useRef, useState } from "react";
 import { Trash2 } from "lucide-react";
-import { Stack } from "@/ui/primitives/Stack";
-import { Heading } from "@/ui/primitives/Heading";
-import { Badge } from "@/ui/primitives/Badge";
-import { Button } from "@/ui/primitives/Button";
-import { Input } from "@/ui/primitives/Input";
-import { SegmentedControl } from "@/ui/primitives/SegmentedControl";
-import { Divider } from "@/ui/primitives/Divider";
-import { StickyAction } from "@/ui/primitives/StickyAction";
-import { SkeletonList } from "@/ui/primitives/Skeleton";
-import { PageScaffold } from "@/ui/patterns/PageScaffold";
-import { FormSection } from "@/ui/patterns/FormSection";
-import { ErrorBanner } from "@/ui/patterns/ErrorBanner";
-import { ImageField } from "@/ui/patterns/ImageField";
+import type { AdminBrandRow, PricingRow } from "@/contracts/catalogue";
+import type { PublicationStatus } from "@/domain/publication";
+import type { VolumeMl } from "@/domain/sale-line";
+import { cleNom, normaliseParfum } from "@/lib/nommage";
+import { useToast } from "@/app-shell/FeedbackProvider";
+import { useAction } from "@/app-shell/hooks/useAction";
+import { routes } from "@/app-shell/routes";
+import { useShellSheet } from "@/app-shell/SheetRegistry";
+import { useUndo } from "@/app-shell/UndoProvider";
+import {
+  createPerfumeAction,
+  deletePerfumeAction,
+  setPerfumeStatusAction,
+  updatePerfumeAction,
+} from "@/server/catalogue/actions";
+import { CollapsibleSection } from "@/ui/patterns/CollapsibleSection";
 import { ConfirmDialog } from "@/ui/patterns/ConfirmDialog";
-import { readJsonSafe } from "@/lib/admin/http";
-import { BrandPicker, type BrandOption } from "./BrandPicker";
+import { ErrorBanner } from "@/ui/patterns/ErrorBanner";
+import { FormField } from "@/ui/patterns/FormField";
+import { FormSection } from "@/ui/patterns/FormSection";
+import { ImageField } from "@/ui/patterns/ImageField";
+import { Button } from "@/ui/primitives/Button";
+import { Card } from "@/ui/primitives/Card";
+import { Input } from "@/ui/primitives/Input";
+import { ListRow } from "@/ui/primitives/ListRow";
+import { StickyAction } from "@/ui/primitives/StickyAction";
+import { BrandSelectSheet, ExistingBrandNotice, type BrandChoice } from "./BrandSelectSheet";
+import { CatalogueThumb } from "./CatalogueThumb";
+import { storyCountLabel } from "./catalogue-model";
+import { pendingRemovals } from "./pending-removals";
+import { draftsFrom, pricingErrors, pricingInput, sameDrafts, type PricingDraft, type PricingDrafts } from "./pricing-model";
+import { PricingFields } from "./PricingFields";
+import { useImageUpload } from "./useImageUpload";
+import { useLeaveGuard } from "./useLeaveGuard";
 
-type PerfumePayload = {
-  id: number;
-  brandId: string;
-  name: string;
-  image: string;
-  imageLight: string | null;
-  status: string;
-  stock?: number;
-};
+export type PerfumeFormProps =
+  | {
+      mode: "create";
+      brands: readonly AdminBrandRow[];
+      recentBrandIds: readonly string[];
+      defaultExchangeRate: string;
+      /** « Dupliquer » : marque et tarifs repris, nom et visuels vides. */
+      initialBrand: BrandChoice | null;
+      initialPricing: readonly PricingRow[];
+      duplicatedFrom: string | null;
+    }
+  | {
+      mode: "edit";
+      brands: readonly AdminBrandRow[];
+      recentBrandIds: readonly string[];
+      defaultExchangeRate: string;
+      perfume: {
+        id: number;
+        name: string;
+        image: string;
+        imageLight: string | null;
+        status: PublicationStatus;
+        mediaCount: number;
+        brand: Extract<BrandChoice, { kind: "existing" }>["brand"];
+      };
+      initialPricing: readonly PricingRow[];
+    };
 
-const STATUS_OPTIONS = [
-  { value: "PUBLISHED" as const, label: "Visible" },
-  { value: "DRAFT" as const, label: "Masqué" },
-];
+function brandRef(choice: BrandChoice) {
+  return choice.kind === "existing" ? { kind: "existing" as const, brandId: choice.brand.id } : { kind: "new" as const, name: choice.name };
+}
 
-const CATALOGUE_HREF = "/admin/catalogue";
+function sameBrand(a: BrandChoice | null, b: BrandChoice | null): boolean {
+  if (a === null || b === null) return a === b;
+  if (a.kind === "existing" && b.kind === "existing") return a.brand.id === b.brand.id;
+  return a.kind === "new" && b.kind === "new" && a.name === b.name;
+}
+
+/** Texte du CTA qui guide vers ce qui manque (06 arbitrage n°9, E19). */
+export function perfumeCta(mode: "create" | "edit", brand: BrandChoice | null, name: string): string {
+  if (!brand) return "Choisir la marque";
+  if (name.trim() === "") return "Saisir le nom";
+  return mode === "create" ? "Ajouter au catalogue" : "Enregistrer";
+}
 
 /**
- * Fiche parfum — création et édition.
- *
- * Trois différences par rapport à la version précédente :
- *   - le titre et le bouton retour viennent du shell, plus d'en-tête maison ;
- *   - le CTA passe par `StickyAction` au lieu d'un `fixed` calé sur une
- *     hauteur de barre d'onglets codée en dur (qui se désalignait dès que la
- *     barre changeait) ;
- *   - le garde-fou « gamme complète » utilise une boîte de dialogue du thème
- *     et non `window.confirm`, que iOS affiche hors du cadre de l'app.
+ * E19 — Formulaire parfum (06 §3.5) : créer un parfum en moins de 90 s, modifier fiche ET tarifs en UN
+ * enregistrement (A-6). Le stock n'y est pas (S20 depuis la fiche). En modification, un visuel envoyé est
+ * enregistré aussitôt (02 §4.5) : une photo perdue parce qu'on quitte l'écran est un travail à refaire.
  */
-type PerfumeFormProps = {
-  perfumeId?: string;
-  /**
-   * Grille tarifaire, chargée côté serveur par la route.
-   *
-   * Passée en slot pour être rendue DANS le scaffold du formulaire. Empilée en
-   * frère à côté de lui, elle créait un second bloc de niveau page dans le même
-   * conteneur de défilement : deux `<main>`, deux flux, et la grille finissait
-   * posée par-dessus la carte des visuels.
-   */
-  pricingSlot?: ReactNode;
-  /**
-   * Galerie des visuels story, chargée côté serveur. Même raison d'être un
-   * slot que la grille tarifaire — et absente sur une fiche neuve : sans
-   * identifiant de parfum, il n'y a nulle part où ranger un visuel.
-   */
-  mediaSlot?: ReactNode;
-};
-
-export function PerfumeForm({ perfumeId, pricingSlot, mediaSlot }: PerfumeFormProps) {
+export function PerfumeForm(props: PerfumeFormProps) {
   const router = useRouter();
-  const isNew = !perfumeId;
+  const { showToast } = useToast();
+  const { scheduleDelete } = useUndo();
+  const { uploadCatalogueImage } = useImageUpload();
+  const editing = props.mode === "edit" ? props.perfume : null;
 
-  const [brands, setBrands] = useState<BrandOption[]>([]);
-  const [loading, setLoading] = useState(!isNew);
-  const [saving, setSaving] = useState(false);
-  const [readOnly, setReadOnly] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const initialBrand: BrandChoice | null = editing ? { kind: "existing", brand: editing.brand } : props.mode === "create" ? props.initialBrand : null;
+  const initialDrafts = useMemo(() => draftsFrom(props.initialPricing), [props.initialPricing]);
 
-  const [brandId, setBrandId] = useState("");
-  const [name, setName] = useState("");
-  const [image, setImage] = useState("");
-  const [imageLight, setImageLight] = useState("");
-  const [status, setStatus] = useState<"PUBLISHED" | "DRAFT">("PUBLISHED");
-  const [stock, setStock] = useState("0");
-
+  const [brand, setBrand] = useState<BrandChoice | null>(initialBrand);
+  const [brandNotice, setBrandNotice] = useState<string | null>(null);
+  const [brandQuery, setBrandQuery] = useState("");
+  const [brandSheetOpen, setBrandSheetOpen] = useState(false);
+  const [name, setName] = useState(editing?.name ?? "");
+  const [image, setImage] = useState(editing?.image ?? "");
+  const [imageLight, setImageLight] = useState(editing?.imageLight ?? "");
+  const [saved, setSaved] = useState({ image: editing?.image ?? "", imageLight: editing?.imageLight ?? "" });
+  const [drafts, setDrafts] = useState<PricingDrafts>(initialDrafts);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [confirmComplete, setConfirmComplete] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    void fetch("/api/admin/brands", { credentials: "include", cache: "no-store" })
-      .then((r) => (r.ok ? readJsonSafe<{ brands: BrandOption[] }>(r) : null))
-      .then((j) => setBrands(j?.brands ?? []));
-  }, []);
+  useShellSheet(brandSheetOpen, () => setBrandSheetOpen(false));
 
-  useEffect(() => {
-    void fetch("/api/admin/session", { credentials: "include", cache: "no-store" })
-      .then((r) => (r.ok ? readJsonSafe<{ user?: { role?: string } }>(r) : null))
-      .then((j) => {
-        if (j?.user?.role === "VIEWER") setReadOnly(true);
-      });
-  }, []);
+  const dirty =
+    !sameBrand(brand, initialBrand) ||
+    name !== (editing?.name ?? "") ||
+    image !== saved.image ||
+    imageLight !== saved.imageLight ||
+    !sameDrafts(drafts, initialDrafts);
+  const guard = useLeaveGuard(dirty);
 
-  useEffect(() => {
-    if (isNew || !perfumeId) return;
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/admin/perfumes/${perfumeId}`, {
-          credentials: "include",
-          cache: "no-store",
-        });
-        const json = await readJsonSafe<{ error?: string; perfume?: PerfumePayload }>(res);
-        if (!res.ok) throw new Error(json?.error ?? "Ce parfum n'a pas pu être chargé.");
-        if (cancelled || !json?.perfume) return;
-        const p = json.perfume;
-        setBrandId(p.brandId);
-        setName(p.name);
-        setImage(p.image);
-        setImageLight(p.imageLight ?? "");
-        setStatus(p.status === "PUBLISHED" ? "PUBLISHED" : "DRAFT");
-        setStock(String(p.stock ?? 0));
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Chargement impossible.");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [isNew, perfumeId]);
+  const { volumes } = pricingInput(drafts);
+  const create = useAction(createPerfumeAction, { success: (data) => `${data.name} ajouté` });
+  const update = useAction(updatePerfumeAction, { success: "Modifications enregistrées" });
+  const autoSave = useAction(updatePerfumeAction, { success: "Visuel enregistré", errors: "inline" });
+  const hide = useAction(setPerfumeStatusAction, { success: (data) => `${data.name} masqué` });
+  const remove = useAction(deletePerfumeAction, { errors: "inline" });
+  const error = create.error ?? update.error;
+  const fields = error?.code === "VALIDATION" ? error.fields : undefined;
+  const volumeErrors = pricingErrors(fields, volumes);
 
-  const selectedBrand = useMemo(
-    () => brands.find((b) => b.id === brandId),
-    [brands, brandId],
-  );
-  const brandIsComplete = selectedBrand?.catalogMode === "COMPLETE";
-  const brandIsHidden = selectedBrand?.status === "DRAFT";
-  /** Un parfum ne peut pas être plus visible que sa marque. */
-  const publicationLocked = brandIsComplete || brandIsHidden || image.trim() === "";
+  const normalised = name.trim() === "" ? "" : normaliseParfum(name);
+  const cta = perfumeCta(props.mode, brand, name);
 
-  const buildBody = useCallback(
-    (overrides: Partial<PerfumePayload> & { allowCompleteOverride?: boolean } = {}) => ({
-      brandId,
-      name,
-      image,
-      imageLight: imageLight.trim() || null,
-      status: publicationLocked ? "DRAFT" : status,
-      stock: Math.max(0, Math.floor(Number(stock) || 0)),
-      ...overrides,
-    }),
-    [brandId, name, image, imageLight, publicationLocked, status, stock],
-  );
+  const setDraft = (volume: VolumeMl, draft: PricingDraft) => setDrafts((previous) => ({ ...previous, [volume]: draft }));
 
-  /**
-   * Enregistre immédiatement après un upload d'image, sur une fiche existante :
-   * une image envoyée puis perdue parce qu'on quitte l'écran sans « Enregistrer »
-   * est la façon la plus sûre de faire refaire le travail deux fois.
-   */
-  const autoSave = useCallback(
-    async (overrides: Partial<PerfumePayload>) => {
-      if (isNew || readOnly || saving) return;
-      try {
-        const res = await fetch(`/api/admin/perfumes/${perfumeId}`, {
-          method: "PUT",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(buildBody(overrides)),
-        });
-        if (!res.ok) {
-          const json = await readJsonSafe<{ error?: string }>(res);
-          throw new Error(json?.error ?? "L'image n'a pas pu être enregistrée.");
-        }
-        router.refresh();
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Enregistrement automatique échoué.");
-      }
-    },
-    [isNew, readOnly, saving, perfumeId, buildBody, router],
-  );
-
-  const save = useCallback(
-    async (allowCompleteOverride: boolean) => {
-      setSaving(true);
-      setError(null);
-      try {
-        const res = await fetch(
-          isNew ? "/api/admin/perfumes" : `/api/admin/perfumes/${perfumeId}`,
-          {
-            method: isNew ? "POST" : "PUT",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(buildBody({ allowCompleteOverride })),
-          },
-        );
-        const json = await readJsonSafe<{ error?: string }>(res);
-        if (!res.ok) throw new Error(json?.error ?? "Enregistrement refusé.");
-        router.push(CATALOGUE_HREF);
-        router.refresh();
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Enregistrement impossible.");
-        setSaving(false);
-      }
-    },
-    [isNew, perfumeId, buildBody, router],
-  );
-
-  const canSubmit = !readOnly && brandId !== "" && name.trim() !== "" && image.trim() !== "";
-
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!canSubmit || saving) return;
-    if (brandIsComplete) {
-      setConfirmComplete(true);
-      return;
+  const commitImage = async (key: "image" | "imageLight", url: string) => {
+    if (!editing) return;
+    const result = await autoSave.run(key === "image" ? { id: editing.id, image: url } : { id: editing.id, imageLight: url || null });
+    if (result.ok) {
+      setSaved((previous) => ({ ...previous, [key]: url }));
+    } else {
+      showToast({ type: "error", message: result.error.fields?.[key] ?? result.error.message });
     }
-    void save(false);
   };
 
-  async function handleDelete() {
-    if (!perfumeId || readOnly) return;
-    setError(null);
-    try {
-      const res = await fetch(`/api/admin/perfumes/${perfumeId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const json = await readJsonSafe<{ error?: string }>(res);
-        throw new Error(json?.error ?? "Suppression refusée.");
-      }
-      router.push(CATALOGUE_HREF);
-      router.refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Suppression impossible.");
-      setConfirmDelete(false);
+  const submit = async () => {
+    if (!brand) {
+      setBrandSheetOpen(true);
+      return;
     }
-  }
+    if (name.trim() === "") {
+      nameRef.current?.focus();
+      return;
+    }
+    const { entries } = pricingInput(drafts);
+    if (editing) {
+      const result = await update.run({
+        id: editing.id,
+        brand: brandRef(brand),
+        name,
+        image,
+        imageLight: imageLight || null,
+        pricing: entries,
+      });
+      if (result.ok) {
+        guard.release();
+        router.push(routes.parfum(editing.id));
+      }
+      return;
+    }
+    const result = await create.run({ brand: brandRef(brand), name, image, imageLight: imageLight || null, pricing: entries });
+    if (result.ok) {
+      guard.release();
+      router.push(routes.parfum(result.data.id));
+    }
+  };
 
-  if (loading) {
-    return (
-      <PageScaffold ariaLabel="Chargement du parfum">
-        <SkeletonList count={4} />
-      </PageScaffold>
-    );
-  }
+  const deleteNow = () => {
+    if (!editing) return;
+    const key = `parfum:${editing.id}` as const;
+    setConfirmDelete(false);
+    pendingRemovals.add(key);
+    scheduleDelete({
+      message: `${editing.name} supprimé`,
+      onUndo: () => pendingRemovals.remove(key),
+      onCommit: async () => {
+        const result = await remove.run({ id: editing.id });
+        pendingRemovals.remove(key);
+        if (!result.ok) showToast({ type: "error", message: result.error.message });
+      },
+    });
+    guard.release();
+    router.push(routes.catalogue());
+  };
+
+  const deleteDescription = editing
+    ? [
+        "Il disparaît de la vitrine immédiatement. Les ventes passées gardent son nom.",
+        editing.mediaCount > 0 ? `Ses ${storyCountLabel(editing.mediaCount)} sont supprimés aussi.` : null,
+        "Tu pourras annuler pendant 5 secondes.",
+      ]
+        .filter(Boolean)
+        .join(" ")
+    : "";
+
+  const brandLabel = brand ? (brand.kind === "existing" ? brand.brand.name : brand.name) : null;
 
   return (
-    <PageScaffold padding={4} ariaLabel={isNew ? "Nouveau parfum" : "Fiche parfum"} formScroll>
-      <form id="perfume-form" onSubmit={onSubmit}>
-        <Stack gap={4}>
-          <header className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <Heading level={1}>{isNew ? "Nouveau parfum" : name || "Sans nom"}</Heading>
-              {isNew ? (
-                <p className="mt-0.5 text-[13px] text-[var(--admin-text-muted)]">
-                  Marque, nom et image sont requis.
-                </p>
-              ) : null}
-            </div>
-            {!isNew ? (
-              <Badge tone={status === "PUBLISHED" ? "success" : "neutral"} size="md" dot>
-                {status === "PUBLISHED" ? "Visible" : "Masqué"}
-              </Badge>
-            ) : null}
-          </header>
+    <>
+      <FormSection title="Visuel" description="Photo du flacon, recadrée en portrait. Sans visuel, le parfum reste masqué.">
+        <ImageField
+          label="Visuel principal"
+          kind="perfume"
+          value={image}
+          onChange={setImage}
+          upload={uploadCatalogueImage}
+          onCommit={editing ? (url) => void commitImage("image", url) : undefined}
+        />
+        <CollapsibleSection bare title="Variante claire" summary={imageLight ? "Ajoutée" : "Facultative"} defaultOpen={imageLight !== ""}>
+          <ImageField
+            label="Variante claire"
+            hint="Affichée sur la vitrine en mode clair."
+            kind="perfume"
+            value={imageLight}
+            onChange={setImageLight}
+            upload={uploadCatalogueImage}
+            onCommit={editing ? (url) => void commitImage("imageLight", url) : undefined}
+          />
+        </CollapsibleSection>
+        {autoSave.error ? <ErrorBanner message={autoSave.error.message} /> : null}
+      </FormSection>
 
-          <ErrorBanner message={error} />
-
-          <FormSection title="Informations">
-            <BrandPicker
-              brands={brands}
-              value={brandId}
-              onSelect={(b) => {
-                setBrandId(b.id);
-                if (b.catalogMode === "COMPLETE" || b.status === "DRAFT") setStatus("DRAFT");
-              }}
-              onClear={() => setBrandId("")}
-              onBrandCreated={(b) =>
-                setBrands((prev) =>
-                  [...prev, b].sort((a, z) => a.name.localeCompare(z.name, "fr")),
+      <FormSection title="Identité">
+        <div className="flex flex-col">
+          <span className="admin-type-caption mb-1.5 font-medium text-[var(--admin-text-muted)]">Marque</span>
+          <Card padding={0} elevated={false} className={fields?.brand || fields?.["brand.name"] ? "border-[var(--admin-danger)]" : undefined}>
+            <ListRow
+              onClick={() => setBrandSheetOpen(true)}
+              ariaLabel={brandLabel ? `Marque : ${brandLabel}. Changer` : "Choisir la marque"}
+              leading={brand?.kind === "existing" ? <CatalogueThumb src={brand.brand.image} name={brand.brand.name} size={40} /> : undefined}
+              primary={
+                brandLabel ? (
+                  <span className="admin-type-body block truncate font-medium text-[var(--admin-text)]">{brandLabel}</span>
+                ) : (
+                  <span className="admin-type-body block truncate text-[var(--admin-text-subtle)]">Choisir la marque</span>
                 )
               }
-              onError={setError}
-              readOnly={readOnly}
+              secondary={brand?.kind === "new" ? "Nouvelle marque, créée avec le parfum" : undefined}
+              chevron
             />
-            {brandIsComplete || brandIsHidden ? (
-              <p className="text-[12px] text-[var(--admin-warning)]">
-                {brandIsComplete
-                  ? "Marque en gamme complète : ce parfum ne s'affichera pas à l'unité."
-                  : "Marque masquée : ce parfum restera masqué."}
-              </p>
-            ) : null}
-
-            <Input
-              label="Nom du parfum"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={readOnly}
-              required
-              enterKeyHint="next"
-              placeholder="Ex : Baccarat Rouge 540"
-            />
-
-            <Input
-              label="Stock"
-              type="number"
-              inputMode="numeric"
-              min="0"
-              value={stock}
-              onChange={(e) => setStock(e.target.value)}
-              disabled={readOnly}
-              numeric
-              hint="Décrémenté automatiquement à chaque vente. Laisse 0 si tu ne suis pas le stock."
-            />
-          </FormSection>
-
-          <FormSection title="Visuels">
-            <ImageField
-              label="Image principale"
-              hint="Affichée partout. WebP recommandé."
-              value={image}
-              onChange={setImage}
-              onCommit={(url) => void autoSave({ image: url })}
-              onError={setError}
-              readOnly={readOnly}
-              clearable={false}
-            />
-            <Divider />
-            <ImageField
-              label="Variante claire"
-              hint="Optionnelle : utilisée sur fond clair."
-              value={imageLight}
-              onChange={setImageLight}
-              onCommit={(url) => void autoSave({ imageLight: url })}
-              onError={setError}
-              readOnly={readOnly}
-            />
-          </FormSection>
-
-          <FormSection
-            title="Publication"
-            description={
-              publicationLocked
-                ? image.trim() === ""
-                  ? "Ajoute une image principale pour pouvoir publier."
-                  : "Réglé par la marque : ce parfum reste masqué."
-                : undefined
-            }
-          >
-            <SegmentedControl
-              options={STATUS_OPTIONS}
-              value={publicationLocked ? "DRAFT" : status}
-              onChange={(v) => {
-                if (publicationLocked || readOnly) return;
-                setStatus(v);
-              }}
-              ariaLabel="Visibilité du parfum"
-              className={publicationLocked ? "pointer-events-none opacity-50" : undefined}
-            />
-          </FormSection>
-
-          {mediaSlot}
-
-          {pricingSlot}
-
-          {!isNew && !readOnly ? (
-            <div className="flex justify-center pt-1">
-              <Button
-                variant="text"
-                size="sm"
-                leadingIcon={<Trash2 size={15} />}
-                onClick={() => setConfirmDelete(true)}
-                className="text-[var(--admin-danger)]"
-              >
-                Supprimer ce parfum
-              </Button>
+          </Card>
+          {fields?.brand || fields?.["brand.name"] ? (
+            <p className="admin-type-caption mt-1.5 font-medium text-[var(--admin-danger)]">{fields.brand ?? fields["brand.name"]}</p>
+          ) : null}
+          {brandNotice ? (
+            <div className="mt-2">
+              <ExistingBrandNotice>{brandNotice}</ExistingBrandNotice>
             </div>
           ) : null}
-        </Stack>
+        </div>
+        <FormField
+          label="Nom du parfum"
+          error={fields?.name}
+          hint={normalised !== "" && normalised !== name.trim() ? `Sera enregistré : ${normalised}` : undefined}
+        >
+          {(field) => (
+            <Input
+              {...field}
+              ref={nameRef}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              autoComplete="off"
+              autoCapitalize="words"
+              enterKeyHint="next"
+              variant="elevated"
+              placeholder="Sauvage"
+            />
+          )}
+        </FormField>
+      </FormSection>
 
-        <StickyAction>
-          <Button
-            type="submit"
-            form="perfume-form"
-            variant="primary"
-            size="lg"
-            fullWidth
-            isLoading={saving}
-            disabled={!canSubmit}
-          >
-            {isNew ? "Créer le parfum" : "Enregistrer"}
-          </Button>
-        </StickyAction>
-      </form>
+      <PricingFields drafts={drafts} onChange={setDraft} errors={volumeErrors} defaultRate={props.defaultExchangeRate} />
 
-      <ConfirmDialog
-        open={confirmComplete}
-        onOpenChange={setConfirmComplete}
-        tone="primary"
-        title="Marque en gamme complète"
-        description={`${selectedBrand?.name ?? "Cette marque"} est proposée en gamme complète : le parfum sera enregistré mais masqué à l'unité.`}
-        confirmLabel="Enregistrer quand même"
-        onConfirm={async () => {
-          setConfirmComplete(false);
-          await save(true);
+      {editing ? (
+        <Button variant="text" leadingIcon={<Trash2 size={16} />} className="self-center text-[var(--admin-danger)]" onClick={() => setConfirmDelete(true)}>
+          Supprimer le parfum
+        </Button>
+      ) : null}
+
+      <StickyAction summary={props.mode === "create" && props.duplicatedFrom ? `Copie de ${props.duplicatedFrom} : marque et tarifs repris` : undefined}>
+        <Button variant="primary" size="lg" fullWidth isLoading={create.pending || update.pending} onClick={() => void submit()}>
+          {cta}
+        </Button>
+      </StickyAction>
+
+      <BrandSelectSheet
+        open={brandSheetOpen}
+        onOpenChange={setBrandSheetOpen}
+        brands={props.brands}
+        recentIds={props.recentBrandIds}
+        value={brand}
+        query={brandQuery}
+        onQueryChange={setBrandQuery}
+        onSelect={(choice) => {
+          setBrand(choice);
+          const typed = brandQuery.trim();
+          setBrandNotice(
+            choice.kind === "existing" && typed !== choice.brand.name && cleNom(typed) !== "" && cleNom(typed) === cleNom(choice.brand.name)
+              ? `Rattaché à ${choice.brand.name}, déjà au catalogue.`
+              : null,
+          );
+          if (name.trim() === "") window.setTimeout(() => nameRef.current?.focus(), 350);
         }}
       />
 
-      <ConfirmDialog
-        open={confirmDelete}
-        onOpenChange={setConfirmDelete}
-        title="Supprimer ce parfum ?"
-        description={`« ${name || "Sans nom"} » sera retiré du catalogue, avec ses tarifs et ses visuels story. Sans retour possible. Les commandes et ventes déjà enregistrées gardent leur trace.`}
-        confirmLabel="Supprimer"
-        onConfirm={handleDelete}
-      />
-    </PageScaffold>
+      {editing ? (
+        <ConfirmDialog
+          open={confirmDelete}
+          onOpenChange={setConfirmDelete}
+          title={`Supprimer ${editing.name} ?`}
+          description={deleteDescription}
+          confirmLabel="Supprimer"
+          tone="danger"
+          onConfirm={deleteNow}
+          alternative={
+            editing.status === "PUBLISHED"
+              ? {
+                  label: "Masquer plutôt",
+                  onAction: () => {
+                    setConfirmDelete(false);
+                    void hide.run({ id: editing.id, status: "DRAFT" });
+                  },
+                }
+              : undefined
+          }
+        />
+      ) : null}
+    </>
   );
 }

@@ -1,170 +1,55 @@
 "use client";
 
-import {
-  forwardRef,
-  type FocusEvent,
-  type InputHTMLAttributes,
-  type KeyboardEvent,
-  type ReactNode,
-  useId,
-} from "react";
+import { forwardRef, type InputHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { fieldClass, handleEnterKey, scrollFieldIntoView } from "./field-behavior";
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  hint?: string;
-  error?: string;
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   leadingIcon?: ReactNode;
   trailingSlot?: ReactNode;
-  /** Numeric tabular alignment (montants). */
+  /** Chiffres tabulaires alignés à droite. Pour un montant, préférer `MoneyInput`. */
   numeric?: boolean;
   /**
-   * "default" — fond `--admin-surface` (à utiliser dans une page sur `--admin-bg`).
-   * "elevated" — fond `--admin-surface` plus contrasté (Card/Sheet sur `--admin-bg`).
+   * `default` — sur le fond de page. `elevated` — dans une carte ou une sheet,
+   * avec un filet intérieur pour se détacher du blanc.
    */
   variant?: "default" | "elevated";
-  /** Désactive le scrollIntoView au focus (utile dans listes virtualisées). */
+  /** Pas de recentrage au focus (listes fenêtrées). */
   disableAutoScroll?: boolean;
 }
 
+/**
+ * Champ de saisie. Le libellé, l'aide et l'erreur viennent de `FormField`, qui
+ * passe `id`, `aria-describedby` et `aria-invalid` : l'erreur se VOIT par la
+ * bordure `danger` que porte `aria-invalid`, et se LIT par le message du champ.
+ * Jamais de tremblement.
+ */
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  {
-    label,
-    hint,
-    error,
-    leadingIcon,
-    trailingSlot,
-    numeric,
-    variant = "default",
-    disableAutoScroll,
-    className,
-    id,
-    onFocus,
-    onKeyDown,
-    enterKeyHint,
-    type,
-    ...rest
-  },
+  { leadingIcon, trailingSlot, numeric, variant = "default", disableAutoScroll, className, onFocus, onKeyDown, enterKeyHint, ...rest },
   ref,
 ) {
-  const autoId = useId();
-  const inputId = id ?? autoId;
-  const helpId = error ? `${inputId}-err` : hint ? `${inputId}-hint` : undefined;
-
-  const handleFocus = (e: FocusEvent<HTMLInputElement>) => {
-    onFocus?.(e);
-    if (disableAutoScroll || e.defaultPrevented) return;
-    const el = e.currentTarget;
-    // Délai pour laisser le clavier mobile s'ouvrir (≈300ms) avant scroll.
-    window.setTimeout(() => {
-      try {
-        el.scrollIntoView({ block: "center", behavior: "smooth" });
-      } catch {
-        /* IE/Safari old: ignore */
-      }
-    }, 320);
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    onKeyDown?.(e);
-    if (e.defaultPrevented) return;
-    if (e.key !== "Enter") return;
-    // `textarea` n'arrive jamais ici (composant Input dédié <input>),
-    // donc on peut intercepter Enter sans risque.
-    const hint = enterKeyHint;
-    if (hint === "next") {
-      e.preventDefault();
-      const form = e.currentTarget.form;
-      if (form) {
-        const focusables = Array.from(
-          form.querySelectorAll<HTMLElement>(
-            "input:not([disabled]):not([type=hidden]), textarea:not([disabled]), select:not([disabled])",
-          ),
-        );
-        const idx = focusables.indexOf(e.currentTarget);
-        const next = idx >= 0 ? focusables[idx + 1] : undefined;
-        if (next) {
-          next.focus();
-          return;
-        }
-      }
-      e.currentTarget.blur();
-      return;
-    }
-    // "go"/"send" annoncent une validation : le clavier iOS affiche « OK » /
-    // « Envoyer », et appuyer dessus doit soumettre. Sans ce cas, l'appel à
-    // preventDefault plus bas avalait la soumission native du formulaire.
-    if (hint === "go" || hint === "send") {
-      const form = e.currentTarget.form;
-      if (form) {
-        e.preventDefault();
-        e.currentTarget.blur();
-        form.requestSubmit();
-        return;
-      }
-    }
-    // "done", "search", "enter" ou non précisé : ferme simplement le clavier.
-    e.preventDefault();
-    e.currentTarget.blur();
-  };
-
   return (
-    <div className="w-full">
-      {label ? (
-        <label
-          htmlFor={inputId}
-          className="mb-1.5 block text-[13px] font-medium text-[var(--admin-text-muted)]"
-        >
-          {label}
-        </label>
+    <div className="relative flex w-full items-center">
+      {leadingIcon ? (
+        <span className="pointer-events-none absolute left-3 flex items-center text-[var(--admin-text-subtle)]">
+          {leadingIcon}
+        </span>
       ) : null}
-      <div className="relative flex items-center">
-        {leadingIcon ? (
-          <div className="pointer-events-none absolute left-3 flex items-center text-[var(--admin-text-subtle)]">
-            {leadingIcon}
-          </div>
-        ) : null}
-        <input
-          ref={ref}
-          id={inputId}
-          type={type}
-          enterKeyHint={enterKeyHint}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={helpId}
-          onFocus={handleFocus}
-          onKeyDown={handleKeyDown}
-          className={cn(
-            "block w-full min-h-[44px] rounded-[12px]",
-            variant === "elevated"
-              ? "bg-[var(--admin-surface)] border border-[var(--admin-border-strong)] shadow-[inset_0_0_0_1px_var(--admin-border)]"
-              : "bg-[var(--admin-surface)] border border-[var(--admin-border-strong)]",
-            "px-4 text-[16px] text-[var(--admin-text)] placeholder:text-[var(--admin-text-subtle)]",
-            "transition-[border-color,box-shadow] duration-[var(--admin-duration-default)] ease-[var(--admin-easing-default)]",
-            "focus-visible:border-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
-            "disabled:opacity-50 disabled:cursor-not-allowed",
-            leadingIcon ? "pl-10" : null,
-            trailingSlot ? "pr-12" : null,
-            error
-              ? "border-[var(--admin-danger)] focus-visible:border-[var(--admin-danger)] focus-visible:ring-[var(--admin-danger-bg)]"
-              : null,
-            numeric ? "tnum text-right" : null,
-            className,
-          )}
-          {...rest}
-        />
-        {trailingSlot ? (
-          <div className="absolute right-2 flex items-center">{trailingSlot}</div>
-        ) : null}
-      </div>
-      {error ? (
-        <p id={helpId} className="mt-1.5 text-[12px] font-medium text-[var(--admin-danger)]">
-          {error}
-        </p>
-      ) : hint ? (
-        <p id={helpId} className="mt-1.5 text-[12px] text-[var(--admin-text-subtle)]">
-          {hint}
-        </p>
-      ) : null}
+      <input
+        ref={ref}
+        enterKeyHint={enterKeyHint}
+        onFocus={(e) => {
+          onFocus?.(e);
+          if (!disableAutoScroll && !e.defaultPrevented) scrollFieldIntoView(e);
+        }}
+        onKeyDown={(e) => {
+          onKeyDown?.(e);
+          handleEnterKey(e, enterKeyHint);
+        }}
+        className={cn(fieldClass(variant), leadingIcon ? "pl-10" : null, trailingSlot ? "pr-12" : null, numeric ? "tnum text-right" : null, className)}
+        {...rest}
+      />
+      {trailingSlot ? <span className="absolute right-1 flex items-center">{trailingSlot}</span> : null}
     </div>
   );
 });

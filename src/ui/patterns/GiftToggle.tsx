@@ -1,34 +1,29 @@
-"use client";
-
 import { Gift } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Chip } from "../primitives/Chip";
 
 type GiftToggleProps = {
-  active: boolean;
-  onToggle: () => void;
+  checked: boolean;
+  /**
+   * Coché : la ligne est offerte, son prix passe à 0 (le coût reste compté).
+   * Décoché : le dernier prix saisi est restauré. Ces deux effets sur le prix
+   * sont à la charge de l'appelant, qui détient la ligne.
+   */
+  onChange: (checked: boolean) => void;
+  disabled?: boolean;
   className?: string;
 };
 
-/**
- * Bascule « Don » réutilisable pour une ligne (vente / commande).
- * Quand active : la ligne est offerte (prix 0, coût compté). Le parent gère la
- * mise à 0 du prix dans son handler `onToggle`.
- */
-export function GiftToggle({ active, onToggle, className }: GiftToggleProps) {
+/** Bascule « Offert » d'une ligne de vente ou de commande (05 §3.2). */
+export function GiftToggle({ checked, onChange, disabled, className }: GiftToggleProps) {
   return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onToggle}
-      className={cn(
-        "inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium tap-scale",
-        active
-          ? "border-[var(--admin-accent)] bg-[var(--admin-accent-bg)] text-[var(--admin-accent)]"
-          : "border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-muted)]",
-        className,
-      )}
+    <Chip
+      active={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      icon={<Gift size={14} />}
+      className={className}
     >
-      <Gift size={14} /> Don
-    </button>
+      Offert
+    </Chip>
   );
 }

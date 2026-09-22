@@ -1,80 +1,98 @@
-import { test, expect, type Page } from "@playwright/test";
-import { installAdminSession } from "./helpers/adminSession";
+import { expect, test, type BrowserContext, type Page } from "@playwright/test";
+import { NEWS_SEEN_KEY } from "../src/contracts/stats";
+import { ACCUEIL_SCENES, ACCUEIL_TEXTS, BANC_ACCUEIL } from "./fixtures/accueil-contrat";
+import { mountAccueil } from "./helpers/banc";
+import { waitForHydration } from "./helpers/hydration";
 import {
   collectBottomOcclusion,
   collectHydrationViolations,
   collectKeyboardViolations,
+  collectLayerPaintViolations,
   collectLayoutViolations,
   simulateKeyboard,
   type Violation,
 } from "./helpers/layoutInvariants";
+import { routes } from "../src/app-shell/routes";
+import { SCREENS, SHEETS, uncoveredRoutes, type ScreenCase } from "./routes";
 
 /**
- * Invariants d'affichage de l'app de gestion.
+ * Invariants d'affichage de la gestion (`npm run test:layout`, 05 §5.5, 06 §1.8).
  *
- * Ces tests ne décrivent pas un écran en particulier : ils énoncent ce qui ne
- * doit jamais arriver dans une app mobile — défilement latéral, texte coupé
- * net, contrôle sous la barre d'onglets ou sous le clavier — et l'éprouvent
- * sur toutes les routes, à trois largeurs, clavier ouvert comme fermé.
+ * Ces tests ne décrivent pas un écran : ils énoncent ce qui ne doit jamais arriver dans une app
+ * mobile — défilement latéral, texte coupé net, contrôle sous la barre d'onglets ou sous le clavier,
+ * écran non hydraté, deux actions principales — et l'éprouvent sur chaque écran et chaque sheet
+ * livrés (`e2e/routes.ts`), aux trois largeurs du parc iPhone, clavier ouvert comme fermé.
  *
- * C'est le filet qui remplace la relecture manuelle écran par écran.
+ * Session réelle : celle ouverte PAR L'ÉCRAN dans `global-setup.ts`. Un écran injoignable ÉCHOUE —
+ * il ne se déclare jamais « sauté », ce qui ressemblait à un succès.
  */
 
-/** Les trois largeurs réelles du parc iPhone en circulation. */
+/** Les trois largeurs réelles du parc iPhone. */
 const VIEWPORTS = [
   { name: "iPhone SE", width: 320, height: 568 },
   { name: "iPhone 13", width: 375, height: 812 },
   { name: "iPhone 15 Pro Max", width: 430, height: 932 },
 ] as const;
 
-/** Routes statiques. Les routes à paramètre sont résolues à l'exécution. */
-const STATIC_ROUTES = [
-  "/admin",
-  "/admin/ordres",
-  "/admin/ordres/new",
-  "/admin/vendre",
-  "/admin/compta",
-  "/admin/compta?vue=tresorerie",
-  "/admin/encaisser",
-  "/admin/catalogue",
-  "/admin/catalogue?tab=brands",
-  "/admin/catalogue?tab=featured",
-  "/admin/clients",
-  "/admin/clients/new",
-  "/admin/lots",
-  "/admin/lots/new",
-  "/admin/perfumes/new",
-  "/admin/brands/new",
-  "/admin/stats/top-parfums",
-  "/admin/offline",
-] as const;
+/** Hauteur du clavier iOS simulé (portrait, suggestions comprises). */
+const KEYBOARD = 336;
 
-function format(route: string, viewport: string, items: Violation[]): string {
-  return [
-    `${items.length} violation(s) — ${route} @ ${viewport}`,
-    ...items.map((v) => `  • [${v.rule}] ${v.selector}\n    ${v.detail}`),
-  ].join("\n");
+function format(where: string, items: Violation[]): string {
+  return [`${items.length} violation(s) — ${where}`, ...items.map((v) => `  • [${v.rule}] ${v.selector}\n    ${v.detail}`)].join("\n");
 }
 
-async function gotoAdmin(page: Page, route: string): Promise<boolean> {
-  const res = await page.goto(route, { waitUntil: "networkidle" });
-  if (res && res.status() >= 400) return false;
-  if (page.url().includes("/admin/login")) return false;
+function unique(items: Violation[]): Violation[] {
+  const seen = new Set<string>();
+  return items.filter((v) => {
+    const key = `${v.rule}|${v.selector}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+async function addCookies(context: BrowserContext, screen: ScreenCase, baseURL: string | undefined) {
+  if (!screen.cookies?.length) return;
+  const { hostname } = new URL(baseURL ?? "http://localhost");
+  await context.addCookies(screen.cookies.map((c) => ({ ...c, domain: hostname })));
+}
+
+/** Stockage local posé avant le premier chargement seulement (brouillon du composeur, 06 §1.8). */
+async function addStorage(page: Page, storage: Record<string, string> | undefined) {
+  if (!storage) return;
+  await page.addInitScript((entries) => {
+    if (sessionStorage.getItem("__e2e-storage")) return;
+    sessionStorage.setItem("__e2e-storage", "1");
+    for (const [key, value] of Object.entries(entries)) localStorage.setItem(key, value);
+  }, storage);
+}
+
+/** Ouvre l'écran et attend qu'il soit vivant (hydraté, blocs posés). */
+async function open(page: Page, url: string, shell: boolean): Promise<void> {
+  const response = await page.goto(url, { waitUntil: "load" });
+  expect(response?.status() ?? 0, `${url} répond`).toBeLessThan(400);
+  if (shell) {
+    expect(new URL(page.url()).pathname, `${url} : session refusée`).not.toBe("/admin/login");
+    await waitForHydration(page.locator("[data-tabbar] a").first());
+  } else {
+    await waitForHydration(page.getByRole("button", { name: "Se connecter" }));
+  }
   // Laisse les Suspense serveur se résoudre avant de mesurer.
-  await page.waitForTimeout(600);
-  return true;
+  await page.waitForTimeout(300);
 }
 
 /**
- * Amène la zone de défilement en bas : c'est là que la réserve basse se prouve.
- *
- * Répété jusqu'à stabilisation : un bloc rendu en différé (Suspense serveur,
- * image qui se charge) rallonge la page après un premier défilement, et la
- * mesure porterait alors sur un état intermédiaire.
+ * Contenu rendu après l'hydratation (sheet adressable `?doc=`, 07 J8) : attendu, puis la fin de l'animation
+ * d'entrée de la sheet, avant toute mesure.
  */
+async function settle(page: Page, waitFor: string | undefined): Promise<void> {
+  if (!waitFor) return;
+  await page.locator(waitFor).first().waitFor({ state: "visible" });
+  await page.waitForTimeout(600);
+}
+
+/** Amène la zone de défilement en bas, jusqu'à stabilisation : la réserve basse se prouve là. */
 async function scrollToBottom(page: Page): Promise<void> {
-  // Les listes paginées (clients) chargent une page de plus à chaque passage
-  // en bas : il faut plusieurs tours avant que la hauteur se fige.
   let previous = -1;
   for (let i = 0; i < 12; i += 1) {
     const position = await page.evaluate(() => {
@@ -85,171 +103,303 @@ async function scrollToBottom(page: Page): Promise<void> {
     });
     if (position === previous) return;
     previous = position;
-    // Une liste paginée déclenche une requête en atteignant le bas : attendre
-    // le silence réseau évite de mesurer avant l'arrivée des lignes suivantes.
-    await page.waitForLoadState("networkidle").catch(() => undefined);
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(250);
   }
+}
+
+/**
+ * Un libellé d'onglet se lit en entier : l'ellipse, que le contrôle « texte rogné » accepte, ne
+ * suffit pas pour une destination permanente (« Comman… » à 320 px, relevé à J4).
+ */
+async function collectTabLabelTruncation(page: Page): Promise<Violation[]> {
+  return page.evaluate(() =>
+    Array.from(document.querySelectorAll<HTMLElement>("[data-tabbar] a > span:last-child"))
+      .filter((label) => label.scrollWidth > label.clientWidth + 1)
+      .map((label) => ({
+        rule: "libelle-onglet-tronque",
+        detail: `Libellé d'onglet tronqué (${label.scrollWidth}px dans ${label.clientWidth}px).`,
+        selector: `onglet « ${(label.textContent ?? "").trim()} »`,
+      })),
+  );
+}
+
+/**
+ * Seul l'onglet actif a un libellé bordeaux et gras (05 §3.4, décision du 17/09/2026) : quand Vendre
+ * peignait aussi le sien, deux onglets semblaient actifs. Vendre garde son accent par sa pastille.
+ */
+async function collectTabAccent(page: Page): Promise<Violation[]> {
+  return page.evaluate(() => {
+    const bar = document.querySelector<HTMLElement>("[data-tabbar]");
+    if (!bar) return [];
+    const probe = document.createElement("span");
+    probe.style.color = "var(--admin-accent)";
+    bar.appendChild(probe);
+    const accent = getComputedStyle(probe).color;
+    probe.remove();
+    return Array.from(bar.querySelectorAll<HTMLElement>("a")).flatMap((link) => {
+      const label = link.querySelector<HTMLElement>(":scope > span:last-child");
+      if (!label) return [];
+      const name = (label.textContent ?? "").trim();
+      const active = link.getAttribute("aria-current") === "page";
+      const style = getComputedStyle(label);
+      const accented = style.color === accent;
+      const bold = Number(style.fontWeight) >= 700;
+      if (active && (!accented || !bold)) {
+        return [{ rule: "accent-onglet", detail: `Onglet actif sans libellé bordeaux et gras (${style.color}, ${style.fontWeight}).`, selector: `onglet « ${name} »` }];
+      }
+      if (!active && (accented || bold)) {
+        return [{ rule: "accent-onglet", detail: "Libellé bordeaux ou gras sur un onglet inactif : deux onglets semblent actifs.", selector: `onglet « ${name} »` }];
+      }
+      return [];
+    });
+  });
+}
+
+async function screenViolations(page: Page): Promise<{ violations: Violation[]; warnings: Violation[] }> {
+  const dead = await collectHydrationViolations(page);
+  const { violations, warnings } = await collectLayoutViolations(page);
+  const labels = [...(await collectTabLabelTruncation(page)), ...(await collectTabAccent(page))];
+  await scrollToBottom(page);
+  const occluded = await collectBottomOcclusion(page);
+  return { violations: unique([...dead, ...violations, ...labels, ...occluded]), warnings };
+}
+
+/** Le dernier champ d'un formulaire garde son bouton d'envoi au-dessus du clavier (06 §4.5). */
+async function submitUnderKeyboard(page: Page, label: string): Promise<Violation[]> {
+  return page.evaluate(
+    ({ kb, name }) => {
+      const button = Array.from(document.querySelectorAll("button")).find((b) => (b.textContent ?? "").trim() === name);
+      if (!button) return [{ rule: "cta-absent", detail: `Bouton « ${name} » introuvable.`, selector: "form" }];
+      const r = button.getBoundingClientRect();
+      const keyboardTop = window.innerHeight - kb;
+      return r.bottom > keyboardTop + 1 || r.top < 0
+        ? [{ rule: "cta-hors-vue-clavier", detail: `« ${name} » hors de la zone visible (${Math.round(r.top)}→${Math.round(r.bottom)} px, clavier à ${keyboardTop} px).`, selector: `button « ${name} »` }]
+        : [];
+    },
+    { kb: KEYBOARD, name: label },
+  );
 }
 
 test.describe("Invariants d'affichage — gestion", () => {
   test.skip(({ browserName }) => browserName !== "chromium", "Mesures de mise en page : un seul moteur suffit.");
 
+  test("e2e/routes.ts couvre chaque écran livré de src/app-shell/routes.ts", () => {
+    expect(uncoveredRoutes()).toEqual([]);
+  });
+
+  test("auto-contrôle : les invariants ajoutés à J4 détectent ce qu'ils interdisent", async ({ page }) => {
+    await page.setContent(`
+      <div class="admin-app-container" style="width:320px">
+        <button data-variant="primary">Encaisser</button>
+        <button data-variant="primary">Livrer</button>
+        <div role="dialog"><button data-variant="primary">Enregistrer</button></div>
+        <div style="position:relative;height:56px"><button id="rangee" style="height:20px">Nouvelle vente</button></div>
+        <button style="height:20px">Petit</button>
+        <button id="sans-nom" style="height:44px;width:44px"><svg width="20" height="20" aria-hidden="true"></svg></button>
+        <button style="height:44px;width:44px" aria-label="Fermer"><svg width="20" height="20" aria-hidden="true"></svg></button>
+        <style>#rangee::after{content:"";position:absolute;inset:0}</style>
+        <span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Recherche au lecteur d'écran</span>
+        <nav data-tabbar><a href="#"><span></span><span style="display:block;width:30px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Commandes</span></a></nav>
+      </div>`);
+    const { violations } = await collectLayoutViolations(page);
+    const about = (rule: string, text: string) => violations.filter((v) => v.rule === rule && v.selector.includes(text));
+    // Deux primary sur l'écran : une violation ; celui du dialogue est dans sa propre couche.
+    expect(violations.filter((v) => v.rule === "plusieurs-primary").map((v) => v.selector)).toEqual(["écran"]);
+    // Rangée étendue par pseudo-élément : la cible est la rangée (56 px), pas le texte (20 px).
+    expect(about("cible-tactile", "Nouvelle vente")).toEqual([]);
+    expect(about("cible-tactile", "Petit")).toHaveLength(1);
+    // Texte `sr-only` : jamais « rogné ».
+    expect(violations.filter((v) => v.rule === "texte-rogne")).toEqual([]);
+    // Nom accessible (J16) : le bouton à icône seule sans libellé est relevé, celui qui a `aria-label` non.
+    expect(violations.filter((v) => v.rule === "sans-nom-accessible").map((v) => v.selector)).toEqual(["button#sans-nom"]);
+    expect((await collectTabLabelTruncation(page)).map((v) => v.selector)).toEqual(["onglet « Commandes »"]);
+  });
+
+  test("auto-contrôle : seul l'onglet actif parle en bordeaux", async ({ page }) => {
+    await page.setContent(`
+      <nav data-tabbar style="--admin-accent:#7B0B1D">
+        <a href="#" aria-current="page"><span></span><span style="color:#7B0B1D;font-weight:700">Accueil</span></a>
+        <a href="#"><span></span><span style="color:#5F5862;font-weight:500">Commandes</span></a>
+        <a href="#"><span></span><span style="color:#7B0B1D;font-weight:500">Vendre</span></a>
+      </nav>`);
+    expect((await collectTabAccent(page)).map((v) => v.selector)).toEqual(["onglet « Vendre »"]);
+  });
+
+  test("auto-contrôle : un voile repeint en opaque est détecté, un voile translucide passe", async ({ page }) => {
+    await page.setContent(`
+      <div data-admin-overlay style="position:fixed;top:0;left:0;width:40px;height:40px;background:rgba(26,18,21,0.38)"></div>
+      <div data-admin-overlay style="position:fixed;top:0;left:60px;width:40px;height:40px;background:#f2f2f7"></div>`);
+    expect((await collectLayerPaintViolations(page)).map((v) => v.rule)).toEqual(["voile-opaque"]);
+  });
+
   for (const viewport of VIEWPORTS) {
-    test.describe(`${viewport.name} (${viewport.width}px)`, () => {
-      for (const route of STATIC_ROUTES) {
-        test(`${route} respecte les invariants`, async ({ page, context, baseURL }) => {
-          const authed = await installAdminSession(context, baseURL ?? "http://localhost:3000");
-          test.skip(!authed, "ADMIN_JWT_SECRET absent de l'environnement.");
+    test.describe(`${viewport.name} (${viewport.width} px)`, () => {
+      test.use({
+        viewport: { width: viewport.width, height: viewport.height },
+        isMobile: true,
+        hasTouch: true,
+        deviceScaleFactor: 2,
+      });
 
-          await page.setViewportSize({ width: viewport.width, height: viewport.height });
-          const reachable = await gotoAdmin(page, route);
-          test.skip(!reachable, `Route ${route} injoignable (session ou données absentes).`);
+      for (const screen of SCREENS) {
+        test.describe(`${screen.screen} — ${screen.label}`, () => {
+          if (!screen.shell) test.use({ storageState: { cookies: [], origins: [] } });
 
-          // Interactivité d'abord : un écran non hydraté est joli et mort.
-          const dead = await collectHydrationViolations(page);
-
-          // Géométrie et cibles : mesurées sur l'écran tel qu'il s'affiche.
-          const { violations, warnings } = await collectLayoutViolations(page);
-
-          // Réserve basse : ne se prouve qu'une fois le bas atteint, la barre
-          // d'onglets recouvrant légitimement le contenu en cours de route.
-          await scrollToBottom(page);
-          const occluded = await collectBottomOcclusion(page);
-
-          const seen = new Set<string>();
-          const all = [...dead, ...violations, ...occluded].filter((v) => {
-            const key = `${v.rule}|${v.selector}`;
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
+          test(`${screen.url} respecte les invariants`, async ({ page, context, baseURL }) => {
+            await addCookies(context, screen, baseURL);
+            await addStorage(page, screen.storage);
+            await open(page, screen.url, screen.shell);
+            await settle(page, screen.waitFor);
+            const { violations, warnings } = await screenViolations(page);
+            if (warnings.length > 0) console.warn(format(`${screen.url} @ ${viewport.width} px (avertissements)`, warnings));
+            expect(violations, format(`${screen.url} @ ${viewport.width} px`, violations)).toEqual([]);
           });
 
-          if (warnings.length > 0) {
-            console.warn(format(`${route} (avertissements)`, viewport.name, warnings));
-          }
-          expect(all, format(route, viewport.name, all)).toEqual([]);
+          const fields = screen.keyboardFields ?? [];
+          fields.forEach((field, index) => {
+            test(`clavier ouvert sur « ${field} »`, async ({ page, context, baseURL }) => {
+              await addCookies(context, screen, baseURL);
+              await addStorage(page, screen.storage);
+              await open(page, screen.url, screen.shell);
+              await settle(page, screen.waitFor);
+              await simulateKeyboard(page, KEYBOARD);
+              await page.getByLabel(field, { exact: true }).focus();
+              // Le cadrage suit la montée du clavier (~320 ms) puis un défilement doux.
+              await page.waitForTimeout(900);
+              const found = await collectKeyboardViolations(page, KEYBOARD);
+              if (!screen.shell && index === fields.length - 1) found.push(...(await submitUnderKeyboard(page, "Se connecter")));
+              expect(found, format(`${screen.url} @ ${viewport.width} px, clavier sur « ${field} »`, found)).toEqual([]);
+            });
+          });
         });
       }
+
+      for (const sheet of SHEETS) {
+        test(`${sheet.sheet} — ${sheet.label}, clavier ouvert`, async ({ page }) => {
+          await addStorage(page, sheet.storage);
+          await open(page, sheet.url, true);
+          let dialog;
+          if (sheet.open === "search") {
+            await page.locator("[data-search-trigger]").tap();
+            dialog = page.locator("[data-command-palette]");
+            await expect(dialog).toBeVisible();
+            // Le champ du dialogue, et non le bouton « Rechercher » du header qui porte le même nom.
+            const field = dialog.getByLabel("Rechercher", { exact: true });
+            await expect(field).toBeFocused();
+            if (sheet.query) {
+              // Résultats et actions de résultat (S17, A16) : la frappe est débouncée de 200 ms côté palette.
+              await field.fill(sheet.query);
+              await expect(dialog.locator("h2, h3").first()).toBeVisible();
+              await page.waitForTimeout(700);
+            }
+          } else {
+            const taps = typeof sheet.open.tap === "string" || sheet.open.tap instanceof RegExp ? [sheet.open.tap] : sheet.open.tap;
+            for (const [index, name] of taps.entries()) {
+              if (typeof name === "object" && !(name instanceof RegExp)) {
+                // Saisie dans la sheet ouverte (« lattafa oud » dans S05) : la couche du dessus, portée en dernier.
+                await page.getByLabel(name.fill, { exact: true }).last().fill(name.text);
+                await page.waitForTimeout(300);
+                continue;
+              }
+              // Toucher suivant : le contrôle est dans la sheet ouverte par le précédent, portée APRÈS l'écran dans le DOM.
+              const matches = page.getByRole(sheet.open.role ?? "button", { name, exact: true });
+              const trigger = index === 0 ? matches.first() : matches.last();
+              // Le contrôle vit dans un bloc streamé : il répond une fois hydraté.
+              if (index === 0) await waitForHydration(trigger);
+              await trigger.tap();
+              // Fin de l'animation d'entrée (260 ms) avant le toucher suivant ou la mesure.
+              await page.waitForTimeout(450);
+            }
+            const LAYER = {
+              drawer: '[data-vaul-drawer][data-state="open"]',
+              viewer: "[data-media-viewer]",
+              // S18 : `ConfirmDialog` est un dialogue Radix (bande `modal`), jamais une sheet vaul.
+              dialog: "[data-confirm-dialog]",
+            } as const;
+            dialog = page.locator(LAYER[sheet.open.layer]).last();
+            await expect(dialog).toBeVisible();
+          }
+
+          const { violations } = await collectLayoutViolations(page);
+          violations.push(...(await collectLayerPaintViolations(page)));
+          expect(violations, format(`${sheet.sheet} sur ${sheet.url} @ ${viewport.width} px`, violations)).toEqual([]);
+
+          await simulateKeyboard(page, KEYBOARD);
+          for (const field of sheet.keyboardFields ?? []) {
+            await dialog.getByLabel(field, { exact: true }).focus();
+            // Comme pour un écran : le cadrage suit la montée du clavier (~320 ms) puis un défilement doux.
+            await page.waitForTimeout(900);
+            const found = await collectKeyboardViolations(page, KEYBOARD);
+            expect(found, format(`${sheet.sheet} @ ${viewport.width} px, clavier sur « ${field} »`, found)).toEqual([]);
+          }
+        });
+      }
+
+      /**
+       * Les trois états de E01 (06 E01 « États », J14). Le jeu e2e porte des documents et des alertes de
+       * stock : le VIDE DE PREMIÈRE UTILISATION et le cas « tout va bien » (rien à faire) sont
+       * inatteignables depuis la base. Le banc `e2e/fixtures/accueil.tsx` monte les vrais composants avec
+       * leurs données, dans `/admin`, sous la feuille admin réelle.
+       */
+      for (const scene of ACCUEIL_SCENES) {
+        test(`E01 — état « ${scene} » respecte les invariants`, async ({ page }, testInfo) => {
+          // La carte « Nouveautés » a la priorité sur celle de la scène (06 E01 zone 2 : UNE carte à la fois) :
+          // on la ferme, sinon aucune scène ne montre sa propre carte. Elle a son cas à elle, sur la vraie page.
+          await addStorage(page, { [NEWS_SEEN_KEY]: "1" });
+          await open(page, routes.accueil(), true);
+          await mountAccueil(page, testInfo, scene, BANC_ACCUEIL);
+          await expect(page.locator(`[data-banc-accueil="${scene}"]`)).toBeVisible();
+          await page.waitForTimeout(400);
+
+          if (scene === "vide-de-depart") {
+            // L'Accueil ORIENTE : la carte « Pour commencer », pas une colonne de zéros (05 §5.1).
+            await expect(page.getByText(ACCUEIL_TEXTS.pourCommencer, { exact: true })).toBeVisible();
+            await expect(page.locator("[data-money-block]")).toHaveCount(0);
+            await expect(page.locator("[data-alerts]")).toHaveCount(0);
+            await expect(page.locator("[data-today-block]")).toHaveCount(0);
+          }
+          if (scene === "tout-va-bien") {
+            // Rien à faire : le bloc « À faire » n'existe pas — la bonne nouvelle est silencieuse.
+            await expect(page.locator("[data-alerts]")).toHaveCount(0);
+            await expect(page.locator("[data-pipeline]")).toHaveCount(0);
+            await expect(page.locator("[data-top-perfumes]")).toHaveCount(0);
+            await expect(page.locator("[data-money-block]")).toBeVisible();
+          }
+          if (scene === "nominal") {
+            await expect(page.locator("[data-alerts]")).toBeVisible();
+            await expect(page.locator("[data-money-block]")).toBeVisible();
+            await expect(page.locator("[data-pipeline]")).toBeVisible();
+            await expect(page.locator("[data-open-batches]")).toBeVisible();
+            await expect(page.locator("[data-top-perfumes]")).toBeVisible();
+          }
+
+          const { violations, warnings } = await screenViolations(page);
+          if (warnings.length > 0) console.warn(format(`E01 « ${scene} » @ ${viewport.width} px (avertissements)`, warnings));
+          expect(violations, format(`E01 « ${scene} » @ ${viewport.width} px`, violations)).toEqual([]);
+        });
+      }
+
+      test("tab bar avec le point de brouillon de Vendre", async ({ page }) => {
+        await page.addInitScript(() => {
+          localStorage.setItem("nurea:brouillon:vendre", JSON.stringify({ v: 1, savedAt: Date.now(), value: { lignes: 1 } }));
+        });
+        await open(page, routes.accueil(), true);
+        await expect(page.getByRole("link", { name: "Vendre, brouillon en cours" })).toBeVisible();
+        const { violations } = await screenViolations(page);
+        expect(violations, format(`point de brouillon @ ${viewport.width} px`, violations)).toEqual([]);
+      });
     });
   }
-});
 
-test.describe("Invariants clavier — gestion", () => {
-  test.skip(({ browserName }) => browserName !== "chromium", "Mesures de mise en page : un seul moteur suffit.");
-
-  /** Écrans de saisie : ce sont les seuls où le clavier s'ouvre. */
-  const FORM_ROUTES = [
-    "/admin/ordres/new",
-    "/admin/vendre",
-    "/admin/clients/new",
-    "/admin/lots/new",
-    "/admin/perfumes/new",
-    "/admin/brands/new",
-  ] as const;
-
-  for (const route of FORM_ROUTES) {
-    test(`${route} reste utilisable clavier ouvert`, async ({ page, context, baseURL }) => {
-      const authed = await installAdminSession(context, baseURL ?? "http://localhost:3000");
-      test.skip(!authed, "ADMIN_JWT_SECRET absent de l'environnement.");
-
-      await page.setViewportSize({ width: 375, height: 812 });
-      const reachable = await gotoAdmin(page, route);
-      test.skip(!reachable, `Route ${route} injoignable.`);
-
-      // Commande et Vente n'exposent aucun champ tant que le client n'est pas
-      // en saisie libre : on déplie l'affordance avant de mesurer, sinon le
-      // test se contenterait de sauter les deux écrans les plus utilisés.
-      const reveal = page.getByRole("button", { name: /Client de passage/i });
-      if (await reveal.count()) await reveal.first().click();
-
-      const input = page
-        .locator('input:not([type="hidden"]):not([type="search"]), textarea')
-        .first();
-      const hasInput = (await input.count()) > 0;
-      test.skip(!hasInput, "Aucun champ de saisie sur cet écran.");
-
-      await input.focus();
-      await simulateKeyboard(page);
-
-      const found = await collectKeyboardViolations(page);
-      expect(found, format(`${route} (clavier)`, "iPhone 13", found)).toEqual([]);
-    });
-  }
-
-  test("le sélecteur de client garde ses résultats visibles clavier ouvert", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    const authed = await installAdminSession(context, baseURL ?? "http://localhost:3000");
-    test.skip(!authed, "ADMIN_JWT_SECRET absent de l'environnement.");
-
-    await page.setViewportSize({ width: 375, height: 812 });
-    const reachable = await gotoAdmin(page, "/admin/vendre");
-    test.skip(!reachable, "Route /admin/vendre injoignable.");
-
-    await page.locator('button[aria-haspopup="dialog"]').first().click();
-    await expect(page.locator("[data-vaul-drawer]")).toBeVisible();
-
-    const search = page.locator('[data-vaul-drawer] input[type="search"]');
-    await search.fill("a");
-    // La recherche est débouncée : attendre la liste plutôt qu'un délai fixe.
-    await expect(page.locator('[data-vaul-drawer] [role="option"]').first()).toBeVisible();
-    await simulateKeyboard(page);
-
-    const found = await collectKeyboardViolations(page);
-    expect(found, format("sélecteur client (clavier)", "iPhone 13", found)).toEqual([]);
-
-    // Régression : la liste doit rester lisible, pas réduite à une lucarne.
-    const rows = page.locator('[data-vaul-drawer] [role="option"]');
-    expect(await rows.count()).toBeGreaterThan(0);
-    await expect(rows.first()).toBeVisible();
+  test.describe("pointeur fin (⌘K affiché)", () => {
+    for (const width of [320, 430]) {
+      test(`header de l'Accueil à ${width} px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 800 });
+        await open(page, routes.accueil(), true);
+        await expect(page.locator("[data-search-trigger] kbd")).toBeVisible();
+        const { violations } = await screenViolations(page);
+        expect(violations, format(`/admin @ ${width} px, pointeur fin`, violations)).toEqual([]);
+      });
+    }
   });
-});
-
-test.describe("Invariants d'affichage — écrans de détail", () => {
-  test.skip(({ browserName }) => browserName !== "chromium", "Mesures de mise en page : un seul moteur suffit.");
-
-  /**
-   * Les fiches n'ont pas d'URL fixe : leurs identifiants sont lus dans l'app au
-   * moment du test. Sans ça, les écrans les plus riches — ceux qui débordent le
-   * plus — resteraient hors couverture.
-   */
-  const SECTIONS = [
-    { label: "commande", list: "/admin/ordres", linkPattern: /^\/admin\/ordres\/[^/]+$/ },
-    { label: "client", list: "/admin/clients", linkPattern: /^\/admin\/clients\/[^/]+$/ },
-    { label: "lot", list: "/admin/lots", linkPattern: /^\/admin\/lots\/[^/]+$/ },
-    { label: "parfum", list: "/admin/catalogue", linkPattern: /^\/admin\/perfumes\/[^/]+\/edit$/ },
-  ] as const;
-
-  for (const section of SECTIONS) {
-    test(`fiche ${section.label} respecte les invariants`, async ({ page, context, baseURL }) => {
-      const authed = await installAdminSession(context, baseURL ?? "http://localhost:3000");
-      test.skip(!authed, "ADMIN_JWT_SECRET absent de l'environnement.");
-
-      await page.setViewportSize({ width: 375, height: 812 });
-      const listReachable = await gotoAdmin(page, section.list);
-      test.skip(!listReachable, `Liste ${section.list} injoignable.`);
-
-      const href = await page.evaluate((source) => {
-        const re = new RegExp(source);
-        const link = Array.from(document.querySelectorAll<HTMLAnchorElement>("a[href]")).find((a) =>
-          re.test(new URL(a.href, location.origin).pathname),
-        );
-        return link ? new URL(link.href, location.origin).pathname : null;
-      }, section.linkPattern.source);
-      test.skip(!href, `Aucune fiche ${section.label} en base pour ce test.`);
-
-      const reachable = await gotoAdmin(page, href!);
-      test.skip(!reachable, `Fiche ${href} injoignable.`);
-
-      const { violations } = await collectLayoutViolations(page);
-      await scrollToBottom(page);
-      const occluded = await collectBottomOcclusion(page);
-
-      const all = [...violations, ...occluded];
-      expect(all, format(href!, "iPhone 13", all)).toEqual([]);
-    });
-  }
 });

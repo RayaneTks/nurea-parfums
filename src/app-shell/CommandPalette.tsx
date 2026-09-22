@@ -1,345 +1,329 @@
 "use client";
 
-import { Command } from "cmdk";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import {
+  BarChart3,
   Boxes,
   ClipboardList,
-  Home,
-  Loader2,
-  Package,
+  HandCoins,
+  Landmark,
+  LineChart,
+  PackagePlus,
   PlusCircle,
-  Search,
-  TrendingUp,
-  UserRound,
-  Users,
+  Settings,
+  ShoppingBag,
+  UserPlus,
+  type LucideIcon,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { statusLabel } from "@/domain/order-status";
-import type { GlobalSearchResult } from "@/server/search/queries";
+import { useRef, useState, type ReactNode } from "react";
+import type { CustomerHitDTO, DocumentHitDTO, PerfumeHitDTO, SearchResultsDTO } from "@/contracts/search";
+import { SEARCH_MIN_LENGTH } from "@/contracts/search";
+import { eur, eurFromWire, formatEur, type MoneyString } from "@/domain/money";
+import { cn } from "@/lib/utils";
+import { ErrorBanner } from "@/ui/patterns/ErrorBanner";
+import { ListSection } from "@/ui/patterns/ListSection";
+import { Money } from "@/ui/patterns/Money";
+import { formatDate } from "@/ui/patterns/date-format";
+import { Avatar } from "@/ui/primitives/Avatar";
+import { Badge } from "@/ui/primitives/Badge";
+import { Button } from "@/ui/primitives/Button";
+import { EmptyState } from "@/ui/primitives/EmptyState";
+import { ListRow } from "@/ui/primitives/ListRow";
+import { SearchField } from "@/ui/primitives/SearchField";
+import { SkeletonList } from "@/ui/primitives/Skeleton";
+import { isToastTarget } from "@/ui/primitives/Toast";
+import { useReadRoute } from "./hooks/useReadRoute";
+import { usePaletteActions } from "./PaletteActions";
+import { isNavigable, routes, withSheet } from "./routes";
+import { useShellNavigation } from "./ShellNavigation";
 
 type CommandPaletteProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-const GROUP_CLS =
-  "px-1.5 [&_[cmdk-group-heading]]:px-1.5 [&_[cmdk-group-heading]]:py-1 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.06em] [&_[cmdk-group-heading]]:text-[var(--admin-text-subtle)]";
+type Entry = { id: string; label: string; icon: LucideIcon; href: string };
 
-const ITEM_CLS =
-  "flex cursor-pointer items-center gap-3 rounded-[10px] px-3 py-2.5 text-[14px] data-[selected=true]:bg-[var(--admin-accent-bg)] data-[selected=true]:text-[var(--admin-accent)]";
+/**
+ * « Créer » et « Aller à » de 06 §4.4 : n'apparaissent que les écrans déjà livrés — un raccourci ne
+ * mène jamais à une page absente. Les autres rejoignent la liste au jalon de leur écran.
+ */
+const CREATE: Entry[] = [
+  { id: "vente", label: "Nouvelle vente", icon: PlusCircle, href: routes.vendre() },
+  { id: "commande", label: "Nouvelle commande", icon: ClipboardList, href: routes.vendre({ mode: "commande" }) },
+  { id: "client", label: "Nouveau client", icon: UserPlus, href: routes.nouveauClient() },
+  { id: "parfum", label: "Nouveau parfum", icon: PackagePlus, href: routes.nouveauParfum() },
+].filter((entry) => isNavigable(entry.href));
 
-type Action = {
-  id: string;
-  label: string;
-  hint?: string;
-  icon: LucideIcon;
-  group: "Navigation" | "Créer";
-  run: () => void;
-};
+const GO_TO: Entry[] = [
+  { id: "compta", label: "Compta", icon: LineChart, href: routes.compta() },
+  { id: "tresorerie", label: "Trésorerie", icon: Landmark, href: routes.compta({ vue: "tresorerie" }) },
+  { id: "encaisser", label: "À encaisser", icon: HandCoins, href: routes.encaisser() },
+  { id: "lots", label: "Lots", icon: Boxes, href: routes.lots() },
+  { id: "statistiques", label: "Statistiques", icon: BarChart3, href: routes.statistiques() },
+  { id: "reglages", label: "Réglages", icon: Settings, href: routes.reglages() },
+].filter((entry) => isNavigable(entry.href));
 
+/** Route de lecture de la recherche à la frappe (04 §3.5) : une API, pas une adresse d'écran. */
+const searchUrl = (q: string) => `/api/admin/search?scope=all&q=${encodeURIComponent(q)}`;
+
+const positive = (value: MoneyString | null): value is MoneyString => value !== null && eur.compare(eurFromWire(value), eur.zero) > 0;
+
+/** « Commande du 12 sept. · Fares » (06 §4.4). */
+function documentLabel(hit: DocumentHitDTO): string {
+  const title = `${hit.origin === "ORDER" ? "Commande" : "Vente"} du ${formatDate(new Date(hit.orderedAt), "short")}`;
+  return hit.customerName ? `${title} · ${hit.customerName}` : title;
+}
+
+/**
+ * Recherche globale S17 (06 §4.4) : dialogue plein écran sur Radix Dialog (focus piégé, défilement bloqué, focus
+ * restitué à la fermeture), bande `commandPalette` au-dessus des sheets, champ focalisé à l'ouverture pour que le
+ * clavier monte avec elle. Dès 2 caractères, la recherche à la frappe (debounce 200 ms, annulable) rend clients,
+ * documents et parfums, par groupes de 6. Un document s'ouvre en fiche SUR L'ÉCRAN COURANT (la palette se ferme
+ * d'abord) ; un parfum ouvre sa fiche ; une navigation ferme la palette.
+ *
+ * Actions de résultat (A16, 07 J15) : « Encaisser xx € » sur un client qui doit de l'argent ferme la palette
+ * puis ouvre S02 « Tout encaisser » sur l'écran courant (`PaletteActions`, jamais rendue sous la palette) ;
+ * elle n'attend aucune requête : les créances et les poches sont arrivées avec les résultats ;
+ * « Vendre » sur un parfum ferme la palette EN NAVIGUANT vers le composeur pré-rempli (`?parfum=`).
+ */
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
-  const router = useRouter();
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const lastFocusedRef = useRef<HTMLElement | null>(null);
+  const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { navigate } = useShellNavigation();
+  const { requestCollect } = usePaletteActions();
+  const trimmed = query.trim();
+  const searching = trimmed.length >= SEARCH_MIN_LENGTH;
+  const read = useReadRoute<SearchResultsDTO>(open && searching ? searchUrl(trimmed) : null, { debounceMs: 200 });
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        onOpenChange(!open);
-      } else if (e.key === "Escape" && open) {
-        onOpenChange(false);
+  const go = (href: string) => {
+    onOpenChange(false);
+    navigate(href);
+  };
+
+  /** La fiche document s'ouvre au-dessus de l'écran courant : on ne change jamais d'onglet (06 §1.3). */
+  const openDocument = (id: string) => {
+    onOpenChange(false);
+    navigate(withSheet(`${window.location.pathname}${window.location.search}`, { doc: id }));
+  };
+
+  const section = (title: string, entries: Entry[]) =>
+    entries.length > 0 ? (
+      <ListSection title={title}>
+        {entries.map((entry) => {
+          const Icon = entry.icon;
+          return (
+            <ListRow
+              key={entry.id}
+              leading={<Icon size={20} className="text-[var(--admin-accent)]" aria-hidden />}
+              primary={entry.label}
+              onClick={() => go(entry.href)}
+            />
+          );
+        })}
+      </ListSection>
+    ) : null;
+
+  const seeAll = (total: number, shown: number, href: string | null) =>
+    href && total > shown && isNavigable(href) ? (
+      <Button variant="text" size="sm" className="self-start" onClick={() => go(href)}>
+        Voir les {total} résultats
+      </Button>
+    ) : undefined;
+
+  /**
+   * « Encaisser xx € » d'un résultat client (A16) : la palette se ferme D'ABORD, puis S02 « Tout encaisser »
+   * s'ouvre sur l'écran courant (06 §4.4). Le bouton reste tapable indépendamment de la rangée (`ListRow`).
+   */
+  const collect = (hit: CustomerHitDTO) => {
+    onOpenChange(false);
+    requestCollect({
+      customerId: hit.id,
+      customerName: hit.fullName,
+      receivables: hit.receivables,
+      pockets: read.data?.pockets ?? [],
+    });
+  };
+
+  const customerRow = (hit: CustomerHitDTO) => {
+    const client = routes.client(hit.id);
+    const encaisser = routes.encaisser({ q: hit.fullName });
+    // Fiche client livrée au jalon J10 ; en attendant, un client qui doit de l'argent mène à ses créances.
+    const target = isNavigable(client) ? client : positive(hit.due) ? encaisser : null;
+    // Un montant OU un bouton, jamais les deux (05 §5.4) : le bouton porte le montant, il le dit lui-même.
+    const trailing =
+      positive(hit.due) && hit.receivables.length > 0 ? (
+        <Button variant="secondary" size="sm" onClick={() => collect(hit)}>
+          Encaisser {formatEur(eurFromWire(hit.due))}
+        </Button>
+      ) : positive(hit.due) ? (
+        <Money value={hit.due} tone="warning" bold />
+      ) : undefined;
+    const common = {
+      leading: <Avatar name={hit.fullName} size="md" />,
+      primary: hit.fullName,
+      secondary: hit.contact ?? undefined,
+      trailing,
+    };
+    return target ? <ListRow key={hit.id} {...common} onClick={() => go(target)} /> : <ListRow key={hit.id} {...common} />;
+  };
+
+  const documentRow = (hit: DocumentHitDTO) => (
+    <ListRow
+      key={hit.id}
+      leading={
+        hit.origin === "ORDER" ? (
+          <ClipboardList size={20} aria-hidden className="text-[var(--admin-text-muted)]" />
+        ) : (
+          <ShoppingBag size={20} aria-hidden className="text-[var(--admin-text-muted)]" />
+        )
       }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onOpenChange]);
-
-  useEffect(() => {
-    if (!open) return;
-
-    lastFocusedRef.current = document.activeElement as HTMLElement | null;
-
-    const getFocusable = () =>
-      dialogRef.current
-        ? [
-            ...dialogRef.current.querySelectorAll<HTMLElement>(
-              'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])',
-            ),
-          ]
-        : [];
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Tab") {
-        const focusables = getFocusable();
-        if (focusables.length === 0) return;
-        const first = focusables[0];
-        const last = focusables[focusables.length - 1];
-        if (!first || !last) return;
-        const active = document.activeElement as HTMLElement | null;
-
-        if (e.shiftKey) {
-          if (!active || active === first) {
-            e.preventDefault();
-            last.focus();
-          }
-        } else if (!active || active === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-
-    document.addEventListener("keydown", onKey);
-    const first = getFocusable()[0];
-    first?.focus();
-
-    const html = document.documentElement;
-    const prevHtmlOverflow = html.style.overflow;
-    const prevBodyOverflow = document.body.style.overflow;
-    html.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      html.style.overflow = prevHtmlOverflow;
-      document.body.style.overflow = prevBodyOverflow;
-      lastFocusedRef.current?.focus?.();
-    };
-  }, [open]);
-
-  const go = useCallback(
-    (href: string) => {
-      onOpenChange(false);
-      router.push(href);
-    },
-    [router, onOpenChange],
+      primary={documentLabel(hit)}
+      secondary={hit.status === "CANCELLED" ? "Annulée" : hit.status === "PENDING" ? "En attente" : undefined}
+      trailing={positive(hit.due) ? <Money value={hit.due} tone="warning" bold /> : <Money value={hit.total} tone="muted" />}
+      onClick={() => openDocument(hit.id)}
+    />
   );
 
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<GlobalSearchResult | null>(null);
-  const [loading, setLoading] = useState(false);
-  const trimmed = query.trim();
-  const searching = trimmed.length >= 2;
+  /**
+   * « Vendre » d'un résultat parfum (A16) : navigation vers le composeur pré-rempli (`?parfum=`), ce qui
+   * ferme la palette. La rupture de stock passe devant : on ne propose pas de vendre ce qu'on n'a plus.
+   */
+  const perfumeRow = (hit: PerfumeHitDTO) => {
+    const vendre = routes.vendre({ parfum: hit.id });
+    const trailing =
+      hit.stockStatus === "out" ? (
+        <Badge tone="danger">Rupture</Badge>
+      ) : isNavigable(vendre) ? (
+        <Button variant="secondary" size="sm" onClick={() => go(vendre)} ariaLabel={`Vendre ${hit.name}`}>
+          Vendre
+        </Button>
+      ) : hit.status === "DRAFT" ? (
+        <Badge>Masqué</Badge>
+      ) : undefined;
+    return (
+      <ListRow
+        key={hit.id}
+        leading={<Avatar name={hit.name} src={hit.image || null} size="md" />}
+        primary={hit.name}
+        secondary={hit.status === "DRAFT" ? `${hit.brandName} · Masqué` : hit.brandName}
+        trailing={trailing}
+        onClick={() => go(routes.parfum(hit.id))}
+      />
+    );
+  };
 
-  // Reset à la fermeture.
-  useEffect(() => {
-    if (!open) {
-      setQuery("");
-      setResults(null);
-      setLoading(false);
+  let body: ReactNode;
+  if (!searching) {
+    body = (
+      <>
+        {section("Créer", CREATE)}
+        {section("Aller à", GO_TO)}
+      </>
+    );
+  } else if (read.error) {
+    body = <ErrorBanner message="Recherche indisponible." onRetry={read.reload} />;
+  } else if (!read.data) {
+    body = <SkeletonList count={4} />;
+  } else {
+    const { customers, documents, perfumes } = read.data;
+    const nothing = customers.total + documents.total + perfumes.total === 0;
+    if (nothing) {
+      const createCustomer = routes.nouveauClient({ nom: trimmed });
+      const createPerfume = routes.nouveauParfum();
+      const actions = [
+        isNavigable(createCustomer) ? (
+          <Button key="client" variant="secondary" onClick={() => go(createCustomer)}>
+            Créer le client « {trimmed} »
+          </Button>
+        ) : null,
+        isNavigable(createPerfume) ? (
+          <Button key="parfum" variant="secondary" onClick={() => go(createPerfume)}>
+            Créer le parfum « {trimmed} »
+          </Button>
+        ) : null,
+      ].filter(Boolean);
+      body =
+        actions.length > 0 ? (
+          <EmptyState title={`Rien ne correspond à « ${trimmed} »`} action={<div className="flex flex-col gap-2">{actions}</div>} />
+        ) : (
+          <EmptyState done title={`Rien ne correspond à « ${trimmed} »`} />
+        );
+    } else {
+      body = (
+        <div className={cn("flex flex-col gap-4", read.loading ? "opacity-70" : null)} aria-busy={read.loading || undefined}>
+          {customers.total > 0 ? (
+            <ListSection title="Clients" count={customers.total} footer={seeAll(customers.total, customers.items.length, routes.clients({ q: trimmed }))}>
+              {customers.items.map(customerRow)}
+            </ListSection>
+          ) : null}
+          {documents.total > 0 ? (
+            <ListSection title="Documents" count={documents.total}>
+              {documents.items.map(documentRow)}
+            </ListSection>
+          ) : null}
+          {perfumes.total > 0 ? (
+            <ListSection title="Parfums" count={perfumes.total} footer={seeAll(perfumes.total, perfumes.items.length, routes.catalogue({ q: trimmed }))}>
+              {perfumes.items.map(perfumeRow)}
+            </ListSection>
+          ) : null}
+        </div>
+      );
     }
-  }, [open]);
-
-  // Recherche débouncée (200 ms) sur les données admin.
-  useEffect(() => {
-    if (trimmed.length < 2) {
-      setResults(null);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    const ctrl = new AbortController();
-    const t = setTimeout(() => {
-      fetch(`/api/admin/search?q=${encodeURIComponent(trimmed)}`, {
-        credentials: "include",
-        signal: ctrl.signal,
-      })
-        .then((r) => (r.ok ? (r.json() as Promise<GlobalSearchResult>) : null))
-        .then((data) => {
-          if (data) setResults(data);
-        })
-        .catch(() => {})
-        .finally(() => setLoading(false));
-    }, 200);
-    return () => {
-      clearTimeout(t);
-      ctrl.abort();
-    };
-  }, [trimmed]);
-
-  const hasResults =
-    !!results &&
-    (results.perfumes.length > 0 ||
-      results.customers.length > 0 ||
-      results.orders.length > 0);
-
-  const actions: Action[] = [
-    { id: "nav.dashboard", label: "Tableau de bord", icon: Home, group: "Navigation", run: () => go("/admin") },
-    { id: "nav.catalogue", label: "Catalogue", icon: Package, group: "Navigation", run: () => go("/admin/catalogue") },
-    { id: "nav.ordres", label: "Commandes", icon: ClipboardList, group: "Navigation", run: () => go("/admin/ordres") },
-    { id: "nav.vendre", label: "Vendre", icon: PlusCircle, group: "Navigation", run: () => go("/admin/vendre") },
-    { id: "nav.compta", label: "Compta", icon: TrendingUp, group: "Navigation", run: () => go("/admin/compta") },
-    { id: "nav.clients", label: "Clients", icon: Users, group: "Navigation", run: () => go("/admin/clients") },
-    { id: "nav.lots", label: "Lots", icon: Boxes, group: "Navigation", run: () => go("/admin/lots") },
-
-    { id: "new.order", label: "Nouvelle commande", icon: ClipboardList, group: "Créer", run: () => go("/admin/ordres/new") },
-    { id: "new.sale", label: "Nouvelle vente", icon: PlusCircle, group: "Créer", run: () => go("/admin/vendre") },
-    { id: "new.perfume", label: "Nouveau parfum", icon: Package, group: "Créer", run: () => go("/admin/perfumes/new") },
-    { id: "new.customer", label: "Nouveau client", icon: UserRound, group: "Créer", run: () => go("/admin/clients/new") },
-  ];
-
-  if (!open) return null;
+  }
 
   return (
-    <>
-      <button
-        type="button"
-        aria-label="Fermer la palette"
-        onClick={() => onOpenChange(false)}
-        className="fixed inset-0 z-[var(--admin-z-command-palette)] bg-black/40 backdrop-blur-sm"
-      />
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Palette de commandes"
-        className="fixed left-1/2 top-[10dvh] z-[var(--admin-z-command-palette)] w-[min(420px,92vw)] -translate-x-1/2"
-      >
-        <Command
-          label="Recherche"
-          loop
-          shouldFilter={!searching}
-          className="overflow-hidden rounded-[18px] bg-[var(--admin-surface)] shadow-[var(--admin-shadow-xl)]"
-          style={{ border: "1px solid var(--admin-border)" }}
+    <Dialog.Root
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) setQuery("");
+        onOpenChange(next);
+      }}
+    >
+      <Dialog.Portal>
+        <Dialog.Overlay data-admin-overlay className="fixed inset-0 z-[var(--admin-z-command-palette)] bg-[var(--admin-overlay)]" />
+        <Dialog.Content
+          aria-describedby={undefined}
+          data-command-palette
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            inputRef.current?.focus();
+          }}
+          // Le toast passe au-dessus (05 §2.7) : le toucher ne ferme pas la palette.
+          onPointerDownOutside={(event) => {
+            if (isToastTarget(event.target)) event.preventDefault();
+          }}
+          className={cn(
+            "admin-theme admin-safe-top fixed inset-x-0 bottom-0 top-0 z-[var(--admin-z-command-palette)] mx-auto flex max-w-[var(--admin-app-max-width)] flex-col outline-none",
+            "bg-[var(--admin-bg)] shadow-[shadow:var(--admin-shadow-xl)]",
+            "motion-safe:data-[state=open]:animate-in motion-safe:data-[state=open]:fade-in motion-safe:data-[state=open]:[animation-duration:var(--admin-duration-slow)]",
+          )}
         >
-          <div
-            className="flex items-center gap-2 px-3 py-2.5"
-            style={{ borderBottom: "1px solid var(--admin-border)" }}
-          >
-            {loading ? (
-              <Loader2 size={16} className="animate-spin text-[var(--admin-text-subtle)]" aria-hidden />
-            ) : (
-              <Search size={16} className="text-[var(--admin-text-subtle)]" aria-hidden />
-            )}
-            <Command.Input
-              autoFocus
+          <Dialog.Title className="sr-only">Recherche</Dialog.Title>
+          <div className="flex shrink-0 items-center gap-2 border-b border-[var(--admin-border)] px-4 py-2">
+            <SearchField
+              ref={inputRef}
               value={query}
-              onValueChange={setQuery}
-              placeholder="Parfum, client, commande…"
-              className="w-full bg-transparent text-[15px] outline-none placeholder:text-[var(--admin-text-subtle)] text-[var(--admin-text)]"
+              onChange={setQuery}
+              placeholder="Client, commande, parfum…"
+              ariaLabel="Rechercher"
+              className="flex-1"
             />
-            <kbd className="rounded-md border border-[var(--admin-border-strong)] bg-[var(--admin-bg)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--admin-text-subtle)]">
-              ⌘K
-            </kbd>
+            <Dialog.Close asChild>
+              <Button variant="text" className="shrink-0 px-2">
+                Fermer
+              </Button>
+            </Dialog.Close>
           </div>
-          <Command.List
-            className="overflow-y-auto px-1.5 py-2 [-webkit-overflow-scrolling:touch]"
-            style={{ maxHeight: "calc(60dvh - var(--admin-keyboard-inset, 0px))" }}
+
+          <div
+            className="flex flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-4 pt-4 [-webkit-overflow-scrolling:touch]"
+            style={{ paddingBottom: "calc(var(--admin-space-6) + var(--admin-safe-area-bottom) + var(--admin-keyboard-inset, 0px))" }}
           >
-            {searching ? (
-              <>
-                {!loading && !hasResults ? (
-                  <div className="px-3 py-6 text-center text-[14px] text-[var(--admin-text-muted)]">
-                    Aucun résultat pour « {trimmed} ».
-                  </div>
-                ) : null}
-
-                {results && results.perfumes.length > 0 ? (
-                  <Command.Group heading="Parfums" className={GROUP_CLS}>
-                    {results.perfumes.map((p) => (
-                      <Command.Item
-                        key={`perfume-${p.id}`}
-                        value={`perfume-${p.id}`}
-                        onSelect={() => go(`/admin/perfumes/${p.id}/edit`)}
-                        className={ITEM_CLS}
-                      >
-                        <Package size={16} aria-hidden />
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate">{p.name}</span>
-                          <span className="block truncate text-[12px] text-[var(--admin-text-subtle)]">
-                            {p.brandName}
-                          </span>
-                        </span>
-                      </Command.Item>
-                    ))}
-                  </Command.Group>
-                ) : null}
-
-                {results && results.customers.length > 0 ? (
-                  <Command.Group heading="Clients" className={GROUP_CLS}>
-                    {results.customers.map((c) => (
-                      <Command.Item
-                        key={`customer-${c.id}`}
-                        value={`customer-${c.id}`}
-                        onSelect={() => go(`/admin/clients/${c.id}`)}
-                        className={ITEM_CLS}
-                      >
-                        <UserRound size={16} aria-hidden />
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate">{c.fullName}</span>
-                          {c.phoneE164 ? (
-                            <span className="block truncate text-[12px] text-[var(--admin-text-subtle)]">
-                              {c.phoneE164}
-                            </span>
-                          ) : null}
-                        </span>
-                      </Command.Item>
-                    ))}
-                  </Command.Group>
-                ) : null}
-
-                {results && results.orders.length > 0 ? (
-                  <Command.Group heading="Commandes" className={GROUP_CLS}>
-                    {results.orders.map((o) => (
-                      <Command.Item
-                        key={`order-${o.id}`}
-                        value={`order-${o.id}`}
-                        onSelect={() => go(`/admin/ordres/${o.id}`)}
-                        className={ITEM_CLS}
-                      >
-                        <ClipboardList size={16} aria-hidden />
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate">{o.customerName}</span>
-                          <span className="block truncate text-[12px] text-[var(--admin-text-subtle)]">
-                            {statusLabel(o.status)} ·{" "}
-                            {new Date(o.orderedAt).toLocaleDateString("fr-FR")}
-                          </span>
-                        </span>
-                      </Command.Item>
-                    ))}
-                  </Command.Group>
-                ) : null}
-              </>
-            ) : (
-              <>
-                <Command.Empty className="px-3 py-6 text-center text-[14px] text-[var(--admin-text-muted)]">
-                  Aucun résultat.
-                </Command.Empty>
-                {(["Navigation", "Créer"] as const).map((group) => {
-                  const items = actions.filter((a) => a.group === group);
-                  if (items.length === 0) return null;
-                  return (
-                    <Command.Group key={group} heading={group} className={GROUP_CLS}>
-                      {items.map((a) => {
-                        const Icon = a.icon;
-                        return (
-                          <Command.Item
-                            key={a.id}
-                            value={`${a.group} ${a.label} ${a.hint ?? ""}`}
-                            onSelect={a.run}
-                            className={ITEM_CLS}
-                          >
-                            <Icon size={16} aria-hidden />
-                            <span className="flex-1">{a.label}</span>
-                            {a.hint ? (
-                              <span className="text-[12px] text-[var(--admin-text-subtle)]">
-                                {a.hint}
-                              </span>
-                            ) : null}
-                          </Command.Item>
-                        );
-                      })}
-                    </Command.Group>
-                  );
-                })}
-              </>
-            )}
-          </Command.List>
-        </Command>
-      </div>
-    </>
+            {body}
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

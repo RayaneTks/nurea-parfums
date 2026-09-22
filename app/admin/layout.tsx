@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "@/design/globals.admin.css";
-import { AdminShell } from "@/app-shell";
 import { ADMIN_STARTUP_IMAGES } from "@/lib/pwa/admin-splash";
 import { SITE_NAME } from "@/lib/site";
 
@@ -50,6 +49,7 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+/** Ni garde ni shell ici : la connexion en dépend. Le shell est monté par `app/admin/(gestion)/layout.tsx` (J4). */
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <AdminShell>{children}</AdminShell>;
+  return children;
 }

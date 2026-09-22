@@ -9,15 +9,11 @@ import {
   registerPrismaCatalogSuccess,
 } from "@/lib/db/prismaRuntimeCircuit";
 import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
-import type {
-  AdminBrandRow,
-  AdminPerfumeRow,
-} from "@/lib/admin/catalogue-types";
 
 /** Cache données catalogue affichées sur le site public. */
 export const PUBLIC_CATALOGUE_CACHE_TAG = "public-catalogue";
 
-/** Cache snapshot admin (même invalidation que le public après mutation). */
+/** Cache de l’instantané catalogue de la gestion (recréé au jalon J11, même invalidation que le public). */
 export const ADMIN_CATALOGUE_CACHE_TAG = "admin-catalogue";
 
 export type CachedPublicCatalogue = {
@@ -226,62 +222,4 @@ const getPublicCatalogueCached = unstable_cache(
  */
 export async function getCachedCatalogue(): Promise<CachedPublicCatalogue> {
   return getPublicCatalogueCached();
-}
-
-async function loadAdminCatalogueFromDb(): Promise<{
-  brands: AdminBrandRow[];
-  perfumes: AdminPerfumeRow[];
-}> {
-  const [brands, perfumes] = await Promise.all([
-    prisma.brand.findMany({
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        catalogMode: true,
-        status: true,
-        image: true,
-        imageLight: true,
-        _count: { select: { perfumes: true } },
-      },
-    }),
-    prisma.perfume.findMany({
-      orderBy: { updatedAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        image: true,
-        imageLight: true,
-        isFeatured: true,
-        status: true,
-        stock: true,
-        brand: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-            imageLight: true,
-            catalogMode: true,
-            status: true,
-          },
-        },
-      },
-    }),
-  ]);
-  return { brands, perfumes };
-}
-
-const getAdminCatalogueCached = unstable_cache(
-  loadAdminCatalogueFromDb,
-  ["admin-catalogue-snapshot-v2"],
-  { tags: [ADMIN_CATALOGUE_CACHE_TAG] },
-);
-
-/** Snapshot complet marques + parfums pour l’admin (SSR + API catalogue). */
-export async function getCachedAdminCatalogue(): Promise<{
-  brands: AdminBrandRow[];
-  perfumes: AdminPerfumeRow[];
-}> {
-  return getAdminCatalogueCached();
 }

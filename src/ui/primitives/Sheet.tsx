@@ -4,48 +4,59 @@ import { Drawer } from "vaul";
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "./Button";
+import { isToastTarget } from "./Toast";
 
 type SheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Title affiché en haut de la sheet. */
   title?: ReactNode;
-  /** Description optionnelle sous le title. */
   description?: ReactNode;
-  /** Slot à droite du title (ex. menu …). */
+  /** Slot à droite du titre (menu « ⋯ »). */
   trailing?: ReactNode;
-  /** Affiche un bouton close X à gauche du title (defaut true). */
+  /**
+   * Barre fixe entre le titre et la zone qui défile — le champ de recherche
+   * d'un sélecteur, qui ne doit pas partir avec la liste.
+   */
+  toolbar?: ReactNode;
+  /** Bouton « Fermer » à gauche du titre (défaut true). */
   closeButton?: boolean;
-  /** Affiche le drag handle iOS-style (defaut true). */
+  /** Poignée de glissement (défaut true). */
   handle?: boolean;
-  /** Hauteur en vh (defaut 92). */
+  /** Part de la hauteur visible, en % (défaut 92). */
   maxVh?: number;
   /**
-   * `full` (defaut) — la sheet occupe toute la hauteur allouée, quel que soit
-   * son contenu. `auto` — elle se règle sur son contenu.
-   *
-   * Le défaut est `full` parce qu'une sheet qui épouse son contenu s'ouvre à
-   * mi-écran : la moitié haute est perdue, et dès que le clavier monte il ne
-   * reste presque rien pour le formulaire. Réserver `auto` aux sheets
-   * réellement minuscules.
+   * `full` (défaut) : la sheet occupe toute la hauteur allouée. `auto` : elle
+   * épouse son contenu — à réserver aux sheets minuscules, car une sheet à
+   * mi-écran perd sa moitié haute dès que le clavier monte.
    */
   size?: "full" | "auto";
-  /** Footer sticky (CTA principal). */
+  /** Pied collant : le CTA de la sheet, au-dessus du clavier. */
   footer?: ReactNode;
-  /** Désactive le swipe-to-dismiss (utile en mode edit avec dirty). */
+  /**
+   * `false` dès qu'un formulaire est modifié : on ne perd pas une saisie d'un
+   * revers de pouce. La croix appelle toujours `onOpenChange(false)` — à
+   * l'appelant de demander « Abandonner la saisie ? ».
+   */
   dismissible?: boolean;
-  /** Imbriquer dans une Sheet parente (utilise Drawer.NestedRoot de vaul). */
+  /** Sheet ouverte depuis une autre sheet : bande `sheetNested` (80/81), sous les confirmations (90/91). */
   nested?: boolean;
   children: ReactNode;
   className?: string;
 };
 
+/**
+ * Bottom sheet iOS (vaul). z 70/71 ; imbriquée 80/81 — bande propre, sous `ConfirmDialog` (90/91) et
+ * le toast (100) : 05 §2.7. Voile et panneau portent `.admin-theme`, qui ne peint pas (05 §2) : le
+ * voile reste translucide, le panneau garde sa surface.
+ */
 export function Sheet({
   open,
   onOpenChange,
   title,
   description,
   trailing,
+  toolbar,
   closeButton = true,
   handle = true,
   maxVh = 92,
@@ -57,92 +68,70 @@ export function Sheet({
   className,
 }: SheetProps) {
   const Root = nested ? Drawer.NestedRoot : Drawer.Root;
-  /**
+  /*
    * Hauteur allouée = part visible souhaitée PLUS la hauteur du clavier.
    *
    * La sheet est ancrée au bas du viewport de mise en page, que le clavier iOS
    * ne rétrécit pas : ses derniers pixels passent sous le clavier, et le pied
-   * les compense par une marge basse égale à l'inset. `--admin-vh` suit lui le
-   * viewport VISUEL, déjà amputé du clavier — sans ce rattrapage, on le
-   * retrancherait deux fois.
+   * les compense par une marge basse égale à l'inset. `--admin-vh` suit, lui,
+   * le viewport VISUEL, déjà amputé du clavier — plafonner la sheet à cette
+   * seule valeur retranchait le clavier une seconde fois et réduisait la zone
+   * de contenu à quelques dizaines de pixels. `min(…, 100dvh)` garde le
+   * garde-fou de l'écran plein.
    */
   const sheetHeight = `min(calc(var(--admin-vh, 100dvh) * ${maxVh / 100} + var(--admin-keyboard-inset, 0px)), 100dvh)`;
+
   return (
-    <Root
-      open={open}
-      onOpenChange={onOpenChange}
-      shouldScaleBackground={!nested}
-      dismissible={dismissible}
-    >
+    <Root open={open} onOpenChange={onOpenChange} shouldScaleBackground={!nested} dismissible={dismissible}>
       <Drawer.Portal>
         <Drawer.Overlay
-          className="admin-theme fixed inset-0 bg-black/40 backdrop-blur-sm"
-          style={{
-            zIndex: nested
-              ? "var(--admin-z-sheet-nested-backdrop)"
-              : "var(--admin-z-sheet-backdrop)",
-          }}
+          data-admin-overlay
+          className={cn(
+            "admin-theme fixed inset-0 bg-[var(--admin-overlay)] backdrop-blur-sm",
+            nested ? "z-[var(--admin-z-sheet-nested-backdrop)]" : "z-[var(--admin-z-sheet-backdrop)]",
+          )}
         />
         <Drawer.Content
           className={cn(
-            "admin-theme fixed inset-x-0 bottom-0 mx-auto flex flex-col rounded-t-[24px] bg-[var(--admin-surface)] outline-none",
-            "max-w-[var(--admin-app-max-width)]",
+            "admin-theme fixed inset-x-0 bottom-0 mx-auto flex max-w-[var(--admin-app-max-width)] flex-col outline-none",
+            "rounded-t-[var(--admin-radius-xl)] bg-[var(--admin-surface)] shadow-[shadow:var(--admin-shadow-lg)]",
+            nested ? "z-[var(--admin-z-sheet-nested)]" : "z-[var(--admin-z-sheet)]",
             className,
           )}
-          /**
-           * Hauteur maximale = part visible souhaitée PLUS la hauteur du clavier.
-           *
-           * La sheet est ancrée en bas du viewport de mise en page, que le
-           * clavier iOS ne rétrécit pas : ses derniers pixels passent donc sous
-           * le clavier, et le pied les compense par une marge basse égale à
-           * l'inset. Mais `--admin-vh` suit le viewport VISUEL, déjà amputé du
-           * clavier — plafonner la sheet à cette valeur retranchait le clavier
-           * une seconde fois et réduisait la zone de contenu à quelques dizaines
-           * de pixels, jusqu'à masquer les résultats de recherche.
-           *
-           * `min(…, 100dvh)` garde le garde-fou de l'écran plein.
-           */
-          style={{
-            // Même expression pour `height` et `max-height` : la sheet occupe
-            // la hauteur allouée au lieu de s'ajuster à son contenu.
-            ...(size === "full" ? { height: sheetHeight } : null),
-            maxHeight: sheetHeight,
-            zIndex: nested ? "var(--admin-z-sheet-nested)" : "var(--admin-z-sheet)",
+          // Taper « Annuler » sur le toast (au-dessus, 05 §3.1) ne ferme pas la sheet au passage.
+          onPointerDownOutside={(event) => {
+            if (isToastTarget(event.target)) event.preventDefault();
           }}
+          style={{ ...(size === "full" ? { height: sheetHeight } : null), maxHeight: sheetHeight }}
         >
           {handle ? <div className="admin-sheet-handle" /> : null}
 
           {title || closeButton || trailing ? (
-            <div
-              className="flex items-center gap-2 px-4 pb-3 pt-3"
-              style={{ borderBottom: "1px solid var(--admin-border)" }}
-            >
+            <div className="flex items-center gap-2 border-b border-[var(--admin-border)] px-2 py-1">
               {closeButton ? (
-                <button
-                  type="button"
-                  onClick={() => onOpenChange(false)}
-                  aria-label="Fermer"
-                  className="-ml-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-[var(--admin-text-muted)] tap-scale hover:bg-[var(--admin-surface-muted)]"
-                >
-                  <X size={18} />
-                </button>
-              ) : null}
-              <div className="min-w-0 flex-1">
+                <Button variant="ghost" iconOnly ariaLabel="Fermer" onClick={() => onOpenChange(false)}>
+                  <X size={18} className="text-[var(--admin-text-muted)]" />
+                </Button>
+              ) : (
+                <span className="w-2 shrink-0" />
+              )}
+              <div className="min-w-0 flex-1 py-2">
                 {title ? (
-                  <Drawer.Title className="text-[16px] font-semibold leading-tight text-[var(--admin-text)] truncate">
-                    {title}
-                  </Drawer.Title>
+                  <Drawer.Title className="admin-type-h3 truncate text-[var(--admin-text)]">{title}</Drawer.Title>
                 ) : null}
                 {description ? (
-                  <Drawer.Description className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-[var(--admin-text-muted)]">
+                  <Drawer.Description className="admin-type-caption mt-0.5 line-clamp-2 text-[var(--admin-text-muted)]">
                     {description}
                   </Drawer.Description>
                 ) : null}
               </div>
-              {trailing ? <div className="shrink-0">{trailing}</div> : null}
+              {trailing ? <div className="shrink-0">{trailing}</div> : <span className="w-2 shrink-0" />}
             </div>
           ) : null}
 
+          {toolbar ? <div className="shrink-0 border-b border-[var(--admin-border)] px-4 py-3">{toolbar}</div> : null}
+
+          {/* `overflow-y-auto` : repère de l'invariant « sheet écrasée » (e2e/helpers/layoutInvariants.ts). */}
           <div
             className={cn(
               "flex-1 overflow-y-auto overscroll-contain px-4 [-webkit-overflow-scrolling:touch]",
@@ -150,8 +139,8 @@ export function Sheet({
             )}
             style={{
               paddingBottom: footer
-                ? "0.75rem"
-                : "calc(1rem + env(safe-area-inset-bottom, 0px) + var(--admin-keyboard-inset, 0px))",
+                ? "var(--admin-space-3)"
+                : "calc(var(--admin-space-4) + var(--admin-safe-area-bottom) + var(--admin-keyboard-inset, 0px))",
             }}
           >
             {children}
@@ -159,14 +148,12 @@ export function Sheet({
 
           {footer ? (
             <div
-              className="px-4 pt-3"
+              className="border-t border-[var(--admin-border)] bg-[var(--admin-surface)] px-4 pt-3"
               style={{
-                borderTop: "1px solid var(--admin-border)",
                 paddingBottom: "var(--admin-sheet-footer-pad)",
-                // Remonte le pied au-dessus du clavier : la sheet elle-même
-                // reste ancrée au bas du viewport de mise en page.
+                // Remonte le pied au-dessus du clavier ; la sheet reste ancrée au
+                // bas du viewport de mise en page.
                 marginBottom: "var(--admin-keyboard-inset, 0px)",
-                background: "var(--admin-surface)",
               }}
             >
               {footer}
