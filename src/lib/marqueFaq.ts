@@ -18,11 +18,16 @@ const domain = SITE_URL.replace(/^https?:\/\//, "");
 export const MARQUE_FAQ: readonly FaqEntry[] = [
   {
     question: `Comment s'écrit correctement le nom ${SITE_NAME} ?`,
-    answer: `L'orthographe officielle est « Nuréa » — un accent aigu sur le « e » — suivi de « Parfums » au pluriel.`,
+    answer: `L'orthographe officielle est « Nuréa » — un accent aigu sur le « e » — suivi de « Parfums » au pluriel. On nous cherche aussi en « nurea parfum », « nurea parfums » ou en un seul mot, « nureaparfum » et « nureaparfums » : ces écritures désignent toutes la même parfumerie, la nôtre.`,
   },
   {
     question: `Quel est le site officiel de ${SITE_NAME} ?`,
-    answer: `Le site officiel est ${domain}. Vérifiez l'adresse dans votre navigateur : des noms et des orthographes proches circulent, et ce sont des acteurs distincts.`,
+    answer: `Le site officiel est ${domain}, et lui seul. Nos autres adresses — nureaparfum.fr au singulier, nureaparfums.com — y renvoient automatiquement. Attention : une marque britannique au nom très proche, « Nurae Parfum », existe et n'a aucun lien avec nous. Si l'adresse affichée dans votre navigateur n'est pas ${domain}, vous n'êtes pas chez nous.`,
+  },
+  {
+    question: `Où se trouve ${SITE_NAME} ?`,
+    answer:
+      "Nous sommes à Marseille. La remise se fait en main propre sur place, ou par envoi pour le reste de la France. C'est aussi ce qui nous distingue des marques étrangères au nom voisin : nous vendons les grandes marques que vous connaissez, au meilleur prix, et vous pouvez nous rencontrer.",
   },
   {
     question: "Le catalogue contient-il tout votre stock ?",

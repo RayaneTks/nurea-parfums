@@ -1,6 +1,12 @@
 # Refonte Nuréa Gestion — Dossier pilote
 
-> **Statut** : **J0 à J17 livrés et fusionnés** dans `refonte/integration` — suites complètes
+> **Statut** : **BASCULÉ le 22/09/2026** — la refonte est en production, `main` la porte, la base
+> est au schéma cible (migration en 20 s, 14 contrôles verts, chiffres identiques au centime). Le
+> détail et les deux écarts au plan sont en tête de `PASSATION.md`. Reste : la surveillance de sept
+> jours (`07` §1.8), la recette de `08` qui n'a pas été passée, et le jalon N à J+30 (suppression du
+> schéma `legacy`, qui est conservé comme chemin de retour).
+>
+> **J0 à J17 livrés et fusionnés** dans `refonte/integration` — suites complètes
 > vertes (808 unitaires et d'architecture, 487 sur base réelle, 513 invariants d'affichage,
 > 93 parcours). Le **retour arrière** de la bascule est éprouvé, sur base de test comme sur la copie
 > des données réelles ; le parcours de **première utilisation** (PC-12) a son test de bout en bout.
