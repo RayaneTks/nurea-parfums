@@ -41,8 +41,9 @@ Les 146 lignes couvrent les 141 de 01 §3 : quatre d'entre elles sont scindées 
 
 Une seule ligne n'a ni test ni geste : **NR-7.8**, le journal d'audit, abandonné — il
 n'y a rien à vérifier. Les 24 gestes humains sont les 23 lignes marquées `(§1a)`,
-`(§1b)` ou `(§1c)` dans les tableaux, plus **PC-12** (§4), qui n'est pas une ligne de
-non-régression mais un parcours sans test.
+`(§1b)` ou `(§1c)` dans les tableaux, plus **PC-12** (§4) : depuis J17 il a son test e2e
+sur base vide, mais son objectif — une première vente en moins de cinq minutes — se juge
+sur l'iPhone du gérant, chronomètre en main.
 
 **Comment lire la colonne « Preuve ».**
 
@@ -107,7 +108,7 @@ correspond-il à ce qu'il a en tête ? → **relecture, puis décision.**
 | NR-9.9 | Résilience de la vitrine (disjoncteur 90 s) | Revue du diff de `catalogue-service.ts` : il ne doit **rien** contenir hors L1. Le code de la vitrine n'est pas dans le périmètre de la refonte. |
 | NR-9.10 | Invalidation du cache public pilotée par la gestion | En préproduction : masquer un parfum dans la gestion, recharger `/` dans les 10 s → il a disparu. Le remettre visible → il revient. |
 | NR-5.15 | Invalidation coordonnée vitrine + gestion | Même geste que NR-9.10, plus : la liste du catalogue de la gestion est à jour **sans** rechargement manuel. |
-| PC-12 | Première utilisation (carte « Pour commencer ») | **Aucun e2e ne couvre PC-12.** Sur une base fraîche, depuis l'Accueil vide : première vente enregistrée en **moins de 5 minutes**, en suivant la carte « Pour commencer ». Chronométrer. |
+| PC-12 | Première utilisation (carte « Pour commencer ») | `e2e/parcours/premiere-utilisation.spec.ts` couvre le parcours entier sur base vide (16 taps, 13,5 s). **Ce qui reste un geste** : le refaire sur l'iPhone du gérant, sur une base fraîche, en le chronométrant — l'objectif de 5 minutes se juge à son doigt et à son réseau, pas au banc. |
 | NR-6.3 | Textes des cartes « Nouveautés » et « Pour commencer » | Relecture des textes avec le gérant (07 §6.5). Ils expliquent les six décisions qui changent un geste ; il doit s'y reconnaître. |
 | NR-2.13 | Gabarit du message de relance | Relecture du texte avec le gérant (07 §6.5) : il doit pouvoir l'envoyer tel quel, sans le réécrire. |
 | NR-1.11 | Textes des confirmations (S18) | Relecture (07 §6.5) : une confirmation qui dit « sans retour possible » doit être sans retour possible ; une qui promet un filet de 5 s doit l'offrir. |
@@ -398,15 +399,20 @@ au chronomètre pendant la recette.
 | PC-09 Récap du jour / compta du mois | 1 tap / 2 taps | 0–1 tap / 1 tap | `accueil`, `compta` | récap **1 tap**, compta **1–2 taps** (J14) | compta : **bascule** ; récap : terminé | [ ] |
 | PC-10 Défaire une erreur | ≤ 3 taps | 1–3 taps | `annuler-paiement` | **3 taps** (J8) | **bascule** | [ ] |
 | PC-11 Répartir / transférer | ≤ 2 / ≤ 5 taps | 2 / 5 taps + saisie | `transfert`, `accueil` | **2 taps** / **5 taps + saisie** (J12) | **bascule** | [ ] |
-| PC-12 Première utilisation | Première vente < 5 min | Carte « Pour commencer » | **aucun** | — | terminé | [ ] |
+| PC-12 Première utilisation | Première vente < 5 min | 16 taps, 13,5 s sur base vide | `premiere-utilisation` (`npm run test:e2e:premiere`) | **13,5 s** (J17) | terminé | [ ] |
 | PC-13 Publier la story d'un parfum | 2 gestes une fois sur la fiche | 5 taps + saisie, ≈ 15 s depuis l'Accueil | `story` | e2e vert ; **partage natif non mesurable au banc** | **bascule** | [ ] |
 | PC-08 variante · Ranger un document sans lot | 3 taps | 3 taps | `lot-depense` | **3 taps** (J13) | **bascule** | [ ] |
 
-> **PC-12 n'a pas de test e2e.** `07 §6.4` nommait un fichier `premiere-utilisation`
-> qui n'a jamais été écrit — la carte « Pour commencer » a été livrée à J14 avec
-> l'Accueil, et seule sa présence est vérifiée (`e2e/fixtures/accueil-contrat.ts`,
-> `layout`). Le parcours lui-même se chronomètre **à la main** (§1c). Son seuil est
-> « terminé », pas « bascule » : il ne bloque pas la bascule.
+> **PC-12 a désormais son test e2e** *(J17, 22/09/2026)*. `07 §6.4` nommait un fichier
+> `premiere-utilisation` qui n'existait pas ; il existe : il joue le parcours entier
+> sur une base **vide** — les trois étapes de « Pour commencer », la marque créée dans
+> la sheet du parfum, la vente pour un client de passage, puis la carte qui s'efface.
+> Le jeu e2e partagé ne pouvait pas le porter (il a des poches, des parfums et des
+> documents) : le parcours a son harnais — base `nurea_test_e2e_vide`, ports 3102/3103,
+> aucun seed, projet `Mobile-premiere` —, lancé par `npm run test:e2e:premiere`, qui est
+> la troisième commande de `npm run test:e2e`. Reste un geste humain : le refaire sur
+> l'iPhone du gérant, chronomètre en main (§1a). Son seuil est « terminé », pas
+> « bascule » : il ne bloque pas la bascule.
 
 > **`commande-saisie` n'existe pas non plus.** `07 §6.3` le citait pour NR-1.3 et
 > `07 §6.4` pour PC-03 : le parcours est en fait dans

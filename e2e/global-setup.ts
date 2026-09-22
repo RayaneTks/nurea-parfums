@@ -12,6 +12,7 @@ import {
   BASE_URL,
   E2E_DATABASE_URL,
   E2E_REMOTE,
+  E2E_SEED,
   E2E_SERVER,
   LOCK_PROJECTS,
   STORAGE_STATE,
@@ -84,6 +85,8 @@ async function recreateDatabase(): Promise<void> {
   const exitCode = runPrisma(["migrate", "deploy"], url.toString());
   if (exitCode !== 0) throw new Error(`Tests de bout en bout : les migrations ont échoué (code ${exitCode}).`);
 
+  // Harnais « première utilisation » (PC-12) : la base reste VIDE — c'est tout l'objet du parcours.
+  if (!E2E_SEED) return;
   const db = new PrismaClient({ datasourceUrl: url.toString() });
   try {
     await seedE2e(db);
@@ -139,7 +142,11 @@ async function loginThroughTheScreen(root: string, config: FullConfig): Promise<
  * les pages déjà ouvertes par d'autres tests : tout ce que la suite ouvre est compilé ici, d'avance.
  */
 async function warmUp(page: import("@playwright/test").Page): Promise<void> {
-  const urls = new Set([...SCREENS.map((c) => c.url), ...SHEETS.map((c) => c.url)]);
+  // Base vide (PC-12) : l'inventaire des écrans porte les identifiants du JEU e2e (`?doc=…`), qui
+  // n'existent pas ici. On ne compile d'avance que les quatre écrans du parcours.
+  const urls = E2E_SEED
+    ? new Set([...SCREENS.map((c) => c.url), ...SHEETS.map((c) => c.url)])
+    : new Set(["/admin", "/admin/compta?vue=tresorerie", "/admin/catalogue/parfums/nouveau", "/admin/vendre"]);
   for (const url of urls) {
     await page.goto(url, { waitUntil: "load", timeout: 180_000 });
   }
@@ -147,8 +154,10 @@ async function warmUp(page: import("@playwright/test").Page): Promise<void> {
   // Routes de lecture appelées à la frappe (07 J8) : compilées d'avance, sinon la première recherche attend la compilation.
   await page.request.get("/api/admin/search?scope=all&q=pr", { timeout: 180_000 });
   await page.request.get("/api/admin/picker", { timeout: 180_000 });
-  // Export CSV (07 J12) : la route est compilée d'avance, sinon le premier « Exporter » attend la compilation.
-  await page.request.get("/api/admin/export/compta", { timeout: 180_000 });
+  if (E2E_SEED) {
+    // Export CSV (07 J12) : la route est compilée d'avance, sinon le premier « Exporter » attend la compilation.
+    await page.request.get("/api/admin/export/compta", { timeout: 180_000 });
+  }
 
   /*
    * Le préchauffage a VISITÉ le composeur avec ses paramètres (`?parfum=`, `?depuis=`) : le brouillon qu'il a posé

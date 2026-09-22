@@ -35,7 +35,11 @@ function parseArgs(argv: readonly string[]): { suffix: Suffix; confirmHost: stri
       if (!confirmHost) fail("--confirm-host attend un hôte.");
       i += 1;
     } else if (arg === "--rollback") {
-      fail("--rollback n'est pas encore livré (docs/refonte/07-PLAN-EXECUTION.md §1.7, J2).");
+      fail(
+        "le retour arrière est une commande à part, qui n'a besoin ni de pg_restore ni de psql : " +
+          "npm run migration:rollback -- --instantane <dossier> [--confirm-host <hôte>] " +
+          "(docs/refonte/07-PLAN-EXECUTION.md §1.7).",
+      );
     } else if (arg?.startsWith("--")) {
       fail(`option inconnue : ${arg}`);
     } else if (suffix === undefined) {

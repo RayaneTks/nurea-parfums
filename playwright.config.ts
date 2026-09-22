@@ -26,6 +26,13 @@ import {
 /** Parcours qui écrivent la ligne `Setting` unique (réglages de E08) : exécutés seuls, voir les projets. */
 const GLOBAL_SETTING_SPECS = /parcours[\\/]reglages\.spec\.ts$/;
 
+/**
+ * PC-12 « Première utilisation » : le seul parcours qui exige une base VIDE. Il a son harnais à lui
+ * (base `nurea_test_e2e_vide`, ports 3102/3103, aucun seed), lancé par une commande séparée —
+ * `npm run test:e2e:premiere`, qui pose `E2E_PREMIERE=1` (`e2e/support/env.ts`).
+ */
+const PREMIERE_SPEC = /parcours[\\/]premiere-utilisation\.spec\.ts$/;
+
 /** Variables de l'app lancée pour les tests : base e2e, secret de test, aucun service réel. */
 const serverEnv: Record<string, string> = {
   DATABASE_URL: E2E_DATABASE_URL,
@@ -63,7 +70,7 @@ export default defineConfig({
     video: "retain-on-failure",
   },
   projects: [
-    { name: "Mobile", use: { ...devices["iPhone 13"] }, testIgnore: GLOBAL_SETTING_SPECS },
+    { name: "Mobile", use: { ...devices["iPhone 13"] }, testIgnore: [GLOBAL_SETTING_SPECS, PREMIERE_SPEC] },
     /**
      * Les parcours qui changent un réglage GLOBAL (la ligne `Setting` unique : poche proposée, taux par
      * défaut, 06 E08) ne peuvent pas courir en même temps qu'un parcours qui lit cette poche — la moitié
@@ -77,7 +84,17 @@ export default defineConfig({
       testMatch: GLOBAL_SETTING_SPECS,
       fullyParallel: false,
     },
-    { name: "Desktop", use: { ...devices["Desktop Chrome"] }, testIgnore: GLOBAL_SETTING_SPECS },
+    { name: "Desktop", use: { ...devices["Desktop Chrome"] }, testIgnore: [GLOBAL_SETTING_SPECS, PREMIERE_SPEC] },
+    /**
+     * PC-12 : base vide, donc harnais séparé et commande séparée. `fullyParallel: false` — le parcours
+     * remplit la base au fil de ses étapes, chacune dépend de la précédente.
+     */
+    {
+      name: "Mobile-premiere",
+      use: { ...devices["iPhone 13"] },
+      testMatch: PREMIERE_SPEC,
+      fullyParallel: false,
+    },
   ],
   webServer: E2E_REMOTE
     ? undefined
