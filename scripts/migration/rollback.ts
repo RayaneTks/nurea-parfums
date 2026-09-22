@@ -225,7 +225,7 @@ async function controlerObjetsRefonte(db: Sql): Promise<Controle> {
   const restesLegacy = await lignes<{ nom: string }>(
     db,
     `SELECT c.relname AS nom FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-     WHERE n.nspname = 'legacy' AND c.relkind IN ('v', 'm', 'r', 'p', 'S') ORDER BY nom COLLATE "C"`,
+     WHERE n.nspname = 'legacy' AND c.relkind IN ('v', 'm', 'r', 'p', 'S') ORDER BY c.relname COLLATE "C"`,
   );
   for (const { nom } of restesLegacy) ecarts.push({ objet: `legacy.${nom}`, regle: "le schéma legacy n'est pas vide" });
 
@@ -294,19 +294,31 @@ async function controlerSequences(db: Sql): Promise<Controle> {
   );
   const ecarts: Record<string, unknown>[] = [];
   for (const { table, colonne } of colonnes) {
-    const [ligne] = await lignes<{ maxi: string; prochaine: string | null }>(
+    // `is_called` ne vit PAS dans la vue `pg_sequences` (elle n'expose que `last_value`, et le rend
+    // NULL tant que la séquence n'a pas été lue) : on interroge la séquence elle-même, dont le nom
+    // vient du catalogue (`pg_get_serial_sequence`, déjà qualifié et échappé).
+    const { sequence } = await premiere<{ sequence: string | null }>(
       db,
-      `SELECT COALESCE((SELECT MAX(${ident(colonne)}) FROM ${ident(table)}), 0)::text AS maxi,
-              (SELECT (CASE WHEN s.is_called THEN s.last_value + 1 ELSE s.last_value END)::text
-                 FROM pg_sequences s
-                WHERE format('%I.%I', s.schemaname, s.sequencename)::regclass = pg_get_serial_sequence($1, $2)::regclass) AS prochaine`,
+      `SELECT pg_get_serial_sequence($1, $2)::text AS sequence`,
       ident(table),
       colonne,
     );
-    if (!ligne || ligne.prochaine === null) {
+    if (sequence === null) {
       ecarts.push({ table, colonne, regle: "séquence introuvable" });
-    } else if (BigInt(ligne.prochaine) <= BigInt(ligne.maxi)) {
-      ecarts.push({ table, colonne, plusGrandId: ligne.maxi, prochaineValeur: ligne.prochaine });
+      continue;
+    }
+    const { maxi } = await premiere<{ maxi: string }>(
+      db,
+      `SELECT COALESCE((SELECT MAX(${ident(colonne)}) FROM ${ident(table)}), 0)::text AS maxi`,
+    );
+    // `setval(seq, max + 1, false)` (restauration) laisse `is_called` faux : la prochaine valeur
+    // rendue est alors `last_value` tel quel, et non `last_value + 1`.
+    const { prochaine } = await premiere<{ prochaine: string }>(
+      db,
+      `SELECT (CASE WHEN is_called THEN last_value + 1 ELSE last_value END)::text AS prochaine FROM ${sequence}`,
+    );
+    if (BigInt(prochaine) <= BigInt(maxi)) {
+      ecarts.push({ table, colonne, plusGrandId: maxi, prochaineValeur: prochaine });
     }
   }
   return controle("R4", "Chaque séquence rend une valeur au-dessus du plus grand identifiant restauré", ecarts, {
