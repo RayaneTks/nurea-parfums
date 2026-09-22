@@ -27,10 +27,22 @@ const nextConfig = {
   },
   images: {
     remotePatterns: supabaseImageRemotes(),
-    /** Inclut des qualités « vignettes » (admin catalogue, listes). */
-    qualities: [60, 65, 70, 75, 80, 85, 90],
-    /** AVIF + WebP — gain ~20% vs WebP seul pour photos parfums. */
-    formats: ["image/avif", "image/webp"],
+    /**
+     * Les visuels sont servis TELS QUELS, sans passer par l'optimiseur de Vercel.
+     *
+     * Pourquoi : ils sont déposés au cadre exact de l'affichage (1024×1536) et pèsent ~90 Ko
+     * depuis leur ré-encodage. Les faire optimiser ne gagnait presque rien et coûtait une
+     * transformation par largeur × format × qualité. Avec dix largeurs de `srcset`, deux formats
+     * et sept qualités ouvertes, une seule visite à froid du catalogue (207 visuels) pouvait
+     * demander plus de 2 000 transformations — pour un quota gratuit de 5 000 par MOIS. Et comme
+     * chaque déploiement vide le cache d'images, le mur était atteint au premier déploiement
+     * venu : le 22/09/2026, toutes les fiches sont tombées en 402
+     * (`OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED`).
+     *
+     * Servir directement supprime la dépendance au quota, et 90 Ko au bon cadre valent mieux
+     * qu'un aller-retour par un optimiseur qui peut refuser de répondre.
+     */
+    unoptimized: true,
   },
   typescript: {
     ignoreBuildErrors: false,
