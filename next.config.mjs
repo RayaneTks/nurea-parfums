@@ -88,6 +88,35 @@ const ADMIN_REDIRECTS = [
   { source: "/admin/compta/ventes/:id", destination: "/admin/compta?doc=:id" },
 ].map((rule) => ({ ...rule, permanent: true }));
 
+/**
+ * Le domaine canonique, et la redirection de tout le reste vers lui.
+ *
+ * Un déploiement Vercel est TOUJOURS joignable par son adresse `*.vercel.app`, en plus du domaine.
+ * Relevé le 22/09/2026 : `nurea-parfums.vercel.app` servait la vitrine entière en 200, avec
+ * `robots: index, follow`. La balise canonique y était juste — elle pointait le bon domaine — mais
+ * une canonique est une SUGGESTION : Google reste libre d'indexer l'autre hôte, et deux hôtes qui
+ * servent le même catalogue divisent l'autorité de la marque. Sur un nom déjà disputé
+ * (« Nurae Parfum » sort sur nos requêtes), c'est exactement ce qu'on ne peut pas s'offrir.
+ *
+ * Une redirection permanente, elle, ne se discute pas.
+ *
+ * **Seulement en production** : les aperçus vivent sur `*.vercel.app`, et les rediriger les rendrait
+ * inutilisables. `VERCEL_ENV` vaut `production`, `preview` ou `development` à la construction.
+ */
+const DOMAINE_CANONIQUE = "nureaparfums.fr";
+
+const REDIRECTIONS_CANONIQUES =
+  process.env.VERCEL_ENV === "production"
+    ? [
+        {
+          source: "/:chemin*",
+          has: [{ type: "host", value: "(?<hoteVercel>.*\.vercel\.app)" }],
+          destination: `https://${DOMAINE_CANONIQUE}/:chemin*`,
+          permanent: true,
+        },
+      ]
+    : [];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -152,7 +181,8 @@ const nextConfig = {
     return ADMIN_HEADER_SOURCES.map((source) => ({ source, headers: ADMIN_SECURITY_HEADERS }));
   },
   async redirects() {
-    return ADMIN_REDIRECTS;
+    // Le domaine d'abord : inutile de rejouer une ancienne adresse sur un hôte qu'on quitte.
+    return [...REDIRECTIONS_CANONIQUES, ...ADMIN_REDIRECTS];
   },
 };
 
