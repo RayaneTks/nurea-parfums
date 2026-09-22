@@ -98,10 +98,24 @@ const nextConfig = {
   },
   images: {
     remotePatterns: supabaseImageRemotes(),
-    /** Inclut des qualités « vignettes » (admin catalogue, listes). */
-    qualities: [60, 65, 70, 75, 80, 85, 90],
-    /** AVIF + WebP — gain ~20% vs WebP seul pour photos parfums. */
-    formats: ["image/avif", "image/webp"],
+    /**
+     * Les visuels sont servis TELS QUELS, sans passer par l'optimiseur de Vercel (repris de `main`,
+     * correctif du 22/09/2026).
+     *
+     * Ce qui s'est passé : chaque visuel était déclaré sur dix largeurs de `srcset`, avec deux
+     * formats et sept qualités ouvertes. La page d'accueil porte 207 visuels — une seule visite à
+     * froid pouvait demander plus de 2 000 transformations, pour un quota gratuit de 5 000 par MOIS.
+     * Et chaque déploiement vide le cache d'images : le mur tombait au premier déploiement venu.
+     * Toutes les fiches ont rendu 402 (`OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED`).
+     *
+     * Pourquoi c'est sans perte : `src/server/catalogue/webp.ts` dépose déjà les visuels au cadre
+     * exact de l'affichage (`PERFUME_FRAME` 1024×1536) et à la qualité 82, soit ~90 Ko. L'optimiseur
+     * ne gagnait presque rien et ajoutait une dépendance qui peut refuser de répondre.
+     *
+     * Si l'optimisation redevient souhaitable un jour, elle ne se rouvre qu'avec `deviceSizes` et
+     * `qualities` restreints — sinon le mur revient.
+     */
+    unoptimized: true,
   },
   typescript: {
     ignoreBuildErrors: false,
