@@ -17,8 +17,9 @@ de zéro — le dossier pilote de la refonte est `docs/refonte/` (`00-README.md`
 | Tests sur base réelle | `npm run test:db` (projet `db`) |
 | Tout sauf navigateur | `npm run verify` |
 | Invariants d'affichage | `npm run test:layout` |
-| Parcours de bout en bout | `npm run test:e2e` |
+| Parcours de bout en bout | `npm run test:e2e` (dont `test:e2e:premiere`, PC-12 sur base vide) |
 | Reprise des données | `npm run migration:reprise` (`--dry-run` par défaut), `migration:reference`, `migration:verify`, `migration:sql` |
+| Retour arrière de la bascule | `npm run migration:instantane` (lecture seule), puis `npm run migration:rollback -- --instantane <dossier>` |
 | Répétition de bascule | `npm run repetition:refresh` |
 | Invariants en base | `npm run check:invariants` (lecture seule) |
 | Compte de gestion | `npm run admin:create-user` |
