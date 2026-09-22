@@ -170,7 +170,7 @@ test("PC-08 : marge du lot visible en 2 taps, dépense ajoutée en 4 taps, tuile
   const margeApres = await margeNetteOf(lot.id);
   expect(margeApres).toBe("90.00");
   await expect(tile(page, "Marge nette")).toContainText(eurosCompact(margeApres));
-  await expect(tile(page, "Dépenses")).toContainText(eurosCompact("60"));
+  await expect(tile(page, "Frais de lot")).toContainText(eurosCompact("60"));
   await expect(page.locator("[data-batch-view]")).toContainText(KNOWN_EXPENSE_LABEL);
 
   const written = (await expensesOf(lot.id)).find((expense) => expense.label === KNOWN_EXPENSE_LABEL);
@@ -187,7 +187,7 @@ test("PC-08 : marge du lot visible en 2 taps, dépense ajoutée en 4 taps, tuile
   suppression.expectAtMost(3);
 
   await expect(tile(page, "Marge nette")).toContainText(eurosCompact(margeAvant));
-  await expect(tile(page, "Dépenses")).toContainText(eurosCompact("0"));
+  await expect(tile(page, "Frais de lot")).toContainText(eurosCompact("0"));
   expect(await margeNetteOf(lot.id)).toBe(margeAvant);
   // La pièce reste, contre-passée : c'est ce qui garde le lot insupprimable (02 §4.4, 03 §4.4).
   expect((await expensesOf(lot.id)).some((expense) => expense.movement.reversedBy !== null)).toBe(true);
@@ -261,16 +261,16 @@ test("E06 : une commande en attente est listée hors des chiffres, une annulée 
   await expect(fiche).toContainText("Amine Ould");
   await expect(fiche).toContainText("En attente");
 
-  // Son total (110 €) n'entre ni dans « À encaisser » ni dans « Coûts d'achat » : elle n'est pas engagée.
+  // Son total (110 €) n'entre ni dans « À encaisser » ni dans « Achat des parfums » : elle n'est pas vendue.
   expect(await aEncaisserOf(MARS)).toBe("0.00");
   await expect(tile(page, "À encaisser")).toContainText(eurosCompact("0"));
   // Le chiffre affiché est celui de la requête canonique…
   const coutsEngages = await coutsOf(MARS);
-  await expect(tile(page, "Coûts d'achat")).toContainText(eurosCompact(coutsEngages));
+  await expect(tile(page, "Achat des parfums")).toContainText(eurosCompact(coutsEngages));
   // …et la commande en attente en est bien exclue : l'inclure changerait le total.
   const coutsAvecEnAttente = await coutsOf(MARS, "('PENDING','CONFIRMED','DELIVERED')");
   expect(Number(coutsAvecEnAttente)).toBeGreaterThan(Number(coutsEngages));
-  await expect(tile(page, "Coûts d'achat")).not.toContainText("110");
+  await expect(tile(page, "Achat des parfums")).not.toContainText("110");
 
   // L'annulée vit dans une sous-section repliée : sans elle, elle resterait rattachée et invisible.
   const annules = page.getByRole("button", { name: /^Annulés/ });

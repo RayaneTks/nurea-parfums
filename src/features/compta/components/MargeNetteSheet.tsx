@@ -53,11 +53,11 @@ export function MargeNetteSheet({ open, onClose, title, figures, onShowUnknownCo
           </div>
           <Divider />
           <div data-marge-line="couts">
-            <Line label="− Coûts d'achat des documents engagés" value={<Money value={figures.costs} />} />
+            <Line label="− Achat des parfums vendus" value={<Money value={figures.costs} />} />
           </div>
           <Divider />
           <div data-marge-line="depenses">
-            <Line label="− Dépenses de lot" value={<Money value={figures.expenses} />} />
+            <Line label="− Frais de lot (transport, douane…)" value={<Money value={figures.expenses} />} />
           </div>
           <Divider />
           <div data-marge-line="marge">
@@ -83,20 +83,21 @@ export function MargeNetteSheet({ open, onClose, title, figures, onShowUnknownCo
               data-unknown-cost
             >
               <span className="admin-type-body font-medium text-[var(--admin-warning)]">
-                {unknown} document{unknown > 1 ? "s" : ""} au coût à compléter, compté{unknown > 1 ? "s" : ""} 0 €
+                {unknown} document{unknown > 1 ? "s" : ""} dont l&apos;achat n&apos;est pas renseigné, compté{unknown > 1 ? "s" : ""} 0 €
               </span>
               <ChevronRight size={18} aria-hidden className="shrink-0 text-[var(--admin-warning)]" />
             </button>
           ) : (
             <Text variant="body" tone="warning">
-              {unknown} document{unknown > 1 ? "s" : ""} au coût à compléter, compté{unknown > 1 ? "s" : ""} 0 €
+              {unknown} document{unknown > 1 ? "s" : ""} dont l&apos;achat n&apos;est pas renseigné, compté{unknown > 1 ? "s" : ""} 0 €
             </Text>
           )
         ) : null}
 
         <Text variant="caption" tone="muted">
-          La Marge nette, c&apos;est ce qui a été encaissé, moins le coût d&apos;achat des documents engagés et les dépenses de
-          lot, sur le même périmètre. Elle est toujours comptée après dépenses.
+          Ce qui te reste : l&apos;argent encaissé, moins ce que les parfums vendus t&apos;ont coûté, moins les frais du lot
+          (transport, douane, et tout ce qui n&apos;est pas le prix des flacons). Une commande pas encore confirmée n&apos;y
+          entre pas — elle n&apos;est pas vendue.
           {figures.percent === null ? null : ` Le pourcentage rapporte la Marge nette à l'Encaissé (${formatEur(eurFromWire(figures.encaisse))}).`}
         </Text>
       </div>
