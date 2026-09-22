@@ -290,6 +290,13 @@ Pourquoi restaurer plutôt que laisser l'expand en place (option ouverte par 03 
 
 - **J+0 à J+7 (surveillance)** : chaque matin, `npm run check:invariants -- --confirm-host <hôte prod>` (lecture seule) ; lecture des journaux Vercel (actions > 1 s, codes `UNEXPECTED` avec leur référence, 04 §9.5) ; cinq minutes de retour du gérant. Tout écart d'invariant est un incident prioritaire.
 - **Arbitrages post-bascule du gérant, dans l'app** (listes R4) : remettre à 0 ou à leur valeur le stock des parfums qu'il suit réellement (S20) ; compléter les coûts inconnus (filtre « coût à compléter », E03) ; annuler, s'il le souhaite, les écarts historiques ou la compensation de reprise (E04, T12).
+
+  **Deux de ces arbitrages sont déjà tranchés** (22/09/2026, lecture de la préproduction sur données réelles) — à appliquer tels quels le jour J, sans reposer la question :
+
+  | Ligne R4 | Réponse du gérant | Geste |
+  |---|---|---|
+  | **Coût inconnu** : Grand Soir 10 ml, 1 × 10,00 €, document de « Yanis secu » du 10/09 — la seule ligne sans coût de toute la base | **Le flacon a été offert par le fournisseur : le coût est nul, pas inconnu.** | Saisir **0 €** comme coût de la ligne. La Marge nette ne bouge pas d'un centime (un coût absent était déjà compté 0, `COALESCE(l."unitCostEur", 0)`) ; ce qui change est le **doute** : `hasUnknownCost` tombe, le document sort du filtre « coût à compléter », et la Marge nette cesse d'être annoncée comme provisoire. |
+  | **Écart historique** : +100,00 € du 19/09 en « Non attribué », « excédent de finalisation (double comptage) », commande de Chloe | **Ne pas l'annuler seul.** Le gérant avait déjà posé une correction de −100,00 € sur Revolut (« Erreur comptabilité application ») : les deux se neutralisent, et la Trésorerie est juste. | **Ne rien toucher** (recommandé : le journal garde la trace honnête des deux mouvements), ou annuler **les deux** ensemble. Annuler le seul écart ferait perdre 100,00 € à la Trésorerie. |
 - **Correctifs** : branche `hotfix/<sujet>` depuis `main`, `npm run verify` + `npm run test:layout` si UI, PR, déploiement. Toute évolution de schéma est désormais une migration normale (nouveau dossier), appliquée par le build.
 - **J+30 : jalon N (nettoyage)** — détaillé en §3.6.
 ---
