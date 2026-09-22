@@ -3,7 +3,7 @@
 > **Pour l'agent qui prend la suite.** Ce fichier est le point d'entrée : il dit où en est le
 > chantier, ce qui reste, comment travailler sur ce poste et quels pièges ont déjà coûté du
 > temps. La conception complète, elle, vit dans `docs/refonte/`.
-> Dernière mise à jour : 22 septembre 2026.
+> Dernière mise à jour : 22 septembre 2026 (fin de J17).
 
 ## 1. Le chantier en trois phrases
 
@@ -34,7 +34,7 @@ d'abord le document amont, puis on code.
 
 ## 3. Où en est le code
 
-**Livré et fusionné dans `refonte/integration`** (jalons J0 à J16, moins le reste du §4) :
+**Livré et fusionné dans `refonte/integration`** (jalons J0 à **J17**, moins le reste du §4) :
 
 - socle : domaine pur, contrats, `defineAction`/`defineQuery`, transactions, cache, session,
   `proxy.ts`, redirections des anciennes adresses ;
@@ -49,15 +49,19 @@ d'abord le document amont, puis on code.
   d'installation, 12 écrans de lancement ;
 - documentation du dépôt remise au niveau du code + `08-RECETTE.md`.
 
-**Dernier passage complet sur la branche fusionnée (18/09/2026) :**
+**Dernier passage complet sur la branche fusionnée (22/09/2026, après J17) :**
 
 | Suite | Commande | Résultat |
 |---|---|---|
 | Unitaires + architecture | `npm test` | **808 verts** |
-| Base réelle | `npm run test:db` | **473 verts** |
+| Base réelle | `npm run test:db` | **487 verts** (+14 : le retour arrière) |
 | Invariants d'affichage | `npm run test:layout` | **513 verts** |
-| Parcours | `npm run test:e2e` | **79 verts** |
+| Parcours | `npm run test:e2e` | **93 verts** (89 · 3 réglages · 1 PC-12) |
 | Types / lint | `npm run typecheck`, `npm run lint` | propres |
+
+> **Cinq parcours sont tombés au premier passage**, tous en délai dépassé (6 ouvriers sur cette
+> machine), et **tous verts relancés seuls** (`--workers=1 --timeout=120000`). C'est exactement le
+> piège du §5 : confirmer un échec avant de « corriger » quoi que ce soit.
 
 **Vitesse mesurée** (budgets de `02` §2) : vente simple **3 taps / 2,2 s** (objectif 8 / 20 s),
 commande avec acompte 9 taps, créance encaissée 4 taps, marge d'un lot 2 taps, récap du jour
@@ -83,18 +87,29 @@ L'aperçu est protégé par l'authentification Vercel : régénérer au besoin u
 `docs/refonte/00-README.md` § « Ce qui reste avant la bascule » tient la liste complète
 (colonne du gérant G-1…G-8, colonne de l'exécutant E-1…E-9). Par ordre de travail :
 
-1. **Finir J17 — retour arrière + parcours de première utilisation.** Travail **écrit mais
-   jamais exécuté**, sauvegardé par le commit `b313bba` de la branche
-   `refonte/j17-rollback-pc12` (worktree `.claude/worktrees/agent-a8596bbfb881c6d84`, partie de
-   `407587b`) : `scripts/migration/rollback.ts`,
-   `scripts/migration/lib/vidage.ts`, `tests/db/rollback.test.ts`, plus des retouches de
-   `apply-sql-migration.ts`, `reference.ts`, `lib/reference-format.ts`,
-   `repetition/lib/garde-cible.ts`, `repetition/lib/restauration.ts`, `package.json` et de la
-   migration expand. **Rien n'a été exécuté** : le test de retour arrière n'a jamais tourné.
-   Cible : `npm run migration:rollback -- --instantane <dossier>` qui remet l'ancien monde avec
-   Node seul (pas de `pg_restore` sur ce poste), vide `public` et `legacy` sans supprimer les
-   schémas, contrôle la référence au centime ; plus `e2e/parcours/premiere-utilisation.spec.ts`
-   (PC-12, sur base vide).
+1. ~~Finir J17~~ — **fait le 22/09/2026** (`751de52`, `669255f`, fusion `refonte/integration`).
+   Le travail était écrit et n'avait jamais tourné. Il tourne : `tests/db/rollback.test.ts` passe
+   14/14 (chaîne complète du jour J, puis retour arrière, plus le cas de l'instantané altéré), après
+   deux correctifs de requêtes de contrôle — un `ORDER BY` qui s'appuyait sur un alias de sortie dans
+   une expression, et `pg_sequences` interrogé pour une colonne `is_called` qu'il n'expose pas. Le
+   retour arrière a aussi été **rejoué sur la copie des données réelles** : R1 à R5 verts, référence
+   recalculée identique au centime, **51,4 s** (dont 50,8 s à rejouer les 24 migrations une par une).
+   Deux manques trouvés en chemin et comblés :
+   - **le jour J ne savait pas produire la source du retour arrière.** `migration:rollback` rejoue un
+     instantané JSON (ce poste n'a ni `pg_restore` ni `psql`), et seule la répétition savait en
+     extraire un — au prix de détruire une base. D'où `npm run migration:instantane`, lecture seule
+     stricte, et l'étape **B2b** du jour J ;
+   - **PC-12 n'avait pas de test**, alors que `07 §6.4` en nommait un.
+     `e2e/parcours/premiere-utilisation.spec.ts` joue le parcours entier sur base vide —
+     **16 taps, 13 s** contre un objectif de 5 minutes. Il lui faut une base sans données : harnais à
+     lui (`nurea_test_e2e_vide`, ports 3102/3103, projet `Mobile-premiere`), lancé par
+     `npm run test:e2e:premiere`, troisième commande de `npm run test:e2e`.
+
+   Documents amendés au passage (une documentation qui ment est un bug) : `07 §1.7` décrivait un
+   retour arrière en `pg_restore` + `psql` **inexécutable sur ce poste**, donc jamais éprouvé ;
+   `07 §2.2` annonçait un `--rollback` que `apply-sql-migration.ts` refuse ; `07 §6.3`, `07 §6.4` et
+   `08 §1c`/`§3` disaient PC-12 sans test.
+
 2. **Répétition générale** de la procédure du jour J (`07` §1.6), retour arrière compris.
 3. **Fusionner `fix/vitrine-slug-maintenance` dans `main`** avant la bascule (L1 : le catalogue
    public ne lit plus `Perfume.slug` ; L2 : mode maintenance). Prête, vérifiée, non fusionnée.
@@ -202,5 +217,5 @@ données réelles et les budgets de perception.
 | `main` | Production (vitrine + ancienne gestion), intacte |
 | `refonte/integration` | La refonte ; **branche de travail**, poussée sur GitHub |
 | `fix/vitrine-slug-maintenance` | L1 + L2, prêtes pour `main` (worktree `../nurea-fix`) |
-| `refonte/j17-rollback-pc12` | Retour arrière + PC-12 — **écrit, jamais exécuté** (`b313bba`) |
+| `refonte/j17-rollback-pc12` | Retour arrière + PC-12 — **exécuté, corrigé et fusionné** le 22/09 (`669255f`) |
 | autres `refonte/j*` et `worktree-agent-*` | Jalons déjà fusionnés ; leurs worktrees ont été retirés le 22/09, les branches restent |
