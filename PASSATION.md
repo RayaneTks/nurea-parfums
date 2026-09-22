@@ -110,7 +110,13 @@ L'aperçu est protégé par l'authentification Vercel : régénérer au besoin u
    `07 §2.2` annonçait un `--rollback` que `apply-sql-migration.ts` refuse ; `07 §6.3`, `07 §6.4` et
    `08 §1c`/`§3` disaient PC-12 sans test.
 
-2. **Répétition générale** de la procédure du jour J (`07` §1.6), retour arrière compris.
+2. **Répétition générale** — **faite pour toute la part « données » le 22/09/2026** (`07` §2.4) :
+   la procédure du jour J jouée avec les commandes exactes de §1.6, une par une, sur la copie des
+   données réelles, **retour arrière compris**. B2b→B8 en 9 à 11 s, retour arrière en 52 s, R1–R5
+   verts, puis la bascule **rejouée après le retour arrière** rendant un rapport identique au centime.
+   **Reste, et appartient au gérant** : le gel et la promotion Vercel (B1, B9, B14), l'étape B3b
+   (tests joués à distance sur une préproduction aux **données réelles** — celle en ligne est
+   fictive) et les budgets de perception sur son iPhone.
 3. **Fusionner `fix/vitrine-slug-maintenance` dans `main`** avant la bascule (L1 : le catalogue
    public ne lit plus `Perfume.slug` ; L2 : mode maintenance). Prête, vérifiée, non fusionnée.
 4. **Mécanique Vercel** : `vercel deploy --prod --skip-domain`, `promote`, puis retour au
