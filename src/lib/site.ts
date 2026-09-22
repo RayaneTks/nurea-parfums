@@ -33,6 +33,18 @@ export const BRAND_ALTERNATE_NAMES: string[] = [
   "Nurea",
   "Parfumerie Nuréa",
   "Nurea Parfumerie",
+  /*
+   * Les formes EN UN SEUL MOT, telles qu'on les tape dans une barre de recherche après avoir vu le
+   * nom sur un flacon ou dans une story. Relevé le 22/09/2026 : sur « nureaparfum », la boutique ne
+   * sortait pas du tout, et c'est une marque homonyme — « Nurae Parfum », Stockport — qui occupait
+   * les trois premiers résultats. Sur « nurea parfum » on était deuxième, sur « nurea parfums »
+   * premier. La seule différence entre ces requêtes est une espace et un « s » : elles doivent
+   * désigner la même entité pour un moteur.
+   */
+  "Nureaparfums",
+  "Nureaparfum",
+  "nureaparfums.fr",
+  "nureaparfum.fr",
 ];
 
 /**
