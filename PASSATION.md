@@ -117,8 +117,16 @@ L'aperçu est protégé par l'authentification Vercel : régénérer au besoin u
    **Reste, et appartient au gérant** : le gel et la promotion Vercel (B1, B9, B14), l'étape B3b
    (tests joués à distance sur une préproduction aux **données réelles** — celle en ligne est
    fictive) et les budgets de perception sur son iPhone.
-3. **Fusionner `fix/vitrine-slug-maintenance` dans `main`** avant la bascule (L1 : le catalogue
-   public ne lit plus `Perfume.slug` ; L2 : mode maintenance). Prête, vérifiée, non fusionnée.
+3. ~~Fusionner `fix/vitrine-slug-maintenance` dans `main`~~ — **fait le 22/09/2026** (`80a88f0`,
+   avance rapide, poussé). L1 et L2 sont **en production**, vérifiés sur `https://nureaparfums.fr`
+   (le domaine canonique ; `www.nureaparfums.com` y redirige en 308) : vitrine 200 avec **108 entrées
+   de marque et 211 visuels — exactement les comptages d'avant le déploiement** (V9 inchangé),
+   `/admin` → 307 vers la connexion, `/api/admin/orders` → 401. Le mode maintenance est donc en ligne
+   et **dormant**, prêt pour le gel du jour J sans reconstruction.
+   **À savoir** : il a fallu **trois builds du même commit** — deux échecs réseau du constructeur
+   Vercel (`P1001` sur le pooler Supabase, puis une police Google non téléchargée par Turbopack), le
+   troisième vert. Rien dans le code. Note ajoutée en `07` §1.6 : un build rouge se relance avant
+   d'être diagnostiqué.
 4. **Mécanique Vercel** : `vercel deploy --prod --skip-domain`, `promote`, puis retour au
    déploiement précédent — à faire avec le gérant, c'est la production.
 5. **Budgets de perception, VoiceOver, PWA installée** : exigent la préproduction sur données

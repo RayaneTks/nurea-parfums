@@ -79,7 +79,7 @@ Branche de travail : **`refonte/integration`** (la production reste sur `main`, 
 | Jalon | État | Commit / remarque |
 |---|---|---|
 | J0 Chantier | ✅ partie locale | React 19, Vitest en projets, CI, garde d'hôte, amendements A-1…A-13. **Reste** : projet Supabase de préproduction + variables Vercel *Preview* (compte du gérant requis) ; V-lib-3 (pooler) en attente de la préproduction. |
-| L1 / L2 sur `main` | ✅ prêts, non fusionnés | Branche `fix/vitrine-slug-maintenance` (worktree `../nurea-fix`), vérifiés en local. À fusionner dans `main` avant la bascule. |
+| L1 / L2 sur `main` | ✅ **fusionnés et déployés** (22/09) | `80a88f0` — avance rapide sur `main`. Vérifiés en production sur `nureaparfums.fr` : comptages de la vitrine **identiques** à ceux d'avant le déploiement, `/admin` → 307, `/api/admin/*` → 401, mode maintenance dormant. Trois builds ont été nécessaires (deux échecs réseau du constructeur, aucun lié au code) : voir la note de `07` §1.6. |
 | J1 Schéma, migrations, retrait | ✅ | Schéma cible, expand/contract, 72 tests base, ancienne gestion retirée de la branche. |
 | J2 Reprise des données | ✅ | Scripts + test des cas tordus. **Répétition n°1 sur la copie réelle (17/09) : verte de bout en bout** — Trésorerie 1 546,00 € = 1 546,00 € ; Encaissé 2 050,00 € = 2 050,00 € (résidu 0,00 €) ; À encaisser 825,00 € = 825,00 € ; Marge nette 1 097,40 € → 1 097,39 € (arrondi d'une ligne historique, règle 03 §4.8). Les 281 stocks à 0 passent en « non suivi » (décision n°5 confirmée : aucun stock n'était réellement suivi). |
 | J3 Socle | ✅ | Domaine pur, contrats, defineAction/Query, transactions, cache, session, proxy, redirections, tests d'architecture. V-lib-1 et V-lib-2 validées. |
@@ -203,7 +203,7 @@ Le fil de reprise pour un agent qui arrive est `PASSATION.md`, à la racine.
 |---|---|---|
 | E-1 | Finir J16 : PWA (service worker par route, page hors ligne, carte d'installation), performance, accessibilité | ✅ fusionné |
 | E-2 | Documentation du dépôt au niveau du code + `08-RECETTE.md` | ✅ J16 |
-| E-3 | Fusionner `fix/vitrine-slug-maintenance` (L1 / L2) dans `main` avant la bascule | ⏳ prête, non fusionnée |
+| E-3 | Fusionner `fix/vitrine-slug-maintenance` (L1 / L2) dans `main` avant la bascule | ✅ **fait le 22/09**, en production et vérifié (comptages vitrine inchangés, mode maintenance dormant) |
 | E-4 | Job CI `layout` (reste de J4) | ✅ job `ecrans` de `.github/workflows/refonte.yml` |
 | E-5 | Répétition générale | ✅ **pour la part « données »** (22/09, `07` §2.4) : procédure du jour J jouée commande par commande sur la copie des données réelles, retour arrière compris et bascule rejouée derrière. ⏳ **reste** : la jouer sur une préproduction aux données réelles (bloqué par G-1) et la part Vercel (B1, B9, B14, bloqué par G-2) |
 | E-6 | Essayer `vercel deploy --skip-domain` puis `promote` (point ouvert de 07) | ⏳ bloqué par G-2 |

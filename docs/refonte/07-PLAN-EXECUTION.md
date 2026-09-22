@@ -180,6 +180,16 @@ Rôles : **l'opérateur** (l'exécutant du plan, poste avec accès Vercel CLI, `
 | B−1a | Depuis un checkout de `main` : `vercel deploy --prod --skip-domain --env NUREA_GESTION_MAINTENANCE=1` → déploiement **M** (ancienne app en maintenance, non promu) | Build verte ; URL de M notée | Corriger, recommencer |
 | B−1b | Depuis le tag `bascule-<AAAA-MM-JJ>` posé sur `refonte/integration` : `vercel deploy --prod --skip-domain --build-env NUREA_SKIP_MIGRATE_DEPLOY=1` → déploiement **R** (refonte, non promu). **Personne n'ouvre l'URL de R avant B9** : son code vitrine, lu contre l'ancien schéma, mettrait en cache un catalogue vide partagé avec la production (03 §6.3, piège documenté). | Build verte ; URL de R notée | Corriger, recommencer |
 
+> **Les builds de production échouent parfois sans raison de code** *(constat du 22/09/2026, fusion de
+> L1/L2 dans `main`)*. Trois builds du **même commit** ont été lancés : le premier a échoué en 15 s sur
+> `P1001: Can't reach database server` (le `prisma migrate deploy` de `main` n'atteignait pas le pooler
+> Supabase — joignable depuis le poste à la même minute) ; le deuxième a passé la migration puis a
+> échoué dans Turbopack sur `next/font/google queries have exactly one entry`, c'est-à-dire un fichier
+> de police que le constructeur n'a pas su télécharger ; le troisième est passé et a été promu. Aucun
+> des trois ne différait d'une ligne. **Conséquence pour B−1a et B−1b : un build rouge se relance avant
+> d'être diagnostiqué**, et les deux déploiements de la veille se préparent avec de la marge — pas dans
+> l'heure qui précède le gel.
+
 **Le jour J**
 
 | Étape | Action (commande) | Contrôle | Si échec |
