@@ -31,7 +31,9 @@ de zéro — le dossier pilote de la refonte est `docs/refonte/` (`00-README.md`
   `.env` tout seul à l'import. Tout script lit son URL **avant** cet import.
 - Base locale de test : PostgreSQL embarqué (`embedded-postgres`) sur
   `localhost:54329`, utilisateur/mot de passe `nurea`/`nurea` — Docker Desktop ne
-  démarre pas sur ce poste.
+  démarre pas sur ce poste. Elle tombe à chaque fin de session : relancer par
+  `node C:\Users\User\nurea-pg\start.mjs` (source et reconstruction :
+  `scripts/local-db/start.mjs`).
   `TEST_DATABASE_URL=postgresql://nurea:nurea@localhost:54329/nurea_test npm run test:db`.
 - **Jamais `npm run build` tel quel** : il enchaîne `prisma generate`, la migration
   gardée et `next build`. Hors production, toujours `NUREA_SKIP_MIGRATE_DEPLOY=1`
