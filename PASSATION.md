@@ -76,11 +76,17 @@ règle `03` §4.8). Les 281 stocks à 0 passent en « non suivi ».
 
 | Essai | Adresse | Données | Compte |
 |---|---|---|---|
-| **En ligne** (aperçu Vercel de la branche) | `https://nurea-parfums-git-refonte-integration-rayanetks-7861s-projects.vercel.app/admin` — **plus protégé par l'authentification Vercel** (répond 200), on entre directement | **fictives** (base Neon `nurea-repetition`, jeu `e2e/fixtures/seed.ts`) | `essai` / `motdepasse-essai-2026`, **ou le compte de production `nureadmin` avec son mot de passe habituel** (22/09 : l'empreinte bcrypt a été recopiée de la production vers la préproduction — jamais le mot de passe en clair, que personne n'a à connaître) |
+| **En ligne** (aperçu Vercel de la branche) | `https://nurea-parfums-git-refonte-integration-rayanetks-7861s-projects.vercel.app/admin` — **plus protégé par l'authentification Vercel** (répond 200), on entre directement | **RÉELLES depuis le 22/09** : instantané de production rejoué et migré dans la base Neon par `npm run repetition:preprod` (281 parfums, 73 marques, 29 clients, 35 documents, 32 paiements, 6 poches ; 14 contrôles verts) | **`nureadmin`, avec le mot de passe habituel de production** — le compte vient de l'instantané, son empreinte bcrypt est celle de la production. Le compte `essai` a disparu avec le remplissage. |
 | **Local** | `http://localhost:3000/admin` (+ l'IP du poste pour l'iPhone) | **réelles, migrées** (base locale `nurea_repetition`) | idem |
 
-L'aperçu est protégé par l'authentification Vercel : régénérer au besoin un lien de partage
-(valable 24 h). Le serveur local n'est pas relancé automatiquement après une fin de session.
+L'aperçu n'est plus protégé par l'authentification Vercel : on ouvre l'adresse et on tombe sur
+l'écran de connexion de l'app. Le serveur local n'est pas relancé automatiquement après une fin de
+session.
+
+**Les visuels de l'aperçu sont ceux de la production, en lecture.** Les URL enregistrées en base
+pointent le bucket `catalog` ; l'aperçu, lui, ÉCRIT dans `catalog-essai`
+(`SUPABASE_STORAGE_BUCKET`, variable de branche). Déposer ou retirer un visuel depuis l'aperçu ne
+peut donc pas toucher un visuel de production.
 
 ## 4. Ce qui reste
 

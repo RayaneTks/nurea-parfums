@@ -33,6 +33,7 @@
     "migration:reprise": "tsx scripts/migration/reprise.ts",
     "migration:verify": "tsx scripts/migration/verify-post.ts",
     "repetition:refresh": "tsx scripts/repetition/refresh.ts",
+    "repetition:preprod": "tsx scripts/repetition/preprod.ts",
     "check:invariants": "tsx scripts/check-invariants.ts"
   },
   "prisma": {

@@ -182,7 +182,7 @@ son iPhone, ou son jugement. Tant qu'elle n'est pas faite, la bascule ne peut pa
 
 | # | Action | Pourquoi lui | Bloque |
 |---|---|---|---|
-| G-1 | **Créer le projet Supabase de préproduction** et y charger une copie des données réelles | Son compte, sa facturation | Tout §5.1 de `08` : répétition générale, invalidation du cache, budgets de perception, PWA installée |
+| G-1 | ~~**Créer le projet Supabase de préproduction** et y charger une copie des données réelles~~ | — | ✅ **levé le 22/09**, autrement que prévu : la préproduction est une base **Neon** (place de marché Vercel), et elle porte désormais les **données réelles** migrées (`npm run repetition:preprod`). Aucun projet Supabase de préproduction n'a été nécessaire : les visuels sont lus dans le bucket de production, les dépôts vont dans `catalog-essai`. |
 | G-2 | **Renseigner les variables Vercel *Preview*** (`DATABASE_URL`, `DIRECT_URL`, `ADMIN_JWT_SECRET`, clés Supabase) vers ce projet | Son compte Vercel | Le déploiement de préproduction |
 | G-3 | **Réglage G9 du bucket `catalog`** : autoriser les formats d'origine (HEIC, PNG, JPEG) en dépôt | Console Supabase, son compte | Le dépôt d'un visuel depuis l'iPhone (NR-5.6, NR-11.1) |
 | G-4 | **Prêter son iPhone**, une demi-journée, pour la recette | C'est son modèle, son réseau, son doigt | Les 16 parcours chronométrés et les 6 gestes de `08` §1a |
@@ -205,7 +205,7 @@ Le fil de reprise pour un agent qui arrive est `PASSATION.md`, à la racine.
 | E-2 | Documentation du dépôt au niveau du code + `08-RECETTE.md` | ✅ J16 |
 | E-3 | Fusionner `fix/vitrine-slug-maintenance` (L1 / L2) dans `main` avant la bascule | ✅ **fait le 22/09**, en production et vérifié (comptages vitrine inchangés, mode maintenance dormant) |
 | E-4 | Job CI `layout` (reste de J4) | ✅ job `ecrans` de `.github/workflows/refonte.yml` |
-| E-5 | Répétition générale | ✅ **pour la part « données »** (22/09, `07` §2.4) : procédure du jour J jouée commande par commande sur la copie des données réelles, retour arrière compris et bascule rejouée derrière. ⏳ **reste** : la jouer sur une préproduction aux données réelles (bloqué par G-1) et la part Vercel (B1, B9, B14, bloqué par G-2) |
+| E-5 | Répétition générale | ✅ **en local ET en préproduction** (22/09) : la procédure du jour J jouée commande par commande sur la copie des données réelles, retour arrière compris et bascule rejouée derrière (`07` §2.4) ; puis la même chaîne rejouée **sur la préproduction Neon**, 14 contrôles verts, 201 s. ⏳ **reste** : la part Vercel (B1, B9, B14), à faire avec le gérant |
 | E-6 | Essayer `vercel deploy --skip-domain` puis `promote` (point ouvert de 07) | ⏳ bloqué par G-2 |
 | E-7 | Vérifier que la build ne touche pas la base (point ouvert de 07) | ⏳ |
 | E-8 | Passer la recette `08` avec le gérant, remplir la feuille de passage §6 | ⏳ bloqué par G-1, G-4 |
