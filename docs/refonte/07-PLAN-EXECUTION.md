@@ -186,7 +186,8 @@ Rôles : **l'opérateur** (l'exécutant du plan, poste avec accès Vercel CLI, `
 |---|---|---|---|
 | B0 | Le gérant ferme l'app ; les ventes de la fenêtre sont notées hors app et saisies après la réouverture | — | — |
 | B1 | **Gel** : `vercel promote <M>` | `/admin` → 503 page maintenance ; `/` → 200 avec le nombre habituel de fiches | `vercel promote <P0>`, report |
-| B2 | **Dump** : `pg_dump --format=custom --schema=public --no-owner --no-privileges "$PROD_DIRECT_URL" -f prod-avant.dump` ; `pg_restore --list prod-avant.dump > /dev/null` ; empreinte `sha256sum` | Liste lisible, empreinte notée | Recommencer ; sinon `promote P0`, report |
+| B2 | **Dump** (archive d'enquête, si `pg_dump` est disponible sur le poste) : `pg_dump --format=custom --schema=public --no-owner --no-privileges "$PROD_DIRECT_URL" -f prod-avant.dump` ; `pg_restore --list prod-avant.dump > /dev/null` ; empreinte `sha256sum` | Liste lisible, empreinte notée | Recommencer ; sinon `promote P0`, report |
+| **B2b** | **Instantané de l'ancien monde — la source du retour arrière** *(amendement J17)* : `npm run migration:instantane -- --out prod/ --confirm-host <hôte prod>`. Lecture seule stricte (§2.2) ; ne demande que Node. C'est lui, et non le dump, que `migration:rollback` rejoue (§1.7). | Sortie 0 ; `prod/instantane/manifest.json` écrit, comptages = ceux de la production ; empreintes SHA-256 par table | Recommencer ; sinon `promote P0`, report — **sans instantané, pas de retour arrière : on ne va pas plus loin** |
 | B3 | **Jumelle** : `npm run repetition:refresh -- --from-dump prod-avant.dump` (restauration dans `nurea-repetition`, puis référence, expand, reprise, contract, vérifications — §2.4) | Sortie 0 ; rapport de la jumelle archivé | `promote P0`, report, analyse |
 | B3b | En parallèle de B4–B8 : déployer le tag en préproduction (sur la jumelle) et lancer `E2E_REMOTE=1 PLAYWRIGHT_BASE_URL=<préprod> npm run test:layout` puis `… npx playwright test parcours --project=Mobile` (V10 de 03) | Verts | Arrêt avant B9 ; retour arrière §1.7 |
 | B4 | **Référence de production** : `npm run migration:reference -- --confirm-host <hôte prod> --out prod/` | Bloc `mesures` de `prod/reference.json` **identique** à celui de la jumelle (fichier trié et déterministe, §2.2 ; seuls diffèrent l'hôte et l'horodatage) : même dump, aucune écriture depuis B1, le gel a tenu | Arrêt ; `promote P0` ; analyse |
@@ -211,56 +212,69 @@ Rôles : **l'opérateur** (l'exécutant du plan, poste avec accès Vercel CLI, `
 | B7 à B12 (avant feu vert) | Schéma de la refonte | Restauration puis `promote P0` ; si R avait été promu, la vitrine repasse sur l'ancien code | Aucune |
 | Après le feu vert (B13) | Données nouvelles écrites | **Pas de retour de base.** Correctifs vers l'avant (§1.8). Le schéma `legacy` et le dump restent disponibles pour enquête. | — |
 
-**Restauration (un seul chemin, éprouvé en répétition générale)** :
+**Restauration — un seul chemin, Node seul, éprouvé** *(amendement J17, 22/09/2026)* :
 
-Pourquoi pas un simple `pg_restore --clean` : `--clean` ne supprime que les objets **présents dans le dump**. Les objets créés par l'expand et le contract resteraient (`SaleDocument`, `SaleLine`, `Payment`, `Setting`, nouveaux enums, fonctions et triggers `nurea_*`, vue `DocumentBalance`, clés étrangères ajoutées à `CashMovement` et `BatchExpense`), et leurs clés étrangères vers `Customer`, `Batch`, `Perfume` et `CashMovement` feraient échouer les `DROP TABLE` sans `CASCADE` de `--clean` : la base ne serait pas « strictement connue ». On **vide donc `public` sans supprimer le schéma** (ses droits par défaut et les extensions installées par Supabase sont conservés), puis on rejoue le dump, **le tout dans une seule transaction** : pas de fenêtre où `public` est vide.
+> **Ce que ce paragraphe disait avant, et pourquoi il a changé.** Il décrivait un retour arrière en
+> `pg_restore` + `psql` : sommaire du dump filtré, dump rendu en SQL, puis `rollback.sql` et le dump
+> rejoués dans une transaction. **Le poste d'exploitation n'a ni `pg_restore` ni `psql`** (ni Docker
+> pour en fournir) : ce chemin n'était pas exécutable le jour J, et n'a donc jamais été éprouvé. Le
+> retour arrière livré ne demande que **Node et le client Prisma**. Il ne part pas d'un dump binaire
+> mais de l'**instantané JSON** de l'ancien monde — celui-là même qu'extrait la répétition, en lecture
+> seule stricte (§2.2). Le `pg_dump` de B2 reste pris quand l'outil est disponible : c'est l'archive
+> d'enquête, ce n'est plus le chemin du retour.
 
-1. `npm run migration:sql -- --rollback prod-avant.dump --confirm-host <hôte prod>`, qui exécute :
-   - `pg_restore -l prod-avant.dump | grep -vE '(SCHEMA - public|COMMENT - SCHEMA public) ' > migration-artifacts/<date>/restore.list` : sommaire du dump **sans** l'entrée du schéma `public` lui-même ni son commentaire (le schéma existe déjà ; selon la version de `pg_dump`, un `CREATE SCHEMA public` ferait échouer la transaction) ;
-   - `pg_restore -L migration-artifacts/<date>/restore.list --no-owner --no-privileges -f migration-artifacts/<date>/prod-avant.sql prod-avant.dump` (le dump rendu en SQL, sans `--clean`) ;
-   - `psql "$PROD_DIRECT_URL" --single-transaction -v ON_ERROR_STOP=1 -f scripts/migration/rollback.sql -f migration-artifacts/<date>/prod-avant.sql` (psql de la même version majeure que `pg_restore`), où `scripts/migration/rollback.sql` vaut :
+Pourquoi on ne peut pas se contenter d'un `pg_restore --clean` : `--clean` ne supprime que les objets
+**présents dans le dump**. Les objets créés par l'expand et le contract resteraient (`SaleDocument`,
+`SaleLine`, `Payment`, `Setting`, nouveaux enums, fonctions et triggers `nurea_*`, vue
+`DocumentBalance`, clés étrangères ajoutées à `CashMovement` et `BatchExpense`), et leurs clés
+étrangères vers `Customer`, `Batch`, `Perfume` et `CashMovement` feraient échouer ses `DROP TABLE`
+sans `CASCADE` : la base ne serait pas « strictement connue ». On **vide donc `public` et `legacy`
+sans supprimer les schémas** (leurs droits par défaut et les extensions installées par Supabase sont
+conservés), puis on rebâtit l'ancien monde.
 
-   ```sql
-   -- Vide public de tout objet qui n'appartient pas à une extension, puis supprime legacy.
-   DROP SCHEMA IF EXISTS legacy CASCADE;
-   DO $$
-   DECLARE r record;
-   BEGIN
-     -- Vues d'abord, puis tables (CASCADE emporte index, contraintes, clés étrangères, triggers,
-     -- séquences possédées), puis séquences isolées. Noms lus dans le catalogue, jamais des oid.
-     FOR r IN
-       SELECT format('DROP %s IF EXISTS public.%I CASCADE',
-                CASE c.relkind WHEN 'v' THEN 'VIEW' WHEN 'm' THEN 'MATERIALIZED VIEW'
-                               WHEN 'S' THEN 'SEQUENCE' ELSE 'TABLE' END, c.relname) AS stmt
-       FROM pg_class c
-       WHERE c.relnamespace = 'public'::regnamespace AND c.relkind IN ('v', 'm', 'r', 'p', 'S')
-         AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.objid = c.oid AND d.deptype = 'e')
-       ORDER BY CASE c.relkind WHEN 'v' THEN 0 WHEN 'm' THEN 0 WHEN 'S' THEN 2 ELSE 1 END
-     LOOP EXECUTE r.stmt; END LOOP;
-     -- Fonctions et procédures (nurea_*, triggers), hors extensions.
-     FOR r IN
-       SELECT format('DROP ROUTINE IF EXISTS public.%I(%s) CASCADE', p.proname,
-                     pg_get_function_identity_arguments(p.oid)) AS stmt
-       FROM pg_proc p
-       WHERE p.pronamespace = 'public'::regnamespace AND p.prokind IN ('f', 'p')
-         AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.objid = p.oid AND d.deptype = 'e')
-     LOOP EXECUTE r.stmt; END LOOP;
-     -- Enums (anciens et nouveaux ; le dump recrée les anciens).
-     FOR r IN
-       SELECT format('DROP TYPE IF EXISTS public.%I CASCADE', t.typname) AS stmt
-       FROM pg_type t
-       WHERE t.typnamespace = 'public'::regnamespace AND t.typtype = 'e'
-         AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.objid = t.oid AND d.deptype = 'e')
-     LOOP EXECUTE r.stmt; END LOOP;
-   END $$;
-   ```
+1. `npm run migration:rollback -- --instantane <dossier> [--reference <fichier>] --confirm-host <hôte prod>`,
+   qui enchaîne quatre phases chronométrées (`scripts/migration/rollback.ts`) :
+   - **vidage**, en **une** transaction (`scripts/migration/lib/vidage.ts`) : vues et vues
+     matérialisées, tables (`CASCADE` : index, contraintes, clés étrangères, triggers, séquences
+     possédées), séquences restées seules, fonctions et procédures, enfin les types énumérés — dans
+     `public` **et** dans `legacy`, en épargnant sans exception tout objet appartenant à une extension
+     (`pg_depend.deptype = 'e'`). Les noms sont lus dans le catalogue et cités par `format('%I')`,
+     jamais mis entre guillemets à la main. Un objet qui survivrait au balayage annule la transaction :
+     rien n'est vidé ;
+   - **schéma** : les dossiers de `prisma/migrations/` qui **précèdent** `…_refonte_expand`, un par un
+     (`prisma db execute` puis `migrate resolve --applied`) — l'ancien monde tel que le dépôt le décrit ;
+   - **données**, en **une** transaction : les lignes de l'instantané dans l'ordre des clés étrangères,
+     `_prisma_migrations` **remplacée** par celle de l'instantané (aucune des deux migrations de la
+     refonte n'y figure), puis séquences remises à niveau ;
+   - **contrôle**, cinq assertions bloquantes : **R1** plus aucun objet de la refonte (tables, vue,
+     fonctions `nurea_*`, triggers, enums) et `legacy` vide ; **R2** chaque table de l'instantané de
+     retour dans `public`, à son compte exact ; **R3** `_prisma_migrations` = celle de l'instantané ;
+     **R4** chaque séquence au-dessus du plus grand identifiant restauré ; **R5** la référence
+     **recalculée** par `scripts/migration/reference.ts` — dans son propre processus, au même instant
+     de mesure (`--instant`) — **identique au bloc `mesures` d'avant la bascule**. Un centime d'écart
+     et la commande sort en erreur, avec « NE PAS ROUVRIR ».
 
-   Contrôles enchaînés par la même commande après le `COMMIT` : `to_regclass('public."SaleDocument"')` et `to_regclass('public."DocumentBalance"')` valent `NULL`, le schéma `legacy` n'existe pas ; puis `npm run migration:reference -- --out rollback/ --confirm-host <hôte prod>` doit produire un bloc `mesures` **identique** à celui de `prod/reference.json` (B4) — preuve que la base est revenue exactement à l'état d'avant l'expand. Un écart ⇒ ne pas rouvrir, analyser (le dump reste intact). Si le `psql` échoue, sa transaction est annulée : la base est dans l'état d'avant la commande, on corrige et on relance.
+   Le bloc `mesures` attendu est pris, dans l'ordre : `--reference <fichier>` s'il est donné ; sinon
+   celui que la reprise a inséré dans `legacy."MigrationReference"` (lu **avant** le vidage, qui
+   l'emporte) ; sinon `reference-attendue.json`, que la commande recopie dans son dossier de sortie dès
+   qu'elle l'a lu — une relance après échec le retrouve là, l'instantané n'étant jamais modifié.
+
+   **Ce que ce retour arrière ne promet pas** : les phases « schéma » et « données » ne peuvent pas
+   entrer dans la transaction du vidage (le CLI Prisma applique chaque migration dans son propre
+   processus). Entre la fin du vidage et la fin du chargement, `public` est vide. C'est sans
+   conséquence le jour J — la gestion est gelée depuis B1 et l'ancienne app n'est repromue qu'ensuite —
+   et cette fenêtre est comptée dans la fenêtre de bascule. **Mesurée le 22/09/2026** sur la copie des
+   données réelles (35 documents, 281 parfums, 1 177 lignes) : **51,4 s au total**, dont 50,8 s pour
+   les 24 dossiers de migration appliqués un par un (le démarrage du CLI Prisma, ≈ 2,1 s par dossier) ;
+   le vidage prend 71 ms, le chargement 108 ms, les contrôles 385 ms.
+
+   Si une phase échoue, sa transaction est annulée : on corrige et on relance la commande telle quelle.
+
 2. `vercel promote <P0>`.
 3. Vitrine : dans l'ancienne app, rouvrir un parfum et l'enregistrer sans changement (déclenche l'invalidation de l'existant, 01 §5.2), puis vérifier les comptages de V9.
 4. Le gérant reprend l'ancienne app. Analyse de l'échec, correction, nouvelle date.
 
-Pourquoi restaurer plutôt que laisser l'expand en place (option ouverte par 03 §7.9) : l'expand laisse une ligne dans `_prisma_migrations` inconnue des dossiers de `main` ; restaurer ramène la base à un état **strictement** connu, sans pari sur la tolérance de `prisma migrate deploy` lors d'un futur build de `main`. La durée de restauration est mesurée en J16 et comptée dans la fenêtre.
+Pourquoi restaurer plutôt que laisser l'expand en place (option ouverte par 03 §7.9) : l'expand laisse une ligne dans `_prisma_migrations` inconnue des dossiers de `main` ; restaurer ramène la base à un état **strictement** connu, sans pari sur la tolérance de `prisma migrate deploy` lors d'un futur build de `main`. La durée de restauration a été mesurée en J17 (51,4 s, ci-dessus) et est comptée dans la fenêtre.
 
 ### 1.8 Après la bascule
 
@@ -300,8 +314,10 @@ Tous vivent dans `scripts/migration/` et `scripts/repetition/`, s'exécutent par
 | Script (commande npm) | Rôle | Arguments | Écrit en base ? |
 |---|---|---|---|
 | `scripts/migration/reference.ts` (`npm run migration:reference`) | Calcule, **sur l'ancien schéma**, la référence de 03 §7.2 et les mesures C1–C6 de §2.5 (anciennes formules, copiées de `src/server/kpi/queries.ts` et `src/server/orders/financials.ts` de `main`), plus les trois comptages de la vitrine (requêtes de `catalogue-service.ts`). Refuse de s'exécuter si la table `Order` n'existe pas dans `public` (déjà migré). | `--out <dossier>` ; `--confirm-host` si production | Non (lecture seule) |
-| `scripts/migration/apply-sql-migration.ts` (`npm run migration:sql`) | Applique **une** migration de la refonte à la main : `prisma db execute --file prisma/migrations/<nom>/migration.sql` (le fichier est enveloppé dans `BEGIN; … COMMIT;`), puis `prisma migrate resolve --applied <nom>`. Dans le contract, chaque `VALIDATE CONSTRAINT` est isolé dans un bloc `DO … EXCEPTION WHEN check_violation` (03 §4.9) : une contrainte que des lignes historiques violent reste `NOT VALID` sans annuler la transaction. Option `--rollback <dump>` pour le retour arrière : vide `public` et rejoue le dump en **une** transaction (`scripts/migration/rollback.sql`, §1.7), puis contrôle la référence. | `<suffixe>` (`refonte_expand` ou `refonte_contract`) ou `--rollback <dump>` ; `--confirm-host` | Oui |
+| `scripts/migration/apply-sql-migration.ts` (`npm run migration:sql`) | Applique **une** migration de la refonte à la main : `prisma db execute --file prisma/migrations/<nom>/migration.sql` (le fichier est enveloppé dans `BEGIN; … COMMIT;`), puis `prisma migrate resolve --applied <nom>`. Dans le contract, chaque `VALIDATE CONSTRAINT` est isolé dans un bloc `DO … EXCEPTION WHEN check_violation` (03 §4.9) : une contrainte que des lignes historiques violent reste `NOT VALID` sans annuler la transaction. Le retour arrière n'est **pas** ici : c'est une commande à part (`migration:rollback`, ci-dessous) ; `--rollback` est refusé avec un message qui y renvoie. | `<suffixe>` (`refonte_expand` ou `refonte_contract`) ; `--confirm-host` | Oui |
 | `scripts/migration/reprise.ts` (`npm run migration:reprise`) | La reprise de 03 §7.3 étape 3 (3a à 3i), en **une** transaction interactive. **`--dry-run` par défaut** (ROLLBACK final) ; `--apply` pour valider. Refuse de démarrer si `SaleDocument` n'est pas vide. Insère la référence dans `legacy."MigrationReference"`, remplit `legacy."MigrationMap"`, exécute les assertions V1–V7 et C1–C5 **dans** la transaction (forme « dans la transaction » de 03 §7.8 : vue `DocumentBalance` créée par l'expand, nature des mouvements lue dans `kindV2`), écrit `rapport.json` et `rapport.md` (R1–R4). Code découpé par étape : `scripts/migration/reprise/3a-poche-systeme.ts` … `3i-assertions.ts`. | `--reference <fichier>` (obligatoire) ; `--apply` ; `--report <dossier>` ; `--confirm-host` | Oui (ou rien en `--dry-run`) |
+| `scripts/migration/instantane.ts` (`npm run migration:instantane`) | **Instantané JSON de l'ancien monde** (B2b), la source du retour arrière. Lecture seule stricte : `BEGIN … REPEATABLE READ READ ONLY`, la liste des tables, un `row_to_json` par table, `ROLLBACK` — rien d'autre, par un client PostgreSQL minimal sans Prisma. Écrit `<dossier>/instantane/` (manifeste, un `.ndjson` par table, empreintes SHA-256, journal des instructions envoyées). | `--out <dossier>` ; `--confirm-host` | Non (lecture seule) |
+| `scripts/migration/rollback.ts` (`npm run migration:rollback`) | **Retour arrière** de §1.7, avec Node seul (ni `pg_restore` ni `psql`) : vidage de `public` et `legacy` en une transaction, migrations d'avant l'expand, lignes de l'instantané, puis les cinq contrôles R1–R5 dont la référence recalculée au centime. Rapport `rollback.json` / `rollback.md`, durées par phase. | `--instantane <dossier>` (obligatoire) ; `--reference` ; `--out` ; `--confirm-host` | Oui |
 | `scripts/migration/verify-post.ts` (`npm run migration:verify`) | Après le contract : V8 (contraintes validées ou listées), C1–C5 recalculés sur le schéma final contre la référence, invariants de 03 §5.7, comptages vitrine en base (V9), visuels story `PerfumeMedia` toujours dans `public`, nombre et empreinte = référence (V11). | `--reference <fichier>` ; `--confirm-host` | Non |
 | `scripts/repetition/refresh.ts` (`npm run repetition:refresh`) | Chaîne complète sur `nurea-repetition` : dump de la production (lecture seule, schéma `public`) ou `--from-dump <fichier>` ; restauration ; `reference` ; `migration:sql refonte_expand` ; `migration:reprise --apply` ; `migration:sql refonte_contract` ; `migration:verify` ; comparaison au rapport précédent (§2.4). Chronomètre chaque étape. **Refuse toute cible dont l'hôte contient la référence du projet de production**, sans exception. | `--from-dump` ; `--sans-migration` (s'arrête après la restauration, pour lancer l'ancienne app) | Oui, sur la répétition uniquement |
 | `scripts/migration/migrate-deploy-guarded.ts` (appelé par `npm run build`) | Garde du build (§2.3) | variables `NUREA_SKIP_MIGRATE_DEPLOY` | Oui (migrations ordinaires seulement) |
@@ -972,7 +988,7 @@ Les nouveautés **intégrées à un geste quotidien** (N1, N2, N7, N8, N9, A1–
 - **Dépendances** : retrait de `@tanstack/react-query`, `nuqs`, `class-variance-authority`, `motion` après recherche de tout importeur dans `src/` et `app/` (04 §17.4).
 - **Documentation du dépôt** (04 §17.5) : `CLAUDE.md` (domaines, `proxy.ts`, routes françaises, `src/contracts`, `src/server/chiffres`, service worker, scripts de migration, mode maintenance), `docs/AGENTS.md`, `docs/admin/PRODUCT.md` et `docs/admin/DESIGN.md` (écrans À encaisser, Réglages, Journée, Journal, Statistiques ; onglets) ; `00-README.md` à jour.
 - **Recette** en préproduction sur une base fraîche : checklist §6.3 parcourue avec le gérant ; parcours chronométrés §6.4 sur son iPhone ; relecture n°2 du rapport de reprise (§2.6).
-- **Répétition générale** de §1.6 sur la répétition, commandes identiques (hôte de répétition dans `--confirm-host`), **y compris le retour arrière** (restauration du dump puis relance de l'ancienne app sur la base restaurée) ; mécanique Vercel éprouvée sur la production **sans changement de code** : `vercel deploy --prod --skip-domain` du commit courant de `main`, `vercel promote` de ce déploiement, puis `vercel promote <P0>` — l'app ne change pas pour le gérant, seule la mécanique est vérifiée.
+- **Répétition générale** de §1.6 sur la répétition, commandes identiques (hôte de répétition dans `--confirm-host`), **y compris le retour arrière** (`migration:instantane` puis `migration:rollback`, §1.7, et relance de l'ancienne app sur la base restaurée) ; mécanique Vercel éprouvée sur la production **sans changement de code** : `vercel deploy --prod --skip-domain` du commit courant de `main`, `vercel promote` de ce déploiement, puis `vercel promote <P0>` — l'app ne change pas pour le gérant, seule la mécanique est vérifiée.
 
 **Décisions prises pendant J16** (§3.0.1 critère 7 : un écart avec un document amont s'amende ici, jamais « on verra plus tard »).
 
@@ -1103,7 +1119,7 @@ Chaque capacité de 01 §3 (**§3.11 compris** : écart du 17/09/2026, lignes NR
 >
 > - **NR-11.11 manquait.** La septième capacité de 01 §3.11.1 — *créer directement une commande confirmée sans acompte* (`3291428`) — n'avait pas de ligne : après NR-11.6, le tableau enchaînait sur deux correctifs de §3.11.2. La ligne est ajoutée ci-dessous.
 > - **`commande-saisie` n'existe pas.** Le parcours est dans `e2e/parcours/commande-acompte-livraison.spec.ts` (« PC-03 : commande avec acompte créée par le composeur en 9 taps »). Corrigé ici et en §6.4.
-> - **`premiere-utilisation` n'existe pas.** PC-12 n'a pas de test e2e : la carte « Pour commencer » est livrée (J14) et sa présence vérifiée, mais le parcours se chronomètre à la main (08 §1c). Son seuil est « terminé », pas « bascule » : il ne bloque pas.
+> - **`premiere-utilisation` existait comme promesse avant d'exister comme fichier.** Écrit à J17 : `e2e/parcours/premiere-utilisation.spec.ts` joue PC-12 **en entier** sur une base vide — les trois étapes de « Pour commencer », la marque créée dans la sheet du parfum, la vente pour un client de passage, puis la carte qui disparaît. Il exige une base sans données : le jeu e2e partagé porte poches, parfums et documents, et `isFirstRun()` y est faux pour toujours. D'où un harnais à lui (base `nurea_test_e2e_vide`, ports 3102/3103, aucun seed, projet `Mobile-premiere`), lancé par `npm run test:e2e:premiere` — troisième commande de `npm run test:e2e`. **Mesure du 22/09/2026 : 16 taps, 13,5 s** (objectif : moins de 5 minutes). Le chronomètre sur l'iPhone du gérant reste un geste de recette (08 §1a).
 
 **3.1 Commandes**
 
@@ -1323,7 +1339,7 @@ Chaque capacité de 01 §3 (**§3.11 compris** : écart du 17/09/2026, lignes NR
 | PC-09 Récap du jour / compta du mois | 1 tap / 2 taps | 0–1 tap / 1 tap | `accueil` | compta : **bascule** ; récap : terminé |
 | PC-10 Défaire une erreur | ≤ 3 taps (décision 06) | 1–3 taps | `annuler-paiement` | **bascule** |
 | PC-11 Répartir / transférer | ≤ 2 / ≤ 5 taps (décision 06) | 2 / 5 taps + saisie | `transfert` | **bascule** |
-| PC-12 Première utilisation | Première vente < 5 min (décision 06) | Carte « Pour commencer » | **aucun** — à chronométrer à la main (08 §1c) | terminé |
+| PC-12 Première utilisation | Première vente < 5 min (décision 06) | 16 taps, **13,5 s** sur base vide | `premiere-utilisation` (harnais à part, `npm run test:e2e:premiere`) | terminé |
 | PC-13 Publier la story d'un parfum (écart du 17/09/2026) | 2 gestes une fois sur la fiche (décision 06) | 5 taps + saisie, ≈ 15 s depuis l'Accueil | `story` | **bascule** (capacité de production) |
 | PC-08 variante · Ranger un document sans lot (écart du 17/09/2026) | 3 taps (décision 06) | 3 taps | critère de J13 | **bascule** (capacité de production) |
 
