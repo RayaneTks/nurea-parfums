@@ -117,12 +117,16 @@ données réelles et les budgets de perception.
   seul à l'import. Tout script lit son URL **avant** cet import. Un oubli a déjà fait lire la
   table des migrations de production (lecture seule, sans dégât) — la garde a été corrigée, ne
   la contourne pas.
-- **Base locale de test** : PostgreSQL embarqué (Docker Desktop ne démarre pas ici),
-  `localhost:54329`, `nurea`/`nurea`. Il **tombe à chaque fin de session**. Relancer par
-  `node start.mjs &` depuis le dossier `pg/` du scratchpad de session ; si la session a changé,
-  réinstaller `embedded-postgres@15.18.0-beta.17` dans un dossier de travail et y recopier un
-  `start.mjs` équivalent (initialise, démarre sur 54329, crée `nurea_test` et `nurea_shadow`).
-  Bases utiles : `nurea_test` (tests), `nurea_test_e2e` (parcours), `nurea_repetition` (copie réelle).
+- **Base locale de test** : PostgreSQL 15 embarqué (Docker Desktop ne démarre pas ici),
+  `localhost:54329`, `nurea`/`nurea`. Elle **tombe à chaque fin de session** ; la relancer par
+  **`node C:\Users\User\nurea-pg\start.mjs`** (garder le processus en vie, c'est lui le serveur).
+  Ce dossier est **hors dépôt et hors répertoire temporaire** — il porte `node_modules` et
+  surtout `data`, où vit `nurea_repetition`, la copie des **données réelles migrées** (au
+  22/09 : 35 documents, 29 paiements, 29 clients, 281 parfums). Ne le remets jamais dans un
+  scratchpad de session, il serait balayé. La source du lanceur, avec la procédure de
+  reconstruction si le dossier disparaît, est `scripts/local-db/start.mjs`.
+  Bases utiles : `nurea_test` (tests), `nurea_test_e2e` (parcours), `nurea_repetition` (copie réelle) ;
+  les `nurea_test_*_j<n>` sont les bases des agents de jalon, jetables.
 - **Jamais `npm run build` tel quel** : toujours `NUREA_SKIP_MIGRATE_DEPLOY=1` avec des
   `DATABASE_URL`/`DIRECT_URL` factices ou locales. **Jamais `prisma migrate reset`, jamais `db push`.**
 - Un agent parallèle tient parfois le moteur Prisma sous Windows : `prisma generate` échoue alors
