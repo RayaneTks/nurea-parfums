@@ -1,10 +1,12 @@
 # Refonte Nuréa Gestion — Dossier pilote
 
-> **Statut** : **J0 à J15 livrés et fusionnés** dans `refonte/integration` ; **J16 en cours**
-> (polissage, PWA, performance, accessibilité, documentation et recette). La reprise des données
-> a été répétée avec succès sur la copie réelle. Démarré le 17 septembre 2026.
+> **Statut** : **J0 à J16 livrés et fusionnés** dans `refonte/integration` — suites complètes
+> vertes (808 unitaires, 473 sur base réelle, 513 invariants d'affichage, 79 parcours). Reste au
+> chantier : le **retour arrière** de la bascule et le parcours de première utilisation (J17, en
+> cours), puis la répétition générale. La reprise des données a été répétée avec succès sur la
+> copie réelle. Démarré le 17 septembre 2026.
 > **Il reste, avant la bascule, des actions qui n'appartiennent pas à l'exécutant** : voir
-> « Ce qui reste avant la bascule » plus bas.
+> « Ce qui reste avant la bascule » plus bas. Fil de reprise d'un agent : `PASSATION.md` (racine).
 > **Objet** : refonte complète, from scratch, de l'application de gestion (`/admin`),
 > dite « Nuréa Gestion ». La vitrine publique (`app/(shop)`) n'est **pas** dans le
 > périmètre, mais ses dépendances aux tables partagées sont une contrainte dure.

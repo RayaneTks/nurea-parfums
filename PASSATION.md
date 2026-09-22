@@ -83,9 +83,10 @@ L'aperçu est protégé par l'authentification Vercel : régénérer au besoin u
 `docs/refonte/00-README.md` § « Ce qui reste avant la bascule » tient la liste complète
 (colonne du gérant G-1…G-8, colonne de l'exécutant E-1…E-9). Par ordre de travail :
 
-1. **Finir J17 — retour arrière + parcours de première utilisation.** Travail **commencé et
-   non commité** dans le worktree `.claude/worktrees/agent-a8596bbfb881c6d84` (branche
-   `refonte/j17-rollback-pc12`, partie de `407587b`) : `scripts/migration/rollback.ts`,
+1. **Finir J17 — retour arrière + parcours de première utilisation.** Travail **écrit mais
+   jamais exécuté**, sauvegardé par le commit `b313bba` de la branche
+   `refonte/j17-rollback-pc12` (worktree `.claude/worktrees/agent-a8596bbfb881c6d84`, partie de
+   `407587b`) : `scripts/migration/rollback.ts`,
    `scripts/migration/lib/vidage.ts`, `tests/db/rollback.test.ts`, plus des retouches de
    `apply-sql-migration.ts`, `reference.ts`, `lib/reference-format.ts`,
    `repetition/lib/garde-cible.ts`, `repetition/lib/restauration.ts`, `package.json` et de la
@@ -197,5 +198,5 @@ données réelles et les budgets de perception.
 | `main` | Production (vitrine + ancienne gestion), intacte |
 | `refonte/integration` | La refonte ; **branche de travail**, poussée sur GitHub |
 | `fix/vitrine-slug-maintenance` | L1 + L2, prêtes pour `main` (worktree `../nurea-fix`) |
-| `refonte/j17-rollback-pc12` | Retour arrière + PC-12 — **en cours, non commité** |
-| autres `refonte/j*` et `worktree-agent-*` | Jalons déjà fusionnés ; supprimables avec leurs worktrees |
+| `refonte/j17-rollback-pc12` | Retour arrière + PC-12 — **écrit, jamais exécuté** (`b313bba`) |
+| autres `refonte/j*` et `worktree-agent-*` | Jalons déjà fusionnés ; leurs worktrees ont été retirés le 22/09, les branches restent |
