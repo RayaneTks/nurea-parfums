@@ -187,14 +187,20 @@ son iPhone, ou son jugement. Tant qu'elle n'est pas faite, la bascule ne peut pa
 | G-7 | **Choisir le créneau de bascule** — une heure creuse, sans vente en cours | Son activité | B12 |
 | G-8 | **Donner le feu vert** (B12) après la recette | — | La bascule |
 
+**Mise à jour du 22/09/2026** : une préproduction **en ligne** existe déjà (base Neon créée
+via la place de marché Vercel, variables d'aperçu surchargées au niveau de la branche), mais
+avec des **données fictives**. G-1 et G-2 ne bloquent donc plus l'essai par le gérant ; ils
+bloquent encore la répétition générale sur données réelles et les budgets de perception.
+Le fil de reprise pour un agent qui arrive est `PASSATION.md`, à la racine.
+
 ### Ce qui appartient à l'exécutant
 
 | # | Action | État |
 |---|---|---|
-| E-1 | Finir J16 : PWA (service worker par route, page hors ligne, carte d'installation), performance, accessibilité | ⏳ en cours |
+| E-1 | Finir J16 : PWA (service worker par route, page hors ligne, carte d'installation), performance, accessibilité | ✅ fusionné |
 | E-2 | Documentation du dépôt au niveau du code + `08-RECETTE.md` | ✅ J16 |
 | E-3 | Fusionner `fix/vitrine-slug-maintenance` (L1 / L2) dans `main` avant la bascule | ⏳ prête, non fusionnée |
-| E-4 | Job CI `layout` (reste de J4) | ⏳ |
+| E-4 | Job CI `layout` (reste de J4) | ✅ job `ecrans` de `.github/workflows/refonte.yml` |
 | E-5 | Répétition générale sur la préproduction, dès que G-1 et G-2 sont faits | ⏳ bloqué par G-1 |
 | E-6 | Essayer `vercel deploy --skip-domain` puis `promote` (point ouvert de 07) | ⏳ bloqué par G-2 |
 | E-7 | Vérifier que la build ne touche pas la base (point ouvert de 07) | ⏳ |
