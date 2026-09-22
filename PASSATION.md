@@ -76,7 +76,7 @@ règle `03` §4.8). Les 281 stocks à 0 passent en « non suivi ».
 
 | Essai | Adresse | Données | Compte |
 |---|---|---|---|
-| **En ligne** (aperçu Vercel de la branche) | `https://nurea-parfums-git-refonte-integration-rayanetks-7861s-projects.vercel.app/admin` | **fictives** (base Neon `nurea-repetition`, jeu `e2e/fixtures/seed.ts`) | `essai` / `motdepasse-essai-2026` |
+| **En ligne** (aperçu Vercel de la branche) | `https://nurea-parfums-git-refonte-integration-rayanetks-7861s-projects.vercel.app/admin` — **plus protégé par l'authentification Vercel** (répond 200), on entre directement | **fictives** (base Neon `nurea-repetition`, jeu `e2e/fixtures/seed.ts`) | `essai` / `motdepasse-essai-2026`, **ou le compte de production `nureadmin` avec son mot de passe habituel** (22/09 : l'empreinte bcrypt a été recopiée de la production vers la préproduction — jamais le mot de passe en clair, que personne n'a à connaître) |
 | **Local** | `http://localhost:3000/admin` (+ l'IP du poste pour l'iPhone) | **réelles, migrées** (base locale `nurea_repetition`) | idem |
 
 L'aperçu est protégé par l'authentification Vercel : régénérer au besoin un lien de partage
