@@ -84,7 +84,6 @@ export default async function OpenGraphImage() {
             border: `1px solid ${BRAND_COLORS.cuivre}2E`,
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={Uint8Array.from(logotype).buffer as unknown as string}
             alt=""
