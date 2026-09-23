@@ -496,3 +496,23 @@
     -webkit-appearance: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PROTECTION DES VISUELS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer base {
+  /*
+   * Les photos de flacons sont le travail de la maison : on retire le glisser-déposer et l'appui
+   * long qui les enregistrent d'un geste. Voir `src/components/security/ContentGuard.tsx` pour ce
+   * que cette protection vaut exactement — de la friction, pas un verrou.
+   *
+   * La sélection de texte n'est PAS touchée : une adresse, un nom de parfum, un horaire doivent
+   * rester copiables. Les images n'en portent pas.
+   */
+  img {
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+}

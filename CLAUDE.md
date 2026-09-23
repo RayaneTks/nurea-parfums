@@ -156,6 +156,27 @@ Toute écriture passe par une **server action** de `src/server/*/actions.ts`
 - **Copywriting** : Utiliser "Marque", "Catalogue", "Parfum". Éviter "Maison", "Galerie", "Sillage".
 - **CSR Bailout** : `useSearchParams()` nécessite un wrap `<Suspense>`.
 
+## Sécurité (les deux registres)
+
+Détail et justifications : `docs/SECURITE.md`, décisions dans `docs/refonte/04-ARCHITECTURE.md` §8.6.
+
+- **En-têtes** : `next.config.mjs`, `headers()`. Deux jeux, sur deux sources qui ne se recouvrent
+  pas — une règle générique plus une règle `/admin` poserait chaque en-tête deux fois. CSP,
+  HSTS (`includeSubDomains; preload`), `X-Frame-Options`, `nosniff`, `Permissions-Policy`,
+  `Referrer-Policy`, et `X-Robots-Tag: noindex` sur la gestion. Tenus par
+  `tests/architecture/securite-headers.test.ts`.
+- **`app/robots.ts` est un fichier public** : n'y écrire aucune adresse qu'on préfère discrète.
+  La gestion tient hors des index par son en-tête, pas par un `Disallow`.
+- **Débit** : `src/lib/security/rate-limit.ts` — recherche, contact et connexion. Frein en mémoire
+  d'instance, jamais un quota exact ; le volume réparti se traite au pare-feu Vercel.
+- **Formulaire public** : `src/lib/contact/guard.ts` (leurre, temps de saisie, plafonds, retours
+  ligne retirés des en-têtes de courriel). Un refus anti-robot est **silencieux**.
+- **JSON-LD** : toujours `jsonLdHtml()` (`src/lib/seo/jsonLd.ts`), jamais `JSON.stringify` nu dans
+  un `<script>`.
+- **`src/components/security/ContentGuard.tsx`** dissuade le clic droit et le glisser d'image sur
+  la vitrine. C'est de la friction, **pas** de la sécurité : ne jamais lui confier une garantie, ni
+  l'étendre en `debugger` en boucle ou en détection d'outils ouverts.
+
 ## Règles Vitrine (charte graphique v3)
 
 La référence complète est `DESIGN.md`. Les trois règles sans exception :

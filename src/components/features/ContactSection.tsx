@@ -1,10 +1,11 @@
 "use client";
 
 import type { FC, FormEvent } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CONTACT } from "@/lib/data";
 import { buildContactMailto } from "@/lib/contactMailto";
 import { submitContactForm } from "@/actions/contact";
+import { ELAPSED_FIELD, HONEYPOT_FIELD } from "@/lib/contact/guard";
 import { Button, buttonClass } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
@@ -74,6 +75,12 @@ export const ContactSection: FC<ContactSectionProps> = ({
   const [sentVia, setSentVia] = useState<"resend" | "mailto" | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
 
+  /* Anti-abus, côté navigateur (voir `src/lib/contact/guard.ts`) : le leurre qu'un humain ne voit
+     pas, et le temps réellement passé sur le formulaire. Les deux ne sont que des indices — le
+     verdict est rendu côté serveur. */
+  const honeypot = useRef<HTMLInputElement>(null);
+  const openedAt = useRef<number>(Date.now());
+
   const patch = (key: keyof ContactFormState) => (value: string) =>
     setForm((current) => ({ ...current, [key]: value }));
 
@@ -91,6 +98,8 @@ export const ContactSection: FC<ContactSectionProps> = ({
     payload.set("email", form.email.trim());
     payload.set("subject", form.subject.trim());
     payload.set("message", form.message.trim());
+    payload.set(HONEYPOT_FIELD, honeypot.current?.value ?? "");
+    payload.set(ELAPSED_FIELD, String(Date.now() - openedAt.current));
 
     try {
       const result = await submitContactForm(payload);
@@ -203,6 +212,21 @@ export const ContactSection: FC<ContactSectionProps> = ({
             </div>
           ) : (
             <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-5" noValidate>
+              {/* Leurre : masqué à l'écran, retiré de l'arbre d'accessibilité et du parcours au
+                  clavier. Un lecteur d'écran ne l'annonce pas, un robot le remplit. */}
+              <div aria-hidden className="hidden">
+                <label htmlFor="societe">Société (ne pas remplir)</label>
+                <input
+                  ref={honeypot}
+                  id="societe"
+                  name={HONEYPOT_FIELD}
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  defaultValue=""
+                />
+              </div>
+
               <div className="grid gap-5 sm:grid-cols-2">
                 <Field
                   id="name"
