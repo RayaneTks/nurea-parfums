@@ -108,7 +108,7 @@ export function DocumentSheet(props: DocumentSheetProps) {
 
 type DocumentViewProps = DocumentSheetProps & { onEdit: (issue?: LineIssue | null) => void };
 
-function DocumentView({ doc, pockets, batches, onEdit }: DocumentViewProps) {
+function DocumentView({ doc, pockets, batches, pickerVersion, onEdit }: DocumentViewProps) {
   const { showToast } = useToast();
   const confirm = useConfirm();
   const { scheduleDelete } = useUndo();

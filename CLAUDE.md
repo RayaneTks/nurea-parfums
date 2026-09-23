@@ -50,7 +50,7 @@ de zéro — le dossier pilote de la refonte est `docs/refonte/` (`00-README.md`
 - **Framework** : Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS.
 - **Base de données** : Prisma (PostgreSQL / Supabase).
 - **Stockage** : Supabase Storage (bucket `catalog`).
-- **Composants UI** : Radix UI (primitifs), Vaul (sheets), cmdk (palette),
+- **Composants UI** : Radix UI (primitifs), Vaul (sheets),
   Recharts (chargé à la demande), Lucide React (icônes).
 - **Argent** : `decimal.js-light` derrière `src/domain/money.ts` — un seul module.
 

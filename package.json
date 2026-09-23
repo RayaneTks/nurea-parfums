@@ -42,12 +42,9 @@
   "dependencies": {
     "@prisma/client": "6.19.2",
     "@radix-ui/react-dialog": "^1.1.2",
-    "@radix-ui/react-popover": "^1.1.2",
-    "@radix-ui/react-slot": "^1.2.3",
     "@supabase/supabase-js": "^2.100.1",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
-    "cmdk": "^1.1.1",
     "decimal.js-light": "^2.5.1",
     "jose": "^6.2.2",
     "lucide-react": "^0.462.0",

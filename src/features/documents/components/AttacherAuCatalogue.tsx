@@ -22,6 +22,13 @@ import { PerfumePicker } from "./PerfumePicker";
  * Ni l'argent ni le stock ne bougent (`attachLineToCatalogue`, côté serveur) : c'est l'identité de ce
  * qui a été vendu qui change, jamais ce qui a été compté.
  */
+/**
+ * Le sélecteur sait afficher « Au ticket ×N » pour ce qui est déjà sur le document en cours de
+ * saisie. Ici on recolle la ligne d'une vente PASSÉE : il n'y a pas de ticket ouvert, donc aucun
+ * compteur à montrer — le badge de stock reprend sa place.
+ */
+const AUCUN_AU_TICKET: ReadonlyMap<number, number> = new Map();
+
 export function AttacherAuCatalogue({
   documentId,
   lineId,
@@ -52,6 +59,7 @@ export function AttacherAuCatalogue({
         open={open}
         onOpenChange={setOpen}
         catalogue={picker.data}
+        inDocument={AUCUN_AU_TICKET}
         loading={picker.loading}
         error={picker.error ? { message: "Catalogue indisponible.", onRetry: picker.reload } : null}
         recent={[]}
