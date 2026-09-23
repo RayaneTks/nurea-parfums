@@ -18,9 +18,17 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
   unstable_cache: (fn: () => unknown) => fn,
 }));
-vi.mock("next/headers", () => ({ cookies: async () => cookieJar.current?.store }));
+vi.mock("next/headers", () => ({
+  cookies: async () => cookieJar.current?.store,
+  // `loginAction` lit les en-têtes pour son frein par adresse (04 §8.6). Sans adresse, tous les
+  // essais partagent la même clé : d'où la remise à zéro entre deux tests, plus bas.
+  headers: async () => new Headers(),
+}));
 
-type Server = typeof import("@/server/auth/actions") & typeof import("@/server/auth/token") & typeof import("@/lib/db/prisma");
+type Server = typeof import("@/server/auth/actions") &
+  typeof import("@/server/auth/token") &
+  typeof import("@/server/auth/throttle") &
+  typeof import("@/lib/db/prisma");
 
 let server: Server;
 
@@ -33,6 +41,7 @@ beforeAll(async () => {
   server = {
     ...(await import("@/server/auth/actions")),
     ...(await import("@/server/auth/token")),
+    ...(await import("@/server/auth/throttle")),
     ...(await import("@/lib/db/prisma")),
   };
 });
@@ -43,6 +52,9 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await resetDatabase(server.prisma);
+  // Le frein par adresse vit dans le processus, pas dans la base : `resetDatabase` ne l'atteint pas,
+  // et une suite qui enchaîne les connexions finirait par se bloquer elle-même.
+  server.resetLoginThrottle();
   cookieJar.current = memoryCookies();
   // Coût 4 : la vérification reste un vrai bcrypt, sans ralentir la suite.
   await server.prisma.adminUser.create({
