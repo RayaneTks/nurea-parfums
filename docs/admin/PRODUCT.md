@@ -171,6 +171,30 @@ ici : deux listes divergent toujours.
 - **Pas de rôle, pas de journal d'audit** : un seul opérateur (02 §7). Une garde de
   session unique, invisible.
 
+## Rattacher une vente passée au catalogue
+
+On vend parfois un flacon avant de l'avoir inscrit au catalogue : la ligne est alors saisie à la
+main et porte le badge **« Hors catalogue »**. Quand le parfum entre au catalogue — souvent des
+semaines plus tard, une fois le flacon revu — les ventes passées restaient orphelines : absentes de
+« Top parfums », de « Achète souvent » et de l'historique du parfum.
+
+**Le geste** : ouvrir la fiche du document, toucher **« Rattacher »** à côté du badge, choisir le
+parfum. Il marche sur une commande **déjà livrée**, et même annulée : c'est le cas réel.
+
+**Ce qu'il change** : le lien vers le parfum, et le nom affiché, qui devient celui du catalogue —
+sans quoi la ligne resterait à part dans les regroupements par nom, ce qui viderait le geste de son
+sens.
+
+**Ce qu'il ne change pas, délibérément** : ni l'argent (prix, coût, taux, quantités livrées restent
+au mot près), ni le **stock**. La vente a eu lieu il y a des semaines ; décompter maintenant
+retrancherait une unité déjà sortie et fausserait l'inventaire du jour.
+
+Une ligne déjà rattachée est refusée, et une ligne dont le parfum a été *supprimé* du catalogue
+aussi — ce n'est pas le même cas, et le message le dit.
+
+Éprouvé par `tests/db/rattacher-catalogue.test.ts`, qui vérifie sur base réelle que le solde de la
+poche et le stock sont identiques avant et après.
+
 ## Mode discret — montrer l'app sans montrer ce qu'elle contient
 
 Le gérant montre parfois Nuréa Gestion : à un fournisseur, à un ami, à quelqu'un qui envisage la

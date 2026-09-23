@@ -328,6 +328,27 @@ export const setLineDeliveredInput = z.object({
 export type SetLineDeliveredInput = z.input<typeof setLineDeliveredInput>;
 export type SetLineDeliveredData = z.output<typeof setLineDeliveredInput>;
 
+// ── Rattacher une ligne hors catalogue au catalogue ────────────────────────────
+
+/**
+ * Une ligne saisie « hors catalogue » désigne un parfum qui n'existait pas encore au catalogue. Quand
+ * il y entre — souvent des semaines plus tard, une fois le flacon revu —, les ventes passées restent
+ * orphelines : elles ne remontent ni dans « Top parfums », ni dans « Achète souvent », ni dans
+ * l'historique du parfum. Ce geste les recolle.
+ *
+ * Il ne touche NI l'argent NI le stock : le prix, le coût et les quantités livrées restent exactement
+ * ce qu'ils étaient — la vente a déjà eu lieu, son stock a déjà été décompté (ou pas) au moment où
+ * elle s'est faite. Seul le lien change, plus le nom affiché qui devient celui du catalogue.
+ */
+export const attachLineToCatalogueInput = z.object({
+  documentId: entityId,
+  lineId: entityId,
+  perfumeId: z.number().int().positive(),
+});
+
+export type AttachLineToCatalogueInput = z.input<typeof attachLineToCatalogueInput>;
+export type AttachLineToCatalogueData = z.output<typeof attachLineToCatalogueInput>;
+
 // ── T4 : changer de statut ─────────────────────────────────────────────────────
 
 /** Annuler est T5 (`cancelDocumentAction`, J6), avec ses remboursements : pas un simple statut cible. */

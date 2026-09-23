@@ -2,6 +2,7 @@
 import "server-only";
 import {
   assignDocumentsToBatchInput,
+  attachLineToCatalogueInput,
   cancelDocumentInput,
   changeDocumentStatusInput,
   createDocumentInput,
@@ -40,6 +41,11 @@ export const setLineDeliveredAction = defineAction("documents.setLineDelivered",
 );
 
 /** T4 — Livrer, revenir, confirmer, réactiver (réserves confirmées par `confirm: true`). Renvoie le jeton de T4b. */
+/** Recolle une vente passée au parfum entré au catalogue depuis (ni argent ni stock touchés). */
+export const attachLineToCatalogueAction = defineAction("documents.attachLineToCatalogue", attachLineToCatalogueInput, (input) =>
+  inTransaction((tx) => documentsWriter.attachLineToCatalogue(tx, input)),
+);
+
 export const changeDocumentStatusAction = defineAction("documents.changeStatus", changeDocumentStatusInput, (input) =>
   inTransaction((tx) => documentsWriter.changeDocumentStatus(tx, input)),
 );

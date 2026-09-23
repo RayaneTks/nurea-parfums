@@ -230,9 +230,13 @@ model SaleLine {
   /// Parfum du catalogue ; NULL = hors catalogue, ou parfum supprimé depuis (seul `isOffCatalog` les distingue).
   perfumeId         Int?
   perfume           Perfume?     @relation(fields: [perfumeId], references: [id], onDelete: SetNull)
-  /// Ligne saisie hors catalogue, fixé à la saisie et jamais modifié : seul critère du libellé « Hors catalogue »
+  /// Ligne saisie hors catalogue : seul critère du libellé « Hors catalogue »
   /// (un parfum supprimé depuis n'est pas « hors catalogue »). CHECK : vrai ⇒ perfumeId NULL.
   /// Reprise : vrai si perfumeId est NULL (l'existant affichait déjà « Hors catalogue » pour ces lignes, §7.7).
+  /// Amendé le 23/09/2026 : ce drapeau n'est plus « fixé à la saisie et jamais modifié ». Le geste
+  /// « Rattacher » (`attachLineToCatalogue`) le repasse à faux quand le parfum entre au catalogue
+  /// APRÈS la vente — sans quoi la vente resterait orpheline des statistiques pour toujours. Il ne
+  /// change que le lien et le nom affiché : ni l'argent ni le stock.
   isOffCatalog      Boolean      @default(false)
   /// Snapshot du nom du parfum (toujours rempli ; « Hors catalogue » pour une ligne historique sans nom).
   perfumeName       String
