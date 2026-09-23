@@ -6,7 +6,8 @@
 > jours (`07` §1.8), la recette de `08` qui n'a pas été passée, et le jalon N à J+30 (suppression du
 > schéma `legacy`, qui est conservé comme chemin de retour).
 >
-> **J0 à J17 livrés et fusionnés** dans `refonte/integration` — suites complètes
+> **J0 à J17 livrés et fusionnés** — la branche `refonte/integration` a été retirée au ménage du
+> 24/09 : `main` porte tout (voir `PASSATION.md` §9). Suites complètes
 > vertes (808 unitaires et d'architecture, 487 sur base réelle, 513 invariants d'affichage,
 > 93 parcours). Le **retour arrière** de la bascule est éprouvé, sur base de test comme sur la copie
 > des données réelles ; le parcours de **première utilisation** (PC-12) a son test de bout en bout.
@@ -80,7 +81,8 @@ refonte en lisant cette série.
 
 ## Avancement de la construction
 
-Branche de travail : **`refonte/integration`** (la production reste sur `main`, intacte).
+Branche de travail à l'époque : `refonte/integration`, retirée le 24/09 une fois la bascule faite.
+**Aujourd'hui tout se fait sur `main`**, qui porte la vitrine et la gestion refondue.
 
 | Jalon | État | Commit / remarque |
 |---|---|---|
@@ -118,7 +120,7 @@ explicites ; jamais `npm run build` sans `NUREA_SKIP_MIGRATE_DEPLOY=1` et une UR
 
 | Essai | Adresse | Données | Compte |
 |---|---|---|---|
-| **En ligne** (aperçu Vercel de `refonte/integration`) | `https://nurea-parfums-git-refonte-integration-rayanetks-7861s-projects.vercel.app/admin` — protégé par l'authentification Vercel (lien de partage de 24 h à régénérer par `vercel` ou le tableau de bord) | **Fictives** : base Neon `nurea-repetition` créée via la place de marché Vercel, jeu `e2e/fixtures/seed.ts` (20 parfums, 56 clients, 36 documents) | `essai` |
+| ~~**En ligne** (aperçu Vercel de `refonte/integration`)~~ | **N'existe plus** : la branche a été retirée le 24/09, l'aperçu avec elle. Depuis la bascule, l'app réelle est sur `https://nureaparfums.fr/admin`, avec les vraies données. La base Neon de préproduction et les variables d'aperçu de la branche sont devenues orphelines — à supprimer chez Vercel et Neon quand le gérant le voudra. | — | — |
 | **Local** | `http://localhost:3000/admin` (et l'IP du poste sur le réseau local, pour l'iPhone) | **Réelles**, migrées : base locale `nurea_repetition`, instantané du 17/09 rejoué par `repetition:refresh` | `essai` |
 
 **Variables d'environnement de l'aperçu.** Les variables *Preview* du projet Vercel pointaient sur la
@@ -134,7 +136,8 @@ attendu, sans rien appliquer.
 Pour un agent ou un développeur qui arrive sur le chantier :
 
 1. **`git fetch` d'abord**, et comparer à `origin/main` : la branche locale peut être
-   en retard. La branche de travail est `refonte/integration` ; la production reste
+   en retard. **La seule branche est `main`** ; l'ancienne branche de travail `refonte/integration`
+   a été retirée le 24/09. Ce qui suit décrit l'époque de la construction ; la production reste
    sur `main`, intacte.
 2. Lire **`CLAUDE.md`** (il décrit l'app telle qu'elle est aujourd'hui, pas celle
    d'avant), puis **ce document**, puis `02-VISION-PRODUIT.md` en entier (30 min) —
