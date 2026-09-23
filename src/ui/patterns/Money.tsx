@@ -1,3 +1,4 @@
+import { SECRET_ATTRIBUTE } from "@/contracts/discretion";
 import { formatEur, spokenEur } from "@/domain/money";
 import { cn } from "@/lib/utils";
 import { toEur, type MoneyValue } from "./money-value";
@@ -42,7 +43,16 @@ const toneClass: Record<MoneyTone, string> = {
 export function Money({ value, compact = false, signed = false, tone = "default", bold = false, className }: MoneyProps) {
   const amount = toEur(value);
   return (
-    <span className={cn("tnum whitespace-nowrap", toneClass[tone], bold ? "font-semibold" : null, className)}>
+    <span
+      /*
+       * Marque du mode discret (`src/contracts/discretion.ts`) : statique, elle ne dit pas que le
+       * mode est actif, seulement que ce texte est un montant. La racine du shell décide, la
+       * feuille de style applique. Poser la marque ICI couvre TOUS les montants de l'app —
+       * quarante fichiers — en une ligne, et rend impossible d'en oublier un.
+       */
+      {...{ [SECRET_ATTRIBUTE]: "" }}
+      className={cn("tnum whitespace-nowrap", toneClass[tone], bold ? "font-semibold" : null, className)}
+    >
       <span aria-hidden>{formatEur(amount, { compact, signed })}</span>
       <span className="sr-only">{spokenEur(amount)}</span>
     </span>

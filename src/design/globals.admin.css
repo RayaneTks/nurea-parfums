@@ -572,3 +572,42 @@ body.admin-route .admin-theme [aria-disabled="true"] {
     animation-name: admin-fade-out;
   }
 }
+
+/* ── Mode discret (src/contracts/discretion.ts) ────────────────────────────────────────────────
+ *
+ * Montrer l'app sans montrer ce qu'elle contient. Un seul attribut sur la racine du shell, et la
+ * cascade fait tout : les montants et les noms de clients portent `data-secret` de façon STATIQUE,
+ * sans jamais savoir si le mode est actif. C'est ce qui permet à `Money` — rendu tantôt par le
+ * serveur, tantôt par le client, dans quarante fichiers — de n'être touché qu'une fois.
+ *
+ * Le flou plutôt qu'un remplacement par des points : la place occupée ne bouge pas, donc aucune
+ * mise en page ne saute quand on bascule, et l'œil voit qu'il y a une valeur — c'est une démo, pas
+ * un écran vide. `user-select: none` évite la copie par sélection.
+ *
+ * Ce que ça ne fait pas : chiffrer. Les valeurs restent dans la page ; c'est un cache posé sur un
+ * écran qu'on tend, pas un contrôle d'accès. Le vrai garde reste la connexion.
+ */
+/*
+ * La rangée « … non attribués » de l'Accueil porte son montant DANS son libellé, pas dans un
+ * `Money` : elle se marque par son propre attribut, déjà présent. Relevé sur capture — le flou
+ * marchait partout sauf là, et c'est la première ligne que l'œil lit.
+ */
+[data-discret="1"] [data-alert="non-attribue"],
+[data-discret="1"] [data-secret] {
+  filter: blur(7px);
+  user-select: none;
+  -webkit-user-select: none;
+  /* Le flou déborde de la boîte : on le contient pour ne pas baver sur le voisin. */
+  contain: paint;
+}
+
+/* Le lecteur d'écran ne doit pas lire à voix haute ce que l'écran cache. */
+[data-discret="1"] [data-secret] .sr-only {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-discret="1"] [data-secret] {
+    transition: none;
+  }
+}

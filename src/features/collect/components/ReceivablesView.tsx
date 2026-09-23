@@ -33,6 +33,8 @@ import {
   type ReceivableGroup,
 } from "./collect-model";
 import { RelanceSheet } from "./RelanceSheet";
+import { SECRET_ATTRIBUTE } from "@/contracts/discretion";
+import { NomClient } from "@/ui/patterns/NomClient";
 
 /** Au-delà de 6 groupes, la recherche est visible (06 E13 zone 3). */
 const SEARCH_THRESHOLD = 6;
@@ -196,10 +198,10 @@ function ReceivableGroupSection({
   const title =
     clientHref && isNavigable(clientHref) ? (
       <Link href={clientHref} className="admin-hit-target tap-scale rounded-[var(--admin-radius-md)]">
-        {group.name}
+        <NomClient>{group.name}</NomClient>
       </Link>
     ) : (
-      group.name
+      <NomClient>{group.name}</NomClient>
     );
   const totalAll = formatEur(eurFromWire(group.total));
   return (
@@ -217,7 +219,7 @@ function ReceivableGroupSection({
           </Button>
           {group.items.length >= 2 ? (
             <Button variant="text" size="sm" onClick={onCollectAll}>
-              Tout encaisser {totalAll}
+              Tout encaisser <span {...{ [SECRET_ATTRIBUTE]: "" }}>{totalAll}</span>
             </Button>
           ) : null}
         </>
@@ -241,7 +243,7 @@ function ReceivableGroupSection({
                   )
                 }
                 primary={title}
-                secondary={receivableCaption(item)}
+                secondary={<span {...{ [SECRET_ATTRIBUTE]: "" }}>{receivableCaption(item)}</span>}
                 onClick={() => onOpen(item.documentId)}
                 ariaLabel={`${title} · ${group.name}`}
                 trailing={
@@ -253,7 +255,7 @@ function ReceivableGroupSection({
                       onClick={() => onCollect(item)}
                       ariaLabel={`Encaisser ${formatEur(due)} · ${group.name}`}
                     >
-                      {formatEur(due)}
+                      <span {...{ [SECRET_ATTRIBUTE]: "" }}>{formatEur(due)}</span>
                     </Button>
                   ) : undefined
                 }
