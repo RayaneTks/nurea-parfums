@@ -19,6 +19,8 @@ import { ListRow } from "@/ui/primitives/ListRow";
 import { SearchField } from "@/ui/primitives/SearchField";
 import { scrollFieldIntoView } from "@/ui/primitives/field-behavior";
 import { customersCountLabel, documentsCountLabel, isPositive, sectionsByLetter } from "./customers-model";
+import { SECRET_ATTRIBUTE } from "@/contracts/discretion";
+import { NomClient } from "@/ui/patterns/NomClient";
 
 const SEARCH_DEBOUNCE_MS = 200;
 
@@ -126,12 +128,13 @@ export function CustomersView({ data, receivableTotal, receivableCount }: Custom
                     <ListRow
                       href={routes.client(row.id)}
                       leading={<Avatar name={row.fullName} size="md" />}
-                      primary={row.fullName}
+                      primary={<NomClient>{row.fullName}</NomClient>}
                       secondary={row.contact ?? undefined}
                       trailing={
                         row.due ? (
                           <Badge tone="warning" size="md">
-                            {`${formatEur(eurFromWire(row.due), { compact: true })} dû`}
+                            {/* Montant écrit dans une chaîne : il porte sa propre marque (mode discret). */}
+                            <span {...{ [SECRET_ATTRIBUTE]: "" }}>{`${formatEur(eurFromWire(row.due), { compact: true })} dû`}</span>
                           </Badge>
                         ) : undefined
                       }
