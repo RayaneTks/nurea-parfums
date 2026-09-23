@@ -212,7 +212,10 @@ const getPublicCatalogueCached = unstable_cache(
   // generateur). Le slug est la valeur du filtre public ?maison=, donc
   // l'instantane en cache devait etre jete ; changer la cle le garantit au
   // deploiement, sans dependre d'une mutation admin pour purger le tag.
-  ["public-catalogue-v2"],
+  // v3 : noms et marques corriges en base hors de la gestion (audit du
+  // 23/09/2026 : Hacivat -> Hundred Silent Ways, Emporio Armani, Elizabeth
+  // Arden...). Meme raison : aucune mutation admin n'a purge le tag.
+  ["public-catalogue-v3"],
   { tags: [PUBLIC_CATALOGUE_CACHE_TAG] },
 );
 
