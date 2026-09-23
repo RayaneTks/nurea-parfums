@@ -269,10 +269,31 @@ données réelles et les budgets de perception.
 
 ## 9. Branches vivantes
 
-| Branche | Rôle |
+**Il n'en reste qu'une : `main`.** Elle porte la vitrine ET la gestion refondue, et c'est elle qui
+déploie en production. Depuis la bascule du 22/09, tout le travail courant y va directement.
+
+Le ménage du 24/09 a supprimé les **19 autres branches**, locales et distantes : toutes étaient
+entièrement fusionnées dans `main`, donc rien n'a été perdu — leur contenu y est, et les commits de
+fusion gardent la trace de d'où chaque chose vient. La raison de les retirer n'est pas la place :
+c'est qu'une branche vieille de plusieurs semaines finit par être prise pour la branche de travail,
+et qu'on repart d'un état ancien sans s'en apercevoir.
+
+> **Le filet, ce sont les tags, pas les branches.** `avant-refonte` (dernier commit de `main` avant
+> la bascule) et `bascule-2026-09-22` (la révision basculée) sont indépendants de tout ce ménage et
+> restent le point de retour. L'instantané des données d'avant la bascule est, lui, dans
+> `migration-artifacts/2026-09-22/bascule/instantane`.
+
+Empreintes des branches retirées, si l'une devait être ressuscitée (`git branch <nom> <empreinte>`) :
+
+| Branche retirée | Empreinte |
 |---|---|
-| `main` | Production (vitrine + ancienne gestion), intacte |
-| `refonte/integration` | La refonte ; **branche de travail**, poussée sur GitHub |
-| `fix/vitrine-slug-maintenance` | L1 + L2, prêtes pour `main` (worktree `../nurea-fix`) |
-| `refonte/j17-rollback-pc12` | Retour arrière + PC-12 — **exécuté, corrigé et fusionné** le 22/09 (`669255f`) |
-| autres `refonte/j*` et `worktree-agent-*` | Jalons déjà fusionnés ; leurs worktrees ont été retirés le 22/09, les branches restent |
+| `refonte/integration` | `a56ffbf` (contenu identique à `main`) |
+| `refonte/j17-rollback-pc12` | `669255f` |
+| `refonte/j16-pwa` | `af77b87` |
+| `refonte/j15-reglages` | `185c9b8` |
+| `refonte/j12-compta` | `9a77b0f` |
+| `refonte/j10-clients` | `9e82cc5` |
+| `fix/vitrine-slug-maintenance` | `f3c0344` |
+| `admin-lisible` | `35e9477` |
+| `rework` | `c105726` |
+| sept `worktree-agent-*` | `01c568b`, `9a2c204`, `9e0b5d8` (×3), `13e9078`, `91cf815` |
