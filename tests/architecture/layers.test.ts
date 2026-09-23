@@ -73,7 +73,9 @@ const RULES: Rule[] = [
   },
   {
     layer: "vitrine",
-    files: /^(app\/\(shop\)\/|app\/(layout|not-found|robots|sitemap)\.tsx?$|app\/api\/(perfume-search|pwa\/shop)\/|src\/components\/|src\/actions\/|src\/hooks\/|src\/lib\/(?!db\/|pwa\/))/,
+    // `src/lib/db`, `src/lib/pwa` et `src/lib/security` sont communs aux deux registres : le frein
+    // de débit sert la recherche de la vitrine ET la connexion de la gestion, et ne dépend de rien.
+    files: /^(app\/\(shop\)\/|app\/(layout|not-found|robots|sitemap)\.tsx?$|app\/api\/(perfume-search|pwa\/shop)\/|src\/components\/|src\/actions\/|src\/hooks\/|src\/lib\/(?!db\/|pwa\/|security\/))/,
     forbidden: /^src\/(server|features|ui|app-shell|contracts)(\/|$)/,
     why: "registres disjoints : la vitrine n'importe rien de la gestion (CLAUDE.md, 04 §1.3)",
   },

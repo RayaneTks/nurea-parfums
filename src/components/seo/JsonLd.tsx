@@ -1,4 +1,5 @@
 import { CONTACT } from "@/lib/data";
+import { jsonLdHtml } from "@/lib/seo/jsonLd";
 import {
   SITE_URL,
   SITE_NAME,
@@ -57,7 +58,7 @@ export function RootJsonLd() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+      dangerouslySetInnerHTML={{ __html: jsonLdHtml(graph) }}
     />
   );
 }
@@ -82,7 +83,7 @@ export function BreadcrumbJsonLd({
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: jsonLdHtml(data) }}
     />
   );
 }

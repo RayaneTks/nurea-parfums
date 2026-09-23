@@ -1,4 +1,5 @@
 import { MARQUE_FAQ } from "@/lib/marqueFaq";
+import { jsonLdHtml } from "@/lib/seo/jsonLd";
 
 /**
  * Balisage `FAQPage` de la page « La parfumerie ».
@@ -20,7 +21,7 @@ export function MarqueFaqJsonLd() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: jsonLdHtml(data) }}
     />
   );
 }
