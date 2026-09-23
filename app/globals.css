@@ -360,11 +360,18 @@
   }
 }
 
-/* Bandeau éditorial — image / texte, moitié-moitié à partir de md.
+/* Bandeau éditorial — la photo à sa taille exacte, le texte prend le reste.
    Le filet qui les sépare est la gouttière elle-même : une grille à `gap: 1px`
    sur fond cuivre, comme les tableaux de la charte. Les blocs partagent donc
    littéralement leur bord, sans bordure à poser sur l'un ou sur l'autre. */
 .nurea-editorial {
+  /* Hauteur du bandeau, et largeur qui s'en déduit par le 2:3 des photos du
+     catalogue (`.nurea-visuel-parfum`). Les deux dimensions tiennent dans une
+     seule valeur : elles ne peuvent pas diverger, donc la photo remplit sa
+     cellule au pixel et ne laisse aucune bande vide. */
+  --nurea-editorial-hauteur: clamp(26rem, 38vw, 40rem);
+  --nurea-editorial-visuel: calc(var(--nurea-editorial-hauteur) * 2 / 3);
+
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 1px;
@@ -376,18 +383,38 @@
 }
 
 @media (min-width: 768px) {
+  /* À parts égales, la colonne du visuel faisait près du double de la largeur
+     de la photo : contenue, celle-ci flottait entre deux bandes vides, et le
+     texte étouffait dans la moitié qui restait. La colonne ne fait donc plus
+     que la largeur de la photo, et le texte prend tout le reste. */
   .nurea-editorial {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: var(--nurea-editorial-visuel) minmax(0, 1fr);
   }
 
   /* Alternance : on permute les colonnes plutôt que l'ordre, pour que la
-     gouttière reste au milieu dans les deux sens. */
+     gouttière reste au milieu dans les deux sens. La colonne étroite passe à
+     droite avec la photo. */
+  .nurea-editorial[data-reverse="true"] {
+    grid-template-columns: minmax(0, 1fr) var(--nurea-editorial-visuel);
+  }
+
   .nurea-editorial[data-reverse="true"] > *:first-child {
     grid-area: 1 / 2;
   }
 
   .nurea-editorial[data-reverse="true"] > *:last-child {
     grid-area: 1 / 1;
+  }
+
+  /* La cellule donne la hauteur du bandeau, et doit remplir la rangée quoi qu'il
+     arrive. Ne pas remplacer ce `min-height` par le seul `aspect-ratio` de la
+     classe : le ratio l'emporte sur l'étirement de la grille, et dès que le
+     texte est le plus haut des deux — entre 768 et 1024 px, mesuré — la cellule
+     s'arrête avant le bas de la rangée et laisse voir la gouttière cuivre en
+     aplat sous la photo. Ici elle s'étire : la photo reste entière et centrée,
+     jamais rognée, et rien ne transparaît. */
+  .nurea-editorial > .nurea-visuel-parfum {
+    min-height: var(--nurea-editorial-hauteur);
   }
 }
 
