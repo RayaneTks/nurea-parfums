@@ -73,6 +73,9 @@ async function venteHorsCatalogue() {
 
 const ligneDe = async (documentId: string) => {
   const [ligne] = await server.prisma.saleLine.findMany({ where: { documentId } });
+  // Un document sans ligne est un bug du montage du test : le dire ici vaut mieux que treize
+  // « possibly undefined » chez l'appelant.
+  if (!ligne) throw new Error(`Aucune ligne sur le document ${documentId}`);
   return ligne;
 };
 

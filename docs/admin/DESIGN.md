@@ -190,7 +190,7 @@ rendent donc **jamais** leur propre lien retour.
 | **Sheets** | Vaul ; handle `.admin-sheet-handle` |
 | **Sheets imbriquées** | Bande propre : elles partageaient celle des modales, et l'ordre des portails décidait laquelle passait devant |
 | **Confirmations** | `ConfirmDialog` — texte fourni par l'appelant, focus sur « Annuler », erreur **dans la boîte** (jamais un toast inerte), corps défilant |
-| **Command palette** | `cmdk` ; `Cmd+K` ou bouton Rechercher |
+| **Command palette** | `src/app-shell/CommandPalette.tsx` (Radix Dialog) ; `Cmd+K` ou bouton Rechercher |
 | **Toasts** | Portalisés vers `<body>`, au-dessus de tout — c'est souvent le toast qui explique pourquoi le reste ne répond pas |
 | **Cartes** | `.admin-card-press` / `.tap-scale` — `:active scale(0.97)` |
 | **Squelettes** | `.admin-skeleton` — pulse 1.6s |
@@ -244,7 +244,7 @@ la sheet ouverte (`e2e/parcours/couches.spec.ts`).
 - Tailwind CSS + variables `--admin-*`
 - Radix primitives via `src/ui/primitives/*`
 - Lucide React (icônes)
-- Vaul (bottom sheets), cmdk (palette), Recharts (chargé à la demande)
+- Vaul (bottom sheets), Recharts (chargé à la demande)
 - **Pas** de shadcn vitrine, **pas** de GFS Didot
 
 ## Theme Mode

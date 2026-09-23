@@ -1622,7 +1622,8 @@ Ajouts à l'existant : `headers()` (§8.6 — depuis le 23/09/2026, il couvre AU
 
 - **Ajouts** : `server-only` ; `esbuild` en dépendance de développement (banc e2e des couches, `e2e/helpers/banc.ts`, qui ne l'avait qu'en dépendance transitive).
 - **Retraits** : `@tanstack/react-query`, `nuqs`, `class-variance-authority`, `motion` (sans importeur à l'audit, à confirmer par recherche avant retrait).
-- **Conservées** : `decimal.js-light` (§5), `jose`, `bcryptjs`, `zod`, `@radix-ui/*`, `vaul`, `cmdk`, `recharts` (chargé à la demande), `@supabase/supabase-js`, `lucide-react`.
+- **Conservées** : `decimal.js-light` (§5), `jose`, `bcryptjs`, `zod`, `@radix-ui/react-dialog`, `vaul`, `recharts` (chargé à la demande), `@supabase/supabase-js`, `lucide-react`.
+- **Retirés le 23/09/2026** (aucun importeur, vérifié fichier par fichier) : `cmdk` — la palette est bâtie sur Radix Dialog, pas sur lui —, `@radix-ui/react-popover` et `@radix-ui/react-slot`.
 - **React** : l'App Router de Next 16 s'exécute avec la version de React qu'il embarque ; aligner `react`, `react-dom`, `@types/react`, `@types/react-dom` sur la 19 pour que `useOptimistic` et les types associés soient exposés — vérifié par `npm run typecheck` au jalon 0.
 
 ### 17.5 Mises à jour de la documentation du repo
