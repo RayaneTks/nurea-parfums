@@ -16,6 +16,7 @@ import { ListSection } from "@/ui/patterns/ListSection";
 import { Money } from "@/ui/patterns/Money";
 import { SelectSheet, type SelectOption } from "@/ui/patterns/SelectSheet";
 import { Input } from "@/ui/primitives/Input";
+import { Card } from "@/ui/primitives/Card";
 import { ListRow } from "@/ui/primitives/ListRow";
 import { Text } from "@/ui/primitives/Text";
 import { canOrderPockets, defaultPocketLabel, rateToInputText, rateToStored, sameRate, selectablePockets } from "./settings-model";
@@ -155,9 +156,19 @@ export function SettingsView({ settings, pockets, username, version }: SettingsV
         </ListSection>
       ) : null}
 
-      <ListSection title="Application">
-        {/* Montrer l'app sans montrer ce qu'elle contient (src/contracts/discretion.ts). */}
+      {/*
+       * Montrer l'app sans montrer ce qu'elle contient (src/contracts/discretion.ts).
+       *
+       * Dans sa PROPRE carte, et non en enfant de la `ListSection` ci-dessous : une `ListSection`
+       * ne pose sa marge que sur ses `ListRow`, si bien qu'un interrupteur nu y touchait les bords.
+       * `Card padding={3}` autour d'un `Switch` est le motif déjà employé par la fiche parfum
+       * (« Visible sur la vitrine ») — un interrupteur à description se pose ainsi partout.
+       */}
+      <Card padding={3}>
         <ModeDiscret />
+      </Card>
+
+      <ListSection title="Application">
         <ListRow
           primary="Version"
           trailing={
