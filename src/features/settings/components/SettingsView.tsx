@@ -11,6 +11,7 @@ import { logoutAction } from "@/server/auth/actions";
 import { updateSettingsAction } from "@/server/settings/actions";
 import { FormField } from "@/ui/patterns/FormField";
 import { FormSection } from "@/ui/patterns/FormSection";
+import { ModeDiscret } from "./ModeDiscret";
 import { ListSection } from "@/ui/patterns/ListSection";
 import { Money } from "@/ui/patterns/Money";
 import { SelectSheet, type SelectOption } from "@/ui/patterns/SelectSheet";
@@ -155,6 +156,8 @@ export function SettingsView({ settings, pockets, username, version }: SettingsV
       ) : null}
 
       <ListSection title="Application">
+        {/* Montrer l'app sans montrer ce qu'elle contient (src/contracts/discretion.ts). */}
+        <ModeDiscret />
         <ListRow
           primary="Version"
           trailing={

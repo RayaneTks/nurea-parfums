@@ -171,6 +171,35 @@ ici : deux listes divergent toujours.
 - **Pas de rôle, pas de journal d'audit** : un seul opérateur (02 §7). Une garde de
   session unique, invisible.
 
+## Mode discret — montrer l'app sans montrer ce qu'elle contient
+
+Le gérant montre parfois Nuréa Gestion : à un fournisseur, à un ami, à quelqu'un qui envisage la
+même chose. Il veut faire voir les écrans, les gestes, la vitesse — **pas son chiffre d'affaires ni
+le nom de ses clients**. L'interrupteur est dans **Réglages › Application**.
+
+**Ce qui est brouillé** : tous les montants, partout — ils passent tous par `Money`, qui porte la
+marque —, les noms de clients sur les écrans qui en listent (À encaisser, Clients, Commandes, fiche
+client), et les montants écrits dans une phrase (« payé 40 € sur 95 € », « Tout encaisser 160 € »,
+« 60 € non attribués »).
+
+**Ce qui reste lisible, délibérément** : les noms de parfums et de marques — montrer son catalogue
+est justement ce qu'on veut faire —, les dates, les compteurs (« 3 parfums en rupture »), et toute
+la structure. L'app reste utilisable : on peut naviguer, et même saisir.
+
+**C'est un réglage de l'APPAREIL, pas de l'entreprise.** Il vit dans un cookie : rien n'entre en
+base, aucun chiffre ne change, et deux téléphones peuvent être dans deux états différents. On le met
+avant de tendre son téléphone, on l'enlève après.
+
+**Ce que ce mode ne prétend pas être.** Ce n'est ni un chiffrement ni un contrôle d'accès : les
+valeurs restent dans la page et un œil averti les retrouverait dans les outils du navigateur. C'est
+un cache posé sur un écran qu'on tend à quelqu'un. Ce qui protège réellement les données reste la
+connexion.
+
+**Où ça vit** : `src/contracts/discretion.ts` (le contrat et le pourquoi), `src/server/core/discretion.ts`
+(lecture du cookie au rendu), la règle CSS en fin de `src/design/globals.admin.css`, et
+`e2e/parcours/mode-discret.spec.ts` qui vérifie que le navigateur applique bien un flou — pas
+seulement qu'on a écrit la classe.
+
 ## Contraintes iOS PWA
 
 L'admin est conçu comme une **app iOS installée**, pas un site responsive générique.

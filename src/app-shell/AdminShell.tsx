@@ -28,11 +28,18 @@ import { SheetRegistryProvider, useSheetRegistry } from "./SheetRegistry";
 import { NavigationProgress, ShellNavigationProvider, scrollRootToTop, useShellNavigation } from "./ShellNavigation";
 import { TabBar, type TabBadge } from "./TabBar";
 import { UndoProvider } from "./UndoProvider";
+import { DISCRET_ATTRIBUTE } from "@/contracts/discretion";
 import { ViewportService } from "./ViewportService";
 
 type AdminShellProps = {
   /** `NUREA_ENV=preprod`, lu par le layout côté serveur (07 §1.3, garde-fou 6). */
   preprod?: boolean;
+  /**
+   * Mode discret de cet appareil (`src/contracts/discretion.ts`), lu du cookie par le layout.
+   * Il ne sert qu'à poser un attribut sur la racine : le brouillage est entièrement en CSS, donc
+   * aucun écran, aucune brique, aucun composant serveur n'a à connaître ce réglage.
+   */
+  discret?: boolean;
   /**
    * Sheets que la palette ouvre sur l'écran courant (06 §4.4, A16) : rendues À CÔTÉ de la palette, jamais
    * sous elle. Un emplacement plutôt qu'un import — le shell ne dépend d'aucun écran (04 §1.3) ; c'est le
@@ -50,14 +57,14 @@ type AdminShellProps = {
  * Rail de 430 px centré, hauteurs en `100 %` (jamais `100dvh`, qui casse le `position: fixed` de la
  * tab bar en PWA iOS). Les écrans ne rendent que leur contenu, dans `PageScaffold`.
  */
-export function AdminShell({ preprod = false, paletteSheets, children }: AdminShellProps) {
+export function AdminShell({ preprod = false, discret = false, paletteSheets, children }: AdminShellProps) {
   return (
     <FeedbackProvider>
       <UndoProvider>
         <SheetRegistryProvider>
           <ShellNavigationProvider>
             <PaletteActionsProvider>
-              <ShellFrame preprod={preprod} paletteSheets={paletteSheets}>
+              <ShellFrame preprod={preprod} discret={discret} paletteSheets={paletteSheets}>
                 {children}
               </ShellFrame>
             </PaletteActionsProvider>
@@ -78,7 +85,17 @@ const DRAFT_BADGE: TabBadge = { label: "brouillon en cours" };
  */
 const CommandPalette = dynamic(() => import("./CommandPalette").then((m) => m.CommandPalette), { ssr: false });
 
-function ShellFrame({ preprod, paletteSheets, children }: { preprod: boolean; paletteSheets?: ReactNode; children: ReactNode }) {
+function ShellFrame({
+  preprod,
+  discret,
+  paletteSheets,
+  children,
+}: {
+  preprod: boolean;
+  discret: boolean;
+  paletteSheets?: ReactNode;
+  children: ReactNode;
+}) {
   const pathname = usePathname() ?? "";
   const { navigate, scrollRoot, onLocation } = useShellNavigation();
   const sheets = useSheetRegistry();
@@ -156,7 +173,7 @@ function ShellFrame({ preprod, paletteSheets, children }: { preprod: boolean; pa
   );
 
   return (
-    <div className="admin-theme admin-paint admin-app-container">
+    <div className="admin-theme admin-paint admin-app-container" {...(discret ? { [DISCRET_ATTRIBUTE]: "1" } : {})}>
       <ViewportService />
       <ServiceWorkerRegistrar />
       <Suspense fallback={null}>
