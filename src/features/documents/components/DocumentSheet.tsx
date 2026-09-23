@@ -25,6 +25,7 @@ import { Money } from "@/ui/patterns/Money";
 import { shareOrCopy, ShareButton } from "@/ui/patterns/ShareButton";
 import { formatDate } from "@/ui/patterns/date-format";
 import { Avatar } from "@/ui/primitives/Avatar";
+import { AttacherAuCatalogue } from "./AttacherAuCatalogue";
 import { Badge } from "@/ui/primitives/Badge";
 import { Button } from "@/ui/primitives/Button";
 import { Card } from "@/ui/primitives/Card";
@@ -291,7 +292,16 @@ function DocumentView({ doc, pockets, batches, onEdit }: DocumentViewProps) {
                   {line.isGift ? (
                     <Badge tone="accent">Offert</Badge>
                   ) : line.isOffCatalog ? (
-                    <Badge>Hors catalogue</Badge>
+                    <>
+                      <Badge>Hors catalogue</Badge>
+                      {/* Le parfum a pu entrer au catalogue depuis la vente : on recolle la ligne. */}
+                      <AttacherAuCatalogue
+                        documentId={doc.id}
+                        lineId={line.id}
+                        perfumeName={line.perfumeName}
+                        pickerVersion={pickerVersion}
+                      />
+                    </>
                   ) : null}
                 </div>
                 <Text variant="caption" tone="muted" truncate>

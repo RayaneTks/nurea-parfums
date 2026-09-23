@@ -23,6 +23,7 @@ import {
   type LineDelivery,
   type LineItem,
   type RevertResult,
+  type AttachLineToCatalogueData,
   type SetLineDeliveredData,
   type UpdateDocumentData,
   type UpdateLineData,
@@ -762,6 +763,63 @@ export async function updateDocument(tx: Tx, input: UpdateDocumentData): Promise
  * évidence à l'écran (06 S01). Refusé sur une vente directe (livrée en entier, sans pointage) et sur
  * un document annulé.
  */
+/**
+ * Recolle une ligne « hors catalogue » au parfum du catalogue qu'elle désignait.
+ *
+ * Le besoin vient du terrain : on vend un flacon avant de l'avoir inscrit au catalogue — la ligne est
+ * saisie à la main — et le parfum y entre plus tard. Sans ce geste, la vente reste orpheline pour
+ * toujours : absente de « Top parfums », de « Achète souvent » et de l'historique du parfum.
+ *
+ * **Ce que ce geste ne fait pas, et c'est délibéré :**
+ * - il ne touche pas au STOCK. La vente a déjà eu lieu ; décompter maintenant retrancherait une
+ *   unité qui est sortie il y a des semaines, et fausserait l'inventaire du jour ;
+ * - il ne touche pas à l'ARGENT. Prix, coût, taux, quantités livrées restent au mot près ce qu'ils
+ *   étaient — aucun chiffre de la compta ne bouge ;
+ * - il n'appelle pas `assertStoredLinesWritable` : une vieille ligne peut porter une contenance hors
+ *   règle ou un coût inconnu, et ce n'est pas une raison de refuser de la rattacher. On corrige ces
+ *   champs-là par l'édition normale, séparément.
+ *
+ * Il est donc permis à TOUT statut, livré et annulé compris : il ne change que l'identité de ce qui a
+ * été vendu, jamais ce qui a été compté.
+ */
+export async function attachLineToCatalogue(tx: Tx, input: AttachLineToCatalogueData): Promise<{ lineId: string; perfumeName: string }> {
+  const doc = await lockDocument(tx, input.documentId);
+  const lines = await readLines(tx, doc.id);
+  const line = lines.find((candidate) => candidate.id === input.lineId);
+  if (!line) throw new DomainError("NOT_FOUND", LINE_NOT_FOUND);
+
+  if (!line.isOffCatalog) {
+    throw new DomainError(
+      "CONFLICT",
+      line.perfumeId === null
+        ? "Cette ligne désigne un parfum supprimé du catalogue, pas un article hors catalogue : recrée le parfum puis refais la vente."
+        : "Cette ligne est déjà rattachée à un parfum du catalogue.",
+    );
+  }
+
+  const perfume = await tx.db.perfume.findUnique({
+    where: { id: input.perfumeId },
+    select: { id: true, name: true, brand: { select: { name: true } } },
+  });
+  if (!perfume) throw new DomainError("NOT_FOUND", "Ce parfum n'existe pas (ou plus) au catalogue.");
+
+  await tx.db.saleLine.update({
+    where: { id: line.id },
+    // `isOffCatalog` repasse à faux : la contrainte `line_off_catalog_ck` interdit « hors catalogue
+    // ET rattaché ». Le nom devient celui du catalogue, sans quoi la ligne resterait à part dans les
+    // regroupements par nom — ce qui viderait le geste de son sens.
+    data: {
+      perfumeId: perfume.id,
+      isOffCatalog: false,
+      perfumeName: perfume.name,
+      brandName: perfume.brand?.name ?? null,
+    },
+    select: { id: true },
+  });
+
+  return { lineId: line.id, perfumeName: perfume.name };
+}
+
 export async function setLineDelivered(tx: Tx, input: SetLineDeliveredData): Promise<LineDelivery> {
   const doc = await lockDocument(tx, input.documentId);
   if (doc.origin === "DIRECT_SALE") {
