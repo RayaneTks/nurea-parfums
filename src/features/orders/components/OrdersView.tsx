@@ -27,6 +27,7 @@ import { SegmentedControl } from "@/ui/primitives/SegmentedControl";
 import { SwipeableRow } from "@/ui/primitives/SwipeableRow";
 import { scrollFieldIntoView } from "@/ui/primitives/field-behavior";
 import { FILTER_LABELS, hasDue, rowCaption, rowName, rowTrailing, sectionTitle } from "./orders-model";
+import { NomClient } from "@/ui/patterns/NomClient";
 
 /** Au-delà de 6 lignes, la recherche est visible (06 E10 zone 3). */
 const SEARCH_THRESHOLD = 6;
@@ -272,7 +273,7 @@ function OrderLine({
       <div data-order-row={row.id}>
         <ListRow
           leading={<Avatar name={name} size="md" />}
-          primary={name}
+          primary={<NomClient>{name}</NomClient>}
           secondary={rowCaption(row, view)}
           trailing={
             trailing === "pending" ? (

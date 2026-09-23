@@ -33,6 +33,8 @@ import { Button } from "@/ui/primitives/Button";
 import { Card } from "@/ui/primitives/Card";
 import { EmptyState } from "@/ui/primitives/EmptyState";
 import { ListRow } from "@/ui/primitives/ListRow";
+import { SECRET_ATTRIBUTE } from "@/contracts/discretion";
+import { NomClient } from "@/ui/patterns/NomClient";
 import { StickyAction } from "@/ui/primitives/StickyAction";
 import { Text } from "@/ui/primitives/Text";
 import { useArrivalPulse } from "./arrival";
@@ -119,9 +121,12 @@ export function CustomerView({ sheet, aEncaisser, receivables, pockets }: Custom
     <>
       {/* 1 — En-tête : nom modifiable en place, ancienneté. */}
       <div ref={header} className="flex items-center gap-3 rounded-[var(--admin-radius-lg)]">
-        <Avatar name={customer.fullName} size="lg" />
+        <NomClient>
+          <Avatar name={customer.fullName} size="lg" />
+        </NomClient>
         <div className="flex min-w-0 flex-1 flex-col">
           <h1 className="min-w-0">
+            {/* Le nom reste MODIFIABLE en mode discret : il est brouillé à l'œil, pas verrouillé. */}
             <InlineNameEditor
               value={customer.fullName}
               variant="h2"
@@ -289,7 +294,7 @@ export function CustomerView({ sheet, aEncaisser, receivables, pockets }: Custom
       <StickyAction>
         {owes ? (
           <Button variant="primary" size="lg" fullWidth onClick={() => collect.show("collect")}>
-            Encaisser {formatEur(eurFromWire(aEncaisser))}
+            Encaisser <span {...{ [SECRET_ATTRIBUTE]: "" }}>{formatEur(eurFromWire(aEncaisser))}</span>
           </Button>
         ) : (
           <Button variant="primary" size="lg" fullWidth onClick={() => router.push(routes.vendre({ client: customer.id }))}>
