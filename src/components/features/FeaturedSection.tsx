@@ -29,17 +29,19 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => (
         {/*
           Mobile : le cadre prend le ratio des photos, rien n'est rogné.
 
-          Desktop : la bande éditoriale est en deux colonnes égales, et lui
-          imposer le 2:3 donnerait un bloc de plus de mille pixels de haut. La
-          cellule garde donc sa géométrie, et c'est l'image qui s'y contient au
-          lieu de la remplir. Les bandes latérales tombent sur le noir de la
-          charte, qui est aussi celui du fond des photos : elles ne se voient
-          pas, et le flacon est entier.
+          Desktop : la hauteur du bandeau et la largeur de la colonne sont la
+          même valeur à un 2:3 près (`.nurea-editorial`, `app/globals.css`) — la
+          photo remplit donc sa cellule au pixel, sans bande vide de part et
+          d'autre. `object-contain` ne sert plus qu'au cas limite où le texte
+          rend la rangée plus haute que le visuel : le flacon reste entier.
+
+          Tailles : 277 px tant que la hauteur est au plancher (sous 1100 px de
+          fenêtre), puis les deux tiers de 38vw, jusqu'au plafond de 427 px.
         */}
-        <div className="nurea-visuel-parfum relative w-full md:aspect-auto md:min-h-[32rem]">
+        <div className="nurea-visuel-parfum relative w-full md:aspect-auto">
           <PerfumeImage
             perfume={perfume}
-            sizes="(max-width: 767px) 100vw, 50vw"
+            sizes="(max-width: 767px) 100vw, (max-width: 1099px) 280px, (max-width: 1684px) 26vw, 427px"
             priority={index === 0}
             className="md:object-contain"
           />
