@@ -406,9 +406,13 @@
     grid-area: 1 / 1;
   }
 
-  /* La cellule donne la hauteur du bandeau. Si le texte demande davantage, elle
-     grandit avec la rangée — la photo reste alors entière et centrée, jamais
-     rognée, et la gouttière cuivre ne transparaît nulle part. */
+  /* La cellule donne la hauteur du bandeau, et doit remplir la rangée quoi qu'il
+     arrive. Ne pas remplacer ce `min-height` par le seul `aspect-ratio` de la
+     classe : le ratio l'emporte sur l'étirement de la grille, et dès que le
+     texte est le plus haut des deux — entre 768 et 1024 px, mesuré — la cellule
+     s'arrête avant le bas de la rangée et laisse voir la gouttière cuivre en
+     aplat sous la photo. Ici elle s'étire : la photo reste entière et centrée,
+     jamais rognée, et rien ne transparaît. */
   .nurea-editorial > .nurea-visuel-parfum {
     min-height: var(--nurea-editorial-hauteur);
   }
