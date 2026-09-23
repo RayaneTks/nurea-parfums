@@ -213,8 +213,9 @@ const getPublicCatalogueCached = unstable_cache(
   // l'instantane en cache devait etre jete ; changer la cle le garantit au
   // deploiement, sans dependre d'une mutation admin pour purger le tag.
   // v3 : noms et marques corriges en base hors de la gestion (audit du
-  // 23/09/2026 : Hacivat -> Hundred Silent Ways, Emporio Armani, Elizabeth
-  // Arden...). Meme raison : aucune mutation admin n'a purge le tag.
+  // 23/09/2026 : Hacivat -> Hundred Silent Ways, Elisabeth Arden -> Elizabeth
+  // Arden, Eau Passion rendue a Franck Olivier, et une douzaine de fautes de
+  // casse). Meme raison : aucune mutation admin n'a purge le tag.
   ["public-catalogue-v3"],
   { tags: [PUBLIC_CATALOGUE_CACHE_TAG] },
 );
