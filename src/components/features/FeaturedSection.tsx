@@ -25,9 +25,14 @@ interface FeaturedSectionProps {
  * s'arrêtait à 780 px du bord droit : ce vide-là ne se lisait pas comme une
  * marge, mais comme un trou. Dans la marge commune, il redevient celui de
  * toutes les autres sections — et la photo s'aligne sur le logo.
+ *
+ * `max-md:px-0` : sur téléphone, la marge de page est retirée et la photo tient
+ * toute la largeur de l'écran — c'est là qu'elle est la plus petite, et 48 px de
+ * marge lui coûtaient un huitième de sa largeur. Le texte, lui, garde son
+ * retrait de 24 px, celui de la charte, posé par la cellule elle-même.
  */
 export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => (
-  <section aria-label="Parfums du moment" className="nurea-page">
+  <section aria-label="Parfums du moment" className="nurea-page max-md:px-0">
     {perfumes.map((perfume, index) => (
       <article
         key={perfume.id}
