@@ -11,15 +11,23 @@ interface FeaturedSectionProps {
 }
 
 /**
- * Bandeaux éditoriaux des parfums mis en avant — image et texte à parts égales,
- * en alternance.
+ * Bandeaux éditoriaux des parfums mis en avant — la photo à sa taille exacte, le
+ * texte prend le reste, en alternance.
  *
  * Les blocs partagent leurs bords et ne sont séparés qu'au filet (charte § 04) :
  * aucune carte flottante, aucun espace entre eux. L'incitation est au filet, le
  * seul aplat plein de la page d'accueil revenant à l'ouverture.
+ *
+ * `.nurea-page` : le bandeau tenait toute la largeur de la fenêtre, seul bloc du
+ * site à le faire — navigation, ouverture, catalogue et pied de page tiennent
+ * tous dans la marge de page (charte § 04). Sur un écran de 1920, la photo
+ * commençait donc au ras de la vitre, 430 px avant le logo, et le texte
+ * s'arrêtait à 780 px du bord droit : ce vide-là ne se lisait pas comme une
+ * marge, mais comme un trou. Dans la marge commune, il redevient celui de
+ * toutes les autres sections — et la photo s'aligne sur le logo.
  */
 export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => (
-  <section aria-label="Parfums du moment">
+  <section aria-label="Parfums du moment" className="nurea-page">
     {perfumes.map((perfume, index) => (
       <article
         key={perfume.id}
@@ -47,9 +55,13 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => (
           />
         </div>
 
-        {/* La révélation porte sur le contenu, pas sur la cellule : une cellule
+        {/* Retrait de 40 px et non de 72 : la marge de page en pose déjà 72 à
+            l'extérieur, et les deux cumulées ne laissaient que 200 px de texte
+            entre 768 et 1024 px — moins que le bouton qu'elles doivent tenir.
+
+            La révélation porte sur le contenu, pas sur la cellule : une cellule
             à `opacity: 0` laisserait voir la couleur de gouttière en aplat. */}
-        <div className="flex flex-col justify-center px-6 py-12 md:px-18 md:py-18">
+        <div className="flex flex-col justify-center px-6 py-12 md:px-10 md:py-18">
           <ScrollReveal className="flex flex-col items-start">
             <p className="nurea-label">Parfum du moment</p>
 
