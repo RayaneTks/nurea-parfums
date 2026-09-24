@@ -216,6 +216,31 @@
     color: var(--nurea-text-subtle);
   }
 
+  /* Chapô — Newsreader 400 · 20 → 24 / 1,45.
+     La phrase qui porte une section, lue avant le reste. Elle remplace le
+     paragraphe d'introduction : une idée, en grand, plutôt que trois lignes
+     grises en corps 16. Newsreader ne descend jamais sous 20 px (charte § 03). */
+  .nurea-lead {
+    font-family: var(--font-serif), Georgia, serif;
+    font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+    font-weight: 400;
+    line-height: 1.45;
+    color: var(--nurea-text);
+  }
+
+  /* Numéro de chapitre — Newsreader 400 · 40 → 64 / 1.
+     La numérotation « 01 · 02 · 03 » est celle de la charte elle-même : elle
+     ordonne une lecture sans l'alourdir d'un intertitre de plus. Chiffres
+     tabulaires, pour que 01 et 03 tiennent la même largeur. */
+  .nurea-numeral {
+    font-family: var(--font-serif), Georgia, serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 400;
+    line-height: 1;
+    font-variant-numeric: tabular-nums lining-nums;
+    color: var(--nurea-accent);
+  }
+
   /* ─── Mise en page — charte § 04 ───────────────────────────────────── */
 
   /* Marge de page : 72 px, 24 px sur mobile. */
@@ -416,6 +441,75 @@
   .nurea-editorial > .nurea-visuel-parfum {
     min-height: var(--nurea-editorial-hauteur);
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGES ÉDITORIALES — La parfumerie, Contact, Légal, 404
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Le monogramme, teinté par `currentColor`.
+ *
+ * Un seul fichier vectoriel, sa forme servant de masque : la couleur vient du
+ * texte, donc du thème, sans décliner un fichier par teinte ni recopier le
+ * tracé dans chaque page. `contain` garde ses proportions — la charte interdit
+ * de les toucher. */
+.nurea-monogram {
+  display: block;
+  aspect-ratio: 1;
+  background-color: currentColor;
+  -webkit-mask: url("/branding/monogram/logo4_monogram_free_ivory_1024.svg") center / contain no-repeat;
+  mask: url("/branding/monogram/logo4_monogram_free_ivory_1024.svg") center / contain no-repeat;
+}
+
+/* Grille à filets — les blocs partagent leur bord (charte § 04), comme
+   `.nurea-editorial` : la gouttière de 1 px sur fond cuivre EST le filet. */
+.nurea-filets {
+  display: grid;
+  gap: 1px;
+  background-color: var(--nurea-border);
+}
+
+.nurea-filets > * {
+  background-color: var(--nurea-bg);
+}
+
+/* Mosaïque de flacons : un grand visuel et deux petits, empilés.
+ *
+ * Les photos du catalogue sont toutes en 2:3 (`.nurea-visuel-parfum`). Une
+ * colonne double à gauche et une simple à droite tombent donc juste : le grand
+ * visuel (2 × 3 unités) a exactement la hauteur des deux petits empilés
+ * (2 × 1,5). Rien n'est rogné, aucune bande vide — c'est de l'arithmétique,
+ * pas un réglage à l'œil. */
+.nurea-mosaique {
+  grid-template-columns: 2fr 1fr;
+}
+
+.nurea-mosaique > :first-child {
+  grid-row: span 2;
+}
+
+/* Questions fréquentes en accordéon, sans JavaScript.
+ *
+ * `<details>` est lu par les moteurs et par les lecteurs d'écran avec son
+ * contenu : le balisage FAQPage reste valide, les réponses sont dans la page.
+ * Le signe tourne d'un huitième de tour à l'ouverture — une rotation n'est pas
+ * un déplacement, et elle répond au geste, pas au survol. */
+.nurea-faq summary {
+  list-style: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nurea-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.nurea-faq-signe {
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nurea-faq[open] .nurea-faq-signe {
+  transform: rotate(45deg);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

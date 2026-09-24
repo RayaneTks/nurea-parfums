@@ -1,5 +1,10 @@
 # UX Audit Mobile-First - Mars 2026
 
+> **Document historique** (mars 2026). Il décrit la vitrine et la gestion d'avant la charte v3
+> (août 2026) et d'avant la refonte de la gestion (bascule du 22/09/2026). Il est gardé pour la
+> trace des décisions, **pas comme référence** : la vitrine se conçoit d'après
+> [`DESIGN.md`](../DESIGN.md), la gestion d'après [`docs/admin/DESIGN.md`](admin/DESIGN.md).
+
 Ce document fixe les conventions UX/UI appliquees apres rework, pour eviter les regressions.
 
 ## Catalogue (site public)
