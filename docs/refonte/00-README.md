@@ -66,6 +66,7 @@ refonte en lisant cette série.
 | `06-ECRANS-PARCOURS.md` | Architecture d'information, navigation, spec écran par écran avec états (vide/chargement/erreur) et gestes. | ✅ |
 | `07-PLAN-EXECUTION.md` | Ordre de construction, jalons vérifiables, stratégie de bascule et de migration, critères d'acceptation. | ✅ |
 | `08-RECETTE.md` | **La recette**, à passer avec le gérant avant la bascule : les 141 capacités de 01 §3, où chacune vit désormais, et comment elle est vérifiée (nom du test, ou geste exact). Plus les parcours chronométrés et ce qui exige la préproduction ou son iPhone. | ✅ ouvert (J16) |
+| `09-SURVEILLANCE.md` | **Le journal de la surveillance d'après-bascule** (`07` §1.8) : le geste du matin — invariants en lecture seule, journaux Vercel, retour du gérant — et ce qui a été relevé chaque jour, du 22/09 au 29/09. | ✅ ouvert (24/09) |
 
 ## Méthode
 

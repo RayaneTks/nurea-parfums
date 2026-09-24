@@ -64,6 +64,7 @@ tous les arbitrages : **on tranche, on consigne dans le doc concerné, on contin
 | Écrans et parcours, écran par écran, avec leurs quatre états | `docs/refonte/06-ECRANS-PARCOURS.md` |
 | Plan d'exécution, jalons, bascule, retour arrière | `docs/refonte/07-PLAN-EXECUTION.md` |
 | **Recette** : 146 capacités, où chacune vit, comment elle est vérifiée | `docs/refonte/08-RECETTE.md` |
+| **Surveillance d'après-bascule** : le geste du matin et le journal jour par jour | `docs/refonte/09-SURVEILLANCE.md` |
 | Règles du dépôt au quotidien | `CLAUDE.md` |
 
 Règle d'or : **une documentation qui ment est un bug**. Si une décision change, on amende
@@ -134,7 +135,7 @@ répétition générale, fusionner L1/L2, la mécanique Vercel — est derrière
 
 | # | Quoi | Pourquoi lui |
 |---|---|---|
-| G-a | **Deux gestes déjà tranchés, à appliquer dans l'app** : mettre le coût à **0 €** sur la ligne Grand Soir du document de « Yanis secu » (le flacon était offert par le fournisseur, ce n'est pas un coût inconnu) ; et **ne pas annuler seul** l'écart historique de +100 € du 19/09 — sa propre correction de −100 € le neutralise déjà, l'annuler seul ferait perdre 100 € de Trésorerie. Détail en `07` §1.8. | Ce sont ses chiffres |
+| G-a | ~~Deux gestes déjà tranchés, à appliquer dans l'app~~ — **faits, vérifiés en lecture seule le 24/09** : la ligne Grand Soir 10 ml du document de « Yanis secu » porte un coût de **0,00 €** (plus aucune ligne sans coût, plus aucun document « au coût à compléter ») ; l'écart historique de +100,00 € du 19/09 est **intact**, avec la correction de −100,00 € du gérant — les deux se neutralisent, « Non attribué » est à 0,00 €. **Ne pas annuler l'écart seul.** Relevé en `docs/refonte/09-SURVEILLANCE.md`. | Ce sont ses chiffres |
 | G-b | **Passer la recette `08`** : 146 lignes, dont 24 gestes humains, et les 16 parcours chronométrés sur son iPhone. **Elle n'a pas été passée** : la bascule a eu lieu sur sa demande explicite, maintenue après avertissement. | Son jugement, son téléphone |
 | G-c | **Supprimer les ressources devenues orphelines** : la base Neon de préproduction (`nurea-repetition`) et les variables d'environnement d'aperçu posées au niveau de l'ancienne branche, chez Vercel. Elles ne servent plus à rien depuis le retrait de `refonte/integration` (§9) et continuent peut-être de compter dans ses quotas. | Son compte, sa facturation |
 
@@ -142,7 +143,7 @@ répétition générale, fusionner L1/L2, la mécanique Vercel — est derrière
 
 | # | Quoi | Quand |
 |---|---|---|
-| E-a | **Surveillance de sept jours** (`07` §1.8) : `npm run check:invariants -- --confirm-host <hôte prod>` chaque matin (lecture seule), plus la lecture des journaux Vercel. Tout écart d'invariant est un incident prioritaire. | J+0 à J+7 de la bascule (22/09) |
+| E-a | **Surveillance de sept jours** (`07` §1.8) : `npm run check:invariants -- --confirm-host <hôte prod>` chaque matin (lecture seule), plus la lecture des journaux Vercel. Tout écart d'invariant est un incident prioritaire. **Le relevé de chaque matin se consigne dans `docs/refonte/09-SURVEILLANCE.md`** ; au 24/09 les invariants sont verts et les deux arbitrages de G-a sont **déjà appliqués en production** (rien à faire). | J+0 à J+7 de la bascule (22/09) |
 | E-b | **Jalon N — nettoyage** : supprimer le schéma `legacy`, retirer les scripts de migration, poser le tag de nettoyage. `legacy` porte les anciennes tables et **reste le chemin de retour** : c'est pour ça qu'il est conservé jusque-là. | J+30, soit vers le 22/10/2026 |
 
 ### Livré depuis la bascule (23–24/09)
