@@ -12,7 +12,7 @@ export type CatalogueTab = (typeof CATALOGUE_TABS)[number];
 export const STOCK_FILTERS = ["bas", "rupture"] as const;
 export type StockFilter = (typeof STOCK_FILTERS)[number];
 
-export const VISIBILITY_FILTERS = ["masques"] as const;
+export const VISIBILITY_FILTERS = ["visibles", "masques"] as const;
 export type VisibilityFilter = (typeof VISIBILITY_FILTERS)[number];
 
 export const RANGE_FILTERS = ["complete"] as const;
@@ -31,13 +31,19 @@ export function matchesWords(searchKey: string, words: readonly string[]): boole
   return words.every((word) => searchKey.includes(word));
 }
 
-export type PerfumeFilters = { words: readonly string[]; stock: StockFilter | null; hidden: boolean };
+/** Visible = publié sur la vitrine ; masqué = brouillon (`DRAFT`). */
+function matchesVisibility(status: string, visibility: VisibilityFilter | null): boolean {
+  if (visibility === null) return true;
+  return visibility === "masques" ? status === "DRAFT" : status !== "DRAFT";
+}
+
+export type PerfumeFilters = { words: readonly string[]; stock: StockFilter | null; visibility: VisibilityFilter | null };
 
 export function filterPerfumes(perfumes: readonly AdminPerfumeRow[], filters: PerfumeFilters): AdminPerfumeRow[] {
   return perfumes.filter(
     (perfume) =>
       matchesWords(perfume.searchKey, filters.words) &&
-      (!filters.hidden || perfume.status === "DRAFT") &&
+      matchesVisibility(perfume.status, filters.visibility) &&
       (filters.stock === null ||
         (filters.stock === "bas" ? perfume.stockStatus === "low" : perfume.stockStatus === "out")),
   );
@@ -48,19 +54,20 @@ export function perfumeCounts(perfumes: readonly AdminPerfumeRow[], words: reado
   const matching = perfumes.filter((perfume) => matchesWords(perfume.searchKey, words));
   return {
     total: matching.length,
+    visible: matching.filter((perfume) => perfume.status !== "DRAFT").length,
     hidden: matching.filter((perfume) => perfume.status === "DRAFT").length,
     low: matching.filter((perfume) => perfume.stockStatus === "low").length,
     out: matching.filter((perfume) => perfume.stockStatus === "out").length,
   };
 }
 
-export type BrandFilters = { words: readonly string[]; hidden: boolean; complete: boolean };
+export type BrandFilters = { words: readonly string[]; visibility: VisibilityFilter | null; complete: boolean };
 
 export function filterBrands(brands: readonly AdminBrandRow[], filters: BrandFilters): AdminBrandRow[] {
   return brands.filter(
     (brand) =>
       matchesWords(brand.searchKey, filters.words) &&
-      (!filters.hidden || brand.status === "DRAFT") &&
+      matchesVisibility(brand.status, filters.visibility) &&
       (!filters.complete || brand.catalogMode === "COMPLETE"),
   );
 }
@@ -69,6 +76,7 @@ export function brandCounts(brands: readonly AdminBrandRow[], words: readonly st
   const matching = brands.filter((brand) => matchesWords(brand.searchKey, words));
   return {
     total: matching.length,
+    visible: matching.filter((brand) => brand.status !== "DRAFT").length,
     hidden: matching.filter((brand) => brand.status === "DRAFT").length,
     complete: matching.filter((brand) => brand.catalogMode === "COMPLETE").length,
   };
