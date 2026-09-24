@@ -37,10 +37,11 @@ vi.mock("@supabase/supabase-js", async () => (await import("./support/catalogue"
 
 let server: CatalogueServer;
 let getCachedCatalogue: typeof import("@/lib/catalogue-service").getCachedCatalogue;
+let getUnlistedPerfumes: typeof import("@/lib/catalogue-service").getUnlistedPerfumes;
 
 beforeAll(async () => {
   server = await loadCatalogueServer();
-  getCachedCatalogue = (await import("@/lib/catalogue-service")).getCachedCatalogue;
+  ({ getCachedCatalogue, getUnlistedPerfumes } = await import("@/lib/catalogue-service"));
 });
 
 afterAll(async () => {
@@ -95,6 +96,13 @@ describe("contrat vitrine : mêmes cartes avant et après des écritures cohére
     const initial = await publicView();
     expect(initial.cards.map((c) => c.name)).toEqual(["Sauvage", "Fahrenheit", "Khamrah", "Guerlain"]);
     expect(initial.cards.find((c) => c.name === "Sauvage")).toMatchObject({ brandSlug: "dior", isFeatured: true });
+    // La recherche publique reconnaît ce qui est au catalogue sans carte : sans visuel, fiche d'une gamme
+    // complète (sa carte est celle de la marque), ou marque masquée.
+    expect(await getUnlistedPerfumes()).toEqual([
+      { name: "Poison", brand: "Dior" },
+      { name: "Shalimar", brand: "Guerlain" },
+      { name: "Bleu", brand: "Chanel" },
+    ]);
     expect(initial.browse).toEqual([
       { name: "Dior", slug: "dior", assortment: "CURATED", publishedCount: 2 },
       { name: "Guerlain", slug: "guerlain", assortment: "COMPLETE", publishedCount: 0 },
@@ -126,6 +134,7 @@ describe("contrat vitrine : mêmes cartes avant et après des écritures cohére
     // 2. Masquer un parfum : une carte de moins ; le republier : identique.
     expectOk(await server.actions.setPerfumeStatusAction({ id: fahrenheit.id, status: "DRAFT" }));
     expect((await publicView()).cards).toHaveLength(initial.cards.length - 1);
+    expect(await getUnlistedPerfumes()).toContainEqual({ name: "Fahrenheit", brand: "Dior" });
     expectOk(await server.actions.setPerfumeStatusAction({ id: fahrenheit.id, status: "PUBLISHED" }));
     expect(await publicView()).toEqual(initial);
 
