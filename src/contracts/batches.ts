@@ -211,6 +211,28 @@ export type BatchExpenseRowDTO = {
   pocketName: string;
 };
 
+/**
+ * Une ligne d'un document non annulé du lot (E06) : de quoi dresser la liste du fournisseur (parfum,
+ * contenance, client — jamais un prix) et relire l'achat dans la monnaie où il a été payé. Montants
+ * d'achat en texte de base (`dzdFromDb`, `rateFromDb`, `eurFromWire`), null quand ils manquent.
+ */
+export type BatchLineDTO = {
+  id: string;
+  documentId: string;
+  status: DocumentStatus;
+  /** Nom vivant de la fiche, à défaut le nom saisi ; null : « Client de passage ». */
+  customerName: string | null;
+  perfumeName: string;
+  brandName: string | null;
+  volumeMl: number | null;
+  quantity: number;
+  deliveredQuantity: number;
+  isGift: boolean;
+  unitCostDzd: string | null;
+  exchangeRate: string | null;
+  unitCostEur: MoneyString | null;
+};
+
 /** La fiche d'un lot (E06). La requête rend `null` quand le lot n'existe plus. */
 export type BatchSheetDTO = {
   batch: BatchSummary;
@@ -223,6 +245,8 @@ export type BatchSheetDTO = {
   cancelled: BatchDocumentRowDTO[];
   /** `documents` + `cancelled` : l'en-tête « Documents · 12 ». */
   documentCount: number;
+  /** Lignes des documents non annulés, client par client, dans l'ordre des documents puis des lignes. */
+  lines: BatchLineDTO[];
   expenses: BatchExpenseRowDTO[];
   /** Raison portée par l'entrée « Supprimer le lot » désactivée, ou `null` si elle est active. */
   deletionRefusal: string | null;

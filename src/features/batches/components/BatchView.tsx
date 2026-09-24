@@ -48,6 +48,8 @@ import {
   rowName,
 } from "./batches-model";
 import { ExpenseSheet } from "./ExpenseSheet";
+import { PurchaseSheet } from "./PurchaseSheet";
+import { SupplierSheet } from "./SupplierSheet";
 
 /**
  * E06 — Fiche lot (06 E06) : la Marge nette RÉELLE d'un envoi, ce qui y est rattaché, ce qu'il a coûté.
@@ -66,6 +68,8 @@ export function BatchView({ data, pockets }: { data: BatchSheetDTO; pockets: rea
   const confirm = useConfirm();
   const sheet = useDocumentSheetNavigation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [supplierOpen, setSupplierOpen] = useState(false);
+  const [purchaseOpen, setPurchaseOpen] = useState(false);
   const [notes, setNotes] = useState(data.batch.notes ?? "");
   const expenseSheet = useTransientSheet<BatchExpenseRowDTO | null>();
   const expenseMenu = useTransientSheet<BatchExpenseRowDTO>();
@@ -165,6 +169,8 @@ export function BatchView({ data, pockets }: { data: BatchSheetDTO; pockets: rea
         <KpiTile
           label="Achat des parfums"
           amount={figures.margeNette.costs}
+          // Le détail en dinars, sur place : ce qui a été payé au fournisseur, avant conversion.
+          onClick={() => setPurchaseOpen(true)}
           hint={
             figures.margeNette.hasUnknownCost
               ? `${figures.margeNette.unknownCostCount} sans achat renseigné, comptés 0 €`
@@ -330,6 +336,14 @@ export function BatchView({ data, pockets }: { data: BatchSheetDTO; pockets: rea
         description={data.batch.name}
       >
         <Card padding={0}>
+          <ListRow
+            primary="Liste pour le fournisseur"
+            secondary="Parfums et contenances par client, sans prix"
+            onClick={() => {
+              setMenuOpen(false);
+              setSupplierOpen(true);
+            }}
+          />
           <ListRow primary={open ? "Clôturer le lot" : "Rouvrir le lot"} onClick={() => void toggleStatus()} />
           {data.deletionRefusal === null ? (
             <ListRow
@@ -343,6 +357,10 @@ export function BatchView({ data, pockets }: { data: BatchSheetDTO; pockets: rea
         </Card>
       </Sheet>
 
+      {supplierOpen ? (
+        <SupplierSheet open onClose={() => setSupplierOpen(false)} batchName={data.batch.name} lines={data.lines} />
+      ) : null}
+      {purchaseOpen ? <PurchaseSheet open onClose={() => setPurchaseOpen(false)} lines={data.lines} /> : null}
     </div>
   );
 }
