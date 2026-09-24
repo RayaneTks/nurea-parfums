@@ -8,7 +8,6 @@ import { BottleMosaic } from "@/components/editorial/BottleMosaic";
 import { BrandIndex } from "@/components/editorial/BrandIndex";
 import { Chapters, type Chapter } from "@/components/editorial/Chapters";
 import { FaqAccordion } from "@/components/editorial/FaqAccordion";
-import { FlaconLabel } from "@/components/editorial/FlaconLabel";
 import { Monogram } from "@/components/editorial/Monogram";
 import { OrderSteps } from "@/components/editorial/OrderSteps";
 import { Seal } from "@/components/editorial/Seal";
@@ -54,7 +53,7 @@ const ENGAGEMENTS: readonly Chapter[] = [
  *
  *   ouverture   — trois flacons du catalogue, le titre, une phrase ;
  *   engagements — 01 · 02 · 03, une phrase chacun ;
- *   flacons     — l'étiquette Nuréa : ce que le client reçoit vraiment ;
+ *   flacons     — ce que le client reçoit : son parfum, dans un flacon Nuréa ;
  *   marques     — l'index du catalogue, chaque nom mène à ses parfums ;
  *   sceau       — l'aplat bordeaux de la charte, qui authentifie le site ;
  *   commander   — trois temps sur une ligne ;
@@ -70,7 +69,6 @@ export default async function MarquePage() {
     .then((brands) => new Set(brands.map((b) => b.slug)))
     .catch(() => new Set<string>());
   const flacons = choisirFlacons(perfumes, 3);
-  const exemple = flacons[0]?.name ?? "Votre parfum";
 
   return (
     <>
@@ -111,24 +109,22 @@ export default async function MarquePage() {
         <Chapters chapters={ENGAGEMENTS} />
       </section>
 
-      {/* ─── Nos flacons ─────────────────────────────────────────────────── */}
+      {/* ─── Nos flacons ─────────────────────────────────────────────────────
+          Texte seul, sans visuel du flacon : c'est le choix de la marque. La mention dit ce que
+          l'on reçoit en le présentant comme un service (le format choisi), pas comme une réserve. */}
       <section className="nurea-page border-b border-nurea-border py-18">
-        <div className="grid items-center gap-10 md:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] md:gap-18">
-          <ScrollReveal className="mx-auto w-full max-w-[15rem]">
-            <FlaconLabel name={exemple} />
-          </ScrollReveal>
-
+        <div className="grid gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-18">
           <ScrollReveal>
             <p className="nurea-label">Nos flacons</p>
-            <h2 className="nurea-section-title mt-4 text-nurea-text">
-              Votre parfum, dans un flacon Nuréa.
-            </h2>
-            <p className="nurea-lead nurea-prose mt-6">
-              Chaque parfum vous est remis dans nos flacons personnalisés, à notre étiquette : 10, 50 ou 80 ml.
+            <h2 className="nurea-section-title mt-4 text-nurea-text">Le parfum, au format qui vous va.</h2>
+          </ScrollReveal>
+          <ScrollReveal>
+            <p className="nurea-lead nurea-prose">
+              Votre parfum vous est remis dans un flacon Nuréa personnalisé, en 10, 50 ou 80 ml.
             </p>
             <p className="nurea-caption nurea-prose mt-6">
-              Les photographies du catalogue montrent les flacons d&apos;origine des marques, pour illustrer chaque
-              référence : ce ne sont pas les flacons que vous recevez. Elles sont réalisées par nos soins.
+              Les photographies du catalogue présentent les flacons d&apos;origine des marques, pour que vous
+              reconnaissiez chaque référence d&apos;un coup d&apos;œil.
             </p>
           </ScrollReveal>
         </div>
@@ -153,7 +149,7 @@ export default async function MarquePage() {
       {/* ─── Le sceau ────────────────────────────────────────────────────── */}
       <section className="nurea-page border-b border-nurea-border py-18">
         <div className="grid items-center gap-10 md:grid-cols-[auto_minmax(0,1fr)] md:gap-18">
-          <ScrollReveal className="mx-auto w-48 md:w-60">
+          <ScrollReveal className="mx-auto w-56 md:w-60">
             <Seal />
           </ScrollReveal>
 

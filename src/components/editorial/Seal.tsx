@@ -4,13 +4,13 @@ import { cn } from "@/lib/utils";
 
 const DOMAINE = SITE_URL.replace(/^https?:\/\//, "");
 
-/** Le texte qui fait le tour du sceau. Le point final referme la boucle sur le début. */
+/** Le texte qui fait le tour du sceau. Le point final le referme sur son début. */
 const LEGENDE = `${SITE_NAME} · Site officiel · ${DOMAINE} · Marseille · `.toUpperCase();
+const LETTRES = [...LEGENDE];
 
-/* Rayon de la ligne de base du texte, et donc sa longueur exacte : le texte est
-   étiré à la circonférence (`textLength`) pour que la couture ne se voie pas. */
+const CENTRE = 120;
+/** Rayon de la ligne de base du texte, entre les deux bagues (108 et 70). */
 const RAYON_TEXTE = 86;
-const CIRCONFERENCE = 2 * Math.PI * RAYON_TEXTE;
 
 /**
  * Le sceau — l'aplat bordeaux de la charte (« Sceau, cachet. Un seul aplat par
@@ -22,40 +22,49 @@ const CIRCONFERENCE = 2 * Math.PI * RAYON_TEXTE;
  * une marque homonyme existe, et le client doit pouvoir reconnaître le vrai site
  * d'un coup d'œil.
  *
- * Un seul par page : la charte réserve le bordeaux à un aplat par support. Le
- * sceau garde ses couleurs dans les deux thèmes — un cachet ne change pas de
- * cire avec la lumière.
+ * **Le texte fait le tour complet, lettre par lettre.** Une première version
+ * posait la légende sur un `<textPath>` étirée par `textLength` : les
+ * navigateurs n'appliquent pas tous cet étirement sur un chemin, et le texte
+ * s'arrêtait aux trois quarts du cercle, laissant un quart vide. Chaque lettre
+ * est donc placée à son angle (360° ÷ nombre de lettres), tournée autour du
+ * centre : la répartition est exacte partout, sans dépendre de la mesure des
+ * glyphes — c'est d'ailleurs ainsi qu'on grave un cachet, à pas régulier.
  *
- * Le texte circulaire est du vrai texte SVG : il reste net à toute taille et se
- * lit au lecteur d'écran par l'étiquette de l'image, pas lettre par lettre.
+ * Un seul par page, et il garde ses couleurs dans les deux thèmes : un cachet ne
+ * change pas de cire avec la lumière. L'étiquette de l'image le lit en entier au
+ * lecteur d'écran ; les lettres, elles, sont masquées une à une.
  */
-export const Seal: FC<{ className?: string; id?: string }> = ({ className, id = "nurea-sceau" }) => (
+export const Seal: FC<{ className?: string }> = ({ className }) => (
   <svg
     viewBox="0 0 240 240"
     role="img"
     aria-label={`Sceau ${SITE_NAME} — site officiel ${DOMAINE}`}
     className={cn("block aspect-square", className)}
   >
-    <circle cx="120" cy="120" r="118" style={{ fill: "var(--nurea-bordeaux)" }} />
-    {/* Deux filets ivoire bornent l'anneau du texte, comme la double bague d'un cachet. */}
-    <circle cx="120" cy="120" r="108" fill="none" stroke="#FDF8F4" strokeOpacity="0.4" strokeWidth="0.75" />
-    <circle cx="120" cy="120" r="70" fill="none" stroke="#FDF8F4" strokeOpacity="0.4" strokeWidth="0.75" />
+    <circle cx={CENTRE} cy={CENTRE} r="118" style={{ fill: "var(--nurea-bordeaux)" }} />
+    {/* Deux bagues ivoire bornent l'anneau du texte, comme la double bague d'un cachet. */}
+    <circle cx={CENTRE} cy={CENTRE} r="108" fill="none" stroke="#FDF8F4" strokeOpacity="0.4" strokeWidth="0.75" />
+    <circle cx={CENTRE} cy={CENTRE} r="70" fill="none" stroke="#FDF8F4" strokeOpacity="0.4" strokeWidth="0.75" />
 
-    <path
-      id={id}
-      d={`M 120 120 m -${RAYON_TEXTE} 0 a ${RAYON_TEXTE} ${RAYON_TEXTE} 0 1 1 ${RAYON_TEXTE * 2} 0 a ${RAYON_TEXTE} ${RAYON_TEXTE} 0 1 1 -${RAYON_TEXTE * 2} 0`}
-      fill="none"
-    />
-    <text
+    <g
+      aria-hidden
       fill="#FDF8F4"
-      fontSize="11"
+      fontSize="12"
       fontWeight="600"
+      textAnchor="middle"
       style={{ fontFamily: "var(--font-sans), system-ui, sans-serif" }}
     >
-      <textPath href={`#${id}`} textLength={CIRCONFERENCE.toFixed(2)} lengthAdjust="spacing">
-        {LEGENDE}
-      </textPath>
-    </text>
+      {LETTRES.map((lettre, index) => (
+        <text
+          key={index}
+          x={CENTRE}
+          y={CENTRE - RAYON_TEXTE}
+          transform={`rotate(${((index * 360) / LETTRES.length).toFixed(3)} ${CENTRE} ${CENTRE})`}
+        >
+          {lettre}
+        </text>
+      ))}
+    </g>
 
     <image
       href="/branding/monogram/logo4_monogram_free_ivory_1024.svg"

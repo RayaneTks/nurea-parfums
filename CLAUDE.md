@@ -86,8 +86,8 @@ une feuille de style l'embarquerait dans les deux registres. Il lit l'en-tête
 - `src/components/features/` — Hero, FeaturedSection, PerfumeCard, PerfumeDialog,
   PerfumeImage, ContactForm.
 - `src/components/editorial/` — briques des pages éditoriales (La parfumerie, Contact,
-  Légal, 404) : `BottleMosaic`, `Chapters`, `OrderSteps`, `BrandIndex`, `FlaconLabel`,
-  `Seal`, `FaqAccordion`, `Monogram`. Voir `DESIGN.md` § Pages éditoriales.
+  Légal, 404) : `BottleMosaic`, `Chapters`, `OrderSteps`, `BrandIndex`, `Seal`,
+  `FaqAccordion`, `Monogram`. Voir `DESIGN.md` § Pages éditoriales.
 - `src/lib/mentions.ts` — les mentions dues au client (flacons, photographies), une source.
 - `src/lib/search/` — Logique de recherche, API externe, cache.
 - `src/lib/catalog/` — Fetching database, transformation, `perfumePresentation.ts`.

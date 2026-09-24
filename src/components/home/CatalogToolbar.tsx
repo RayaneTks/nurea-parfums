@@ -7,13 +7,51 @@ import { cn } from "@/lib/utils";
 import type { SortKey } from "./useCatalogFilters";
 
 const SEARCH_ID = "catalogue-recherche";
-const SORT_ID = "catalogue-tri";
 
 const SORT_OPTIONS: ReadonlyArray<{ value: SortKey; label: string }> = [
   { value: "default", label: "Ordre du catalogue" },
   { value: "name", label: "Nom (A–Z)" },
   { value: "brand", label: "Marque (A–Z)" },
 ];
+
+interface SortControlProps {
+  id: string;
+  sort: SortKey;
+  resultLabel: string;
+  onSortChange: (sort: SortKey) => void;
+  className?: string;
+}
+
+/**
+ * Nombre de résultats et tri, côte à côte.
+ *
+ * Rendu deux fois par la section, jamais en même temps : dans la barre collante sur grand écran,
+ * sous elle sur téléphone (`CatalogSection`). Sur téléphone il n'a pas sa place dans la barre :
+ * il écrasait les onglets jusqu'à « TOUT VO », et la barre collante mangeait 150 px d'écran en
+ * permanence. D'où l'`id` en paramètre — deux listes déroulantes ne partagent pas un identifiant.
+ */
+export const SortControl: FC<SortControlProps> = ({ id, sort, resultLabel, onSortChange, className }) => (
+  <div className={cn("flex items-center gap-4", className)}>
+    <span className="nurea-caption whitespace-nowrap" aria-live="polite">
+      {resultLabel}
+    </span>
+    <label htmlFor={id} className="sr-only">
+      Trier le catalogue
+    </label>
+    <select
+      id={id}
+      value={sort}
+      onChange={(event) => onSortChange(event.target.value as SortKey)}
+      className="h-11 border border-nurea-border bg-nurea-surface px-3 text-sm text-nurea-text outline-none transition-colors duration-nurea ease-out focus:border-nurea-accent"
+    >
+      {SORT_OPTIONS.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  </div>
+);
 
 interface CatalogToolbarProps {
   query: string;
@@ -61,7 +99,7 @@ export const CatalogToolbar: FC<CatalogToolbarProps> = ({
         onChange={(event: ChangeEvent<HTMLInputElement>) =>
           onQueryChange(event.target.value)
         }
-        placeholder="Rechercher une marque, un parfum…"
+        placeholder="Marque ou parfum…"
         autoComplete="off"
         enterKeyHint="search"
         className="h-14 w-full border-0 bg-transparent pl-8 pr-12 text-base text-nurea-text outline-none placeholder:text-nurea-subtle"
@@ -78,11 +116,13 @@ export const CatalogToolbar: FC<CatalogToolbarProps> = ({
       )}
     </div>
 
-    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-2">
+    <div className="flex items-center justify-between gap-x-6 py-2">
+      {/* Téléphone : les onglets ont toute la largeur, et leur bord droit s'efface pour dire qu'ils
+          défilent. `-mr-6` : la rangée va jusqu'au bord de l'écran, là où le pouce la pousse. */}
       <div
         role="tablist"
         aria-label="Catégories"
-        className="no-scrollbar -mx-3 flex min-w-0 flex-1 overflow-x-auto"
+        className="no-scrollbar nurea-defilement -ml-3 -mr-6 flex min-w-0 flex-1 overflow-x-auto pr-6 md:-mr-3 md:pr-0"
       >
         {categories.map((item) => {
           const active = item === category;
@@ -112,24 +152,13 @@ export const CatalogToolbar: FC<CatalogToolbarProps> = ({
         })}
       </div>
 
-      <div className="flex shrink-0 items-center gap-4">
-        <span className="nurea-caption whitespace-nowrap">{resultLabel}</span>
-        <label htmlFor={SORT_ID} className="sr-only">
-          Trier le catalogue
-        </label>
-        <select
-          id={SORT_ID}
-          value={sort}
-          onChange={(event) => onSortChange(event.target.value as SortKey)}
-          className="h-11 border border-nurea-border bg-nurea-surface px-3 text-sm text-nurea-text outline-none transition-colors duration-nurea ease-out focus:border-nurea-accent"
-        >
-          {SORT_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      <SortControl
+        id="catalogue-tri"
+        sort={sort}
+        resultLabel={resultLabel}
+        onSortChange={onSortChange}
+        className="hidden shrink-0 md:flex"
+      />
     </div>
   </div>
 );

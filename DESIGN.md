@@ -152,8 +152,7 @@ paragraphe. Les briques vivent dans `src/components/editorial/` :
 | `Chapters` | Chapitres « 01 · 02 · 03 », une phrase chacun (`.nurea-numeral`). |
 | `OrderSteps` | Le parcours de commande en trois temps — **source unique**, affichée sur La parfumerie et Contact. |
 | `BrandIndex` | L'index des marques en toutes lettres ; chaque nom mène au catalogue filtré. |
-| `FlaconLabel` | L'étiquette des flacons Nuréa (charte § 06, 44 × 60 mm). |
-| `Seal` | Le sceau bordeaux : l'aplat unique de la charte, qui authentifie le site officiel. |
+| `Seal` | Le sceau bordeaux : l'aplat unique de la charte, qui authentifie le site officiel. Lettres placées une à une à pas régulier — un `<textPath>` étiré laissait un quart du cercle vide. |
 | `FaqAccordion` | Questions repliées en `<details>`, sans JavaScript. |
 | `Monogram` | Le monogramme teinté par `currentColor` (`.nurea-monogram`, masque CSS). |
 
@@ -169,7 +168,9 @@ Deux mentions sont dues au client, et tenues dans **un** fichier,
 [`src/lib/mentions.ts`](src/lib/mentions.ts) :
 
 - **Les flacons** — les photographies montrent les flacons d'origine des marques ;
-  le parfum est remis dans un flacon Nuréa personnalisé. À dire là où l'on regarde
+  le parfum est remis dans un flacon Nuréa personnalisé. **Aucun visuel du flacon
+  Nuréa** sur le site, par choix de la marque : la mention, seule, le dit — présentée
+  comme un format au choix (10, 50 ou 80 ml), jamais comme une réserve. À dire là où l'on regarde
   une photo de flacon : fiche parfum, page Contact, La parfumerie, pied de page.
 - **Les photographies** — réalisées par Nuréa Parfums, reproduction interdite
   sans accord écrit. Pied de page et informations légales.

@@ -1,17 +1,23 @@
 import type { FC, ReactNode } from "react";
 import Link from "next/link";
-import { CONTACT } from "@/lib/data";
 import { MENTION_FLACONS } from "@/lib/mentions";
 import { contactHref, whatsappOrderUrl } from "@/lib/catalog/perfumePresentation";
 import { buttonClass } from "@/components/ui/Button";
 import { ChannelSoon } from "@/components/ui/ChannelSoon";
-import { SnapchatIcon, WhatsAppIcon } from "@/components/ui/Icons";
+import { WhatsAppIcon } from "@/components/ui/Icons";
+import { SnapchatOrderButton } from "./SnapchatOrderButton";
 
 interface OrderChannelsProps {
   perfume: string;
   brand: string;
   /** Liens supplémentaires, rendus après le formulaire (ex. « Voir la fiche du parfum »). */
   children?: ReactNode;
+  /**
+   * `false` : le bouton Snapchat n'est pas rendu ici sur téléphone, parce que l'appelant le tient
+   * dans une barre collée en bas de l'écran (fiche en surimpression). Deux boutons pleins l'un
+   * au-dessus de l'autre enfreindraient la charte, et le second ne servirait à rien.
+   */
+  primaryOnMobile?: boolean;
 }
 
 /**
@@ -24,21 +30,13 @@ interface OrderChannelsProps {
  * Charte § 05 : Snapchat prend l'unique aplat de l'écran — c'est le seul canal ouvert —,
  * WhatsApp le filet, le formulaire le lien texte. Sans état ni effet : rendu serveur possible.
  */
-export const OrderChannels: FC<OrderChannelsProps> = ({ perfume, brand, children }) => {
+export const OrderChannels: FC<OrderChannelsProps> = ({ perfume, brand, children, primaryOnMobile = true }) => {
   /* `null` tant que le canal n'est pas ouvert — voir `CONTACT.whatsapp`. */
   const commandeWhatsApp = whatsappOrderUrl(perfume, brand);
 
   return (
     <div className="mt-3 flex flex-col items-start gap-3">
-      <a
-        href={CONTACT.snapchat}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={buttonClass("solid", "w-full")}
-      >
-        <SnapchatIcon className="h-4 w-4 shrink-0" aria-hidden />
-        Snapchat
-      </a>
+      <SnapchatOrderButton perfume={perfume} brand={brand} className={primaryOnMobile ? undefined : "max-md:hidden"} />
 
       {commandeWhatsApp ? (
         <a
