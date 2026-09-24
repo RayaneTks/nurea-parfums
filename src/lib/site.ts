@@ -19,14 +19,19 @@ export const SITE_SHORT_NAME = "Nuréa";
 export const SITE_TAGLINE = "Parfumerie d'Exception";
 
 export const DEFAULT_DESCRIPTION =
-  "Nuréa Parfums — Retrouvez vos parfums préférés au meilleur prix. Une sélection rigoureuse des plus grandes marques pour homme et femme. Découvrez notre catalogue et commandez directement sur Snapchat.";
+  "Nuréa Parfums, parfumerie à Marseille : vos parfums préférés des plus grandes marques, au meilleur prix, pour homme et femme. Commande directe sur Snapchat, remise en main propre ou envoi.";
 
 /**
  * Noms alternatifs pour schema.org et cohérence SEO.
  */
 export const BRAND_ALTERNATE_NAMES: string[] = [
-  "Nuréa Parfums",
+  /*
+   * Pas « Nuréa Parfums » en tête : c'est déjà `name`. Google lit `alternateName` quand il écarte
+   * le nom principal pour l'affichage — la première entrée doit donc être la forme de repli la
+   * plus juste, sans accent, pas une copie.
+   */
   "Nurea Parfums",
+  "Nuréa Parfums Marseille",
   "Nuréa Parfum",
   "Nurea Parfum",
   "Nuréa",

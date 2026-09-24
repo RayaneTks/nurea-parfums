@@ -8,7 +8,7 @@ import { MARQUE_FAQ } from "@/lib/marqueFaq";
 import { DEFAULT_DESCRIPTION, pageOg, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "La parfumerie",
+  title: "Qui sommes-nous — parfumerie à Marseille",
   description: `${SITE_NAME} — Retrouvez les plus grands parfums au meilleur prix. Une sélection rigoureuse des meilleures marques, homme et femme.`,
   keywords: [
     "Nuréa Parfums",

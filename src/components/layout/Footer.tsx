@@ -8,6 +8,7 @@ import { SITE_NAME } from "@/lib/site";
 
 const NAVIGATION = [
   { href: "/", label: "Le catalogue" },
+  { href: "/parfums", label: "Toutes les marques" },
   { href: "/marque", label: "La parfumerie" },
   { href: "/contact", label: "Contact & commande" },
 ] as const;

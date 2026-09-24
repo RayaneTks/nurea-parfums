@@ -2,7 +2,7 @@ import type { FC } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { buttonClass } from "@/components/ui/Button";
-import { SITE_TAGLINE } from "@/lib/site";
+import { SITE_NAME } from "@/lib/site";
 
 /**
  * Ouverture de la vitrine.
@@ -35,10 +35,19 @@ export const Hero: FC = () => (
     />
 
     <div className="nurea-page pb-18 pt-32 md:pt-40">
-      <p className="nurea-label">{SITE_TAGLINE}</p>
-
-      <h1 className="nurea-title mt-6 max-w-[14ch] text-nurea-text">
-        L&apos;excellence du parfum
+      {/*
+       * Le titre de la page porte la marque ET la ville. Il ne disait que « L'excellence du
+       * parfum » : une accroche que cent boutiques pourraient signer, et aucun des deux mots
+       * qu'on tape pour nous trouver. Or Google lit le titre de la page d'accueil pour choisir
+       * le nom du site qu'il affiche, et pour savoir de quoi — et d'où — parle la page.
+       * Le dessin ne change pas : la ligne d'étiquette et l'accroche sont les deux moitiés du
+       * même titre.
+       */}
+      <h1>
+        <span className="nurea-label block">{SITE_NAME} · Parfumerie à Marseille</span>
+        <span className="nurea-title mt-6 block max-w-[14ch] text-nurea-text">
+          L&apos;excellence du parfum
+        </span>
       </h1>
 
       <p className="nurea-body nurea-prose mt-6">

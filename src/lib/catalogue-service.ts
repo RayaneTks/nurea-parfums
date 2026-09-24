@@ -9,6 +9,7 @@ import {
   registerPrismaCatalogSuccess,
 } from "@/lib/db/prismaRuntimeCircuit";
 import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
+import { loadSeoCatalogue, type SeoBrand, type SeoPerfume } from "@/lib/catalog/seoCatalogue";
 
 /** Cache données catalogue affichées sur le site public. */
 export const PUBLIC_CATALOGUE_CACHE_TAG = "public-catalogue";
@@ -226,4 +227,32 @@ const getPublicCatalogueCached = unstable_cache(
  */
 export async function getCachedCatalogue(): Promise<CachedPublicCatalogue> {
   return getPublicCatalogueCached();
+}
+
+const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v1"], {
+  tags: [PUBLIC_CATALOGUE_CACHE_TAG],
+});
+
+/**
+ * Catalogue des pages indexables (`/parfums/*`, sitemap) — voir `src/lib/catalog/seoCatalogue.ts`.
+ *
+ * À la différence de `getCachedCatalogue`, AUCUN repli de démonstration : une base injoignable
+ * lève, la page répond 500 et Google réessaie. Un repli vide aurait répondu 404 sur chaque fiche,
+ * c'est-à-dire demandé leur retrait de l'index. Sans base configurée (poste local nu) : vide.
+ */
+export async function getSeoCatalogue(): Promise<SeoBrand[]> {
+  if (!process.env.DATABASE_URL?.trim()) return [];
+  return getSeoCatalogueCached();
+}
+
+export async function getSeoBrand(slug: string): Promise<SeoBrand | null> {
+  return (await getSeoCatalogue()).find((brand) => brand.slug === slug) ?? null;
+}
+
+export async function getSeoPerfume(id: number): Promise<{ brand: SeoBrand; perfume: SeoPerfume } | null> {
+  for (const brand of await getSeoCatalogue()) {
+    const perfume = brand.perfumes.find((p) => p.id === id);
+    if (perfume) return { brand, perfume };
+  }
+  return null;
 }

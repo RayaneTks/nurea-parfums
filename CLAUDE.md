@@ -183,6 +183,21 @@ Détail et justifications : `docs/SECURITE.md`, décisions dans `docs/refonte/04
   la vitrine. C'est de la friction, **pas** de la sécurité : ne jamais lui confier une garantie, ni
   l'étendre en `debugger` en boucle ou en détection d'outils ouverts.
 
+## Référencement (vitrine)
+
+Stratégie, attentes et suivi : `docs/SEO.md`. Gestes hors code : `docs/seo/INSTRUCTIONS-CHROME.md`.
+
+- **Pages indexables du catalogue** : `/parfums` (index A→Z), `/parfums/<slug-marque>`,
+  `/parfums/<marque>/<nom>-<id>`. Toute adresse passe par `src/lib/seo/paths.ts`. **L'identifiant
+  fait foi** : un nom corrigé redirige en 308, l'ancienne adresse ne meurt pas.
+- Ces pages lisent `getSeoCatalogue()` (`src/lib/catalogue-service.ts`), **sans repli** : une base
+  injoignable répond 500, jamais 404 (un 404 désindexe).
+- **Chaque page déclare sa canonique** ; le layout n'en pose aucune (un repli y ferait passer
+  une page neuve pour un doublon de l'accueil). Pas de hreflang : le site n'a qu'une langue.
+- **Sitemap** (`app/sitemap.ts`) : `lastModified` seulement quand il est vrai (`updatedAt`).
+- **Pas de balisage `Product`** tant qu'aucun prix n'est public : Google le compterait en erreur.
+- Le titre (H1) de l'accueil porte « Nuréa Parfums » et « Marseille » : ne pas le réduire à une accroche.
+
 ## Règles Vitrine (charte graphique v3)
 
 La référence complète est `DESIGN.md`. Les trois règles sans exception :

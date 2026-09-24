@@ -30,6 +30,10 @@ export const MARQUE_FAQ: readonly FaqEntry[] = [
       "Nous sommes à Marseille. La remise se fait en main propre sur place, ou par envoi pour le reste de la France. C'est aussi ce qui nous distingue des marques étrangères au nom voisin : nous vendons les grandes marques que vous connaissez, au meilleur prix, et vous pouvez nous rencontrer.",
   },
   {
+    question: "Où acheter un parfum de grande marque à Marseille ?",
+    answer: `Chez ${SITE_NAME}. Nous vendons les parfums des plus grandes marques, grandes maisons comme parfumerie de niche, au meilleur prix, avec remise en main propre à Marseille ou envoi dans le reste de la France. Le catalogue est en ligne, marque par marque, sur ${domain}/parfums.`,
+  },
+  {
     question: "Le catalogue contient-il tout votre stock ?",
     answer:
       "Le site présente nos références principales. Si vous ne trouvez pas votre parfum habituel, demandez-le nous directement : les arrivages sont fréquents.",

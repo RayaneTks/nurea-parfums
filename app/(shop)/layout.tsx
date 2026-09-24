@@ -58,10 +58,13 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
-  alternates: {
-    canonical: "/",
-    languages: { "fr-FR": "/" },
-  },
+  /*
+   * Aucun `alternates` ici, ni canonique ni hreflang : chaque page déclare sa propre URL
+   * canonique. Un repli posé dans le layout se propage à toute page qui l'oublie — une page
+   * neuve aurait déclaré l'accueil comme son original, c'est-à-dire demandé à Google de ne pas
+   * l'indexer. Quant au hreflang `fr-FR → /`, il faisait dire à /legal que sa version française
+   * était l'accueil : le site n'existe qu'en une langue, il n'en a pas besoin.
+   */
   formatDetection: {
     telephone: true,
     email: true,
