@@ -200,3 +200,15 @@ describe("money — affichage", () => {
     expect(spokenEur(E("-3.05"))).toBe("moins 3 euros 5");
   });
 });
+
+describe("dinars d'achat (E06)", () => {
+  it("dzd.times et dzd.sum exacts ; formatRate sans zéros de fin ; sameRate à la décimale près", async () => {
+    const { dzd, dzdFromDb, formatDzd, formatRate, rateFromDb, sameRate } = await import("../money");
+    const total = dzd.sum([dzd.times(dzdFromDb("22000.00"), 2), dzdFromDb("9000.50")]);
+    expect(formatDzd(total)).toBe("53\u202F000,50\u202FDA");
+    expect(() => dzd.times(dzdFromDb("1.00"), 1.5)).toThrow(RangeError);
+    expect(formatRate(rateFromDb("277.0000"))).toBe("277");
+    expect(formatRate(rateFromDb("277.5000"))).toBe("277,5");
+    expect(sameRate(rateFromDb("277.0000"), rateFromDb("277"))).toBe(true);
+  });
+});

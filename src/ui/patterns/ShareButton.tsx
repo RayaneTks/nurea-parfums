@@ -42,6 +42,7 @@ type ShareButtonProps = {
   variant?: ButtonVariant;
   size?: ButtonSize;
   fullWidth?: boolean;
+  disabled?: boolean;
   /**
    * Retour à afficher en toast par l'appelant (le provider de toasts est dans
    * le shell, que `src/ui` n'importe pas) : « Message copié » après la copie de
@@ -58,6 +59,7 @@ export function ShareButton({
   variant = "secondary",
   size = "md",
   fullWidth,
+  disabled,
   onFeedback,
   copiedMessage = "Message copié",
 }: ShareButtonProps) {
@@ -80,6 +82,7 @@ export function ShareButton({
       size={size}
       fullWidth={fullWidth}
       isLoading={busy}
+      disabled={disabled}
       leadingIcon={<Share2 size={16} />}
       onClick={() => void share()}
     >

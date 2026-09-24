@@ -20,6 +20,11 @@ type KpiTileBase = {
    * Sur l'écran de RÉFÉRENCE d'un chiffre, pas de tuile du tout : `Money` + libellé.
    */
   href?: string;
+  /**
+   * Détail du chiffre ouvert sur place (une sheet, sans quitter l'écran) : « Achat des parfums » d'un lot
+   * relu en dinars. Exclusif de `href`.
+   */
+  onClick?: () => void;
   className?: string;
 };
 
@@ -40,13 +45,14 @@ type KpiTileProps =
 
 /** Tuile de chiffre (05 §3.2). */
 export function KpiTile(props: KpiTileProps) {
-  const { label, dominant = false, hint, href, className } = props;
+  const { label, dominant = false, hint, href, onClick, className } = props;
+  const actionable = href !== undefined || onClick !== undefined;
 
   const body = (
     <>
       <span className="flex items-center justify-between gap-2">
         <span className="admin-type-micro truncate uppercase text-[var(--admin-text-subtle)]">{label}</span>
-        {href ? <ChevronRight size={14} aria-hidden className="shrink-0 text-[var(--admin-text-subtle)]" /> : null}
+        {actionable ? <ChevronRight size={14} aria-hidden className="shrink-0 text-[var(--admin-text-subtle)]" /> : null}
       </span>
       <span className={cn("mt-1 block truncate", dominant ? "admin-type-display" : "admin-type-h2")}>
         {props.amount !== undefined ? (
@@ -70,6 +76,20 @@ export function KpiTile(props: KpiTileProps) {
   // `data-kpi-tile` : repère de test, comme `data-money-tile` sur les tuiles de la fiche document.
   // Sans lui, une assertion portée sur la grille entière passe sur la MAUVAISE tuile — et masque
   // exactement ce qu'elle prétend vérifier (relevé à J13 : « Coûts d'achat » lu pour « Marge nette »).
+  const interactive = cn(
+    surface,
+    "tap-scale min-h-[var(--admin-touch-min)]",
+    "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
+    "active:bg-[var(--admin-surface-alt)] mouse-hover:shadow-[shadow:var(--admin-shadow-md)]",
+  );
+
+  if (onClick && !href)
+    return (
+      <button type="button" data-kpi-tile={label} onClick={onClick} className={cn(interactive, "text-left")}>
+        {body}
+      </button>
+    );
+
   if (!href)
     return (
       <div className={surface} data-kpi-tile={label}>
@@ -82,12 +102,7 @@ export function KpiTile(props: KpiTileProps) {
       data-kpi-tile={label}
       href={href}
       prefetch
-      className={cn(
-        surface,
-        "tap-scale min-h-[var(--admin-touch-min)]",
-        "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
-        "active:bg-[var(--admin-surface-alt)] mouse-hover:shadow-[shadow:var(--admin-shadow-md)]",
-      )}
+      className={interactive}
     >
       {body}
     </Link>

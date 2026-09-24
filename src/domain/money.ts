@@ -194,6 +194,27 @@ export const eur: {
   isNegative: (a) => raw(a).isNegative(),
 };
 
+/** Dinars : l'achat d'un lot se relit dans la monnaie où il a été payé (E06 « Achat des parfums »). */
+export const dzd: {
+  zero: Dzd;
+  times(a: Dzd, quantity: number): Dzd; // quantité entière ≥ 0, sinon exception
+  sum(values: readonly Dzd[]): Dzd;
+} = {
+  zero: wrap<Dzd>(new D(0)),
+  times: (a, quantity) => {
+    if (!Number.isSafeInteger(quantity) || quantity < 0) {
+      throw new RangeError(`dzd.times: quantité entière ≥ 0 attendue, reçu ${quantity}`);
+    }
+    return wrap<Dzd>(raw(a).times(quantity));
+  },
+  sum: (values) => wrap<Dzd>(values.reduce<Dec>((acc, v) => acc.plus(raw(v)), new D(0))),
+};
+
+/** Deux taux égaux à la décimale près (277 et 277,0000) : même groupe d'achat. */
+export function sameRate(a: Rate, b: Rate): boolean {
+  return raw(a).eq(raw(b));
+}
+
 // ── Règles métier ──────────────────────────────────────────────────────────────
 
 /**
@@ -250,6 +271,14 @@ export function formatDzd(v: Dzd): string {
   const d = raw(v);
   const [int = "0", frac] = d.abs().toFixed(d.isInteger() ? 0 : 2).split(".");
   return `${d.isNegative() ? MINUS : ""}${groupThousands(int)}${frac ? `,${frac}` : ""}${NNBSP}DA`;
+}
+
+/** « 277 », « 277,5 » : un taux sans ses zéros de fin. */
+export function formatRate(v: Rate): string {
+  // toFixed(4) porte toujours un point : on retire les zéros de fin, puis le point resté seul.
+  const text = raw(v).toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+  const [int = "0", frac] = text.split(".");
+  return `${groupThousands(int)}${frac ? `,${frac}` : ""}`;
 }
 
 /** « 1 234 euros 50 » pour VoiceOver (05 §6) ; « 45 centimes » sous l'euro. */

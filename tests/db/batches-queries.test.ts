@@ -8,6 +8,7 @@ import {
   type MoneyServer,
 } from "./transactions/support/argent";
 import { expectError, expectOk, freshStart, newId, seedBatch, seedCustomer, seedPerfume } from "./transactions/support/harness";
+import { toWire } from "@/domain/money";
 
 /**
  * Lectures des écrans des lots (07 J13) : E05 (liste + zone « À rattacher »), E06 (fiche : tuiles,
@@ -279,6 +280,27 @@ describe("E06 — fiche du lot", () => {
     const after = await sheetOf(lot.id);
     expect(after.figures.aEncaisser).toBe("95.00");
     expect(after.figures.margeNette.costs).toBe("100.00");
+  });
+
+  it("les lignes du lot : liste du fournisseur (attente comprise) et achat en dinars égal à la tuile, au centime", async () => {
+    await seedSystemPocket(server.prisma);
+    const lot = await seedBatch(server.prisma, { name: "Commande d'avril" });
+    await sale({ batchId: lot.id, price: "120", received: "120", customer: "Fares" });
+    await sale({ batchId: lot.id, price: "90", received: "90", customer: "Lina" });
+    await pendingOrder({ batchId: lot.id, price: "95", customer: "Nora" });
+    const annulee = await sale({ batchId: lot.id, price: "80", customer: "Sami" });
+    expectOk(await server.documents.cancelDocumentAction({ documentId: annulee, confirm: true }));
+
+    const sheet = await sheetOf(lot.id);
+    // Liste du fournisseur : les documents non annulés, commande en attente comprise, dans l'ordre des demandes.
+    expect(sheet.lines.map((line) => line.customerName)).toEqual(["Fares", "Lina", "Nora"]);
+    expect(sheet.lines[0]).toMatchObject({ unitCostDzd: "27700.00", exchangeRate: "277.00", unitCostEur: "100.00" });
+
+    // Achat en dinars : le périmètre de la tuile (engagés), donc sa somme exacte.
+    const { purchaseDetail } = await import("@/features/batches/components/supplier-model");
+    const detail = purchaseDetail(sheet.lines);
+    expect(toWire(detail.totalEur)).toBe(sheet.figures.margeNette.costs);
+    expect(detail.lines.map((line) => line.customer)).toEqual(["Fares", "Lina"]);
   });
 
   it("les dépenses vivantes seulement ; une dépense supprimée sort de la liste et rend la Marge nette", async () => {

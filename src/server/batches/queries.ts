@@ -7,6 +7,7 @@ import {
   type AssignSheetDTO,
   type BatchDocumentRowDTO,
   type BatchExpenseRowDTO,
+  type BatchLineDTO,
   type BatchRowDTO,
   type BatchSheetDTO,
   type BatchStatus,
@@ -18,16 +19,18 @@ import type { BatchFiguresDTO } from "@/contracts/chiffres";
 import { phoneDigitVariants, searchTerms } from "@/contracts/search";
 import type { DocumentOrigin, DocumentStatus } from "@/domain/document-status";
 import { isTextId } from "@/domain/ids";
-import { eurFromDb, toWire, type MoneyString } from "@/domain/money";
+import { dzdFromDb, eurFromDb, rateFromDb, toDb, toWire, type MoneyString } from "@/domain/money";
 import {
   assignCandidatesSql,
   batchDeletionCountsSql,
   batchDocumentsSql,
   batchExpensesSql,
+  batchLinesSql,
   batchRowsSql,
   expenseLabelsSql,
   unbatchedSql,
   type BatchExpenseRow,
+  type BatchLineRow,
   type BatchRow,
   type DocumentRow,
 } from "@/server/batches/sql";
@@ -78,6 +81,25 @@ function documentRow(row: DocumentRow): BatchDocumentRowDTO {
     due: money(row.due),
     items: row.items,
     lineCount: row.lineCount,
+  };
+}
+
+/** Une ligne du lot : montants d'achat relus par le module monétaire, jamais recopiés tels quels. */
+function lineRow(row: BatchLineRow): BatchLineDTO {
+  return {
+    id: row.id,
+    documentId: row.documentId,
+    status: row.status as DocumentStatus,
+    customerName: row.customerName,
+    perfumeName: row.perfumeName,
+    brandName: row.brandName,
+    volumeMl: row.volumeMl,
+    quantity: row.quantity,
+    deliveredQuantity: row.deliveredQuantity,
+    isGift: row.isGift,
+    unitCostDzd: row.unitCostDzd === null ? null : toDb(dzdFromDb(row.unitCostDzd)),
+    exchangeRate: row.exchangeRate === null ? null : toDb(rateFromDb(row.exchangeRate)),
+    unitCostEur: row.unitCostEur === null ? null : money(row.unitCostEur),
   };
 }
 
@@ -167,7 +189,7 @@ const cachedBatchSheet = cached(
     });
     if (!row) return null;
 
-    const [figures, dues, documents, expenses, [counts], labels] = await Promise.all([
+    const [figures, dues, documents, expenses, [counts], labels, lines] = await Promise.all([
       margeNette("all", id),
       // `aEncaisser(batchId, customerId)` : le lot est le PREMIER argument.
       aEncaisser(id),
@@ -175,6 +197,7 @@ const cachedBatchSheet = cached(
       db.$queryRaw<BatchExpenseRow[]>(batchExpensesSql(id)),
       db.$queryRaw<{ documents: number; expenses: number; activeExpenses: number }[]>(batchDeletionCountsSql(id)),
       db.$queryRaw<{ label: string }[]>(expenseLabelsSql({ batchId: id, limit: EXPENSE_LABEL_CHIPS })),
+      db.$queryRaw<BatchLineRow[]>(batchLinesSql(id)),
     ]);
 
     const rows = documents.map(documentRow);
@@ -191,6 +214,7 @@ const cachedBatchSheet = cached(
       documents: rows.filter((doc) => doc.status !== "CANCELLED"),
       cancelled: rows.filter((doc) => doc.status === "CANCELLED"),
       documentCount: rows.length,
+      lines: lines.map(lineRow),
       expenses: expenses.map(
         (expense): BatchExpenseRowDTO => ({
           id: expense.id,

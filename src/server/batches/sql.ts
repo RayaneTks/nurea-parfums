@@ -138,6 +138,41 @@ export function assignCandidatesSql(query: { batchId: string; search: OrdersSear
     LIMIT ${query.limit}`;
 }
 
+export type BatchLineRow = {
+  id: string;
+  documentId: string;
+  status: "PENDING" | "CONFIRMED" | "DELIVERED";
+  customerName: string | null;
+  perfumeName: string;
+  brandName: string | null;
+  volumeMl: number | null;
+  quantity: number;
+  deliveredQuantity: number;
+  isGift: boolean;
+  unitCostDzd: string | null;
+  exchangeRate: string | null;
+  unitCostEur: string | null;
+};
+
+/**
+ * E06 — les lignes des documents NON ANNULÉS du lot : liste du fournisseur (commandes en attente comprises —
+ * c'est ce qu'on lui fait préparer) et détail de l'achat en dinars. Ordre : le document le plus ancien
+ * d'abord (l'ordre des demandes), puis l'ordre des lignes.
+ */
+export function batchLinesSql(batchId: string): Prisma.Sql {
+  return Prisma.sql`
+    SELECT l.id, l."documentId", d.status::text AS status,
+           COALESCE(c."fullName", d."customerName") AS "customerName",
+           l."perfumeName", l."brandName", l."volumeMl", l.quantity, l."deliveredQuantity", l."isGift",
+           l."unitCostDzd"::text AS "unitCostDzd", l."exchangeRate"::text AS "exchangeRate",
+           l."unitCostEur"::text AS "unitCostEur"
+    FROM "SaleLine" l
+    JOIN "SaleDocument" d ON d.id = l."documentId"
+    LEFT JOIN "Customer" c ON c.id = d."customerId"
+    WHERE d."batchId" = ${batchId} AND d.status <> 'CANCELLED'
+    ORDER BY d."orderedAt", d.id, l.position, l."createdAt", l.id`;
+}
+
 export type BatchExpenseRow = {
   id: string;
   label: string;
