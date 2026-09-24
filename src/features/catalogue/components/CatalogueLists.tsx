@@ -62,7 +62,7 @@ function RowList<T>({ items, itemKey, label, render }: { items: readonly T[]; it
  */
 export function CatalogueLists({ catalogue }: { catalogue: AdminCatalogue }) {
   const router = useRouter();
-  const { tab, query, stock, hidden, complete, write } = useCatalogueUrl();
+  const { tab, query, stock, visibility, complete, write } = useCatalogueUrl();
   const removals = usePendingRemovals();
   const words = useMemo(() => searchWords(query), [query]);
 
@@ -80,8 +80,12 @@ export function CatalogueLists({ catalogue }: { catalogue: AdminCatalogue }) {
 
   if (tab === "marques") {
     const counts = brandCounts(brands, words);
-    const shown = filterBrands(brands, { words, hidden, complete });
-    const filtered = words.length > 0 || hidden || complete;
+    const shown = filterBrands(brands, { words, visibility, complete });
+    const filtered = words.length > 0 || visibility !== null || complete;
+    const visibleOn = visibility === "visibles";
+    const hiddenOn = visibility === "masques";
+    const showVisible = chipShown(counts.visible, counts.total, visibleOn);
+    const showHidden = chipShown(counts.hidden, counts.total, hiddenOn);
     const add = (
       <Button variant="primary" size="sm" leadingIcon={<Plus size={16} />} ariaLabel="Nouvelle marque" onClick={() => router.push(routes.nouvelleMarque())}>
         Marque
@@ -103,10 +107,15 @@ export function CatalogueLists({ catalogue }: { catalogue: AdminCatalogue }) {
     }
     return (
       <div className="flex flex-col gap-3">
-        {chipShown(counts.hidden, counts.total, hidden) || chipShown(counts.complete, counts.total, complete) ? (
+        {showVisible || showHidden || chipShown(counts.complete, counts.total, complete) ? (
           <ChipRow>
-            {chipShown(counts.hidden, counts.total, hidden) ? (
-              <Chip active={hidden} clearable={hidden} count={counts.hidden || undefined} onClick={() => write({ visibilite: hidden ? null : "masques" })}>
+            {showVisible ? (
+              <Chip active={visibleOn} clearable={visibleOn} count={counts.visible || undefined} onClick={() => write({ visibilite: visibleOn ? null : "visibles" })}>
+                Visibles
+              </Chip>
+            ) : null}
+            {showHidden ? (
+              <Chip active={hiddenOn} clearable={hiddenOn} count={counts.hidden || undefined} onClick={() => write({ visibilite: hiddenOn ? null : "masques" })}>
                 Masquées
               </Chip>
             ) : null}
@@ -135,7 +144,7 @@ export function CatalogueLists({ catalogue }: { catalogue: AdminCatalogue }) {
   }
 
   const counts = perfumeCounts(perfumes, words);
-  const shown = filterPerfumes(perfumes, { words, stock, hidden });
+  const shown = filterPerfumes(perfumes, { words, stock, visibility });
   if (perfumes.length === 0) {
     return (
       <EmptyState
@@ -151,7 +160,20 @@ export function CatalogueLists({ catalogue }: { catalogue: AdminCatalogue }) {
     );
   }
   const chips = [
-    { key: "hidden", label: "Masqués", count: counts.hidden, active: hidden, toggle: () => write({ visibilite: hidden ? null : "masques" }) },
+    {
+      key: "visible",
+      label: "Visibles",
+      count: counts.visible,
+      active: visibility === "visibles",
+      toggle: () => write({ visibilite: visibility === "visibles" ? null : "visibles" }),
+    },
+    {
+      key: "hidden",
+      label: "Masqués",
+      count: counts.hidden,
+      active: visibility === "masques",
+      toggle: () => write({ visibilite: visibility === "masques" ? null : "masques" }),
+    },
     { key: "low", label: "Stock bas", count: counts.low, active: stock === "bas", toggle: () => write({ stock: stock === "bas" ? null : "bas" }) },
     { key: "out", label: "Rupture", count: counts.out, active: stock === "rupture", toggle: () => write({ stock: stock === "rupture" ? null : "rupture" }) },
   ].filter((chip) => chipShown(chip.count, counts.total, chip.active));

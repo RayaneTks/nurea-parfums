@@ -30,7 +30,7 @@ export function useCatalogueUrl() {
   const tab = readEnum<CatalogueTab>(state.get("tab"), CATALOGUE_TABS, "parfums");
   const query = state.get("q") ?? "";
   const stock = state.get("stock") === null ? null : readEnum<StockFilter | "">(state.get("stock"), STOCK_FILTERS, "") || null;
-  const hidden = readEnum<VisibilityFilter | "">(state.get("visibilite"), VISIBILITY_FILTERS, "") === "masques";
+  const visibility = readEnum<VisibilityFilter | "">(state.get("visibilite"), VISIBILITY_FILTERS, "") || null;
   const complete = readEnum<RangeFilter | "">(state.get("gamme"), RANGE_FILTERS, "") === "complete";
   const { hrefWith } = state;
 
@@ -42,5 +42,5 @@ export function useCatalogueUrl() {
     [hrefWith],
   );
 
-  return { tab, query, stock, hidden, complete, write };
+  return { tab, query, stock, visibility, complete, write };
 }

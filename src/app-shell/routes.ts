@@ -181,7 +181,7 @@ export const routes = {
     tab?: "parfums" | "marques" | "en-avant";
     q?: string;
     stock?: "bas" | "rupture";
-    visibilite?: "masques";
+    visibilite?: "visibles" | "masques";
     /** Onglet Marques : les gammes complètes seulement (chip « Gammes complètes », 06 E15). */
     gamme?: "complete";
   }) => build("/admin/catalogue", q),
