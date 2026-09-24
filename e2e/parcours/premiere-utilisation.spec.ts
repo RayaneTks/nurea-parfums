@@ -157,7 +157,7 @@ test("PC-12 : première vente en moins de cinq minutes, en suivant « Pour comme
   await expect(faites(page)).toHaveCount(2);
   await expect(etape(page, "Ajouter un parfum")).toHaveCount(0);
 
-  // ── 3. « Faire une vente » → E11, client de passage, tout reçu ───────────────────────────────────
+  // ── 3. « Faire une vente » → E11, nom du client, tout reçu ────────────────────────────────────
   await taps.tap(etape(page, "Faire une vente"), "étape « Faire une vente »");
   await expect(page).toHaveURL(/\/admin\/vendre$/);
   await expect(composer(page)).toBeVisible();
@@ -178,6 +178,8 @@ test("PC-12 : première vente en moins de cinq minutes, en suivant « Pour comme
   await expect(page.getByLabel("Reçu maintenant", { exact: true })).toHaveValue(PARFUM.prix80);
   // La poche par défaut est celle créée en premier.
   await expect(page.getByRole("button", { name: "Espèces", exact: true })).toHaveAttribute("aria-pressed", "true");
+  // Le nom du client, obligatoire : sa fiche est créée à l'enregistrement.
+  await page.getByLabel("Nom du client", { exact: true }).fill("Sarah Benali");
   await expect(cta(page)).toContainText(`Encaisser ${euros(PARFUM.prix80)} · Espèces`);
 
   await taps.tap(cta(page), "Encaisser");

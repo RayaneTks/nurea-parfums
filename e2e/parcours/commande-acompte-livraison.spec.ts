@@ -166,12 +166,12 @@ test("PC-03 : commande avec acompte créée par le composeur en 9 taps, puis liv
   await expect(page.getByRole("radio", { name: "Commande" })).toHaveAttribute("aria-checked", "true");
   await expect(cta(page)).toHaveText("Choisir le client");
   await taps.tap(cta(page), "Choisir le client");
-  const picker = openSheet(page);
-  // La rangée porte le contact en légende : le nom accessible du bouton ne s'arrête pas au nom du client.
-  const recent = picker.getByRole("button", { name: new RegExp(`^${fares.fullName}`) });
-  await waitForHydration(recent);
-  await taps.tap(recent, fares.fullName);
-  await expect(picker).toBeHidden();
+  const field = page.getByLabel("Nom du client", { exact: true });
+  await expect(field).toBeFocused();
+  await field.fill(fares.fullName.slice(0, 4));
+  // La suggestion porte le contact en légende : le nom accessible du bouton ne s'arrête pas au nom du client.
+  const suggestion = page.locator("[data-customer-suggestions]").getByRole("button", { name: new RegExp(`^${fares.fullName}`) });
+  await taps.tap(suggestion, fares.fullName);
 
   await expect(cta(page)).toHaveText("Ajouter un parfum");
   await taps.tap(tile(page, "J'adore"), "tuile J'adore");

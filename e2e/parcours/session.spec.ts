@@ -19,17 +19,10 @@ test("cookie supprimé après deux lignes : connexion, retour sur Vendre avec le
   await openFresh(page, routes.vendre());
   await waitForComposer(page);
 
-  // Deux lignes et un nom de client de passage : le ticket est en cours.
+  // Deux lignes et un nom de client : le ticket est en cours.
   await tile(page, "J'adore").tap();
   await tile(page, "L'Homme Idéal").tap();
-  await page.getByRole("button", { name: "Client : Client de passage" }).tap();
-  const picker = openSheet(page);
-  const passing = picker.getByRole("button", { name: /^Client de passage/ });
-  await waitForHydration(passing);
-  await passing.tap();
-  await picker.getByLabel("Nom du client", { exact: true }).fill(CUSTOMER);
-  await picker.getByRole("button", { name: "Valider", exact: true }).tap();
-  await expect(picker).toBeHidden();
+  await page.getByLabel("Nom du client", { exact: true }).fill(CUSTOMER);
   await expect(cta(page)).toContainText(`Encaisser ${euros("240")}`);
 
   // Le point de brouillon dit qu'un ticket attend sur l'onglet Vendre (06 §1.5).
@@ -53,7 +46,7 @@ test("cookie supprimé après deux lignes : connexion, retour sur Vendre avec le
   // Le brouillon est retrouvé tel quel : deux lignes, le client, le montant reçu.
   await waitForComposer(page);
   await expect(page.locator("[data-edit-line]")).toHaveCount(2);
-  await expect(page.getByRole("button", { name: `Client : ${CUSTOMER}` })).toBeVisible();
+  await expect(page.getByLabel("Nom du client", { exact: true })).toHaveValue(CUSTOMER);
   await expect(cta(page)).toContainText(`Encaisser ${euros("240")}`);
 
   await cta(page).tap();
@@ -74,7 +67,7 @@ test("« Se déconnecter » depuis les Réglages : confirmation, retour à la co
 
   // Un ticket en cours, écrit sur l'appareil : c'est lui qui doit survivre à la déconnexion.
   await tile(page, "Asad").tap();
-  await expect(cta(page)).toContainText("Encaisser");
+  await expect(cta(page)).toHaveText("Choisir le client");
   const draft = await page.evaluate(() => localStorage.getItem("nurea:brouillon:vendre"));
   expect(draft, "le composeur a écrit son brouillon sur l'appareil").not.toBeNull();
 

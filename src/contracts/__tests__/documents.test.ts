@@ -9,6 +9,7 @@ import {
   PRICE_REQUIRED_MESSAGE,
   PROPOSED_VOLUME_ML,
   RATE_REQUIRED_MESSAGE,
+  SALE_NAME_REQUIRED_MESSAGE,
   VOLUME_MESSAGE,
   assignDocumentsToBatchInput,
   changeDocumentStatusInput,
@@ -152,9 +153,11 @@ describe("createDocumentInput — client et livraison", () => {
     expect(errors(createDocumentInput.safeParse(order({ ...sale })))).toEqual({
       customer: "Choisis le client : il faut un nom pour suivre les 120,00 € à encaisser.",
     });
-    expect(createDocumentInput.safeParse(order({ ...sale, lines: [line({ isGift: true, unitPriceEur: null })] })).success).toBe(
-      true,
-    );
+    // Nom exigé toujours (amendé le 24/09/2026), même pour un don à 0 € : chaque vente se range sur une fiche.
+    expect(errors(createDocumentInput.safeParse(order({ ...sale, lines: [line({ isGift: true, unitPriceEur: null })] })))).toEqual({
+      customer: SALE_NAME_REQUIRED_MESSAGE,
+    });
+    expect(createDocumentInput.safeParse(order({ ...sale, customer: { kind: "named", name: "Fares" } })).success).toBe(true);
   });
 
   it("customerNameRequirement : rien pour une vente soldée", () => {
@@ -258,12 +261,14 @@ describe("paiements de création (N1) et gestes d'argent du document (J6)", () =
     ).toEqual({ "payments.1.id": "Ce paiement apparaît deux fois : recharge la page et réessaie." });
   });
 
-  it("vente directe sans nom : exigé pour le reste dû après « Reçu maintenant », pas pour une vente payée en entier", () => {
+  it("vente directe sans nom : refusée, qu'il reste un dû après la saisie ou qu'elle soit payée en entier", () => {
     const sale = { origin: "DIRECT_SALE", customer: { kind: "passing", name: null } };
     expect(errors(createDocumentInput.safeParse(order({ ...sale, payments: [{ id: PAYMENT_ID, amount: "50" }] })))).toEqual({
       customer: "Choisis le client : il faut un nom pour suivre les 70,00 € à encaisser.",
     });
-    expect(createDocumentInput.safeParse(order({ ...sale, payments: [{ id: PAYMENT_ID, amount: "120" }] })).success).toBe(true);
+    expect(errors(createDocumentInput.safeParse(order({ ...sale, payments: [{ id: PAYMENT_ID, amount: "120" }] })))).toEqual({
+      customer: SALE_NAME_REQUIRED_MESSAGE,
+    });
   });
 
   it("annuler : remboursements facultatifs, chacun une fois, montants positifs", () => {

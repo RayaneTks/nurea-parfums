@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { createDocumentInput, type CreateDocumentInput } from "@/contracts/documents";
+import { SALE_NAME_REQUIRED_MESSAGE, createDocumentInput, type CreateDocumentInput } from "@/contracts/documents";
 import {
   INJECTED_ON,
   balanceOf,
@@ -104,10 +104,9 @@ describe("T1 — « Reçu maintenant » (N1)", () => {
     });
     expect(await counts(server.prisma)).toMatchObject({ documents: 0 });
 
-    // Payée en entier, une vente de passage n'a pas besoin de nom.
-    expectOk(
-      await server.documents.createDocumentAction({ ...anonymous, payments: [{ id: newId(), amount: "120", pocketId: null }] }),
-    );
+    // Payée en entier, elle exige un nom aussi : chaque vente se range sur une fiche (amendé le 24/09/2026).
+    const paid = await server.documents.createDocumentAction({ ...anonymous, payments: [{ id: newId(), amount: "120", pocketId: null }] });
+    expect(expectError(paid, "VALIDATION").fields).toEqual({ customer: SALE_NAME_REQUIRED_MESSAGE });
 
     const credit = document({ lines: [catalogueLine(perfume.id)], payments: [{ id: newId(), amount: "50", pocketId: null }] });
     expect(expectOk(await server.documents.createDocumentAction(credit))).toMatchObject({ status: "DELIVERED", paid: "50.00", due: "70.00" });

@@ -172,13 +172,15 @@ export type UpdateLineData = z.output<typeof updateLineInput>;
 // ── Client du document ─────────────────────────────────────────────────────────
 
 /**
- * Trois façons de poser un client (06 S06, S10) : de passage (nom et contact libres, aucune fiche),
- * fiche existante (le nom est copié en snapshot), fiche créée en ligne dans la même transaction.
+ * Quatre façons de poser un client (06 S06, S10) : de passage (nom et contact libres, aucune fiche),
+ * fiche existante (le nom est copié en snapshot), fiche créée en ligne dans la même transaction, ou
+ * nom seul (composeur Vendre) : la fiche du même nom est reprise, sinon elle est créée.
  */
 export const documentCustomer = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("passing"), name: optionalText(120), contact: optionalText(200) }),
   z.object({ kind: z.literal("linked"), customerId: entityId }),
   z.object({ kind: z.literal("new"), customer: customerFields }),
+  z.object({ kind: z.literal("named"), name: customerFields.shape.fullName }),
 ]);
 
 export type DocumentCustomerData = z.output<typeof documentCustomer>;
@@ -209,6 +211,8 @@ export function linesTotal(lines: readonly { quantity: number; unitPriceEur: Mon
 }
 
 // ── T1 : créer ─────────────────────────────────────────────────────────────────
+
+export const SALE_NAME_REQUIRED_MESSAGE = "Indique le nom du client : chaque vente se range sur sa fiche.";
 
 export const DIRECT_SALE_DELIVERY_MESSAGE = "Une vente directe est livrée sur-le-champ : retire la date de livraison prévue.";
 
@@ -267,11 +271,12 @@ export const createDocumentInput = z
       }
       ids.add(payment.id);
     });
-    if (!input.customer || hasCustomerName(input.customer)) return;
-    // Ce qui reste à encaisser après les paiements de création exige un nom (06 E11 zone 4).
+    if (hasCustomerName(input.customer)) return;
+    // Tout document naît sous un nom (06 E11 zone 4, amendé le 24/09/2026) ; le message dit pourquoi quand il
+    // reste à encaisser.
     const due = total === null || received === null ? null : eur.clampZero(eur.sub(total, received));
-    const message = due === null ? null : customerNameRequirement(input.origin, due);
-    if (message) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["customer"], message });
+    const message = (due === null ? null : customerNameRequirement(input.origin, due)) ?? SALE_NAME_REQUIRED_MESSAGE;
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["customer"], message });
   });
 
 export type CreateDocumentInput = z.input<typeof createDocumentInput>;

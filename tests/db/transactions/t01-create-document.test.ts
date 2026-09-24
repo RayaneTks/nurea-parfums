@@ -281,6 +281,30 @@ describe("T1 — gardes", () => {
     expect(await counts(server.prisma)).toEqual(before);
   });
 
+  it("client au nom seul : la fiche du même nom (casse et accents ignorés) est reprise, sinon créée", async () => {
+    const perfume = await seedPerfume(server.prisma);
+    const lea = await seedCustomer(server.prisma, { fullName: "Léa Martin" });
+
+    const known = order([catalogueLine(perfume.id)], { customer: { kind: "named", name: "lea  MARTIN" } });
+    expectOk(await server.documents.createDocumentAction(known));
+    expect(await server.prisma.saleDocument.findUniqueOrThrow({ where: { id: known.id } })).toMatchObject({
+      customerId: lea.id,
+      customerName: "Léa Martin",
+    });
+
+    const fresh = order([catalogueLine(perfume.id)], { customer: { kind: "named", name: " Yanis " } });
+    expectOk(await server.documents.createDocumentAction(fresh));
+    const yanis = await server.prisma.customer.findFirstOrThrow({ where: { fullName: "Yanis" } });
+    expect(await server.prisma.saleDocument.findUniqueOrThrow({ where: { id: fresh.id } })).toMatchObject({
+      customerId: yanis.id,
+      customerName: "Yanis",
+    });
+
+    const again = order([catalogueLine(perfume.id)], { customer: { kind: "named", name: "yanis" } });
+    expectOk(await server.documents.createDocumentAction(again));
+    expect(await server.prisma.customer.count()).toBe(2);
+  });
+
   it("fiche liée disparue ⇒ NOT_FOUND ; commande sans nom ⇒ VALIDATION sous le client", async () => {
     const perfume = await seedPerfume(server.prisma);
     expectError(

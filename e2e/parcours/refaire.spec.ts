@@ -33,7 +33,7 @@ test("« Refaire » d'une vente : lignes, client et lot repris, paiements laiss�
   await expect(page.locator("[data-edit-line]")).toHaveCount(2);
   await expect(page.getByLabel("Prix de Yara", { exact: true })).toHaveValue("60");
   await expect(page.getByLabel("Prix de N°5", { exact: true })).toHaveValue("140");
-  await expect(page.getByRole("button", { name: `Client : ${elise.fullName}` })).toBeVisible();
+  await expect(page.getByLabel("Nom du client", { exact: true })).toHaveValue(elise.fullName);
   await expect(page.getByRole("button", { name: "Lot : Commande de mars" })).toBeVisible();
   await expect(page.getByRole("radio", { name: "Vente" })).toHaveAttribute("aria-checked", "true");
 

@@ -25,14 +25,7 @@ const DOUBLE = "Théo Lambert";
 const OFFLINE = "Sonia Meddah";
 
 async function nameCustomer(page: import("@playwright/test").Page, name: string): Promise<void> {
-  await page.getByRole("button", { name: "Client : Client de passage" }).tap();
-  const picker = openSheet(page);
-  const passing = picker.getByRole("button", { name: /^Client de passage/ });
-  await waitForHydration(passing);
-  await passing.tap();
-  await picker.getByLabel("Nom du client", { exact: true }).fill(name);
-  await picker.getByRole("button", { name: "Valider", exact: true }).tap();
-  await expect(picker).toBeHidden();
+  await page.getByLabel("Nom du client", { exact: true }).fill(name);
 }
 
 test("double tap sur le CTA : une seule vente", async ({ page }) => {
@@ -77,7 +70,7 @@ test("interruption : le ticket survit au rechargement et au passage par un autre
   await openFresh(page, routes.vendre());
   await waitForComposer(page);
   await tile(page, "Mon Guerlain").tap();
-  await expect(cta(page)).toContainText("Encaisser");
+  await expect(cta(page)).toHaveText("Choisir le client");
   await expect(page.getByRole("link", { name: "Vendre, brouillon en cours" })).toBeVisible();
 
   // Rechargement (l'app tuée en arrière-plan par iOS) : le ticket est là.

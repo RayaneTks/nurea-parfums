@@ -125,8 +125,10 @@ describe("CTA qui dit l'effet complet (06 E11)", () => {
     expect(ctaPlan(freshDraft(), ctx)).toEqual({ kind: "hidden" });
   });
 
-  it("vente payée : « Encaisser 120,00 € · Espèces », lot en résumé", () => {
-    expect(ctaPlan(saleWithSauvage(), ctx)).toEqual({ kind: "submit", label: `Encaisser ${euros("120")} · Espèces`, summary: "lot Commande de mars" });
+  it("vente payée : sans nom « Choisir le client » ; nommée, « Encaisser 120,00 € · Espèces », lot en résumé", () => {
+    expect(ctaPlan(saleWithSauvage(), ctx)).toEqual({ kind: "customer", label: "Choisir le client", summary: "Chaque vente se range sur une fiche client" });
+    const named = { ...saleWithSauvage(), customer: { kind: "passing" as const, name: "Fares", contact: "" } };
+    expect(ctaPlan(named, ctx)).toEqual({ kind: "submit", label: `Encaisser ${euros("120")} · Espèces`, summary: "lot Commande de mars" });
   });
 
   it("vente à crédit partiel sans nom : « Choisir le client », puis « Encaisser 50,00 € » avec ce qui restera", () => {
@@ -180,6 +182,13 @@ describe("entrée de T1", () => {
     expect(input.expectedDeliveryAt).toBeUndefined();
   });
 
+  it("client : la fiche choisie, sinon le nom tapé (fiche reprise ou créée) ; une lettre seule reste de passage", () => {
+    const withCustomer = (customer: ComposerDraft["customer"]) => createInput({ ...saleWithSauvage(), customer }, ctx).customer;
+    expect(withCustomer({ kind: "linked", id: "cclientfares0000000000000", fullName: "Fares", contact: null })).toEqual({ kind: "linked", customerId: "cclientfares0000000000000" });
+    expect(withCustomer({ kind: "passing", name: "  Lina Haddad ", contact: "" })).toEqual({ kind: "named", name: "Lina Haddad" });
+    expect(withCustomer({ kind: "passing", name: "L", contact: "" })).toEqual({ kind: "passing", name: "L", contact: null });
+  });
+
   it("répartition S08 : les parts saisies, le reste à « Non attribué » ; ignorée si le reçu a changé", () => {
     const draft = { ...saleWithSauvage(), split: { received: m("120.00"), entries: [{ pocketId: CASH.id, amount: "100" }] } };
     expect(paymentsOf(draft, POCKETS).map((part) => [part.pocketName, part.amount])).toEqual([
@@ -200,6 +209,7 @@ describe("entrée de T1", () => {
     const input = createInput({ ...order, lines: order.lines.map((line) => ({ ...line, price: "45" })) }, ctx);
     expect(input).toMatchObject({
       origin: "ORDER",
+      customer: { kind: "named", name: "Fares" },
       expectedDeliveryAt: "2026-09-17T22:00:00.000Z",
       expectedDeliveryHasTime: false,
       notes: "Coffret",
