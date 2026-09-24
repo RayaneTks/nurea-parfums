@@ -22,9 +22,15 @@ export const OPEN_CATALOG_FILTERS_EVENT = "nurea:open-catalog-filters";
 
 const NAV_LINKS = [
   { href: "/", label: "Catalogue" },
+  { href: "/parfums", label: "Marques" },
   { href: "/marque", label: "La Parfumerie" },
   { href: "/contact", label: "Contact" },
 ] as const;
+
+/** « Marques » reste allumé sur une page marque ou parfum ; l'accueil, lui, n'a pas de descendant. */
+function isCurrent(pathname: string, href: string): boolean {
+  return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+}
 
 interface NavbarProps {
   /** Accueil : ouvre le panneau de filtres. Par défaut, diffuse l'événement. */
@@ -153,10 +159,10 @@ export const Navbar: FC<NavbarProps> = ({ onOpenFilters }) => {
             <Link
               key={href}
               href={href}
-              aria-current={pathname === href ? "page" : undefined}
+              aria-current={isCurrent(pathname, href) ? "page" : undefined}
               className={cn(
                 "nurea-label py-2 transition-colors duration-nurea ease-out",
-                pathname === href
+                isCurrent(pathname, href)
                   ? "text-nurea-accent"
                   : "text-nurea-subtle hover:text-nurea-text"
               )}
@@ -231,10 +237,10 @@ export const Navbar: FC<NavbarProps> = ({ onOpenFilters }) => {
                   key={href}
                   href={href}
                   onClick={closeMenu}
-                  aria-current={pathname === href ? "page" : undefined}
+                  aria-current={isCurrent(pathname, href) ? "page" : undefined}
                   className={cn(
                     "nurea-section-title border-b border-nurea-border py-6 transition-colors duration-nurea ease-out",
-                    pathname === href ? "text-nurea-accent" : "text-nurea-text"
+                    isCurrent(pathname, href) ? "text-nurea-accent" : "text-nurea-text"
                   )}
                 >
                   {label}

@@ -25,12 +25,13 @@ const MAX_FEATURED = 2;
  *
  * Formulation : la marque d'abord, parce que le trafic vient du bouche-à-oreille
  * et de Snapchat — on cherche « nuréa parfums » avant de chercher « parfum pas
- * cher ». La proposition et la ville suivent, pour les recherches locales.
- * 59 caractères : au-delà de 60, Google coupe.
+ * cher ». Puis les deux mots de la recherche locale, « parfum » et « Marseille ».
+ * 54 caractères : au-delà de 60, Google coupe. « Au meilleur prix » est passé
+ * dans la description, où il a la place.
  */
-const TITRE_ACCUEIL = `${SITE_NAME} — Grandes marques au meilleur prix, Marseille`;
+const TITRE_ACCUEIL = `${SITE_NAME} — Parfums de grandes marques à Marseille`;
 
-const DESCRIPTION_ACCUEIL = `Le catalogue ${SITE_NAME} : parfums des plus grandes marques pour homme et femme, au meilleur prix. Commande directe sur Snapchat, remise en main propre à Marseille.`;
+const DESCRIPTION_ACCUEIL = `${SITE_NAME}, parfumerie à Marseille : les plus grandes marques de parfum pour homme et femme, au meilleur prix. Commande sur Snapchat, remise en main propre ou envoi.`;
 
 export const metadata: Metadata = {
   /*

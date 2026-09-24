@@ -12,11 +12,11 @@ import {
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { X } from "lucide-react";
-import { CONTACT, type Perfume } from "@/lib/data";
-import { contactHref, whatsappOrderUrl } from "@/lib/catalog/perfumePresentation";
+import type { Perfume } from "@/lib/data";
+import { isCompleteRange } from "@/lib/catalog/perfumePresentation";
+import { brandPath, perfumePath } from "@/lib/seo/paths";
 import { buttonClass } from "@/components/ui/Button";
-import { ChannelSoon } from "@/components/ui/ChannelSoon";
-import { SnapchatIcon, WhatsAppIcon } from "@/components/ui/Icons";
+import { OrderChannels } from "./OrderChannels";
 import { PerfumeImage } from "./PerfumeImage";
 
 interface PerfumeDialogProps {
@@ -27,16 +27,15 @@ interface PerfumeDialogProps {
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
- * Détail d'un parfum — **seule** surface qui porte les moyens de commande.
+ * Détail d'un parfum en surimpression, ouvert depuis la grille de l'accueil.
  *
  * Il n'en existe qu'une instance, montée par la section catalogue ; la fiche en
- * grille ne fait que la demander. Les mêmes appels à l'action étaient
- * auparavant recopiés dans un panneau desktop, une feuille mobile et une liste
- * de gamme, et les trois avaient fini par diverger.
+ * grille ne fait que la demander. Les moyens de commande viennent d'`OrderChannels`,
+ * partagé avec la fiche parfum indexable (`/parfums/<marque>/<parfum>`) : les mêmes
+ * appels à l'action avaient été recopiés trois fois, et les trois copies avaient
+ * divergé.
  *
- * Charte § 05 : angles 0, aucune ombre, séparation au filet. Snapchat prend
- * l'unique aplat cuivre de l'écran — c'est le seul canal ouvert —, WhatsApp le
- * filet, le formulaire le lien texte.
+ * Charte § 05 : angles 0, aucune ombre, séparation au filet.
  */
 const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
   const titleId = useId();
@@ -91,8 +90,20 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
     if (start !== null && end !== undefined && end - start > 70) onClose();
   };
 
-  /* `null` tant que le canal n'est pas ouvert — voir `CONTACT.whatsapp`. */
-  const commandeWhatsApp = whatsappOrderUrl(perfume.name, perfume.brand);
+  /*
+   * La fiche a une adresse à elle : c'est elle qu'on partage en story, et elle que Google indexe.
+   *
+   * La fiche-marque d'une gamme complète n'est pas un flacon : le catalogue la fabrique à partir de
+   * la marque (même nom, identifiant synthétique), et son adresse est celle de la marque. Les
+   * flacons réels d'une marque en gamme complète portent aussi la catégorie « gamme » — c'est le
+   * nom, distinct de celui de la marque, qui les reconnaît.
+   */
+  const brandSheet = isCompleteRange(perfume) && perfume.name === perfume.brand;
+  const sheetHref = perfume.brandSlug
+    ? brandSheet
+      ? brandPath(perfume.brandSlug)
+      : perfumePath(perfume.brandSlug, perfume.name, perfume.id)
+    : null;
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end justify-center md:items-center">
@@ -138,38 +149,13 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
 
             <p className="nurea-caption mt-6">Écrivez-nous pour le prix et la disponibilité</p>
 
-            <div className="mt-3 flex flex-col items-start gap-3">
-              <a
-                href={CONTACT.snapchat}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={buttonClass("solid", "w-full")}
-              >
-                <SnapchatIcon className="h-4 w-4 shrink-0" aria-hidden />
-                Snapchat
-              </a>
-
-              {commandeWhatsApp ? (
-                <a
-                  href={commandeWhatsApp}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={buttonClass("outline", "w-full")}
-                >
-                  <WhatsAppIcon className="h-4 w-4 shrink-0" aria-hidden />
-                  WhatsApp
-                </a>
-              ) : (
-                <ChannelSoon />
-              )}
-
-              <Link
-                href={contactHref(perfume.name, perfume.brand)}
-                className={buttonClass("link")}
-              >
-                Passer par le formulaire
-              </Link>
-            </div>
+            <OrderChannels perfume={perfume.name} brand={perfume.brand}>
+              {sheetHref ? (
+                <Link href={sheetHref} className={buttonClass("link")}>
+                  {brandSheet ? "Voir la page de la marque" : "Voir la fiche du parfum"}
+                </Link>
+              ) : null}
+            </OrderChannels>
           </div>
         </div>
       </div>
