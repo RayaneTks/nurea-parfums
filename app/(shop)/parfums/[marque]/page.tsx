@@ -8,6 +8,7 @@ import { JsonLdScript } from "@/components/seo/JsonLd";
 import { buttonClass } from "@/components/ui/Button";
 import { SnapchatIcon } from "@/components/ui/Icons";
 import { CONTACT } from "@/lib/data";
+import { MENTION_FLACONS } from "@/lib/mentions";
 import { getSeoBrand, getSeoCatalogue } from "@/lib/catalogue-service";
 import { toCardPerfume, type SeoBrand } from "@/lib/catalog/seoCatalogue";
 import { brandPath, CATALOGUE_PATH, fullPerfumeName, perfumePath } from "@/lib/seo/paths";
@@ -158,6 +159,7 @@ export default async function BrandPage({ params }: BrandPageProps) {
               </li>
             ))}
           </ul>
+          <p className="nurea-caption mt-6 border-t border-nurea-border pt-4">{MENTION_FLACONS}</p>
         </section>
       ) : null}
 

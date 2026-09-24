@@ -1,6 +1,7 @@
 import type { FC, ReactNode } from "react";
 import Link from "next/link";
 import { CONTACT } from "@/lib/data";
+import { MENTION_FLACONS } from "@/lib/mentions";
 import { contactHref, whatsappOrderUrl } from "@/lib/catalog/perfumePresentation";
 import { buttonClass } from "@/components/ui/Button";
 import { ChannelSoon } from "@/components/ui/ChannelSoon";
@@ -58,6 +59,9 @@ export const OrderChannels: FC<OrderChannelsProps> = ({ perfume, brand, children
       </Link>
 
       {children}
+
+      {/* Toute surface qui montre un flacon et propose de le commander dit ce que l'on reçoit. */}
+      <p className="nurea-caption mt-3 w-full border-t border-nurea-border pt-4">{MENTION_FLACONS}</p>
     </div>
   );
 };
