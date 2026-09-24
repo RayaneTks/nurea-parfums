@@ -4,7 +4,7 @@
 
 `brand`
 
-Site vitrine catalogue. Le design EST le produit : l'expérience doit transmettre luxe, confiance et désir d'achat avant tout contact Snapchat/WhatsApp.
+Site vitrine catalogue. Le design EST le produit : l'expérience doit transmettre luxe, confiance et désir d'achat avant le premier message sur Snapchat.
 
 ## Target Users
 
@@ -14,7 +14,13 @@ Site vitrine catalogue. Le design EST le produit : l'expérience doit transmettr
 
 ## Product Purpose
 
-Permettre de parcourir 200+ références, filtrer par marque/catégorie, consulter une fiche produit, puis contacter la marque via Snapchat ou WhatsApp.
+Permettre de parcourir une centaine de références d'une quarantaine de marques, filtrer par marque ou catégorie, consulter une fiche parfum, puis écrire à la parfumerie — sur Snapchat, seul canal ouvert (WhatsApp est annoncé « bientôt », jamais présenté comme cliquable tant que le numéro n'existe pas), ou par le formulaire.
+
+Le site ne vend pas en ligne : ni panier, ni paiement, ni compte client. Le prix se donne dans l'échange, jamais en grille.
+
+## Ce que reçoit le client
+
+Le parfum est remis dans un **flacon Nuréa personnalisé** (10, 50 ou 80 ml), à l'étiquette de la marque Nuréa — monogramme, nom, concentration, contenance. Les photographies du catalogue, réalisées par Nuréa Parfums, montrent les flacons d'origine des marques pour qu'on reconnaisse la référence : **ce ne sont pas les flacons livrés**, et le site le dit là où l'on regarde un flacon (voir `DESIGN.md` § Mentions).
 
 ## Brand Personality
 
@@ -22,6 +28,7 @@ Permettre de parcourir 200+ références, filtrer par marque/catégorie, consult
 - **Intime et personnel** : sélection curatée, pas marketplace impersonnelle
 - **Français, raffiné** : copy sobre, pas de marketing agressif
 - **Tangible** : les flacons et marques sont les héros visuels
+- **Signée** : le flacon Nuréa, son étiquette et le sceau bordeaux sont la signature de la marque
 
 ## Anti-References
 
@@ -39,7 +46,7 @@ Permettre de parcourir 200+ références, filtrer par marque/catégorie, consult
 
 1. **Le parfum est la star** : images produit nettes, UI en retrait
 2. **Mobile d'abord** : catalogue scrollable, barre contact fixe, filtres accessibles
-3. **Conversion = contact** : CTAs Snapchat/WhatsApp visibles sans scroll excessif
+3. **Conversion = contact** : l'appel Snapchat visible sans défiler, sur la fiche parfum comme sur la page Contact
 4. **Luxe par la retenue** : une seule transition, 160 ms sur la couleur ; ni ombre, ni arrondi (voir `DESIGN.md`)
 5. **Pas de look "généré par IA"** : éviter les tells listés dans les skills taste/impeccable
 

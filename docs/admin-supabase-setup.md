@@ -1,96 +1,61 @@
-# Panel admin, comptes et Supabase Storage
+# Gestion — compte, Supabase Storage et variables
 
-## 1. Rôle du panel
+Mis à jour le 24/09/2026, après la refonte (bascule du 22/09/2026). La version précédente
+décrivait l'ancienne gestion — rôles OWNER / EDITOR / VIEWER, `middleware.ts`, routes
+`/api/admin/*` d'écriture, `db:push` — qui n'existe plus.
 
-- URL : `/admin` (protégé par middleware + cookie JWT).
-- Connexion : `/admin/login`.
-- **OWNER / EDITOR** : création / édition / archivage des parfums, marques, upload d’images (si Storage configuré).
-- **VIEWER** : lecture seule (liste + fiches sans mutation).
+Architecture de l'authentification : [`docs/refonte/04-ARCHITECTURE.md`](refonte/04-ARCHITECTURE.md)
+§ 8. Sécurité d'ensemble : [`docs/SECURITE.md`](SECURITE.md).
 
-Le catalogue public lit toujours la base via `getCatalogPerfumes()` : seuls les parfums `PUBLISHED` et non supprimés (`deletedAt` vide) apparaissent sur le site.
+## 1. Accès
 
----
+- Adresse : `/admin`, connexion sur `/admin/login`. **Un seul compte, sans rôle.**
+- Garde optimiste dans `proxy.ts` (redirection vers la connexion), garde d'autorité dans
+  `requireSession`, appelée par construction dans chaque action, lecture et route de la gestion.
+- Session : jeton signé HS256 dans un cookie `httpOnly`, `secure`, `SameSite=Lax`, 7 jours,
+  renouvelé en glissant.
+- Essais de connexion : verrou progressif par compte (en base), plus un frein de 20 essais par quart
+  d'heure et par adresse (`src/server/auth/throttle.ts`).
 
-## 2. Configurer Supabase Storage (images 1024×1536)
-
-Les visuels peuvent rester des chemins `/parfums/…` (fichiers dans `public/`) ou des **URLs complètes** pointant vers Supabase. Le format **1024×1536** (portrait) convient bien aux cartes ; pas de redimensionnement obligatoire côté app pour l’instant.
-
-### Étape A — Créer un bucket
-
-1. Dashboard Supabase → **Storage** → **New bucket**.
-2. Nom : `catalog` (ou autre, alors définissez `SUPABASE_STORAGE_BUCKET` avec le même nom).
-3. **Public bucket** : **oui** si vous voulez des URLs stables du type  
-   `https://<projet>.supabase.co/storage/v1/object/public/catalog/perfumes/…`  
-   utilisées dans le champ `image` / `imageLight` / `imageDark` et affichées avec `next/image` (déjà autorisé via `next.config.mjs` si `NEXT_PUBLIC_SUPABASE_URL` est défini au build).
-
-### Étape B — Politiques (RLS)
-
-Avec un bucket **public**, la **lecture** est ouverte via l’URL publique.  
-L’**écriture** ne doit **pas** être ouverte au public : le panel utilise la **clé service role** uniquement côté serveur (`/api/admin/storage/sign`) pour générer une **URL d’upload signée** (valide ~2 h). Les utilisateurs anonymes ne peuvent pas uploader sans passer par une session admin valide.
-
-En pratique, la **service role** contourne RLS pour les appels serveur : gardez `SUPABASE_SERVICE_ROLE_KEY` **uniquement** sur Vercel / serveur, jamais dans le front.
-
-### Étape C — Variables d’environnement
-
-| Variable | Où | Rôle |
-|----------|-----|------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Vercel + local | URL du projet ; sert aux URLs publiques et au pattern `next/image`. |
-| `SUPABASE_SERVICE_ROLE_KEY` | **Serveur seulement** | Client admin Storage + signature d’upload. |
-| `SUPABASE_STORAGE_BUCKET` | optionnel | Défaut `catalog`. |
-
-Après modification de `NEXT_PUBLIC_SUPABASE_URL`, **rebuild** le site (Vercel redéploie) pour que `next.config.mjs` régénère les `remotePatterns` d’images.
-
-### Étape D — Flux dans le panel
-
-1. L’admin choisit un fichier (jpg / png / webp / gif).
-2. Le navigateur appelle `POST /api/admin/storage/sign` (cookie de session).
-3. La réponse contient `signedUrl`, `token`, `publicUrl`.
-4. Le navigateur envoie le fichier en `PUT` sur `signedUrl` (avec en-têtes indiqués par l’API Supabase).
-5. Le champ **Image principale** est rempli avec `publicUrl`.
-
-Sans Storage configuré, vous pouvez toujours coller une URL absolue ou un chemin `/parfums/…`.
-
----
-
-## 3. Créer un compte admin (local)
-
-Prérequis : `DATABASE_URL` dans `.env.local`, schéma à jour (`npm run db:push`), tables créées.
+## 2. Créer le compte, ou en changer le mot de passe
 
 ```bash
-npm run admin:create-user -- votre@email.com "MotDePasseTrèsLong!"
+npm run admin:create-user -- <identifiant> <mot-de-passe> --confirm-host <hôte-de-la-base>
 ```
 
-Rôle par défaut : **OWNER**. Pour un lecteur seul :
+Le script lit `.env.local`, qui désigne la **production** : il refuse d'y écrire sans
+`--confirm-host` reproduisant exactement l'hôte de la base. Mot de passe de 10 caractères au moins.
+Relancé sur un compte existant, il remplace le mot de passe et lève le verrou de connexion.
 
-```bash
-npm run admin:create-user -- lecture@email.com "MotDePasseTrèsLong!" VIEWER
-```
+## 3. Supabase Storage
 
-Puis définissez `ADMIN_JWT_SECRET` (≥ 24 caractères), redémarrez `npm run dev`, ouvrez `/admin/login`.
+1. Un bucket **`catalog`** (ou un autre nom, alors `SUPABASE_STORAGE_BUCKET` le dit), **public en
+   lecture** : les visuels de la vitrine sont des URL publiques stables.
+2. **Aucune écriture publique.** L'application n'expose aucune clé Supabase au navigateur. Un envoi
+   de visuel passe par une server action qui, session vérifiée, demande à Supabase une URL d'envoi
+   signée avec la clé de service (`src/server/catalogue/storage.ts`) ; le navigateur envoie le
+   fichier sur cette URL, rien d'autre.
+3. À vérifier dans la console Supabase (le code ne peut pas le faire) : les politiques du bucket
+   n'ouvrent pas l'écriture aux utilisateurs anonymes.
 
----
+Les visuels sont convertis en WebP côté serveur (`src/server/catalogue/webp.ts`) — l'iPhone n'encode
+pas le WebP — au cadre 1024 × 1536 pour les parfums.
 
-## 4. Variables à renseigner sur Vercel
+## 4. Variables d'environnement (Vercel)
 
-Dans **Project → Settings → Environment Variables** (Production / Preview selon vos besoins) :
+Validées au démarrage par `src/server/env.ts` ; une variable manquante fait répondre la gestion
+« Configuration serveur incomplète » sans faire tomber la vitrine.
 
-| Variable | Obligatoire pour | Note |
-|----------|------------------|------|
-| `DATABASE_URL` | Catalogue + admin | Session pooler Supabase recommandé + `?sslmode=require`. |
-| `ADMIN_JWT_SECRET` | Connexion `/admin` | Secret long et aléatoire. |
-| `ADMIN_DASHBOARD_SECRET` | `GET /api/admin/health` | Inchangé ; distinct du JWT. |
-| `NEXT_PUBLIC_SUPABASE_URL` | Images Storage + build `next/image` | URL projet Supabase. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Upload admin | **Ne jamais** préfixer avec `NEXT_PUBLIC_`. |
-| `SUPABASE_STORAGE_BUCKET` | Si bucket ≠ `catalog` | Optionnel. |
+| Variable | Rôle |
+|---|---|
+| `DATABASE_URL`, `DIRECT_URL` | Base PostgreSQL (Supabase). |
+| `ADMIN_JWT_SECRET` | Signature des sessions — 24 caractères au moins. |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL du projet : visuels, `next/image`, CSP. |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Serveur seulement**, jamais préfixée `NEXT_PUBLIC_`. |
+| `SUPABASE_STORAGE_BUCKET` | Facultative, `catalog` par défaut. |
+| `NUREA_GESTION_MAINTENANCE` | `1` : la gestion répond 503 sans lire la base. |
 
-Après ajout ou changement des variables : **Redeploy** le projet.
+`ADMIN_DASHBOARD_SECRET` n'est plus lue par aucun code : elle peut être retirée de Vercel.
 
----
-
-## 5. Sécurité — rappels
-
-- Ne commitez pas `.env.local`.
-- Ne publiez pas la **service role** Supabase.
-- Préférez des mots de passe longs pour les comptes `AdminUser`.
-- Le middleware refuse l’accès aux pages `/admin` sans JWT valide ; les routes `/api/admin/*` (sauf `login`) vérifient la même session.
-- La limite de débit sur `POST /api/admin/login` limite les essais de mot de passe (best effort en mémoire sur une instance serverless).
+Après un changement de `NEXT_PUBLIC_SUPABASE_URL`, redéployer : `next.config.mjs` en dérive les
+hôtes d'images autorisés et la politique de sécurité du contenu.
