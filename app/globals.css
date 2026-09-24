@@ -452,14 +452,26 @@
  * Grand écran : le 2:3 exact des photos, dans sa colonne — rien n'est rogné.
  *
  * Téléphone : la photo en 2:3 sur toute la largeur faisait 560 px sur un écran
- * de 812. Le nom et le bouton de commande tombaient sous le pli : on croyait
- * avoir ouvert une visionneuse, pas une fiche. Le cadre est donc plafonné à la
- * plus petite de deux hauteurs — le 4:5 de la largeur (125vw), ou 52 % de la
- * hauteur d'écran — et la photo le remplit en `cover`, centrée. Les flacons
- * sont au centre de toutes les photos du catalogue : le rognage prend le ciel
- * et le socle, jamais le flacon. */
+ * de 812, et le nom tombait sous le pli. Le bouton de commande, lui, est tenu
+ * dans une barre collée au bas de la feuille (`PerfumeDialog`) : il ne reste à
+ * faire tenir que la photo et le nom.
+ *
+ * Trois hauteurs, dans cet ordre :
+ *   150vw               — la photo entière (2:3), jamais plus ;
+ *   92dvh − 13rem       — la place laissée par la feuille (92dvh), la barre de
+ *                         commande et le bloc marque + nom (13rem à eux deux) ;
+ *   135vw               — plancher : on ne retire JAMAIS plus de 10 % de la
+ *                         hauteur, 5 % en haut et 5 % en bas.
+ *
+ * Mesuré : 430 × 932 → photo entière ; 390 × 844 → 3 % retirés ; 375 × 812 →
+ * 4 % ; 375 × 667 → 10 %, et le nom passe juste sous le pli plutôt que de
+ * couper le flacon.
+ *
+ * Une première version plafonnait à min(125vw, 52dvh) : jusqu'à 25 % de la
+ * hauteur partait, et sur les photos où le flacon est haut ou décentré, le
+ * rognage le coupait. Le plancher de 135vw est là pour que ça ne revienne pas. */
 .nurea-fiche-visuel {
-  height: min(125vw, 52dvh);
+  height: min(150vw, max(135vw, calc(92dvh - 13rem)));
 }
 
 @media (min-width: 768px) {
