@@ -95,12 +95,18 @@ Instrument Sans 11 px).
 | `.nurea-title` | Newsreader 500 | 32 → 56 / 1,08 / −0,015 em |
 | `.nurea-section-title` | Newsreader 500 | 28 → 40 / 1,1 |
 | `.nurea-name` | Newsreader 500 | 20 → 24 / 1,3 |
+| `.nurea-lead` | Newsreader 400 | 20 → 24 / 1,45 — chapô |
+| `.nurea-numeral` | Newsreader 400 | 40 → 64 / 1 — numéro de chapitre, chiffres tabulaires |
 | `.nurea-body` | Instrument 400 | 16 / 1,8 |
 | `.nurea-label` | Instrument 600 | 11 / 0,18 em capitales |
 | `.nurea-caption` | Instrument 400 | 12,5 / 1,75 |
 
 **N'écrivez pas de taille en dur.** Une taille arbitraire (`text-[13.5px]`) est
 le signe qu'un rôle manque — ajoutez-le ici plutôt que de le contourner.
+
+Le **chapô** (`.nurea-lead`) remplace le paragraphe d'introduction : une idée en
+grand, lue d'abord, plutôt que trois lignes grises en corps 16. Une section qui a
+besoin de deux chapôs a besoin de deux sections.
 
 ## Grille & espacement
 
@@ -133,6 +139,40 @@ Les briques vivent dans `src/components/ui/` :
 
 **Un seul bouton plein par écran.** Sur l'accueil, c'est celui du bandeau
 d'ouverture ; toutes les autres incitations sont au filet ou en lien texte.
+
+### Pages éditoriales
+
+La parfumerie (`/marque`), Contact, Légal et la 404 se lisent comme un carnet en
+chapitres : chaque section est portée par une image ou un signe, jamais par un
+paragraphe. Les briques vivent dans `src/components/editorial/` :
+
+| Brique | Rôle |
+|---|---|
+| `BottleMosaic` | Trois flacons du catalogue, un grand et deux petits empilés, bord contre bord. Calage exact : photos 2:3, colonnes 2fr / 1fr (`.nurea-mosaique`). |
+| `Chapters` | Chapitres « 01 · 02 · 03 », une phrase chacun (`.nurea-numeral`). |
+| `OrderSteps` | Le parcours de commande en trois temps — **source unique**, affichée sur La parfumerie et Contact. |
+| `BrandIndex` | L'index des marques en toutes lettres ; chaque nom mène au catalogue filtré. |
+| `FlaconLabel` | L'étiquette des flacons Nuréa (charte § 06, 44 × 60 mm). |
+| `Seal` | Le sceau bordeaux : l'aplat unique de la charte, qui authentifie le site officiel. |
+| `FaqAccordion` | Questions repliées en `<details>`, sans JavaScript. |
+| `Monogram` | Le monogramme teinté par `currentColor` (`.nurea-monogram`, masque CSS). |
+
+Les flacons sont choisis par `choisirFlacons` (`src/lib/catalog/`) : les parfums
+mis en avant d'abord, une marque une seule fois, jamais une gamme complète.
+
+**Le bordeaux reste un aplat par page.** Le sceau est celui de La parfumerie ;
+aucune autre page n'en porte.
+
+### Mentions
+
+Deux mentions sont dues au client, et tenues dans **un** fichier,
+[`src/lib/mentions.ts`](src/lib/mentions.ts) :
+
+- **Les flacons** — les photographies montrent les flacons d'origine des marques ;
+  le parfum est remis dans un flacon Nuréa personnalisé. À dire là où l'on regarde
+  une photo de flacon : fiche parfum, page Contact, La parfumerie, pied de page.
+- **Les photographies** — réalisées par Nuréa Parfums, reproduction interdite
+  sans accord écrit. Pied de page et informations légales.
 
 ### Fiche produit
 

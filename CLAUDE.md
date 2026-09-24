@@ -84,7 +84,11 @@ une feuille de style l'embarquerait dans les deux registres. Il lit l'en-tête
 - `src/components/home/` — CatalogSection et ses pièces : `CatalogToolbar`,
   `CatalogEmptyState`, `CatalogFilterDrawer`, `useCatalogFilters`, `useExtendedSearch`.
 - `src/components/features/` — Hero, FeaturedSection, PerfumeCard, PerfumeDialog,
-  PerfumeImage.
+  PerfumeImage, ContactForm.
+- `src/components/editorial/` — briques des pages éditoriales (La parfumerie, Contact,
+  Légal, 404) : `BottleMosaic`, `Chapters`, `OrderSteps`, `BrandIndex`, `FlaconLabel`,
+  `Seal`, `FaqAccordion`, `Monogram`. Voir `DESIGN.md` § Pages éditoriales.
+- `src/lib/mentions.ts` — les mentions dues au client (flacons, photographies), une source.
 - `src/lib/search/` — Logique de recherche, API externe, cache.
 - `src/lib/catalog/` — Fetching database, transformation, `perfumePresentation.ts`.
 - `src/actions/` — Server Actions de la vitrine (Contact).
@@ -223,6 +227,11 @@ Le reste :
   aucun texte, l'accent devient le bordeaux.
 - **Fiche produit** : ordre imposé marque / nom / contenance ; jamais de prix en
   grille. Une ligne sans donnée vraie est omise, pas inventée.
+- **Flacons** : les photos montrent les flacons d'origine des marques ; le client reçoit
+  son parfum dans un **flacon Nuréa personnalisé** (10 / 50 / 80 ml). Toute surface qui
+  montre un flacon le dit, par `MENTION_FLACONS` (`src/lib/mentions.ts`) — jamais une
+  formulation recopiée. Les photos sont de Nuréa Parfums (`MENTION_PHOTOS`).
+- **Bordeaux** : un seul aplat par page — le sceau (`Seal`) sur La parfumerie.
 
 ## Règles Gestion (PWA)
 

@@ -28,7 +28,10 @@ un bug (02 §8). Si un changement rend un document faux, on amende le document d
 | `refonte/07-PLAN-EXECUTION.md` | Jalons, bascule, migration, critères d'acceptation. |
 | `refonte/08-RECETTE.md` | **La recette** : chaque capacité de 01 §3, où elle vit, et le test qui la couvre — ou le geste exact à faire à la main. |
 | `catalog-database.md` | Contrat de lecture du catalogue par la vitrine. |
-| `admin-supabase-setup.md` | Réglages Supabase (bucket, politiques). |
+| `admin-supabase-setup.md` | Compte de gestion, Supabase Storage, variables d'environnement. |
+| `SECURITE.md` | Réponse à l'audit de sécurité du 23/09/2026, et ce qui reste à faire hors du code (comptes, 2FA). |
+| `charte-graphique.html` | La charte graphique v3, page autonome (ouvrir dans un navigateur). |
+| `ux-audit-mobile-first-2026-03.md` | **Historique** — conventions de mars 2026, antérieures à la charte v3 et à la refonte. |
 | `shared/agent-tiers.md` | Tiers d'agents et règles de délégation. |
 
 ## Subdirectories
