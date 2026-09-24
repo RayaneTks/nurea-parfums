@@ -121,7 +121,7 @@ explicites ; jamais `npm run build` sans `NUREA_SKIP_MIGRATE_DEPLOY=1` et une UR
 | Essai | Adresse | Données | Compte |
 |---|---|---|---|
 | ~~**En ligne** (aperçu Vercel de `refonte/integration`)~~ | **N'existe plus** : la branche a été retirée le 24/09, l'aperçu avec elle. Depuis la bascule, l'app réelle est sur `https://nureaparfums.fr/admin`, avec les vraies données. La base Neon de préproduction et les variables d'aperçu de la branche sont devenues orphelines — à supprimer chez Vercel et Neon quand le gérant le voudra. | — | — |
-| **Local** | `http://localhost:3000/admin` (et l'IP du poste sur le réseau local, pour l'iPhone) | **Réelles**, migrées : base locale `nurea_repetition`, instantané du 17/09 rejoué par `repetition:refresh` | `essai` |
+| ~~**Local**~~ | **N'existe plus** : la base locale `nurea_repetition` a été supprimée au ménage du 24/09. La bascule est faite, l'app réelle est en production. En refaire une copie locale si besoin : `npm run repetition:refresh`. | — | — |
 
 **Variables d'environnement de l'aperçu.** Les variables *Preview* du projet Vercel pointaient sur la
 **base de production** : tout aperçu aurait écrit dans les vraies données. Elles sont désormais
