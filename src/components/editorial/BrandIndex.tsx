@@ -1,13 +1,16 @@
 import type { FC } from "react";
 import Link from "next/link";
 import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
+import { brandPath } from "@/lib/seo/paths";
 
 /**
  * L'index des marques du catalogue, en toutes lettres.
  *
  * « Une sélection des plus grandes marques » se disait en une phrase ; ici elle
- * se montre. Chaque nom mène au catalogue déjà filtré sur la marque (`?maison=`,
- * lu par `useCatalogFilters`) et descend jusqu'à la grille.
+ * se montre. Chaque nom mène à la page de la marque (`/parfums/<slug>`) — un lien
+ * interne de plus vers elle, et une page qui se partage. Une marque sans page (gamme
+ * complète sans visuel, flacons au visuel provisoire : voir `getSeoCatalogue`) garde
+ * l'ancien chemin, le catalogue filtré (`?maison=`) : jamais de lien vers un 404.
  *
  * Une typographie plutôt que des logos : les marques n'ont pas toutes un logo
  * en base, et un mur à trous ferait moins sérieux qu'une liste nette. Les noms
@@ -22,7 +25,11 @@ import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
  * du cadre, quel que soit l'endroit où la ligne se coupe — sans mesurer quoi que
  * ce soit en JavaScript.
  */
-export const BrandIndex: FC<{ brands: readonly CatalogBrowseBrand[] }> = ({ brands }) => {
+export const BrandIndex: FC<{
+  brands: readonly CatalogBrowseBrand[];
+  /** Slugs des marques qui ont une page. Vide (base injoignable) : tout passe par `?maison=`. */
+  pagedSlugs?: ReadonlySet<string>;
+}> = ({ brands, pagedSlugs }) => {
   const tri = [...brands].sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }));
 
   return (
@@ -32,7 +39,11 @@ export const BrandIndex: FC<{ brands: readonly CatalogBrowseBrand[] }> = ({ bran
           <li key={brand.id} className="flex items-center gap-x-4">
             <span aria-hidden className="h-px w-2 bg-nurea-accent" />
             <Link
-              href={`/?maison=${encodeURIComponent(brand.slug)}#collection`}
+              href={
+                pagedSlugs?.has(brand.slug)
+                  ? brandPath(brand.slug)
+                  : `/?maison=${encodeURIComponent(brand.slug)}#collection`
+              }
               className="nurea-name inline-flex min-h-11 items-center text-nurea-text transition-colors duration-nurea ease-out hover:text-nurea-accent"
             >
               {brand.name}
