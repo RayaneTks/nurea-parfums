@@ -63,6 +63,12 @@ function browseFromMock(): CatalogBrowseBrand[] {
     .sort((a, b) => a.name.localeCompare(b.name, "fr"));
 }
 
+/** Un visuel servable sur la vitrine : ni vide, ni gabarit, ni ancien chemin local. */
+function isPublicImage(image: string | null | undefined): boolean {
+  const img = image?.trim() ?? "";
+  return img !== "" && !img.includes("placeholder.svg") && !img.startsWith("/parfums/");
+}
+
 async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
   if (!process.env.DATABASE_URL?.trim()) {
     return { perfumes: perfumesFromMock(), browseBrands: browseFromMock() };
@@ -132,15 +138,7 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
     const maxId = perfumes.reduce((acc, p) => Math.max(acc, p.id), 0);
 
     const asPerfumesFromBrands: Perfume[] = rangeBrands
-      .filter((b) => {
-        const img = b.image?.trim() ?? "";
-        return (
-          img !== "" &&
-          !img.includes("placeholder.svg") &&
-          !img.startsWith("/parfums/") &&
-          b.name.trim() !== ""
-        );
-      })
+      .filter((b) => isPublicImage(b.image) && b.name.trim() !== "")
       .map((b, idx) => ({
         id: maxId + idx + 1,
         name: b.name,
@@ -154,16 +152,7 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
       }));
 
     const mappedPerfumes: Perfume[] = perfumes
-      .filter((p) => {
-        const img = p.image?.trim() ?? "";
-        return (
-          img !== "" &&
-          !img.includes("placeholder.svg") &&
-          !img.startsWith("/parfums/") &&
-          p.brand.name.trim() !== "" &&
-          p.name.trim() !== ""
-        );
-      })
+      .filter((p) => isPublicImage(p.image) && p.brand.name.trim() !== "" && p.name.trim() !== "")
       .map((p) => {
         const isComplete = p.brand.catalogMode === "COMPLETE";
         return {
@@ -220,6 +209,40 @@ const getPublicCatalogueCached = unstable_cache(
   ["public-catalogue-v3"],
   { tags: [PUBLIC_CATALOGUE_CACHE_TAG] },
 );
+
+/**
+ * Un parfum au catalogue qui n'a pas (encore) sa carte sur la vitrine : masqué, marque masquée, ou sans
+ * visuel servable. La recherche publique le reconnaît pour inviter à écrire — sans dire qu'on l'a, ni qu'on
+ * ne l'a pas. Seuls le nom et la marque sortent : ni image, ni prix, ni stock.
+ */
+export type UnlistedPerfume = { name: string; brand: string };
+
+async function loadUnlistedPerfumesFromDb(): Promise<UnlistedPerfume[]> {
+  if (!process.env.DATABASE_URL?.trim() || prismaCatalogInCooldown()) return [];
+  try {
+    const rows = await prisma.perfume.findMany({
+      where: { name: { not: "" } },
+      select: { name: true, status: true, image: true, brand: { select: { name: true, status: true } } },
+      orderBy: { id: "asc" },
+    });
+    return rows
+      .filter((p) => p.name.trim() !== "" && p.brand.name.trim() !== "")
+      .filter((p) => !(p.status === "PUBLISHED" && p.brand.status === "PUBLISHED" && isPublicImage(p.image)))
+      .map((p) => ({ name: p.name.trim(), brand: p.brand.name.trim() }));
+  } catch (e) {
+    console.error("[catalogue-service] unlisted perfumes DB error:", e);
+    return [];
+  }
+}
+
+const getUnlistedPerfumesCached = unstable_cache(loadUnlistedPerfumesFromDb, ["unlisted-perfumes-v1"], {
+  tags: [PUBLIC_CATALOGUE_CACHE_TAG],
+});
+
+/** Parfums hors vitrine, pour la recherche publique ; invalidés avec le catalogue public. */
+export async function getUnlistedPerfumes(): Promise<UnlistedPerfume[]> {
+  return getUnlistedPerfumesCached();
+}
 
 /**
  * Catalogue public (parfums + panneau Explorer) — une couche Prisma par invalidation du tag

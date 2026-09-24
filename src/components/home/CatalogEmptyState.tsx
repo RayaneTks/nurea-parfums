@@ -21,8 +21,9 @@ interface CatalogEmptyStateProps {
 /**
  * Ce qu'on montre quand la grille est vide.
  *
- * Trois cas, dans cet ordre de précision : la recherche élargie a identifié la
- * référence, un indice hors ligne la reconnaît, ou rien ne correspond. Aucun
+ * Quatre cas, dans cet ordre de précision : la référence est au catalogue sans
+ * carte en ligne (masquée), la recherche élargie l'a identifiée ailleurs, un
+ * indice hors ligne la reconnaît, ou rien ne correspond. Aucun
  * n'est un cul-de-sac — chacun mène au contact, seul endroit où une commande
  * se conclut.
  */
@@ -49,6 +50,30 @@ export const CatalogEmptyState: FC<CatalogEmptyStateProps> = ({
         title="Recherche en cours…"
         body="Nous vérifions aussi nos stocks étendus."
         withContactLink={false}
+      />
+    );
+  }
+
+  const unlisted =
+    extendedSearch.status === "done" &&
+    extendedSearch.response.type === "unlisted_match"
+      ? extendedSearch.response.match
+      : null;
+
+  /* Au catalogue sans carte en ligne (masqué, visuels en préparation) : on ne dit
+     ni qu'on l'a, ni qu'on ne l'a pas — on invite à écrire, demande pré-remplie. */
+  if (unlisted) {
+    const brandOnly = unlisted.on === "brand";
+    return (
+      <EmptyShell
+        testId="unlisted-match"
+        title={
+          brandOnly
+            ? `Vous cherchez un parfum ${unlisted.brand} ?`
+            : `Vous cherchez « ${unlisted.name} » de ${unlisted.brand} ?`
+        }
+        body={`Tout ce que nous proposons n'est pas encore en ligne : chaque fiche demande ses visuels, et le site en ajoute au fil de l'eau. Écrivez-nous, nous vous dirons ce qu'il en est${brandOnly ? " pour cette marque" : " pour ce parfum"}.`}
+        contactHref={contactHref(brandOnly ? { marque: unlisted.brand } : { parfum: unlisted.name, marque: unlisted.brand })}
       />
     );
   }
@@ -110,7 +135,16 @@ interface EmptyShellProps {
   body: string;
   footnote?: string | null;
   withContactLink?: boolean;
+  /** Contact pré-rempli (`?parfum=…&marque=…`), sinon la page Contact nue. */
+  contactHref?: string;
   testId?: string;
+}
+
+function contactHref(params: { parfum?: string; marque?: string }): string {
+  const search = new URLSearchParams();
+  if (params.parfum) search.set("parfum", params.parfum);
+  if (params.marque) search.set("marque", params.marque);
+  return `/contact?${search.toString()}`;
 }
 
 const EmptyShell: FC<EmptyShellProps> = ({
@@ -118,6 +152,7 @@ const EmptyShell: FC<EmptyShellProps> = ({
   body,
   footnote,
   withContactLink = true,
+  contactHref = "/contact",
   testId,
 }) => (
   <div
@@ -128,7 +163,7 @@ const EmptyShell: FC<EmptyShellProps> = ({
     <p className="nurea-body mt-4">{body}</p>
     {footnote ? <p className="nurea-caption mt-4">{footnote}</p> : null}
     {withContactLink ? (
-      <Link href="/contact" className={buttonClass("outline", "mt-8")}>
+      <Link href={contactHref} className={buttonClass("outline", "mt-8")}>
         Nous écrire
       </Link>
     ) : null}

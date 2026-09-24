@@ -19,6 +19,7 @@ function parseResponse(payload: unknown): PerfumeSearchResponse | null {
   if (typeof payload !== "object" || payload === null) return null;
   const { type } = payload as { type?: unknown };
   return type === "local_results" ||
+    type === "unlisted_match" ||
     type === "external_suggestion" ||
     type === "no_results"
     ? (payload as PerfumeSearchResponse)
