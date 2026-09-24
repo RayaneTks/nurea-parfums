@@ -4,6 +4,7 @@ import { Mail, MapPin } from "lucide-react";
 import { BrandLogo } from "./BrandLogo";
 import { CONTACT } from "@/lib/data";
 import { SnapchatIcon, WhatsAppIcon } from "@/components/ui/Icons";
+import { MENTION_FLACONS_COURTE, MENTION_PHOTOS } from "@/lib/mentions";
 import { SITE_NAME } from "@/lib/site";
 
 const NAVIGATION = [
@@ -54,6 +55,7 @@ export const Footer: FC = () => (
           Une sélection tenue à la main, pour homme et pour femme, sans
           intermédiaire entre vous et le flacon.
         </p>
+        <p className="nurea-caption max-w-xs">{MENTION_FLACONS_COURTE}</p>
 
         <div className="flex gap-3">
           {SOCIAL.map(({ href, label, Icon }) => (
@@ -91,7 +93,9 @@ export const Footer: FC = () => (
             href={`mailto:${CONTACT.email}`}
             className="min-w-0 break-words transition-colors duration-nurea ease-out hover:text-nurea-text"
           >
-            {CONTACT.email}
+            {/* Coupure permise après l'arobase : sans elle, « .fr » tombait seul sur sa ligne. */}
+            {CONTACT.email.split("@")[0]}@<wbr />
+            {CONTACT.email.split("@")[1]}
           </a>
         </li>
         <li className="flex items-start gap-3">
@@ -115,9 +119,12 @@ export const Footer: FC = () => (
     </div>
 
     <div className="nurea-page flex flex-col gap-3 border-t border-nurea-border py-8 sm:flex-row sm:items-center sm:justify-between">
-      <p className="nurea-caption">
-        © {new Date().getFullYear()} {SITE_NAME}. Tous droits réservés.
-      </p>
+      <div className="flex flex-col gap-1">
+        <p className="nurea-caption">
+          © {new Date().getFullYear()} {SITE_NAME}. Tous droits réservés.
+        </p>
+        <p className="nurea-caption">{MENTION_PHOTOS}</p>
+      </div>
       <p className="nurea-label text-nurea-subtle">Marseille</p>
     </div>
   </footer>
