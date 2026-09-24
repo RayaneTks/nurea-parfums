@@ -127,61 +127,39 @@ peut donc pas toucher un visuel de production.
 
 ## 4. Ce qui reste
 
-`docs/refonte/00-README.md` § « Ce qui reste avant la bascule » tient la liste complète
-(colonne du gérant G-1…G-8, colonne de l'exécutant E-1…E-9). Par ordre de travail :
+**La bascule est faite** (voir §0) : tout ce que cette section listait avant — finir J17, la
+répétition générale, fusionner L1/L2, la mécanique Vercel — est derrière nous. Reste ceci.
 
-1. ~~Finir J17~~ — **fait le 22/09/2026** (`751de52`, `669255f`, fusion `refonte/integration`).
-   Le travail était écrit et n'avait jamais tourné. Il tourne : `tests/db/rollback.test.ts` passe
-   14/14 (chaîne complète du jour J, puis retour arrière, plus le cas de l'instantané altéré), après
-   deux correctifs de requêtes de contrôle — un `ORDER BY` qui s'appuyait sur un alias de sortie dans
-   une expression, et `pg_sequences` interrogé pour une colonne `is_called` qu'il n'expose pas. Le
-   retour arrière a aussi été **rejoué sur la copie des données réelles** : R1 à R5 verts, référence
-   recalculée identique au centime, **51,4 s** (dont 50,8 s à rejouer les 24 migrations une par une).
-   Deux manques trouvés en chemin et comblés :
-   - **le jour J ne savait pas produire la source du retour arrière.** `migration:rollback` rejoue un
-     instantané JSON (ce poste n'a ni `pg_restore` ni `psql`), et seule la répétition savait en
-     extraire un — au prix de détruire une base. D'où `npm run migration:instantane`, lecture seule
-     stricte, et l'étape **B2b** du jour J ;
-   - **PC-12 n'avait pas de test**, alors que `07 §6.4` en nommait un.
-     `e2e/parcours/premiere-utilisation.spec.ts` joue le parcours entier sur base vide —
-     **16 taps, 13 s** contre un objectif de 5 minutes. Il lui faut une base sans données : harnais à
-     lui (`nurea_test_e2e_vide`, ports 3102/3103, projet `Mobile-premiere`), lancé par
-     `npm run test:e2e:premiere`, troisième commande de `npm run test:e2e`.
+### À faire par le gérant
 
-   Documents amendés au passage (une documentation qui ment est un bug) : `07 §1.7` décrivait un
-   retour arrière en `pg_restore` + `psql` **inexécutable sur ce poste**, donc jamais éprouvé ;
-   `07 §2.2` annonçait un `--rollback` que `apply-sql-migration.ts` refuse ; `07 §6.3`, `07 §6.4` et
-   `08 §1c`/`§3` disaient PC-12 sans test.
+| # | Quoi | Pourquoi lui |
+|---|---|---|
+| G-a | **Deux gestes déjà tranchés, à appliquer dans l'app** : mettre le coût à **0 €** sur la ligne Grand Soir du document de « Yanis secu » (le flacon était offert par le fournisseur, ce n'est pas un coût inconnu) ; et **ne pas annuler seul** l'écart historique de +100 € du 19/09 — sa propre correction de −100 € le neutralise déjà, l'annuler seul ferait perdre 100 € de Trésorerie. Détail en `07` §1.8. | Ce sont ses chiffres |
+| G-b | **Passer la recette `08`** : 146 lignes, dont 24 gestes humains, et les 16 parcours chronométrés sur son iPhone. **Elle n'a pas été passée** : la bascule a eu lieu sur sa demande explicite, maintenue après avertissement. | Son jugement, son téléphone |
+| G-c | **Supprimer les ressources devenues orphelines** : la base Neon de préproduction (`nurea-repetition`) et les variables d'environnement d'aperçu posées au niveau de l'ancienne branche, chez Vercel. Elles ne servent plus à rien depuis le retrait de `refonte/integration` (§9) et continuent peut-être de compter dans ses quotas. | Son compte, sa facturation |
 
-2. **Répétition générale** — **faite pour toute la part « données » le 22/09/2026** (`07` §2.4) :
-   la procédure du jour J jouée avec les commandes exactes de §1.6, une par une, sur la copie des
-   données réelles, **retour arrière compris**. B2b→B8 en 9 à 11 s, retour arrière en 52 s, R1–R5
-   verts, puis la bascule **rejouée après le retour arrière** rendant un rapport identique au centime.
-   **Reste, et appartient au gérant** : le gel et la promotion Vercel (B1, B9, B14), l'étape B3b
-   (tests joués à distance sur une préproduction aux **données réelles** — celle en ligne est
-   fictive) et les budgets de perception sur son iPhone.
-3. ~~Fusionner `fix/vitrine-slug-maintenance` dans `main`~~ — **fait le 22/09/2026** (`80a88f0`,
-   avance rapide, poussé). L1 et L2 sont **en production**, vérifiés sur `https://nureaparfums.fr`
-   (le domaine canonique ; `www.nureaparfums.com` y redirige en 308) : vitrine 200 avec **108 entrées
-   de marque et 211 visuels — exactement les comptages d'avant le déploiement** (V9 inchangé),
-   `/admin` → 307 vers la connexion, `/api/admin/orders` → 401. Le mode maintenance est donc en ligne
-   et **dormant**, prêt pour le gel du jour J sans reconstruction.
-   **À savoir** : il a fallu **trois builds du même commit** — deux échecs réseau du constructeur
-   Vercel (`P1001` sur le pooler Supabase, puis une police Google non téléchargée par Turbopack), le
-   troisième vert. Rien dans le code. Note ajoutée en `07` §1.6 : un build rouge se relance avant
-   d'être diagnostiqué.
-4. **Mécanique Vercel** : `vercel deploy --prod --skip-domain`, `promote`, puis retour au
-   déploiement précédent — à faire avec le gérant, c'est la production.
-5. **Budgets de perception, VoiceOver, PWA installée** : exigent la préproduction sur données
-   réelles et l'iPhone du gérant.
-6. **Recette `08` avec le gérant** : 146 lignes, dont 24 gestes humains.
-7. Après la bascule : jalon N — supprimer le schéma `legacy`, retirer les scripts de migration,
-   poser le tag de bascule.
+### À faire par l'exécutant
 
-Ce qui a changé depuis la rédaction de `00-README` : une **préproduction en ligne existe déjà**
-(base Neon + variables d'aperçu au niveau de la branche), mais avec des **données fictives**.
-G-1 et G-2 ne bloquent donc plus l'essai ; ils bloquent encore la répétition générale sur
-données réelles et les budgets de perception.
+| # | Quoi | Quand |
+|---|---|---|
+| E-a | **Surveillance de sept jours** (`07` §1.8) : `npm run check:invariants -- --confirm-host <hôte prod>` chaque matin (lecture seule), plus la lecture des journaux Vercel. Tout écart d'invariant est un incident prioritaire. | J+0 à J+7 de la bascule (22/09) |
+| E-b | **Jalon N — nettoyage** : supprimer le schéma `legacy`, retirer les scripts de migration, poser le tag de nettoyage. `legacy` porte les anciennes tables et **reste le chemin de retour** : c'est pour ça qu'il est conservé jusque-là. | J+30, soit vers le 22/10/2026 |
+
+### Livré depuis la bascule (23–24/09)
+
+- **Visuels** : les 223 images du bucket ré-encodées (485 Mo → 23 Mo) ; l'optimiseur d'images de
+  Vercel n'est plus utilisé (`unoptimized`), après que son quota gratuit eut rendu toutes les fiches
+  en 402. L'uploader de l'ancienne app encodait en qualité 0,95, corrigé à 0,82.
+- **SEO** : `*.vercel.app` redirige en 308 vers le domaine (en production seulement) ; formes en un
+  mot du nom dans le balisage ; FAQ qui distingue la marque homonyme britannique.
+- **Mode discret** (Réglages › Application) : brouille montants et noms de clients sur cet appareil,
+  pour montrer l'app sans montrer ce qu'elle contient. `docs/admin/PRODUCT.md`.
+- **Rattacher au catalogue** : recolle une vente passée — même livrée — au parfum entré au catalogue
+  depuis, sans toucher ni l'argent ni le stock. `docs/admin/PRODUCT.md`.
+- **Sécurité** (autre session) : en-têtes, frein de débit, garde du formulaire public.
+  `docs/SECURITE.md`.
+- **Ménage des branches** : il n'en reste qu'une, `main` (§9).
+
 
 ## 5. Ce poste : les règles vitales
 
