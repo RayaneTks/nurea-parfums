@@ -39,17 +39,16 @@ test("composeur vide, vente d'une ligne, commande avec client et acompte, carte 
   await shot(page, "01-composeur-vide.png");
 
   await tile(page, "Asad").tap();
+  await page.getByLabel("Nom du client", { exact: true }).fill("Fares");
   await expect(page.locator("[data-composer-cta]")).toContainText("Encaisser");
   await page.evaluate(() => document.getElementById("admin-scroll-root")?.scrollTo({ top: 0 }));
   await shot(page, "02-vente-une-ligne-prete.png");
 
   await page.getByRole("radio", { name: "Commande" }).tap();
-  await page.locator("[data-composer-cta]").tap();
-  const sheet = page.locator('[data-vaul-drawer][data-state="open"]');
-  const fares = sheet.getByRole("button", { name: "Fares Benali" });
+  const fares = page.locator("[data-customer-suggestions]").getByRole("button", { name: /^Fares Benali/ });
+  await page.getByLabel("Nom du client", { exact: true }).focus();
   await waitForHydration(fares);
   await fares.tap();
-  await expect(sheet).toBeHidden();
   await page.getByRole("button", { name: "Demain", exact: true }).tap();
   await page.getByRole("button", { name: "La moitié", exact: true }).tap();
   await expect(page.locator("[data-composer-cta]")).toContainText("Créer la commande · acompte");

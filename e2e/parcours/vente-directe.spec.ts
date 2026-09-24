@@ -38,6 +38,8 @@ test("PC-01 : trois taps depuis l'Accueil, stock décrémenté, paiement dans la
   await taps.tap(tab(page, "Vendre"), "onglet Vendre");
   await waitForComposer(page);
   await taps.tap(tile(page, "Asad"), "tuile Asad · 80 ml · 120 €");
+  // Chaque vente se range sous un nom (06 E11 zone 4) : un nom neuf crée sa fiche à l'enregistrement.
+  await page.getByLabel("Nom du client", { exact: true }).fill("Karim Saidi");
 
   // Le ticket est prêt : prix et coût mémorisés, poche par défaut pré-sélectionnée (N2), le CTA dit l'effet complet.
   await expect(page.getByLabel("Prix de Asad", { exact: true })).toHaveValue("120");
@@ -57,7 +59,8 @@ test("PC-01 : trois taps depuis l'Accueil, stock décrémenté, paiement dans la
   await expect(page.getByRole("link", { name: "Vendre, brouillon en cours" })).toHaveCount(0);
 
   const [sale] = await documentsOf({ perfume: "Asad", exclude: [DOCS.recentAsad] });
-  expect(sale).toMatchObject({ origin: "DIRECT_SALE", status: "DELIVERED", customerId: null });
+  expect(sale).toMatchObject({ origin: "DIRECT_SALE", status: "DELIVERED", customerName: "Karim Saidi" });
+  expect(sale?.customerId).not.toBeNull();
   expect(sale?.lines).toHaveLength(1);
   expect(sale?.lines[0]).toMatchObject({ perfumeName: "Asad", brandName: "Lattafa", volumeMl: 80, quantity: 1, isGift: false });
   expect(sale?.lines[0]?.unitPriceEur.toFixed(2)).toBe("120.00");
@@ -106,6 +109,7 @@ test("réserve de stock : le dialogue dit ce qui va arriver à la fiche, et rien
   // Deux flacons pour un stock suivi à 1.
   await page.getByRole("button", { name: "Augmenter" }).first().tap();
   await page.getByLabel("Prix de Coco Mademoiselle", { exact: true }).fill("90");
+  await page.getByLabel("Nom du client", { exact: true }).fill("Nadia Ferhat");
   await cta(page).tap();
 
   await expect(dialog(page)).toContainText("Stock insuffisant");
@@ -141,6 +145,8 @@ test("hors catalogue : nom normalisé, marque rattachée à celle du catalogue, 
   await taps.tap(cta(page), "Ajouter le prix");
   await expect(page.getByLabel("Prix de Oud Royal", { exact: true })).toBeFocused();
   await page.getByLabel("Prix de Oud Royal", { exact: true }).fill("45");
+  await expect(cta(page)).toHaveText("Choisir le client");
+  await page.getByLabel("Nom du client", { exact: true }).fill("Walid Kaci");
   await expect(cta(page)).toContainText("Encaisser");
   await taps.tap(cta(page), "Encaisser");
   await expect(confirmationCard(page)).toContainText("Vente enregistrée");

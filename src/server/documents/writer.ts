@@ -267,6 +267,10 @@ async function resolveCustomer(tx: Tx, choice: DocumentCustomerData): Promise<Cu
       const customer = await customersWriter.createCustomer(tx, choice.customer);
       return { customerId: customer.id, customerName: customer.fullName, customerContact: null };
     }
+    case "named": {
+      const customer = await customersWriter.findOrCreateCustomerByName(tx, choice.name);
+      return { customerId: customer.id, customerName: customer.fullName, customerContact: null };
+    }
     default: {
       const _exhaustive: never = choice;
       return _exhaustive;

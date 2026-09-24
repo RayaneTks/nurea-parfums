@@ -24,38 +24,25 @@ import { Input } from "@/ui/primitives/Input";
 import { ListRow } from "@/ui/primitives/ListRow";
 import { Text } from "@/ui/primitives/Text";
 
-/** « Client de passage » (06 S06 zone 1) : nom et contact libres, sans fiche. */
-export type PassingCustomerOption = {
-  name: string;
-  contact: string;
-  /** Nom obligatoire : commande, ou vente dont il restera à encaisser. */
-  nameRequired: boolean;
-  onSubmit: (name: string, contact: string) => void;
-};
-
 type CustomerPickerProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** La fiche choisie, avec de quoi l'afficher tout de suite (nom, contact en légende). */
   onSelect: (customerId: string, customer: ComposerCustomerDTO | null) => void;
   nested?: boolean;
-  /** « Lier une fiche » (S01) ; « Client » (composeur). */
+  /** « Lier une fiche » (S01). */
   title?: string;
-  /** Rangée « Client de passage » en tête (composeur) ; absente depuis S01 « Lier une fiche ». */
-  passing?: PassingCustomerOption;
 };
 
 /** URL de la route de lecture (04 §3.5) : pas une adresse d'écran, elle ne vit pas dans `routes.ts`. */
 const searchUrl = (q: string) => `/api/admin/search?scope=customers&q=${encodeURIComponent(q)}`;
 
 /**
- * S06 — Sélecteur de client : « Client de passage » (composeur seulement), récents (8 clients au document le plus
- * récent), recherche à la frappe (nom, téléphone normalisé, Snap, WhatsApp), et S10 — création en ligne avec alerte
- * d'homonyme.
+ * S06 — Sélecteur de client : récents (8 clients au document le plus récent), recherche à la frappe (nom, téléphone
+ * normalisé, Snap, WhatsApp), et S10 — création en ligne avec alerte d'homonyme.
  */
-export function CustomerPicker({ open, onOpenChange, onSelect, nested = true, title = "Lier une fiche", passing }: CustomerPickerProps) {
+export function CustomerPicker({ open, onOpenChange, onSelect, nested = true, title = "Lier une fiche" }: CustomerPickerProps) {
   const [query, setQuery] = useState("");
-  const [passingOpen, setPassingOpen] = useState(false);
   // Fiches créées en ligne (S10) : pas encore dans les résultats de la recherche.
   const created = useRef(new Map<string, ComposerCustomerDTO>());
   const trimmed = query.trim();
@@ -84,37 +71,10 @@ export function CustomerPicker({ open, onOpenChange, onSelect, nested = true, ti
 
   const recent = results && results.q.length < 2 ? results.recentCustomers.map((hit) => hit.id) : undefined;
 
-  const header = passing ? (
-    passingOpen ? (
-      <PassingForm
-        option={passing}
-        onDone={(name, contact) => {
-          passing.onSubmit(name, contact);
-          setPassingOpen(false);
-          onOpenChange(false);
-        }}
-        onCancel={() => setPassingOpen(false)}
-      />
-    ) : (
-      <Card padding={0}>
-        <ListRow
-          leading={<UserRound size={20} aria-hidden className="text-[var(--admin-text-muted)]" />}
-          primary="Client de passage"
-          secondary={passing.name.trim() ? [passing.name.trim(), passing.contact.trim()].filter(Boolean).join(" · ") : "Nom et contact facultatifs"}
-          chevron
-          onClick={() => setPassingOpen(true)}
-        />
-      </Card>
-    )
-  ) : undefined;
-
   return (
     <SelectSheet
       open={open}
-      onOpenChange={(next) => {
-        if (!next) setPassingOpen(false);
-        onOpenChange(next);
-      }}
+      onOpenChange={onOpenChange}
       nested={nested}
       title={title}
       options={options}
@@ -122,9 +82,8 @@ export function CustomerPicker({ open, onOpenChange, onSelect, nested = true, ti
       recent={recent}
       recentTitle="Récents"
       listAllBeforeSearch={false}
-      header={header}
       searchPlaceholder="Nom, téléphone, Snap"
-      autoFocusSearch={!passing}
+      autoFocusSearch
       query={query}
       onQueryChange={setQuery}
       loading={read.loading && !results}
@@ -147,47 +106,6 @@ export function CustomerPicker({ open, onOpenChange, onSelect, nested = true, ti
         ),
       }}
     />
-  );
-}
-
-/** S06 zone 1 — client de passage : nom (obligatoire pour une créance ou une commande), contact libre. */
-function PassingForm({ option, onDone, onCancel }: { option: PassingCustomerOption; onDone: (name: string, contact: string) => void; onCancel: () => void }) {
-  const [name, setName] = useState(option.name);
-  const [contact, setContact] = useState(option.contact);
-  const [tried, setTried] = useState(false);
-  const missing = option.nameRequired && name.trim().length < 2;
-  return (
-    <Card padding={3}>
-      <div className="flex flex-col gap-3" data-passing-form>
-        <Text variant="bodyEm">Client de passage</Text>
-        <FormField
-          label="Nom du client"
-          required={option.nameRequired}
-          hint={option.nameRequired ? "Nécessaire pour suivre ce qui reste à encaisser." : "Facultatif pour une vente payée."}
-          error={tried && missing ? "Indique un nom pour suivre ce document." : undefined}
-        >
-          {(field) => <Input {...field} value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" enterKeyHint="next" />}
-        </FormField>
-        <FormField label="Contact" hint="Téléphone, Snap… facultatif">
-          {(field) => <Input {...field} value={contact} onChange={(e) => setContact(e.target.value)} autoComplete="off" enterKeyHint="done" />}
-        </FormField>
-        <div className="flex gap-2">
-          <Button variant="text" onClick={onCancel}>
-            Revenir
-          </Button>
-          <Button
-            variant="secondary"
-            fullWidth
-            onClick={() => {
-              setTried(true);
-              if (!missing) onDone(name.trim(), contact.trim());
-            }}
-          >
-            Valider
-          </Button>
-        </div>
-      </div>
-    </Card>
   );
 }
 

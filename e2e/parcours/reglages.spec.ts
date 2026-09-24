@@ -77,6 +77,7 @@ test("la poche par défaut choisie dans les Réglages est pré-sélectionnée da
     await openFresh(page, routes.vendre());
     await waitForComposer(page);
     await tile(page, "J'adore").tap();
+    await page.getByLabel("Nom du client", { exact: true }).fill("Nora");
     const chips = page.getByRole("group", { name: "Poche" });
     await expect(chips.getByRole("button", { name: POCKETS.bank.name, exact: true })).toHaveAttribute("aria-pressed", "true");
     await expect(chips.getByRole("button", { name: POCKETS.cash.name, exact: true })).toHaveAttribute("aria-pressed", "false");

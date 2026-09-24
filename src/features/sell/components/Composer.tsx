@@ -1,6 +1,6 @@
 "use client";
 
-import { Boxes, MoreHorizontal, Plus, Search, UserRound } from "lucide-react";
+import { Boxes, MoreHorizontal, Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useConfirm, useToast } from "@/app-shell/FeedbackProvider";
@@ -16,7 +16,6 @@ import type { PocketSummary } from "@/contracts/treasury";
 import { eur, formatEur, halfForCash, parseEurInput, type Eur } from "@/domain/money";
 import { cn } from "@/lib/utils";
 import { BatchPicker } from "@/features/documents/components/BatchPicker";
-import { CustomerPicker } from "@/features/documents/components/CustomerPicker";
 import { DeliveryChips } from "@/features/documents/components/DeliveryChips";
 import { LineCard } from "@/features/documents/components/LineCard";
 import { PerfumePicker } from "@/features/documents/components/PerfumePicker";
@@ -45,7 +44,6 @@ import {
   confirmationOf,
   createInput,
   ctaPlan,
-  customerDisplay,
   hasCustomerName,
   hasParams,
   isDraftEmpty,
@@ -67,6 +65,7 @@ import {
   type LineSources,
 } from "./composer-model";
 import { ConfirmationCard } from "./ConfirmationCard";
+import { CustomerNameField } from "./CustomerNameField";
 import { RecentProvider, type RecentContextValue } from "./RecentlySold";
 import { SplitSheet } from "./SplitSheet";
 import { useComposerDraft } from "./useComposerDraft";
@@ -110,7 +109,6 @@ export function Composer({ pockets, batches, settings, pickerVersion, catalogueC
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
   const [pendingParams, setPendingParams] = useState<ComposerParams | null>(null);
   const [perfumeOpen, setPerfumeOpen] = useState(false);
-  const [customerOpen, setCustomerOpen] = useState(false);
   const [batchOpen, setBatchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openCost, setOpenCost] = useState<string | null>(null);
@@ -119,6 +117,7 @@ export function Composer({ pockets, batches, settings, pickerVersion, catalogueC
   const priceRefs = useRef(new Map<string, HTMLInputElement | null>());
   const cardRefs = useRef(new Map<string, HTMLDivElement | null>());
   const receivedRef = useRef<HTMLInputElement | null>(null);
+  const customerRef = useRef<HTMLInputElement | null>(null);
   const submitted = useRef<ComposerDraft | null>(null);
 
   const ctx = useMemo(() => ({ pockets, batches }), [pockets, batches]);
@@ -247,7 +246,7 @@ export function Composer({ pockets, batches, settings, pickerVersion, catalogueC
         return;
       }
       case "customer":
-        setCustomerOpen(true);
+        customerRef.current?.focus();
         return;
       case "perfume":
         setPerfumeOpen(true);
@@ -273,7 +272,7 @@ export function Composer({ pockets, batches, settings, pickerVersion, catalogueC
   const batch = resolveBatch(draft, batches);
   const margin = marginText(draft);
   const due = received === null ? null : eur.clampZero(eur.sub(sum, received));
-  const customerRequired = order ? !hasCustomerName(draft) : due !== null && eur.compare(due, eur.zero) > 0 && !hasCustomerName(draft);
+  const customerRequired = !hasCustomerName(draft);
   const showSecondary = order || hasLines || draft.customer.kind === "linked" || !isDraftEmpty(draft);
   const splitActive = payments.length > 1;
   const realPockets = pockets.filter((p) => !p.isSystem);
@@ -368,33 +367,16 @@ export function Composer({ pockets, batches, settings, pickerVersion, catalogueC
           />
         ) : null}
 
-        {/* Zone 4 — client */}
+        {/* Zone 4 — client : un nom ; la fiche du même nom est reprise, sinon créée à l'enregistrement */}
         {showSecondary ? (
-          <div className="flex flex-col gap-1">
-            <Card padding={0} className={customerRequired ? "border-[var(--admin-warning)]" : undefined}>
-              <ListRow
-                leading={<UserRound size={20} aria-hidden className={customerRequired ? "text-[var(--admin-warning)]" : "text-[var(--admin-text-muted)]"} />}
-                primary={customerDisplay(draft.customer)}
-                secondary={
-                  customerRequired ? (
-                    <span className="text-[var(--admin-warning)]">Client requis</span>
-                  ) : draft.customer.kind === "linked" ? (
-                    (draft.customer.contact ?? undefined)
-                  ) : (
-                    draft.customer.contact.trim() || undefined
-                  )
-                }
-                chevron
-                ariaLabel={`Client : ${customerDisplay(draft.customer)}`}
-                onClick={() => setCustomerOpen(true)}
-              />
-            </Card>
-            {fieldError("customer") ? (
-              <Text variant="caption" tone="danger">
-                {fieldError("customer")}
-              </Text>
-            ) : null}
-          </div>
+          <CustomerNameField
+            ref={customerRef}
+            customer={draft.customer}
+            order={order}
+            error={fieldError("customer")}
+            onType={(name) => update((d) => ({ ...d, customer: { kind: "passing", name, contact: "" } }))}
+            onPick={(customer) => update((d) => ({ ...d, customer: { kind: "linked", ...customer } }))}
+          />
         ) : null}
 
         {/* Zone 5 — articles */}
@@ -418,6 +400,18 @@ export function Composer({ pockets, batches, settings, pickerVersion, catalogueC
             />
           ))}
 
+          <button
+            type="button"
+            onClick={() => setPerfumeOpen(true)}
+            className={cn(
+              "tap-scale flex min-h-[var(--admin-touch-min)] w-full items-center gap-2 rounded-[var(--admin-radius-md)] border border-[var(--admin-border-strong)] bg-[var(--admin-surface)] px-3 text-left",
+              "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
+            )}
+          >
+            <Search size={16} aria-hidden className="text-[var(--admin-text-subtle)]" />
+            <span className="admin-type-field text-[var(--admin-text-subtle)]">Rechercher un parfum</span>
+          </button>
+
           {catalogueCount === 0 && !hasLines ? (
             <EmptyState
               title="Ajoute d'abord un parfum"
@@ -432,17 +426,6 @@ export function Composer({ pockets, batches, settings, pickerVersion, catalogueC
             recent
           )}
 
-          <button
-            type="button"
-            onClick={() => setPerfumeOpen(true)}
-            className={cn(
-              "tap-scale flex min-h-[var(--admin-touch-min)] w-full items-center gap-2 rounded-[var(--admin-radius-md)] border border-[var(--admin-border-strong)] bg-[var(--admin-surface)] px-3 text-left",
-              "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
-            )}
-          >
-            <Search size={16} aria-hidden className="text-[var(--admin-text-subtle)]" />
-            <span className="admin-type-field text-[var(--admin-text-subtle)]">Rechercher un parfum</span>
-          </button>
           {fieldError("lines") ? (
             <Text variant="caption" tone="danger">
               {fieldError("lines")}
@@ -616,21 +599,6 @@ export function Composer({ pockets, batches, settings, pickerVersion, catalogueC
           setConfirmation(null);
           update((d) => withOffCatalogLine(d, name, brandName, settings.defaultExchangeRate));
         }}
-      />
-      <CustomerPicker
-        open={customerOpen}
-        onOpenChange={setCustomerOpen}
-        nested={false}
-        title="Client"
-        passing={{
-          name: draft.customer.kind === "passing" ? draft.customer.name : "",
-          contact: draft.customer.kind === "passing" ? draft.customer.contact : "",
-          nameRequired: customerRequired || order,
-          onSubmit: (name, contact) => update((d) => ({ ...d, customer: { kind: "passing", name, contact } })),
-        }}
-        onSelect={(id, details) =>
-          update((d) => ({ ...d, customer: { kind: "linked", id, fullName: details?.fullName ?? "Client", contact: details?.contact ?? null } }))
-        }
       />
       <BatchPicker
         open={batchOpen}

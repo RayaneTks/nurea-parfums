@@ -286,8 +286,9 @@ export function ctaPlan(draft: ComposerDraft, ctx: ComposerContext): CtaPlan {
     return { kind: "submit", label: `Créer la commande · acompte ${formatEur(received)}`, summary: join([pockets, lot]) };
   }
 
-  if (eur.compare(due, eur.zero) > 0 && !hasCustomerName(draft)) {
-    return { kind: "customer", label: "Choisir le client", summary: `Nécessaire pour suivre les ${formatEur(due)} à encaisser` };
+  if (!hasCustomerName(draft)) {
+    const summary = eur.compare(due, eur.zero) > 0 ? `Nécessaire pour suivre les ${formatEur(due)} à encaisser` : "Chaque vente se range sur une fiche client";
+    return { kind: "customer", label: "Choisir le client", summary };
   }
   if (!paid) {
     if (eur.isZero(sum)) return { kind: "submit", label: "Enregistrer la vente", summary: join([customerDisplay(draft.customer), lot]) };
@@ -320,10 +321,7 @@ export function createInput(draft: ComposerDraft, ctx: ComposerContext): CreateD
   return {
     id: draft.id,
     origin: order ? "ORDER" : "DIRECT_SALE",
-    customer:
-      draft.customer.kind === "linked"
-        ? { kind: "linked", customerId: draft.customer.id }
-        : { kind: "passing", name: draft.customer.name.trim() || null, contact: draft.customer.contact.trim() || null },
+    customer: documentCustomerOf(draft.customer),
     batchId: batch?.id ?? null,
     expectedDeliveryAt: order ? deliveryIso(draft.deliveryDay, draft.deliveryTime) : undefined,
     expectedDeliveryHasTime: order && draft.deliveryDay !== null && /^\d{2}:\d{2}$/.test(draft.deliveryTime),
@@ -331,6 +329,17 @@ export function createInput(draft: ComposerDraft, ctx: ComposerContext): CreateD
     lines: draft.lines.map((line) => ({ item: lineItemOf({ ...line, isNew: true }) as NonNullable<ReturnType<typeof lineItemOf>>, ...lineFields(line) })),
     payments: paymentsOf(draft, ctx.pockets).map((part) => ({ id: part.id, amount: toWire(part.amount), pocketId: part.pocketId })),
   };
+}
+
+/**
+ * Le client envoyé à T1 : la fiche choisie ; sinon le nom tapé, que le serveur rattache à la fiche du même nom ou
+ * dont il crée la fiche ; sans nom, une vente payée reste de passage.
+ */
+function documentCustomerOf(customer: ComposerCustomer): CreateDocumentInput["customer"] {
+  if (customer.kind === "linked") return { kind: "linked", customerId: customer.id };
+  const name = customer.name.trim();
+  if (name.length >= 2) return { kind: "named", name };
+  return { kind: "passing", name: name || null, contact: customer.contact.trim() || null };
 }
 
 // ── Carte de confirmation (06 E11 zone 3) ──────────────────────────────────────

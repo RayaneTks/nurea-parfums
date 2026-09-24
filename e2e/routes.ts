@@ -484,7 +484,8 @@ export const SHEETS: SheetCase[] = [
     open: { tap: "Ordre des poches", layer: "drawer" },
   },
 
-  // J9 — sheets du composeur (06 S05 hors catalogue, S06 + client de passage, S07, S08).
+  // J9 — sheets du composeur (06 S05 hors catalogue, S07, S08). Son client est un champ nom (E11 zone 4) :
+  // S06 et S10 s'éprouvent depuis S01 « Lier une fiche ».
   {
     sheet: "S05",
     label: "sélecteur de parfum du composeur, recherche clavier ouvert",
@@ -504,17 +505,10 @@ export const SHEETS: SheetCase[] = [
   },
   {
     sheet: "S06",
-    label: "client depuis « Nouvelle commande »",
-    url: routes.vendre({ mode: "commande" }),
-    open: { tap: "Choisir le client", layer: "drawer" },
+    label: "lier une fiche depuis S01",
+    url: withSheet(routes.commandes(), { doc: DOCS.acompte }),
+    open: { tap: /^Lier une fiche/, layer: "drawer" },
     keyboardFields: ["Nom, téléphone, Snap"],
-  },
-  {
-    sheet: "S06",
-    label: "client de passage : nom et contact",
-    url: routes.vendre({ mode: "commande" }),
-    open: { tap: ["Choisir le client", /^Client de passage/], layer: "drawer" },
-    keyboardFields: ["Nom du client", "Contact"],
   },
   {
     // Le composeur propose le lot ouvert le plus récent : son NOM dépend du jeu e2e, pas de l'écran.
@@ -530,9 +524,9 @@ export const SHEETS: SheetCase[] = [
   {
     sheet: "S10",
     label: "créer un client en ligne, depuis S06",
-    url: routes.vendre({ mode: "commande" }),
+    url: withSheet(routes.commandes(), { doc: DOCS.acompte }),
     open: {
-      tap: ["Choisir le client", { fill: "Nom, téléphone, Snap", text: "yasmine kerrache" }, "Créer « yasmine kerrache »"],
+      tap: [/^Lier une fiche/, { fill: "Nom, téléphone, Snap", text: "yasmine kerrache" }, "Créer « yasmine kerrache »"],
       layer: "drawer",
     },
     keyboardFields: ["Nom", "Téléphone"],

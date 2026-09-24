@@ -40,19 +40,19 @@ test("« Reçu maintenant » partiel : le client est exigé, le dû part dans À
   await waitForComposer(page);
   await taps.tap(tile(page, "J'adore"), "tuile J'adore · 80 ml · 150 €");
 
-  // Reçu 50 € sur 150 € : sans nom, le CTA dit pourquoi il en faut un et ouvre le sélecteur.
+  // Reçu 50 € sur 150 € : sans nom, le CTA dit pourquoi il en faut un et place le curseur dans le champ client.
   await taps.tap(page.getByLabel("Reçu maintenant", { exact: true }), "champ Reçu maintenant");
   await page.getByLabel("Reçu maintenant", { exact: true }).fill("50");
   await expect(cta(page)).toHaveText("Choisir le client");
   await expect(page.locator("[data-sticky-action]")).toContainText(`Nécessaire pour suivre les ${euros("100")} à encaisser`);
 
   await taps.tap(cta(page), "Choisir le client");
-  const sheet = openSheet(page);
-  // Une rangée de client porte son contact en légende : le nom accessible du bouton ne s'arrête pas au nom.
-  const client = sheet.getByRole("button", { name: new RegExp(`^${CLIENT.fullName}`) });
-  await waitForHydration(client);
+  const field = page.getByLabel("Nom du client", { exact: true });
+  await expect(field).toBeFocused();
+  await field.fill(CLIENT.fullName.slice(0, 4));
+  // Une suggestion porte son contact en légende : le nom accessible du bouton ne s'arrête pas au nom.
+  const client = page.locator("[data-customer-suggestions]").getByRole("button", { name: new RegExp(`^${CLIENT.fullName}`) });
   await taps.tap(client, CLIENT.fullName);
-  await expect(sheet).toBeHidden();
 
   await expect(cta(page)).toContainText(`Encaisser ${euros("50")}`);
   await expect(page.locator("[data-sticky-action]")).toContainText(`${euros("100")} resteront à encaisser`);
@@ -82,16 +82,11 @@ test("vente entièrement à crédit puis « Annuler » : sans paiement, la vente
   await tile(page, "J'adore").tap();
   await page.getByRole("button", { name: "Rien", exact: true }).tap();
 
-  // Sans reçu, le CTA annonce la créance ; le nom du client de passage suffit à la suivre.
+  // Sans reçu, le CTA annonce la créance ; un nom suffit à la suivre (fiche créée à l'enregistrement).
   await expect(cta(page)).toHaveText("Choisir le client");
   await cta(page).tap();
-  const sheet = openSheet(page);
-  const passing = sheet.getByRole("button", { name: /^Client de passage/ });
-  await waitForHydration(passing);
-  await passing.tap();
-  await sheet.getByLabel("Nom du client", { exact: true }).fill("Inès Rahmani");
-  await sheet.getByRole("button", { name: "Valider", exact: true }).tap();
-  await expect(sheet).toBeHidden();
+  await expect(page.getByLabel("Nom du client", { exact: true })).toBeFocused();
+  await page.getByLabel("Nom du client", { exact: true }).fill("Inès Rahmani");
 
   await expect(cta(page)).toHaveText(`Enregistrer · ${euros("150")} à encaisser`);
   await cta(page).tap();

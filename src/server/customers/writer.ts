@@ -7,6 +7,7 @@ import {
   type UpdateCustomerData,
 } from "@/contracts/customers";
 import { DomainError } from "@/domain/errors";
+import { cleNom } from "@/lib/nommage";
 import type { Tx } from "@/server/db/transaction";
 
 /**
@@ -83,6 +84,21 @@ export async function findCustomerForLink(tx: Tx, id: string): Promise<{ id: str
   const customer = await tx.db.customer.findUnique({ where: { id }, select: { id: true, fullName: true } });
   if (!customer) throw new DomainError("NOT_FOUND", CUSTOMER_NOT_FOUND);
   return customer;
+}
+
+/**
+ * Client posé par son nom seul (composeur Vendre) : la fiche au même nom — casse, accents et ponctuation
+ * ignorés — est reprise, la plus ancienne s'il y a des homonymes ; sinon une fiche est créée, nom seul.
+ */
+export async function findOrCreateCustomerByName(tx: Tx, name: string): Promise<{ id: string; fullName: string }> {
+  const fullName = name.trim();
+  const key = cleNom(fullName);
+  if (key !== "") {
+    const candidates = await tx.db.customer.findMany({ select: { id: true, fullName: true }, orderBy: { createdAt: "asc" } });
+    const existing = candidates.find((candidate) => cleNom(candidate.fullName) === key);
+    if (existing) return existing;
+  }
+  return tx.db.customer.create({ data: { fullName }, select: { id: true, fullName: true } });
 }
 
 /**

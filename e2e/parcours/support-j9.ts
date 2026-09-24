@@ -69,6 +69,7 @@ export function documentsOf(filter: { customerName?: string; customerId?: string
         batchId: true,
         expectedDeliveryAt: true,
         customerId: true,
+        customerName: true,
         notes: true,
         lines: { orderBy: { position: "asc" }, select: { perfumeName: true, brandName: true, volumeMl: true, quantity: true, unitPriceEur: true, isGift: true, unitCostEur: true, note: true, isOffCatalog: true } },
         payments: { select: { kind: true, movement: { select: { amount: true, pocketId: true, pocket: { select: { name: true } } } } } },
