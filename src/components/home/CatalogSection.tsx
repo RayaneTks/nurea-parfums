@@ -21,7 +21,7 @@ import { isCompleteRange } from "@/lib/catalog/perfumePresentation";
 import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
 import { brandSlug } from "@/lib/slugify";
 import { CatalogEmptyState } from "./CatalogEmptyState";
-import { CatalogToolbar } from "./CatalogToolbar";
+import { CatalogToolbar, SortControl } from "./CatalogToolbar";
 import { useCatalogFilters } from "./useCatalogFilters";
 import { useExtendedSearch } from "./useExtendedSearch";
 
@@ -276,6 +276,15 @@ export const CatalogSection = ({
           onQueryChange={(query) => update({ query })}
           onCategoryChange={changeCategory}
           onSortChange={(sort) => update({ sort })}
+        />
+
+        {/* Téléphone : le nombre et le tri sous la barre collante, pas dedans (voir `SortControl`). */}
+        <SortControl
+          id="catalogue-tri-mobile"
+          sort={filters.sort}
+          resultLabel={resultLabel}
+          onSortChange={(sort) => update({ sort })}
+          className="justify-between pt-4 md:hidden"
         />
 
         {hasAnyFilter && (

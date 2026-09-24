@@ -28,7 +28,7 @@ Le parfum est remis dans un **flacon Nuréa personnalisé** (10, 50 ou 80 ml), �
 - **Intime et personnel** : sélection curatée, pas marketplace impersonnelle
 - **Français, raffiné** : copy sobre, pas de marketing agressif
 - **Tangible** : les flacons et marques sont les héros visuels
-- **Signée** : le flacon Nuréa, son étiquette et le sceau bordeaux sont la signature de la marque
+- **Signée** : le monogramme et le sceau bordeaux sont la signature de la marque ; le flacon Nuréa se dit, il ne se montre pas
 
 ## Anti-References
 

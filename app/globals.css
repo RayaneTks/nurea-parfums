@@ -444,6 +444,49 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   FICHE PARFUM ET BARRE DU CATALOGUE — téléphone d'abord
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Le visuel de la fiche en surimpression.
+ *
+ * Grand écran : le 2:3 exact des photos, dans sa colonne — rien n'est rogné.
+ *
+ * Téléphone : la photo en 2:3 sur toute la largeur faisait 560 px sur un écran
+ * de 812. Le nom et le bouton de commande tombaient sous le pli : on croyait
+ * avoir ouvert une visionneuse, pas une fiche. Le cadre est donc plafonné à la
+ * plus petite de deux hauteurs — le 4:5 de la largeur (125vw), ou 52 % de la
+ * hauteur d'écran — et la photo le remplit en `cover`, centrée. Les flacons
+ * sont au centre de toutes les photos du catalogue : le rognage prend le ciel
+ * et le socle, jamais le flacon. */
+.nurea-fiche-visuel {
+  height: min(125vw, 52dvh);
+}
+
+@media (min-width: 768px) {
+  .nurea-fiche-visuel {
+    height: auto;
+    aspect-ratio: 2 / 3;
+  }
+}
+
+/* Rangée qui défile à l'horizontale (onglets du catalogue).
+ *
+ * Le bord droit s'efface sur 32 px : c'est ce qui dit « il y a une suite » sans
+ * flèche ni ombre. Un masque, pas un dégradé posé par-dessus — il n'ajoute
+ * aucune couleur, il retire seulement de l'opacité au contenu. */
+.nurea-defilement {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+}
+
+@media (min-width: 768px) {
+  .nurea-defilement {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    PAGES ÉDITORIALES — La parfumerie, Contact, Légal, 404
    ═══════════════════════════════════════════════════════════════════════════ */
 

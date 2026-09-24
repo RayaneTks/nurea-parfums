@@ -17,6 +17,7 @@ import { isCompleteRange } from "@/lib/catalog/perfumePresentation";
 import { brandPath, perfumePath } from "@/lib/seo/paths";
 import { buttonClass } from "@/components/ui/Button";
 import { OrderChannels } from "./OrderChannels";
+import { SnapchatOrderButton } from "./SnapchatOrderButton";
 import { PerfumeImage } from "./PerfumeImage";
 
 interface PerfumeDialogProps {
@@ -36,6 +37,15 @@ const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1
  * divergé.
  *
  * Charte § 05 : angles 0, aucune ombre, séparation au filet.
+ *
+ * Téléphone — la fiche doit se lire comme une fiche, pas comme une visionneuse. La photo en 2:3
+ * pleine largeur occupait 560 px sur 812 : nom et bouton de commande tombaient sous le pli, et
+ * le geste « toucher un parfum » semblait n'ouvrir qu'un agrandissement. Désormais :
+ *   - la photo est plafonnée (`.nurea-fiche-visuel`) : le nom apparaît sans défiler ;
+ *   - « Commander sur Snapchat » est tenu dans une barre collée au bas de la feuille, hors de la
+ *     zone qui défile : il reste visible quoi qu'on fasse ;
+ *   - une poignée en haut dit que la feuille se ferme d'un glissé vers le bas.
+ * Grand écran : inchangé, photo en 2:3 à gauche, tout le reste à droite.
  */
 const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
   const titleId = useId();
@@ -118,45 +128,59 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
         aria-modal="true"
         aria-labelledby={titleId}
         onKeyDown={onKeyDown}
-        className="relative flex max-h-[92dvh] w-full flex-col overflow-y-auto border-t border-nurea-border bg-nurea-bg md:max-h-[86dvh] md:max-w-[46rem] md:border"
+        className="relative flex max-h-[92dvh] w-full flex-col border-t border-nurea-border bg-nurea-bg md:max-h-[86dvh] md:max-w-[46rem] md:border"
       >
-        <div className="md:grid md:grid-cols-2">
-          <div
-            className="nurea-visuel-parfum relative w-full border-b border-nurea-border md:border-b-0 md:border-r"
-            onTouchStart={onTouchStart}
-            onTouchEnd={onTouchEnd}
-          >
-            <PerfumeImage
-              perfume={perfume}
-              sizes="(max-width: 767px) 100vw, 23rem"
-              priority
-            />
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Fermer"
-              className="absolute right-0 top-0 flex h-12 w-12 items-center justify-center bg-nurea-bg text-nurea-text transition-colors duration-nurea ease-out hover:bg-nurea-surface-hover"
+        {/* La zone qui défile. La barre de commande, en dessous, n'en fait pas partie. */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <div className="md:grid md:grid-cols-2">
+            <div
+              className="nurea-fiche-visuel relative w-full overflow-hidden border-b border-nurea-border md:border-b-0 md:border-r"
+              onTouchStart={onTouchStart}
+              onTouchEnd={onTouchEnd}
             >
-              <X size={20} strokeWidth={1.5} />
-            </button>
+              <PerfumeImage
+                perfume={perfume}
+                sizes="(max-width: 767px) 100vw, 23rem"
+                priority
+              />
+              {/* Poignée : la feuille se ferme d'un glissé vers le bas (téléphone). */}
+              <span
+                aria-hidden
+                className="absolute left-1/2 top-2 h-1 w-10 -translate-x-1/2 bg-nurea-text/70 md:hidden"
+              />
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Fermer"
+                className="absolute right-0 top-0 flex h-12 w-12 items-center justify-center bg-nurea-bg text-nurea-text transition-colors duration-nurea ease-out hover:bg-nurea-surface-hover"
+              >
+                <X size={20} strokeWidth={1.5} />
+              </button>
+            </div>
+
+            <div className="flex flex-col p-6 md:p-8">
+              <p className="nurea-label">{perfume.brand}</p>
+              <h2 id={titleId} className="nurea-name mt-2 text-nurea-text">
+                {perfume.name}
+              </h2>
+
+              <p className="nurea-caption mt-2">Prix et disponibilité : écrivez-nous.</p>
+
+              <OrderChannels perfume={perfume.name} brand={perfume.brand} primaryOnMobile={false}>
+                {sheetHref ? (
+                  <Link href={sheetHref} className={buttonClass("link")}>
+                    {brandSheet ? "Voir la page de la marque" : "Voir la fiche du parfum"}
+                  </Link>
+                ) : null}
+              </OrderChannels>
+            </div>
           </div>
+        </div>
 
-          <div className="flex flex-col p-6 md:p-8">
-            <p className="nurea-label">{perfume.brand}</p>
-            <h2 id={titleId} className="nurea-name mt-2 text-nurea-text">
-              {perfume.name}
-            </h2>
-
-            <p className="nurea-caption mt-6">Écrivez-nous pour le prix et la disponibilité</p>
-
-            <OrderChannels perfume={perfume.name} brand={perfume.brand}>
-              {sheetHref ? (
-                <Link href={sheetHref} className={buttonClass("link")}>
-                  {brandSheet ? "Voir la page de la marque" : "Voir la fiche du parfum"}
-                </Link>
-              ) : null}
-            </OrderChannels>
-          </div>
+        {/* Téléphone : l'action principale, toujours à portée de pouce. `safe-area` : au-dessus de
+            la barre d'accueil de l'iPhone, jamais dessous. */}
+        <div className="border-t border-nurea-border bg-nurea-bg px-6 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 md:hidden">
+          <SnapchatOrderButton perfume={perfume.name} brand={perfume.brand} />
         </div>
       </div>
     </div>
