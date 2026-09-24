@@ -12,7 +12,7 @@ import { FlaconLabel } from "@/components/editorial/FlaconLabel";
 import { Monogram } from "@/components/editorial/Monogram";
 import { OrderSteps } from "@/components/editorial/OrderSteps";
 import { Seal } from "@/components/editorial/Seal";
-import { getCachedCatalogue } from "@/lib/catalogue-service";
+import { getCachedCatalogue, getSeoCatalogue } from "@/lib/catalogue-service";
 import { choisirFlacons } from "@/lib/catalog/choisirFlacons";
 import { MARQUE_FAQ } from "@/lib/marqueFaq";
 import { pageOg, SITE_NAME, SITE_URL } from "@/lib/site";
@@ -64,6 +64,11 @@ const ENGAGEMENTS: readonly Chapter[] = [
  */
 export default async function MarquePage() {
   const { perfumes, browseBrands } = await getCachedCatalogue();
+  // Quelles marques ont une page. Une panne ne doit pas faire tomber /marque : on retombe sur
+  // les liens filtrés de l'accueil, qui marchent toujours.
+  const pagedSlugs = await getSeoCatalogue()
+    .then((brands) => new Set(brands.map((b) => b.slug)))
+    .catch(() => new Set<string>());
   const flacons = choisirFlacons(perfumes, 3);
   const exemple = flacons[0]?.name ?? "Votre parfum";
 
@@ -140,7 +145,7 @@ export default async function MarquePage() {
             <p className="nurea-caption mt-4">Touchez un nom pour voir ses parfums.</p>
           </ScrollReveal>
           <div className="mt-10">
-            <BrandIndex brands={browseBrands} />
+            <BrandIndex brands={browseBrands} pagedSlugs={pagedSlugs} />
           </div>
         </section>
       )}
