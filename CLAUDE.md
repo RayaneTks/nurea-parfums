@@ -20,7 +20,7 @@ de zéro — le dossier pilote de la refonte est `docs/refonte/` (`00-README.md`
 | Parcours de bout en bout | `npm run test:e2e` (dont `test:e2e:premiere`, PC-12 sur base vide) |
 | Reprise des données | `npm run migration:reprise` (`--dry-run` par défaut), `migration:reference`, `migration:verify`, `migration:sql` |
 | Retour arrière de la bascule | `npm run migration:instantane` (lecture seule), puis `npm run migration:rollback -- --instantane <dossier>` |
-| Répétition de bascule | `npm run repetition:refresh` |
+| Répétition de bascule | `npm run repetition:refresh` (locale), `npm run repetition:preprod` (distante) |
 | Invariants en base | `npm run check:invariants` (lecture seule) |
 | Compte de gestion | `npm run admin:create-user` |
 | Assets PWA | `node scripts/build-admin-pwa-assets.mjs` |
@@ -36,6 +36,12 @@ de zéro — le dossier pilote de la refonte est `docs/refonte/` (`00-README.md`
   `node C:\Users\User\nurea-pg\start.mjs` (source et reconstruction :
   `scripts/local-db/start.mjs`).
   `TEST_DATABASE_URL=postgresql://nurea:nurea@localhost:54329/nurea_test npm run test:db`.
+  Quatre bases seulement, toutes jetables et recréées par les suites : `nurea_test`,
+  `nurea_test_e2e`, `nurea_test_e2e_vide` (harnais PC-12) et `nurea_shadow`.
+- **Il n'existe plus de préproduction** : la base Neon a été supprimée le 24/09, et
+  la cible `preview` retirée de `DATABASE_URL`/`DIRECT_URL` chez Vercel. Un aperçu
+  n'a donc plus d'URL de base et **échoue franchement** au lieu d'écrire dans les
+  vraies données. En refaire une : `npm run repetition:preprod`.
 - **Jamais `npm run build` tel quel** : il enchaîne `prisma generate`, la migration
   gardée et `next build`. Hors production, toujours `NUREA_SKIP_MIGRATE_DEPLOY=1`
   avec des `DATABASE_URL`/`DIRECT_URL` factices ou locales.

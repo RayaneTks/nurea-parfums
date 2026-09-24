@@ -15,7 +15,7 @@ l'ancienne gestion n'est plus servie. Ce qui suit est l'état réel, pas un plan
 | Tag de bascule | `bascule-2026-09-22` |
 | Dernier commit d'avant | tag `avant-refonte` (`f3c0344`) |
 | Déploiement de retour (P0) | `nurea-parfums-6zlbktll5` |
-| Instantané de retour arrière | `migration-artifacts/2026-09-22/bascule/instantane` (19 tables, 1 209 lignes) |
+| Filet de retour arrière | Le **schéma `legacy` en production** (12 tables, vérifié présent le 24/09). L'instantané JSON pris le jour J a été effacé du disque depuis — sans conséquence : après le feu vert du gérant, `07` §1.7 exclut de toute façon un retour de base, les correctifs vont vers l'avant. |
 | Durée de la migration | **20 s** — référence 2 s, expand 5 s, reprise 5 s, contract 5 s, vérifications 3 s |
 
 Chiffres, identiques au centime : Trésorerie **1 611,00 €**, Encaissé **2 185,00 €**,
@@ -170,13 +170,23 @@ répétition générale, fusionner L1/L2, la mécanique Vercel — est derrière
 - **Base locale de test** : PostgreSQL 15 embarqué (Docker Desktop ne démarre pas ici),
   `localhost:54329`, `nurea`/`nurea`. Elle **tombe à chaque fin de session** ; la relancer par
   **`node C:\Users\User\nurea-pg\start.mjs`** (garder le processus en vie, c'est lui le serveur).
-  Ce dossier est **hors dépôt et hors répertoire temporaire** — il porte `node_modules` et
-  surtout `data`, où vit `nurea_repetition`, la copie des **données réelles migrées** (au
-  22/09 : 35 documents, 29 paiements, 29 clients, 281 parfums). Ne le remets jamais dans un
-  scratchpad de session, il serait balayé. La source du lanceur, avec la procédure de
-  reconstruction si le dossier disparaît, est `scripts/local-db/start.mjs`.
-  Bases utiles : `nurea_test` (tests), `nurea_test_e2e` (parcours), `nurea_repetition` (copie réelle) ;
-  les `nurea_test_*_j<n>` sont les bases des agents de jalon, jetables.
+  Ce dossier est **hors dépôt et hors répertoire temporaire** — il porte `node_modules` et `data`.
+  Ne le remets jamais dans un scratchpad de session, il serait balayé. La source du lanceur, avec
+  la procédure de reconstruction si le dossier disparaît, est `scripts/local-db/start.mjs`.
+
+  **Quatre bases y vivent, et pas une de plus** (ménage du 24/09 : 28 bases de jalon supprimées,
+  273 Mo rendus) :
+
+  | Base | Rôle | Recréée par |
+  |---|---|---|
+  | `nurea_test` | `npm run test:db` | la suite, à chaque exécution |
+  | `nurea_test_e2e` | les parcours | `e2e/global-setup.ts` |
+  | `nurea_test_e2e_vide` | harnais PC-12, base vide | `npm run test:e2e:premiere` |
+  | `nurea_shadow` | base d'ombre de Prisma | le lanceur |
+
+  Toutes sont **jetables** : les suites les détruisent et les recréent. `nurea_repetition`, la copie
+  locale des données réelles, a été supprimée — la bascule est faite, l'app réelle est en
+  production. En recréer une si besoin : `npm run repetition:refresh`.
 - **Jamais `npm run build` tel quel** : toujours `NUREA_SKIP_MIGRATE_DEPLOY=1` avec des
   `DATABASE_URL`/`DIRECT_URL` factices ou locales. **Jamais `prisma migrate reset`, jamais `db push`.**
 - Un agent parallèle tient parfois le moteur Prisma sous Windows : `prisma generate` échoue alors
@@ -186,6 +196,14 @@ répétition générale, fusionner L1/L2, la mécanique Vercel — est derrière
 - **Contention machine** : sous charge, deux ou trois parcours tombent en délai dépassé sans
   qu'aucune régression n'existe. Toujours confirmer un échec en le relançant seul
   (`--workers=1 --timeout=120000`) avant de « corriger » quoi que ce soit.
+- **Plusieurs sessions peuvent travailler dans CE MÊME répertoire.** Vécu le 23/09 : une autre
+  session éditait pendant que `test:layout` tournait — 254 tests passés, puis 76 échecs d'un coup,
+  parce que le serveur de test est tombé sous un fichier qui changeait. Rien n'était cassé. Deux
+  réflexes : ne jamais faire `git add -A` (on commite le travail en cours d'un autre — c'est
+  arrivé, et il a fallu défaire), et relancer une suite avant de conclure à une régression.
+- **Vercel est capricieux au build** : le 22/09, **trois builds du même commit** — `P1001` sur le
+  pooler Supabase, puis une police Google que Turbopack n'a pas su télécharger, puis vert. Un build
+  rouge se relance avant d'être diagnostiqué.
 
 ## 6. Comment ce chantier a été mené (et pourquoi continuer ainsi)
 
@@ -223,27 +241,38 @@ répétition générale, fusionner L1/L2, la mécanique Vercel — est derrière
   **n'arrondit jamais**.
 - **Pas de rôles, pas de journal d'audit** : un seul opérateur.
 
-## 8. Comptes et infrastructure (état réel)
+## 8. Comptes et infrastructure (état réel au 24/09/2026, après ménage)
 
 - **Vercel** : projet `nurea-parfums` (équipe `rayanetks-7861s-projects`, plan Hobby), lié à
-  `github.com/RayaneTks/nurea-parfums`. La ligne de commande `vercel` est **déjà authentifiée**
-  sur ce poste. Le MCP Vercel ne gère pas les variables d'environnement — passer par la CLI.
-- **Piège majeur, déjà désamorcé** : les variables *Preview* du projet pointaient sur la **base de
-  production** — tout aperçu aurait écrit dans les vraies données. Elles sont surchargées **au
-  niveau de la branche** `refonte/integration` : base Neon, secret de session distinct,
-  `SUPABASE_STORAGE_BUCKET=catalog-essai` (aucun visuel de production ne peut être supprimé),
-  `NUREA_ENV=preprod`. **Ne jamais déployer la refonte en aperçu sans vérifier ces variables.**
-- La **garde du build** a été éprouvée en vrai : le premier déploiement de la branche, encore
-  branché sur la production, **a échoué** au build avec le message attendu, sans rien appliquer.
-- **Neon** : base de préproduction `nurea-repetition` créée via la place de marché Vercel, migrée
-  et remplie de données fictives. Ses valeurs vivent dans un `.env.preprod` **hors du dépôt**
-  (scratchpad de session) ; le motif `.env.preprod` est ignoré par git.
-- **Supabase** : un seul projet, celui de **production**. Créer un projet de préproduction exige
-  une validation dans un navigateur qu'un agent ne peut pas faire ici (extension Chrome non
-  connectée, et la prise de contrôle du bureau interdit les clics dans un navigateur).
-- **Réglage attendu du gérant** (critère G9 de `07` §1.5) : autoriser les formats d'origine
-  (JPEG, PNG, HEIC, jusqu'à 12 Mo) dans le bucket `catalog`, la conversion WebP se faisant
-  désormais côté serveur.
+  `github.com/RayaneTks/nurea-parfums`. La ligne de commande `vercel` est **déjà authentifiée** sur
+  ce poste. Elle ne sait pas supprimer une variable d'environnement de façon ciblée (`env rm` ne
+  prend pas `--git-branch`) : pour ça, passer par l'API REST **en visant l'identifiant**, jamais le
+  nom — plusieurs variables portent le même nom sur des cibles différentes.
+- **Aucun aperçu ne peut plus atteindre la production.** C'était le piège d'origine : `DATABASE_URL`
+  et `DIRECT_URL` portent la base de production et visaient « Production + Preview ». Les variables
+  de branche qui les masquaient ont disparu avec la branche, et la base Neon avec elles. La cible
+  **`preview` leur a donc été retirée** le 24/09 : un aperçu n'a plus d'URL de base et **échoue
+  franchement**, au lieu d'écrire en silence dans les vraies données. Cibles actuelles :
+  `DATABASE_URL` → production + development ; `DIRECT_URL` → production.
+- **Il n'y a plus de préproduction.** La base Neon `nurea-repetition` a été supprimée le 24/09
+  (elle portait une copie des données réelles, devenue inutile après la bascule), ainsi que ses
+  18 variables `NEONPP_*` et les 5 variables de l'ancienne branche. Refaire une préproduction, si
+  le besoin revient : recréer une base par la place de marché Vercel, puis
+  `npm run repetition:preprod -- --confirm-host <hôte>` (`07` §2.2) — la commande existe et a servi.
+- **Supabase** : un seul projet, celui de **production** (`db_nureaparfums`). Le bucket `catalog`
+  accepte déjà tous les formats d'origine, sans limite de taille : le critère G9 de `07` §1.5 est
+  **satisfait**, vérifié le 22/09.
+- **Images** : l'optimiseur d'images de Vercel n'est plus utilisé (`unoptimized` dans
+  `next.config.mjs`). Son quota gratuit avait été épuisé et toutes les fiches rendaient 402. Les
+  visuels sont déposés au cadre exact (1024×1536, qualité 82) et pèsent ~90 Ko : l'optimiseur
+  n'apportait rien. **Ne pas le rallumer** sans restreindre `deviceSizes` et `qualities`, sinon le
+  mur revient.
+- **La garde du build** a été éprouvée en vrai avant la bascule : un déploiement encore branché sur
+  la production **a échoué** au build avec le message attendu, sans rien appliquer.
+- **Sur le disque du poste** : `migration-artifacts/visuels-avant/` garde les 223 visuels
+  **d'origine** (486 Mo), avant le ré-encodage du 22/09. C'est la seule copie ; les versions servies
+  aujourd'hui sont ~20 fois plus légères et vérifiées. À supprimer quand le gérant le dira.
+
 
 ## 9. Branches vivantes
 
@@ -259,7 +288,9 @@ et qu'on repart d'un état ancien sans s'en apercevoir.
 > **Le filet, ce sont les tags, pas les branches.** `avant-refonte` (dernier commit de `main` avant
 > la bascule) et `bascule-2026-09-22` (la révision basculée) sont indépendants de tout ce ménage et
 > restent le point de retour. L'instantané des données d'avant la bascule est, lui, dans
-> `migration-artifacts/2026-09-22/bascule/instantane`.
+> le **schéma `legacy`** de la production (12 tables), conservé jusqu'au jalon N. L'instantané JSON
+> du jour J n'est plus sur le disque, et ce n'est pas un problème : deux jours de ventes réelles ont
+> été saisies depuis, le restaurer les effacerait.
 
 Empreintes des branches retirées, si l'une devait être ressuscitée (`git branch <nom> <empreinte>`) :
 
