@@ -15,6 +15,13 @@ export type ViewportSample = {
   offsetTop: number;
   /** `visualViewport.scale` : au-delà de 1, l'utilisateur zoome. */
   scale: number;
+  /**
+   * Un champ de saisie a le focus. Sans lui, pas de clavier : iOS (PWA surtout) rapporte parfois un
+   * viewport visuel plus court que la fenêtre sans aucun clavier à l'écran — après une fermeture de
+   * clavier, au retour d'arrière-plan. Pris pour un clavier, cet écart remontait le pied des sheets
+   * d'environ 300 px et écrasait leur contenu dans une bande qu'il fallait faire défiler.
+   */
+  editing: boolean;
 };
 
 export type ViewportVars = { vh: number; keyboardInset: number; offsetTop: number };
@@ -36,12 +43,24 @@ export function computeViewport(sample: ViewportSample, previous: ViewportVars |
     return { vh: Math.round(sample.innerHeight), keyboardInset: 0, offsetTop: 0 };
   }
   if (sample.scale > 1.01 && previous) return previous;
+  if (!sample.editing) return { vh: Math.round(sample.visualHeight), keyboardInset: 0, offsetTop: 0 };
   const inset = sample.innerHeight - sample.visualHeight - sample.offsetTop;
   return {
     vh: Math.round(sample.visualHeight),
     keyboardInset: Math.max(0, Math.round(inset)),
     offsetTop: Math.max(0, Math.round(sample.offsetTop)),
   };
+}
+
+/** Élément qui fait monter le clavier virtuel : champ texte, zone de texte, contenu éditable. */
+export function isEditable(element: Element | null): boolean {
+  if (!element) return false;
+  if (element instanceof HTMLTextAreaElement) return !element.readOnly;
+  if (element instanceof HTMLInputElement) {
+    const noKeyboard = ["button", "checkbox", "color", "file", "hidden", "image", "radio", "range", "reset", "submit"];
+    return !element.readOnly && !noKeyboard.includes(element.type);
+  }
+  return element instanceof HTMLElement && element.isContentEditable;
 }
 
 export function sameViewport(a: ViewportVars | null, b: ViewportVars): boolean {
