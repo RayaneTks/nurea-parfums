@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { VIEWPORT_VARIABLES, computeViewport, sameViewport, type ViewportVars } from "./viewport";
+import { VIEWPORT_VARIABLES, computeViewport, isEditable, sameViewport, type ViewportVars } from "./viewport";
 
 /** Instance qui écrit, s'il y en a une : un seul écrivain, même si deux montages se chevauchent. */
 let owner: symbol | null = null;
@@ -37,6 +37,7 @@ export function ViewportService() {
           visualHeight: vv ? vv.height : null,
           offsetTop: vv ? vv.offsetTop : 0,
           scale: vv ? vv.scale : 1,
+          editing: isEditable(document.activeElement),
         },
         previous,
       );
@@ -57,6 +58,9 @@ export function ViewportService() {
     vv?.addEventListener("scroll", schedule);
     window.addEventListener("resize", schedule);
     window.addEventListener("orientationchange", schedule);
+    // Le focus décide s'il y a un clavier : entrer dans un champ ou en sortir remesure.
+    document.addEventListener("focusin", schedule);
+    document.addEventListener("focusout", schedule);
 
     return () => {
       if (frame !== 0) window.cancelAnimationFrame(frame);
@@ -64,6 +68,8 @@ export function ViewportService() {
       vv?.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
       window.removeEventListener("orientationchange", schedule);
+      document.removeEventListener("focusin", schedule);
+      document.removeEventListener("focusout", schedule);
       root.style.removeProperty(VIEWPORT_VARIABLES.vh);
       root.style.removeProperty(VIEWPORT_VARIABLES.keyboardInset);
       root.style.removeProperty(VIEWPORT_VARIABLES.offsetTop);

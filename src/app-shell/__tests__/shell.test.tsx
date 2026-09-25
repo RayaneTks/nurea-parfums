@@ -14,7 +14,7 @@ import { computeViewport } from "../viewport";
 
 describe("service viewport (05 §2.8)", () => {
   it("clavier ouvert : hauteur visible et inset", () => {
-    expect(computeViewport({ innerHeight: 844, visualHeight: 508, offsetTop: 0, scale: 1 }, null)).toEqual({
+    expect(computeViewport({ innerHeight: 844, visualHeight: 508, offsetTop: 0, scale: 1, editing: true }, null)).toEqual({
       vh: 508,
       keyboardInset: 336,
       offsetTop: 0,
@@ -22,16 +22,24 @@ describe("service viewport (05 §2.8)", () => {
   });
 
   it("iOS fait défiler le viewport visuel : le décalage n'est pas du clavier", () => {
-    expect(computeViewport({ innerHeight: 844, visualHeight: 508, offsetTop: 120, scale: 1 }, null).keyboardInset).toBe(216);
+    expect(computeViewport({ innerHeight: 844, visualHeight: 508, offsetTop: 120, scale: 1, editing: true }, null).keyboardInset).toBe(216);
   });
 
   it("un zoom au pincement n'ouvre pas de clavier imaginaire", () => {
     const previous = { vh: 844, keyboardInset: 0, offsetTop: 0 };
-    expect(computeViewport({ innerHeight: 844, visualHeight: 422, offsetTop: 0, scale: 2 }, previous)).toBe(previous);
+    expect(computeViewport({ innerHeight: 844, visualHeight: 422, offsetTop: 0, scale: 2, editing: true }, previous)).toBe(previous);
+  });
+
+  it("sans champ actif, pas de clavier : l'écart que rapporte iOS n'est pas un clavier", () => {
+    expect(computeViewport({ innerHeight: 1150, visualHeight: 844, offsetTop: 0, scale: 1, editing: false }, null)).toEqual({
+      vh: 844,
+      keyboardInset: 0,
+      offsetTop: 0,
+    });
   });
 
   it("sans visualViewport : la fenêtre, sans inset", () => {
-    expect(computeViewport({ innerHeight: 700.4, visualHeight: null, offsetTop: 0, scale: 1 }, null)).toEqual({
+    expect(computeViewport({ innerHeight: 700.4, visualHeight: null, offsetTop: 0, scale: 1, editing: true }, null)).toEqual({
       vh: 700,
       keyboardInset: 0,
       offsetTop: 0,
