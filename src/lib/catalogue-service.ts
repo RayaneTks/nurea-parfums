@@ -206,7 +206,10 @@ const getPublicCatalogueCached = unstable_cache(
   // 23/09/2026 : Hacivat -> Hundred Silent Ways, Elisabeth Arden -> Elizabeth
   // Arden, Eau Passion rendue a Franck Olivier, et une douzaine de fautes de
   // casse). Meme raison : aucune mutation admin n'a purge le tag.
-  ["public-catalogue-v3"],
+  // v4 : visuels remplacés et noms corrigés en base hors de la gestion (audit des visuels des
+  // 24-26/09/2026 : 45 fiches aux visuels refaits, 13 noms remis à l'orthographe de la marque,
+  // Hibiscus Mahajád ajouté, Tiramisú retiré). Même raison que v2 et v3.
+  ["public-catalogue-v4"],
   { tags: [PUBLIC_CATALOGUE_CACHE_TAG] },
 );
 
@@ -252,7 +255,8 @@ export async function getCachedCatalogue(): Promise<CachedPublicCatalogue> {
   return getPublicCatalogueCached();
 }
 
-const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v1"], {
+// v2 : mêmes corrections que « public-catalogue-v4 », écrites en base sans purge du tag.
+const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v2"], {
   tags: [PUBLIC_CATALOGUE_CACHE_TAG],
 });
 
