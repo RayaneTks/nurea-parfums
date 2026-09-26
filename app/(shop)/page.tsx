@@ -5,6 +5,7 @@ import { FeaturedSection } from "@/components/features/FeaturedSection";
 import { CatalogSection } from "@/components/home/CatalogSection";
 import { CatalogSkeleton } from "@/components/features/PerfumeCardSkeleton";
 import { getCachedCatalogue } from "@/lib/catalogue-service";
+import { discoveryOrder } from "@/lib/catalog/discoveryOrder";
 import { pageOg, SITE_NAME } from "@/lib/site";
 
 /** Données via `getCachedCatalogue` (tag `public-catalogue`) — pas de HTML figé au build. */
@@ -49,6 +50,8 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const { perfumes, browseBrands } = await getCachedCatalogue();
   const featured = perfumes.filter((p) => p.isFeatured).slice(0, MAX_FEATURED);
+  // Nouvel ordre à chaque visite, marques variées en tête — tiré ici, côté serveur (`discoveryOrder`).
+  const catalogue = discoveryOrder(perfumes);
 
   return (
     <>
@@ -59,7 +62,7 @@ export default async function HomePage() {
       {/* `CatalogSection` lit les filtres dans l'URL : sans cette frontière,
           la page entière basculerait en rendu client. */}
       <Suspense fallback={<CatalogSkeleton />}>
-        <CatalogSection catalogPerfumes={perfumes} browseBrands={browseBrands} />
+        <CatalogSection catalogPerfumes={catalogue} browseBrands={browseBrands} />
       </Suspense>
     </>
   );
