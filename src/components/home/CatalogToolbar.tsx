@@ -9,7 +9,8 @@ import type { SortKey } from "./useCatalogFilters";
 const SEARCH_ID = "catalogue-recherche";
 
 const SORT_OPTIONS: ReadonlyArray<{ value: SortKey; label: string }> = [
-  { value: "default", label: "Ordre du catalogue" },
+  // L'ordre par défaut change à chaque visite (`discoveryOrder`) : « Ordre du catalogue » ne le disait plus.
+  { value: "default", label: "Sélection du moment" },
   { value: "name", label: "Nom (A–Z)" },
   { value: "brand", label: "Marque (A–Z)" },
 ];
