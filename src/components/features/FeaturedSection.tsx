@@ -48,20 +48,19 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => (
           d'autre. `object-contain` ne sert plus qu'au cas limite où le texte
           rend la rangée plus haute que le visuel : le flacon reste entier.
 
-          `sizes` décrit la largeur réelle — 277 px tant que la hauteur est au
-          plancher (sous 1100 px de fenêtre), puis les deux tiers de 38vw,
-          jusqu'au plafond de 427 px. Il ne change RIEN au poids téléchargé
-          aujourd'hui : `images.unoptimized` est à `true` (`next.config.mjs`,
-          correctif du 22/09/2026 — le quota de transformations Vercel), donc
-          aucun `srcset` n'est rendu et la photo est servie telle quelle, à
-          1024 × 1536 et ~145 Ko. L'attribut reste parce que `fill` l'exige et
-          qu'il sera juste le jour où l'optimisation rouvrira.
+          `sizes` décrit la largeur réelle — toute la largeur sur téléphone,
+          277 px tant que la hauteur est au plancher (sous 1100 px de fenêtre),
+          puis les deux tiers de 38vw, jusqu'au plafond de 427 px. Le chargeur
+          d'images (`src/lib/images/loader.ts`) s'en sert : la vignette 640 px
+          quand elle suffit, l'original 1024 × 1536 sinon — sur téléphone, où
+          la photo occupe l'écran, c'est l'original, et c'est voulu.
         */}
         <div className="nurea-visuel-parfum relative w-full md:aspect-auto">
           <PerfumeImage
             perfume={perfume}
             sizes="(max-width: 767px) 100vw, (max-width: 1099px) 280px, (max-width: 1684px) 26vw, 427px"
-            priority={index === 0}
+            // Pas de priorité : la section est sous le bandeau d'accueil, hors du premier écran. Son
+            // préchargement (145 Ko) disputait la bande passante au visuel d'accueil, l'élément LCP.
             className="md:object-contain"
           />
         </div>
