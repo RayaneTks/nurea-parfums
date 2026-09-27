@@ -17,7 +17,7 @@ import {
   type Category,
   type Perfume,
 } from "@/lib/data";
-import { isCompleteRange } from "@/lib/catalog/perfumePresentation";
+import { inCategory, isCompleteRange } from "@/lib/catalog/perfumePresentation";
 import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
 import { brandSlug } from "@/lib/slugify";
 import { CatalogEmptyState } from "./CatalogEmptyState";
@@ -67,8 +67,7 @@ export const CatalogSection = ({
         const slug = slugOf(perfume);
         return (
           fuzzySearchMatch(perfume, filters.query) &&
-          (filters.category === "Tout voir" ||
-            perfume.category === filters.category) &&
+          inCategory(perfume, filters.category) &&
           (filters.brandSlug === "" || slug === filters.brandSlug) &&
           (filters.brandSlugs.size === 0 || filters.brandSlugs.has(slug))
         );

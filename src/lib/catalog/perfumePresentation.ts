@@ -1,4 +1,4 @@
-import { CONTACT, type Perfume } from "@/lib/data";
+import { CONTACT, type Category, type Perfume } from "@/lib/data";
 
 /**
  * Règles de présentation partagées par la fiche, le détail et la recherche.
@@ -12,6 +12,18 @@ export const COMPLETE_RANGE_CATEGORY = "Gammes Complètes";
 
 export function isCompleteRange(perfume: Perfume): boolean {
   return perfume.category === COMPLETE_RANGE_CATEGORY;
+}
+
+/**
+ * Le parfum appartient-il à cette catégorie ? Seule règle, pour la grille comme pour la recherche.
+ *
+ * « Nouveautés » n'est pas une catégorie qu'on attribue à la main — elle restait vide : ce sont les
+ * derniers parfums entrés au catalogue, marqués `isNew` par le catalogue serveur.
+ */
+export function inCategory(perfume: Perfume, category: Category): boolean {
+  if (category === "Tout voir") return true;
+  if (category === "Nouveautés") return perfume.isNew === true;
+  return perfume.category === category;
 }
 
 /** Formulaire de contact pré-rempli avec le parfum consulté. */
