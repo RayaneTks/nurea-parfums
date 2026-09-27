@@ -2,6 +2,7 @@ import "server-only";
 import type { Sharp, SharpOptions } from "sharp";
 import { IMAGE_TOO_LARGE_MESSAGE, IMAGE_UNREADABLE_MESSAGE, type ImageUsage } from "@/contracts/catalogue";
 import { DomainError } from "@/domain/errors";
+import { THUMB_HEIGHT, THUMB_QUALITY, THUMB_WIDTH } from "@/lib/images/thumbnails";
 
 /**
  * Conversion WebP des images de la gestion, CÔTÉ SERVEUR (04 §12 ; décision du 17/09/2026 : iOS Safari ne
@@ -102,6 +103,24 @@ export async function toWebp(input: Uint8Array, usage: ImageUsage): Promise<Webp
   try {
     const { data, info } = await frame(sharp(input, INPUT).rotate(), usage)
       .webp({ quality: WEBP_QUALITY, effort: WEBP_EFFORT })
+      .toBuffer({ resolveWithObject: true });
+    return { data, width: info.width, height: info.height, bytes: info.size, hasAlpha: info.channels === 4 };
+  } catch {
+    throw unreadable();
+  }
+}
+
+/**
+ * La vignette d'un visuel de parfum (640 × 960), tirée du WebP déjà converti au cadre 2:3 : même
+ * cadrage, simple réduction. Servie aux petites cartes par le chargeur d'images de la vitrine
+ * (`src/lib/images/thumbnails.ts`).
+ */
+export async function toWebpThumbnail(converted: Uint8Array): Promise<WebpImage> {
+  const sharp = await loadSharp();
+  try {
+    const { data, info } = await sharp(converted, INPUT)
+      .resize(THUMB_WIDTH, THUMB_HEIGHT, { fit: "cover", position: "centre" })
+      .webp({ quality: THUMB_QUALITY, effort: WEBP_EFFORT })
       .toBuffer({ resolveWithObject: true });
     return { data, width: info.width, height: info.height, bytes: info.size, hasAlpha: info.channels === 4 };
   } catch {

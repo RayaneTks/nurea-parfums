@@ -1,3 +1,4 @@
+import { thumbnailOf } from "@/lib/images/thumbnails";
 import sharp from "sharp";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -346,7 +347,11 @@ describe("retrait : l'objet part APRÈS le commit, jamais sur une transaction an
     };
     expectOk(await server.actions.deletePerfumeAction({ id: sauvage.id }));
     expect(seen).toEqual([0]);
-    expect(storageFake.removed.flat().sort()).toEqual([image, ...items.map((item) => item.url)].map((url) => url.slice(OWNED.length)).sort());
+    const imagePath = image.slice(OWNED.length);
+    // Le visuel part avec sa vignette (`x.webp` → `x-640.webp`) ; les planches story n'en ont pas.
+    expect(storageFake.removed.flat().sort()).toEqual(
+      [imagePath, thumbnailOf(imagePath), ...items.map((item) => item.url.slice(OWNED.length))].sort(),
+    );
     expect(await mediaRows()).toEqual([]);
   });
 });
@@ -361,7 +366,9 @@ describe("visuel de parfum et logo : convertImageAction (le formulaire enregistr
     const path = `perfumes/${stampOf(source)}.webp`;
     expect(image).toMatchObject({ url: `${OWNED}${path}`, width: 1024, height: 1536 });
     expect(await sharp(storageFake.objects.get(path)).metadata()).toMatchObject({ format: "webp", width: 1024, height: 1536 });
-    expect(storageFake.keys()).toEqual([path]);
+    // Et sa vignette 640 × 960, que la vitrine sert aux petites cartes.
+    expect(storageFake.keys().sort()).toEqual([path, thumbnailOf(path)].sort());
+    expect(await sharp(storageFake.objects.get(thumbnailOf(path))).metadata()).toMatchObject({ format: "webp", width: 640, height: 960 });
     expect(await server.prisma.perfume.count()).toBe(0); // rien d'écrit en base : c'est la fiche qui enregistre
 
     const brand = expectOk(await server.actions.createBrandAction({ name: "Dior" }));

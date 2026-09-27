@@ -65,6 +65,7 @@ describe("referencedPaths — ce qui est désigné par la base", () => {
     );
     expect([...referenced].sort()).toEqual([
       "brands/1757500000003-1a2b3c50.webp",
+      "perfumes/1757500000000-1a2b3c4d-640.webp", // sa vignette, déduite de son nom
       "perfumes/1757500000000-1a2b3c4d.webp",
       "stories/12/1757500000001-1a2b3c4e.webp",
       "stories/12/1757500000002-1a2b3c4f.webp",
@@ -133,5 +134,15 @@ describe("assertSameProject — la base et le bucket du même projet", () => {
         "https://projet-essai.supabase.co",
       ),
     ).toThrow(/ne sont pas le même projet/);
+  });
+});
+
+describe("referencedPaths — vignettes", () => {
+  it("la vignette d'un visuel de parfum référencé est référencée avec lui", () => {
+    const prefix = "https://p.supabase.co/storage/v1/object/public/catalog/";
+    const referenced = referencedPaths({ urls: [`${prefix}perfumes/1790000000000-abcd1234.webp`, `${prefix}brands/x.webp`], paths: [] }, prefix);
+    expect(referenced.has("perfumes/1790000000000-abcd1234-640.webp")).toBe(true);
+    // Un logo n'a pas de vignette : rien n'est inventé à côté de lui.
+    expect(referenced.has("brands/x-640.webp")).toBe(false);
   });
 });

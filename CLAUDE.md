@@ -161,6 +161,12 @@ Toute écriture passe par une **server action** de `src/server/*/actions.ts`
 - **Travail Intelligent** : Ne jamais modifier les proportions d'un logo. Toujours rogner le vide inutile des images sources.
 - **Images** : Format WebP obligatoire (conversion **côté serveur** : l'iPhone n'encode
   pas le WebP). Image principale = Dark mode (base). ImageLight = Variante Light mode optionnelle.
+- **Vignettes** : chaque visuel `perfumes/<horodatage>-<aléa>.webp` a sa vignette 640 × 960
+  `…-640.webp` à côté (`src/lib/images/thumbnails.ts`). La gestion l'écrit et la supprime avec
+  l'original ; le chargeur `next/image` (`src/lib/images/loader.ts`) la sert aux petites largeurs
+  **sans vérifier qu'elle existe**. Tout visuel déposé hors de la gestion (script, reprise) doit
+  donc écrire la sienne (`toWebpThumbnail`). L'optimiseur de Vercel reste fermé (quota épuisé le
+  22/09/2026) : on choisit parmi des fichiers prêts, on ne transforme rien à la demande.
 - **Visibilité** : Tout parfum ou marque sans image Dark est masqué automatiquement (status DRAFT).
 - **Navigation** : Standard mobile-first (Zone du pouce). Zones de clic min 44px.
 - **Copywriting** : Utiliser "Marque", "Catalogue", "Parfum". Éviter "Maison", "Galerie", "Sillage".

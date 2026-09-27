@@ -1,8 +1,26 @@
 import type { FC } from "react";
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import Link from "next/link";
 import { buttonClass } from "@/components/ui/Button";
 import { SITE_NAME } from "@/lib/site";
+
+/*
+ * Deux cadrages, pas deux tailles. Sur téléphone, le bandeau est EN HAUTEUR et `object-cover`
+ * n'affiche qu'une tranche centrale de la photo paysage : le navigateur téléchargeait l'original
+ * (2814 px, 139 Ko) pour en montrer un tiers. Il reçoit maintenant cette tranche, découpée une fois
+ * (`visuel-hero-portrait.webp`, 39 Ko) ; tablette et ordinateur gardent le paysage, décliné par le
+ * chargeur d'images (`src/lib/images/loader.ts`). Chargement immédiat : c'est l'élément le plus
+ * grand du premier écran, celui que mesure le LCP.
+ */
+const { props: heroImg } = getImageProps({
+  src: "/branding/visuel-hero.webp",
+  alt: "",
+  width: 2814,
+  height: 1504,
+  sizes: "100vw",
+  loading: "eager",
+});
+const HERO_PORTRAIT = "/branding/visuel-hero-portrait.webp";
 
 /**
  * Ouverture de la vitrine.
@@ -18,16 +36,17 @@ import { SITE_NAME } from "@/lib/site";
  */
 export const Hero: FC = () => (
   <header className="relative isolate flex min-h-[88svh] items-center border-b border-nurea-border md:min-h-[92svh]">
-    <Image
-      src="/branding/visuel-hero.webp"
-      alt=""
-      fill
-      sizes="100vw"
-      priority
-      fetchPriority="high"
-      quality={85}
-      className="-z-10 object-cover object-[center_30%]"
-    />
+    <picture>
+      <source media="(orientation: portrait)" srcSet={HERO_PORTRAIT} />
+      <source media="(orientation: landscape)" srcSet={heroImg.srcSet} sizes="100vw" />
+      {/* Un <img> nu, voulu : `getImageProps` + <picture>, la recette Next pour deux cadrages. */}
+      <img
+        {...heroImg}
+        alt=""
+        fetchPriority="high"
+        className="absolute inset-0 -z-10 h-full w-full object-cover object-[center_30%]"
+      />
+    </picture>
     <div
       aria-hidden
       className="absolute inset-0 -z-10"

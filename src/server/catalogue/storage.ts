@@ -13,7 +13,8 @@ import {
   type ImageUsage,
 } from "@/contracts/catalogue";
 import { DomainError } from "@/domain/errors";
-import { imageDimensions, toWebp } from "@/server/catalogue/webp";
+import { hasThumbnailPath, thumbnailOf } from "@/lib/images/thumbnails";
+import { imageDimensions, toWebp, toWebpThumbnail } from "@/server/catalogue/webp";
 import { logEvent } from "@/server/core/log";
 import { inTransaction, type Tx } from "@/server/db/transaction";
 import { ConfigurationError } from "@/server/env";
@@ -135,6 +136,17 @@ async function writeObject(path: string, bytes: Buffer, contentType: string): Pr
   if (error) throw new Error(`Stockage : écriture refusée pour ${path} (${error.message})`);
 }
 
+/**
+ * La vignette 640 px d'un visuel de parfum, à côté de lui (`x.webp` → `x-640.webp`). La vitrine la
+ * sert aux petites cartes sans pouvoir vérifier qu'elle existe : tout visuel `perfumes/` écrit par la
+ * gestion DOIT avoir la sienne, sinon sa carte n'aurait pas d'image sur téléphone.
+ */
+async function writeThumbnail(path: string, converted: Buffer): Promise<void> {
+  if (!hasThumbnailPath(path)) return;
+  const thumb = await toWebpThumbnail(converted);
+  await writeObject(thumbnailOf(path), thumb.data, "image/webp");
+}
+
 /** Le WebP écrit à son chemin définitif, et ce qu'il faut en ranger en base. */
 export type StoredImage = { path: string; url: string; width: number; height: number; bytes: number };
 
@@ -157,10 +169,13 @@ export async function convertUpload(source: string, usage: ImageUsage): Promise<
   if (bytes === null) {
     const stored = await readObject(path);
     if (stored === null) throw new DomainError("VALIDATION", IMAGE_NOT_RECEIVED_MESSAGE, "source");
+    // Demande déjà servie : la vignette a pu manquer (réponse perdue avant son écriture). Idempotent.
+    if (hasThumbnailPath(path) && (await readObject(thumbnailOf(path))) === null) await writeThumbnail(path, stored);
     return { path, url, ...(await imageDimensions(stored)), bytes: stored.length };
   }
   const webp = await toWebp(bytes, usage);
   await writeObject(path, webp.data, "image/webp");
+  await writeThumbnail(path, webp.data);
   return { path, url, width: webp.width, height: webp.height, bytes: webp.bytes };
 }
 
@@ -213,7 +228,11 @@ export async function removeOwnedObjects(urls: readonly string[]): Promise<{ rem
   for (const url of unique) {
     const path = ownedObjectPath(url, prefix);
     if (path === null) ignored.push(url);
-    else paths.push(path);
+    else {
+      paths.push(path);
+      // La vignette part avec son original (aucune ligne ne la nomme).
+      if (hasThumbnailPath(path)) paths.push(thumbnailOf(path));
+    }
   }
   if (ignored.length > 0) logEvent("info", "storage.remove.ignored", { count: ignored.length });
   if (paths.length === 0) return { removed: [], ignored };
