@@ -1,3 +1,4 @@
+import { thumbnailOf } from "@/lib/images/thumbnails";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPerfumeInput, updatePerfumeInput, type UpdatePerfumeInput } from "@/contracts/catalogue";
 import { canFeaturePerfume, canPublishBrand, canPublishPerfume } from "@/domain/publication";
@@ -466,8 +467,10 @@ describe("suppressions : historique lisible, objets retirés après le commit (0
     expect(seenAtRemoval).toEqual([0]);
 
     const removed = storageFake.removed.flat().sort();
+    const bleuPath = bleuImage.slice(OWNED.length);
     expect(removed).toEqual(
-      [logo, bleuImage, ...stories.map((s) => s.url)].map((url) => url.slice(OWNED.length)).sort(),
+      // Le visuel du parfum part avec sa vignette ; le logo et les planches story n'en ont pas.
+      [logo.slice(OWNED.length), bleuPath, thumbnailOf(bleuPath), ...stories.map((s) => s.url.slice(OWNED.length))].sort(),
     );
     expect(removed).not.toContain(soldImage.slice(OWNED.length)); // vignette d'une vente passée
     expect(removed.some((path) => path.includes("bleu-clair"))).toBe(false); // objet d'un autre projet

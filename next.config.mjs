@@ -253,7 +253,21 @@ const nextConfig = {
      * Si l'optimisation redevient souhaitable un jour, elle ne se rouvre qu'avec `deviceSizes` et
      * `qualities` restreints — sinon le mur revient.
      */
-    unoptimized: true,
+    unoptimized: false,
+    /*
+     * 28/09/2026 : l'optimiseur reste FERMÉ — aucune transformation n'est demandée à Vercel. Le
+     * chargeur choisit parmi des fichiers déjà prêts : la vignette 640 px de chaque visuel de parfum
+     * (écrite par la gestion à côté de l'original) et les déclinaisons des visuels fixes. Les
+     * téléphones recevaient l'original 1024 × 1536 pour une carte de 170 px (voir
+     * `src/lib/images/thumbnails.ts`).
+     *
+     * Peu de largeurs : chacune ajoute une entrée au `srcset` de chaque image, et l'accueil en porte
+     * plus de deux cents. Elles suffisent à départager vignette, original et déclinaisons.
+     */
+    loader: "custom",
+    loaderFile: "./src/lib/images/loader.ts",
+    deviceSizes: [640, 750, 1024, 1280, 1920],
+    imageSizes: [256],
   },
   typescript: {
     ignoreBuildErrors: false,

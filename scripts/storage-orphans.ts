@@ -34,6 +34,7 @@
  *     [--confirm-host <hôte base>] [--confirm-storage-host <hôte stockage>]
  */
 import { assertHostConfirmed, HostRefusedError, hostOf, isProductionUrl, PRODUCTION_PROJECT_REF } from "./lib/garde-hote";
+import { hasThumbnailPath, thumbnailOf } from "../src/lib/images/thumbnails";
 
 // Lus AVANT tout import de @prisma/client (qui charge `.env`, la production, sans écraser l'existant).
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -100,6 +101,10 @@ export function referencedPaths(references: { urls: readonly (string | null)[]; 
     if (value.startsWith(prefix)) out.add(decodeURIComponent(value.slice(prefix.length).split(/[?#]/)[0] ?? ""));
   }
   for (const path of references.paths) out.add(path.trim());
+  // La vignette d'un visuel référencé est référencée avec lui : aucune ligne ne la nomme, elle se
+  // déduit du nom de l'original (`src/lib/images/thumbnails.ts`). Sans cette ligne, le nettoyage
+  // supprimait toutes les vignettes, et chaque carte du catalogue perdait son image.
+  for (const path of [...out]) if (hasThumbnailPath(path)) out.add(thumbnailOf(path));
   return out;
 }
 
