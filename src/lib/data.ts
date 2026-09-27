@@ -50,6 +50,8 @@ export interface Perfume {
   aliases?: string[];
   classics?: string[];
   isFeatured?: boolean;
+  /** Parmi les derniers entrés au catalogue : catégorie « Nouveautés » (voir `catalogue-service`). */
+  isNew?: boolean;
 }
 
 export const categories: Category[] = [

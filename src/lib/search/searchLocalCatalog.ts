@@ -5,6 +5,7 @@ import {
   type Category,
   type Perfume,
 } from "../data";
+import { inCategory } from "../catalog/perfumePresentation";
 
 export function parseCategoryParam(raw: string | null): Category {
   if (!raw) return "Tout voir";
@@ -28,8 +29,7 @@ export function searchLocalCatalog(
   const cat = options?.category ?? "Tout voir";
 
   const list = perfumes.filter((perfume) => {
-    const matchCategory =
-      cat === "Tout voir" || perfume.category === cat;
+    const matchCategory = inCategory(perfume, cat);
     const matchSearch = fuzzySearchMatch(perfume, q);
     return matchSearch && matchCategory;
   });

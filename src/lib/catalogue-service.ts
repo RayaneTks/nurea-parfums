@@ -11,6 +11,12 @@ import {
 import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
 import { loadSeoCatalogue, type SeoBrand, type SeoPerfume } from "@/lib/catalog/seoCatalogue";
 
+/**
+ * Combien de parfums portent « Nouveau » : les derniers entrés au catalogue, par date d'ajout.
+ * Assez pour que la catégorie « Nouveautés » vive, pas au point de tout y mettre.
+ */
+export const NEW_ARRIVALS_COUNT = 10;
+
 /** Cache données catalogue affichées sur le site public. */
 export const PUBLIC_CATALOGUE_CACHE_TAG = "public-catalogue";
 
@@ -93,6 +99,7 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
           image: true,
           imageLight: true,
           isFeatured: true,
+          createdAt: true,
           brand: {
             select: {
               name: true,
@@ -171,6 +178,23 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
         };
       });
 
+    /*
+     * « Nouveautés » : les NEW_ARRIVALS_COUNT derniers parfums entrés au catalogue (date d'ajout,
+     * puis identifiant — une séquence — pour départager). Seulement des flacons réels : la fiche d'une
+     * gamme complète n'est pas un ajout. Marqués ici, une fois, pour la grille ET la recherche.
+     */
+    const newest = new Set(
+      [...perfumes]
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime() || b.id - a.id)
+        .slice(0, NEW_ARRIVALS_COUNT)
+        .map((p) => p.id),
+    );
+    for (const perfume of mappedPerfumes) {
+      if (!newest.has(perfume.id)) continue;
+      perfume.isNew = true;
+      perfume.tags = [...(perfume.tags ?? []), "Nouveau"];
+    }
+
     const browseBrands: CatalogBrowseBrand[] = browseRows.map((b) => ({
       id: b.id,
       name: b.name,
@@ -210,7 +234,9 @@ const getPublicCatalogueCached = unstable_cache(
   // 24-26/09/2026 : 45 fiches aux visuels refaits, 13 noms remis à l'orthographe de la marque,
   // Hibiscus Mahajád ajouté, Tiramisú retiré). Même raison que v2 et v3.
   // v5 : deuxième fournée de visuels refaits (28/09/2026, 15 fiches), écrite en base.
-  ["public-catalogue-v5"],
+  // v6 : l'instantané porte désormais `isNew` (catégorie « Nouveautés ») — un instantané v5 servi
+  // au nouveau code laisserait la catégorie vide jusqu'à la prochaine modification du catalogue.
+  ["public-catalogue-v6"],
   { tags: [PUBLIC_CATALOGUE_CACHE_TAG] },
 );
 
