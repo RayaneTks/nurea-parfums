@@ -209,7 +209,8 @@ const getPublicCatalogueCached = unstable_cache(
   // v4 : visuels remplacés et noms corrigés en base hors de la gestion (audit des visuels des
   // 24-26/09/2026 : 45 fiches aux visuels refaits, 13 noms remis à l'orthographe de la marque,
   // Hibiscus Mahajád ajouté, Tiramisú retiré). Même raison que v2 et v3.
-  ["public-catalogue-v4"],
+  // v5 : deuxième fournée de visuels refaits (28/09/2026, 15 fiches), écrite en base.
+  ["public-catalogue-v5"],
   { tags: [PUBLIC_CATALOGUE_CACHE_TAG] },
 );
 
@@ -255,8 +256,8 @@ export async function getCachedCatalogue(): Promise<CachedPublicCatalogue> {
   return getPublicCatalogueCached();
 }
 
-// v2 : mêmes corrections que « public-catalogue-v4 », écrites en base sans purge du tag.
-const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v2"], {
+// v3 : mêmes corrections que « public-catalogue-v5 », écrites en base sans purge du tag.
+const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v3"], {
   tags: [PUBLIC_CATALOGUE_CACHE_TAG],
 });
 
