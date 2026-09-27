@@ -1,5 +1,6 @@
 import type { FC } from "react";
 import { getImageProps } from "next/image";
+import { preload } from "react-dom";
 import Link from "next/link";
 import { buttonClass } from "@/components/ui/Button";
 import { SITE_NAME } from "@/lib/site";
@@ -20,7 +21,8 @@ const { props: heroImg } = getImageProps({
   sizes: "100vw",
   loading: "eager",
 });
-const HERO_PORTRAIT = "/branding/visuel-hero-portrait.webp";
+/** Tranche portrait en deux largeurs : 480 pour les téléphones ordinaires, 800 pour les écrans denses. */
+const HERO_PORTRAIT_SRCSET = "/branding/visuel-hero-portrait-480.webp 480w, /branding/visuel-hero-portrait.webp 800w";
 
 /**
  * Ouverture de la vitrine.
@@ -34,10 +36,18 @@ const HERO_PORTRAIT = "/branding/visuel-hero-portrait.webp";
  * Le monogramme n'apparaît pas en filigrane : la charte interdit de le poser
  * nu sur une photo.
  */
-export const Hero: FC = () => (
+export const Hero: FC = () => {
+  /*
+   * Annoncée dès l'en-tête du document, avant la feuille de style : le navigateur n'attend plus de
+   * découvrir l'<img> pour la demander. Une annonce par cadrage, filtrée par la même media query que
+   * <source> — un téléphone ne télécharge jamais la version paysage, ni l'inverse.
+   */
+  preload(HERO_PORTRAIT_SRCSET.split(" ")[0]!, { as: "image", imageSrcSet: HERO_PORTRAIT_SRCSET, imageSizes: "100vw", media: "(orientation: portrait)", fetchPriority: "high" });
+  preload(heroImg.src, { as: "image", imageSrcSet: heroImg.srcSet, imageSizes: "100vw", media: "(orientation: landscape)", fetchPriority: "high" });
+  return (
   <header className="relative isolate flex min-h-[88svh] items-center border-b border-nurea-border md:min-h-[92svh]">
     <picture>
-      <source media="(orientation: portrait)" srcSet={HERO_PORTRAIT} />
+      <source media="(orientation: portrait)" srcSet={HERO_PORTRAIT_SRCSET} sizes="100vw" />
       <source media="(orientation: landscape)" srcSet={heroImg.srcSet} sizes="100vw" />
       {/* Un <img> nu, voulu : `getImageProps` + <picture>, la recette Next pour deux cadrages. */}
       <img
@@ -92,3 +102,4 @@ export const Hero: FC = () => (
     </div>
   </header>
 );
+};

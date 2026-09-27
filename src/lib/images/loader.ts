@@ -21,14 +21,17 @@ export const LOCAL_VARIANTS: Readonly<Record<string, readonly Variant[]>> = {
     { width: 1280, src: "/branding/visuel-hero-1280.webp" },
     { width: 1920, src: "/branding/visuel-hero-1920.webp" },
   ],
+  // Le logo s'affiche sur ~150 px : `next/image` demande 256 (1x) puis 640 (2x et plus).
   "/branding/logos/nurea-logo-horizontal-dark.webp": [
-    { width: 512, src: "/branding/logos/nurea-logo-horizontal-dark-512.webp" },
+    { width: 640, src: "/branding/logos/nurea-logo-horizontal-dark-640.webp" },
     { width: 1024, src: "/branding/logos/nurea-logo-horizontal-dark-1024.webp" },
   ],
   "/branding/logos/nurea-logo-horizontal-black.webp": [
-    { width: 512, src: "/branding/logos/nurea-logo-horizontal-black-512.webp" },
+    { width: 640, src: "/branding/logos/nurea-logo-horizontal-black-640.webp" },
     { width: 1024, src: "/branding/logos/nurea-logo-horizontal-black-1024.webp" },
   ],
+  // Monogramme du menu mobile, affiché sur 28 px : 128 px suffisent à toutes les densités.
+  "/branding/monogram/np-free-cuivre.webp": [{ width: 640, src: "/branding/monogram/np-free-cuivre-128.webp" }],
 };
 
 export default function nureaImageLoader({ src, width }: { src: string; width: number; quality?: number }): string {
