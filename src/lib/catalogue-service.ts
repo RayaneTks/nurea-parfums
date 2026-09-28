@@ -236,7 +236,7 @@ const getPublicCatalogueCached = unstable_cache(
   // v5 : deuxième fournée de visuels refaits (28/09/2026, 15 fiches), écrite en base.
   // v6 : l'instantané porte désormais `isNew` (catégorie « Nouveautés ») — un instantané v5 servi
   // au nouveau code laisserait la catégorie vide jusqu'à la prochaine modification du catalogue.
-  ["public-catalogue-v8"],
+  ["public-catalogue-v9"],
   { tags: [PUBLIC_CATALOGUE_CACHE_TAG] },
 );
 
@@ -283,7 +283,7 @@ export async function getCachedCatalogue(): Promise<CachedPublicCatalogue> {
 }
 
 // v3 : mêmes corrections que « public-catalogue-v5 », écrites en base sans purge du tag.
-const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v5"], {
+const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v6"], {
   tags: [PUBLIC_CATALOGUE_CACHE_TAG],
 });
 
