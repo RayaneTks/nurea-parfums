@@ -241,7 +241,7 @@ découvre le jour de la bascule.
 | NR-5.14 | Instantané catalogue en cache, mode sélecteur allégé | Tag `admin-catalogue` ; route `picker` versionnée | db `catalogue` (« instantané admin »), `invalidation` ; arch `cache-calls` | [ ] |
 | NR-5.15 | Invalidation coordonnée vitrine + gestion | `src/server/cache/invalidate.ts`, **déduite des modèles écrits** — plus de liste de tags à tenir à jour | db `invalidation` (« invalide gestion, admin-catalogue et le contrat vitrine »), `catalogue-vitrine` ; **+ contrôle en préproduction** (§1c) | [ ] |
 | NR-5.16 | Rôles VIEWER / EDITOR et audit des mutations | **Abandonnés** (02 §4.5, §4.7) — voir §2 | arch `server-actions` (aucune garde de rôle résiduelle) | [ ] |
-| NR-5.17 | Listes virtualisées, vignettes ≤ 256 px | `WindowedList` ; `nureaAdminThumbLoader`. Le rendu serveur ne part **plus** de la liste entière (539 Ko → 157 Ko). | `layout` E15 | [ ] |
+| NR-5.17 | Listes virtualisées, vignettes légères | `WindowedList` ; vignette 640 px servie par `src/lib/images/loader.ts`, sans optimiseur (amendé le 28/09/2026). Le rendu serveur ne part **plus** de la liste entière (539 Ko → 157 Ko). | `layout` E15 | [ ] |
 
 ### 3.6 Accueil / Tableau de bord / Shell (01 §3.6 — 11 lignes)
 

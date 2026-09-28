@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { nureaAdminThumbLoader } from "@/lib/image/cappedImageLoader";
 import { cn } from "@/lib/utils";
 
 type CatalogueThumbProps = {
@@ -19,7 +18,8 @@ const sizeClass = { 40: "h-10 w-10", 44: "h-11 w-11", 56: "h-14 w-14" } as const
 
 /**
  * Vignette de liste (06 E15) : image CONTENUE — un logo garde ses proportions, un flacon n'est pas rogné —
- * plafonnée à 256 px par le chargeur d'images de la gestion (04 §15, NR-5.17), basse priorité.
+ * basse priorité. Servie par le chargeur du site (`src/lib/images/loader.ts`) : la vignette 640 px déjà
+ * déposée à côté du visuel, jamais l'optimiseur de Vercel, fermé depuis le 22/09/2026 (04 §15, NR-5.17).
  */
 export function CatalogueThumb({ src, name, size = 44, muted = false }: CatalogueThumbProps) {
   const [broken, setBroken] = useState(false);
@@ -36,13 +36,11 @@ export function CatalogueThumb({ src, name, size = 44, muted = false }: Catalogu
     >
       {url && !broken ? (
         <Image
-          loader={nureaAdminThumbLoader}
           src={url}
           alt=""
           width={size}
           height={size}
           sizes={`${size}px`}
-          quality={60}
           fetchPriority="low"
           className="h-full w-full object-contain p-0.5"
           onError={() => setBroken(true)}
