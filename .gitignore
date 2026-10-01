@@ -69,3 +69,6 @@ migration-artifacts/
 # Secrets de la préproduction, jamais dans le dépôt
 .env.preprod
 .env.*.preprod
+
+# Carte du code (graphify) : locale, propre à ce poste, reconstruite par `graphify update .`
+graphify-out/
