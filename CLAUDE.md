@@ -51,6 +51,22 @@ de zéro — le dossier pilote de la refonte est `docs/refonte/` (`00-README.md`
 - Mode maintenance : `NUREA_GESTION_MAINTENANCE=1` fait répondre 503 à toute la
   gestion sans lire la base (`proxy.ts`, `src/server/core/maintenance.ts`).
 
+## Carte du code (graphify)
+
+Une carte du dépôt (code + documentation) existe sur ce poste, hors git :
+`C:\Users\User\Desktop\nurea-parfums\graphify-out\` — **chemin absolu**, valable aussi depuis
+un worktree (qui n'a pas de copie à lui).
+
+- **Avant d'explorer le code à la main**, interroger la carte : elle coûte bien moins de lecture.
+  `graphify query "<question>" --graph C:/Users/User/Desktop/nurea-parfums/graphify-out/graph.json`
+  (aussi `graphify path "A" "B"`, `graphify explain "Symbole"`). Vue d'ensemble :
+  `graphify-out/GRAPH_REPORT.md`.
+- La carte suit le code de `main` au moment de sa construction. Après de gros changements :
+  `graphify update .` depuis la racine du dépôt principal — code seulement, gratuit, sans IA.
+  La documentation (`docs/`, `*.md`) ne se rafraîchit que par `/graphify --update` (coûte des
+  jetons : à faire rarement).
+- Périmètre : tout sauf `.agents/`, `.codex/`, `public/` et les images.
+
 ## Architecture & Tech Stack
 
 - **Framework** : Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS.
