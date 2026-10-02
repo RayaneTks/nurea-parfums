@@ -10,8 +10,8 @@ Ce fichier est la racine de la hiérarchie `AGENTS.md` utilisée par les skills 
 - `DEVELOPER.md` — commandes sûres, base de test locale, ce qu'il ne faut jamais lancer.
 - `PASSATION.md` — état du chantier et reprise.
 - `DESIGN.md` / `PRODUCT.md` — vitrine ; `docs/admin/` — gestion.
-- `.cursor/rules/project-memory.mdc` — mémoire persistante always-on.
-- `.cursor/rules/design-engineering.mdc` — standards design/qualité UI non négociables.
+- `.impeccable.md` — résumé de la charte vitrine pour les skills de design.
+- `graphify-out/` (hors git) — carte du code à interroger avant d'explorer (voir `CLAUDE.md`).
 
 ## Subdirectories
 - `docs/` — documentation de référence versionnée.
@@ -24,7 +24,7 @@ Ce fichier est la racine de la hiérarchie `AGENTS.md` utilisée par les skills 
 - Respecter les sections stables (Purpose / Key Files / Subdirectories / For Agents / Testing Requirements).
 - Ne pas supprimer les blocs `<!-- MANUAL: ... -->` s'ils existent.
 - Suivre une boucle stricte: comprendre -> implémenter -> vérifier -> documenter -> corriger.
-- Pour toute évolution métier/admin, mettre à jour la mémoire projet (`CLAUDE.md`, `DEVELOPER.md`, `.cursor/rules/project-memory.mdc`) dans le même lot. Une documentation qui promet ce que le code ne fait pas est un bug.
+- Pour toute évolution métier/admin, mettre à jour la mémoire projet (`CLAUDE.md`, `DEVELOPER.md`) dans le même lot. Une documentation qui promet ce que le code ne fait pas est un bug.
 - Privilégier les garde-fous serveur (API/DB) avant les garde-fous UI.
 - En cas d'ambiguïté métier, proposer une contre-proposition argumentée puis implémenter la version la plus robuste après validation.
 

@@ -31,7 +31,6 @@ un bug (02 §8). Si un changement rend un document faux, on amende le document d
 | `admin-supabase-setup.md` | Compte de gestion, Supabase Storage, variables d'environnement. |
 | `SECURITE.md` | Réponse à l'audit de sécurité du 23/09/2026, et ce qui reste à faire hors du code (comptes, 2FA). |
 | `charte-graphique.html` | La charte graphique v3, page autonome (ouvrir dans un navigateur). |
-| `ux-audit-mobile-first-2026-03.md` | **Historique** — conventions de mars 2026, antérieures à la charte v3 et à la refonte. |
 | `shared/agent-tiers.md` | Tiers d'agents et règles de délégation. |
 
 ## Subdirectories
