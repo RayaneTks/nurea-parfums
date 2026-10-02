@@ -30,7 +30,10 @@ function indexOf(data: readonly ReferenceBrand[]): IndexedBrand[] {
     index = data.map((b) => ({
       brand: b.brand,
       names: [b.brand, ...(b.aliases ?? [])].map(normalizeForFuzzy).filter(Boolean),
-      perfumes: b.perfumes.map((name) => ({ name, norm: normalizeForFuzzy(name) })),
+      // Un nom de moins de 4 caractères (« Man », « Oud ») ferait des faux positifs en recherche floue.
+      perfumes: b.perfumes
+        .map((name) => ({ name, norm: normalizeForFuzzy(name) }))
+        .filter((p) => p.norm.length >= 4),
     }));
     indexCache.set(data, index);
   }
