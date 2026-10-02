@@ -53,7 +53,9 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(functi
         placeholder={placeholder}
         aria-label={ariaLabel ?? placeholder}
         className={cn(
-          "admin-type-field block h-full w-full bg-transparent pl-9 text-[var(--admin-text)] placeholder:text-[var(--admin-text-subtle)]",
+          // Le cadre fait 44 px bordure comprise : le champ déborde d'1 px sur chaque filet pour que
+          // la zone touchée tienne les 44 px pleins (transparent, il ne masque rien).
+          "admin-type-field -my-px block h-[var(--admin-touch-min)] w-full bg-transparent pl-9 text-[var(--admin-text)] placeholder:text-[var(--admin-text-subtle)]",
           "focus-visible:outline-none [&::-webkit-search-cancel-button]:hidden",
           value.length > 0 ? "pr-11" : "pr-3",
         )}
