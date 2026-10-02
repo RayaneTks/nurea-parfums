@@ -23,7 +23,7 @@ export type PricingDrafts = Record<VolumeMl, PricingDraft>;
 const EMPTY: PricingDraft = { price: "", cost: "", rate: "" };
 
 /** « 120.00 » → « 120 » ; « 119.90 » → « 119,90 » (saisie française). */
-export function decimalToInput(value: string): string {
+function decimalToInput(value: string): string {
   return value.replace(/^(-?\d+)\.(\d+)$/, (_, int: string, frac: string) => {
     const trimmed = frac.replace(/0+$/, "");
     return trimmed === "" ? int : `${int},${trimmed}`;

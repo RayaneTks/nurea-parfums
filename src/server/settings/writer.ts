@@ -16,7 +16,7 @@ import type { Tx } from "@/server/db/transaction";
 const SETTING_ID = 1;
 
 /** Taux proposé tant qu'aucun réglage n'existe (valeur de l'existant, 01 §3.2). */
-export const DEFAULT_EXCHANGE_RATE = "277";
+const DEFAULT_EXCHANGE_RATE = "277";
 
 const POCKET_NOT_FOUND = "Cette poche n'existe plus. Choisis-en une autre.";
 

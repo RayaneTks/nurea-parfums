@@ -45,7 +45,7 @@ export function documentDescription(doc: Pick<DocumentSheetDTO, "origin" | "orde
 
 // ── Argent ─────────────────────────────────────────────────────────────────────
 
-export type MoneyTile = { label: "Total" | "Payé" | "À encaisser" | "Trop-perçu"; value: MoneyString; tone: "default" | "warning" };
+type MoneyTile = { label: "Total" | "Payé" | "À encaisser" | "Trop-perçu"; value: MoneyString; tone: "default" | "warning" };
 
 export type MoneyView = {
   tiles: MoneyTile[];
@@ -87,7 +87,7 @@ export function marginLabel(doc: Pick<DocumentSheetDTO, "balance">): { text: str
   return { text: `Marge avant dépenses ${money(marginBeforeExpenses)}${percent}`, unknown: false };
 }
 
-export type PrimaryAction =
+type PrimaryAction =
   | { kind: "acompte" }
   | { kind: "solde"; amount: MoneyString }
   | { kind: "rembourser"; amount: MoneyString }

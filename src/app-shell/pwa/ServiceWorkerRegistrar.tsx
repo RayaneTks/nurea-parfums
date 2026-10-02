@@ -19,8 +19,8 @@ import { SKIP_WAITING_MESSAGE } from "./service-worker";
  *   Jamais de rechargement imposé en pleine vente.
  */
 
-export const UPDATE_TOAST_MESSAGE = "Nouvelle version prête";
-export const UPDATE_TOAST_ACTION = "Recharger";
+const UPDATE_TOAST_MESSAGE = "Nouvelle version prête";
+const UPDATE_TOAST_ACTION = "Recharger";
 
 /**
  * Le script est servi à la RACINE — un worker ne contrôle jamais plus que son propre répertoire — et

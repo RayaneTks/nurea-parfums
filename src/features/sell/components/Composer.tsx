@@ -37,33 +37,7 @@ import { Sheet } from "@/ui/primitives/Sheet";
 import { StickyAction } from "@/ui/primitives/StickyAction";
 import { Text } from "@/ui/primitives/Text";
 import { Textarea } from "@/ui/primitives/Textarea";
-import {
-  applyParams,
-  articlesLabel,
-  chosenPocket,
-  confirmationOf,
-  createInput,
-  ctaPlan,
-  hasCustomerName,
-  hasParams,
-  isDraftEmpty,
-  marginText,
-  paymentsOf,
-  pocketsLabel,
-  quantitiesByPerfume,
-  receivedOf,
-  receivedText,
-  resolveBatch,
-  total as totalOf,
-  withMode,
-  withOffCatalogLine,
-  withPerfume,
-  withReceived,
-  type ComposerDraft,
-  type ComposerParams,
-  type Confirmation,
-  type LineSources,
-} from "./composer-model";
+import { applyParams, articlesLabel, chosenPocket, confirmationOf, createInput, ctaPlan, hasParams, isDraftEmpty, marginText, paymentsOf, pocketsLabel, quantitiesByPerfume, receivedOf, receivedText, resolveBatch, total as totalOf, withMode, withOffCatalogLine, withPerfume, withReceived, type ComposerDraft, type ComposerParams, type Confirmation, type LineSources } from "./composer-model";
 import { ConfirmationCard } from "./ConfirmationCard";
 import { CustomerNameField } from "./CustomerNameField";
 import { RecentProvider, type RecentContextValue } from "./RecentlySold";
@@ -271,8 +245,6 @@ export function Composer({ pockets, batches, settings, pickerVersion, catalogueC
   const pocket = chosenPocket(draft, pockets);
   const batch = resolveBatch(draft, batches);
   const margin = marginText(draft);
-  const due = received === null ? null : eur.clampZero(eur.sub(sum, received));
-  const customerRequired = !hasCustomerName(draft);
   const showSecondary = order || hasLines || draft.customer.kind === "linked" || !isDraftEmpty(draft);
   const splitActive = payments.length > 1;
   const realPockets = pockets.filter((p) => !p.isSystem);

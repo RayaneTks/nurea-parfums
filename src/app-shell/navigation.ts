@@ -228,11 +228,6 @@ export function createTabMemory(): TabMemory {
 /** La mémoire du shell (une par onglet de navigateur, perdue au rechargement : c'est voulu). */
 export const tabMemory = createTabMemory();
 
-/** À chaque navigation et à chaque défilement : URL (sans sheet) et défilement de l'onglet courant. */
-export function rememberTabLocation(tab: TabId, url: string, scrollTop?: number, memory: TabMemory = tabMemory): void {
-  memory.remember(tab, url, scrollTop);
-}
-
 /** Vrai si la query porte un filtre ou une recherche de la racine de cet onglet. */
 export function hasActiveFilters(tab: TabId, search: string): boolean {
   const params = new URLSearchParams(search);

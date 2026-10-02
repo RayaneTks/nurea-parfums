@@ -1,5 +1,5 @@
 import { Card } from "@/ui/primitives/Card";
-import { Skeleton, SkeletonList, SkeletonRow } from "@/ui/primitives/Skeleton";
+import { Skeleton, SkeletonList } from "@/ui/primitives/Skeleton";
 
 /**
  * Squelettes des écrans des lots (05 §5.1) : aux proportions EXACTES du contenu final — en-tête de
@@ -77,18 +77,6 @@ export function BatchSkeleton() {
           <Skeleton height={44} className="rounded-[var(--admin-radius-md)]" />
           <Skeleton height={60} className="rounded-[var(--admin-radius-md)]" />
         </div>
-      </Card>
-    </div>
-  );
-}
-
-/** E21 : deux champs et le repli. */
-export function NewBatchSkeleton() {
-  return (
-    <div className="flex flex-col gap-4" aria-busy aria-label="Chargement du formulaire">
-      <Skeleton height={44} className="rounded-[var(--admin-radius-md)]" />
-      <Card padding={3}>
-        <SkeletonRow avatar={false} trailing={false} />
       </Card>
     </div>
   );

@@ -244,7 +244,7 @@ la sheet ouverte (`e2e/parcours/couches.spec.ts`).
 - Tailwind CSS + variables `--admin-*`
 - Radix primitives via `src/ui/primitives/*`
 - Lucide React (icônes)
-- Vaul (bottom sheets), Recharts (chargé à la demande)
+- Vaul (bottom sheets) ; graphiques en SVG écrit à la main (`BarChart`), sans bibliothèque
 - **Pas** de shadcn vitrine, **pas** de GFS Didot
 
 ## Theme Mode

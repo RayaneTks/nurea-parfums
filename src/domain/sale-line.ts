@@ -36,7 +36,7 @@ export const MAX_LINE_QUANTITY = 999;
 export const GIFT_PRICE_MESSAGE = "Mets le prix de la ligne offerte à 0 € ou décoche Offert.";
 
 /** Champ à corriger, pour ouvrir la fiche en édition sur la bonne donnée (06 S01). */
-export type LineRuleField = "volumeMl" | "unitPriceEur" | "exchangeRate";
+type LineRuleField = "volumeMl" | "unitPriceEur" | "exchangeRate";
 
 export type LineRuleViolation = { field: LineRuleField; message: string };
 

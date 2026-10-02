@@ -19,10 +19,10 @@ import { useCallback, useEffect, useState } from "react";
  * ne soit montée, et un événement non retenu est perdu.
  */
 
-export type InstallMode = "prompt" | "ios";
+type InstallMode = "prompt" | "ios";
 
 /** Fermeture définitive de la carte, sur CET appareil. */
-export const INSTALL_DISMISSED_KEY = "nurea:pwa:installation-fermee";
+const INSTALL_DISMISSED_KEY = "nurea:pwa:installation-fermee";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;

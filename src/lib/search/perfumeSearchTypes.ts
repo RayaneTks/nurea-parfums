@@ -12,7 +12,7 @@ export type PerfumeSearchResponse =
   | PerfumeSearchNoResults;
 
 /** Sous-ensemble des champs catalogue exposés dans la réponse API. */
-export interface PerfumeSearchCatalogItem {
+interface PerfumeSearchCatalogItem {
   id: number;
   name: string;
   brand: string;
@@ -25,7 +25,7 @@ export interface PerfumeSearchCatalogItem {
   classics?: string[];
 }
 
-export interface PerfumeSearchLocalResults {
+interface PerfumeSearchLocalResults {
   type: "local_results";
   query: string;
   results: PerfumeSearchCatalogItem[];
@@ -35,7 +35,7 @@ export interface PerfumeSearchLocalResults {
  * Référence au catalogue sans carte sur la vitrine (masquée, visuel pas encore prêt). Seuls le nom et la
  * marque sont exposés : la vitrine invite à écrire sans affirmer ni nier la disponibilité.
  */
-export interface PerfumeSearchUnlistedMatch {
+interface PerfumeSearchUnlistedMatch {
   type: "unlisted_match";
   query: string;
   /** `brand` : la saisie ne vise que la marque (« xerjoff ») — on parle de la marque, pas d'un parfum pris au hasard. */
@@ -52,13 +52,13 @@ export interface ExternalPerfumeSuggestion {
   raw?: Record<string, unknown>;
 }
 
-export interface PerfumeSearchExternalSuggestion {
+interface PerfumeSearchExternalSuggestion {
   type: "external_suggestion";
   query: string;
   suggestion: ExternalPerfumeSuggestion;
 }
 
-export interface PerfumeSearchNoResults {
+interface PerfumeSearchNoResults {
   type: "no_results";
   query: string;
 }
