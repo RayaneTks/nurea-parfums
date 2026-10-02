@@ -6,6 +6,27 @@ Le dépôt porte **deux applications disjointes** : la **vitrine** publique (`ap
 registre `brand`) et **Nuréa Gestion** (`app/admin`, registre `product`), refondue
 de zéro — le dossier pilote de la refonte est `docs/refonte/` (`00-README.md` d'abord).
 
+## Façon de travailler (toute session, sans exception)
+
+- **Langue et ton : caveman ultra, en français.** Penser, répondre, rendre compte : phrases
+  courtes, sans politesse ni remplissage, flèches pour les causes (X → Y), un mot quand un mot
+  suffit. Le gérant n'est pas développeur : mots simples, pas de jargon. On écrit en clair et
+  complet seulement pour : avertissement de sécurité, action irréversible à confirmer, messages
+  de commit et docs du dépôt.
+- **Carte du code d'abord** — `graphify` remplace la lecture de dossiers entiers :
+  `graphify query "<question>" --budget 1500 --graph C:/Users/User/Desktop/nurea-parfums/graphify-out/graph.json`
+  (aussi `graphify path "A" "B"`, `graphify explain "Symbole"` ; vue d'ensemble :
+  `graphify-out/GRAPH_REPORT.md`). Ne lire un fichier qu'une fois localisé, et seulement la
+  partie utile. Carte hors git, chemin absolu, valable depuis un worktree. Après de gros
+  changements de code : `graphify update .` à la racine du dépôt principal (gratuit, sans IA).
+  Les docs ne se rafraîchissent que par `/graphify --update` (coûte des jetons : rarement).
+- **Sessions en parallèle** sur ce dépôt : `git fetch` et comparer à `origin/main` avant de
+  partir d'une base ; ne jamais toucher les fichiers en cours d'une autre session ; `git add`
+  fichier par fichier, jamais `git add -A`. Un chantier long se fait dans un worktree
+  (`.claude/worktrees/<nom>`), pas en changeant la branche du dossier partagé.
+- **Mettre en ligne** = pousser sur `main` (Vercel déploie la production). Une branche poussée
+  donne un aperçu Vercel : sans base, il montre l'instantané `src/lib/catalog/demo-catalogue.json`.
+
 ## Commandes Utiles
 
 | But | Commande |
@@ -50,22 +71,6 @@ de zéro — le dossier pilote de la refonte est `docs/refonte/` (`00-README.md`
   l'exposaient ont été supprimés ; on passe par une migration ou par rien.
 - Mode maintenance : `NUREA_GESTION_MAINTENANCE=1` fait répondre 503 à toute la
   gestion sans lire la base (`proxy.ts`, `src/server/core/maintenance.ts`).
-
-## Carte du code (graphify)
-
-Une carte du dépôt (code + documentation) existe sur ce poste, hors git :
-`C:\Users\User\Desktop\nurea-parfums\graphify-out\` — **chemin absolu**, valable aussi depuis
-un worktree (qui n'a pas de copie à lui).
-
-- **Avant d'explorer le code à la main**, interroger la carte : elle coûte bien moins de lecture.
-  `graphify query "<question>" --graph C:/Users/User/Desktop/nurea-parfums/graphify-out/graph.json`
-  (aussi `graphify path "A" "B"`, `graphify explain "Symbole"`). Vue d'ensemble :
-  `graphify-out/GRAPH_REPORT.md`.
-- La carte suit le code de `main` au moment de sa construction. Après de gros changements :
-  `graphify update .` depuis la racine du dépôt principal — code seulement, gratuit, sans IA.
-  La documentation (`docs/`, `*.md`) ne se rafraîchit que par `/graphify --update` (coûte des
-  jetons : à faire rarement).
-- Périmètre : tout sauf `.agents/`, `.codex/`, `public/` et les images.
 
 ## Architecture & Tech Stack
 
