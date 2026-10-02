@@ -1,0 +1,1277 @@
+[
+{
+"id": 80,
+"name": "Fantasy",
+"brand": "Britney Spears",
+"brandSlug": "britney-spears",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458433328-149bf650.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458433460-1ee36f66.webp",
+"isFeatured": false
+},
+{
+"id": 131,
+"name": "Gris Dior",
+"brand": "Dior",
+"brandSlug": "dior",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790181107619-4c71e763.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790181111538-b74166ec.webp",
+"isFeatured": false
+},
+{
+"id": 190,
+"name": "Terre d'Hermès",
+"brand": "Hermès",
+"brandSlug": "hermes",
+"category": "Gammes Complètes",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802660841-8b74a2c2.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802661255-56068011.webp",
+"isFeatured": false,
+"tags": [
+"Gamme complète",
+"Nouveau"
+],
+"isNew": true
+},
+{
+"id": 299,
+"name": "Hibiscus Mahajád",
+"brand": "Maison Crivelli",
+"brandSlug": "maison-crivelli",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547093054-f3b69115.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547094087-a9d179b9.webp",
+"isFeatured": false,
+"tags": [
+"Nouveau"
+],
+"isNew": true
+},
+{
+"id": 35,
+"name": "Grand Soir",
+"brand": "Maison Francis Kurkdjian",
+"brandSlug": "maison-francis-kurkdjian",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547095774-ec7c216d.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547095916-abea3df7.webp",
+"isFeatured": false
+},
+{
+"id": 85,
+"name": "Her",
+"brand": "Burberry",
+"brandSlug": "burberry",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802608836-4c9b3c3a.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802609155-9541bf33.webp",
+"isFeatured": false
+},
+{
+"id": 28,
+"name": "Blue Jeans",
+"brand": "Versace",
+"brandSlug": "versace",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774715983196-1895835f.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774715990733-b616d1a5.webp",
+"isFeatured": false
+},
+{
+"id": 58,
+"name": "Velvet Orchid",
+"brand": "Tom Ford",
+"brandSlug": "tom-ford",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576125541-4dbd1f72.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576125850-229b5b15.webp",
+"isFeatured": false
+},
+{
+"id": 100,
+"name": "Pi",
+"brand": "Givenchy",
+"brandSlug": "givenchy",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052142818-6828f0b4.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052145936-49cbd2e8.webp",
+"isFeatured": false
+},
+{
+"id": 106,
+"name": "5th Avenue",
+"brand": "Elizabeth Arden",
+"brandSlug": "elisabeth-arden",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052684102-eb912530.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052689146-749aefb2.webp",
+"isFeatured": false
+},
+{
+"id": 300,
+"name": "Babycat",
+"brand": "Yves Saint Laurent",
+"brandSlug": "yves-saint-laurent",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790517431059-966587a5.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790517438144-15af24d0.webp",
+"isFeatured": false,
+"tags": [
+"Nouveau"
+],
+"isNew": true
+},
+{
+"id": 65,
+"name": "Good Girl",
+"brand": "Carolina Herrera",
+"brandSlug": "carolina-herrera",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585724096-95c100c2.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585724437-564b8cf0.webp",
+"isFeatured": false
+},
+{
+"id": 78,
+"name": "Bal d'Afrique",
+"brand": "Byredo",
+"brandSlug": "byredo",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458435064-ca643b6b.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458435207-bcbe6347.webp",
+"isFeatured": false
+},
+{
+"id": 88,
+"name": "1881 pour Femme",
+"brand": "Cerruti",
+"brandSlug": "cerruti",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585727635-de1c8f23.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585728035-1dd41ff6.webp",
+"isFeatured": false
+},
+{
+"id": 103,
+"name": "Girl of Now",
+"brand": "Elie Saab",
+"brandSlug": "elie-saab",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458452272-ddc9aac2.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458452412-8b622729.webp",
+"isFeatured": false
+},
+{
+"id": 19,
+"name": "Quatre en Rouge",
+"brand": "Boucheron",
+"brandSlug": "boucheron",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585719449-98b02859.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585720143-a831e856.webp",
+"isFeatured": false
+},
+{
+"id": 23,
+"name": "Marrakech Intense",
+"brand": "Aesop",
+"brandSlug": "aesop",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802604749-af82e0c2.webp",
+"isFeatured": false
+},
+{
+"id": 311,
+"name": "Guerlain",
+"brand": "Guerlain",
+"brandSlug": "guerlain",
+"category": "Gammes Complètes",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585732831-03e0fe9b.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585733513-e68da213.webp",
+"tags": [
+"Gamme complète"
+]
+},
+{
+"id": 60,
+"name": "Bleu de Chanel",
+"brand": "Chanel",
+"brandSlug": "chanel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458447086-631839c7.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458447239-95a47d1e.webp",
+"isFeatured": false
+},
+{
+"id": 108,
+"name": "Rockin' Rio",
+"brand": "Escada",
+"brandSlug": "escada",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802615192-515d92c7.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802615568-11829484.webp",
+"isFeatured": false
+},
+{
+"id": 16,
+"name": "Tobacco Collection",
+"brand": "Zara",
+"brandSlug": "zara",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802619417-82256c1b.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802619754-17ce1377.webp",
+"isFeatured": false
+},
+{
+"id": 72,
+"name": "Anaïs Anaïs Premier Délice",
+"brand": "Cacharel",
+"brandSlug": "cacharel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458436872-d8925998.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458437021-3679242f.webp",
+"isFeatured": false
+},
+{
+"id": 10,
+"name": "Aventus",
+"brand": "Creed",
+"brandSlug": "creed",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458451078-99f69dc4.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458451232-ca66078f.webp",
+"isFeatured": false
+},
+{
+"id": 315,
+"name": "Lacoste",
+"brand": "Lacoste",
+"brandSlug": "lacoste",
+"category": "Gammes Complètes",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547088344-f74cb8f2.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547088514-783f1f36.webp",
+"tags": [
+"Gamme complète"
+]
+},
+{
+"id": 93,
+"name": "Déclaration Haute Fraîcheur",
+"brand": "Cartier",
+"brandSlug": "cartier",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585725107-89564f99.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585725412-45a176cf.webp",
+"isFeatured": false
+},
+{
+"id": 47,
+"name": "Polo Red",
+"brand": "Ralph Lauren",
+"brandSlug": "ralph-lauren",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713715990-593f2dd9.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713724196-f997b353.webp",
+"isFeatured": false
+},
+{
+"id": 44,
+"name": "Symphony",
+"brand": "Louis Vuitton",
+"brandSlug": "louis-vuitton",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802617527-573b1850.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802617869-0b0c2eb8.webp",
+"isFeatured": true
+},
+{
+"id": 101,
+"name": "Paradoxe",
+"brand": "Prada",
+"brandSlug": "prada",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052233136-59980066.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052238345-646f06fe.webp",
+"isFeatured": false
+},
+{
+"id": 48,
+"name": "Spicebomb",
+"brand": "Viktor & Rolf",
+"brandSlug": "viktor-rolf",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576128423-399da96b.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576128742-cae7e68d.webp",
+"isFeatured": false
+},
+{
+"id": 158,
+"name": "K by Dolce & Gabbana",
+"brand": "Dolce & Gabbana",
+"brandSlug": "dolce-gabbana",
+"category": "Gammes Complètes",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802662484-bf84e727.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802662837-c1b1bb50.webp",
+"isFeatured": false,
+"tags": [
+"Gamme complète"
+]
+},
+{
+"id": 309,
+"name": "Azzaro",
+"brand": "Azzaro",
+"brandSlug": "azzaro",
+"category": "Gammes Complètes",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458432673-cd17f203.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458432847-226e972c.webp",
+"tags": [
+"Gamme complète"
+]
+},
+{
+"id": 12,
+"name": "Kirkè",
+"brand": "Tiziana Terenzi",
+"brandSlug": "tiziana-terenzi",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576127493-1d471542.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576127808-8808bb71.webp",
+"isFeatured": false
+},
+{
+"id": 22,
+"name": "Blue Seduction",
+"brand": "Antonio Banderas",
+"brandSlug": "antonio-banderas",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802605648-322a1160.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802606010-696e544f.webp",
+"isFeatured": false
+},
+{
+"id": 295,
+"name": "Stronger With You Oud",
+"brand": "Giorgio Armani",
+"brandSlug": "giorgio-armani",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790176468599-70b33ed1.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790176475361-07354303.webp",
+"isFeatured": false,
+"tags": [
+"Nouveau"
+],
+"isNew": true
+},
+{
+"id": 188,
+"name": "Rouge Smoking",
+"brand": "BDK Parfums",
+"brandSlug": "bdk-parfums",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790181011427-b03989e2.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790181016277-1621814c.webp",
+"isFeatured": false
+},
+{
+"id": 99,
+"name": "La Nuit Trésor",
+"brand": "Lancôme",
+"brandSlug": "lancome",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547089553-8542b45f.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547089684-84b9d4a9.webp",
+"isFeatured": false
+},
+{
+"id": 13,
+"name": "Oud Touch",
+"brand": "Franck Olivier",
+"brandSlug": "franck-olivier",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458454613-4773c869.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458454836-c642ea43.webp",
+"isFeatured": false
+},
+{
+"id": 34,
+"name": "Erba Pura Magica",
+"brand": "Sospiro",
+"brandSlug": "sospiro",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713806138-010ffbd9.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713812849-a0ae5da2.webp",
+"isFeatured": false
+},
+{
+"id": 313,
+"name": "Hugo Boss",
+"brand": "Hugo Boss",
+"brandSlug": "hugo-boss",
+"category": "Gammes Complètes",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547087525-df1606c3.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547087904-fdeab7dc.webp",
+"tags": [
+"Gamme complète"
+]
+},
+{
+"id": 296,
+"name": "Vanilla Powder",
+"brand": "Matière Première",
+"brandSlug": "matiere-premiere",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790177874314-c28317dd.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790177878919-52e474ec.webp",
+"isFeatured": false,
+"tags": [
+"Nouveau"
+],
+"isNew": true
+},
+{
+"id": 297,
+"name": "Bianco Latte",
+"brand": "Giardini Di Toscana",
+"brandSlug": "giardini-di-toscana",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585731330-ad08e537.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585731654-b5fad367.webp",
+"isFeatured": false,
+"tags": [
+"Nouveau"
+],
+"isNew": true
+},
+{
+"id": 45,
+"name": "Hundred Silent Ways",
+"brand": "Nishane",
+"brandSlug": "nishane",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550430051-007138e2.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550430741-5c0e539f.webp",
+"isFeatured": false
+},
+{
+"id": 314,
+"name": "Jean Paul Gaultier",
+"brand": "Jean Paul Gaultier",
+"brandSlug": "jean-paul-gaultier",
+"category": "Gammes Complètes",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802614225-24dae019.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802614558-2418d363.webp",
+"tags": [
+"Gamme complète"
+]
+},
+{
+"id": 316,
+"name": "Rabanne",
+"brand": "Rabanne",
+"brandSlug": "rabanne",
+"category": "Gammes Complètes",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547096417-b56aae39.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547096569-0769aace.webp",
+"tags": [
+"Gamme complète"
+]
+},
+{
+"id": 81,
+"name": "Midnight Fantasy",
+"brand": "Britney Spears",
+"brandSlug": "britney-spears",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802606735-6e46e57c.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802607069-abec49f0.webp",
+"isFeatured": false
+},
+{
+"id": 144,
+"name": "Ambre Nuit",
+"brand": "Dior",
+"brandSlug": "dior",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790875976865-6bfc4dd7.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790875977622-3908e392.webp",
+"isFeatured": false
+},
+{
+"id": 312,
+"name": "Hermès",
+"brand": "Hermès",
+"brandSlug": "hermes",
+"category": "Gammes Complètes",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585734173-55a8095a.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585734507-1ab22a63.webp",
+"tags": [
+"Gamme complète"
+]
+},
+{
+"id": 298,
+"name": "Tubéreuse Astrale",
+"brand": "Maison Crivelli",
+"brandSlug": "maison-crivelli",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547094587-432d5a07.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547094732-5fd1b4d0.webp",
+"isFeatured": false,
+"tags": [
+"Nouveau"
+],
+"isNew": true
+},
+{
+"id": 9,
+"name": "Baccarat Rouge 540",
+"brand": "Maison Francis Kurkdjian",
+"brandSlug": "maison-francis-kurkdjian",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547095175-b9004bc8.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547095317-2c0690ae.webp",
+"isFeatured": false
+},
+{
+"id": 83,
+"name": "Brit Red",
+"brand": "Burberry",
+"brandSlug": "burberry",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802607715-4c9022b5.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802608046-fb137f07.webp",
+"isFeatured": false
+},
+{
+"id": 59,
+"name": "The Dreamer",
+"brand": "Versace",
+"brandSlug": "versace",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802618497-974d6b38.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802618799-4f2ebd9f.webp",
+"isFeatured": false
+},
+{
+"id": 54,
+"name": "Neroli Portofino",
+"brand": "Tom Ford",
+"brandSlug": "tom-ford",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550433320-3437a6f6.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550433641-9aca1cf5.webp",
+"isFeatured": false
+},
+{
+"id": 174,
+"name": "L'Interdit Rouge",
+"brand": "Givenchy",
+"brandSlug": "givenchy",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802659868-acde5f05.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802660209-a42a2fbc.webp",
+"isFeatured": false
+},
+{
+"id": 105,
+"name": "Green Tea",
+"brand": "Elizabeth Arden",
+"brandSlug": "elisabeth-arden",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585728684-5d40beb4.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585728941-b849188d.webp",
+"isFeatured": false
+},
+{
+"id": 18,
+"name": "Y L'Elixir",
+"brand": "Yves Saint Laurent",
+"brandSlug": "yves-saint-laurent",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774649944806-da016eac.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774750970249-3e941518.webp",
+"isFeatured": false
+},
+{
+"id": 27,
+"name": "Bad Boy",
+"brand": "Carolina Herrera",
+"brandSlug": "carolina-herrera",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458440374-dd872935.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458440528-7e15aa4f.webp",
+"isFeatured": false
+},
+{
+"id": 79,
+"name": "Blanche",
+"brand": "Byredo",
+"brandSlug": "byredo",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774647843235-7e1a4eb6.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774647855710-4745abb8.webp",
+"isFeatured": false
+},
+{
+"id": 102,
+"name": "Girl of Now Forever",
+"brand": "Elie Saab",
+"brandSlug": "elie-saab",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802612176-6ec5d8be.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802612587-44a2dc5b.webp",
+"isFeatured": false
+},
+{
+"id": 63,
+"name": "Coco Mademoiselle",
+"brand": "Chanel",
+"brandSlug": "chanel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458448268-e6142afd.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458448648-79ba3fe7.webp",
+"isFeatured": false
+},
+{
+"id": 109,
+"name": "Party Love",
+"brand": "Escada",
+"brandSlug": "escada",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052959203-7ede6d95.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052967635-037158ea.webp",
+"isFeatured": false
+},
+{
+"id": 77,
+"name": "Yes I Am Glorious",
+"brand": "Cacharel",
+"brandSlug": "cacharel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585722889-54fa47ba.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585723207-b4094a88.webp",
+"isFeatured": false
+},
+{
+"id": 14,
+"name": "Pasha de Cartier",
+"brand": "Cartier",
+"brandSlug": "cartier",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585726969-80f37d00.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458446042-baf96f60.webp",
+"isFeatured": false
+},
+{
+"id": 40,
+"name": "L'Immensité",
+"brand": "Louis Vuitton",
+"brandSlug": "louis-vuitton",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547090149-1e747dd0.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547090283-6397aa1c.webp",
+"isFeatured": false
+},
+{
+"id": 310,
+"name": "Dolce & Gabbana",
+"brand": "Dolce & Gabbana",
+"brandSlug": "dolce-gabbana",
+"category": "Gammes Complètes",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458451687-1a6bca53.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458451838-8e2cb86f.webp",
+"tags": [
+"Gamme complète"
+]
+},
+{
+"id": 26,
+"name": "Stronger With You",
+"brand": "Giorgio Armani",
+"brandSlug": "giorgio-armani",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458456557-d19cc778.webp",
+"isFeatured": false
+},
+{
+"id": 32,
+"name": "Eau de Passion Men Intense",
+"brand": "Franck Olivier",
+"brandSlug": "franck-olivier",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458453995-8fca56f4.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458454161-e132508d.webp",
+"isFeatured": false
+},
+{
+"id": 33,
+"name": "Erba Gold",
+"brand": "Sospiro",
+"brandSlug": "sospiro",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547097012-f3865d08.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547097178-4445ff63.webp",
+"isFeatured": false
+},
+{
+"id": 187,
+"name": "Oud Maracujá",
+"brand": "Maison Crivelli",
+"brandSlug": "maison-crivelli",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790212655203-86e082ce.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790212662531-d191eaf3.webp",
+"isFeatured": false
+},
+{
+"id": 94,
+"name": "Oud Satin Mood",
+"brand": "Maison Francis Kurkdjian",
+"brandSlug": "maison-francis-kurkdjian",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968290895-eb1461d9.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968294808-d378ff4c.webp",
+"isFeatured": false
+},
+{
+"id": 87,
+"name": "Weekend",
+"brand": "Burberry",
+"brandSlug": "burberry",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802609797-6101d39d.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802610178-0191eb8d.webp",
+"isFeatured": false
+},
+{
+"id": 31,
+"name": "Dylan Blue",
+"brand": "Versace",
+"brandSlug": "versace",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576123644-cdb27965.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576124264-f6b63fef.webp",
+"isFeatured": false
+},
+{
+"id": 57,
+"name": "Vanille Fatale",
+"brand": "Tom Ford",
+"brandSlug": "tom-ford",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576124917-77ac4335.webp",
+"isFeatured": false
+},
+{
+"id": 20,
+"name": "La Nuit de L'Homme",
+"brand": "Yves Saint Laurent",
+"brandSlug": "yves-saint-laurent",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576129348-7e6c9c08.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576129645-23145945.webp",
+"isFeatured": false
+},
+{
+"id": 66,
+"name": "Good Girl Blush",
+"brand": "Carolina Herrera",
+"brandSlug": "carolina-herrera",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458441054-2dc76d20.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458441189-8eb4b595.webp",
+"isFeatured": false
+},
+{
+"id": 104,
+"name": "Girl of Now Rose Petal",
+"brand": "Elie Saab",
+"brandSlug": "elie-saab",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802613258-576c5535.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802613599-2fed16b9.webp",
+"isFeatured": false
+},
+{
+"id": 62,
+"name": "N°19",
+"brand": "Chanel",
+"brandSlug": "chanel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458449690-1f755ccf.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458450047-cfe36663.webp",
+"isFeatured": false
+},
+{
+"id": 110,
+"name": "Candy Love",
+"brand": "Escada",
+"brandSlug": "escada",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779053012486-4fb33bad.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779053020203-918ca090.webp",
+"isFeatured": false
+},
+{
+"id": 73,
+"name": "Eden",
+"brand": "Cacharel",
+"brandSlug": "cacharel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458437442-8290d05c.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458437576-9e0449d4.webp",
+"isFeatured": false
+},
+{
+"id": 29,
+"name": "Carat",
+"brand": "Cartier",
+"brandSlug": "cartier",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458442787-c64e25b4.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458442927-22ad9979.webp",
+"isFeatured": false
+},
+{
+"id": 42,
+"name": "Nuit de Feu",
+"brand": "Louis Vuitton",
+"brandSlug": "louis-vuitton",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547091309-2585e5ea.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547091453-eec3deb2.webp",
+"isFeatured": false
+},
+{
+"id": 154,
+"name": "DGVIB3",
+"brand": "Dolce & Gabbana",
+"brandSlug": "dolce-gabbana",
+"category": "Gammes Complètes",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802663487-52fa0989.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802663911-5d91744e.webp",
+"isFeatured": false,
+"tags": [
+"Gamme complète"
+]
+},
+{
+"id": 117,
+"name": "Emporio Armani Stronger With You Powerfully",
+"brand": "Giorgio Armani",
+"brandSlug": "giorgio-armani",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802661870-53c03f17.webp",
+"isFeatured": false
+},
+{
+"id": 15,
+"name": "Sun Java Black / White",
+"brand": "Franck Olivier",
+"brandSlug": "franck-olivier",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585730704-8e0bd138.webp",
+"isFeatured": false
+},
+{
+"id": 82,
+"name": "Body",
+"brand": "Burberry",
+"brandSlug": "burberry",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585720797-beaee350.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585721323-0daf8170.webp",
+"isFeatured": false
+},
+{
+"id": 11,
+"name": "Eros",
+"brand": "Versace",
+"brandSlug": "versace",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576126479-7e2c3fc9.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576126822-3a52ac3c.webp",
+"isFeatured": false
+},
+{
+"id": 51,
+"name": "Bitter Peach",
+"brand": "Tom Ford",
+"brandSlug": "tom-ford",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713923236-db2ec2a9.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713927452-f34e5637.webp",
+"isFeatured": false
+},
+{
+"id": 17,
+"name": "MYSLF",
+"brand": "Yves Saint Laurent",
+"brandSlug": "yves-saint-laurent",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774714930637-19815001.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774714934846-192a1e78.webp",
+"isFeatured": false
+},
+{
+"id": 67,
+"name": "Good Girl Suprême",
+"brand": "Carolina Herrera",
+"brandSlug": "carolina-herrera",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458441625-3ec1b6e1.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458441762-2037ea3a.webp",
+"isFeatured": false
+},
+{
+"id": 90,
+"name": "Gabrielle Chanel Essence",
+"brand": "Chanel",
+"brandSlug": "chanel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458449105-32da5cb5.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458449248-44003fd2.webp",
+"isFeatured": false
+},
+{
+"id": 107,
+"name": "Taj Sunset",
+"brand": "Escada",
+"brandSlug": "escada",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458453396-1fbf84b0.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458453553-ab1db8b7.webp",
+"isFeatured": false
+},
+{
+"id": 75,
+"name": "Yes I Am",
+"brand": "Cacharel",
+"brandSlug": "cacharel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585721960-0c312574.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585722293-ef80fc87.webp",
+"isFeatured": false
+},
+{
+"id": 37,
+"name": "La Panthère",
+"brand": "Cartier",
+"brandSlug": "cartier",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585726038-2a2c9e1d.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585726356-2104bbdf.webp",
+"isFeatured": false
+},
+{
+"id": 39,
+"name": "Contre Moi",
+"brand": "Louis Vuitton",
+"brandSlug": "louis-vuitton",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774712575155-4c58739c.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774712590554-0b7f6cb2.webp",
+"isFeatured": false
+},
+{
+"id": 21,
+"name": "Stronger With You Intensely",
+"brand": "Giorgio Armani",
+"brandSlug": "giorgio-armani",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458457110-9d1b4c93.webp",
+"isFeatured": false
+},
+{
+"id": 86,
+"name": "My Burberry",
+"brand": "Burberry",
+"brandSlug": "burberry",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774648410484-80b59742.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774648420217-32db745b.webp",
+"isFeatured": false
+},
+{
+"id": 56,
+"name": "Tobacco Vanille",
+"brand": "Tom Ford",
+"brandSlug": "tom-ford",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774714348932-7e181121.webp",
+"isFeatured": false
+},
+{
+"id": 95,
+"name": "Libre",
+"brand": "Yves Saint Laurent",
+"brandSlug": "yves-saint-laurent",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968404315-093fba78.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968411095-d848238a.webp",
+"isFeatured": false
+},
+{
+"id": 68,
+"name": "Good Girl Velvet Fatale",
+"brand": "Carolina Herrera",
+"brandSlug": "carolina-herrera",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458442220-47ebb239.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458442365-f284088d.webp",
+"isFeatured": false
+},
+{
+"id": 91,
+"name": "N°1 de Chanel L'Eau Rouge",
+"brand": "Chanel",
+"brandSlug": "chanel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774651420850-1f0d4e2a.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774651499106-4daadc53.webp",
+"isFeatured": false
+},
+{
+"id": 71,
+"name": "Anaïs Anaïs",
+"brand": "Cacharel",
+"brandSlug": "cacharel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458435657-8fe99753.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458435799-d476360d.webp",
+"isFeatured": false
+},
+{
+"id": 92,
+"name": "Déclaration d'Un Soir",
+"brand": "Cartier",
+"brandSlug": "cartier",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458443948-6de1448f.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458444094-aef2df0b.webp",
+"isFeatured": false
+},
+{
+"id": 98,
+"name": "Imagination",
+"brand": "Louis Vuitton",
+"brandSlug": "louis-vuitton",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968751258-b3c8b3a4.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968757720-53330d12.webp",
+"isFeatured": false
+},
+{
+"id": 96,
+"name": "Power Of You",
+"brand": "Giorgio Armani",
+"brandSlug": "giorgio-armani",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968456546-62813f0e.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968463428-23ab6a3e.webp",
+"isFeatured": false
+},
+{
+"id": 84,
+"name": "Brit Sheer",
+"brand": "Burberry",
+"brandSlug": "burberry",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458434466-a8cf15c3.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458434641-392f057d.webp",
+"isFeatured": false
+},
+{
+"id": 97,
+"name": "Noir Extreme",
+"brand": "Tom Ford",
+"brandSlug": "tom-ford",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968695979-065907e5.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968701975-ea93b5d9.webp",
+"isFeatured": false
+},
+{
+"id": 25,
+"name": "Y",
+"brand": "Yves Saint Laurent",
+"brandSlug": "yves-saint-laurent",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576130341-a4960c27.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576131419-93f95dce.webp",
+"isFeatured": false
+},
+{
+"id": 69,
+"name": "Good Girl Dot Drama",
+"brand": "Carolina Herrera",
+"brandSlug": "carolina-herrera",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774646967856-88b2daff.webp",
+"isFeatured": false
+},
+{
+"id": 61,
+"name": "N°5",
+"brand": "Chanel",
+"brandSlug": "chanel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802610849-89596096.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802611508-907853ef.webp",
+"isFeatured": false
+},
+{
+"id": 74,
+"name": "Noa",
+"brand": "Cacharel",
+"brandSlug": "cacharel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458438018-79824467.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458438157-89154e60.webp",
+"isFeatured": false
+},
+{
+"id": 30,
+"name": "Déclaration",
+"brand": "Cartier",
+"brandSlug": "cartier",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458443365-8a72e98d.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458443505-ee871bd6.webp",
+"isFeatured": false
+},
+{
+"id": 223,
+"name": "Attrape-Rêves",
+"brand": "Louis Vuitton",
+"brandSlug": "louis-vuitton",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802616204-f05162ce.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802616532-457a2000.webp",
+"isFeatured": false,
+"tags": [
+"Nouveau"
+],
+"isNew": true
+},
+{
+"id": 53,
+"name": "Café Rose",
+"brand": "Tom Ford",
+"brandSlug": "tom-ford",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550432323-5647395c.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550432625-011ca5a0.webp",
+"isFeatured": false
+},
+{
+"id": 89,
+"name": "Gabrielle Chanel",
+"brand": "Chanel",
+"brandSlug": "chanel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774649032962-e9c27a0f.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774649039911-49a068cd.webp",
+"isFeatured": false
+},
+{
+"id": 70,
+"name": "Amor Amor",
+"brand": "Cacharel",
+"brandSlug": "cacharel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458436237-885b52c1.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458436390-cc95a063.webp",
+"isFeatured": false
+},
+{
+"id": 43,
+"name": "Sur la Route",
+"brand": "Louis Vuitton",
+"brandSlug": "louis-vuitton",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547091907-d7d60fb6.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547092045-29f68f36.webp",
+"isFeatured": false
+},
+{
+"id": 52,
+"name": "Black Orchid",
+"brand": "Tom Ford",
+"brandSlug": "tom-ford",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550431351-537cc8d2.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550431686-26b5dbd6.webp",
+"isFeatured": false
+},
+{
+"id": 64,
+"name": "Coco Noir",
+"brand": "Chanel",
+"brandSlug": "chanel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458447697-ec591b73.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458447829-aaa5a64a.webp",
+"isFeatured": false
+},
+{
+"id": 76,
+"name": "Yes I Am Bloom Up!",
+"brand": "Cacharel",
+"brandSlug": "cacharel",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458439202-45b4009d.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458439377-0ea1094e.webp",
+"isFeatured": false
+},
+{
+"id": 38,
+"name": "Afternoon Swim",
+"brand": "Louis Vuitton",
+"brandSlug": "louis-vuitton",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547088963-9dbd1551.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547089108-fd11535e.webp",
+"isFeatured": true
+},
+{
+"id": 55,
+"name": "Soleil Blanc",
+"brand": "Tom Ford",
+"brandSlug": "tom-ford",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550434268-e29c5209.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550434585-113e9ad2.webp",
+"isFeatured": false
+},
+{
+"id": 275,
+"name": "LV Lovers",
+"brand": "Louis Vuitton",
+"brandSlug": "louis-vuitton",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802657724-6b2b5f53.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802658232-5e044166.webp",
+"isFeatured": false,
+"tags": [
+"Nouveau"
+],
+"isNew": true
+},
+{
+"id": 308,
+"name": "Les Sables Roses",
+"brand": "Louis Vuitton",
+"brandSlug": "louis-vuitton",
+"category": "Sélections Individuelles",
+"image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790875978581-ddabefa3.webp",
+"imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790875979080-b95f1a2e.webp",
+"isFeatured": false,
+"tags": [
+"Nouveau"
+],
+"isNew": true
+}
+]

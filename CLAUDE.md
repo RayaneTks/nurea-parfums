@@ -230,7 +230,8 @@ La référence complète est `DESIGN.md`. Les trois règles sans exception :
 - **Angles 0** — aucun arrondi, boutons et images compris.
 - **Aucune ombre** — on sépare au filet 1 px ; les blocs partagent leurs bords.
 - **Survol : la couleur seule**, 160 ms `ease-out`. Jamais de déplacement ni
-  d'agrandissement.
+  d'agrandissement. Le mouvement répond au **geste** : appui qui cède de 2 %, feuilles
+  qui suivent le doigt (`src/lib/motion/`, `useSheetMotion`) — `DESIGN.md` § Mouvement.
 
 Le reste :
 - **Jetons** : `app/globals.css` (`--nurea-*`, en canaux RVB) et `src/design/brand.ts`

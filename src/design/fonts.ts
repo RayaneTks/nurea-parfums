@@ -15,9 +15,15 @@ import { Instrument_Sans, Newsreader } from "next/font/google";
  * gestion compose en `-apple-system` et n'embarque aucune police distante.
  */
 
-/** Titres et noms de parfum. 400 et 500, jamais plus. */
+/**
+ * Titres et noms de parfum. 400 et 500, jamais plus — la charte se tient dans les classes de rôle.
+ *
+ * Chargée en police variable avec son axe optique (`opsz`, 6 → 72) : le navigateur choisit le
+ * dessin adapté à chaque corps (`font-optical-sizing: auto`, par défaut) — plus fin et plus serré
+ * en titre, plus robuste en 20 px. Une graisse variable est un seul fichier, pas deux.
+ */
 const serif = Newsreader({
-  weight: ["400", "500"],
+  axes: ["opsz"],
   subsets: ["latin"],
   variable: "--font-serif",
   display: "swap",

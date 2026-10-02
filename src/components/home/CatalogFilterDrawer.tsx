@@ -1,15 +1,9 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type FC,
-  type TouchEvent as ReactTouchEvent,
-} from "react";
+import { useEffect, useMemo, useRef, useState, type FC } from "react";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useSheetMotion } from "@/hooks/useSheetMotion";
 import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +49,9 @@ function groupByInitial(brands: CatalogBrowseBrand[]) {
  * La sélection est un brouillon : elle n'agit sur la grille qu'à la validation.
  * Fermer sans valider ne change donc rien, ce qui rend l'exploration sans
  * conséquence.
+ *
+ * Mouvement : `useSheetMotion` — la feuille suit le doigt par son en-tête, ou
+ * n'importe où quand la liste est en haut, et sort par où elle est entrée.
  */
 export const CatalogFilterDrawer: FC<CatalogFilterDrawerProps> = ({
   open,
@@ -64,7 +61,11 @@ export const CatalogFilterDrawer: FC<CatalogFilterDrawerProps> = ({
   onClose,
 }) => {
   const [draft, setDraft] = useState<Set<string>>(() => new Set(selected));
-  const touchStartY = useRef<number | null>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const scrimRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useSheetMotion({ open, onRequestClose: onClose, panelRef, scrimRef, scrollRef, desktop: "right" });
 
   /* Le brouillon repart de la sélection réelle à chaque ouverture. */
   useEffect(() => {
@@ -98,25 +99,15 @@ export const CatalogFilterDrawer: FC<CatalogFilterDrawerProps> = ({
     });
   };
 
-  const onTouchStart = (event: ReactTouchEvent) => {
-    touchStartY.current = event.touches[0]?.clientY ?? null;
-  };
-
-  const onTouchEnd = (event: ReactTouchEvent) => {
-    const start = touchStartY.current;
-    const end = event.changedTouches[0]?.clientY;
-    touchStartY.current = null;
-    if (start !== null && end !== undefined && end - start > 60) onClose();
-  };
-
   return (
     <>
       <div
+        ref={scrimRef}
         aria-hidden
         onClick={onClose}
         className={cn(
-          "fixed inset-0 z-[110] bg-nurea-bg/85 transition-opacity duration-nurea ease-out",
-          open ? "opacity-100" : "pointer-events-none opacity-0"
+          "fixed inset-0 z-[110] bg-nurea-bg/85 opacity-0",
+          !open && "pointer-events-none"
         )}
       />
 
@@ -125,18 +116,14 @@ export const CatalogFilterDrawer: FC<CatalogFilterDrawerProps> = ({
           ferait croire aux lecteurs d'écran qu'une modale est toujours
           ouverte, et masquerait le reste de la page. */}
       <aside
+        ref={panelRef}
         {...(open
           ? { role: "dialog", "aria-modal": true, "aria-label": "Filtrer par marques" }
           : { inert: true, "aria-hidden": true })}
-        className={cn(
-          "fixed inset-x-0 bottom-0 z-[120] flex h-[78dvh] flex-col border-t border-nurea-border bg-nurea-bg transition-transform duration-300 ease-out",
-          "md:inset-y-0 md:left-auto md:right-0 md:h-full md:w-full md:max-w-[25rem] md:border-l md:border-t-0",
-          open ? "translate-y-0 md:translate-x-0" : "translate-y-full md:translate-y-0 md:translate-x-full"
-        )}
+        className="fixed inset-x-0 bottom-0 z-[120] flex h-[78dvh] translate-y-full flex-col border-t border-nurea-border bg-nurea-bg will-change-transform md:inset-y-0 md:left-auto md:right-0 md:h-full md:w-full md:max-w-[25rem] md:translate-x-full md:translate-y-0 md:border-l md:border-t-0"
       >
         <header
-          onTouchStart={onTouchStart}
-          onTouchEnd={onTouchEnd}
+          data-sheet-handle
           className="flex shrink-0 items-center justify-between border-b border-nurea-border px-6 py-4"
         >
           <div>
@@ -157,7 +144,7 @@ export const CatalogFilterDrawer: FC<CatalogFilterDrawerProps> = ({
           </button>
         </header>
 
-        <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div ref={scrollRef} className="thin-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {groups.length === 0 ? (
             <p className="nurea-caption px-6 py-12 text-center">
               Aucune marque disponible.
