@@ -118,7 +118,7 @@ export const Navbar: FC<NavbarProps> = ({ onOpenFilters }) => {
   };
 
   return (
-    <nav className="fixed inset-x-0 top-0 z-50 border-b border-nurea-border bg-nurea-bg pt-[env(safe-area-inset-top,0px)]">
+    <nav className="nurea-material fixed inset-x-0 top-0 z-50 border-b border-nurea-border pt-[env(safe-area-inset-top,0px)]">
       <div className="nurea-page flex h-14 items-center justify-between md:h-[4.25rem]">
         {/* Retour ou menu — mobile seulement */}
         <div className="flex w-11 justify-start md:hidden">

@@ -26,6 +26,7 @@ interface PerfumeCardProps {
  *
  * Survol : la couleur de fond, rien d'autre. Ni déplacement, ni agrandissement,
  * ni ombre — c'est la règle du § 05, et elle n'a pas d'exception.
+ * Appui (`.nurea-press`) : la couleur bascule dès le contact et la fiche cède de 2 %.
  */
 export const PerfumeCard: FC<PerfumeCardProps> = ({
   perfume,
@@ -41,7 +42,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
         ? `${perfume.brand} : voir les parfums de la marque`
         : `${perfume.brand} — ${perfume.name} : voir comment commander`
     }
-    className="flex w-full flex-col border border-nurea-border bg-nurea-surface text-left transition-colors duration-nurea ease-out hover:bg-nurea-surface-hover"
+    className="nurea-press flex w-full flex-col border border-nurea-border bg-nurea-surface text-left hover:bg-nurea-surface-hover active:bg-nurea-surface-hover"
   >
     <div className="nurea-visuel-parfum relative w-full overflow-hidden">
       <PerfumeImage

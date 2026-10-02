@@ -47,6 +47,13 @@ async function main(): Promise<number> {
   }
 
   const url = EXPLICIT_URL;
+  /* Aperçu Vercel : il n'a plus de base depuis la suppression de la préproduction (CLAUDE.md).
+     Rien à migrer, et la vitrine s'y affiche sur son catalogue de démonstration : l'aperçu
+     sert à juger un rendu, pas des données. Une URL fournie, elle, repasse par la garde. */
+  if (!url && process.env.VERCEL_ENV === "preview") {
+    console.log("migrate-deploy-guarded — aperçu Vercel sans base : migrations ignorées.");
+    return 0;
+  }
   if (!url) {
     console.error(
       "migrate-deploy-guarded — ni DIRECT_URL ni DATABASE_URL dans l'environnement : refus de laisser " +

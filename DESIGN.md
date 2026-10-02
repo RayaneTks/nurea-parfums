@@ -29,7 +29,8 @@ l'écran qu'il faut revoir.
 2. **Aucune ombre.** On sépare au filet 1 px, jamais à la carte flottante.
    Les blocs partagent leurs bords.
 3. **Survol : la couleur seule**, en 160 ms `ease-out`. Jamais de déplacement,
-   jamais d'agrandissement.
+   jamais d'agrandissement. Le mouvement répond au **geste**, jamais au survol
+   (§ Mouvement).
 
 ## Couleurs
 
@@ -92,14 +93,21 @@ Instrument Sans 11 px).
 
 | Classe | Police | Taille / interligne |
 |---|---|---|
-| `.nurea-title` | Newsreader 500 | 32 → 56 / 1,08 / −0,015 em |
-| `.nurea-section-title` | Newsreader 500 | 28 → 40 / 1,1 |
-| `.nurea-name` | Newsreader 500 | 20 → 24 / 1,3 |
-| `.nurea-lead` | Newsreader 400 | 20 → 24 / 1,45 — chapô |
-| `.nurea-numeral` | Newsreader 400 | 40 → 64 / 1 — numéro de chapitre, chiffres tabulaires |
-| `.nurea-body` | Instrument 400 | 16 / 1,8 |
+| `.nurea-title` | Newsreader 500 | 32 → 56 / 1,06 / −0,022 em |
+| `.nurea-section-title` | Newsreader 500 | 28 → 40 / 1,1 / −0,016 em |
+| `.nurea-name` | Newsreader 500 | 20 → 24 / 1,25 / −0,008 em |
+| `.nurea-lead` | Newsreader 400 | 20 → 24 / 1,45 / −0,006 em — chapô |
+| `.nurea-numeral` | Newsreader 400 | 40 → 64 / 1 / −0,02 em — numéro de chapitre, chiffres tabulaires |
+| `.nurea-body` | Instrument 400 | 16 / 1,8 / 0 |
 | `.nurea-label` | Instrument 600 | 11 / 0,18 em capitales |
-| `.nurea-caption` | Instrument 400 | 12,5 / 1,75 |
+| `.nurea-caption` | Instrument 400 | 12,5 / 1,75 / +0,006 em |
+
+**L'interlettrage dépend de la taille**, jamais une valeur pour tous : un grand
+corps paraît lâche et se resserre, un petit corps se desserre pour rester
+lisible. Newsreader est chargée en police variable avec son **axe optique**
+(`opsz`) : le dessin s'affine en titre et s'épaissit en petit corps, tout seul.
+Les titres équilibrent leurs lignes (`text-wrap: balance`), le texte évite les
+mots orphelins (`text-wrap: pretty`).
 
 **N'écrivez pas de taille en dur.** Une taille arbitraire (`text-[13.5px]`) est
 le signe qu'un rôle manque — ajoutez-le ici plutôt que de le contourner.
@@ -134,7 +142,7 @@ Les briques vivent dans `src/components/ui/` :
 - [`Field`](src/components/ui/Field.tsx) — libellé, contrôle, erreur. L'état
   visuel dérive d'`aria-invalid` : il ne peut pas diverger de l'état annoncé.
 - [`ScrollReveal`](src/components/ui/ScrollReveal.tsx) — opacité et 12 px de
-  montée, une seule fois. **Pas de variante de direction** : la charte n'admet
+  montée, une seule fois (§ Mouvement). **Pas de variante de direction** : la charte n'admet
   ni entrée latérale ni agrandissement.
 
 **Un seul bouton plein par écran.** Sur l'accueil, c'est celui du bandeau
@@ -189,6 +197,35 @@ omise — mieux vaut une ligne absente qu'une contenance inventée.
 | Survol | `--nurea-surface-hover` |
 | Focus | filet cuivre 1 px, `outline-offset: -2px` |
 | Épuisé | 40 % d'opacité |
+
+## Mouvement
+
+Inspiré des interfaces d'Apple : l'écran répond au doigt comme un objet. Le
+moteur est pur et testé — [`src/lib/motion/physics.ts`](src/lib/motion/physics.ts)
+(ressort, élan, résistance) — et les feuilles le branchent par
+[`useSheetMotion`](src/hooks/useSheetMotion.ts). Aucune bibliothèque.
+
+| Geste | Réponse |
+|---|---|
+| **Appui** (bouton, fiche) | Dès le contact, pas au lâcher : la couleur bascule sans transition et l'élément cède de 2 % (`scale(0.98)`, `.nurea-press`). Céder n'est pas grandir — la règle 3 tient. |
+| **Feuille** (fiche parfum, filtres — téléphone) | Entre par le bas, sort par le bas : même chemin dans les deux sens. Se saisit par sa poignée (photo, en-tête) ou n'importe où quand son contenu est en haut, et **suit le doigt au pixel**. Tirée vers le haut, elle résiste au lieu de bloquer. Lâchée, elle vise où l'élan la portait : un glissé franc ferme même court, un glissé lent ferme passé la moitié. Le ressort reprend la vitesse exacte du doigt, et la feuille se rattrape en plein vol. |
+| **Boîte** (grand écran) | Fondu et 12 px de montée sur ressort ; le tiroir de filtres vient de la droite et y repart. |
+| **Défilement** | Une entrée, une fois : opacité et 12 px, sur une courbe de ressort sans rebond. |
+
+Ressorts : **amortissement 1** (aucun rebond) par défaut ; un soupçon de rebond
+(0,86) seulement quand le geste a donné de l'élan. Toute fermeture — bouton,
+Échap, fond, glissé — passe par la même sortie animée.
+
+**Mouvement réduit** demandé : plus de glissement, un fondu court ; plus de
+cession à l'appui. **Transparence réduite** : la barre redevient pleine.
+**Contraste renforcé** : les filets passent à leur version appuyée.
+
+### Matière
+
+La barre de navigation est une **matière translucide** (fond à 78 %, flou
+20 px) : le contenu passe dessous et reste deviné. Elle garde son filet cuivre ;
+c'est la seule surface translucide du site — jamais une matière posée sur une
+autre.
 
 ## Images bi-thème
 

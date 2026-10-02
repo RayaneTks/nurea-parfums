@@ -10,6 +10,7 @@ import {
 } from "@/lib/db/prismaRuntimeCircuit";
 import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
 import { loadSeoCatalogue, type SeoBrand, type SeoPerfume } from "@/lib/catalog/seoCatalogue";
+import demoCatalogue from "@/lib/catalog/demo-catalogue.json";
 
 /**
  * Combien de parfums portent « Nouveau » : les derniers entrés au catalogue, par date d'ajout.
@@ -28,22 +29,31 @@ export type CachedPublicCatalogue = {
   browseBrands: CatalogBrowseBrand[];
 };
 
-function perfumesFromMock(): Perfume[] {
-  return mockPerfumes.map((p) => ({
+/**
+ * Sans base du tout — aperçu Vercel, poste de développement sans `.env` — la vitrine montre un
+ * instantané du catalogue public (`demo-catalogue.json`, relevé sur nureaparfums.fr le 02/10/2026) :
+ * on y juge un rendu, il faut donc des flacons à regarder. Rien que du public : nom, marque,
+ * visuel. Une base configurée mais injoignable, elle, garde le repli vide — jamais un instantané
+ * périmé présenté comme le catalogue du jour.
+ */
+const DEMO_PERFUMES = demoCatalogue as Perfume[];
+
+function perfumesFromMock(source: Perfume[] = mockPerfumes): Perfume[] {
+  return source.map((p) => ({
     ...p,
     brandSlug: p.brandSlug ?? p.brand.toLowerCase().trim().replace(/\s+/g, "-"),
   }));
 }
 
-function browseFromMock(): CatalogBrowseBrand[] {
+function browseFromMock(source: Perfume[] = mockPerfumes): CatalogBrowseBrand[] {
   const byBrand = new Map<
     string,
     { slug: string; complete: boolean; curatedCount: number }
   >();
-  for (const p of mockPerfumes) {
+  for (const p of source) {
     const key = p.brand;
     const row = byBrand.get(key) ?? {
-      slug: p.brand.toLowerCase().trim().replace(/\s+/g, "-"),
+      slug: p.brandSlug ?? p.brand.toLowerCase().trim().replace(/\s+/g, "-"),
       complete: false,
       curatedCount: 0,
     };
@@ -77,7 +87,7 @@ function isPublicImage(image: string | null | undefined): boolean {
 
 async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
   if (!process.env.DATABASE_URL?.trim()) {
-    return { perfumes: perfumesFromMock(), browseBrands: browseFromMock() };
+    return { perfumes: perfumesFromMock(DEMO_PERFUMES), browseBrands: browseFromMock(DEMO_PERFUMES) };
   }
 
   if (prismaCatalogInCooldown()) {

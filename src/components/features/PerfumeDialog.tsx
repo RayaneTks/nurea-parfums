@@ -1,18 +1,19 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useId,
   useRef,
   useState,
   type FC,
   type KeyboardEvent as ReactKeyboardEvent,
-  type TouchEvent as ReactTouchEvent,
 } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { X } from "lucide-react";
 import type { Perfume } from "@/lib/data";
+import { useSheetMotion } from "@/hooks/useSheetMotion";
 import { isCompleteRange } from "@/lib/catalog/perfumePresentation";
 import { brandPath, perfumePath } from "@/lib/seo/paths";
 import { buttonClass } from "@/components/ui/Button";
@@ -46,11 +47,29 @@ const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1
  *     zone qui défile : il reste visible quoi qu'on fasse ;
  *   - une poignée en haut dit que la feuille se ferme d'un glissé vers le bas.
  * Grand écran : inchangé, photo en 2:3 à gauche, tout le reste à droite.
+ *
+ * Mouvement (`useSheetMotion`) : la feuille entre par le bas et ressort par le bas, suit le doigt
+ * dès qu'on la saisit — par la photo, ou n'importe où quand la fiche est en haut — et se laisse
+ * rattraper pendant qu'elle bouge. Toute fermeture (bouton, Échap, fond, glissé) passe par la même
+ * sortie animée ; `onClose` n'est appelé qu'une fois la feuille sortie.
  */
 const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
-  const touchStartY = useRef<number | null>(null);
+  const scrimRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(true);
+  const close = useCallback(() => setOpen(false), []);
+
+  useSheetMotion({
+    open,
+    onRequestClose: close,
+    onClosed: onClose,
+    panelRef,
+    scrimRef,
+    scrollRef,
+    desktop: "rise",
+  });
 
   /* Verrou de défilement, focus entrant, focus rendu au déclencheur. */
   useEffect(() => {
@@ -69,7 +88,7 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Escape") {
-      onClose();
+      close();
       return;
     }
     if (event.key !== "Tab" || !panelRef.current) return;
@@ -86,18 +105,6 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
       event.preventDefault();
       first.focus();
     }
-  };
-
-  /* Glisser vers le bas pour fermer — geste attendu d'une feuille mobile. */
-  const onTouchStart = (event: ReactTouchEvent) => {
-    touchStartY.current = event.touches[0]?.clientY ?? null;
-  };
-
-  const onTouchEnd = (event: ReactTouchEvent) => {
-    const start = touchStartY.current;
-    const end = event.changedTouches[0]?.clientY;
-    touchStartY.current = null;
-    if (start !== null && end !== undefined && end - start > 70) onClose();
   };
 
   /*
@@ -120,7 +127,12 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
       {/* Le clic sur le fond ferme, comme attendu d'une boîte modale. Il ne
           porte aucune fonction propre : Échap et le bouton « Fermer » sont les
           chemins accessibles, ce fond n'est qu'un raccourci à la souris. */}
-      <div aria-hidden className="absolute inset-0 bg-nurea-bg/85" onClick={onClose} />
+      <div
+        ref={scrimRef}
+        aria-hidden
+        className="absolute inset-0 bg-nurea-bg/85 opacity-0"
+        onClick={close}
+      />
 
       <div
         ref={panelRef}
@@ -128,15 +140,14 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
         aria-modal="true"
         aria-labelledby={titleId}
         onKeyDown={onKeyDown}
-        className="relative flex max-h-[92dvh] w-full flex-col border-t border-nurea-border bg-nurea-bg md:max-h-[86dvh] md:max-w-[46rem] md:border"
+        className="relative flex max-h-[92dvh] w-full flex-col border-t border-nurea-border bg-nurea-bg will-change-transform md:max-h-[86dvh] md:max-w-[46rem] md:border"
       >
         {/* La zone qui défile. La barre de commande, en dessous, n'en fait pas partie. */}
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <div className="md:grid md:grid-cols-2">
             <div
+              data-sheet-handle
               className="nurea-fiche-visuel relative w-full overflow-hidden border-b border-nurea-border md:border-b-0 md:border-r"
-              onTouchStart={onTouchStart}
-              onTouchEnd={onTouchEnd}
             >
               <PerfumeImage
                 perfume={perfume}
@@ -150,7 +161,7 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
               />
               <button
                 type="button"
-                onClick={onClose}
+                onClick={close}
                 aria-label="Fermer"
                 className="absolute right-0 top-0 flex h-12 w-12 items-center justify-center bg-nurea-bg text-nurea-text transition-colors duration-nurea ease-out hover:bg-nurea-surface-hover"
               >
