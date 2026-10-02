@@ -9,10 +9,12 @@ import {
 import { searchExternalPerfumeApi } from "./searchExternalPerfumeApi";
 import { searchFragantyApi } from "./searchFragantyApi";
 import { cleNom } from "../nommage";
+import { getReferenceCatalogue } from "./reference/referenceCatalogue";
+import { searchReference } from "./reference/searchReference";
 import { searchLocalCatalog } from "./searchLocalCatalog";
 
 /**
- * Orchestration : catalogue (DB ou mock) → parfums au catalogue sans carte publique → cache externe
+ * Orchestration : catalogue (DB ou mock) → parfums au catalogue sans carte publique → référentiel mondial → cache externe
  * (DB ou mémoire) → API externe.
  */
 export async function searchPerfumeWithFallback(
@@ -40,6 +42,12 @@ export async function searchPerfumeWithFallback(
   const unlisted = searchUnlisted(await getUnlistedPerfumes(), q);
   if (unlisted) {
     return { type: "unlisted_match", query: q, match: unlisted };
+  }
+
+  // Référentiel des marques et parfums du monde : hors ligne, déterministe, sans coût d'API.
+  const reference = searchReference(getReferenceCatalogue(), q);
+  if (reference) {
+    return { type: "reference_match", query: q, match: reference };
   }
 
   const cached = await getExternalSuggestionFromCache(q, categoryKey);

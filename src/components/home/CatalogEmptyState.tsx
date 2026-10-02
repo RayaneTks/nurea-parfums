@@ -78,6 +78,36 @@ export const CatalogEmptyState: FC<CatalogEmptyStateProps> = ({
     );
   }
 
+  const reference =
+    extendedSearch.status === "done" &&
+    extendedSearch.response.type === "reference_match"
+      ? extendedSearch.response.match
+      : null;
+
+  /* Reconnu dans le référentiel mondial : peut-être pas encore ajouté au catalogue.
+     On invite à écrire, demande pré-remplie. */
+  if (reference) {
+    const brandOnly = reference.kind === "brand";
+    return (
+      <EmptyShell
+        testId="reference-match"
+        title={
+          brandOnly
+            ? `Vous recherchez un parfum ${reference.brand} ?`
+            : `Vous recherchez « ${reference.name} » de ${reference.brand} ?`
+        }
+        body={
+          brandOnly
+            ? "Cette marque n'est peut-être pas encore ajoutée au catalogue, mais contactez-nous : nous vous dirons ce que nous pouvons vous proposer."
+            : "Ce parfum n'a peut-être pas encore été ajouté au catalogue, mais contactez-nous : nous vous dirons s'il est disponible, ou nous vous proposerons une alternative."
+        }
+        contactHref={contactHref(
+          brandOnly ? { marque: reference.brand } : { parfum: reference.name, marque: reference.brand },
+        )}
+      />
+    );
+  }
+
   const suggestion =
     extendedSearch.status === "done" &&
     extendedSearch.response.type === "external_suggestion"
