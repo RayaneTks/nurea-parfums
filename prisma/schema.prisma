@@ -64,6 +64,9 @@ model Perfume {
   brandId    String
   brand      Brand             @relation(fields: [brandId], references: [id], onDelete: Cascade)
   name       String
+  /// Gamme : ligne de la marque (« La Collection Privée », « Private Blend »), affichée avec elle.
+  /// NULL = pas de gamme ; jamais une chaîne vide (CHECK perfume_line_ck).
+  line       String?
   /// Visuel principal (thème sombre, WebP). Chaîne vide = sans visuel ⇒ CHECK : status = DRAFT.
   image      String
   /// Variante du visuel pour le thème clair (optionnelle).

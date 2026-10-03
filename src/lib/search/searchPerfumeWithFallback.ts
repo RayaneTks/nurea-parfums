@@ -81,11 +81,12 @@ export async function searchPerfumeWithFallback(
 export function searchUnlisted(
   unlisted: readonly UnlistedPerfume[],
   query: string,
-): (UnlistedPerfume & { on: "perfume" | "brand" }) | null {
+): (Pick<UnlistedPerfume, "name" | "brand"> & { on: "perfume" | "brand" }) | null {
   const asPerfumes: Perfume[] = unlisted.map((p, index) => ({
     id: index,
     name: p.name,
     brand: p.brand,
+    line: p.line,
     category: "Sélections Individuelles",
     image: "",
   }));

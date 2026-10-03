@@ -27,7 +27,11 @@ import { db } from "@/server/db/client";
  * (tag `gestion`) et servent à agir (04 §10.4).
  */
 
-const searchKey = (...parts: string[]) => parts.map(cleNom).join(" ");
+const searchKey = (...parts: (string | null)[]) =>
+  parts
+    .filter((part): part is string => !!part)
+    .map(cleNom)
+    .join(" ");
 
 type MediaDbRow = {
   id: string;
@@ -67,6 +71,7 @@ async function loadAdminCatalogue(): Promise<AdminCatalogue> {
         id: true,
         brandId: true,
         name: true,
+        line: true,
         image: true,
         imageLight: true,
         status: true,
@@ -94,6 +99,7 @@ async function loadAdminCatalogue(): Promise<AdminCatalogue> {
     perfumeRows.push({
       id: perfume.id,
       name: perfume.name,
+      line: perfume.line,
       image: perfume.image,
       imageLight: perfume.imageLight,
       status: perfume.status,
@@ -102,7 +108,7 @@ async function loadAdminCatalogue(): Promise<AdminCatalogue> {
       stockStatus: stockStatus(perfume.stock),
       mediaCount: media.get(perfume.id) ?? 0,
       brand: brandState(brand),
-      searchKey: searchKey(perfume.name, brand.name),
+      searchKey: searchKey(perfume.name, brand.name, perfume.line),
       updatedAt: perfume.updatedAt.toISOString(),
     });
   }
@@ -139,6 +145,7 @@ export const perfumeSheet = defineQuery(async (id: number): Promise<PerfumeSheet
     select: {
       id: true,
       name: true,
+      line: true,
       image: true,
       imageLight: true,
       status: true,
@@ -169,6 +176,7 @@ export const perfumeSheet = defineQuery(async (id: number): Promise<PerfumeSheet
     perfume: {
       id: perfume.id,
       name: perfume.name,
+      line: perfume.line,
       image: perfume.image,
       imageLight: perfume.imageLight,
       status: perfume.status,
@@ -188,16 +196,17 @@ export const perfumeSheet = defineQuery(async (id: number): Promise<PerfumeSheet
   };
 });
 
-/** « Dupliquer » (E16 → E19 `?dupliquer=<id>`) : marque et tarifs repris ; nom, visuels et stock non repris. */
+/** « Dupliquer » (E16 → E19 `?dupliquer=<id>`) : marque, gamme et tarifs repris ; nom, visuels et stock non repris. */
 export const perfumeDuplicationDraft = defineQuery(async (id: number): Promise<PerfumeDuplicationDraft | null> => {
   const perfume = await db.perfume.findUnique({
     where: { id },
     select: {
+      line: true,
       brand: { select: { id: true, name: true, status: true, catalogMode: true, image: true } },
       pricings: { select: PRICING_SELECT },
     },
   });
-  return perfume ? { brand: brandState(perfume.brand), pricing: pricingRows(perfume.pricings) } : null;
+  return perfume ? { brand: brandState(perfume.brand), line: perfume.line, pricing: pricingRows(perfume.pricings) } : null;
 });
 
 /** E17 : marque en modification (slug en lecture seule, comptes pour les dialogues de cascade). */

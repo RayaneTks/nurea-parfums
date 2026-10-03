@@ -16,7 +16,7 @@ import { CatalogueThumb } from "./CatalogueThumb";
 
 /**
  * Ligne de parfum (06 E15 zone 3) : vignette, nom (+ « Rupture » ou « Stock bas » si le stock est suivi),
- * légende marque (+ « · 2 visuels story »), et l'œil de visibilité — 1 tap, optimiste, restauré avec la
+ * légende marque (+ « · gamme », « · 2 visuels story »), et l'œil de visibilité — 1 tap, optimiste, restauré avec la
  * raison du refus en toast (message unique de `src/domain/publication.ts`, renvoyé par le serveur).
  */
 export function PerfumeRow({ perfume }: { perfume: AdminPerfumeRow }) {
@@ -62,7 +62,9 @@ export function PerfumeRow({ perfume }: { perfume: AdminPerfumeRow }) {
           {badge ? <span className="shrink-0">{badge}</span> : null}
         </span>
       }
-      secondary={perfume.mediaCount > 0 ? `${perfume.brand.name} · ${storyCountLabel(perfume.mediaCount)}` : perfume.brand.name}
+      secondary={[perfume.brand.name, perfume.line, perfume.mediaCount > 0 ? storyCountLabel(perfume.mediaCount) : null]
+        .filter(Boolean)
+        .join(" · ")}
       trailing={
         <Button
           variant="ghost"

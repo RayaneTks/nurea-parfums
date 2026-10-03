@@ -41,6 +41,8 @@ export interface Perfume {
   brand: string;
   /** Renseigné par le catalogue serveur (DB / dérivé du nom). */
   brandSlug?: string;
+  /** Gamme : ligne de la marque (« La Collection Privée »), affichée avec elle. Absente = pas de gamme. */
+  line?: string;
   category: Category;
   image: string;
   imageLight?: string;
@@ -97,7 +99,7 @@ function levenshtein(a: string, b: string): number {
 }
 
 function combinedSearchHaystack(p: Perfume): string {
-  const parts = [p.name, p.brand, p.category, ...(p.tags ?? []), ...(p.aliases ?? []), ...(p.classics ?? [])];
+  const parts = [p.name, p.brand, p.line ?? "", p.category,...(p.tags ?? []), ...(p.aliases ?? []), ...(p.classics ?? [])];
   return normalizeForFuzzy(parts.join(" "));
 }
 
@@ -114,7 +116,9 @@ export function fuzzySearchMatch(perfume: Perfume, query: string): boolean {
 function rawDistanceToPerfume(q: string, p: Perfume): number {
   const n = normalizeForFuzzy(p.name);
   const b = normalizeForFuzzy(p.brand);
-  return Math.min(levenshtein(q, n), levenshtein(q, b));
+  const distance = Math.min(levenshtein(q, n), levenshtein(q, b));
+  // La gamme se tape aussi (« private blend », « collection privee ») : même tolérance aux fautes.
+  return p.line ? Math.min(distance, levenshtein(q, normalizeForFuzzy(p.line))) : distance;
 }
 
 export function suggestSimilarPerfumes(
@@ -233,6 +237,7 @@ export function searchRelevanceScore(perfume: Perfume, query: string): number {
   )
     score += 380;
   if (brand.includes(q)) score += 300;
+  if (perfume.line && normalizeForFuzzy(perfume.line).includes(q)) score += 300;
   if (hay.includes(q)) score += 200;
   score += Math.max(0, 120 - Math.min(119, rawDistanceToPerfume(query, perfume)));
   return score;

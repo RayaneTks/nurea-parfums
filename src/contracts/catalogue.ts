@@ -37,6 +37,20 @@ const perfumeName = z
   .min(1, PERFUME_NAME_MESSAGE)
   .max(200, "Raccourcis ce nom : 200 caractères au plus.");
 
+export const PERFUME_LINE_MAX = 60;
+
+/**
+ * Gamme : ligne de la marque (« La Collection Privée », « Private Blend »). Rognée, vidée → `null`
+ * (jamais de chaîne vide, CHECK `perfume_line_ck`) ; absente → `undefined` (non touchée en modification).
+ */
+const perfumeLine = z
+  .string()
+  .trim()
+  .max(PERFUME_LINE_MAX, `Raccourcis cette gamme : ${PERFUME_LINE_MAX} caractères au plus.`)
+  .nullable()
+  .optional()
+  .transform((value) => (value === "" ? null : value));
+
 const brandName = z
   .string()
   .trim()
@@ -171,6 +185,7 @@ export type BrandRefData = z.output<typeof brandRef>;
 export const createPerfumeInput = z.object({
   brand: brandRef,
   name: perfumeName,
+  line: perfumeLine,
   image: imageField.optional().default(""),
   imageLight: optionalImageField,
   /** Visibilité demandée ; rendue masquée si une règle de publication l'empêche (notice). */
@@ -187,6 +202,7 @@ export const updatePerfumeInput = z.object({
   id: perfumeId,
   brand: brandRef.optional(),
   name: perfumeName.optional(),
+  line: perfumeLine,
   image: imageField.optional(),
   imageLight: optionalImageField,
   pricing: pricingGridInput.optional(),
@@ -567,6 +583,8 @@ export type BrandState = BrandPublicationState & { id: string };
 export type AdminPerfumeRow = {
   id: number;
   name: string;
+  /** Gamme de la marque, ou null. */
+  line: string | null;
   image: string;
   imageLight: string | null;
   status: PublicationStatus;
@@ -606,6 +624,8 @@ export type PerfumeSheet = {
   perfume: {
     id: number;
     name: string;
+    /** Gamme de la marque, ou null. */
+    line: string | null;
     image: string;
     imageLight: string | null;
     status: PublicationStatus;
@@ -621,9 +641,10 @@ export type PerfumeSheet = {
   featured: { count: number; limit: number };
 };
 
-/** « Dupliquer » (E16 → E19 `?dupliquer=<id>`) : marque et tarifs repris, nom et visuels vides. */
+/** « Dupliquer » (E16 → E19 `?dupliquer=<id>`) : marque, gamme et tarifs repris, nom et visuels vides. */
 export type PerfumeDuplicationDraft = {
   brand: BrandState;
+  line: string | null;
   pricing: PricingRow[];
 };
 

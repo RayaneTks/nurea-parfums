@@ -142,6 +142,33 @@ describe("createPerfumeInput et createBrandInput", () => {
   });
 });
 
+describe("gamme d'un parfum (ligne de la marque)", () => {
+  const base = { brand: { kind: "existing" as const, brandId: BRAND_ID }, name: "Gris Dior" };
+
+  it("rognée ; vide ou blanche → null, jamais une chaîne vide", () => {
+    expect(createPerfumeInput.parse({ ...base, line: "  La Collection Privée  " }).line).toBe("La Collection Privée");
+    expect(createPerfumeInput.parse({ ...base, line: "" }).line).toBeNull();
+    expect(createPerfumeInput.parse({ ...base, line: "   " }).line).toBeNull();
+    expect(createPerfumeInput.parse({ ...base, line: null }).line).toBeNull();
+    expect(updatePerfumeInput.parse({ id: 4, line: " " })).toEqual({ id: 4, line: null });
+  });
+
+  it("absente : non touchée en modification", () => {
+    expect("line" in updatePerfumeInput.parse({ id: 4, name: "Oud Wood" })).toBe(false);
+    expect(createPerfumeInput.parse(base).line).toBeUndefined();
+  });
+
+  it("60 caractères au plus", () => {
+    expect(createPerfumeInput.parse({ ...base, line: "x".repeat(60) }).line).toHaveLength(60);
+    expect(errors(createPerfumeInput.safeParse({ ...base, line: "x".repeat(61) }))).toEqual({
+      line: "Raccourcis cette gamme : 60 caractères au plus.",
+    });
+    expect(errors(updatePerfumeInput.safeParse({ id: 4, line: "x".repeat(61) }))).toEqual({
+      line: "Raccourcis cette gamme : 60 caractères au plus.",
+    });
+  });
+});
+
 describe("envoi d'images : chemin décidé par le serveur (04 §12)", () => {
   it("seule l'extension survit au nom de fichier de l'appareil", () => {
     expect(createImageUploadUrlInput.parse({ usage: "parfum", extension: "../../IMG_1234.HEIC" })).toEqual({
