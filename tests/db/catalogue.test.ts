@@ -204,6 +204,30 @@ describe("parfum et grille tarifaire en un enregistrement (A-6)", () => {
     expect((await pricingOf(sauvage.id)).map((p) => p.volumeMl)).toEqual([50]);
   });
 
+  it("gamme : enregistrée rognée, lue par la fiche et la liste, vidée = NULL, absente = non touchée", async () => {
+    const dior = await brand("Dior");
+    const gris = expectOk(
+      await server.actions.createPerfumeAction({
+        brand: { kind: "existing", brandId: dior.id },
+        name: "Gris Dior",
+        line: "  La Collection Privée ",
+        image: catalogueImage(),
+      }),
+    );
+    expect((await row(gris.id)).line).toBe("La Collection Privée");
+    expect((await server.queries.perfumeSheet(gris.id))?.perfume.line).toBe("La Collection Privée");
+    expect((await server.queries.adminCatalogue()).perfumes.find((p) => p.id === gris.id)).toMatchObject({
+      line: "La Collection Privée",
+      searchKey: "grisdior dior lacollectionprivee",
+    });
+
+    expectOk(await server.actions.updatePerfumeAction({ id: gris.id, name: "Gris Dior" }));
+    expect((await row(gris.id)).line).toBe("La Collection Privée");
+
+    expectOk(await server.actions.updatePerfumeAction({ id: gris.id, line: "   " }));
+    expect((await row(gris.id)).line).toBeNull();
+  });
+
   it("un nom équivalent dans la même marque est refusé en nommant le parfum existant", async () => {
     const dior = await brand("Dior");
     await perfume(dior.id, "J'adore");
@@ -673,6 +697,7 @@ describe("lectures du catalogue (04 §12, §15)", () => {
 
     expect(await server.queries.perfumeDuplicationDraft(sauvage.id)).toEqual({
       brand: { id: dior.id, name: "Dior", status: "PUBLISHED", catalogMode: "CURATED", image: null },
+      line: null,
       pricing: sheet?.pricing,
     });
     expect(await server.queries.brandSheet(dior.id)).toMatchObject({ perfumeCount: 1, publishedCount: 1, republishableCount: 0 });

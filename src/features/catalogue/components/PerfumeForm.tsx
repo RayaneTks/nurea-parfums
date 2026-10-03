@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { Trash2 } from "lucide-react";
-import type { AdminBrandRow, PricingRow } from "@/contracts/catalogue";
+import { PERFUME_LINE_MAX, type AdminBrandRow, type PricingRow } from "@/contracts/catalogue";
 import type { PublicationStatus } from "@/domain/publication";
 import type { VolumeMl } from "@/domain/sale-line";
 import { cleNom, normaliseParfum } from "@/lib/nommage";
@@ -44,8 +44,9 @@ export type PerfumeFormProps =
       brands: readonly AdminBrandRow[];
       recentBrandIds: readonly string[];
       defaultExchangeRate: string;
-      /** « Dupliquer » : marque et tarifs repris, nom et visuels vides. */
+      /** « Dupliquer » : marque, gamme et tarifs repris, nom et visuels vides. */
       initialBrand: BrandChoice | null;
+      initialLine: string | null;
       initialPricing: readonly PricingRow[];
       duplicatedFrom: string | null;
     }
@@ -57,6 +58,7 @@ export type PerfumeFormProps =
       perfume: {
         id: number;
         name: string;
+        line: string | null;
         image: string;
         imageLight: string | null;
         status: PublicationStatus;
@@ -103,6 +105,8 @@ export function PerfumeForm(props: PerfumeFormProps) {
   const [brandQuery, setBrandQuery] = useState("");
   const [brandSheetOpen, setBrandSheetOpen] = useState(false);
   const [name, setName] = useState(editing?.name ?? "");
+  const initialLine = (editing ? editing.line : props.mode === "create" ? props.initialLine : null) ?? "";
+  const [line, setLine] = useState(initialLine);
   const [image, setImage] = useState(editing?.image ?? "");
   const [imageLight, setImageLight] = useState(editing?.imageLight ?? "");
   const [saved, setSaved] = useState({ image: editing?.image ?? "", imageLight: editing?.imageLight ?? "" });
@@ -115,6 +119,7 @@ export function PerfumeForm(props: PerfumeFormProps) {
   const dirty =
     !sameBrand(brand, initialBrand) ||
     name !== (editing?.name ?? "") ||
+    line !== initialLine ||
     image !== saved.image ||
     imageLight !== saved.imageLight ||
     !sameDrafts(drafts, initialDrafts);
@@ -160,6 +165,7 @@ export function PerfumeForm(props: PerfumeFormProps) {
         id: editing.id,
         brand: brandRef(brand),
         name,
+        line: line.trim() || null,
         image,
         imageLight: imageLight || null,
         pricing: entries,
@@ -170,7 +176,14 @@ export function PerfumeForm(props: PerfumeFormProps) {
       }
       return;
     }
-    const result = await create.run({ brand: brandRef(brand), name, image, imageLight: imageLight || null, pricing: entries });
+    const result = await create.run({
+      brand: brandRef(brand),
+      name,
+      line: line.trim() || null,
+      image,
+      imageLight: imageLight || null,
+      pricing: entries,
+    });
     if (result.ok) {
       guard.release();
       router.push(routes.parfum(result.data.id));
@@ -276,6 +289,20 @@ export function PerfumeForm(props: PerfumeFormProps) {
               enterKeyHint="next"
               variant="elevated"
               placeholder="Sauvage"
+            />
+          )}
+        </FormField>
+        <FormField label="Ligne" error={fields?.line} hint="Ligne de la marque, ex. La Collection Privée, Emporio Armani. Laisser vide sinon.">
+          {(field) => (
+            <Input
+              {...field}
+              value={line}
+              onChange={(event) => setLine(event.target.value)}
+              maxLength={PERFUME_LINE_MAX}
+              autoComplete="off"
+              autoCapitalize="words"
+              enterKeyHint="done"
+              variant="elevated"
             />
           )}
         </FormField>

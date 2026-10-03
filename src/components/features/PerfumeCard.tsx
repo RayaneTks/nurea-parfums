@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 import type { Perfume } from "@/lib/data";
-import { isCompleteRange } from "@/lib/catalog/perfumePresentation";
+import { brandLineLabel, isCompleteRange } from "@/lib/catalog/perfumePresentation";
 import { PerfumeImage } from "./PerfumeImage";
 
 interface PerfumeCardProps {
@@ -21,7 +21,7 @@ interface PerfumeCardProps {
 /**
  * Fiche produit du catalogue — charte § 05.
  *
- * Ordre imposé : marque, nom, contenance. Le prix n'apparaît jamais en grille,
+ * Ordre imposé : marque (« Marque · Ligne » si le parfum appartient à une ligne de la marque), nom, contenance. Le prix n'apparaît jamais en grille,
  * seulement dans l'échange direct.
  *
  * Survol : la couleur de fond, rien d'autre. Ni déplacement, ni agrandissement,
@@ -66,7 +66,7 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
     </div>
 
     <div className="border-t border-nurea-border p-5">
-      <p className="nurea-label line-clamp-2">{perfume.brand}</p>
+      <p className="nurea-label line-clamp-2">{brandLineLabel(perfume.brand, perfume.line)}</p>
       <p className="nurea-name mt-2 line-clamp-2 text-nurea-text">{perfume.name}</p>
       {caption ? <p className="nurea-caption mt-2">{caption}</p> : null}
     </div>

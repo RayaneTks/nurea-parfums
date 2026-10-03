@@ -13,13 +13,14 @@ const IDLE: ExtendedSearchState = { status: "idle" };
 
 /**
  * La réponse vient du réseau : on ne la croit sur parole que si son
- * discriminant est l'une des trois formes du contrat.
+ * discriminant est l'une des formes du contrat.
  */
 function parseResponse(payload: unknown): PerfumeSearchResponse | null {
   if (typeof payload !== "object" || payload === null) return null;
   const { type } = payload as { type?: unknown };
   return type === "local_results" ||
     type === "unlisted_match" ||
+    type === "reference_match" ||
     type === "external_suggestion" ||
     type === "no_results"
     ? (payload as PerfumeSearchResponse)

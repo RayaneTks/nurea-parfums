@@ -69,6 +69,8 @@ const cases: readonly TableCase[] = [
     violations: [
       { constraint: "perfume_publish_image_ck", why: "publié sans visuel", row: { image: "" } },
       { constraint: "perfume_stock_ck", why: "stock négatif", row: { stock: -1 } },
+      { constraint: "perfume_line_ck", why: "gamme vide", row: { line: "" } },
+      { constraint: "perfume_line_ck", why: "gamme blanche", row: { line: "   " } },
     ],
   },
   {

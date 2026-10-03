@@ -106,6 +106,7 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
         select: {
           id: true,
           name: true,
+          line: true,
           image: true,
           imageLight: true,
           isFeatured: true,
@@ -177,6 +178,7 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
           name: p.name,
           brand: p.brand.name,
           brandSlug: p.brand.slug,
+          line: p.line?.trim() || undefined,
           category: (isComplete
             ? "Gammes Complètes"
             : "Sélections Individuelles") as Category,
@@ -246,36 +248,37 @@ const getPublicCatalogueCached = unstable_cache(
   // v5 : deuxième fournée de visuels refaits (28/09/2026, 15 fiches), écrite en base.
   // v6 : l'instantané porte désormais `isNew` (catégorie « Nouveautés ») — un instantané v5 servi
   // au nouveau code laisserait la catégorie vide jusqu'à la prochaine modification du catalogue.
-  ["public-catalogue-v12"],
+  // v13 : l'instantané porte la gamme (`line`) de chaque parfum.
+  ["public-catalogue-v13"],
   { tags: [PUBLIC_CATALOGUE_CACHE_TAG] },
 );
 
 /**
  * Un parfum au catalogue qui n'a pas (encore) sa carte sur la vitrine : masqué, marque masquée, ou sans
  * visuel servable. La recherche publique le reconnaît pour inviter à écrire — sans dire qu'on l'a, ni qu'on
- * ne l'a pas. Seuls le nom et la marque sortent : ni image, ni prix, ni stock.
+ * ne l'a pas. Seuls le nom, la marque et la gamme sortent : ni image, ni prix, ni stock.
  */
-export type UnlistedPerfume = { name: string; brand: string };
+export type UnlistedPerfume = { name: string; brand: string; line?: string };
 
 async function loadUnlistedPerfumesFromDb(): Promise<UnlistedPerfume[]> {
   if (!process.env.DATABASE_URL?.trim() || prismaCatalogInCooldown()) return [];
   try {
     const rows = await prisma.perfume.findMany({
       where: { name: { not: "" } },
-      select: { name: true, status: true, image: true, brand: { select: { name: true, status: true } } },
+      select: { name: true, line: true, status: true, image: true, brand: { select: { name: true, status: true } } },
       orderBy: { id: "asc" },
     });
     return rows
       .filter((p) => p.name.trim() !== "" && p.brand.name.trim() !== "")
       .filter((p) => !(p.status === "PUBLISHED" && p.brand.status === "PUBLISHED" && isPublicImage(p.image)))
-      .map((p) => ({ name: p.name.trim(), brand: p.brand.name.trim() }));
+      .map((p) => ({ name: p.name.trim(), brand: p.brand.name.trim(), ...(p.line?.trim() ? { line: p.line.trim() } : {}) }));
   } catch (e) {
     console.error("[catalogue-service] unlisted perfumes DB error:", e);
     return [];
   }
 }
 
-const getUnlistedPerfumesCached = unstable_cache(loadUnlistedPerfumesFromDb, ["unlisted-perfumes-v1"], {
+const getUnlistedPerfumesCached = unstable_cache(loadUnlistedPerfumesFromDb, ["unlisted-perfumes-v2"], {
   tags: [PUBLIC_CATALOGUE_CACHE_TAG],
 });
 
@@ -293,7 +296,8 @@ export async function getCachedCatalogue(): Promise<CachedPublicCatalogue> {
 }
 
 // v3 : mêmes corrections que « public-catalogue-v5 », écrites en base sans purge du tag.
-const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v9"], {
+// v10 : chaque parfum porte sa gamme (`line`).
+const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v10"], {
   tags: [PUBLIC_CATALOGUE_CACHE_TAG],
 });
 

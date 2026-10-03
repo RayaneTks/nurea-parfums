@@ -37,6 +37,7 @@ export async function PerfumeFormBlock(props: { mode: "create"; duplicateId: num
         perfume={{
           id: sheet.perfume.id,
           name: sheet.perfume.name,
+          line: sheet.perfume.line,
           image: sheet.perfume.image,
           imageLight: sheet.perfume.imageLight,
           status: sheet.perfume.status,
@@ -60,6 +61,7 @@ export async function PerfumeFormBlock(props: { mode: "create"; duplicateId: num
       recentBrandIds={recentBrandIds(catalogue.perfumes)}
       defaultExchangeRate={settings.defaultExchangeRate}
       initialBrand={draft ? { kind: "existing", brand: draft.brand } : null}
+      initialLine={draft?.line ?? null}
       initialPricing={draft?.pricing ?? []}
       duplicatedFrom={draft && source ? source.name : null}
     />

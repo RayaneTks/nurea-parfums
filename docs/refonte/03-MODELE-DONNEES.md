@@ -292,6 +292,10 @@ model Perfume {
   brandId    String
   brand      Brand             @relation(fields: [brandId], references: [id], onDelete: Cascade)
   name       String
+  /// Gamme : ligne de la marque (« La Collection Privée », « Private Blend »), affichée avec elle.
+  /// NULL = pas de gamme ; jamais une chaîne vide (CHECK perfume_line_ck). Ajoutée le 03/10/2026
+  /// par la migration ordinaire `20261003100000_perfume_line`, après la refonte.
+  line       String?
   /// Visuel principal (thème sombre, WebP). Chaîne vide = sans visuel ⇒ CHECK : status = DRAFT.
   image      String
   /// Variante du visuel pour le thème clair (optionnelle).
@@ -813,6 +817,8 @@ ALTER TABLE "Perfume" ADD CONSTRAINT perfume_publish_image_ck
   CHECK (status = 'DRAFT' OR btrim(image) <> '') NOT VALID;
 ALTER TABLE "Perfume" ADD CONSTRAINT perfume_stock_ck
   CHECK (stock IS NULL OR stock >= 0) NOT VALID;
+-- Hors migration de contrat : posée valide par `20261003100000_perfume_line` (colonne neuve, toute NULL).
+-- ALTER TABLE "Perfume" ADD CONSTRAINT perfume_line_ck CHECK (line IS NULL OR btrim(line) <> '');
 -- Contenances réelles 10 / 50 / 80 ml (30 → 10 et 100 → 80 traduits en production le 10/09/2026).
 ALTER TABLE "PerfumePricing" ADD CONSTRAINT pricing_volume_ck
   CHECK ("volumeMl" IN (10, 50, 80)) NOT VALID;
