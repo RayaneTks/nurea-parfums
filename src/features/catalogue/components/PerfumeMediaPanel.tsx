@@ -25,8 +25,8 @@ type PerfumeMediaPanelProps = {
   media: readonly PerfumeMediaItem[];
 };
 
-export const REMOVE_MEDIA_TITLE = "Retirer ce visuel ?";
-export const REMOVE_MEDIA_DESCRIPTION =
+const REMOVE_MEDIA_TITLE = "Retirer ce visuel ?";
+const REMOVE_MEDIA_DESCRIPTION =
   "Il est supprimé de la fiche et du stockage, sans retour possible. Ton téléphone garde les copies déjà enregistrées.";
 
 /**

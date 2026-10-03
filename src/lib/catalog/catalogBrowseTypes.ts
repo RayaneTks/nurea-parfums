@@ -1,6 +1,6 @@
 import type { Category } from "@/lib/data";
 
-export type CatalogAssortment = "UNSET" | "COMPLETE" | "CURATED";
+type CatalogAssortment = "UNSET" | "COMPLETE" | "CURATED";
 
 export type CatalogBrowseBrand = {
   id: string;

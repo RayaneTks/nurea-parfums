@@ -65,7 +65,7 @@ export const A_RATTACHER_CUSTOMER = "Racha Meziane";
 /** Libellé de la dépense déjà saisie : le chip que PC-08 touche au lieu de retaper « Transport ». */
 export const KNOWN_EXPENSE_LABEL = "Transport";
 
-export const SEEDED_EXPENSE = { id: cuid("depensemars"), label: KNOWN_EXPENSE_LABEL, amount: "45" } as const;
+const SEEDED_EXPENSE = { id: cuid("depensemars"), label: KNOWN_EXPENSE_LABEL, amount: "45" } as const;
 
 const RATE = "277";
 

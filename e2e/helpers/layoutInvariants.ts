@@ -14,8 +14,8 @@ export type Violation = {
  * pour ne pas bloquer sur des contrôles secondaires assumés tout en gardant
  * l'information visible.
  */
-export const TOUCH_FAIL_PX = 32;
-export const TOUCH_WARN_PX = 44;
+const TOUCH_FAIL_PX = 32;
+const TOUCH_WARN_PX = 44;
 
 /**
  * Invariants mesurables sur l'écran tel qu'il s'affiche : géométrie et cibles.

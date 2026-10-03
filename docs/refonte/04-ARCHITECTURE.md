@@ -347,7 +347,7 @@ nurea-parfums/
     │   ├── routes.ts                 Constructeurs d'URL — seul endroit où une URL admin s'écrit ;
     │   │                             inventaire de 06 §1.2 avec l'état de chaque écran (à venir, provisoire, livré)
     │   ├── Block.tsx                 Suspense + frontière d'erreur par bloc (§13.2)
-    │   ├── hooks/                    useAction, useDraft, useUrlState, useCoalescedAction, useReadRoute
+    │   ├── hooks/                    useAction, useDraft, useUrlState, coalesce, useReadRoute
     │   │                             (+ noyaux purs testés : draft-store, coalesce, url-patch, action-errors)
     │   ├── AdminShell · AppHeader · TabBar · CommandPalette · PullToRefresh (J4)
     │   ├── FeedbackProvider.tsx      Toast unique (z 100, portalisé : 05 §2.7, §3.1) et confirmations `useConfirm` (J4)
@@ -653,7 +653,7 @@ Règles d'état client :
 
 - **Les données serveur arrivent en props et ne sont jamais recopiées dans `useState`** (anti-pattern `OrderDetailClient`, 01 §4.1). L'affichage immédiat d'une écriture rapide passe par `useOptimistic` au-dessus des props ; la vérité revient avec le RSC rafraîchi.
 - Pré-contrôle : le client évalue les réserves avec les mêmes fonctions pures (`src/domain/document-status.ts`, `stock.ts`, `document-balance.ts`) pour ouvrir la confirmation **avant** l'aller-retour ; le serveur recontrôle toujours.
-- **Coalescence** (`useCoalescedAction`) : le stepper de livraison envoie la valeur finale 400 ms après le dernier tap, pas une requête par tap (les actions Next s'exécutent en file).
+- **Coalescence** (`createCoalescer`, `src/app-shell/hooks/coalesce.ts`) : le stepper de livraison envoie la valeur finale 400 ms après le dernier tap, pas une requête par tap (les actions Next s'exécutent en file).
 - **Brouillons** (`useDraft(key)`) : les formulaires Vendre, commande (création et modification) et dépense de lot sont sauvegardés en `localStorage` à chaque changement (id compris), restaurés à l'ouverture, effacés au succès, expirés après 24 h. iOS tue les PWA en arrière-plan : une vente interrompue ne se perd pas.
 - **État d'URL** (`useUrlState`) : seul importeur autorisé de `useSearchParams` (ESLint) ; le composant qui l'utilise est sous `<Suspense>` dans sa page — vérifié par la détection d'hydratation de `npm run test:layout`.
 

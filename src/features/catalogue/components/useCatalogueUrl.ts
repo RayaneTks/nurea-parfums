@@ -14,9 +14,6 @@ import {
   type VisibilityFilter,
 } from "./catalogue-model";
 
-/** Paramètres qui filtrent la liste (06 §1.2) ; `tab` n'en fait pas partie pour « Effacer les filtres ». */
-export const FILTER_KEYS = ["q", "stock", "visibilite", "gamme"] as const;
-
 /**
  * L'état de l'écran Catalogue dans l'URL (`?tab=`, `?q=`, `?stock=`, `?visibilite=`, `?gamme=`), lu par
  * `useUrlState` — donc sous `<Suspense>` dans la page (04 §3.7).

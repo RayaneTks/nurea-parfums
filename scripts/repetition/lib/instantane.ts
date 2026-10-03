@@ -16,7 +16,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { ConnexionLectureSeule } from "./pg-lecture-seule";
 
-export const FORMAT_INSTANTANE = "nurea-instantane/1";
+const FORMAT_INSTANTANE = "nurea-instantane/1";
 
 export const SQL_DEBUT = "BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY";
 export const SQL_TABLES =

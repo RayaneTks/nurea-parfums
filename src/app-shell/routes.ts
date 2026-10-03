@@ -11,7 +11,7 @@
  */
 
 /** Présentation d'un écran à ce jour. `provisoire` : page d'attente navigable (07 J4). */
-export type RouteState = "a-venir" | "provisoire" | "livree";
+type RouteState = "a-venir" | "provisoire" | "livree";
 
 export type RouteSpec = {
   /** Identifiant d'écran de 06 §3 (E01…). */

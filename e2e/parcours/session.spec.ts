@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { routes } from "../../src/app-shell/routes";
 import { ADMIN, SESSION_COOKIE } from "../support/env";
 import { waitForHydration } from "../helpers/hydration";
-import { confirmationCard, cta, documentsOf, euros, openFresh, openSheet, tile, waitForComposer } from "./support-j9";
+import { confirmationCard, cta, documentsOf, euros, openFresh, tile, waitForComposer } from "./support-j9";
 
 /**
  * Session expirée en pleine vente (06 §4.6, 07 J9) : le brouillon vit sur l'appareil, pas dans la session. Le cookie

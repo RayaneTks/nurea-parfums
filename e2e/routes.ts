@@ -37,7 +37,7 @@ export type ScreenCase = {
 };
 
 /** Un geste d'ouverture : toucher un contrôle (nom accessible exact), ou saisir dans un champ (libellé exact). */
-export type OpenStep = string | RegExp | { fill: string; text: string };
+type OpenStep = string | RegExp | { fill: string; text: string };
 
 export type SheetCase = {
   /** Sheet ou dialogue de 06 (S17…). */

@@ -9,7 +9,7 @@ import { Input } from "@/ui/primitives/Input";
 import { Text } from "@/ui/primitives/Text";
 
 /** « 2026-09-17 » + 2 jours → « 2026-09-19 » (calendrier, jamais des millisecondes). */
-export function shiftDayKey(key: string, days: number): string {
+function shiftDayKey(key: string, days: number): string {
   const [year, month, day] = key.split("-").map(Number) as [number, number, number];
   const shifted = new Date(Date.UTC(year, month - 1, day + days));
   return shifted.toISOString().slice(0, 10);

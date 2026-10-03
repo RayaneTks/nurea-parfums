@@ -91,7 +91,7 @@ export function TabBar({ badges = {}, onTabPress }: TabBarProps) {
                 />
               ) : null}
             </span>
-            <span className={cn("admin-type-micro max-w-full truncate tracking-tight", active ? "font-bold" : "font-medium")}>
+            <span className={cn("admin-type-micro admin-tab-bar__label max-w-full truncate tracking-tight", active ? "font-bold" : "font-medium")}>
               {tab.label}
             </span>
           </Link>

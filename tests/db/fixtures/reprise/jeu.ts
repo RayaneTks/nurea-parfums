@@ -81,7 +81,7 @@ function ligneVente(
   ];
 }
 
-export const JEU: Ligne[] = [
+const JEU: Ligne[] = [
   // ─── Référentiels ────────────────────────────────────────────────────────────────────────────────
   ["AdminUser", { id: "admin-1", username: "gerant", passwordHash: "x", role: "OWNER", createdAt: T("2026-01-01 08:00:00"), updatedAt: T("2026-01-01 08:00:00") }],
   ["AuditLog", { id: "audit-1", actorId: "admin-1", action: "order.create", entity: "Order", entityId: "cmd-doublon", meta: '{"montant": 70.00}', createdAt: T("2026-08-10 09:00:00") }],

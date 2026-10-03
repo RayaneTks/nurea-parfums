@@ -7,7 +7,7 @@ import { describeDbError, isNureaTriggerError } from "@/server/core/errors";
  * On n'y écrit jamais l'entrée d'une action : elle peut contenir un mot de passe ou un téléphone.
  */
 
-export const SLOW_ACTION_MS = 1_000;
+const SLOW_ACTION_MS = 1_000;
 
 type Level = "info" | "warn" | "error";
 

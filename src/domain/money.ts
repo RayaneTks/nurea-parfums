@@ -20,8 +20,7 @@ type Opaque<Name extends string> = { readonly [opaque]: Name };
 export type Eur = Opaque<"Eur">; // euros, 2 décimales, signé
 export type Dzd = Opaque<"Dzd">; // dinars, 2 décimales
 export type Rate = Opaque<"Rate">; // dinars pour 1 €, 4 décimales, > 0
-export type MoneyString = string & { readonly __wire: "eur" }; // "1234.50" — point, 2 décimales, signe éventuel
-export type RateString = string & { readonly __wire: "rate" }; // "277.0000"
+export type MoneyString = string & { readonly __wire: "eur" }; // "277.0000"
 
 // Précision 28 chiffres ; exposants larges pour que toString() ne passe jamais en notation scientifique.
 const D = Decimal.clone({

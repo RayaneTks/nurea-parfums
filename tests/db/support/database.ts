@@ -32,10 +32,10 @@ export async function resetDatabase(db: TestDatabase): Promise<void> {
 export interface RawSql {
   readonly raw: string;
 }
-export const sql = (raw: string): RawSql => ({ raw });
+const sql = (raw: string): RawSql => ({ raw });
 export const NOW = sql("now()");
 
-export type SqlValue = string | number | boolean | null | RawSql;
+type SqlValue = string | number | boolean | null | RawSql;
 export type Row = Record<string, SqlValue>;
 
 /**

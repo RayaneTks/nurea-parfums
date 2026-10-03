@@ -15,7 +15,7 @@ import { hasThumbnail, thumbnailOf, THUMB_WIDTH } from "./thumbnails";
 type Variant = { width: number; src: string };
 
 /** Largeurs disponibles des visuels fixes, de la plus petite à la plus grande (l'original clôt la liste). */
-export const LOCAL_VARIANTS: Readonly<Record<string, readonly Variant[]>> = {
+const LOCAL_VARIANTS: Readonly<Record<string, readonly Variant[]>> = {
   "/branding/visuel-hero.webp": [
     { width: 750, src: "/branding/visuel-hero-750.webp" },
     { width: 1280, src: "/branding/visuel-hero-1280.webp" },

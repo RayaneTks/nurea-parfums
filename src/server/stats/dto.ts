@@ -118,7 +118,7 @@ function nextDayDto(row: NextDayRow): NextDayDeliveryDTO {
  * Jour de Paris voisin, par le CALENDRIER : `periodBounds("day", …, ±1)` — jamais une addition de
  * 86 400 000 ms, qui saute ou répète une heure aux changements d'heure (04 §6.5).
  */
-export function shiftDay(jour: string, days: number): string {
+function shiftDay(jour: string, days: number): string {
   const midnight = parseParisDayKey(jour);
   if (!midnight) throw new TypeError(`stats : jour illisible « ${jour} ».`);
   return parisDayKey(periodBounds("day", midnight, days).from);

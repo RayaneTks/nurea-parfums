@@ -61,11 +61,15 @@ test("PC-07 : un parfum créé avec sa photo, depuis l'Accueil, en 9 taps au plu
   await expect(page.getByRole("switch", { name: /Visible sur la vitrine/ })).toHaveAttribute("aria-checked", "true");
   await expect(page.getByText("80 ml", { exact: true })).toBeVisible();
   // Converti par le serveur (04 §12, décision du 17/09/2026) : un vrai WebP portrait, l'original temporaire supprimé.
+  // Avec sa vignette 640 × 960 à côté (`src/lib/images/thumbnails.ts`) : le chargeur la sert aux petites
+  // largeurs sans vérifier qu'elle existe, la gestion l'écrit donc avec l'original.
   const created = (await storedKeys()).filter((key) => key.startsWith("catalog/perfumes/") && !perfumeKeysBefore.has(key));
-  expect(created).toHaveLength(1);
-  const [finalKey] = created as [string];
+  expect(created).toHaveLength(2);
+  const finalKey = created.find((key) => !key.endsWith("-640.webp")) as string;
   expect(finalKey).toMatch(/^catalog\/perfumes\/\d{13}-[0-9a-f]{8}\.webp$/);
+  expect(created).toContain(finalKey.replace(/\.webp$/, "-640.webp"));
   expect(await storedImage(finalKey)).toEqual({ format: "webp", width: 1024, height: 1536, hasAlpha: false });
+  expect(await storedImage(finalKey.replace(/\.webp$/, "-640.webp"))).toEqual({ format: "webp", width: 640, height: 960, hasAlpha: false });
   const stampOf = /(\d{13}-[0-9a-f]{8})\.webp$/.exec(finalKey)?.[1] as string;
   await expect.poll(async () => (await storedKeys()).filter((key) => key.startsWith(`catalog/tmp/perfumes/${stampOf}.`))).toEqual([]);
 

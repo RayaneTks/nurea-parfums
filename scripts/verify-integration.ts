@@ -37,7 +37,7 @@ function loadEnvLocal(): void {
 loadEnvLocal();
 process.env.VERIFICATION_SCRIPT = "1";
 
-const { registerPrismaCatalogFailure, prismaCatalogInCooldown } = await import(
+const { registerPrismaCatalogFailure } = await import(
   "../src/lib/db/prismaRuntimeCircuit"
 );
 

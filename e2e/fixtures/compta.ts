@@ -40,15 +40,15 @@ export const COMPTA_DOCS = {
   credit: uuid(63),
 } as const;
 
-export const COMPTA_PASSING = {
+const COMPTA_PASSING = {
   unknownCost: "Nora Belkacem",
   unassigned: "Walid Ferhat",
 } as const;
 
 /** Montant encaissé dans « Non attribué » (PC-11 : « Ranger 60,00 € dans Espèces »). */
-export const UNASSIGNED_AMOUNT = "60";
+const UNASSIGNED_AMOUNT = "60";
 
-export const JOURNAL_MOVEMENTS = 45;
+const JOURNAL_MOVEMENTS = 45;
 
 /** Premier jour du mois décalé de `months` (Paris), en clé « AAAA-MM-JJ ». */
 function monthStart(months: number, now: Date = new Date()): string {

@@ -87,7 +87,7 @@ export function lineSignature(lines: readonly LineDraft[]): string {
   return JSON.stringify(lines.map(({ lastPrice: _last, imageUrl: _image, ...rest }) => ({ ...rest, price: rest.isGift ? "" : rest.price })));
 }
 
-export type PricingSource = {
+type PricingSource = {
   /** Mémoire de prix du volume (N8), si elle existe. */
   pricing?: PricingRow;
   /** Prix à défaut de mémoire : dernier prix pratiqué (« Vendus récemment »). */
@@ -213,12 +213,12 @@ export function errorsByLine(error: ActionError | null, lines: readonly LineDraf
 }
 
 /** Prix unitaire lu (0 pour une ligne offerte) ; null tant que le prix n'est pas un montant. */
-export function unitPriceOf(line: LineDraft): Eur | null {
+function unitPriceOf(line: LineDraft): Eur | null {
   return line.isGift ? eur.zero : parseEurInput(line.price);
 }
 
 /** Coût unitaire en euros de la saisie ; null si le coût ou le taux manque (« Coût à compléter »). */
-export function unitCostOf(line: LineDraft): Eur | null {
+function unitCostOf(line: LineDraft): Eur | null {
   const cost = parseDzdInput(line.cost);
   const rate = parseRateInput(line.rate);
   return cost && rate ? dzdToEur(cost, rate) : null;

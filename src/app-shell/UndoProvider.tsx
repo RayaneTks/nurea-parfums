@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, typ
 import { useToast } from "./FeedbackProvider";
 
 /** Délai du filet « Annuler » (06 §4.3). */
-export const UNDO_DELAY_MS = 5000;
+const UNDO_DELAY_MS = 5000;
 
 export type ScheduleDeleteArgs = {
   /** « Commande supprimée », « Fares supprimé ». */

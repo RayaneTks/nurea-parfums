@@ -136,7 +136,7 @@ const NON_TEXT_INPUTS = new Set([
 ]);
 
 /** Un champ qui ouvre le clavier : zone de texte, champ de saisie (hors cases, boutons, dates), contenu éditable. */
-export function isTextEntry(target: EventTarget | null): target is HTMLElement {
+function isTextEntry(target: EventTarget | null): target is HTMLElement {
   if (!(target instanceof HTMLElement)) return false;
   if (target instanceof HTMLTextAreaElement) return !target.readOnly;
   if (target instanceof HTMLInputElement) return !target.readOnly && !NON_TEXT_INPUTS.has(target.type);

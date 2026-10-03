@@ -1,6 +1,5 @@
 import { expect, test } from "@playwright/test";
 import { routes } from "../../src/app-shell/routes";
-import { waitForHydration } from "../helpers/hydration";
 import {
   confirmationCard,
   cta,

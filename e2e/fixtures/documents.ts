@@ -116,7 +116,7 @@ type DocumentSpec = {
 
 const cost = (value: string) => ({ cost: value });
 
-export const DOCUMENT_SPECS: DocumentSpec[] = [
+const DOCUMENT_SPECS: DocumentSpec[] = [
   {
     id: DOCS.pending,
     origin: "ORDER",
@@ -428,7 +428,7 @@ export const DOCUMENT_SPECS: DocumentSpec[] = [
 ];
 
 /** Instant des documents « récents » du jeu : une minute après midi (Paris), ou après maintenant si l'on est plus tard. */
-export function recentInstant(now: Date = new Date()): Date {
+function recentInstant(now: Date = new Date()): Date {
   return new Date(Math.max(now.getTime(), parisNoon(0, now).getTime()) + 60_000);
 }
 

@@ -27,7 +27,7 @@ export function searchWords(query: string): string[] {
 }
 
 /** Tous les mots doivent se trouver dans la clé (`cleNom` du nom et de la marque). */
-export function matchesWords(searchKey: string, words: readonly string[]): boolean {
+function matchesWords(searchKey: string, words: readonly string[]): boolean {
   return words.every((word) => searchKey.includes(word));
 }
 
@@ -102,7 +102,7 @@ export function recentBrandIds(perfumes: readonly AdminPerfumeRow[], limit = 6):
 }
 
 /** « nurea-dior-sauvage-story » : reconnaissable dans une pellicule. */
-export function fileSlug(value: string): string {
+function fileSlug(value: string): string {
   return value
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")

@@ -8,7 +8,7 @@
 import type { BatchDocumentRowDTO, BatchExpenseRowDTO, BatchRowDTO } from "@/contracts/batches";
 import { eur, eurFromWire, formatEur } from "@/domain/money";
 import { periodLabel } from "@/domain/periods";
-import { Noun, PASSING_CUSTOMER, documentTitle } from "@/features/documents/components/document-model";
+import { PASSING_CUSTOMER, documentTitle } from "@/features/documents/components/document-model";
 import { formatDate } from "@/ui/patterns/date-format";
 
 /**
@@ -176,12 +176,6 @@ export function assignCta(changes: number): string {
   return `Enregistrer (${changes} changement${changes > 1 ? "s" : ""})`;
 }
 
-/** Titre de S12 hors de E06 : « Dépense · Commande de mars » (06 S12 « Ouverture »). */
-export const expenseSheetTitle = (batchName: string) => `Dépense · ${batchName}`;
-
 /** Nom accessible du menu d'une dépense : « Actions : Transport du 12 sept. ». */
 export const expenseMenuLabel = (expense: BatchExpenseRowDTO, now: Date = new Date()) =>
   `Actions : ${expense.label} du ${formatDate(new Date(expense.occurredAt), "short", now)}`;
-
-/** Nom d'un document pour un lot, quand seul son genre importe : « Commande », « Vente ». */
-export const documentNoun = Noun;

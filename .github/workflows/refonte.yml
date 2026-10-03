@@ -1,11 +1,13 @@
-name: refonte
+name: verification
 
-# docs/refonte/07-PLAN-EXECUTION.md §1.2 — CI de la branche d'intégration.
+# Contrôle de tout ce qui part en production. Née comme CI de la branche d'intégration de la
+# refonte (docs/refonte/07-PLAN-EXECUTION.md §1.2) ; depuis la bascule du 22/09/2026 la
+# production est `main` : la CI la suit, ainsi que toute demande de fusion vers elle.
 on:
   push:
-    branches: ["refonte/integration"]
+    branches: ["main"]
   pull_request:
-    branches: ["refonte/integration"]
+    branches: ["main"]
 
 concurrency:
   group: refonte-${{ github.ref }}
@@ -44,13 +46,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
-      - name: test:db (dès que tests/db contient des tests)
-        run: |
-          if ls tests/db/*.test.ts >/dev/null 2>&1 || ls tests/db/**/*.test.ts >/dev/null 2>&1; then
-            npm run test:db
-          else
-            echo "Aucun test sur base réelle avant J1."
-          fi
+      - run: npm run test:db
 
   # Invariants d'affichage et parcours : serveur de dev lancé par Playwright sur la base de CI.
   ecrans:

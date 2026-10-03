@@ -72,3 +72,7 @@ migration-artifacts/
 
 # Carte du code (graphify) : locale, propre à ce poste, reconstruite par `graphify update .`
 graphify-out/
+
+# Outils d'agents installés localement (oh-my-claudecode pour Codex) : propres au poste, hors dépôt.
+.agents/
+.codex/

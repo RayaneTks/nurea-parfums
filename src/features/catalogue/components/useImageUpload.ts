@@ -21,7 +21,7 @@ const imageConvert = () => import("./image-convert");
  * JPEG sur l'appareil (`image-convert.ts`). Le geste de l'utilisateur ne change pas.
  */
 
-export const UPLOAD_REFUSED = "envoi refusé par le stockage";
+const UPLOAD_REFUSED = "envoi refusé par le stockage";
 
 async function putToSignedUrl(ticket: ImageUploadTicket, file: File): Promise<void> {
   let response: Response;

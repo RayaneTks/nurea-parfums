@@ -25,7 +25,7 @@ const OPEN_LAYERS = [
   "[data-media-viewer]",
 ].join(", ");
 
-export function fieldIsFocused(doc: Pick<Document, "activeElement">): boolean {
+function fieldIsFocused(doc: Pick<Document, "activeElement">): boolean {
   const active = doc.activeElement;
   if (!active) return false;
   const element = active as HTMLElement;
@@ -33,11 +33,11 @@ export function fieldIsFocused(doc: Pick<Document, "activeElement">): boolean {
   return element.isContentEditable === true;
 }
 
-export function layerIsOpen(doc: Pick<Document, "querySelector">): boolean {
+function layerIsOpen(doc: Pick<Document, "querySelector">): boolean {
   return doc.querySelector(OPEN_LAYERS) !== null;
 }
 
-export function draftInProgress(storage: StorageLike | null, now: number = Date.now()): boolean {
+function draftInProgress(storage: StorageLike | null, now: number = Date.now()): boolean {
   if (!storage) return false;
   return readDraft(storage, DRAFT_KEYS.vendre, now) !== null;
 }

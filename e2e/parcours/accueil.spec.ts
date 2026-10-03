@@ -2,7 +2,6 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { routes } from "../../src/app-shell/routes";
 import { figurePeriodLabel } from "../../src/contracts/compta";
 import { NEWS_SEEN_KEY, TOP_PERFUMES_HOME, TOP_PERFUMES_PAGE } from "../../src/contracts/stats";
-import { OLD_RECEIVABLE_DAYS } from "../../src/domain/document-balance";
 import { parisDayKey } from "../../src/domain/periods";
 import { COMPTA_MONTH, EMPTY_DAY } from "../fixtures/compta";
 import { chiffresCanoniques, shown } from "../helpers/chiffres";

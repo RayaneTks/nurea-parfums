@@ -69,8 +69,6 @@ async function documentFor(
   return id;
 }
 
-const names = (list: Awaited<ReturnType<typeof server.queries.customersList>>) => list.rows.map((row) => row.fullName);
-
 describe("E12 — liste A–Z", () => {
   it("initiales accentuées sous leur lettre de base, noms sans lettre initiale en dernier sous « # », compteurs", async () => {
     for (const fullName of ["Zoé Amrani", "Élise Martin", "eden Kaci", "Alice Durand", "4 Saisons", "Œdipe Roy"]) {

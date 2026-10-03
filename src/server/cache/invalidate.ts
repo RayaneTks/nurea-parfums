@@ -13,7 +13,7 @@ import { ADMIN_CATALOGUE_CACHE_TAG, GESTION_TAG, PUBLIC_CATALOGUE_CACHE_TAG, fam
  * de `src/lib/admin/revalidateAdminCatalogue.ts` (contrat vitrine, 04 §12).
  * `{ expire: 0 }` : invalidation immédiate (Next 16, route handlers).
  */
-export function revalidateAdminCatalogue(): void {
+function revalidateAdminCatalogue(): void {
   revalidateTag(PUBLIC_CATALOGUE_CACHE_TAG, { expire: 0 });
   revalidateTag(ADMIN_CATALOGUE_CACHE_TAG, { expire: 0 });
   revalidatePath("/admin/catalogue");

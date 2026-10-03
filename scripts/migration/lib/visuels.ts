@@ -18,7 +18,7 @@ export interface Visuels {
   empreinte: string;
 }
 
-export const SQL_VISUELS = `
+const SQL_VISUELS = `
 SELECT count(*)::int AS nombre,
        md5(COALESCE(string_agg(
          concat_ws('|', id, "perfumeId"::text, path, url, COALESCE(label, '∅'), width::text, height::text,

@@ -32,7 +32,7 @@ export type ComposerCustomer =
   | { kind: "linked"; id: string; fullName: string; contact: string | null };
 
 /** Lot du document (N9) : proposé (le lot ouvert le plus récent) tant qu'il n'a pas été choisi. */
-export type BatchChoice = { kind: "auto" } | { kind: "chosen"; id: string | null; name: string | null };
+type BatchChoice = { kind: "auto" } | { kind: "chosen"; id: string | null; name: string | null };
 
 export type SplitEntry = { pocketId: string; amount: string };
 
@@ -60,7 +60,7 @@ export type ComposerDraft = {
   paymentIds: string[];
 };
 
-export const MAX_PAYMENTS = 10;
+const MAX_PAYMENTS = 10;
 
 export function freshDraft(mode: ComposerMode = "vente"): ComposerDraft {
   return {
@@ -143,7 +143,7 @@ export function hasCustomerName(draft: ComposerDraft): boolean {
 }
 
 /** « Fares Benali », le nom saisi, ou « Client de passage ». */
-export function customerDisplay(customer: ComposerCustomer): string {
+function customerDisplay(customer: ComposerCustomer): string {
   if (customer.kind === "linked") return customer.fullName;
   return customer.name.trim() || PASSING_CUSTOMER;
 }

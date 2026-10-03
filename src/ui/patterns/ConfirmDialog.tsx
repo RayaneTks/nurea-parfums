@@ -8,10 +8,10 @@ import { Button } from "../primitives/Button";
 import { isToastTarget } from "../primitives/Toast";
 
 /** Message affiché quand l'échec ne dit rien d'exploitable (rejet sans `Error`, message vide). */
-export const CONFIRM_FALLBACK_ERROR = "L'action n'a pas abouti. Rien n'a été modifié — réessaie.";
+const CONFIRM_FALLBACK_ERROR = "L'action n'a pas abouti. Rien n'a été modifié — réessaie.";
 
 /** Texte montré dans la boîte pour un rejet de `onConfirm` (05 §3.2). */
-export function confirmErrorMessage(cause: unknown): string {
+function confirmErrorMessage(cause: unknown): string {
   return cause instanceof Error && cause.message.trim() ? cause.message : CONFIRM_FALLBACK_ERROR;
 }
 

@@ -67,12 +67,3 @@ export function Stack({
     </Tag>
   );
 }
-
-/** Alias commodes. */
-export function VStack(props: Omit<StackProps, "direction">) {
-  return <Stack direction="column" {...props} />;
-}
-
-export function HStack(props: Omit<StackProps, "direction">) {
-  return <Stack direction="row" {...props} />;
-}

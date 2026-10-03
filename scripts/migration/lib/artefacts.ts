@@ -13,10 +13,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { PROJECT_ROOT } from "./prisma-cli";
 
-export const RACINE_ARTEFACTS = path.join(PROJECT_ROOT, "migration-artifacts");
+const RACINE_ARTEFACTS = path.join(PROJECT_ROOT, "migration-artifacts");
 
 /** Date locale AAAA-MM-JJ. */
-export function dateLocale(instant: Date = new Date()): string {
+function dateLocale(instant: Date = new Date()): string {
   const deux = (n: number) => String(n).padStart(2, "0");
   return `${instant.getFullYear()}-${deux(instant.getMonth() + 1)}-${deux(instant.getDate())}`;
 }
@@ -27,7 +27,7 @@ export function heureLocale(instant: Date = new Date()): string {
   return `${deux(instant.getHours())}${deux(instant.getMinutes())}${deux(instant.getSeconds())}`;
 }
 
-export function dossierDuJour(): string {
+function dossierDuJour(): string {
   return path.join(RACINE_ARTEFACTS, dateLocale());
 }
 

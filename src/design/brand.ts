@@ -63,46 +63,5 @@ export const SCREEN_TINTS = {
   },
 } as const;
 
-/**
- * Deux familles à faible contraste, chargées depuis Google Fonts dans
- * `app/(shop)/layout.tsx`. Aucun délié fin : elles restent nettes à 12 px.
- */
-export const BRAND_FONTS = {
-  /** Titres et noms de parfum. Graisses 400 et 500, jamais plus. */
-  serif: "Newsreader",
-  /** Texte et interface. Graisses 400, 500, 600, jamais sous 400. */
-  sans: "Instrument Sans",
-} as const;
-
-/** Échelle d'espacement, base 4 px. Aucune valeur hors échelle. */
-export const SPACING = {
-  /** Dans un composant. */
-  1: 8,
-  /** Entre éléments liés. */
-  2: 16,
-  /** Padding de carte. */
-  3: 24,
-  /** Entre blocs. */
-  4: 40,
-  /** Marge de page, entre sections. */
-  5: 72,
-} as const;
-
-/** Règles de mise en page non négociables. */
-export const LAYOUT = {
-  /** Marge de page : 72 px, 24 px sur mobile. */
-  pageMargin: { mobile: 24, desktop: 72 },
-  /** Largeur de texte maximale. */
-  proseWidth: 640,
-  /** Grille : 12 colonnes, gouttière 24 px. */
-  gutter: 24,
-  /** Angles : jamais d'arrondi. */
-  radius: 0,
-  /** Ombres : aucune. La séparation se fait au filet 1 px. */
-  shadow: "none",
-  /** Sur la couleur uniquement. Jamais de déplacement au survol. */
-  transition: "160ms ease-out",
-} as const;
-
 /** Couleur peinte par le système derrière la barre d'état (PWA, onglet). */
 export const THEME_COLOR = BRAND_COLORS.noir;

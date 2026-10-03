@@ -6,7 +6,7 @@ import { SEED, seedPerfumeId } from "./seed";
  * (`src/features/sell/components/composer-model.ts`), écrite à la main : un test ne dépend pas du code qu'il éprouve.
  */
 
-export const DRAFT_STORAGE_KEY = "nurea:brouillon:vendre";
+const DRAFT_STORAGE_KEY = "nurea:brouillon:vendre";
 
 const uuid = (n: number) => `e2e0d0c0-0000-4000-9000-${String(n).padStart(12, "0")}`;
 

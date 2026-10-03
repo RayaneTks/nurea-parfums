@@ -31,7 +31,7 @@ export interface MouvementHistorique {
   label: string | null;
 }
 
-export interface Classement {
+interface Classement {
   categorie: Categorie;
   motif: string;
   natureV2: NatureV2;

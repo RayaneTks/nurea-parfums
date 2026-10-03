@@ -23,8 +23,3 @@ export function registerPrismaCatalogFailure(coolMs = DEFAULT_COOL_MS): void {
 export function registerPrismaCatalogSuccess(): void {
   coolUntil = 0;
 }
-
-/** Tests uniquement */
-export function resetPrismaCatalogCircuitForTests(): void {
-  coolUntil = 0;
-}

@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useTransition } from "react";
-import { applyUrlPatch, readEnum, type UrlPatch } from "./url-patch";
+import { applyUrlPatch, type UrlPatch } from "./url-patch";
 
 /**
  * État d'URL (04 §3.7) : SEUL importeur autorisé de `useSearchParams` (règle ESLint).
@@ -53,23 +53,4 @@ export function useUrlState() {
     }),
     [pathname, search, searchParams, hrefWith, set, pending],
   );
-}
-
-/**
- * Un paramètre à valeurs fermées (`vue`, `tab`, `filtre`…) : `[valeur, écrire]`. Une valeur inconnue
- * dans l'URL se lit comme le défaut ; écrire le défaut retire la clé.
- */
-export function useUrlParam<T extends string>(
-  key: string,
-  options: { values: readonly T[]; defaultValue: T; history?: "replace" | "push" },
-): [T, (next: T | null) => void, boolean] {
-  const state = useUrlState();
-  const { values, defaultValue, history } = options;
-  const value = readEnum(state.get(key), values, defaultValue);
-  const { set } = state;
-  const write = useCallback(
-    (next: T | null) => set({ [key]: next }, { history, defaults: { [key]: defaultValue } }),
-    [set, key, history, defaultValue],
-  );
-  return [value, write, state.pending];
 }

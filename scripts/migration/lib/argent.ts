@@ -26,11 +26,6 @@ export function euros(valeur: bigint): string {
   return `${negatif ? "-" : ""}${entiers.toString()}.${decimales}`;
 }
 
-/** Somme de montants textuels, en chaîne à deux décimales. */
-export function somme(montants: readonly string[]): string {
-  return euros(montants.reduce((acc, m) => acc + centimes(m), 0n));
-}
-
 /** Affichage pour le gérant : « 1 069,50 € », « −30,00 € ». */
 export function eurosLisibles(montant: string | bigint): string {
   const valeur = typeof montant === "bigint" ? montant : centimes(montant);

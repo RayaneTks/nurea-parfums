@@ -17,7 +17,7 @@ export const ELAPSED_FIELD = "duree";
  * Le plus court des messages réels demande le temps de lire quatre libellés et de taper une
  * adresse. Un robot poste l'instant d'après le chargement.
  */
-export const MIN_ELAPSED_MS = 2_000;
+const MIN_ELAPSED_MS = 2_000;
 
 /** Longueurs maximales : au-delà, c'est un dépôt, pas un message. */
 export const MAX_LENGTHS = { name: 120, email: 200, subject: 200, message: 5_000 } as const;
@@ -40,7 +40,7 @@ export function multiLine(value: string): string {
   return value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]+/g, "").replace(/\r\n?/g, "\n").trim();
 }
 
-export type ContactFields = { name: string; email: string; subject: string; message: string };
+type ContactFields = { name: string; email: string; subject: string; message: string };
 
 export type ContactGuardVerdict =
   | { kind: "ok"; fields: ContactFields }
