@@ -255,6 +255,9 @@ Le reste :
   `app/(shop)/layout.tsx`. Une page ne rend que son contenu.
 - **Mode clair** : hors charte, dérivé. Le cuivre y tombe à 2,5:1 — il n'y porte
   aucun texte, l'accent devient le bordeaux.
+- **Marque = ligne commerciale** : Giorgio Armani ≠ Emporio Armani ≠ Armani Privé, Dior ≠ Dior
+  Collection Privée, Tom Ford ≠ Tom Ford Private Blend, etc. La découpe de référence est celle du
+  référentiel (`src/lib/search/reference/data/*.json`) ; un parfum se crée dans SA ligne.
 - **Fiche produit** : ordre imposé marque / nom / contenance ; jamais de prix en
   grille. Une ligne sans donnée vraie est omise, pas inventée.
 - **Flacons** : les photos montrent les flacons d'origine des marques ; le client reçoit

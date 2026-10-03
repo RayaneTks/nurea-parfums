@@ -246,7 +246,9 @@ const getPublicCatalogueCached = unstable_cache(
   // v5 : deuxième fournée de visuels refaits (28/09/2026, 15 fiches), écrite en base.
   // v6 : l'instantané porte désormais `isNew` (catégorie « Nouveautés ») — un instantané v5 servi
   // au nouveau code laisserait la catégorie vide jusqu'à la prochaine modification du catalogue.
-  ["public-catalogue-v12"],
+  // v13 : marques rangées par ligne commerciale en base (migration 20261003120000_marques_par_ligne :
+  // Emporio Armani, Dior Collection Privée, Tom Ford Private Blend…). Même raison que v2 et v3.
+  ["public-catalogue-v13"],
   { tags: [PUBLIC_CATALOGUE_CACHE_TAG] },
 );
 
@@ -275,7 +277,8 @@ async function loadUnlistedPerfumesFromDb(): Promise<UnlistedPerfume[]> {
   }
 }
 
-const getUnlistedPerfumesCached = unstable_cache(loadUnlistedPerfumesFromDb, ["unlisted-perfumes-v1"], {
+// v2 : marques rangées par ligne en base (voir « public-catalogue-v13 »).
+const getUnlistedPerfumesCached = unstable_cache(loadUnlistedPerfumesFromDb, ["unlisted-perfumes-v2"], {
   tags: [PUBLIC_CATALOGUE_CACHE_TAG],
 });
 
@@ -293,7 +296,8 @@ export async function getCachedCatalogue(): Promise<CachedPublicCatalogue> {
 }
 
 // v3 : mêmes corrections que « public-catalogue-v5 », écrites en base sans purge du tag.
-const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v9"], {
+// v10 : marques rangées par ligne en base (voir « public-catalogue-v13 »).
+const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v10"], {
   tags: [PUBLIC_CATALOGUE_CACHE_TAG],
 });
 

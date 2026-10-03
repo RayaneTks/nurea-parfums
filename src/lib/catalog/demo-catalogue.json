@@ -12,8 +12,8 @@
 {
 "id": 131,
 "name": "Gris Dior",
-"brand": "Dior",
-"brandSlug": "dior",
+"brand": "Dior Collection Privée",
+"brandSlug": "dior-collection-privee",
 "category": "Sélections Individuelles",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790181107619-4c71e763.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790181111538-b74166ec.webp",
@@ -111,8 +111,8 @@
 {
 "id": 300,
 "name": "Babycat",
-"brand": "Yves Saint Laurent",
-"brandSlug": "yves-saint-laurent",
+"brand": "Yves Saint Laurent Le Vestiaire des Parfums",
+"brandSlug": "yves-saint-laurent-le-vestiaire-des-parfums",
 "category": "Sélections Individuelles",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790517431059-966587a5.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790517438144-15af24d0.webp",
@@ -353,8 +353,8 @@
 {
 "id": 295,
 "name": "Stronger With You Oud",
-"brand": "Giorgio Armani",
-"brandSlug": "giorgio-armani",
+"brand": "Emporio Armani",
+"brandSlug": "emporio-armani",
 "category": "Sélections Individuelles",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790176468599-70b33ed1.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790176475361-07354303.webp",
@@ -491,8 +491,8 @@
 {
 "id": 144,
 "name": "Ambre Nuit",
-"brand": "Dior",
-"brandSlug": "dior",
+"brand": "Dior Collection Privée",
+"brandSlug": "dior-collection-privee",
 "category": "Sélections Individuelles",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790875976865-6bfc4dd7.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790875977622-3908e392.webp",
@@ -557,8 +557,8 @@
 {
 "id": 54,
 "name": "Neroli Portofino",
-"brand": "Tom Ford",
-"brandSlug": "tom-ford",
+"brand": "Tom Ford Private Blend",
+"brandSlug": "tom-ford-private-blend",
 "category": "Sélections Individuelles",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550433320-3437a6f6.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550433641-9aca1cf5.webp",
@@ -689,8 +689,8 @@
 {
 "id": 26,
 "name": "Stronger With You",
-"brand": "Giorgio Armani",
-"brandSlug": "giorgio-armani",
+"brand": "Emporio Armani",
+"brandSlug": "emporio-armani",
 "category": "Sélections Individuelles",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458456557-d19cc778.webp",
 "isFeatured": false
@@ -758,8 +758,8 @@
 {
 "id": 57,
 "name": "Vanille Fatale",
-"brand": "Tom Ford",
-"brandSlug": "tom-ford",
+"brand": "Tom Ford Private Blend",
+"brandSlug": "tom-ford-private-blend",
 "category": "Sélections Individuelles",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576124917-77ac4335.webp",
 "isFeatured": false
@@ -859,9 +859,9 @@
 },
 {
 "id": 117,
-"name": "Emporio Armani Stronger With You Powerfully",
-"brand": "Giorgio Armani",
-"brandSlug": "giorgio-armani",
+"name": "Stronger With You Powerfully",
+"brand": "Emporio Armani",
+"brandSlug": "emporio-armani",
 "category": "Sélections Individuelles",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802661870-53c03f17.webp",
 "isFeatured": false
@@ -898,8 +898,8 @@
 {
 "id": 51,
 "name": "Bitter Peach",
-"brand": "Tom Ford",
-"brandSlug": "tom-ford",
+"brand": "Tom Ford Private Blend",
+"brandSlug": "tom-ford-private-blend",
 "category": "Sélections Individuelles",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713923236-db2ec2a9.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713927452-f34e5637.webp",
@@ -978,8 +978,8 @@
 {
 "id": 21,
 "name": "Stronger With You Intensely",
-"brand": "Giorgio Armani",
-"brandSlug": "giorgio-armani",
+"brand": "Emporio Armani",
+"brandSlug": "emporio-armani",
 "category": "Sélections Individuelles",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458457110-9d1b4c93.webp",
 "isFeatured": false
@@ -997,8 +997,8 @@
 {
 "id": 56,
 "name": "Tobacco Vanille",
-"brand": "Tom Ford",
-"brandSlug": "tom-ford",
+"brand": "Tom Ford Private Blend",
+"brandSlug": "tom-ford-private-blend",
 "category": "Sélections Individuelles",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774714348932-7e181121.webp",
 "isFeatured": false
@@ -1065,9 +1065,9 @@
 },
 {
 "id": 96,
-"name": "Power Of You",
-"brand": "Giorgio Armani",
-"brandSlug": "giorgio-armani",
+"name": "Power of You",
+"brand": "Emporio Armani",
+"brandSlug": "emporio-armani",
 "category": "Sélections Individuelles",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968456546-62813f0e.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968463428-23ab6a3e.webp",
@@ -1239,8 +1239,8 @@
 {
 "id": 55,
 "name": "Soleil Blanc",
-"brand": "Tom Ford",
-"brandSlug": "tom-ford",
+"brand": "Tom Ford Private Blend",
+"brandSlug": "tom-ford-private-blend",
 "category": "Sélections Individuelles",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550434268-e29c5209.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550434585-113e9ad2.webp",
