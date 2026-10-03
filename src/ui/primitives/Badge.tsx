@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export type BadgeTone = "neutral" | "accent" | "success" | "warning" | "danger" | "info";
+type BadgeTone = "neutral" | "accent" | "success" | "warning" | "danger" | "info";
 type BadgeSize = "sm" | "md";
 
 type BadgeProps = {

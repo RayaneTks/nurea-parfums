@@ -103,16 +103,6 @@ function lineRow(row: BatchLineRow): BatchLineDTO {
   };
 }
 
-function summaryOf(row: BatchRow): BatchSummary {
-  return {
-    id: row.id,
-    name: row.name,
-    status: row.status as BatchStatus,
-    expectedAt: row.expectedAt?.toISOString() ?? null,
-    notes: row.notes,
-  };
-}
-
 /** Un lot sans document ni dépense n'a pas de ligne dans les agrégats : ses chiffres sont nuls, pas absents. */
 function figuresOf(batchId: string, byBatch: Record<string, BatchFiguresDTO>): BatchFiguresDTO {
   return (

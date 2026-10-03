@@ -13,7 +13,7 @@ import type { Reference } from "../lib/reference-format";
 import { LISTES_R4, type Contexte, type ListeR4 } from "./contexte";
 import type { ResultatAssertions } from "./3i-assertions";
 
-export const FORMAT_RAPPORT = "nurea-rapport-reprise/1";
+const FORMAT_RAPPORT = "nurea-rapport-reprise/1";
 
 export type Statut = "dry-run" | "appliquée" | "échec" | "refusée";
 

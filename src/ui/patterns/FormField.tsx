@@ -2,7 +2,7 @@
 
 import { useId, type ReactNode } from "react";
 
-export type FieldControlProps = {
+type FieldControlProps = {
   id: string;
   "aria-describedby"?: string;
   "aria-invalid"?: true;

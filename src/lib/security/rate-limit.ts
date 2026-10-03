@@ -17,7 +17,7 @@
  * (voir `hashKey`), et l'entrée disparaît à la fin de sa fenêtre.
  */
 
-export type RateLimitDecision = {
+type RateLimitDecision = {
   ok: boolean;
   /** Essais restants dans la fenêtre en cours. */
   remaining: number;

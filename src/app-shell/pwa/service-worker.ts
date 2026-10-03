@@ -32,10 +32,10 @@ export const SKIP_WAITING_MESSAGE = "skip-waiting";
 export const CACHE_PREFIX = "nurea-admin-";
 
 /** URL versionnées par leur contenu : sûres à garder tant que la version du script ne change pas. */
-export const IMMUTABLE_PREFIXES = ["/_next/static/", "/pwa/admin/", "/branding/"] as const;
+const IMMUTABLE_PREFIXES = ["/_next/static/", "/pwa/admin/", "/branding/"] as const;
 
 /** Repli sur la page hors ligne quand le réseau ne répond pas (06 §1.4 « Réseau dégradé », F-4.7-05). */
-export const NAVIGATION_TIMEOUT_MS = 10_000;
+const NAVIGATION_TIMEOUT_MS = 10_000;
 
 /**
  * Le script servi à `GET /admin-sw.js`. `version` est l'identifiant du déploiement : il n'entre dans le

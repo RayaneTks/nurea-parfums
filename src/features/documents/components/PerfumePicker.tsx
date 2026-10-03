@@ -15,7 +15,7 @@ import { Input } from "@/ui/primitives/Input";
 import { Text } from "@/ui/primitives/Text";
 import { stockBadgeOf } from "./line-draft";
 
-export type OffCatalogChoice = { name: string; brandName: string | null };
+type OffCatalogChoice = { name: string; brandName: string | null };
 
 type PerfumePickerProps = {
   open: boolean;

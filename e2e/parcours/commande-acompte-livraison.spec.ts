@@ -19,7 +19,7 @@ import {
   tab,
   toast,
 } from "./support-j8";
-import { chrono, cta, documentsOf, openFresh, openSheet, tile, waitForComposer } from "./support-j9";
+import { chrono, cta, documentsOf, openFresh, tile, waitForComposer } from "./support-j9";
 
 /**
  * PC-04 et PC-05 (06 §2 ; 02 §2 tâches n°4 et n°5 ; 07 J8) : acompte depuis la fiche en 3 taps, statut et tuiles à

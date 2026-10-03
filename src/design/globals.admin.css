@@ -313,6 +313,22 @@ body.admin-route {
   -webkit-user-select: none;
 }
 
+/* Cinq onglets sur 320 px = 64 px chacun. En San Francisco « Commandes » y tient ; en Roboto
+   (Android) ou DejaVu, plus larges, il déborde de 3 px et se tronque. Sous 344 px, le libellé
+   suit la largeur d'écran (10,2 px à 320) au lieu de se couper. */
+.admin-tab-bar__item .admin-tab-bar__label {
+  font-size: clamp(10px, 3.2vw, var(--admin-type-micro-size));
+}
+
+/* Et si la police reste trop large malgré tout, les onglets cessent d'être cinq parts égales :
+   chacun part de la largeur de son libellé et se partage le reste. « Commandes » prend les
+   quelques pixels que « Vendre » n'utilise pas, quelle que soit la police du téléphone. */
+@media (max-width: 359px) {
+  .admin-tab-bar__item {
+    flex: 1 1 auto;
+  }
+}
+
 .admin-safe-top {
   padding-top: env(safe-area-inset-top, 0px);
 }

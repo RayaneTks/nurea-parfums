@@ -15,7 +15,7 @@ const trim = (expression: string) => `regexp_replace(${expression}, '^[[:space:]
 const visuelAffichable = (colonne: string) =>
   `${trim(colonne)} <> '' AND strpos(${trim(colonne)}, 'placeholder.svg') = 0 AND left(${trim(colonne)}, 9) <> '/parfums/'`;
 
-export const SQL_VITRINE = `
+const SQL_VITRINE = `
 SELECT
   (SELECT count(*)::int
      FROM "Perfume" p JOIN "Brand" b ON b.id = p."brandId"

@@ -11,7 +11,7 @@ import {
 } from "react";
 import { cn } from "@/lib/utils";
 
-export type SwipeActionTone = "success" | "warning" | "accent";
+type SwipeActionTone = "success" | "warning" | "accent";
 
 export type SwipeAction = {
   icon: ReactNode;

@@ -7,7 +7,7 @@ import { eur, eurFromWire, formatEur, type Eur } from "@/domain/money";
 import { parisDayKey } from "@/domain/periods";
 import { formatDate } from "@/ui/patterns/date-format";
 
-export const PASSING_CUSTOMER = "Client de passage";
+const PASSING_CUSTOMER = "Client de passage";
 
 /** Types de poche (06 S16 : chips « Espèces · Banque · Fournisseur · Autre »). */
 export const POCKET_KIND_LABELS: Record<PocketKind, string> = {
