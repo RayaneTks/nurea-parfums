@@ -21,6 +21,8 @@ import type { Perfume } from "@/lib/data";
 export type SeoPerfume = {
   id: number;
   name: string;
+  /** Gamme de la marque, ou null. */
+  line: string | null;
   image: string;
   imageLight: string | null;
   blurDataURL: string;
@@ -61,7 +63,7 @@ export async function loadSeoCatalogue(): Promise<SeoBrand[]> {
       updatedAt: true,
       perfumes: {
         where: { status: "PUBLISHED", name: { not: "" }, image: { not: "" } },
-        select: { id: true, name: true, image: true, imageLight: true, updatedAt: true },
+        select: { id: true, name: true, line: true, image: true, imageLight: true, updatedAt: true },
         orderBy: { name: "asc" },
       },
     },
@@ -75,6 +77,7 @@ export async function loadSeoCatalogue(): Promise<SeoBrand[]> {
         .map((p) => ({
           id: p.id,
           name: p.name,
+          line: p.line?.trim() || null,
           image: p.image,
           imageLight: p.imageLight,
           blurDataURL: getBlurPlaceholder(p.image),
@@ -103,6 +106,7 @@ export function toCardPerfume(brand: SeoBrand, perfume: SeoPerfume): Perfume {
     name: perfume.name,
     brand: brand.name,
     brandSlug: brand.slug,
+    line: perfume.line ?? undefined,
     // Toujours un flacon réel ici : la catégorie « gamme » est réservée à la fiche-marque synthétique.
     category: "Sélections Individuelles",
     image: perfume.image,

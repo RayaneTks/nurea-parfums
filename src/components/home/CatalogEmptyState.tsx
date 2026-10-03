@@ -21,8 +21,9 @@ interface CatalogEmptyStateProps {
 /**
  * Ce qu'on montre quand la grille est vide.
  *
- * Quatre cas, dans cet ordre de précision : la référence est au catalogue sans
- * carte en ligne (masquée), la recherche élargie l'a identifiée ailleurs, un
+ * Cinq cas, dans cet ordre de précision : la référence est au catalogue sans
+ * carte en ligne (masquée), le répertoire des parfums existants la reconnaît,
+ * la recherche élargie l'a identifiée ailleurs, un
  * indice hors ligne la reconnaît, ou rien ne correspond. Aucun
  * n'est un cul-de-sac — chacun mène au contact, seul endroit où une commande
  * se conclut.
@@ -74,6 +75,31 @@ export const CatalogEmptyState: FC<CatalogEmptyStateProps> = ({
         }
         body={`Tout ce que nous proposons n'est pas encore en ligne : chaque fiche demande ses visuels, et le site en ajoute au fil de l'eau. Écrivez-nous, nous vous dirons ce qu'il en est${brandOnly ? " pour cette marque" : " pour ce parfum"}.`}
         contactHref={contactHref(brandOnly ? { marque: unlisted.brand } : { parfum: unlisted.name, marque: unlisted.brand })}
+      />
+    );
+  }
+
+  const reference =
+    extendedSearch.status === "done" &&
+    extendedSearch.response.type === "reference_match"
+      ? extendedSearch.response.match
+      : null;
+
+  /* Parfum qui existe ailleurs, pas encore chez nous : on le nomme, on dit qu'il n'est peut-être
+     pas encore ajouté, et la demande part pré-remplie. Jamais « aucun résultat » pour un vrai parfum. */
+  if (reference) {
+    const brandOnly = reference.on === "brand";
+    const maison = reference.line ? `${reference.brand} (${reference.line})` : reference.brand;
+    return (
+      <EmptyShell
+        testId="reference-match"
+        title={
+          brandOnly
+            ? `Vous cherchez un parfum ${reference.brand} ?`
+            : `Vous cherchez « ${reference.name} » de ${maison} ?`
+        }
+        body={`${brandOnly ? "Cette marque n'a peut-être pas encore été ajoutée" : "Ce parfum n'a peut-être pas encore été ajouté"} au catalogue : nous l'enrichissons au fil des demandes. Écrivez-nous, nous vous dirons s'il est disponible.`}
+        contactHref={contactHref(brandOnly ? { marque: reference.brand } : { parfum: reference.name, marque: reference.brand })}
       />
     );
   }

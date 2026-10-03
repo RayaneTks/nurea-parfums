@@ -441,6 +441,7 @@ export async function createPerfume(tx: Tx, input: CreatePerfumeData): Promise<P
     data: {
       brandId: brand.id,
       name,
+      line: input.line ?? null,
       image: input.image,
       imageLight: input.imageLight ?? null,
       status: settled.status,
@@ -481,7 +482,7 @@ export async function updatePerfume(tx: Tx, input: UpdatePerfumeData): Promise<P
       ? null
       : await tx.db.perfume.findUnique({
           where: { id: input.id },
-          select: { ...PERFUME_SELECT, image: true, imageLight: true },
+          select: { ...PERFUME_SELECT, line: true, image: true, imageLight: true },
         });
   if (!current) throw new DomainError("NOT_FOUND", PERFUME_NOT_FOUND);
   if (current.brandId !== before.brandId) throw new DomainError("CONFLICT", STALE_PERFUME);
@@ -489,6 +490,7 @@ export async function updatePerfume(tx: Tx, input: UpdatePerfumeData): Promise<P
   const data: {
     brandId?: string;
     name?: string;
+    line?: string | null;
     image?: string;
     imageLight?: string | null;
     status?: PublicationStatus;
@@ -500,6 +502,7 @@ export async function updatePerfume(tx: Tx, input: UpdatePerfumeData): Promise<P
     const name = await perfumeNameFor(tx, input.name ?? current.name, brand, current.id);
     if (name !== current.name) data.name = name;
   }
+  if (input.line !== undefined && input.line !== current.line) data.line = input.line;
   if (input.image !== undefined && input.image !== current.image) data.image = input.image;
   if (input.imageLight !== undefined && input.imageLight !== current.imageLight) data.imageLight = input.imageLight;
 

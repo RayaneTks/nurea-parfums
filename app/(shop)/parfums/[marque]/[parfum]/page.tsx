@@ -7,6 +7,7 @@ import { PerfumeLinkCard } from "@/components/features/PerfumeLinkCard";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buttonClass } from "@/components/ui/Button";
 import { getSeoPerfume } from "@/lib/catalogue-service";
+import { brandLineLabel } from "@/lib/catalog/perfumePresentation";
 import { toCardPerfume } from "@/lib/catalog/seoCatalogue";
 import { brandPath, CATALOGUE_PATH, fullPerfumeName, perfumeIdFromSegment, perfumePath } from "@/lib/seo/paths";
 import { pageOg, SITE_NAME } from "@/lib/site";
@@ -30,9 +31,10 @@ export async function generateMetadata({ params }: PerfumePageProps): Promise<Me
 
   const { brand, perfume } = found;
   const path = perfumePath(brand.slug, perfume.name, perfume.id);
+  const full = fullPerfumeName(brand.name, perfume.name);
   return {
-    title: `${fullPerfumeName(brand.name, perfume.name)} à Marseille`,
-    description: `${perfume.name} de ${brand.name} chez ${SITE_NAME}, parfumerie à Marseille : au meilleur prix, remise en main propre à Marseille ou envoi en France. Prix et disponibilité sur Snapchat.`,
+    title: `${perfume.line ? `${full} (${perfume.line})` : full} à Marseille`,
+    description: `${perfume.name} de ${brand.name}${perfume.line ? `, gamme ${perfume.line},` : ""} chez ${SITE_NAME}, parfumerie à Marseille : au meilleur prix, remise en main propre à Marseille ou envoi en France. Prix et disponibilité sur Snapchat.`,
     alternates: { canonical: path },
     // Le visuel du flacon, pas la vignette générique : c'est ce lien qu'on partage en story.
     openGraph: { ...pageOg(path), images: [{ url: perfume.image, alt: `${brand.name} — ${perfume.name}` }] },
@@ -79,13 +81,13 @@ export default async function PerfumePage({ params }: PerfumePageProps) {
           </div>
 
           <div className="flex flex-col p-6 md:p-10">
-            {/* Charte : marque, puis nom. Les deux dans le titre : c'est ainsi qu'on les cherche. */}
+            {/* Charte : marque (et sa gamme), puis nom. Les deux dans le titre : c'est ainsi qu'on les cherche. */}
             <h1>
               <Link
                 href={brandPath(brand.slug)}
                 className="nurea-label block transition-colors duration-nurea ease-out hover:text-nurea-accent"
               >
-                {brand.name}
+                {brandLineLabel(brand.name, perfume.line)}
               </Link>
               <span className="nurea-title mt-3 block text-nurea-text">{perfume.name}</span>
             </h1>

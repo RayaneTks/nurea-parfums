@@ -69,6 +69,7 @@ export function PerfumeView({ sheet }: { sheet: PerfumeSheet }) {
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-2">
           <div className="min-w-0">
             <h1 className="admin-type-h1 break-words text-[var(--admin-text)]">{perfume.name}</h1>
+            {perfume.line ? <p className="admin-type-body break-words text-[var(--admin-text-muted)]">{perfume.line}</p> : null}
             <Link
               href={routes.modifierMarque(perfume.brand.id)}
               className="admin-type-body admin-hit-target tap-scale inline-flex max-w-full items-center gap-1 rounded-[var(--admin-radius-md)] text-[var(--admin-accent)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]"

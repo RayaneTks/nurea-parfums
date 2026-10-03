@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import Link from "next/link";
 import type { Perfume } from "@/lib/data";
+import { brandLineLabel } from "@/lib/catalog/perfumePresentation";
 import { PerfumeImage } from "./PerfumeImage";
 
 interface PerfumeLinkCardProps {
@@ -28,7 +29,7 @@ export const PerfumeLinkCard: FC<PerfumeLinkCardProps> = ({ perfume, href, image
       <PerfumeImage perfume={perfume} sizes="(max-width: 1023px) 50vw, 33vw" priority={imagePriority} />
     </div>
     <div className="border-t border-nurea-border p-5">
-      <p className="nurea-label line-clamp-2">{perfume.brand}</p>
+      <p className="nurea-label line-clamp-2">{brandLineLabel(perfume.brand, perfume.line)}</p>
       <p className="nurea-name mt-2 line-clamp-2 text-nurea-text">{perfume.name}</p>
     </div>
   </Link>

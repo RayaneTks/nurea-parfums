@@ -26,6 +26,15 @@ export function inCategory(perfume: Perfume, category: Category): boolean {
   return perfume.category === category;
 }
 
+/**
+ * L'étiquette de marque d'une fiche : « Dior · La Collection Privée » quand le parfum a une gamme,
+ * « Dior » sinon. Une seule règle pour la carte, la fiche en surimpression et la page indexable.
+ */
+export function brandLineLabel(brand: string, line?: string | null): string {
+  const gamme = line?.trim() ?? "";
+  return gamme === "" ? brand : `${brand} · ${gamme}`;
+}
+
 /** Formulaire de contact pré-rempli avec le parfum consulté. */
 export function contactHref(perfume: string, brand: string): string {
   const params = new URLSearchParams({ parfum: perfume, marque: brand });

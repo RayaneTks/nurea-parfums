@@ -10,9 +10,11 @@ import { searchExternalPerfumeApi } from "./searchExternalPerfumeApi";
 import { searchFragantyApi } from "./searchFragantyApi";
 import { cleNom } from "../nommage";
 import { searchLocalCatalog } from "./searchLocalCatalog";
+import { searchRepertoire } from "./searchRepertoire";
 
 /**
- * Orchestration : catalogue (DB ou mock) → parfums au catalogue sans carte publique → cache externe
+ * Orchestration : catalogue (DB ou mock) → parfums au catalogue sans carte publique → répertoire des
+ * parfums existants (`searchRepertoire`) → cache externe
  * (DB ou mémoire) → API externe.
  */
 export async function searchPerfumeWithFallback(
@@ -40,6 +42,12 @@ export async function searchPerfumeWithFallback(
   const unlisted = searchUnlisted(await getUnlistedPerfumes(), q);
   if (unlisted) {
     return { type: "unlisted_match", query: q, match: unlisted };
+  }
+
+  // Connu ailleurs, pas chez nous : on le nomme et on invite à écrire, plutôt qu'un « aucun résultat ».
+  const reference = searchRepertoire(q);
+  if (reference) {
+    return { type: "reference_match", query: q, match: reference };
   }
 
   const cached = await getExternalSuggestionFromCache(q, categoryKey);
@@ -81,11 +89,12 @@ export async function searchPerfumeWithFallback(
 export function searchUnlisted(
   unlisted: readonly UnlistedPerfume[],
   query: string,
-): (UnlistedPerfume & { on: "perfume" | "brand" }) | null {
+): (Pick<UnlistedPerfume, "name" | "brand"> & { on: "perfume" | "brand" }) | null {
   const asPerfumes: Perfume[] = unlisted.map((p, index) => ({
     id: index,
     name: p.name,
     brand: p.brand,
+    line: p.line,
     category: "Sélections Individuelles",
     image: "",
   }));

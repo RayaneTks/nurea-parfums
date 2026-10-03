@@ -14,7 +14,7 @@ import Link from "next/link";
 import { X } from "lucide-react";
 import type { Perfume } from "@/lib/data";
 import { useSheetMotion } from "@/hooks/useSheetMotion";
-import { isCompleteRange } from "@/lib/catalog/perfumePresentation";
+import { brandLineLabel, isCompleteRange } from "@/lib/catalog/perfumePresentation";
 import { brandPath, perfumePath } from "@/lib/seo/paths";
 import { buttonClass } from "@/components/ui/Button";
 import { OrderChannels } from "./OrderChannels";
@@ -170,7 +170,7 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
             </div>
 
             <div className="flex flex-col p-6 md:p-8">
-              <p className="nurea-label">{perfume.brand}</p>
+              <p className="nurea-label">{brandLineLabel(perfume.brand, perfume.line)}</p>
               <h2 id={titleId} className="nurea-name mt-2 text-nurea-text">
                 {perfume.name}
               </h2>
