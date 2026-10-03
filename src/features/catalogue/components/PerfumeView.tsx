@@ -34,7 +34,7 @@ function pulse(element: HTMLElement | null) {
 }
 
 /** « Vendu 12 fois · dernier le 14 sept. » ; `null` si jamais vendu (la ligne est omise). */
-export function activityText(units: number): string {
+function activityText(units: number): string {
   return units === 1 ? "Vendu 1 fois" : `Vendu ${units} fois`;
 }
 

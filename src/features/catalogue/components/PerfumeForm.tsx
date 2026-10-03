@@ -79,7 +79,7 @@ function sameBrand(a: BrandChoice | null, b: BrandChoice | null): boolean {
 }
 
 /** Texte du CTA qui guide vers ce qui manque (06 arbitrage n°9, E19). */
-export function perfumeCta(mode: "create" | "edit", brand: BrandChoice | null, name: string): string {
+function perfumeCta(mode: "create" | "edit", brand: BrandChoice | null, name: string): string {
   if (!brand) return "Choisir la marque";
   if (name.trim() === "") return "Saisir le nom";
   return mode === "create" ? "Ajouter au catalogue" : "Enregistrer";

@@ -8,7 +8,7 @@ import { SITE_URL } from "@/lib/site";
  * au renommage (02 §4.9, 04 §12). Le nom du paramètre vit ici, côté vitrine, et nulle part dans les
  * textes de la gestion.
  */
-export const BRAND_FILTER_PARAM = "maison";
+const BRAND_FILTER_PARAM = "maison";
 
 /** « https://nureaparfums.fr/?maison=dior » */
 export function brandPublicUrl(slug: string): string {

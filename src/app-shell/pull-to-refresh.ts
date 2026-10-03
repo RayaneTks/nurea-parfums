@@ -6,8 +6,8 @@
 
 export const PULL_THRESHOLD_PX = 64;
 export const PULL_MAX_PX = 96;
-export const PULL_RESISTANCE = 0.5;
-export const REFRESH_MIN_VISIBLE_MS = 300;
+const PULL_RESISTANCE = 0.5;
+const REFRESH_MIN_VISIBLE_MS = 300;
 /** Au-delà, l'indicateur se retire même si la réponse n'est pas arrivée : il ne ment pas indéfiniment. */
 export const REFRESH_GIVE_UP_MS = 15_000;
 

@@ -31,7 +31,7 @@ const toneClass: Record<ToastType, { border: string; icon: string }> = {
 };
 
 /** Attribut posé sur le nœud du toast : les couches modales le reconnaissent (`isToastTarget`). */
-export const TOAST_ATTRIBUTE = "data-admin-toast";
+const TOAST_ATTRIBUTE = "data-admin-toast";
 
 /**
  * Un appui (ou un focus) venu du toast n'est pas une « interaction extérieure » pour la sheet, la

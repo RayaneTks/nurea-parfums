@@ -5,7 +5,6 @@ import { useToast } from "@/app-shell/FeedbackProvider";
 import { useAction } from "@/app-shell/hooks/useAction";
 import { useUrlState } from "@/app-shell/hooks/useUrlState";
 import { useShellSheet } from "@/app-shell/SheetRegistry";
-import { withSheet } from "@/app-shell/routes";
 import type { AssignCandidateDTO, AssignSheetDTO } from "@/contracts/batches";
 import { foldText, searchTerms } from "@/contracts/search";
 import { assignDocumentsToBatchAction } from "@/server/documents/actions";
@@ -180,6 +179,3 @@ export function AssignSheet({ data }: { data: AssignSheetDTO }) {
     </Sheet>
   );
 }
-
-/** URL qui ouvre S13 sur la fiche d'un lot : `?assigner=1` (06 §1.2). */
-export const assignHref = (url: string) => withSheet(url, { assigner: true });

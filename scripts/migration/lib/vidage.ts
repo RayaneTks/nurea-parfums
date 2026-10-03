@@ -20,7 +20,7 @@
  */
 import { lignes, type Sql } from "./base";
 
-export type Genre = "vue" | "table" | "séquence" | "routine" | "type";
+type Genre = "vue" | "table" | "séquence" | "routine" | "type";
 
 export interface ObjetSupprime {
   schema: string;

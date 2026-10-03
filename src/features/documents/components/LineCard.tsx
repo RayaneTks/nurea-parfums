@@ -16,7 +16,7 @@ import { Stepper } from "@/ui/primitives/Stepper";
 import { Text } from "@/ui/primitives/Text";
 import { costSummary, priceHint, withGift, withQuantity, type LineDraft } from "./line-draft";
 
-export type LineBadge = { label: string; tone: "danger" | "warning" | "neutral" | "accent" };
+type LineBadge = { label: string; tone: "danger" | "warning" | "neutral" | "accent" };
 
 type LineCardProps = {
   line: LineDraft;

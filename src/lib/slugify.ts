@@ -1,6 +1,6 @@
 import { normalizeForFuzzy } from "./data";
 
-export function slugifySegment(s: string): string {
+function slugifySegment(s: string): string {
   const x = normalizeForFuzzy(s)
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");

@@ -222,7 +222,7 @@ export function getPerfumesByIds(
   return out;
 }
 
-export function searchRelevanceScore(perfume: Perfume, query: string): number {
+function searchRelevanceScore(perfume: Perfume, query: string): number {
   const q = normalizeForFuzzy(query.trim());
   if (!q) return 0;
   const name = normalizeForFuzzy(perfume.name);
@@ -253,6 +253,6 @@ export function compareSearchRelevance(
 
 export type { ExternalPerfumeHint } from "./search/externalSearchTypes";
 export {
-  EXTERNAL_PERFUME_HINTS,
+  
   EXTERNAL_SEARCH_FALLBACK_MESSAGE,
 } from "./search/externalSearchHints";

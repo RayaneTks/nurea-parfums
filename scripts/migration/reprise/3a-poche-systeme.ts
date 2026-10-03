@@ -10,7 +10,7 @@
 import { lignes } from "../lib/base";
 import { inscrireCorrespondances, type Contexte } from "./contexte";
 
-export const ID_POCHE_SYSTEME_CREEE = "mig-poche-non-attribue";
+const ID_POCHE_SYSTEME_CREEE = "mig-poche-non-attribue";
 
 export async function etape3aPocheSysteme(ctx: Contexte): Promise<void> {
   const poches = await lignes<{ id: string; name: string; kind: string; archived: boolean; soldeOuverture: string }>(

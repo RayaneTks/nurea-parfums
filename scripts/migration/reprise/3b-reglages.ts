@@ -10,7 +10,7 @@ import { inscrireCorrespondances, type Contexte } from "./contexte";
 
 const TAUX_PAR_DEFAUT = "277";
 
-export function lireTaux(valeur: string | null | undefined): string | null {
+function lireTaux(valeur: string | null | undefined): string | null {
   if (valeur === null || valeur === undefined) return null;
   const normalise = valeur.trim().replace(",", ".");
   const match = /^(\d{1,6})(?:\.(\d{1,4}))?$/.exec(normalise);

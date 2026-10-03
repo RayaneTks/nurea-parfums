@@ -1,23 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { routes } from "../../src/app-shell/routes";
 import { SEED } from "../fixtures/seed";
-import { waitForHydration } from "../helpers/hydration";
 import { countTaps } from "../helpers/tap";
-import {
-  chrono,
-  confirmationCard,
-  cta,
-  dialog,
-  documentsOf,
-  euros,
-  expectToast,
-  openFresh,
-  openSheet,
-  stockOf,
-  tab,
-  tile,
-  waitForComposer,
-} from "./support-j9";
+import { chrono, confirmationCard, cta, dialog, documentsOf, euros, expectToast, openFresh, stockOf, tab, tile, waitForComposer } from "./support-j9";
 
 /**
  * PC-01 variante « Reçu maintenant » partiel (02 §5 N1 ; 06 E11 zone 8 ; 07 J9) : le dû se dérive du ledger, le CTA

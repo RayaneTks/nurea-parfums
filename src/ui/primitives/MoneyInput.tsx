@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Chip } from "./Chip";
 import { fieldClass, handleEnterKey, scrollFieldIntoView } from "./field-behavior";
 
-export type QuickAmount = {
+type QuickAmount = {
   /** « Tout », « La moitié », « Rien ». */
   label: string;
   amount: Eur;

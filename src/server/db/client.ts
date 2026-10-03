@@ -33,7 +33,7 @@ export const db = prisma.$extends({
   },
 });
 
-export type Db = typeof db;
+type Db = typeof db;
 
 /** Le client reçu dans une transaction interactive : tout sauf l'ouverture d'une autre transaction. */
 export type DbTransaction = Parameters<Parameters<Db["$transaction"]>[0]>[0];

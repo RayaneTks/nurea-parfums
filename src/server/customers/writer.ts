@@ -26,7 +26,7 @@ const SUMMARY_SELECT = {
   notes: true,
 } as const;
 
-export const CUSTOMER_NOT_FOUND = "Cette fiche client n'existe plus. Elle a peut-être été supprimée depuis un autre écran.";
+const CUSTOMER_NOT_FOUND = "Cette fiche client n'existe plus. Elle a peut-être été supprimée depuis un autre écran.";
 
 /** Refus du numéro déjà porté par une autre fiche : « Ce numéro est déjà celui de Lina. » (06 E20, S10). */
 async function assertPhoneFree(tx: Tx, phoneE164: string | null | undefined, selfId?: string): Promise<void> {

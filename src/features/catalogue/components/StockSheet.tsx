@@ -24,7 +24,7 @@ type StockSheetProps = {
 };
 
 /** « Mettre le stock à 5 », « Ne plus suivre le stock » : le CTA dit l'effet (06 S20). */
-export function stockCta(tracked: boolean, value: number | null): string {
+function stockCta(tracked: boolean, value: number | null): string {
   if (!tracked) return "Ne plus suivre le stock";
   return value === null ? "Saisir le stock" : `Mettre le stock à ${value}`;
 }

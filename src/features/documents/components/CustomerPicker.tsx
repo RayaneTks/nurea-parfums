@@ -1,6 +1,4 @@
 "use client";
-
-import { UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { useToast } from "@/app-shell/FeedbackProvider";
@@ -19,9 +17,7 @@ import { SelectSheet, type SelectCreateContext, type SelectOption } from "@/ui/p
 import { Avatar } from "@/ui/primitives/Avatar";
 import { Badge } from "@/ui/primitives/Badge";
 import { Button } from "@/ui/primitives/Button";
-import { Card } from "@/ui/primitives/Card";
 import { Input } from "@/ui/primitives/Input";
-import { ListRow } from "@/ui/primitives/ListRow";
 import { Text } from "@/ui/primitives/Text";
 
 type CustomerPickerProps = {

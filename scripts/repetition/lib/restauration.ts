@@ -38,11 +38,6 @@ export function dossiersAncienSchema(): string[] {
   return dossiers.filter((nom) => nom < (expand[0] as string));
 }
 
-/** Dernier dossier de l'ancien schéma (aujourd'hui `20260910160000_fix_delivered_at_backfill`). */
-export function derniereMigrationAncienne(): string {
-  return dossiersAncienSchema().at(-1) as string;
-}
-
 export async function recreerBase(url: string): Promise<void> {
   const cible = assertCibleLocale(url, USAGE);
   const admin = await ouvrirBase(urlMaintenance(cible));

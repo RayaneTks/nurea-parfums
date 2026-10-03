@@ -4,7 +4,7 @@ import { unstable_rethrow, useRouter } from "next/navigation";
 import { Component, Suspense, useTransition, type ErrorInfo, type ReactNode } from "react";
 import { ErrorBanner } from "@/ui/patterns/ErrorBanner";
 
-export const BLOCK_ERROR_MESSAGE = "Ce bloc n'a pas pu se charger.";
+const BLOCK_ERROR_MESSAGE = "Ce bloc n'a pas pu se charger.";
 
 type BlockProps = {
   /** Squelette aux proportions EXACTES du contenu final (05 §5.1). */

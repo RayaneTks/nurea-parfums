@@ -13,7 +13,7 @@
  */
 import { HostRefusedError, assertHostConfirmed, assertNotProduction, hostOf } from "../../lib/garde-hote";
 
-export const HOTES_LOCAUX = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
+const HOTES_LOCAUX = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
 const NOM_BASE = /^nurea_(repetition|test)[a-z0-9_]*$/;
 
 export interface Cible {

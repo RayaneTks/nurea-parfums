@@ -20,7 +20,7 @@ export const E2E_REMOTE = process.env.E2E_REMOTE === "1";
  * Harnais « première utilisation » (PC-12) : base vide, ports et base à lui. Posé par le lanceur
  * `e2e/support/lancer-premiere.mjs`, il est hérité par les processus ouvriers de Playwright.
  */
-export const E2E_PREMIERE = process.env.E2E_PREMIERE === "1";
+const E2E_PREMIERE = process.env.E2E_PREMIERE === "1";
 
 /** Faux : `global-setup` ne remplit pas la base (le compte du gérant, lui, est toujours créé). */
 export const E2E_SEED = !E2E_PREMIERE;

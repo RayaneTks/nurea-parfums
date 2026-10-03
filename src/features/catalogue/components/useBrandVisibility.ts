@@ -8,7 +8,7 @@ import { useAction } from "@/app-shell/hooks/useAction";
 import { republishBrandPerfumesAction, setBrandVisibilityAction } from "@/server/catalogue/actions";
 
 /** « 8 parfums ont un visuel et redeviendront visibles. » (06 S18) */
-export function republishDescription(count: number): string {
+function republishDescription(count: number): string {
   return count === 1
     ? "1 parfum a un visuel et redeviendra visible."
     : `${count} parfums ont un visuel et redeviendront visibles.`;

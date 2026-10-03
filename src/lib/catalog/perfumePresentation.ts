@@ -8,7 +8,7 @@ import { CONTACT, type Category, type Perfume } from "@/lib/data";
  */
 
 /** Catégorie « gamme » : la fiche représente une marque, pas un flacon. */
-export const COMPLETE_RANGE_CATEGORY = "Gammes Complètes";
+const COMPLETE_RANGE_CATEGORY = "Gammes Complètes";
 
 export function isCompleteRange(perfume: Perfume): boolean {
   return perfume.category === COMPLETE_RANGE_CATEGORY;
