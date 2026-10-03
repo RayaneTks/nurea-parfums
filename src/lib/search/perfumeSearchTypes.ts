@@ -8,6 +8,7 @@
 export type PerfumeSearchResponse =
   | PerfumeSearchLocalResults
   | PerfumeSearchUnlistedMatch
+  | PerfumeSearchReferenceMatch
   | PerfumeSearchExternalSuggestion
   | PerfumeSearchNoResults;
 
@@ -40,6 +41,16 @@ export interface PerfumeSearchUnlistedMatch {
   query: string;
   /** `brand` : la saisie ne vise que la marque (« xerjoff ») — on parle de la marque, pas d'un parfum pris au hasard. */
   match: { name: string; brand: string; on: "perfume" | "brand" };
+}
+
+/**
+ * Parfum reconnu par le répertoire (`searchRepertoire`) mais absent du catalogue : la vitrine le nomme
+ * et invite à écrire, sans rien promettre.
+ */
+export interface PerfumeSearchReferenceMatch {
+  type: "reference_match";
+  query: string;
+  match: { name: string; brand: string; line?: string; on: "perfume" | "brand" };
 }
 
 export interface ExternalPerfumeSuggestion {

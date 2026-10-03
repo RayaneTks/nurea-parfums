@@ -189,11 +189,11 @@ Ordre imposé : **marque, nom, contenance**. Le prix n'apparaît jamais en
 grille, seulement dans l'échange direct. Une ligne dont la donnée manque est
 omise — mieux vaut une ligne absente qu'une contenance inventée.
 
-Un parfum peut appartenir à une **gamme** de sa marque (« La Collection Privée »
+Un parfum peut appartenir à une **ligne** de sa marque (« La Collection Privée »
 chez Dior, « Private Blend » chez Tom Ford). L'étiquette de marque devient alors
-**« Marque · Gamme »**, même classe `.nurea-label`, à la même place — carte,
+**« Marque · Ligne »**, même classe `.nurea-label`, à la même place — carte,
 fiche en surimpression et page du parfum (`brandLineLabel`,
-`src/lib/catalog/perfumePresentation.ts`). Sans gamme, la marque seule : jamais
+`src/lib/catalog/perfumePresentation.ts`). Sans ligne, la marque seule : jamais
 de séparateur orphelin.
 
 ### États

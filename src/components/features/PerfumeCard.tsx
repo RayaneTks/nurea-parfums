@@ -21,7 +21,7 @@ interface PerfumeCardProps {
 /**
  * Fiche produit du catalogue — charte § 05.
  *
- * Ordre imposé : marque (« Marque · Gamme » si le parfum a une gamme), nom, contenance. Le prix n'apparaît jamais en grille,
+ * Ordre imposé : marque (« Marque · Ligne » si le parfum appartient à une ligne de la marque), nom, contenance. Le prix n'apparaît jamais en grille,
  * seulement dans l'échange direct.
  *
  * Survol : la couleur de fond, rien d'autre. Ni déplacement, ni agrandissement,

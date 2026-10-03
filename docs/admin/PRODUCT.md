@@ -90,7 +90,7 @@ page hors inventaire.
 | E20 Formulaire client | `/admin/clients/nouveau`, `/admin/clients/[id]/modifier` | Téléphone normalisé, doublon nommé avant l'envoi. |
 | E15 Catalogue | `/admin/catalogue?tab=&q=&stock=&visibilite=&gamme=` | Parfums / Marques / En avant. |
 | E16 Fiche parfum | `/admin/catalogue/parfums/[id]` | Tarifs, stock, visibilité, galerie de visuels story. |
-| E19 Formulaire parfum | `.../parfums/nouveau`, `.../parfums/[id]/modifier` | Fiche (marque, nom, gamme facultative), image sombre + variante claire, grille tarifaire. |
+| E19 Formulaire parfum | `.../parfums/nouveau`, `.../parfums/[id]/modifier` | Fiche (marque, nom, ligne facultative — ex. La Collection Privée), image sombre + variante claire, grille tarifaire. |
 | E17 Formulaire marque | `/admin/catalogue/marques/nouvelle`, `.../[id]/modifier` | Logo jamais recadré, gamme complète. |
 | E18 Connexion | `/admin/login?retour=` | **Hors shell** : ni header ni tab bar. |
 

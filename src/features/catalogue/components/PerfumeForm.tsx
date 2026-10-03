@@ -292,7 +292,7 @@ export function PerfumeForm(props: PerfumeFormProps) {
             />
           )}
         </FormField>
-        <FormField label="Gamme" error={fields?.line} hint="Ligne de la marque, ex. La Collection Privée. Laisser vide sinon.">
+        <FormField label="Ligne" error={fields?.line} hint="Ligne de la marque, ex. La Collection Privée, Emporio Armani. Laisser vide sinon.">
           {(field) => (
             <Input
               {...field}

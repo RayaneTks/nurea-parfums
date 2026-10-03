@@ -30,7 +30,7 @@ export const CHECK_MESSAGES: Readonly<Record<string, string>> = {
     canPublishPerfume({ image: "" }, { name: "", status: "PUBLISHED", catalogMode: "CURATED", image: null }),
   ),
   perfume_stock_ck: "Le stock ne peut pas être négatif : indique 0 ou plus.",
-  perfume_line_ck: "Saisis le nom de la gamme, ou laisse le champ vide.",
+  perfume_line_ck: "Saisis le nom de la ligne, ou laisse le champ vide.",
   pricing_volume_ck: "Choisis un volume de 10, 50 ou 80 ml.",
   pricing_amounts_ck: "Les prix, coûts et taux de la grille doivent être positifs : corrige la grille tarifaire.",
   doc_confirmed_at_ck: INCOHERENT,
