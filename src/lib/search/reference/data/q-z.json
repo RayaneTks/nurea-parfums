@@ -97,6 +97,17 @@
   ]
  },
  {
+  "brand": "Revlon",
+  "aliases": [
+   "revlon"
+  ],
+  "perfumes": [
+   "Charlie",
+   "Charlie Red",
+   "Charlie Blue"
+  ]
+ },
+ {
   "brand": "Rihanna",
   "aliases": [
    "rihanna"
@@ -122,6 +133,45 @@
    "Karma",
    "Ayurveda",
    "Hammam"
+  ]
+ },
+ {
+  "brand": "Roberto Cavalli",
+  "aliases": [
+   "cavalli",
+   "just cavalli"
+  ],
+  "perfumes": [
+   "Paradiso",
+   "Paradiso Azzurro",
+   "Paradiso Assoluto",
+   "Just Cavalli",
+   "Just Cavalli Him",
+   "Just Cavalli Her",
+   "Just Gold",
+   "Roberto Cavalli",
+   "Uomo",
+   "Serpentine",
+   "Nero Assoluto",
+   "Oro"
+  ]
+ },
+ {
+  "brand": "Rochas",
+  "aliases": [
+   "rochas"
+  ],
+  "perfumes": [
+   "Femme",
+   "Madame Rochas",
+   "Eau de Rochas",
+   "Eau de Rochas Homme",
+   "Moustache",
+   "Byzance",
+   "Tocade",
+   "Mademoiselle Rochas",
+   "Rochas Man",
+   "Lumière"
   ]
  },
  {
@@ -174,42 +224,83 @@
   ]
  },
  {
-  "brand": "Roberto Cavalli",
+  "brand": "S.T. Dupont",
   "aliases": [
-   "cavalli",
-   "just cavalli"
+   "st dupont",
+   "dupont"
   ],
   "perfumes": [
-   "Paradiso",
-   "Paradiso Azzurro",
-   "Paradiso Assoluto",
-   "Just Cavalli",
-   "Just Cavalli Him",
-   "Just Cavalli Her",
-   "Just Gold",
-   "Roberto Cavalli",
-   "Uomo",
-   "Serpentine",
-   "Nero Assoluto",
-   "Oro"
+   "Pour Homme",
+   "Passenger",
+   "Essence Pure"
   ]
  },
  {
-  "brand": "Rochas",
+  "brand": "Salvatore Ferragamo",
   "aliases": [
-   "rochas"
+   "ferragamo",
+   "salvatore ferragamo"
   ],
   "perfumes": [
-   "Femme",
-   "Madame Rochas",
-   "Eau de Rochas",
-   "Eau de Rochas Homme",
-   "Moustache",
-   "Byzance",
-   "Tocade",
-   "Mademoiselle Rochas",
-   "Rochas Man",
-   "Lumière"
+   "Signorina",
+   "Signorina Misteriosa",
+   "Signorina in Rosso",
+   "Signorina Ribelle",
+   "Signorina Libera",
+   "Signorina Eleganza",
+   "Attimo",
+   "Tuscan Soul",
+   "F by Ferragamo",
+   "Uomo",
+   "Acqua Essenziale",
+   "Emozione",
+   "Incanto Shine",
+   "Incanto Heaven",
+   "Incanto Dream",
+   "Incanto Charms"
+  ]
+ },
+ {
+  "brand": "Santa Maria Novella",
+  "aliases": [
+   "santa maria novella",
+   "smn"
+  ],
+  "perfumes": [
+   "Melograno",
+   "Nostalgia",
+   "Acqua della Regina",
+   "Acqua di Colonia",
+   "Tabacco Toscano"
+  ]
+ },
+ {
+  "brand": "Sarah Jessica Parker",
+  "aliases": [
+   "sjp",
+   "sarah jessica parker"
+  ],
+  "perfumes": [
+   "Lovely",
+   "Covet",
+   "Dawn",
+   "Stash",
+   "Endless",
+   "Born Lovely",
+   "Crush",
+   "Lovely You",
+   "Twilight"
+  ]
+ },
+ {
+  "brand": "Sean John",
+  "aliases": [
+   "sean john"
+  ],
+  "perfumes": [
+   "Unforgivable",
+   "Unforgivable Woman",
+   "I Am King"
   ]
  },
  {
@@ -265,61 +356,6 @@
   ]
  },
  {
-  "brand": "Sospiro",
-  "aliases": [
-   "sospiro",
-   "sospiro perfumes"
-  ],
-  "perfumes": [
-   "Accento",
-   "Duet",
-   "Opera",
-   "Ouverture",
-   "Wardasina",
-   "Laylati",
-   "Quercus"
-  ]
- },
- {
-  "brand": "Salvatore Ferragamo",
-  "aliases": [
-   "ferragamo",
-   "salvatore ferragamo"
-  ],
-  "perfumes": [
-   "Signorina",
-   "Signorina Misteriosa",
-   "Signorina in Rosso",
-   "Signorina Ribelle",
-   "Signorina Libera",
-   "Signorina Eleganza",
-   "Attimo",
-   "Tuscan Soul",
-   "F by Ferragamo",
-   "Uomo",
-   "Acqua Essenziale",
-   "Emozione",
-   "Incanto Shine",
-   "Incanto Heaven",
-   "Incanto Dream",
-   "Incanto Charms"
-  ]
- },
- {
-  "brand": "Stella McCartney",
-  "aliases": [
-   "stella mccartney"
-  ],
-  "perfumes": [
-   "Stella",
-   "Stella Peony",
-   "Stella Sheer",
-   "Pop",
-   "L.I.L.Y.",
-   "Stella In Two Peony"
-  ]
- },
- {
   "brand": "Shakira",
   "aliases": [
    "shakira"
@@ -336,21 +372,15 @@
   ]
  },
  {
-  "brand": "Sarah Jessica Parker",
+  "brand": "Shiseido",
   "aliases": [
-   "sjp",
-   "sarah jessica parker"
+   "shiseido"
   ],
   "perfumes": [
-   "Lovely",
-   "Covet",
-   "Dawn",
-   "Stash",
-   "Endless",
-   "Born Lovely",
-   "Crush",
-   "Lovely You",
-   "Twilight"
+   "Zen",
+   "Ever Bloom",
+   "Ginza",
+   "Zen Gold Elixir"
   ]
  },
  {
@@ -371,6 +401,50 @@
   ]
  },
  {
+  "brand": "Sol de Janeiro",
+  "aliases": [
+   "sol de janeiro"
+  ],
+  "perfumes": [
+   "Cheirosa 62",
+   "Cheirosa 68",
+   "Cheirosa 71",
+   "Cheirosa 40",
+   "Cheirosa 39",
+   "Cheirosa 87"
+  ]
+ },
+ {
+  "brand": "Sospiro",
+  "aliases": [
+   "sospiro",
+   "sospiro perfumes"
+  ],
+  "perfumes": [
+   "Accento",
+   "Duet",
+   "Opera",
+   "Ouverture",
+   "Wardasina",
+   "Laylati",
+   "Quercus"
+  ]
+ },
+ {
+  "brand": "Stella McCartney",
+  "aliases": [
+   "stella mccartney"
+  ],
+  "perfumes": [
+   "Stella",
+   "Stella Peony",
+   "Stella Sheer",
+   "Pop",
+   "L.I.L.Y.",
+   "Stella In Two Peony"
+  ]
+ },
+ {
   "brand": "Tauer Perfumes",
   "aliases": [
    "tauer",
@@ -385,6 +459,65 @@
    "Une Rose Vermeille",
    "Vetiver Dance",
    "Phi Une Rose de Kandahar"
+  ]
+ },
+ {
+  "brand": "Taylor Swift",
+  "aliases": [
+   "taylor swift"
+  ],
+  "perfumes": [
+   "Wonderstruck",
+   "Wonderstruck Enchanted",
+   "Taylor",
+   "Incredible Things"
+  ]
+ },
+ {
+  "brand": "Ted Lapidus",
+  "aliases": [
+   "ted lapidus",
+   "lapidus"
+  ],
+  "perfumes": [
+   "Black Soul",
+   "Black Extreme",
+   "Lapidus Pour Homme",
+   "Lapidus Pour Femme"
+  ]
+ },
+ {
+  "brand": "The Different Company",
+  "aliases": [
+   "different company",
+   "the different company"
+  ],
+  "perfumes": [
+   "Bois d'Iris",
+   "De Bachmakov",
+   "Osmanthus",
+   "Sel de Vétiver",
+   "Jasmin de Nuit",
+   "Rose Poivrée",
+   "Une Nuit Magnétique",
+   "Oriental Lounge",
+   "Divine Bergamote",
+   "Sublime Balkiss"
+  ]
+ },
+ {
+  "brand": "Tiffany & Co.",
+  "aliases": [
+   "tiffany",
+   "tiffany and co"
+  ],
+  "perfumes": [
+   "Tiffany",
+   "Tiffany & Love",
+   "Rose Gold",
+   "Intense",
+   "Sheer",
+   "Tiffany for Men"
   ]
  },
  {
@@ -411,43 +544,6 @@
    "Chiron",
    "Lillipur",
    "Sirius"
-  ]
- },
- {
-  "brand": "Tommy Hilfiger",
-  "aliases": [
-   "tommy hilfiger",
-   "tommy"
-  ],
-  "perfumes": [
-   "Tommy",
-   "Tommy Girl",
-   "Tommy Girl Summer",
-   "Tommy Now",
-   "Tommy Cool",
-   "Tommy Jeans",
-   "Impact",
-   "Impact Intense",
-   "Freedom",
-   "10",
-   "True Star",
-   "True Star Gold",
-   "Tommy Hilfiger Man",
-   "Tommy Girl Now"
-  ]
- },
- {
-  "brand": "Trussardi",
-  "aliases": [
-   "trussardi"
-  ],
-  "perfumes": [
-   "Riflesso",
-   "Uomo",
-   "Donna",
-   "My Land",
-   "Inside",
-   "Delicate Rose"
   ]
  },
  {
@@ -538,6 +634,55 @@
   ]
  },
  {
+  "brand": "Tommy Hilfiger",
+  "aliases": [
+   "tommy hilfiger",
+   "tommy"
+  ],
+  "perfumes": [
+   "Tommy",
+   "Tommy Girl",
+   "Tommy Girl Summer",
+   "Tommy Now",
+   "Tommy Cool",
+   "Tommy Jeans",
+   "Impact",
+   "Impact Intense",
+   "Freedom",
+   "10",
+   "True Star",
+   "True Star Gold",
+   "Tommy Hilfiger Man",
+   "Tommy Girl Now"
+  ]
+ },
+ {
+  "brand": "Tory Burch",
+  "aliases": [
+   "tory burch"
+  ],
+  "perfumes": [
+   "Tory Burch",
+   "Love Relentlessly",
+   "Bel Azur",
+   "Just Like Heaven"
+  ]
+ },
+ {
+  "brand": "Trussardi",
+  "aliases": [
+   "trussardi"
+  ],
+  "perfumes": [
+   "Riflesso",
+   "Uomo",
+   "Donna",
+   "My Land",
+   "Inside",
+   "Delicate Rose"
+  ]
+ },
+ {
   "brand": "Valentino",
   "aliases": [
    "valentino",
@@ -561,6 +706,43 @@
    "Rock'n Rose",
    "Rock'n Rose Couture",
    "Rosso Valentino"
+  ]
+ },
+ {
+  "brand": "Van Cleef & Arpels",
+  "aliases": [
+   "van cleef",
+   "van cleef and arpels",
+   "vca"
+  ],
+  "perfumes": [
+   "First",
+   "Gardénia Pétale",
+   "Oud Blanc",
+   "Santal Blanc",
+   "Bois d'Iris",
+   "Moonlight Patchouli",
+   "Néroli Amalfi",
+   "Orchidée Vanille",
+   "Ambre Impérial",
+   "Bois d'Amande",
+   "Cologne Noire",
+   "Rose Rouge",
+   "Muguet Blanc",
+   "Bois Doré"
+  ]
+ },
+ {
+  "brand": "Vera Wang",
+  "aliases": [
+   "vera wang"
+  ],
+  "perfumes": [
+   "Vera Wang",
+   "Princess",
+   "Rock Princess",
+   "Embrace",
+   "Look"
   ]
  },
  {
@@ -660,30 +842,6 @@
   ]
  },
  {
-  "brand": "Van Cleef & Arpels",
-  "aliases": [
-   "van cleef",
-   "van cleef and arpels",
-   "vca"
-  ],
-  "perfumes": [
-   "First",
-   "Gardénia Pétale",
-   "Oud Blanc",
-   "Santal Blanc",
-   "Bois d'Iris",
-   "Moonlight Patchouli",
-   "Néroli Amalfi",
-   "Orchidée Vanille",
-   "Ambre Impérial",
-   "Bois d'Amande",
-   "Cologne Noire",
-   "Rose Rouge",
-   "Muguet Blanc",
-   "Bois Doré"
-  ]
- },
- {
   "brand": "Vilhelm Parfumerie",
   "aliases": [
    "vilhelm",
@@ -698,6 +856,20 @@
    "Room Service",
    "Moon Carnival",
    "Dedicated to You"
+  ]
+ },
+ {
+  "brand": "Vivienne Westwood",
+  "aliases": [
+   "vivienne westwood"
+  ],
+  "perfumes": [
+   "Boudoir",
+   "Libertine",
+   "Anglomania",
+   "Naughty Alice",
+   "Let It Rock",
+   "Vivienne Westwood Man"
   ]
  },
  {
@@ -732,6 +904,28 @@
    "Rosa Moresca",
    "Hayat",
    "Mamluk"
+  ]
+ },
+ {
+  "brand": "Yardley",
+  "aliases": [
+   "yardley",
+   "yardley london"
+  ],
+  "perfumes": [
+   "English Lavender",
+   "English Rose"
+  ]
+ },
+ {
+  "brand": "Yves Rocher",
+  "aliases": [
+   "yves rocher"
+  ],
+  "perfumes": [
+   "Comme une Évidence",
+   "Rose Absolue",
+   "Mon Évidence"
   ]
  },
  {
@@ -812,14 +1006,21 @@
   ]
  },
  {
-  "brand": "Yves Rocher",
+  "brand": "Zadig & Voltaire",
   "aliases": [
-   "yves rocher"
+   "zadig",
+   "zadig et voltaire",
+   "z&v"
   ],
   "perfumes": [
-   "Comme une Évidence",
-   "Rose Absolue",
-   "Mon Évidence"
+   "This Is Her!",
+   "This Is Him!",
+   "This Is Love!",
+   "This Is Really Her!",
+   "This Is Really Him!",
+   "Girls Can Do Anything",
+   "Just Rock!",
+   "Swann"
   ]
  },
  {
@@ -844,7 +1045,8 @@
    "Night Pour Homme",
    "Gardenia",
    "Wonder Rose",
-   "Man Rise"
+   "Man Rise",
+   "Rich Warm Addictive"
   ]
  },
  {
@@ -871,207 +1073,6 @@
    "Penguin",
    "Tanuki",
    "Musk Deer"
-  ]
- },
- {
-  "brand": "Zadig & Voltaire",
-  "aliases": [
-   "zadig",
-   "zadig et voltaire",
-   "z&v"
-  ],
-  "perfumes": [
-   "This Is Her!",
-   "This Is Him!",
-   "This Is Love!",
-   "This Is Really Her!",
-   "This Is Really Him!",
-   "Girls Can Do Anything",
-   "Just Rock!",
-   "Swann"
-  ]
- },
- {
-  "brand": "Shiseido",
-  "aliases": [
-   "shiseido"
-  ],
-  "perfumes": [
-   "Zen",
-   "Ever Bloom",
-   "Ginza",
-   "Zen Gold Elixir"
-  ]
- },
- {
-  "brand": "Sean John",
-  "aliases": [
-   "sean john"
-  ],
-  "perfumes": [
-   "Unforgivable",
-   "Unforgivable Woman",
-   "I Am King"
-  ]
- },
- {
-  "brand": "Sol de Janeiro",
-  "aliases": [
-   "sol de janeiro"
-  ],
-  "perfumes": [
-   "Cheirosa 62",
-   "Cheirosa 68",
-   "Cheirosa 71",
-   "Cheirosa 40",
-   "Cheirosa 39",
-   "Cheirosa 87"
-  ]
- },
- {
-  "brand": "Santa Maria Novella",
-  "aliases": [
-   "santa maria novella",
-   "smn"
-  ],
-  "perfumes": [
-   "Melograno",
-   "Nostalgia",
-   "Acqua della Regina",
-   "Acqua di Colonia",
-   "Tabacco Toscano"
-  ]
- },
- {
-  "brand": "S.T. Dupont",
-  "aliases": [
-   "st dupont",
-   "dupont"
-  ],
-  "perfumes": [
-   "Pour Homme",
-   "Passenger",
-   "Essence Pure"
-  ]
- },
- {
-  "brand": "Tiffany & Co.",
-  "aliases": [
-   "tiffany",
-   "tiffany and co"
-  ],
-  "perfumes": [
-   "Tiffany",
-   "Tiffany & Love",
-   "Rose Gold",
-   "Intense",
-   "Sheer",
-   "Tiffany for Men"
-  ]
- },
- {
-  "brand": "Tory Burch",
-  "aliases": [
-   "tory burch"
-  ],
-  "perfumes": [
-   "Tory Burch",
-   "Love Relentlessly",
-   "Bel Azur",
-   "Just Like Heaven"
-  ]
- },
- {
-  "brand": "The Different Company",
-  "aliases": [
-   "different company",
-   "the different company"
-  ],
-  "perfumes": [
-   "Bois d'Iris",
-   "De Bachmakov",
-   "Osmanthus",
-   "Sel de Vétiver",
-   "Jasmin de Nuit",
-   "Rose Poivrée",
-   "Une Nuit Magnétique",
-   "Oriental Lounge",
-   "Divine Bergamote",
-   "Sublime Balkiss"
-  ]
- },
- {
-  "brand": "Ted Lapidus",
-  "aliases": [
-   "ted lapidus",
-   "lapidus"
-  ],
-  "perfumes": [
-   "Black Soul",
-   "Black Extreme",
-   "Lapidus Pour Homme",
-   "Lapidus Pour Femme"
-  ]
- },
- {
-  "brand": "Vera Wang",
-  "aliases": [
-   "vera wang"
-  ],
-  "perfumes": [
-   "Vera Wang",
-   "Princess",
-   "Rock Princess",
-   "Embrace",
-   "Look"
-  ]
- },
- {
-  "brand": "Vivienne Westwood",
-  "aliases": [
-   "vivienne westwood"
-  ],
-  "perfumes": [
-   "Boudoir",
-   "Libertine",
-   "Anglomania",
-   "Naughty Alice",
-   "Let It Rock",
-   "Vivienne Westwood Man"
-  ]
- },
- {
-  "brand": "Taylor Swift",
-  "aliases": [
-   "taylor swift"
-  ],
-  "perfumes": [
-   "Wonderstruck",
-   "Wonderstruck Enchanted",
-   "Taylor",
-   "Incredible Things"
-  ]
- },
- {
-  "brand": "Revlon",
-  "aliases": [
-   "revlon"
-  ],
-  "perfumes": [
-   "Charlie",
-   "Charlie Red",
-   "Charlie Blue"
-  ]
- },
- {
-  "brand": "Yardley",
-  "aliases": [
-   "yardley",
-   "yardley london"
-  ],
-  "perfumes": [
-   "English Lavender",
-   "English Rose"
   ]
  }
 ]

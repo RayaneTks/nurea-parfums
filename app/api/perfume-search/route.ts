@@ -59,10 +59,7 @@ export async function GET(request: Request) {
   const category = parseCategoryParam(searchParams.get("cat"));
 
   try {
-    const payload = await searchPerfumeWithFallback(validated.value, {
-      category,
-      signal: request.signal,
-    });
+    const payload = await searchPerfumeWithFallback(validated.value, { category });
     return NextResponse.json(payload, {
       headers: { ...quotaHeaders(quota.remaining), "Cache-Control": CACHE_CONTROL },
     });

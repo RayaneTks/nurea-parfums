@@ -1,5 +1,20 @@
 [
  {
+  "brand": "Abercrombie & Fitch",
+  "aliases": [
+   "abercrombie",
+   "a&f",
+   "abercrombie and fitch"
+  ],
+  "perfumes": [
+   "Fierce",
+   "8",
+   "Authentic",
+   "Away Man",
+   "Away Woman"
+  ]
+ },
+ {
   "brand": "Acqua di Parma",
   "aliases": [
    "acqua di parma",
@@ -39,6 +54,22 @@
   ]
  },
  {
+  "brand": "Adidas",
+  "aliases": [
+   "adidas"
+  ],
+  "perfumes": [
+   "Dynamic Pulse",
+   "Team Five",
+   "Ice Dive",
+   "Get Ready!",
+   "Pure Game",
+   "Fair Play",
+   "Moves",
+   "Vibes"
+  ]
+ },
+ {
   "brand": "Aesop",
   "aliases": [
    "aesop"
@@ -57,6 +88,39 @@
    "Olous",
    "Cythera",
    "Libertine"
+  ]
+ },
+ {
+  "brand": "Agent Provocateur",
+  "aliases": [
+   "agent provocateur"
+  ],
+  "perfumes": [
+   "Agent Provocateur",
+   "Maitresse",
+   "Fatale"
+  ]
+ },
+ {
+  "brand": "Aigner",
+  "aliases": [
+   "aigner",
+   "etienne aigner"
+  ],
+  "perfumes": [
+   "Private Number",
+   "No. 1"
+  ]
+ },
+ {
+  "brand": "Alaïa",
+  "aliases": [
+   "alaia",
+   "azzedine alaia"
+  ],
+  "perfumes": [
+   "Alaïa",
+   "Alaïa Blanche"
   ]
  },
  {
@@ -131,6 +195,22 @@
   ]
  },
  {
+  "brand": "Anna Sui",
+  "aliases": [
+   "anna sui"
+  ],
+  "perfumes": [
+   "Dolly Girl",
+   "Fantasia",
+   "Flight of Fancy",
+   "Secret Wish",
+   "Sui Dreams",
+   "Romantica",
+   "Night of Fancy",
+   "Anna Sui"
+  ]
+ },
+ {
   "brand": "Annick Goutal",
   "aliases": [
    "goutal",
@@ -189,6 +269,34 @@
   ]
  },
  {
+  "brand": "Aquolina",
+  "aliases": [
+   "aquolina",
+   "pink sugar"
+  ],
+  "perfumes": [
+   "Pink Sugar",
+   "Pink Sugar Sensual",
+   "Blue Sugar",
+   "Honey Sugar"
+  ]
+ },
+ {
+  "brand": "Aramis",
+  "aliases": [
+   "aramis"
+  ],
+  "perfumes": [
+   "Aramis",
+   "Devin",
+   "Tuscany Per Uomo",
+   "Havana",
+   "Aramis 900",
+   "JHL",
+   "Aramis Gentleman"
+  ]
+ },
+ {
   "brand": "Ariana Grande",
   "aliases": [
    "ariana",
@@ -210,6 +318,18 @@
    "Cloud Pink",
    "Eternal Cloud",
    "Lovenotes Cloud"
+  ]
+ },
+ {
+  "brand": "Armand Basi",
+  "aliases": [
+   "armand basi"
+  ],
+  "perfumes": [
+   "In Blue",
+   "In Red",
+   "In Love",
+   "Blue Sport"
   ]
  },
  {
@@ -299,6 +419,38 @@
   ]
  },
  {
+  "brand": "Atelier des Ors",
+  "aliases": [
+   "atelier des ors"
+  ],
+  "perfumes": [
+   "Cuir Sacré",
+   "Lune Féline",
+   "Larmes du Désert",
+   "Rose Omeyyade",
+   "Iris Fauve"
+  ]
+ },
+ {
+  "brand": "Avon",
+  "aliases": [
+   "avon"
+  ],
+  "perfumes": [
+   "Far Away",
+   "Little Black Dress",
+   "Imari",
+   "Timeless",
+   "Rare Gold",
+   "Black Suede",
+   "Mesmerize",
+   "Haiku",
+   "Perceive",
+   "Wild Country",
+   "Occur!"
+  ]
+ },
+ {
   "brand": "Azzaro",
   "aliases": [
    "azaro",
@@ -331,6 +483,32 @@
    "Aqua Bella",
    "Pour Elle",
    "Azzaro Now"
+  ]
+ },
+ {
+  "brand": "Balenciaga",
+  "aliases": [
+   "balenciaga"
+  ],
+  "perfumes": [
+   "Paris",
+   "Rosabotanica",
+   "B. Balenciaga",
+   "Florabotanica"
+  ]
+ },
+ {
+  "brand": "Balmain",
+  "aliases": [
+   "balmain",
+   "pierre balmain"
+  ],
+  "perfumes": [
+   "Ambre Gris",
+   "Jolie Madame",
+   "Vent Vert",
+   "Miss Balmain",
+   "Extatic"
   ]
  },
  {
@@ -444,6 +622,21 @@
   ]
  },
  {
+  "brand": "Beyoncé",
+  "aliases": [
+   "beyonce"
+  ],
+  "perfumes": [
+   "Heat",
+   "Pulse",
+   "Rise",
+   "Midnight Heat",
+   "Heat Rush",
+   "Heat Wild Orchid",
+   "Pulse Summer"
+  ]
+ },
+ {
   "brand": "Billie Eilish",
   "aliases": [
    "billie",
@@ -482,6 +675,48 @@
    "Tabacco Italico",
    "Sicilian Fantasy",
    "Vento nel Vento"
+  ]
+ },
+ {
+  "brand": "Bond No. 9",
+  "aliases": [
+   "bond no 9",
+   "bond 9",
+   "bond n9"
+  ],
+  "perfumes": [
+   "New York Nights",
+   "Bleecker Street",
+   "Chinatown",
+   "Eau de New York",
+   "Park Avenue",
+   "Wall Street",
+   "Greenwich Village",
+   "Hudson Yards",
+   "Nuits de Noho",
+   "Scent of Peace",
+   "Fire Island",
+   "Lafayette Street",
+   "Saks Fifth Avenue",
+   "West Side",
+   "Silver Factory"
+  ]
+ },
+ {
+  "brand": "Bottega Veneta",
+  "aliases": [
+   "bottega veneta",
+   "bottega"
+  ],
+  "perfumes": [
+   "Bottega Veneta",
+   "Illusione",
+   "Pour Homme Parallele",
+   "Knot",
+   "Eau Légère",
+   "Eau Sensuelle",
+   "Pour Homme Extreme",
+   "Pour Homme"
   ]
  },
  {
@@ -913,6 +1148,27 @@
   ]
  },
  {
+  "brand": "Celine",
+  "aliases": [
+   "celine haute parfumerie",
+   "maison celine"
+  ],
+  "perfumes": [
+   "Black Tie",
+   "Parade",
+   "Reptile",
+   "Rimbaud",
+   "Dans Paris",
+   "Nightclubbing",
+   "Bois Dormant",
+   "Cologne Française",
+   "La Peau Nue",
+   "Zouzou",
+   "Eau de Californie",
+   "Saint-Germain-des-Prés"
+  ]
+ },
+ {
   "brand": "Cerruti",
   "aliases": [
    "cerruti",
@@ -1048,6 +1304,35 @@
   ]
  },
  {
+  "brand": "Christian Louboutin",
+  "aliases": [
+   "louboutin",
+   "christian louboutin"
+  ],
+  "perfumes": [
+   "Loubicroc",
+   "Loubifunk",
+   "Bikini Questa Sera",
+   "Trouble in Heaven",
+   "Rouge Louboutin"
+  ]
+ },
+ {
+  "brand": "Clean",
+  "aliases": [
+   "clean reserve",
+   "clean"
+  ],
+  "perfumes": [
+   "Warm Cotton",
+   "Rain",
+   "Fresh Laundry",
+   "Skin",
+   "Sueded Oud",
+   "Smoked Vetiver"
+  ]
+ },
+ {
   "brand": "Clinique",
   "aliases": [
    "clinique"
@@ -1139,6 +1424,28 @@
   ]
  },
  {
+  "brand": "Coty",
+  "aliases": [
+   "coty"
+  ],
+  "perfumes": [
+   "L'Aimant",
+   "Emeraude",
+   "Muguet des Bois"
+  ]
+ },
+ {
+  "brand": "Courrèges",
+  "aliases": [
+   "courreges"
+  ],
+  "perfumes": [
+   "Empreinte",
+   "In Blue",
+   "Hyperbole"
+  ]
+ },
+ {
   "brand": "Creed",
   "aliases": [
    "creed"
@@ -1186,262 +1493,6 @@
   ]
  },
  {
-  "brand": "Abercrombie & Fitch",
-  "aliases": [
-   "abercrombie",
-   "a&f",
-   "abercrombie and fitch"
-  ],
-  "perfumes": [
-   "Fierce",
-   "8",
-   "Authentic",
-   "Away Man",
-   "Away Woman"
-  ]
- },
- {
-  "brand": "Adidas",
-  "aliases": [
-   "adidas"
-  ],
-  "perfumes": [
-   "Dynamic Pulse",
-   "Team Five",
-   "Ice Dive",
-   "Get Ready!",
-   "Pure Game",
-   "Fair Play",
-   "Moves",
-   "Vibes"
-  ]
- },
- {
-  "brand": "Agent Provocateur",
-  "aliases": [
-   "agent provocateur"
-  ],
-  "perfumes": [
-   "Agent Provocateur",
-   "Maitresse",
-   "Fatale"
-  ]
- },
- {
-  "brand": "Aigner",
-  "aliases": [
-   "aigner",
-   "etienne aigner"
-  ],
-  "perfumes": [
-   "Private Number",
-   "No. 1"
-  ]
- },
- {
-  "brand": "Anna Sui",
-  "aliases": [
-   "anna sui"
-  ],
-  "perfumes": [
-   "Dolly Girl",
-   "Fantasia",
-   "Flight of Fancy",
-   "Secret Wish",
-   "Sui Dreams",
-   "Romantica",
-   "Night of Fancy",
-   "Anna Sui"
-  ]
- },
- {
-  "brand": "Aramis",
-  "aliases": [
-   "aramis"
-  ],
-  "perfumes": [
-   "Aramis",
-   "Devin",
-   "Tuscany Per Uomo",
-   "Havana",
-   "Aramis 900",
-   "JHL",
-   "Aramis Gentleman"
-  ]
- },
- {
-  "brand": "Armand Basi",
-  "aliases": [
-   "armand basi"
-  ],
-  "perfumes": [
-   "In Blue",
-   "In Red",
-   "In Love",
-   "Blue Sport"
-  ]
- },
- {
-  "brand": "Balenciaga",
-  "aliases": [
-   "balenciaga"
-  ],
-  "perfumes": [
-   "Paris",
-   "Rosabotanica",
-   "B. Balenciaga",
-   "Florabotanica"
-  ]
- },
- {
-  "brand": "Balmain",
-  "aliases": [
-   "balmain",
-   "pierre balmain"
-  ],
-  "perfumes": [
-   "Ambre Gris",
-   "Jolie Madame",
-   "Vent Vert",
-   "Miss Balmain",
-   "Extatic"
-  ]
- },
- {
-  "brand": "Beyoncé",
-  "aliases": [
-   "beyonce"
-  ],
-  "perfumes": [
-   "Heat",
-   "Pulse",
-   "Rise",
-   "Midnight Heat",
-   "Heat Rush",
-   "Heat Wild Orchid",
-   "Pulse Summer"
-  ]
- },
- {
-  "brand": "Bond No. 9",
-  "aliases": [
-   "bond no 9",
-   "bond 9",
-   "bond n9"
-  ],
-  "perfumes": [
-   "New York Nights",
-   "Bleecker Street",
-   "Chinatown",
-   "Eau de New York",
-   "Park Avenue",
-   "Wall Street",
-   "Greenwich Village",
-   "Hudson Yards",
-   "Nuits de Noho",
-   "Scent of Peace",
-   "Fire Island",
-   "Lafayette Street",
-   "Saks Fifth Avenue",
-   "West Side",
-   "Silver Factory"
-  ]
- },
- {
-  "brand": "Bottega Veneta",
-  "aliases": [
-   "bottega veneta",
-   "bottega"
-  ],
-  "perfumes": [
-   "Bottega Veneta",
-   "Illusione",
-   "Pour Homme Parallele",
-   "Knot",
-   "Eau Légère",
-   "Eau Sensuelle",
-   "Pour Homme Extreme",
-   "Pour Homme"
-  ]
- },
- {
-  "brand": "Clean",
-  "aliases": [
-   "clean reserve",
-   "clean"
-  ],
-  "perfumes": [
-   "Warm Cotton",
-   "Rain",
-   "Fresh Laundry",
-   "Skin",
-   "Sueded Oud",
-   "Smoked Vetiver"
-  ]
- },
- {
-  "brand": "Courrèges",
-  "aliases": [
-   "courreges"
-  ],
-  "perfumes": [
-   "Empreinte",
-   "In Blue",
-   "Hyperbole"
-  ]
- },
- {
-  "brand": "Christian Louboutin",
-  "aliases": [
-   "louboutin",
-   "christian louboutin"
-  ],
-  "perfumes": [
-   "Loubicroc",
-   "Loubifunk",
-   "Bikini Questa Sera",
-   "Trouble in Heaven",
-   "Rouge Louboutin"
-  ]
- },
- {
-  "brand": "Aquolina",
-  "aliases": [
-   "aquolina",
-   "pink sugar"
-  ],
-  "perfumes": [
-   "Pink Sugar",
-   "Pink Sugar Sensual",
-   "Blue Sugar",
-   "Honey Sugar"
-  ]
- },
- {
-  "brand": "Atelier des Ors",
-  "aliases": [
-   "atelier des ors"
-  ],
-  "perfumes": [
-   "Cuir Sacré",
-   "Lune Féline",
-   "Larmes du Désert",
-   "Rose Omeyyade",
-   "Iris Fauve"
-  ]
- },
- {
-  "brand": "Alaïa",
-  "aliases": [
-   "alaia",
-   "azzedine alaia"
-  ],
-  "perfumes": [
-   "Alaïa",
-   "Alaïa Blanche"
-  ]
- },
- {
   "brand": "Cuba Paris",
   "aliases": [
    "cuba",
@@ -1454,36 +1505,6 @@
    "Cuba Blue",
    "Cuba Black",
    "Cuba VIP"
-  ]
- },
- {
-  "brand": "Coty",
-  "aliases": [
-   "coty"
-  ],
-  "perfumes": [
-   "L'Aimant",
-   "Emeraude",
-   "Muguet des Bois"
-  ]
- },
- {
-  "brand": "Avon",
-  "aliases": [
-   "avon"
-  ],
-  "perfumes": [
-   "Far Away",
-   "Little Black Dress",
-   "Imari",
-   "Timeless",
-   "Rare Gold",
-   "Black Suede",
-   "Mesmerize",
-   "Haiku",
-   "Perceive",
-   "Wild Country",
-   "Occur!"
   ]
  }
 ]

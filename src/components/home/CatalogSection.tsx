@@ -10,9 +10,7 @@ import { Button, buttonClass } from "@/components/ui/Button";
 import { OPEN_CATALOG_FILTERS_EVENT } from "@/components/layout/Navbar";
 import {
   compareSearchRelevance,
-  findExternalPerfumeHint,
   fuzzySearchMatch,
-  getPerfumesByIds,
   suggestSimilarPerfumes,
   type Category,
   type Perfume,
@@ -116,28 +114,23 @@ export const CatalogSection = ({
   /* La recherche élargie ne part que si le catalogue local n'a rien donné. */
   const extendedSearch = useExtendedSearch(filters.query, sorted.length === 0);
 
-  const externalHint = useMemo(
-    () => (filters.query.trim() ? findExternalPerfumeHint(filters.query) : null),
-    [filters.query]
-  );
-
-  const apiSuggestion =
+  const referenceBrand =
     extendedSearch.status === "done" &&
-    extendedSearch.response.type === "external_suggestion"
-      ? extendedSearch.response.suggestion
+    extendedSearch.response.type === "reference_match"
+      ? extendedSearch.response.match.brand
       : null;
 
-  /* La suggestion externe vise parfois une marque déjà présente : on le dit,
+  /* La référence reconnue est parfois d'une marque déjà présente : on le dit,
      et on remonte sa gamme en tête des pistes proposées. */
   const suggestedRange = useMemo(() => {
-    const brand = apiSuggestion?.brand?.trim();
-    if (!brand || brand === "—") return null;
+    const brand = referenceBrand?.trim();
+    if (!brand) return null;
     return (
       catalogPerfumes.find(
         (p) => isCompleteRange(p) && p.brand.toLowerCase() === brand.toLowerCase()
       ) ?? null
     );
-  }, [apiSuggestion, catalogPerfumes]);
+  }, [referenceBrand, catalogPerfumes]);
 
   const inspirations = useMemo(() => {
     if (sorted.length > 0) return [];
@@ -146,9 +139,6 @@ export const CatalogSection = ({
 
     const candidates = [
       ...(suggestedRange ? [suggestedRange] : []),
-      ...(externalHint
-        ? getPerfumesByIds(externalHint.similarCatalogIds, catalogPerfumes)
-        : []),
       ...suggestSimilarPerfumes(query, catalogPerfumes, 6),
     ];
 
@@ -161,7 +151,7 @@ export const CatalogSection = ({
       merged.push(perfume);
     }
     return merged;
-  }, [sorted.length, filters.query, catalogPerfumes, suggestedRange, externalHint]);
+  }, [sorted.length, filters.query, catalogPerfumes, suggestedRange]);
 
   const resultLabel = useMemo(() => {
     const count = sorted.length;
@@ -366,7 +356,6 @@ export const CatalogSection = ({
             <CatalogEmptyState
               query={filters.query}
               suggestedBrandInCatalog={suggestedRange?.brand ?? null}
-              externalHint={externalHint}
               extendedSearch={extendedSearch}
             />
 

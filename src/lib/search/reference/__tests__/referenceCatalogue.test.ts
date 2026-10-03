@@ -26,4 +26,28 @@ describe("référentiel hors catalogue", () => {
     );
     expect(searchReference(DATA, "stronger with you")).toMatchObject({ brand: "Emporio Armani" });
   });
+
+  it("reconnaît les saisies courantes, marque avant ou après, d'un bloc ou non", () => {
+    const cas: [string, string, string][] = [
+      ["j'adore", "J'adore", "Dior"],
+      ["jadore dior", "J'adore", "Dior"],
+      ["chanel n5", "N°5", "Chanel"],
+      ["ysl libre", "Libre", "Yves Saint Laurent"],
+      ["mugler angel", "Angel", "Mugler"],
+      ["givenchy gentleman", "Gentleman", "Givenchy"],
+      ["oud wood", "Oud Wood", "Tom Ford Private Blend"],
+      ["code", "Armani Code", "Giorgio Armani"],
+    ];
+    for (const [saisie, name, brand] of cas) {
+      expect(searchReference(DATA, saisie), saisie).toEqual({ kind: "perfume", name, brand });
+    }
+  });
+
+  it("ne reconnaît pas à tort : mieux vaut rien qu'un mauvais parfum", () => {
+    // Relevés sur l'ancien score, emprunté à l'API externe.
+    expect(searchReference(DATA, "j'adore")).not.toMatchObject({ brand: "Bvlgari" });
+    expect(searchReference(DATA, "maison margiela replica")).toEqual({ kind: "brand", brand: "Maison Margiela" });
+    expect(searchReference(DATA, "bmw perfume")).toBeNull();
+    expect(searchReference(DATA, "nurea-inconnu-xyz")).toBeNull();
+  });
 });

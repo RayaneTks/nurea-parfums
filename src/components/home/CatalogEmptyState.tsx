@@ -3,34 +3,26 @@
 import type { FC } from "react";
 import Link from "next/link";
 import { buttonClass } from "@/components/ui/Button";
-import {
-  EXTERNAL_SEARCH_FALLBACK_MESSAGE,
-  type ExternalPerfumeHint,
-} from "@/lib/data";
-import { formatExternalSuggestionDisplay } from "@/lib/search/formatExternalSuggestionDisplay";
 import type { ExtendedSearchState } from "./useExtendedSearch";
 
 interface CatalogEmptyStateProps {
   query: string;
   /** Fiche de la marque suggérée, quand elle est déjà au catalogue. */
   suggestedBrandInCatalog: string | null;
-  externalHint: ExternalPerfumeHint | null;
   extendedSearch: ExtendedSearchState;
 }
 
 /**
  * Ce qu'on montre quand la grille est vide.
  *
- * Quatre cas, dans cet ordre de précision : la référence est au catalogue sans
- * carte en ligne (masquée), la recherche élargie l'a identifiée ailleurs, un
- * indice hors ligne la reconnaît, ou rien ne correspond. Aucun
- * n'est un cul-de-sac — chacun mène au contact, seul endroit où une commande
- * se conclut.
+ * Trois cas, dans cet ordre de précision : la référence est au catalogue sans
+ * carte en ligne (masquée), le référentiel des parfums du monde la reconnaît,
+ * ou rien ne correspond. Aucun n'est un cul-de-sac — chacun mène au contact,
+ * seul endroit où une commande se conclut.
  */
 export const CatalogEmptyState: FC<CatalogEmptyStateProps> = ({
   query,
   suggestedBrandInCatalog,
-  externalHint,
   extendedSearch,
 }) => {
   const trimmed = query.trim();
@@ -99,7 +91,9 @@ export const CatalogEmptyState: FC<CatalogEmptyStateProps> = ({
         body={
           brandOnly
             ? "Cette marque n'est peut-être pas encore ajoutée au catalogue, mais contactez-nous : nous vous dirons ce que nous pouvons vous proposer."
-            : "Ce parfum n'a peut-être pas encore été ajouté au catalogue, mais contactez-nous : nous vous dirons s'il est disponible, ou nous vous proposerons une alternative."
+            : suggestedBrandInCatalog
+              ? `Ce parfum n'a peut-être pas encore été ajouté au catalogue, mais la marque ${suggestedBrandInCatalog} y est déjà. Contactez-nous : nous vous dirons s'il est disponible.`
+              : "Ce parfum n'a peut-être pas encore été ajouté au catalogue, mais contactez-nous : nous vous dirons s'il est disponible, ou nous vous proposerons une alternative."
         }
         contactHref={contactHref(
           brandOnly ? { marque: reference.brand } : { parfum: reference.name, marque: reference.brand },
@@ -108,62 +102,26 @@ export const CatalogEmptyState: FC<CatalogEmptyStateProps> = ({
     );
   }
 
-  const suggestion =
-    extendedSearch.status === "done" &&
-    extendedSearch.response.type === "external_suggestion"
-      ? extendedSearch.response.suggestion
-      : null;
-
-  if (suggestion) {
-    const label = formatExternalSuggestionDisplay(suggestion, trimmed);
-    const brand =
-      suggestion.brand && suggestion.brand !== "—" ? suggestion.brand : null;
-
-    return (
-      <EmptyShell
-        testId="external-api-suggestion"
-        title={`Vous cherchez « ${label} »${brand ? ` de ${brand}` : ""} ?`}
-        body={
-          suggestedBrandInCatalog
-            ? `La gamme ${suggestedBrandInCatalog} est déjà au catalogue. Cette référence peut être demandée directement.`
-            : "Cette référence n'est pas encore en ligne. Nous pouvons confirmer une disponibilité ou vous proposer une alternative."
-        }
-      />
-    );
-  }
-
-  if (externalHint) {
-    return (
-      <EmptyShell
-        title={`Vous cherchez « ${externalHint.displayName} » ?`}
-        body={externalHint.caption ?? EXTERNAL_SEARCH_FALLBACK_MESSAGE}
-        footnote={
-          externalHint.footnote === "none"
-            ? null
-            : externalHint.footnote === "legacy-offline"
-              ? "Cette référence n'a pas de fiche au catalogue. Écrivez-nous : nous confirmons les commandes et les alternatives possibles."
-              : "Pour un conseil ou une commande précise, passez par la page Contact : nous reprenons l'échange avec vous."
-        }
-      />
-    );
-  }
-
   return (
     <EmptyShell
-      title={`Aucun résultat pour « ${trimmed} »`}
+      title={`Vous recherchez « ${trimmed} » ?`}
       body={
         extendedSearch.status === "error"
-          ? "Le service de recherche élargie est momentanément indisponible. Vous pouvez reformuler, ou nous écrire directement."
-          : EXTERNAL_SEARCH_FALLBACK_MESSAGE
+          ? "La recherche élargie est momentanément indisponible. Vous pouvez reformuler, ou nous écrire directement."
+          : FALLBACK_MESSAGE
       }
+      contactHref={contactHref({ parfum: trimmed })}
     />
   );
 };
 
+/** Rien de reconnu : on invite quand même à écrire, sans laisser le client face à un mur. */
+const FALLBACK_MESSAGE =
+  "Ce parfum n'a peut-être pas encore été ajouté au catalogue. Écrivez-nous : nous vous dirons s'il est disponible, ou nous vous proposerons une alternative.";
+
 interface EmptyShellProps {
   title: string;
   body: string;
-  footnote?: string | null;
   withContactLink?: boolean;
   /** Contact pré-rempli (`?parfum=…&marque=…`), sinon la page Contact nue. */
   contactHref?: string;
@@ -180,7 +138,6 @@ function contactHref(params: { parfum?: string; marque?: string }): string {
 const EmptyShell: FC<EmptyShellProps> = ({
   title,
   body,
-  footnote,
   withContactLink = true,
   contactHref = "/contact",
   testId,
@@ -191,7 +148,6 @@ const EmptyShell: FC<EmptyShellProps> = ({
   >
     <p className="nurea-name text-nurea-text">{title}</p>
     <p className="nurea-body mt-4">{body}</p>
-    {footnote ? <p className="nurea-caption mt-4">{footnote}</p> : null}
     {withContactLink ? (
       <Link href={contactHref} className={buttonClass("outline", "mt-8")}>
         Nous écrire

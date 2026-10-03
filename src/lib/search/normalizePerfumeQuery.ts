@@ -1,13 +1,3 @@
-import { normalizeForFuzzy } from "../data";
-
-/**
- * Normalise une requête utilisateur : trim, espaces, accents (via normalizeForFuzzy du catalogue).
- * À utiliser pour clés de cache, comparaisons serveur, validation.
- */
-export function normalizePerfumeQuery(raw: string): string {
-  return normalizeForFuzzy(raw.trim().replace(/\s+/g, " "));
-}
-
 const MAX_QUERY_LEN = 120;
 
 export type ValidateQueryResult =

@@ -110,7 +110,9 @@ une feuille de style l'embarquerait dans les deux registres. Il lit l'en-tête
   Légal, 404) : `BottleMosaic`, `Chapters`, `OrderSteps`, `BrandIndex`, `Seal`,
   `FaqAccordion`, `Monogram`. Voir `DESIGN.md` § Pages éditoriales.
 - `src/lib/mentions.ts` — les mentions dues au client (flacons, photographies), une source.
-- `src/lib/search/` — Logique de recherche, API externe, cache.
+- `src/lib/search/` — Logique de recherche, tout en interne (aucune API tierce). `reference/` :
+  le référentiel des marques et parfums du monde (`data/*.json`), qui reconnaît une saisie hors
+  catalogue et invite à écrire. Une marque = une ligne commerciale (Emporio Armani ≠ Giorgio Armani).
 - `src/lib/catalog/` — Fetching database, transformation, `perfumePresentation.ts`.
 - `src/actions/` — Server Actions de la vitrine (Contact).
 

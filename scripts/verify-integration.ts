@@ -1,7 +1,6 @@
 /**
- * Vérification intégration : DB, recherche locale, Fraganty, cache.
+ * Vérification intégration : DB, recherche locale, référentiel interne.
  * Lance : npx tsx scripts/verify-integration.ts
- * Active les compteurs HTTP si VERIFICATION_SCRIPT=1 (défini automatiquement).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -123,95 +122,16 @@ async function main(): Promise<void> {
     record("Catalogue: chargement", false, String(e));
   }
 
-  /* ---------- 3–4. Orchestrateur + Fraganty + cache ---------- */
-  const {
-    resetPerfumeSearchInstrumentation,
-    getPerfumeSearchInstrumentation,
-  } = await import("../src/lib/search/perfumeSearchInstrumentation");
+  /* ---------- 3. Référentiel interne (hors catalogue) ---------- */
   const { searchPerfumeWithFallback } = await import("../src/lib/search/searchPerfumeWithFallback");
-
-  const hasFraganty = !!(process.env.FRAGANTY_API_KEY ?? "").trim();
-
-  if (!hasFraganty) {
-    record("Fraganty: clé présente", false, "FRAGANTY_API_KEY vide — tests externes ignorés");
-  } else {
-    resetPerfumeSearchInstrumentation();
-    const rLocal = await searchPerfumeWithFallback("Eros");
-    const inst = getPerfumeSearchInstrumentation();
-    record(
-      "Fallback: pas d’appel si résultat local (Eros)",
-      rLocal.type === "local_results" && inst.fragantyHttpFetches === 0,
-      `type=${rLocal.type} fragantyFetches=${inst.fragantyHttpFetches}`
-    );
-
-    resetPerfumeSearchInstrumentation();
-    const rShort = await searchPerfumeWithFallback("zz");
-    const inst2 = getPerfumeSearchInstrumentation();
-    record(
-      "Fallback: requête courte (2 car.) sans HTTP externe",
-      rShort.type === "no_results" && inst2.fragantyHttpFetches === 0,
-      `type=${rShort.type} fragantyFetches=${inst2.fragantyHttpFetches}`
-    );
-
-    const qNeg = `nurea-verify-neg-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    resetPerfumeSearchInstrumentation();
-    const n1 = await searchPerfumeWithFallback(qNeg);
-    const f1 = getPerfumeSearchInstrumentation().fragantyHttpFetches;
-    resetPerfumeSearchInstrumentation();
-    const n2 = await searchPerfumeWithFallback(qNeg);
-    const f2 = getPerfumeSearchInstrumentation().fragantyHttpFetches;
-    record(
-      "Cache négatif: 2e appel sans nouveau fetch Fraganty",
-      n1.type === "no_results" && n2.type === "no_results" && f1 >= 1 && f2 === 0,
-      `1er: type=${n1.type} fetches=${f1} ; 2e: type=${n2.type} fetches=${f2}`
-    );
-
-    const qHit = `nurea-cache-pos-${Date.now()}`;
-    const { setExternalSuggestionCache } = await import(
-      "../src/lib/catalog/externalSearchCache"
-    );
-    await setExternalSuggestionCache(
-      qHit,
-      "Tout voir",
-      {
-        name: "Parfum Cache Test",
-        brand: "Marque Test",
-        externalId: "nurea-verify-cache-slug",
-        source: "fraganty",
-        raw: { id: "nurea-verify-cache-slug", name: "Parfum Cache Test", brand: "Marque Test" },
-      },
-      "found"
-    );
-    resetPerfumeSearchInstrumentation();
-    const h2 = await searchPerfumeWithFallback(qHit);
-    const hf2 = getPerfumeSearchInstrumentation().fragantyHttpFetches;
-    const hitOk =
-      h2.type === "external_suggestion" && hf2 === 0 && h2.suggestion?.externalId === "nurea-verify-cache-slug";
-    record(
-      "Cache positif: lecture sans nouveau fetch Fraganty",
-      hitOk,
-      `type=${h2.type} fetches=${hf2}`
-    );
-
-    const savedKey = process.env.FRAGANTY_API_KEY;
-    process.env.FRAGANTY_API_KEY = "fg_invalid_key_for_error_cache_test";
-    const qErr = `nurea-verify-err-${Date.now()}`;
-    resetPerfumeSearchInstrumentation();
-    const e1 = await searchPerfumeWithFallback(qErr);
-    const ef1 = getPerfumeSearchInstrumentation().fragantyHttpFetches;
-    resetPerfumeSearchInstrumentation();
-    const e2 = await searchPerfumeWithFallback(qErr);
-    const ef2 = getPerfumeSearchInstrumentation().fragantyHttpFetches;
-    process.env.FRAGANTY_API_KEY = savedKey;
-    record(
-      "Cache erreur: 2e appel sans nouveau fetch (clé invalide)",
-      e1.type === "no_results" &&
-        e2.type === "no_results" &&
-        ef1 >= 1 &&
-        ef2 === 0,
-      `1er fetches=${ef1} 2e fetches=${ef2}`
-    );
-  }
+  const ref = await searchPerfumeWithFallback("initio oud for greatness");
+  record(
+    "Référentiel: parfum absent du catalogue reconnu",
+    ref.type === "reference_match" || ref.type === "unlisted_match" || ref.type === "local_results",
+    ref.type,
+  );
+  const rien = await searchPerfumeWithFallback(`nurea-verify-${Date.now()}`);
+  record("Référentiel: saisie inconnue sans réponse inventée", rien.type === "no_results", rien.type);
 
   /* ---------- Contrat JSON (échantillon) ---------- */
   const { searchPerfumeWithFallback: sp } = await import("../src/lib/search/searchPerfumeWithFallback");

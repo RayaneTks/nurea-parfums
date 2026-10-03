@@ -21,7 +21,6 @@ function parseResponse(payload: unknown): PerfumeSearchResponse | null {
   return type === "local_results" ||
     type === "unlisted_match" ||
     type === "reference_match" ||
-    type === "external_suggestion" ||
     type === "no_results"
     ? (payload as PerfumeSearchResponse)
     : null;

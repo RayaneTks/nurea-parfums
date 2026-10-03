@@ -1,5 +1,191 @@
 [
  {
+  "brand": "Afnan",
+  "aliases": [
+   "afnan",
+   "afnan perfumes"
+  ],
+  "perfumes": [
+   "9 PM",
+   "9 PM Rebel",
+   "9 AM",
+   "9 AM Dive",
+   "Supremacy Not Only Intense",
+   "Supremacy Silver",
+   "Supremacy Incense",
+   "Supremacy Collector's Edition",
+   "Supremacy Noir",
+   "Turathi Blue",
+   "Turathi Brown",
+   "Turathi Electric",
+   "Modest Pour Homme",
+   "Modest Pour Femme",
+   "Rare Carbon",
+   "Rare Reef",
+   "Rare Passion"
+  ]
+ },
+ {
+  "brand": "AG Oud",
+  "aliases": [
+   "agoud"
+  ],
+  "perfumes": []
+ },
+ {
+  "brand": "Ajmal",
+  "aliases": [
+   "ajmal"
+  ],
+  "perfumes": [
+   "Aristocrat",
+   "Wisal",
+   "Wisal Dhahab",
+   "Evoke Silver Edition",
+   "Evoke Gold Edition",
+   "Amber Wood",
+   "Sacrifice for Him",
+   "Sacrifice for Her",
+   "Dahn Al Oudh Al Moattaq"
+  ]
+ },
+ {
+  "brand": "Al Haramain",
+  "aliases": [
+   "al haramain",
+   "haramain",
+   "alharamain"
+  ],
+  "perfumes": [
+   "Amber Oud Gold Edition",
+   "Amber Oud Rouge Edition",
+   "Amber Oud Tobacco Edition",
+   "Amber Oud Dubai Night",
+   "Amber Oud Aqua Dubai",
+   "Amber Oud Exclusif Emerald",
+   "L'Aventure",
+   "L'Aventure Intense",
+   "L'Aventure Femme",
+   "Detour Noir",
+   "Rose Oud"
+  ]
+ },
+ {
+  "brand": "Al Rehab",
+  "aliases": [
+   "al rehab"
+  ],
+  "perfumes": [
+   "Choco Musk",
+   "Soft"
+  ]
+ },
+ {
+  "brand": "Ameenah",
+  "perfumes": []
+ },
+ {
+  "brand": "Arabian Oud",
+  "aliases": [
+   "arabian oud"
+  ],
+  "perfumes": [
+   "Kalemat",
+   "Kalemat Amber"
+  ]
+ },
+ {
+  "brand": "Ard Al Zaafaran",
+  "aliases": [
+   "ard al zaafaran",
+   "ard zaafaran"
+  ],
+  "perfumes": [
+   "Mousuf"
+  ]
+ },
+ {
+  "brand": "Armaf",
+  "aliases": [
+   "armaf"
+  ],
+  "perfumes": [
+   "Club de Nuit Intense Man",
+   "Club de Nuit Intense Woman",
+   "Club de Nuit Iconic",
+   "Club de Nuit Untold",
+   "Club de Nuit Sillage",
+   "Club de Nuit Milestone",
+   "Club de Nuit Urban Elixir",
+   "Club de Nuit Maleka",
+   "Club de Nuit Man",
+   "Club de Nuit Woman",
+   "Tres Nuit",
+   "Odyssey Mandarin Sky",
+   "Odyssey Aoud",
+   "Odyssey Homme",
+   "Odyssey Homme White Edition",
+   "Odyssey Spectra",
+   "Odyssey Candee",
+   "Odyssey Mega",
+   "Odyssey Limoni",
+   "Craze",
+   "Hunter Intense",
+   "Hunter",
+   "Tag-Him",
+   "Tag Her",
+   "Magnificent",
+   "Eternia",
+   "Skye Blue",
+   "Derby Club House",
+   "Vanity Femme Essence",
+   "Vanity"
+  ]
+ },
+ {
+  "brand": "Fragrance World",
+  "aliases": [
+   "fragrance world"
+  ],
+  "perfumes": [
+   "Barakkat Rouge 540",
+   "Barakkat Rouge 540 Extrait"
+  ]
+ },
+ {
+  "brand": "French Avenue",
+  "aliases": [
+   "french avenue"
+  ],
+  "perfumes": [
+   "Liquid Brun",
+   "Vintage Radio"
+  ]
+ },
+ {
+  "brand": "Kajal",
+  "aliases": [
+   "kajal",
+   "kajal perfumes"
+  ],
+  "perfumes": [
+   "Almaz",
+   "Dahab",
+   "Lamar",
+   "Warde"
+  ]
+ },
+ {
+  "brand": "Khadlaj",
+  "aliases": [
+   "khadlaj"
+  ],
+  "perfumes": [
+   "Icon",
+   "Shiyaaka"
+  ]
+ },
+ {
   "brand": "Lattafa",
   "aliases": [
    "lattafa",
@@ -68,146 +254,6 @@
   ]
  },
  {
-  "brand": "Armaf",
-  "aliases": [
-   "armaf"
-  ],
-  "perfumes": [
-   "Club de Nuit Intense Man",
-   "Club de Nuit Intense Woman",
-   "Club de Nuit Iconic",
-   "Club de Nuit Untold",
-   "Club de Nuit Sillage",
-   "Club de Nuit Milestone",
-   "Club de Nuit Urban Elixir",
-   "Club de Nuit Maleka",
-   "Club de Nuit Man",
-   "Club de Nuit Woman",
-   "Tres Nuit",
-   "Odyssey Mandarin Sky",
-   "Odyssey Aoud",
-   "Odyssey Homme",
-   "Odyssey Homme White Edition",
-   "Odyssey Spectra",
-   "Odyssey Candee",
-   "Odyssey Mega",
-   "Odyssey Limoni",
-   "Craze",
-   "Hunter Intense",
-   "Hunter",
-   "Tag-Him",
-   "Tag Her",
-   "Magnificent",
-   "Eternia",
-   "Skye Blue",
-   "Derby Club House",
-   "Vanity Femme Essence",
-   "Vanity"
-  ]
- },
- {
-  "brand": "Rasasi",
-  "aliases": [
-   "rasasi",
-   "al rasasi"
-  ],
-  "perfumes": [
-   "Hawas",
-   "Hawas for Her",
-   "Hawas Ice",
-   "Hawas Black",
-   "Hawas Elixir",
-   "Shuhrah",
-   "Fattan",
-   "La Yuqawam",
-   "La Yuqawam Ambergris Showers",
-   "Attar Al Kaaba",
-   "Oud Al Abiyad",
-   "Dhan Al Oudh",
-   "Dhan Al Oudh Al Safwa",
-   "Daarej",
-   "Egra",
-   "Faqat Lil Rijal",
-   "Junoon",
-   "Junoon Leather",
-   "Blue Lady",
-   "Rumz Al Rasasi 9325 Pour Elle",
-   "Rumz Al Rasasi 9325 Pour Lui"
-  ]
- },
- {
-  "brand": "Al Haramain",
-  "aliases": [
-   "al haramain",
-   "haramain",
-   "alharamain"
-  ],
-  "perfumes": [
-   "Amber Oud Gold Edition",
-   "Amber Oud Rouge Edition",
-   "Amber Oud Tobacco Edition",
-   "Amber Oud Dubai Night",
-   "Amber Oud Aqua Dubai",
-   "Amber Oud Exclusif Emerald",
-   "L'Aventure",
-   "L'Aventure Intense",
-   "L'Aventure Femme",
-   "Detour Noir",
-   "Rose Oud"
-  ]
- },
- {
-  "brand": "Swiss Arabian",
-  "aliases": [
-   "swiss arabian",
-   "swiss arabian perfumes"
-  ],
-  "perfumes": [
-   "Layali",
-   "Shaghaf Oud",
-   "Shaghaf Oud Aswad",
-   "Shaghaf Oud Abyad",
-   "Casablanca",
-   "Rasheeqa"
-  ]
- },
- {
-  "brand": "Ard Al Zaafaran",
-  "aliases": [
-   "ard al zaafaran",
-   "ard zaafaran"
-  ],
-  "perfumes": [
-   "Mousuf"
-  ]
- },
- {
-  "brand": "Afnan",
-  "aliases": [
-   "afnan",
-   "afnan perfumes"
-  ],
-  "perfumes": [
-   "9 PM",
-   "9 PM Rebel",
-   "9 AM",
-   "9 AM Dive",
-   "Supremacy Not Only Intense",
-   "Supremacy Silver",
-   "Supremacy Incense",
-   "Supremacy Collector's Edition",
-   "Supremacy Noir",
-   "Turathi Blue",
-   "Turathi Brown",
-   "Turathi Electric",
-   "Modest Pour Homme",
-   "Modest Pour Femme",
-   "Rare Carbon",
-   "Rare Reef",
-   "Rare Passion"
-  ]
- },
- {
   "brand": "Maison Alhambra",
   "aliases": [
    "maison alhambra",
@@ -225,23 +271,15 @@
   ]
  },
  {
-  "brand": "Fragrance World",
+  "brand": "Orientica",
   "aliases": [
-   "fragrance world"
+   "orientica"
   ],
   "perfumes": [
-   "Barakkat Rouge 540",
-   "Barakkat Rouge 540 Extrait"
-  ]
- },
- {
-  "brand": "French Avenue",
-  "aliases": [
-   "french avenue"
-  ],
-  "perfumes": [
-   "Liquid Brun",
-   "Vintage Radio"
+   "Amber Rouge",
+   "Oud Saffron",
+   "Velvet Gold",
+   "Royal Amber"
   ]
  },
  {
@@ -279,63 +317,41 @@
   ]
  },
  {
-  "brand": "Arabian Oud",
+  "brand": "Rasasi",
   "aliases": [
-   "arabian oud"
+   "rasasi",
+   "al rasasi"
   ],
   "perfumes": [
-   "Kalemat",
-   "Kalemat Amber"
+   "Hawas",
+   "Hawas for Her",
+   "Hawas Ice",
+   "Hawas Black",
+   "Hawas Elixir",
+   "Shuhrah",
+   "Fattan",
+   "La Yuqawam",
+   "La Yuqawam Ambergris Showers",
+   "Attar Al Kaaba",
+   "Oud Al Abiyad",
+   "Dhan Al Oudh",
+   "Dhan Al Oudh Al Safwa",
+   "Daarej",
+   "Egra",
+   "Faqat Lil Rijal",
+   "Junoon",
+   "Junoon Leather",
+   "Blue Lady",
+   "Rumz Al Rasasi 9325 Pour Elle",
+   "Rumz Al Rasasi 9325 Pour Lui"
   ]
  },
  {
-  "brand": "Ajmal",
+  "brand": "Rasayel Oud",
   "aliases": [
-   "ajmal"
+   "rasayel"
   ],
-  "perfumes": [
-   "Aristocrat",
-   "Wisal",
-   "Wisal Dhahab",
-   "Evoke Silver Edition",
-   "Evoke Gold Edition",
-   "Amber Wood",
-   "Sacrifice for Him",
-   "Sacrifice for Her",
-   "Dahn Al Oudh Al Moattaq"
-  ]
- },
- {
-  "brand": "Al Rehab",
-  "aliases": [
-   "al rehab"
-  ],
-  "perfumes": [
-   "Choco Musk",
-   "Soft"
-  ]
- },
- {
-  "brand": "Khadlaj",
-  "aliases": [
-   "khadlaj"
-  ],
-  "perfumes": [
-   "Icon",
-   "Shiyaaka"
-  ]
- },
- {
-  "brand": "Orientica",
-  "aliases": [
-   "orientica"
-  ],
-  "perfumes": [
-   "Amber Rouge",
-   "Oud Saffron",
-   "Velvet Gold",
-   "Royal Amber"
-  ]
+  "perfumes": []
  },
  {
   "brand": "Rave",
@@ -348,16 +364,18 @@
   ]
  },
  {
-  "brand": "Kajal",
+  "brand": "Swiss Arabian",
   "aliases": [
-   "kajal",
-   "kajal perfumes"
+   "swiss arabian",
+   "swiss arabian perfumes"
   ],
   "perfumes": [
-   "Almaz",
-   "Dahab",
-   "Lamar",
-   "Warde"
+   "Layali",
+   "Shaghaf Oud",
+   "Shaghaf Oud Aswad",
+   "Shaghaf Oud Abyad",
+   "Casablanca",
+   "Rasheeqa"
   ]
  }
 ]

@@ -1,8 +1,3 @@
-import {
-  EXTERNAL_PERFUME_HINTS,
-} from "./search/externalSearchHints";
-import type { ExternalPerfumeHint } from "./search/externalSearchTypes";
-
 export const CONTACT = {
   /**
    * WhatsApp n'est pas encore ouvert — et `null` le dit mieux qu'un faux.
@@ -134,90 +129,6 @@ export function suggestSimilarPerfumes(
 
 // --- Helpers pour l'affichage ---
 
-function tokenMatchesExternalWord(token: string, word: string): boolean {
-  if (word.length < 3) return token === word;
-  return word.includes(token) || token.includes(word);
-}
-
-function maxQueryLen(h: ExternalPerfumeHint): number {
-  return Math.max(...h.queries.map((q) => q.length));
-}
-
-function scoreExternalQueryPair(nq: string, hq: string): number {
-  if (nq === hq) return 100;
-  if (nq.includes(hq) && hq.length >= 3) return 96;
-  if (hq.includes(nq) && nq.length >= 3) return 93;
-  const d = levenshtein(nq, hq);
-  const L = Math.max(nq.length, hq.length);
-  if (L >= 4 && d <= 2 && d / L <= 0.28) return 88;
-  if (L >= 6 && d <= 3 && d / L <= 0.22) return 82;
-
-  const nt = nq.split(/\s+/).filter((t) => t.length >= 2);
-  const ht = hq.split(/\s+/).filter((t) => t.length >= 2);
-  if (ht.length === 0) return 0;
-
-  let hqHits = 0;
-  for (const h of ht) {
-    if (nt.some((t) => tokenMatchesExternalWord(t, h))) hqHits++;
-  }
-  const coverHq = hqHits / ht.length;
-  if (coverHq >= 1) return 86;
-  if (coverHq >= 0.66 && nt.length >= 2) return 74;
-
-  if (nt.length === 1 && ht.length === 1) {
-    const t = nt[0]!;
-    const h = ht[0]!;
-    if (tokenMatchesExternalWord(t, h)) return 84;
-  }
-
-  return 0;
-}
-
-const EXTERNAL_HINT_MIN_SCORE = 72;
-
-export function findExternalPerfumeHint(query: string): ExternalPerfumeHint | null {
-  const raw = query.trim();
-  if (raw.length < 2) return null;
-  const nq = normalizeForFuzzy(raw);
-  if (nq.length < 2) return null;
-
-  const hintsSorted = [...EXTERNAL_PERFUME_HINTS].sort(
-    (a, b) => maxQueryLen(b) - maxQueryLen(a)
-  );
-
-  let best: { hint: ExternalPerfumeHint; score: number } | null = null;
-
-  for (const hint of hintsSorted) {
-    for (const hqRaw of hint.queries) {
-      const hq = normalizeForFuzzy(hqRaw);
-      const score = scoreExternalQueryPair(nq, hq);
-      if (score > (best?.score ?? 0)) {
-        best = { hint, score };
-      }
-    }
-  }
-
-  if (!best || best.score < EXTERNAL_HINT_MIN_SCORE) return null;
-  return best.hint;
-}
-
-export function getPerfumesByIds(
-  ids: number[],
-  perfumes: Perfume[]
-): Perfume[] {
-  const byId = new Map(perfumes.map((p) => [p.id, p]));
-  const out: Perfume[] = [];
-  const seen = new Set<number>();
-  for (const id of ids) {
-    const p = byId.get(id);
-    if (p && !seen.has(p.id)) {
-      seen.add(p.id);
-      out.push(p);
-    }
-  }
-  return out;
-}
-
 export function searchRelevanceScore(perfume: Perfume, query: string): number {
   const q = normalizeForFuzzy(query.trim());
   if (!q) return 0;
@@ -245,9 +156,3 @@ export function compareSearchRelevance(
 ): number {
   return searchRelevanceScore(b, query) - searchRelevanceScore(a, query);
 }
-
-export type { ExternalPerfumeHint } from "./search/externalSearchTypes";
-export {
-  EXTERNAL_PERFUME_HINTS,
-  EXTERNAL_SEARCH_FALLBACK_MESSAGE,
-} from "./search/externalSearchHints";

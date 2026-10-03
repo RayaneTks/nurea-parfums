@@ -2,30 +2,21 @@ import type { Category, Perfume } from "../data";
 import type { PerfumeSearchResponse } from "./perfumeSearchTypes";
 import { getCatalogPerfumes } from "../catalog/getCatalogPerfumes";
 import { getUnlistedPerfumes, type UnlistedPerfume } from "../catalogue-service";
-import {
-  getExternalSuggestionFromCache,
-  setExternalSuggestionCache,
-} from "../catalog/externalSearchCache";
-import { searchExternalPerfumeApi } from "./searchExternalPerfumeApi";
-import { searchFragantyApi } from "./searchFragantyApi";
 import { cleNom } from "../nommage";
 import { getReferenceCatalogue } from "./reference/referenceCatalogue";
 import { searchReference } from "./reference/searchReference";
 import { searchLocalCatalog } from "./searchLocalCatalog";
 
 /**
- * Orchestration : catalogue (DB ou mock) → parfums au catalogue sans carte publique → référentiel mondial → cache externe
- * (DB ou mémoire) → API externe.
+ * Orchestration, tout en interne : catalogue en ligne → parfums au catalogue sans carte publique →
+ * référentiel des marques et parfums du monde (`reference/`). Aucun service tiers : la réponse ne
+ * dépend ni d'une clé, ni d'un quota, ni d'une panne extérieure.
  */
 export async function searchPerfumeWithFallback(
   query: string,
-  options?: {
-    category?: Category;
-    signal?: AbortSignal;
-  }
+  options?: { category?: Category },
 ): Promise<PerfumeSearchResponse> {
   const cat = options?.category ?? "Tout voir";
-  const categoryKey = cat;
 
   const catalog = await getCatalogPerfumes();
   const local = searchLocalCatalog(catalog, query, { category: cat });
@@ -44,41 +35,12 @@ export async function searchPerfumeWithFallback(
     return { type: "unlisted_match", query: q, match: unlisted };
   }
 
-  // Référentiel des marques et parfums du monde : hors ligne, déterministe, sans coût d'API.
+  // Pas chez nous : on reconnaît peut-être ce que le client cherche ; on l'invite à écrire.
   const reference = searchReference(getReferenceCatalogue(), q);
   if (reference) {
     return { type: "reference_match", query: q, match: reference };
   }
 
-  const cached = await getExternalSuggestionFromCache(q, categoryKey);
-  if (cached !== undefined) {
-    if (cached === null) return { type: "no_results", query: q };
-    return { type: "external_suggestion", query: q, suggestion: cached };
-  }
-
-  const api = (process.env.FRAGANTY_API_KEY ?? "").trim()
-    ? await searchFragantyApi(q, options?.signal)
-    : await searchExternalPerfumeApi(q, options?.signal);
-
-  if (api.outcome === "disabled") {
-    return { type: "no_results", query: q };
-  }
-
-  if (api.outcome === "error") {
-    await setExternalSuggestionCache(q, categoryKey, null, "error");
-    return { type: "no_results", query: q };
-  }
-
-  if (api.outcome === "hit") {
-    await setExternalSuggestionCache(q, categoryKey, api.suggestion, "found");
-    return { type: "external_suggestion", query: q, suggestion: api.suggestion };
-  }
-
-  if (api.outcome === "too_short") {
-    return { type: "no_results", query: q };
-  }
-
-  await setExternalSuggestionCache(q, categoryKey, null, "not_found");
   return { type: "no_results", query: q };
 }
 

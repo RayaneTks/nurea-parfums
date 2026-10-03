@@ -94,7 +94,7 @@ le rail ; il ne voit pas qu'il est laid, illisible ou de travers. → **contrôl
 | NR-9.7 | Fiche parfum en dialogue, Snapchat, contact pré-rempli, jamais de prix | Sur `/`, toucher une fiche : dialogue ; bouton **Snapchat** en aplat ; **WhatsApp absent** si le parfum n'en a pas ; « Nous écrire » ouvre le formulaire avec `?parfum=&marque=` remplis ; **aucun prix** nulle part. |
 | NR-9.6a | ~1080 « hints » de marques virales absentes du catalogue | Sur `/`, chercher **« lattafa »** : une caption de conciergerie et des alternatives du catalogue. |
 | NR-9.6b | État vide « Pistes au catalogue » | Sur `/`, chercher **« zzzzz »** : l'état vide propose jusqu'à **6** pistes, jamais zéro ligne muette. |
-| NR-9.5b | Recherche élargie serveur (API externe) | Sur `/`, chercher un parfum réel absent du catalogue (ex. **« initio oud for greatness »**) : **une** suggestion externe au plus, après ~350 ms. Dépend d'une clé d'API : à faire en préproduction, pas en local. |
+| NR-9.5b | Recherche élargie serveur (référentiel interne) | Sur `/`, chercher un parfum réel absent du catalogue (ex. **« initio oud for greatness »**) : « Vous recherchez « … » de … ? », lien Contact pré-rempli, après ~350 ms. Sans API ni clé : faisable en local. |
 | NR-7.20 | Metadata de la gestion (barre d'état lisible, zoom autorisé) | App installée : l'**heure** en haut est **noire et lisible**. Écarter deux doigts sur un écran : le zoom **fonctionne** (WCAG). |
 
 **(c) Le verdict est un jugement de gérant.** Le texte est-il juste ? le chiffre
@@ -312,7 +312,7 @@ et après. C'est la contrainte la plus dure du chantier : la vitrine lit les mê
 | NR-9.3 | Cartes « Gammes complètes » synthétisées depuis les marques `COMPLETE` | db `catalogue-vitrine` (comptage) | Répétitions, B10 | [ ] |
 | NR-9.4 | Mise en avant éditoriale (2 bandeaux alternés) | **à la main** (§1b) : deux bandeaux sur `/` | B10 | [ ] |
 | NR-9.5a | Recherche floue locale (accents, Levenshtein, tokens, pertinence) | e2e `catalog-filters` | B10 | [ ] |
-| NR-9.5b | Recherche élargie serveur (cache, Fraganty, suggestion unique) | **à la main** (§1b) : une requête absente du catalogue | J16, B10 | [ ] |
+| NR-9.5b | Recherche élargie serveur (référentiel interne, réponse unique) | **à la main** (§1b) : une requête absente du catalogue | J16, B10 | [ ] |
 | NR-9.6a | ~1080 « hints » de marques virales | **à la main** (§1b) : chercher « lattafa » | J16 | [ ] |
 | NR-9.6b | État vide « Pistes au catalogue », plafonné à 6 | **à la main** (§1b) : chercher « zzzzz » | J16 | [ ] |
 | NR-9.7 | Fiche en dialogue, Snapchat, WhatsApp conditionnel, contact pré-rempli, **jamais de prix** | **à la main** (§1b) | J16, B10 | [ ] |
@@ -437,7 +437,6 @@ qui suit ne peut être fait — et il n'existe pas de contournement local.
 | **Répétition générale de la reprise** (07 §2.4) | La reprise se juge sur les **vraies** données : les cas tordus sont ceux que personne n'a imaginés. Le rapport chiffré (Trésorerie, Encaissé, À encaisser, Marge nette) n'a de sens que sur la copie réelle. |
 | **Relecture n°2 du rapport de reprise** avec le gérant (07 §2.6) | Il est le seul à savoir si « 1 097,39 € » est le bon nombre. |
 | **NR-9.10 / NR-5.15** — invalidation du cache public | Le cache de Next ne se comporte comme en production que **déployé**. En local, tout paraît toujours frais. |
-| **NR-9.5b** — recherche élargie de la vitrine | Elle appelle une API externe sous clé : jamais en local. |
 | **Réglage G9 du bucket Supabase** | Les formats d'origine (HEIC, PNG) doivent être autorisés **avant** la bascule, sans quoi le dépôt d'un visuel depuis l'iPhone échoue. Réglage à faire dans la console Supabase du projet, pas dans le code. |
 | **Budgets de perception** (J16) | Une mesure de latence sur `localhost` ne mesure rien. À refaire **à J+7** après la bascule. |
 | **PWA installée** | `start_url`, `scope`, écrans de lancement et service worker ne s'observent que servis en HTTPS sur un vrai domaine. |

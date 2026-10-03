@@ -44,7 +44,6 @@ const serverEnv: Record<string, string> = {
   SUPABASE_SERVICE_ROLE_KEY: "e2e-sans-cle",
   SUPABASE_STORAGE_BUCKET: "catalog",
   ADMIN_DASHBOARD_SECRET: "e2e-sans-secret",
-  FRAGANTY_API_KEY: "e2e-sans-cle",
   RESEND_API_KEY: "e2e-sans-cle",
   NUREA_GESTION_MAINTENANCE: "0",
   NUREA_ENV: process.env.NUREA_ENV ?? "",
