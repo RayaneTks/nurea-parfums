@@ -86,7 +86,7 @@ export const createBrandAction = defineAction("catalogue.createBrand", createBra
   return created ? summary : withNotice(summary, `${brand.name} existe déjà au catalogue : elle a été sélectionnée.`);
 });
 
-/** E17 « Enregistrer » : slug inchangé ; masquer ou passer en gamme complète masque les parfums (T14, réserve). */
+/** E17 « Enregistrer » : slug inchangé ; masquer une marque masque ses parfums (T14, réserve). */
 export const updateBrandAction = defineAction("catalogue.updateBrand", updateBrandInput, (input) =>
   inTransaction((tx) => catalogueWriter.updateBrand(tx, input)),
 );

@@ -11,10 +11,9 @@ import { ListRow } from "@/ui/primitives/ListRow";
 import { CatalogueThumb } from "./CatalogueThumb";
 import { useBrandVisibility } from "./useBrandVisibility";
 
-/** « Sélection · 14 parfums » ou « Gamme complète » (06 E15 zone 4). */
-export function brandCaption(brand: Pick<AdminBrandRow, "catalogMode" | "perfumeCount">): string {
-  if (brand.catalogMode === "COMPLETE") return "Gamme complète";
-  return `Sélection · ${brand.perfumeCount} parfum${brand.perfumeCount > 1 ? "s" : ""}`;
+/** « 14 références » sous le nom de la marque. */
+export function brandCaption(brand: Pick<AdminBrandRow, "perfumeCount">): string {
+  return `${brand.perfumeCount} référence${brand.perfumeCount > 1 ? "s" : ""}`;
 }
 
 /**

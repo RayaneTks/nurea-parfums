@@ -8,9 +8,9 @@ import { brandPath } from "@/lib/seo/paths";
  *
  * « Une sélection des plus grandes marques » se disait en une phrase ; ici elle
  * se montre. Chaque nom mène à la page de la marque (`/parfums/<slug>`) — un lien
- * interne de plus vers elle, et une page qui se partage. Une marque sans page (gamme
- * complète sans visuel, flacons au visuel provisoire : voir `getSeoCatalogue`) garde
- * l'ancien chemin, le catalogue filtré (`?maison=`) : jamais de lien vers un 404.
+ * interne de plus vers elle, et une page qui se partage. Les marques visibles ont une
+ * page, même si elles n'ont pas encore de flacons publiés : leur gamme reste consultable
+ * sur demande.
  *
  * Une typographie plutôt que des logos : les marques n'ont pas toutes un logo
  * en base, et un mur à trous ferait moins sérieux qu'une liste nette. Les noms

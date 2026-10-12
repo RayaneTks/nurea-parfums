@@ -33,9 +33,11 @@ function groupByInitial(brands: SeoBrand[]): [string, SeoBrand[]][] {
 }
 
 function countLabel(brand: SeoBrand): string {
-  if (brand.complete) return "Gamme complète";
   const n = brand.perfumes.length;
-  return `${n} parfum${n > 1 ? "s" : ""}`;
+  if (n === 0 && brand.visual) return "Gamme complète";
+  if (n === 0) return "Références sur demande";
+  const perfumes = `${n} parfum${n > 1 ? "s" : ""}`;
+  return brand.visual ? `${perfumes} · gamme complète` : perfumes;
 }
 
 /**

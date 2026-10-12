@@ -33,9 +33,9 @@ enum PublicationStatus {
 
 /// Mode d'une marque sur la vitrine.
 enum BrandCatalogMode {
-  /// Sélection : seuls ses parfums publiés apparaissent.
+  /// Mode conservé pour compatibilité avec les données historiques. Les deux visuels coexistent.
   CURATED
-  /// Gamme complète : une carte unique synthétisée depuis le logo de la marque.
+  /// Ancien mode exclusif, converti en CURATED par migration.
   COMPLETE
 }
 
@@ -45,11 +45,10 @@ model Brand {
   /// Valeur publique du filtre vitrine `?maison=`. Fixée à la création, JAMAIS régénérée au renommage.
   slug        String            @unique
   catalogMode BrandCatalogMode  @default(CURATED)
-  /// CHECK brand_complete_logo_ck : une marque COMPLETE ne peut être PUBLISHED sans logo.
   status      PublicationStatus @default(PUBLISHED)
-  /// Logo principal (thème sombre, WebP, proportions d'origine).
+  /// Visuel de gamme principal (thème sombre, WebP, proportions d'origine).
   image       String?
-  /// Variante du logo pour le thème clair (optionnelle).
+  /// Variante claire du visuel de gamme (optionnelle).
   imageLight  String?
   createdAt   DateTime          @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime          @updatedAt @db.Timestamptz(3)

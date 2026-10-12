@@ -5,11 +5,9 @@ import { useUrlState } from "@/app-shell/hooks/useUrlState";
 import { readEnum, type UrlPatch } from "@/app-shell/hooks/url-patch";
 import {
   CATALOGUE_TABS,
-  RANGE_FILTERS,
   STOCK_FILTERS,
   VISIBILITY_FILTERS,
   type CatalogueTab,
-  type RangeFilter,
   type StockFilter,
   type VisibilityFilter,
 } from "./catalogue-model";
@@ -28,7 +26,6 @@ export function useCatalogueUrl() {
   const query = state.get("q") ?? "";
   const stock = state.get("stock") === null ? null : readEnum<StockFilter | "">(state.get("stock"), STOCK_FILTERS, "") || null;
   const visibility = readEnum<VisibilityFilter | "">(state.get("visibilite"), VISIBILITY_FILTERS, "") || null;
-  const complete = readEnum<RangeFilter | "">(state.get("gamme"), RANGE_FILTERS, "") === "complete";
   const { hrefWith } = state;
 
   const write = useCallback(
@@ -39,5 +36,5 @@ export function useCatalogueUrl() {
     [hrefWith],
   );
 
-  return { tab, query, stock, visibility, complete, write };
+  return { tab, query, stock, visibility, write };
 }
