@@ -278,7 +278,9 @@ async function loadUnlistedPerfumesFromDb(): Promise<UnlistedPerfume[]> {
   }
 }
 
-const getUnlistedPerfumesCached = unstable_cache(loadUnlistedPerfumesFromDb, ["unlisted-perfumes-v2"], {
+// v3 : fiches de la liste du fournisseur (12/10/2026) ajoutées en base hors de la gestion, masquées et sans
+// visuel — la recherche doit les reconnaître sans attendre une mutation de la gestion qui purge le tag.
+const getUnlistedPerfumesCached = unstable_cache(loadUnlistedPerfumesFromDb, ["unlisted-perfumes-v3"], {
   tags: [PUBLIC_CATALOGUE_CACHE_TAG],
 });
 
