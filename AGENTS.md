@@ -12,6 +12,7 @@ Ce fichier est la racine de la hiérarchie `AGENTS.md` utilisée par les skills 
 - `DESIGN.md` / `PRODUCT.md` — vitrine ; `docs/admin/` — gestion.
 - `.impeccable.md` — résumé de la charte vitrine pour les skills de design.
 - `graphify-out/` (hors git) — carte du code à interroger avant d'explorer (voir `CLAUDE.md`).
+- `.agents/skills/` — skills versionnés du dépôt : Ponytail, Caveman, Graphify et Addy Osmani.
 
 ## Subdirectories
 - `docs/` — documentation de référence versionnée.
@@ -22,6 +23,8 @@ Ce fichier est la racine de la hiérarchie `AGENTS.md` utilisée par les skills 
 
 ## For Agents
 - Respecter les sections stables (Purpose / Key Files / Subdirectories / For Agents / Testing Requirements).
+- Charger `.agents/skills/ponytail/SKILL.md` pour le travail code, `.agents/skills/caveman/SKILL.md` pour le style bref en français, et `.agents/skills/graphify/SKILL.md` pour toute question de codebase. Utiliser les skills Addy Osmani (`.agents/skills/`) quand leur domaine correspond.
+- Pour explorer le dépôt, interroger d'abord `graphify-out/graph.json` avec `graphify query`; garder le chemin local documenté dans `CLAUDE.md`. Ne pas lancer une installation ou reconstruction Graphify qui remplace les consignes, met à jour la carte coûteusement ou touche à la base sans besoin explicite.
 - Ne pas supprimer les blocs `<!-- MANUAL: ... -->` s'ils existent.
 - Suivre une boucle stricte: comprendre -> implémenter -> vérifier -> documenter -> corriger.
 - Pour toute évolution métier/admin, mettre à jour la mémoire projet (`CLAUDE.md`, `DEVELOPER.md`) dans le même lot. Une documentation qui promet ce que le code ne fait pas est un bug.
