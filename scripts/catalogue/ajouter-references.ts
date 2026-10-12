@@ -25,6 +25,8 @@
  *   npm run catalogue:fournisseur -- --confirm-host <hôte>                       (essai à blanc)
  *   npm run catalogue:fournisseur -- --confirm-host <hôte> --apply --attendu 233
  *   npm run catalogue:fournisseur -- --confirm-host <hôte> --annuler <journal.json> [--apply]
+ *
+ * `--liste <fichier>` choisit un autre lot (relatif à ce dossier), avec son propre `--journal`.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
@@ -35,11 +37,12 @@ import { cleNom, normaliseMarque, normaliseParfum } from "../../src/lib/nommage"
 const DATABASE_URL = process.env.DATABASE_URL;
 
 const USAGE =
-  "Usage : npm run catalogue:fournisseur -- --confirm-host <hôte> [--apply --attendu <n>] [--journal <fichier>] | --annuler <journal.json> [--apply]";
+  "Usage : npm run catalogue:fournisseur -- --confirm-host <hôte> [--apply --attendu <n>] [--journal <fichier>] [--liste <fichier>] | --annuler <journal.json> [--apply]";
 
 const DEFAULT_JOURNAL = "migration-artifacts/references-fournisseur-journal.json";
+const DEFAULT_LISTE = "fournisseur-2026-10/references.json";
 
-export type Reference = { brand: string; name: string; fournisseur?: readonly string[] };
+export type Reference = { brand: string; name: string; line?: string; fournisseur?: readonly string[] };
 
 export type MarqueEnBase = { id: string; name: string };
 export type ParfumEnBase = { brandId: string; name: string };
@@ -50,10 +53,12 @@ export type Options = {
   confirmHost?: string;
   journal: string;
   annuler?: string;
+  /** Fichier de références, relatif au dossier du script (défaut : le lot du 12/10/2026). */
+  liste: string;
 };
 
 export function parseArgs(argv: readonly string[]): Options {
-  const options: Options = { apply: false, journal: DEFAULT_JOURNAL };
+  const options: Options = { apply: false, journal: DEFAULT_JOURNAL, liste: DEFAULT_LISTE };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     const next = argv[i + 1];
@@ -70,6 +75,9 @@ export function parseArgs(argv: readonly string[]): Options {
     } else if (arg === "--annuler" && next !== undefined) {
       options.annuler = next;
       i += 1;
+    } else if (arg === "--liste" && next !== undefined) {
+      options.liste = next;
+      i += 1;
     }
   }
   return options;
@@ -83,6 +91,8 @@ export type Insertion = {
   /** Id de la marque déjà en base, sinon `null` : elle sera créée. */
   brandId: string | null;
   name: string;
+  /** Gamme de la marque (ex. « Emporio Armani » chez Giorgio Armani), sinon absente. */
+  line?: string;
 };
 
 export type Plan = {
@@ -150,7 +160,7 @@ export function planifier(
         proches.push(`${reference.brand} : « ${nomPropre} » ressemble à la fiche existante « ${nom} »`);
       }
     }
-    aInserer.push({ brand: reference.brand, brandId: marque?.id ?? null, name: nomPropre });
+    aInserer.push({ brand: reference.brand, brandId: marque?.id ?? null, name: nomPropre, ...(reference.line ? { line: reference.line } : {}) });
   }
 
   return { total: references.length, dejaPresentes, aInserer, marquesACreer: [...marquesACreer.values()], proches };
@@ -238,7 +248,12 @@ export async function appliquer(plan: Plan, hote: string, cheminJournal: string 
       for (const insertion of insertions) {
         const ecriture = await catalogueWriter.createPerfume(
           tx,
-          createPerfumeInput.parse({ brand: { kind: "existing", brandId }, name: insertion.name, status: "DRAFT" }),
+          createPerfumeInput.parse({
+            brand: { kind: "existing", brandId },
+            name: insertion.name,
+            status: "DRAFT",
+            ...(insertion.line ? { line: insertion.line } : {}),
+          }),
         );
         creees.push({ id: ecriture.perfume.id, brand: insertion.brand, name: ecriture.perfume.name });
       }
@@ -301,8 +316,8 @@ export async function annuler(journal: Journal, apply: boolean): Promise<BilanAn
 
 // ── Programme ──────────────────────────────────────────────────────────────────
 
-function chargerReferences(): Reference[] {
-  const chemin = new URL("./fournisseur-2026-10/references.json", import.meta.url);
+function chargerReferences(liste: string): Reference[] {
+  const chemin = new URL(`./${liste}`, import.meta.url);
   return JSON.parse(readFileSync(chemin, "utf8")) as Reference[];
 }
 
@@ -337,7 +352,7 @@ async function main(): Promise<number> {
     }
 
     const { marques, parfums } = await lireCatalogue(prisma);
-    const plan = planifier(chargerReferences(), marques, parfums);
+    const plan = planifier(chargerReferences(options.liste), marques, parfums);
     console.log(`Base : ${hote}`);
     console.log(decrire(plan));
 
