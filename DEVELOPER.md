@@ -75,6 +75,13 @@ Détail : [`docs/catalog-database.md`](docs/catalog-database.md) et
   parfums (avec confirmation).
 - Un parfum ne se publie qu'avec un visuel. `image` est la variante sombre (principale),
   `imageLight` la claire, facultative.
+- Une référence fournisseur ajoutée avec une photo d'origine reste `DRAFT` : elle est visible dans
+  l'admin et la recherche publique peut proposer de nous contacter, sans rendre le produit achetable.
+  Le flacon original est une référence pour le designer, pas une variante sombre ou claire.
+- L'import photo se fait par agent avec `npm run catalogue:images:fournisseur` ; aucun dépôt d'image
+  utilisateur dans le designer. La commande exige la confirmation d'hôte, un compte attendu, et
+  conserve un journal des URL avant/après. Après ajout hors gestion, incrémenter la clé
+  `unlisted-perfumes-vN` dans `src/lib/catalogue-service.ts` pour la recherche publique.
 - Deux parfums mis en avant au plus.
 - Le slug d'une marque est fixé à la création et jamais recalculé : c'est la valeur publique du
   filtre `?maison=`.
