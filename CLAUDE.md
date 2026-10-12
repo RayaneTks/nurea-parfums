@@ -2,6 +2,31 @@
 
 Fichier de contexte projet chargé automatiquement par Claude Code.
 
+## Consignes permanentes des agents
+
+Lire et appliquer `AGENTS.md` à la racine à chaque session : il complète ce fichier et fixe
+les règles de navigation, les skills à charger, la boucle comprendre → implémenter → vérifier
+→ documenter → corriger et les exigences de tests. En particulier :
+
+- Charger `.agents/skills/ponytail/SKILL.md` pour tout travail code, `caveman` pour le style
+  bref en français, `graphify` pour explorer le dépôt, et les skills Addy Osmani quand leur
+  domaine correspond.
+- Interroger d'abord la carte existante avec `graphify query`; ne pas installer ou reconstruire
+  Graphify sans besoin explicite. Préserver les blocs `<!-- MANUAL: ... -->`.
+- Pour toute évolution métier ou admin, mettre à jour `CLAUDE.md` et `DEVELOPER.md` dans le
+  même lot. Préférer les garde-fous serveur. En cas d'ambiguïté métier, présenter une
+  contre-proposition argumentée et attendre validation avant de trancher.
+- Après une modification de code, lancer `npm run typecheck`, `npm run lint` et `npm test`;
+  pour une évolution de base, écrire et tester une migration locale. Ne jamais lancer
+  `prisma db push` ni `prisma migrate reset`.
+
+Pour une refonte explicitement demandée de l'expérience vitrine, le brief de référence est
+de concevoir une expérience premium, éditoriale, distincte des interfaces génériques et pensée
+d'abord pour le mobile; examiner les parcours et données réels, ne jamais inventer de faits,
+préserver les fonctions opérationnelles, puis réaliser et vérifier les parcours essentiels.
+Ce brief autorise à reconsidérer la charte vitrine : mettre à jour les documents de référence
+avant le code. Il ne change pas les règles métier de Nuréa Gestion ni ses contenances réelles.
+
 Le dépôt porte **deux applications disjointes** : la **vitrine** publique (`app/(shop)`,
 registre `brand`) et **Nuréa Gestion** (`app/admin`, registre `product`), refondue
 de zéro — le dossier pilote de la refonte est `docs/refonte/` (`00-README.md` d'abord).
@@ -45,8 +70,17 @@ de zéro — le dossier pilote de la refonte est `docs/refonte/` (`00-README.md`
 | Invariants en base | `npm run check:invariants` (lecture seule) |
 | Compte de gestion | `npm run admin:create-user` |
 | Références du fournisseur (essai à blanc par défaut) | `npm run catalogue:fournisseur -- --confirm-host <hôte>` |
+| Flacons originaux fournisseur (essai à blanc par défaut) | `npm run catalogue:images:fournisseur -- --confirm-host <hôte> --source-dir <dossier-site>` |
 | Assets PWA | `node scripts/build-admin-pwa-assets.mjs` |
 | Optimisation Images | `sharp` via scripts Node si nécessaire |
+
+Les fiches fournisseur et leurs flacons d'origine restent en `DRAFT` : visibles dans la gestion,
+proposées pour prise de contact dans la recherche publique, jamais publiées comme produits achetables.
+Les flacons servent de références au designer ; ils ne remplacent pas les variantes sombre/claire
+générées. Le script `catalogue:images:fournisseur` passe par le writer et le bucket Supabase, exige
+`--confirm-host` et un `--attendu` égal à l'essai à blanc, et journalise chaque URL avant écriture.
+Quand une nouvelle fiche est ajoutée hors gestion, incrémenter aussi la clé `unlisted-perfumes-vN`
+de `src/lib/catalogue-service.ts` pour rafraîchir la recherche publique.
 
 ### Base de données : les règles vitales
 
