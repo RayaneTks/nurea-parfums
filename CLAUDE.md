@@ -44,6 +44,7 @@ de zéro — le dossier pilote de la refonte est `docs/refonte/` (`00-README.md`
 | Répétition de bascule | `npm run repetition:refresh` (locale), `npm run repetition:preprod` (distante) |
 | Invariants en base | `npm run check:invariants` (lecture seule) |
 | Compte de gestion | `npm run admin:create-user` |
+| Références du fournisseur (essai à blanc par défaut) | `npm run catalogue:fournisseur -- --confirm-host <hôte>` |
 | Assets PWA | `node scripts/build-admin-pwa-assets.mjs` |
 | Optimisation Images | `sharp` via scripts Node si nécessaire |
 
