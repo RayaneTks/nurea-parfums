@@ -91,6 +91,19 @@ describe("appliquer", () => {
   });
 });
 
+describe("gamme", () => {
+  it("écrit la gamme d'une référence quand elle en porte une", async () => {
+    await amorce();
+    const plan = script.planifier([{ brand: "Lattafa", name: "Khamrah Dark", line: "Collection Test" }], ...(await (async () => {
+      const { marques, parfums } = await script.lireCatalogue(server.prisma);
+      return [marques, parfums] as const;
+    })()));
+    const journal = await script.appliquer(plan, "hote-test", null);
+    const ligne = await server.prisma.perfume.findUniqueOrThrow({ where: { id: journal.parfums[0]!.id } });
+    expect(ligne.line).toBe("Collection Test");
+  });
+});
+
 describe("annuler", () => {
   it("retire exactement les lignes du journal, marque créée comprise, et laisse l'existant", async () => {
     const { asad } = await amorce();

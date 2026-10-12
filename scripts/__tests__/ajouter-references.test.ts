@@ -19,16 +19,23 @@ const PARFUMS: ParfumEnBase[] = [
 
 describe("parseArgs", () => {
   it("n'écrit pas par défaut", () => {
-    expect(parseArgs([])).toEqual({ apply: false, journal: "migration-artifacts/references-fournisseur-journal.json" });
+    expect(parseArgs([])).toEqual({
+      apply: false,
+      journal: "migration-artifacts/references-fournisseur-journal.json",
+      liste: "fournisseur-2026-10/references.json",
+    });
   });
 
   it("lit --apply, --attendu, l'hôte, le journal et l'annulation", () => {
-    expect(parseArgs(["--apply", "--attendu", "234", "--confirm-host", "db.x", "--journal", "j.json", "--annuler", "a.json"])).toEqual({
+    expect(
+      parseArgs(["--apply", "--attendu", "234", "--confirm-host", "db.x", "--journal", "j.json", "--annuler", "a.json", "--liste", "l.json"]),
+    ).toEqual({
       apply: true,
       attendu: 234,
       confirmHost: "db.x",
       journal: "j.json",
       annuler: "a.json",
+      liste: "l.json",
     });
   });
 });
@@ -82,6 +89,11 @@ describe("planifier", () => {
     const plan = planifier([{ brand: "Lattafa", name: "Asad Bourbon" }], MARQUES, PARFUMS);
     expect(plan.aInserer).toHaveLength(1);
     expect(plan.proches.join("\n")).toMatch(/Asad Bourbon.*Asad/);
+  });
+
+  it("reporte la gamme de la référence sur l'insertion", () => {
+    const plan = planifier([{ brand: "Dior", name: "Dior Homme", line: "Collection Privée" }], MARQUES, PARFUMS);
+    expect(plan.aInserer).toEqual([{ brand: "Dior", brandId: "b-dior", name: "Dior Homme", line: "Collection Privée" }]);
   });
 
   it("décrit le plan avec les chiffres exacts", () => {
