@@ -14,6 +14,7 @@
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
     "db:seed": "dotenv -e .env.local -- prisma db seed",
     "admin:create-user": "dotenv -e .env.local -- tsx --conditions=react-server scripts/create-admin.ts",
+    "catalogue:fournisseur": "dotenv -e .env.local -- tsx --conditions=react-server scripts/catalogue/ajouter-references.ts",
     "verify:integration": "tsx scripts/verify-integration.ts",
     "test": "vitest run --project unit --project arch",
     "test:db": "vitest run --project db",
