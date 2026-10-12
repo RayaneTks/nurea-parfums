@@ -250,7 +250,7 @@ export const createBrandInput = z.object({
 
 /**
  * Modification (E17). Le slug n'est JAMAIS une entrée : fixé à la création, stable au renommage.
- * Masquer ou passer en gamme complète masque les parfums (T14) : réserve à confirmer.
+ * Masquer une marque masque ses parfums (T14) : réserve à confirmer.
  */
 export const updateBrandInput = z.object({
   id: entityId,

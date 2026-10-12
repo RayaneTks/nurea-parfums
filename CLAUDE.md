@@ -223,7 +223,7 @@ Toute écriture passe par une **server action** de `src/server/*/actions.ts`
   **sans vérifier qu'elle existe**. Tout visuel déposé hors de la gestion (script, reprise) doit
   donc écrire la sienne (`toWebpThumbnail`). L'optimiseur de Vercel reste fermé (quota épuisé le
   22/09/2026) : on choisit parmi des fichiers prêts, on ne transforme rien à la demande.
-- **Visibilité** : Tout parfum ou marque sans image Dark est masqué automatiquement (status DRAFT).
+- **Visibilité catalogue** : un parfum est publiable avec son visuel et une marque visible ; le mode historique `catalogMode` n'est plus exclusif. Le visuel de gamme de la marque est facultatif et complète ses flacons publiés sur la vitrine.
 - **Navigation** : Standard mobile-first (Zone du pouce). Zones de clic min 44px.
 - **Copywriting** : Utiliser "Marque", "Catalogue", "Parfum". Éviter "Maison", "Galerie", "Sillage".
 - **CSR Bailout** : `useSearchParams()` nécessite un wrap `<Suspense>`.

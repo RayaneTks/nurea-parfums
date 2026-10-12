@@ -1,5 +1,5 @@
 import "server-only";
-import { canPublishBrand, canPublishPerfume, type PublicationVerdict } from "@/domain/publication";
+import { canPublishPerfume, type PublicationVerdict } from "@/domain/publication";
 
 /**
  * Le dictionnaire des messages d'erreur de base (04 §9.3). Seul `errors.ts` le lit. Chaque phrase
@@ -25,7 +25,6 @@ const INCOHERENT = "Cet enregistrement est incohérent : recharge la page et ré
 
 /** CHECK de 03 §4.9, par nom de contrainte. */
 export const CHECK_MESSAGES: Readonly<Record<string, string>> = {
-  brand_complete_logo_ck: refusal(canPublishBrand({ catalogMode: "COMPLETE", image: null })),
   perfume_publish_image_ck: refusal(
     canPublishPerfume({ image: "" }, { name: "", status: "PUBLISHED", catalogMode: "CURATED", image: null }),
   ),

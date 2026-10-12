@@ -7,7 +7,6 @@ import type { AdminBrandRow, BrandSheet } from "@/contracts/catalogue";
 import { canPublishBrand, type BrandCatalogMode, type PublicationStatus } from "@/domain/publication";
 import { normaliseMarque, trouveParNom } from "@/lib/nommage";
 import { brandPublicUrl } from "@/lib/vitrine-links";
-import { cn } from "@/lib/utils";
 import { useToast } from "@/app-shell/FeedbackProvider";
 import { useAction } from "@/app-shell/hooks/useAction";
 import { routes } from "@/app-shell/routes";
@@ -37,11 +36,6 @@ export type BrandFormProps = {
   brands: readonly AdminBrandRow[];
 };
 
-const MODES: readonly { value: BrandCatalogMode; title: string; description: string }[] = [
-  { value: "CURATED", title: "Sélection", description: "Seuls les parfums publiés apparaissent." },
-  { value: "COMPLETE", title: "Gamme complète", description: "Une carte unique avec le logo." },
-];
-
 /** « Ses 14 parfums » ; 1 : « Son parfum ». */
 function perfumesText(count: number): string {
   return count === 1 ? "son parfum" : `ses ${count} parfums`;
@@ -49,8 +43,8 @@ function perfumesText(count: number): string {
 
 /**
  * E17 — Formulaire marque (06 §3.5) : logo SANS recadrage (proportions d'origine, règle projet), nom
- * dédoublonné, mode, visibilité, lien public stable au renommage. Masquer ou passer en gamme complète
- * masque ses parfums : la réserve du domaine s'affiche avant d'écrire (T14).
+ * dédoublonné, visibilité, lien public stable au renommage. Un visuel de gamme peut compléter les
+ * flacons publiés, sans les remplacer.
  */
 export function BrandForm({ sheet, brands }: BrandFormProps) {
   const router = useRouter();
@@ -71,7 +65,6 @@ export function BrandForm({ sheet, brands }: BrandFormProps) {
     [current],
   );
   const [name, setName] = useState(initial.name);
-  const [catalogMode, setCatalogMode] = useState<BrandCatalogMode>(initial.catalogMode);
   const [status, setStatus] = useState<PublicationStatus>(initial.status);
   const [image, setImage] = useState(initial.image);
   const [imageLight, setImageLight] = useState(initial.imageLight);
@@ -81,7 +74,6 @@ export function BrandForm({ sheet, brands }: BrandFormProps) {
 
   const dirty =
     name !== initial.name ||
-    catalogMode !== initial.catalogMode ||
     status !== initial.status ||
     image !== saved.image ||
     imageLight !== saved.imageLight;
@@ -98,7 +90,7 @@ export function BrandForm({ sheet, brands }: BrandFormProps) {
   const trimmed = name.trim();
   const twin = trimmed.length >= 2 ? trouveParNom(brands.filter((brand) => brand.id !== current?.id), (brand) => brand.name, trimmed) : undefined;
   const normalised = trimmed === "" ? "" : normaliseMarque(trimmed);
-  const publishVerdict = canPublishBrand({ catalogMode, image });
+  const publishVerdict = canPublishBrand({ catalogMode: "CURATED", image });
   const cta = trimmed === "" ? "Saisir le nom" : current ? "Enregistrer" : twin ? `Ouvrir ${twin.name}` : "Ajouter la marque";
 
   const commitImage = async (key: "image" | "imageLight", url: string) => {
@@ -121,7 +113,7 @@ export function BrandForm({ sheet, brands }: BrandFormProps) {
         router.push(routes.modifierMarque(twin.id));
         return;
       }
-      const result = await create.run({ name, catalogMode, status, image: image || null, imageLight: imageLight || null });
+      const result = await create.run({ name, catalogMode: "CURATED", status, image: image || null, imageLight: imageLight || null });
       if (result.ok) {
         guard.release();
         router.push(routes.catalogue({ tab: "marques" }));
@@ -131,7 +123,7 @@ export function BrandForm({ sheet, brands }: BrandFormProps) {
     const result = await update.run({
       id: current.id,
       name,
-      catalogMode,
+      catalogMode: "CURATED",
       status,
       image: image || null,
       imageLight: imageLight || null,
@@ -177,9 +169,9 @@ export function BrandForm({ sheet, brands }: BrandFormProps) {
 
   return (
     <>
-      <FormSection title="Logo" description="Gardé tel quel, jamais recadré. Obligatoire pour une gamme complète.">
+      <FormSection title="Visuel de gamme" description="Facultatif. Gardé tel quel, jamais recadré. Il complète les flacons publiés.">
         <ImageField
-          label="Logo"
+          label="Visuel de gamme"
           kind="logo"
           value={image}
           onChange={setImage}
@@ -188,7 +180,7 @@ export function BrandForm({ sheet, brands }: BrandFormProps) {
         />
         <CollapsibleSection bare title="Variante claire" summary={imageLight ? "Ajoutée" : "Facultative"} defaultOpen={imageLight !== ""}>
           <ImageField
-            label="Logo, variante claire"
+            label="Visuel de gamme, variante claire"
             hint="Affiché sur la vitrine en mode clair."
             kind="logo"
             value={imageLight}
@@ -236,42 +228,6 @@ export function BrandForm({ sheet, brands }: BrandFormProps) {
         ) : null}
       </FormSection>
 
-      <FormSection title="Mode">
-        <div role="radiogroup" aria-label="Mode de la marque" className="flex flex-col gap-2">
-          {MODES.map((mode) => {
-            const checked = catalogMode === mode.value;
-            return (
-              <button
-                key={mode.value}
-                type="button"
-                role="radio"
-                aria-checked={checked}
-                onClick={() => setCatalogMode(mode.value)}
-                className={cn(
-                  "tap-scale flex min-h-[var(--admin-touch-comfortable)] w-full items-start gap-3 rounded-[var(--admin-radius-md)] border px-3 py-2.5 text-left",
-                  "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--admin-accent-ring)]",
-                  checked ? "border-[var(--admin-accent)] bg-[var(--admin-accent-bg)]" : "border-[var(--admin-border-strong)] bg-[var(--admin-surface)]",
-                )}
-              >
-                <span
-                  aria-hidden
-                  className={cn(
-                    "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-[var(--admin-radius-full)] border-2",
-                    checked ? "border-[var(--admin-accent)]" : "border-[var(--admin-border-strong)]",
-                  )}
-                >
-                  {checked ? <span className="h-2.5 w-2.5 rounded-[var(--admin-radius-full)] bg-[var(--admin-accent)]" /> : null}
-                </span>
-                <span className="flex min-w-0 flex-col">
-                  <span className="admin-type-body font-medium text-[var(--admin-text)]">{mode.title}</span>
-                  <span className="admin-type-caption text-[var(--admin-text-muted)]">{mode.description}</span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </FormSection>
-
       <FormSection title="Vitrine">
         <Switch
           checked={status === "PUBLISHED"}
@@ -280,9 +236,7 @@ export function BrandForm({ sheet, brands }: BrandFormProps) {
           disabledReason={publishVerdict.ok ? undefined : publishVerdict.message}
           description={
             status === "PUBLISHED"
-              ? catalogMode === "COMPLETE"
-                ? "Une carte avec le logo sur le site."
-                : "Ses parfums publiés apparaissent sur le site."
+              ? "Ses parfums publiés et son visuel de gamme apparaissent sur le site."
               : perfumeCount > 0
                 ? `Masquée : ${perfumesText(perfumeCount)} aussi.`
                 : "Masquée : absente du site."

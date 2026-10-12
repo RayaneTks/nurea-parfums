@@ -79,12 +79,20 @@ export const CatalogSection = ({
     const list = [...matching];
     const byName = (a: Perfume, b: Perfume) =>
       a.name.localeCompare(b.name, "fr", { sensitivity: "base" });
+    const rangeAfterBrandPerfumes = (a: Perfume, b: Perfume) =>
+      a.brand === b.brand && isCompleteRange(a) !== isCompleteRange(b)
+        ? isCompleteRange(a) ? 1 : -1
+        : 0;
 
-    if (filters.sort === "name") return list.sort(byName);
+    if (filters.sort === "name") {
+      const oneBrand = filters.brandSlug !== "" || filters.brandSlugs.size === 1;
+      return list.sort((a, b) => (oneBrand ? rangeAfterBrandPerfumes(a, b) : 0) || byName(a, b));
+    }
     if (filters.sort === "brand") {
       return list.sort(
         (a, b) =>
           a.brand.localeCompare(b.brand, "fr", { sensitivity: "base" }) ||
+          rangeAfterBrandPerfumes(a, b) ||
           byName(a, b)
       );
     }
@@ -93,7 +101,7 @@ export const CatalogSection = ({
       return list.sort((a, b) => compareSearchRelevance(a, b, filters.query.trim()));
     }
     return list;
-  }, [matching, filters.sort, filters.query]);
+  }, [matching, filters.sort, filters.query, filters.brandSlug, filters.brandSlugs]);
 
   /*
    * La grille rend TOUTES les fiches ; seule leur visibilité est tronquée.

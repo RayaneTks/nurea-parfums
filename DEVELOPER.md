@@ -70,9 +70,10 @@ Détail : [`docs/catalog-database.md`](docs/catalog-database.md) et
 [`src/domain/publication.ts`](src/domain/publication.ts).
 
 - Un parfum n'est jamais plus visible que sa marque.
-- **Gamme complète** : la marque s'affiche en une carte faite de son logo, sans ses parfums ; elle
-  exige un logo pour être visible. Passer une marque en gamme complète, ou la masquer, masque ses
-  parfums (avec confirmation).
+- **Gamme complète** : le visuel de gamme est facultatif et complète les flacons publiés, en bas de
+  la page publique de la marque. Le mode exclusif historique est retiré ; masquer la marque masque
+  toujours ses parfums (avec confirmation). Republier une marque propose aussi de republier ses
+  parfums masqués qui ont un visuel.
 - Un parfum ne se publie qu'avec un visuel. `image` est la variante sombre (principale),
   `imageLight` la claire, facultative.
 - Une référence fournisseur ajoutée avec une photo d'origine reste `DRAFT` : elle est visible dans

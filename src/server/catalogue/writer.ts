@@ -237,7 +237,7 @@ async function republishableCount(tx: Tx, brandId: string): Promise<number> {
 }
 
 /**
- * Cascade T14 (03 §4.3) : une marque masquée ou en gamme complète masque ses parfums, et un parfum masqué
+ * Cascade T14 (03 §4.3) : une marque masquée masque ses parfums, et un parfum masqué
  * perd sa mise en avant. Des parfums visibles à masquer ⇒ réserve « Ses 14 parfums seront masqués sur la
  * vitrine. » tant qu'elle n'est pas confirmée (06 S18), levée AVANT toute écriture.
  */
@@ -254,12 +254,9 @@ async function hideBrandPerfumes(
   });
   const visible = affected.filter((perfume) => perfume.status === "PUBLISHED").length;
   if (visible > 0 && !confirm) {
-    const title =
-      next.status === "DRAFT" && current.status !== "DRAFT"
-        ? `Masquer ${next.name} ?`
-        : next.catalogMode === "COMPLETE" && current.catalogMode !== "COMPLETE"
-          ? `Passer ${next.name} en gamme complète ?`
-          : `Masquer les parfums de ${next.name} ?`;
+    const title = next.status === "DRAFT" && current.status !== "DRAFT"
+      ? `Masquer ${next.name} ?`
+      : `Masquer les parfums de ${next.name} ?`;
     const reserve =
       visible === 1 ? "Son parfum visible sera masqué sur la vitrine." : `Ses ${visible} parfums seront masqués sur la vitrine.`;
     throw new NeedsConfirmation(title, [reserve], "Confirmer");
@@ -321,8 +318,7 @@ export async function updateBrand(tx: Tx, input: UpdateBrandData): Promise<Brand
   if (Object.keys(data).length > 0) {
     await tx.db.brand.update({ where: { id: current.id }, data, select: { id: true } });
   }
-  const republishable =
-    next.status === "PUBLISHED" && next.catalogMode === "CURATED" ? await republishableCount(tx, current.id) : 0;
+  const republishable = next.status === "PUBLISHED" ? await republishableCount(tx, current.id) : 0;
   return {
     brand: brandSummary({ ...current, ...next, imageLight: data.imageLight !== undefined ? data.imageLight : current.imageLight }),
     hiddenPerfumes,
@@ -429,7 +425,7 @@ async function perfumeNameFor(tx: Tx, raw: string, brand: LockedBrand, selfId: n
 
 /**
  * Créer un parfum avec sa grille (A-6), en une transaction. Il naît « Non suivi » (stock NULL) ; s'il ne
- * peut pas être visible (sans visuel, marque masquée ou en gamme complète), il est enregistré masqué et la
+ * peut pas être visible (sans visuel ou marque masquée), il est enregistré masqué et la
  * notice le dit (« Sauvage ajouté, masqué : rends d'abord la marque Dior visible. »).
  */
 export async function createPerfume(tx: Tx, input: CreatePerfumeData): Promise<PerfumeWrite> {

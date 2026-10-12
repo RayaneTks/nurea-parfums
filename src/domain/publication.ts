@@ -3,13 +3,12 @@
  *
  * Le writer `catalogue` les applique, l'UI les appelle pour ses pré-contrôles (interrupteur
  * verrouillé, bascule optimiste) et affiche LES MÊMES messages : l'existant en avait trois
- * formulations divergentes (01 §4.5). Les CHECK `perfume_publish_image_ck` et
- * `brand_complete_logo_ck` doublent les deux premières règles en base ; « marque visible
- * en Sélection » et « deux mises en avant au plus » sont des règles de service (03 §4.9).
+ * formulations divergentes (01 §4.5). Le CHECK `perfume_publish_image_ck` double la règle de
+ * visuel en base ; « deux mises en avant au plus » est une règle de service (03 §4.9).
  *
  * Un parfum n'est jamais plus visible que sa marque : la vitrine ne lit que les parfums
- * PUBLISHED d'une marque PUBLISHED en Sélection, avec un nom et un visuel (03 §6.1). Une marque
- * en gamme complète s'affiche en une carte synthétisée depuis son logo, sans ses parfums.
+ * PUBLISHED d'une marque PUBLISHED, avec un nom et un visuel. Le visuel de gamme complète les
+ * flacons publiés en bas de la page marque.
  */
 
 export type PublicationStatus = "DRAFT" | "PUBLISHED";
@@ -22,7 +21,7 @@ export type BrandPublicationState = {
   name: string;
   status: PublicationStatus;
   catalogMode: BrandCatalogMode;
-  /** Logo principal (thème sombre). */
+  /** Visuel de gamme principal (thème sombre, facultatif). */
   image: string | null;
 };
 
@@ -36,24 +35,18 @@ export function hasVisual(image: string | null | undefined): boolean {
   return (image ?? "").trim() !== "";
 }
 
-/** Un parfum peut-il passer « Visible » ? Un refus à la fois, dans l'ordre de l'existant : visuel, mode, marque. */
+/** Un parfum peut-il passer « Visible » ? Il lui faut un visuel et une marque visible. */
 export function canPublishPerfume(
   perfume: { image: string | null },
   brand: BrandPublicationState,
 ): PublicationVerdict {
   if (!hasVisual(perfume.image)) return refuse("Ajoute un visuel pour publier ce parfum.");
-  if (brand.catalogMode === "COMPLETE") {
-    return refuse(`La marque ${brand.name} est en gamme complète : repasse-la en Sélection pour publier ce parfum.`);
-  }
   if (brand.status !== "PUBLISHED") return refuse(`Rends d'abord la marque ${brand.name} visible.`);
   return OK;
 }
 
-/** Une marque peut-elle passer « Visible » ? Seule la gamme complète exige un logo (sa carte en est faite). */
-export function canPublishBrand(brand: { catalogMode: BrandCatalogMode; image: string | null }): PublicationVerdict {
-  if (brand.catalogMode === "COMPLETE" && !hasVisual(brand.image)) {
-    return refuse("Ajoute un logo pour publier une gamme complète.");
-  }
+/** Une marque peut-elle passer « Visible » ? Le visuel de gamme est facultatif. */
+export function canPublishBrand(_brand: { catalogMode: BrandCatalogMode; image: string | null }): PublicationVerdict {
   return OK;
 }
 
@@ -81,14 +74,13 @@ export function isPerfumeVisible(
     perfume.status === "PUBLISHED" &&
     perfume.name.trim() !== "" &&
     hasVisual(perfume.image) &&
-    brand.status === "PUBLISHED" &&
-    brand.catalogMode === "CURATED"
+    brand.status === "PUBLISHED"
   );
 }
 
-/** Cascade T14 : masquer une marque ou la passer en gamme complète masque tous ses parfums. */
+/** Cascade T14 : masquer une marque masque tous ses parfums. */
 export function brandHidesPerfumes(brand: { status: PublicationStatus; catalogMode: BrandCatalogMode }): boolean {
-  return brand.status === "DRAFT" || brand.catalogMode === "COMPLETE";
+  return brand.status === "DRAFT";
 }
 
 /**

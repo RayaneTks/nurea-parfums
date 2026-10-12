@@ -11,7 +11,7 @@ export interface CatalogFilters {
   query: string;
   category: Category;
   sort: SortKey;
-  /** Marque unique, ouverte depuis une fiche « gamme complète ». */
+  /** Marque unique, ouverte depuis une carte de gamme. */
   brandSlug: string;
   /** Sélection multiple, venue du panneau de filtres. */
   brandSlugs: ReadonlySet<string>;

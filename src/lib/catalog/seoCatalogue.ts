@@ -33,8 +33,6 @@ export type SeoPerfume = {
 export type SeoBrand = {
   name: string;
   slug: string;
-  /** Marque vendue en gamme complète : la fiche représente la marque, pas un flacon. */
-  complete: boolean;
   /**
    * `Brand.image` : malgré son commentaire de schéma (« logo »), c'est un visuel au format des fiches,
    * que l'accueil affiche comme une carte de gamme. On le traite donc en visuel, pas en logo.
@@ -57,7 +55,6 @@ export async function loadSeoCatalogue(): Promise<SeoBrand[]> {
     select: {
       name: true,
       slug: true,
-      catalogMode: true,
       image: true,
       imageLight: true,
       updatedAt: true,
@@ -89,14 +86,12 @@ export async function loadSeoCatalogue(): Promise<SeoBrand[]> {
       return {
         name: brand.name,
         slug: brand.slug,
-        complete: brand.catalogMode === "COMPLETE",
         visual: isPublicImage(brand.image) ? brand.image : null,
         visualLight: brand.imageLight,
         updatedAt: latest.toISOString(),
         perfumes,
       };
-    })
-    .filter((brand) => brand.perfumes.length > 0 || (brand.complete && brand.visual !== null));
+    });
 }
 
 /** La forme attendue par les composants de fiche (`PerfumeImage`, cartes). */

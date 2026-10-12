@@ -110,10 +110,8 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
   /*
    * La fiche a une adresse à elle : c'est elle qu'on partage en story, et elle que Google indexe.
    *
-   * La fiche-marque d'une gamme complète n'est pas un flacon : le catalogue la fabrique à partir de
-   * la marque (même nom, identifiant synthétique), et son adresse est celle de la marque. Les
-   * flacons réels d'une marque en gamme complète portent aussi la catégorie « gamme » — c'est le
-   * nom, distinct de celui de la marque, qui les reconnaît.
+   * La carte de gamme complète n'est pas un flacon : le catalogue la fabrique à partir de la
+   * marque (même nom, identifiant synthétique), et son adresse est celle de la marque.
    */
   const brandSheet = isCompleteRange(perfume) && perfume.name === perfume.brand;
   const sheetHref = perfume.brandSlug

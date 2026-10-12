@@ -15,8 +15,6 @@ export type StockFilter = (typeof STOCK_FILTERS)[number];
 export const VISIBILITY_FILTERS = ["visibles", "masques"] as const;
 export type VisibilityFilter = (typeof VISIBILITY_FILTERS)[number];
 
-export const RANGE_FILTERS = ["complete"] as const;
-export type RangeFilter = (typeof RANGE_FILTERS)[number];
 
 /** Mots de la recherche, sans accents ni casse ni ponctuation (« Coco mademoiselle » → coco, mademoiselle). */
 export function searchWords(query: string): string[] {
@@ -61,14 +59,13 @@ export function perfumeCounts(perfumes: readonly AdminPerfumeRow[], words: reado
   };
 }
 
-export type BrandFilters = { words: readonly string[]; visibility: VisibilityFilter | null; complete: boolean };
+export type BrandFilters = { words: readonly string[]; visibility: VisibilityFilter | null };
 
 export function filterBrands(brands: readonly AdminBrandRow[], filters: BrandFilters): AdminBrandRow[] {
   return brands.filter(
     (brand) =>
       matchesWords(brand.searchKey, filters.words) &&
-      matchesVisibility(brand.status, filters.visibility) &&
-      (!filters.complete || brand.catalogMode === "COMPLETE"),
+      matchesVisibility(brand.status, filters.visibility),
   );
 }
 
@@ -78,7 +75,6 @@ export function brandCounts(brands: readonly AdminBrandRow[], words: readonly st
     total: matching.length,
     visible: matching.filter((brand) => brand.status !== "DRAFT").length,
     hidden: matching.filter((brand) => brand.status === "DRAFT").length,
-    complete: matching.filter((brand) => brand.catalogMode === "COMPLETE").length,
   };
 }
 

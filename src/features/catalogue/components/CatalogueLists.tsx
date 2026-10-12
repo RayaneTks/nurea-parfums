@@ -62,7 +62,7 @@ function RowList<T>({ items, itemKey, label, render }: { items: readonly T[]; it
  */
 export function CatalogueLists({ catalogue }: { catalogue: AdminCatalogue }) {
   const router = useRouter();
-  const { tab, query, stock, visibility, complete, write } = useCatalogueUrl();
+  const { tab, query, stock, visibility, write } = useCatalogueUrl();
   const removals = usePendingRemovals();
   const words = useMemo(() => searchWords(query), [query]);
 
@@ -80,8 +80,8 @@ export function CatalogueLists({ catalogue }: { catalogue: AdminCatalogue }) {
 
   if (tab === "marques") {
     const counts = brandCounts(brands, words);
-    const shown = filterBrands(brands, { words, visibility, complete });
-    const filtered = words.length > 0 || visibility !== null || complete;
+    const shown = filterBrands(brands, { words, visibility });
+    const filtered = words.length > 0 || visibility !== null;
     const visibleOn = visibility === "visibles";
     const hiddenOn = visibility === "masques";
     const showVisible = chipShown(counts.visible, counts.total, visibleOn);
@@ -107,7 +107,7 @@ export function CatalogueLists({ catalogue }: { catalogue: AdminCatalogue }) {
     }
     return (
       <div className="flex flex-col gap-3">
-        {showVisible || showHidden || chipShown(counts.complete, counts.total, complete) ? (
+        {showVisible || showHidden ? (
           <ChipRow>
             {showVisible ? (
               <Chip active={visibleOn} clearable={visibleOn} count={counts.visible || undefined} onClick={() => write({ visibilite: visibleOn ? null : "visibles" })}>
@@ -117,11 +117,6 @@ export function CatalogueLists({ catalogue }: { catalogue: AdminCatalogue }) {
             {showHidden ? (
               <Chip active={hiddenOn} clearable={hiddenOn} count={counts.hidden || undefined} onClick={() => write({ visibilite: hiddenOn ? null : "masques" })}>
                 Masquées
-              </Chip>
-            ) : null}
-            {chipShown(counts.complete, counts.total, complete) ? (
-              <Chip active={complete} clearable={complete} count={counts.complete || undefined} onClick={() => write({ gamme: complete ? null : "complete" })}>
-                Gammes complètes
               </Chip>
             ) : null}
           </ChipRow>

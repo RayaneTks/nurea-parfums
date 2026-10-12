@@ -115,7 +115,6 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
             select: {
               name: true,
               slug: true,
-              catalogMode: true,
             },
           },
         },
@@ -123,7 +122,6 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
       }),
       prisma.brand.findMany({
         where: {
-          catalogMode: "COMPLETE",
           status: "PUBLISHED",
           name: { not: "" },
           AND: [{ image: { not: null } }, { image: { not: "" } }],
@@ -135,15 +133,14 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
         where: {
           status: "PUBLISHED",
           OR: [
-            { catalogMode: "COMPLETE" },
             { perfumes: { some: { status: "PUBLISHED" } } },
+            { AND: [{ image: { not: null } }, { image: { not: "" } }] },
           ],
         },
         select: {
           id: true,
           name: true,
           slug: true,
-          catalogMode: true,
           perfumes: {
             where: { status: "PUBLISHED" },
             select: { id: true },
@@ -172,28 +169,24 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
     const mappedPerfumes: Perfume[] = perfumes
       .filter((p) => isPublicImage(p.image) && p.brand.name.trim() !== "" && p.name.trim() !== "")
       .map((p) => {
-        const isComplete = p.brand.catalogMode === "COMPLETE";
         return {
           id: p.id,
           name: p.name,
           brand: p.brand.name,
           brandSlug: p.brand.slug,
           line: p.line?.trim() || undefined,
-          category: (isComplete
-            ? "Gammes Complètes"
-            : "Sélections Individuelles") as Category,
+          category: "Sélections Individuelles" as Category,
           image: p.image,
           imageLight: p.imageLight ?? undefined,
           blurDataURL: getBlurPlaceholder(p.image),
           isFeatured: p.isFeatured,
-          tags: isComplete ? ["Gamme complète"] : undefined,
         };
       });
 
     /*
      * « Nouveautés » : les NEW_ARRIVALS_COUNT derniers parfums entrés au catalogue (date d'ajout,
-     * puis identifiant — une séquence — pour départager). Seulement des flacons réels : la fiche d'une
-     * gamme complète n'est pas un ajout. Marqués ici, une fois, pour la grille ET la recherche.
+     * puis identifiant — une séquence — pour départager). Seulement des flacons réels : les visuels
+     * synthétiques de gamme ne sont pas des ajouts. Marqués ici, une fois, pour la grille ET la recherche.
      */
     const newest = new Set(
       [...perfumes]
@@ -211,12 +204,9 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
       id: b.id,
       name: b.name,
       slug: b.slug,
-      assortment: b.catalogMode,
+      assortment: "CURATED",
       publishedCount: b.perfumes.length,
-      categories:
-        b.catalogMode === "COMPLETE"
-          ? ["Gammes Complètes"]
-          : ["Sélections Individuelles"],
+      categories: ["Sélections Individuelles"],
     }));
 
     registerPrismaCatalogSuccess();
@@ -248,8 +238,8 @@ const getPublicCatalogueCached = unstable_cache(
   // v5 : deuxième fournée de visuels refaits (28/09/2026, 15 fiches), écrite en base.
   // v6 : l'instantané porte désormais `isNew` (catégorie « Nouveautés ») — un instantané v5 servi
   // au nouveau code laisserait la catégorie vide jusqu'à la prochaine modification du catalogue.
-  // v13 : l'instantané porte la gamme (`line`) de chaque parfum.
-  ["public-catalogue-v13"],
+  // v14 : les visuels de gamme sont proposés en complément des flacons pour toutes les marques.
+  ["public-catalogue-v14"],
   { tags: [PUBLIC_CATALOGUE_CACHE_TAG] },
 );
 
@@ -301,7 +291,7 @@ export async function getCachedCatalogue(): Promise<CachedPublicCatalogue> {
 
 // v3 : mêmes corrections que « public-catalogue-v5 », écrites en base sans purge du tag.
 // v10 : chaque parfum porte sa gamme (`line`).
-const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v10"], {
+const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v11"], {
   tags: [PUBLIC_CATALOGUE_CACHE_TAG],
 });
 
