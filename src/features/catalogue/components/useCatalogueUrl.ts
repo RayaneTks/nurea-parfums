@@ -26,6 +26,7 @@ export function useCatalogueUrl() {
   const query = state.get("q") ?? "";
   const stock = state.get("stock") === null ? null : readEnum<StockFilter | "">(state.get("stock"), STOCK_FILTERS, "") || null;
   const visibility = readEnum<VisibilityFilter | "">(state.get("visibilite"), VISIBILITY_FILTERS, "") || null;
+  const collectionVisual = state.get("gamme") === "complete" ? true : null;
   const { hrefWith } = state;
 
   const write = useCallback(
@@ -36,5 +37,5 @@ export function useCatalogueUrl() {
     [hrefWith],
   );
 
-  return { tab, query, stock, visibility, write };
+  return { tab, query, stock, visibility, collectionVisual, write };
 }

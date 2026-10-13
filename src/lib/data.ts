@@ -29,11 +29,7 @@ export const CONTACT = {
   location: "Marseille & alentours",
 };
 
-export type Category =
-  | "Tout voir"
-  | "Gammes Complètes"
-  | "Sélections Individuelles"
-  | "Nouveautés";
+export type Category = "Tout voir" | "Nouveautés";
 
 export interface Perfume {
   id: number;
@@ -58,8 +54,6 @@ export interface Perfume {
 
 export const categories: Category[] = [
   "Tout voir",
-  "Gammes Complètes",
-  "Sélections Individuelles",
   "Nouveautés",
 ];
 

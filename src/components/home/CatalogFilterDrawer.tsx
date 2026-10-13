@@ -187,9 +187,7 @@ export const CatalogFilterDrawer: FC<CatalogFilterDrawerProps> = ({
                             {brand.name}
                           </span>
                           <span className="nurea-caption shrink-0 tabular-nums">
-                            {brand.assortment === "COMPLETE"
-                              ? "Gamme"
-                              : brand.publishedCount}
+                            {brand.publishedCount} réf.
                           </span>
                         </label>
                       </li>

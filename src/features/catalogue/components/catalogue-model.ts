@@ -59,13 +59,14 @@ export function perfumeCounts(perfumes: readonly AdminPerfumeRow[], words: reado
   };
 }
 
-export type BrandFilters = { words: readonly string[]; visibility: VisibilityFilter | null };
+export type BrandFilters = { words: readonly string[]; visibility: VisibilityFilter | null; collectionVisual: boolean | null };
 
 export function filterBrands(brands: readonly AdminBrandRow[], filters: BrandFilters): AdminBrandRow[] {
   return brands.filter(
     (brand) =>
       matchesWords(brand.searchKey, filters.words) &&
-      matchesVisibility(brand.status, filters.visibility),
+      matchesVisibility(brand.status, filters.visibility) &&
+      (filters.collectionVisual === null || Boolean(brand.image) === filters.collectionVisual),
   );
 }
 
@@ -75,6 +76,7 @@ export function brandCounts(brands: readonly AdminBrandRow[], words: readonly st
     total: matching.length,
     visible: matching.filter((brand) => brand.status !== "DRAFT").length,
     hidden: matching.filter((brand) => brand.status === "DRAFT").length,
+    collectionVisual: matching.filter((brand) => Boolean(brand.image)).length,
   };
 }
 

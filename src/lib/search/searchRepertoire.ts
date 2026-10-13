@@ -24,7 +24,7 @@ const ENTRIES: Perfume[] = (repertoire as ReferenceEntry[]).map((entry, index) =
   brand: entry.brand,
   line: entry.line,
   aliases: entry.aliases,
-  category: "Sélections Individuelles",
+  category: "Tout voir",
   image: "",
 }));
 

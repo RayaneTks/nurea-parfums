@@ -309,7 +309,7 @@ et après. C'est la contrainte la plus dure du chantier : la vitrine lit les mê
 |---|---|---|---|---|
 | NR-9.1 | Catalogue une page, filtres, 12 fiches visibles, **toutes dans le DOM** (référencement) | e2e `catalog-filters` ; comptage du DOM | Chaque fin de jalon, et B10 | [ ] |
 | NR-9.2 | Filtres miroirs de l'URL (`q`, `cat`, `sort`, `maison`, `brands`) ; un lien `?maison=` partagé survit à un renommage de marque | e2e `catalog-filters` ; db `catalogue` (slug stable) | J11, B10 | [ ] |
-| NR-9.3 | Cartes « Gammes complètes » synthétisées depuis les marques `COMPLETE` | db `catalogue-vitrine` (comptage) | Répétitions, B10 | [ ] |
+| NR-9.3 | Pages marque : parfums individuels d'abord, visuel de collection facultatif en bas ; aucun produit synthétique | db `catalogue-vitrine` | Répétitions, B10 | [ ] |
 | NR-9.4 | Mise en avant éditoriale (2 bandeaux alternés) | **à la main** (§1b) : deux bandeaux sur `/` | B10 | [ ] |
 | NR-9.5a | Recherche floue locale (accents, Levenshtein, tokens, pertinence) | e2e `catalog-filters` | B10 | [ ] |
 | NR-9.5b | Recherche élargie serveur (cache, Fraganty, suggestion unique) | **à la main** (§1b) : une requête absente du catalogue | J16, B10 | [ ] |

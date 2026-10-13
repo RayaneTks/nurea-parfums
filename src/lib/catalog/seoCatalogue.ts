@@ -102,8 +102,7 @@ export function toCardPerfume(brand: SeoBrand, perfume: SeoPerfume): Perfume {
     brand: brand.name,
     brandSlug: brand.slug,
     line: perfume.line ?? undefined,
-    // Toujours un flacon réel ici : la catégorie « gamme » est réservée à la fiche-marque synthétique.
-    category: "Sélections Individuelles",
+    category: "Tout voir",
     image: perfume.image,
     imageLight: perfume.imageLight ?? undefined,
     blurDataURL: perfume.blurDataURL,

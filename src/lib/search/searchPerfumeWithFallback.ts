@@ -95,7 +95,7 @@ export function searchUnlisted(
     name: p.name,
     brand: p.brand,
     line: p.line,
-    category: "Sélections Individuelles",
+    category: "Tout voir",
     image: "",
   }));
   const [best] = searchLocalCatalog(asPerfumes, query);

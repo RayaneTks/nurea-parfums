@@ -17,7 +17,7 @@ import {
   type Category,
   type Perfume,
 } from "@/lib/data";
-import { inCategory, isCompleteRange } from "@/lib/catalog/perfumePresentation";
+import { inCategory } from "@/lib/catalog/perfumePresentation";
 import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
 import { brandSlug } from "@/lib/slugify";
 import { CatalogEmptyState } from "./CatalogEmptyState";
@@ -79,20 +79,15 @@ export const CatalogSection = ({
     const list = [...matching];
     const byName = (a: Perfume, b: Perfume) =>
       a.name.localeCompare(b.name, "fr", { sensitivity: "base" });
-    const rangeAfterBrandPerfumes = (a: Perfume, b: Perfume) =>
-      a.brand === b.brand && isCompleteRange(a) !== isCompleteRange(b)
-        ? isCompleteRange(a) ? 1 : -1
-        : 0;
 
     if (filters.sort === "name") {
       const oneBrand = filters.brandSlug !== "" || filters.brandSlugs.size === 1;
-      return list.sort((a, b) => (oneBrand ? rangeAfterBrandPerfumes(a, b) : 0) || byName(a, b));
+      return list.sort(byName);
     }
     if (filters.sort === "brand") {
       return list.sort(
         (a, b) =>
           a.brand.localeCompare(b.brand, "fr", { sensitivity: "base" }) ||
-          rangeAfterBrandPerfumes(a, b) ||
           byName(a, b)
       );
     }
@@ -135,17 +130,12 @@ export const CatalogSection = ({
       ? extendedSearch.response.suggestion
       : null;
 
-  /* La suggestion externe vise parfois une marque déjà présente : on le dit,
-     et on remonte sa gamme en tête des pistes proposées. */
-  const suggestedRange = useMemo(() => {
+  /* Une suggestion externe peut viser une marque déjà présente. */
+  const suggestedBrandInCatalog = useMemo(() => {
     const brand = apiSuggestion?.brand?.trim();
     if (!brand || brand === "—") return null;
-    return (
-      catalogPerfumes.find(
-        (p) => isCompleteRange(p) && p.brand.toLowerCase() === brand.toLowerCase()
-      ) ?? null
-    );
-  }, [apiSuggestion, catalogPerfumes]);
+    return browseBrands.find((b) => b.name.toLowerCase() === brand.toLowerCase())?.name ?? null;
+  }, [apiSuggestion, browseBrands]);
 
   const inspirations = useMemo(() => {
     if (sorted.length > 0) return [];
@@ -153,7 +143,6 @@ export const CatalogSection = ({
     if (!query) return catalogPerfumes.slice(0, 6);
 
     const candidates = [
-      ...(suggestedRange ? [suggestedRange] : []),
       ...(externalHint
         ? getPerfumesByIds(externalHint.similarCatalogIds, catalogPerfumes)
         : []),
@@ -169,16 +158,12 @@ export const CatalogSection = ({
       merged.push(perfume);
     }
     return merged;
-  }, [sorted.length, filters.query, catalogPerfumes, suggestedRange, externalHint]);
+  }, [sorted.length, filters.query, catalogPerfumes, externalHint]);
 
   const resultLabel = useMemo(() => {
     const count = sorted.length;
     if (count === 0) return "0 résultat";
-    const ranges = sorted.some(isCompleteRange);
-    const singles = sorted.some((p) => !isCompleteRange(p));
-    if (ranges && !singles) return `${count} marque${count > 1 ? "s" : ""}`;
-    if (singles && !ranges) return `${count} parfum${count > 1 ? "s" : ""}`;
-    return `${count} résultat${count > 1 ? "s" : ""}`;
+    return `${count} parfum${count > 1 ? "s" : ""}`;
   }, [sorted]);
 
   const brandName = useMemo(
@@ -208,20 +193,7 @@ export const CatalogSection = ({
     [selectCategory, revealCatalogTop]
   );
 
-  /* Une fiche « gamme » représente une marque : elle restreint la grille au
-     lieu d'ouvrir un détail, qui n'aurait aucune référence à présenter. */
-  const openPerfume = useCallback(
-    (perfume: Perfume) => {
-      if (isCompleteRange(perfume)) {
-        update({ brandSlug: slugOf(perfume), brandSlugs: new Set() });
-        setShowAll(false);
-        revealCatalogTop();
-        return;
-      }
-      setOpenedPerfume(perfume);
-    },
-    [update, revealCatalogTop]
-  );
+  const openPerfume = (perfume: Perfume) => setOpenedPerfume(perfume);
 
   const applyBrandFilter = useCallback(
     (slugs: Set<string>) => {
@@ -231,17 +203,6 @@ export const CatalogSection = ({
       revealCatalogTop();
     },
     [update, revealCatalogTop]
-  );
-
-  const captionFor = useCallback(
-    (perfume: Perfume) => {
-      if (!isCompleteRange(perfume)) return undefined;
-      const count = browseBrands.find(
-        (b) => b.slug === slugOf(perfume)
-      )?.publishedCount;
-      return count ? `Gamme complète · ${count} référence${count > 1 ? "s" : ""}` : "Gamme complète";
-    },
-    [browseBrands]
   );
 
   return (
@@ -353,7 +314,6 @@ export const CatalogSection = ({
                 >
                   <PerfumeCard
                     perfume={perfume}
-                    caption={captionFor(perfume)}
                     onOpen={openPerfume}
                     imagePriority={index < 4}
                   />
@@ -373,7 +333,7 @@ export const CatalogSection = ({
           <div className="pt-6">
             <CatalogEmptyState
               query={filters.query}
-              suggestedBrandInCatalog={suggestedRange?.brand ?? null}
+              suggestedBrandInCatalog={suggestedBrandInCatalog}
               externalHint={externalHint}
               extendedSearch={extendedSearch}
             />
@@ -388,7 +348,6 @@ export const CatalogSection = ({
                     <PerfumeCard
                       key={perfume.id}
                       perfume={perfume}
-                      caption={captionFor(perfume)}
                       onOpen={openPerfume}
                     />
                   ))}

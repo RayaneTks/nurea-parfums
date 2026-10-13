@@ -43,7 +43,7 @@ function perfumesText(count: number): string {
 
 /**
  * E17 — Formulaire marque (06 §3.5) : logo SANS recadrage (proportions d'origine, règle projet), nom
- * dédoublonné, visibilité, lien public stable au renommage. Un visuel de gamme peut compléter les
+ * dédoublonné, visibilité, lien public stable au renommage. Un visuel de collection peut compléter les
  * flacons publiés, sans les remplacer.
  */
 export function BrandForm({ sheet, brands }: BrandFormProps) {
@@ -169,9 +169,9 @@ export function BrandForm({ sheet, brands }: BrandFormProps) {
 
   return (
     <>
-      <FormSection title="Visuel de gamme" description="Facultatif. Gardé tel quel, jamais recadré. Il complète les flacons publiés.">
+      <FormSection title="Visuel de collection" description="Facultatif. Gardé tel quel, jamais recadré. Il apparaît après les parfums publiés sur la page de marque.">
         <ImageField
-          label="Visuel de gamme"
+          label="Visuel de collection"
           kind="logo"
           value={image}
           onChange={setImage}
@@ -180,7 +180,7 @@ export function BrandForm({ sheet, brands }: BrandFormProps) {
         />
         <CollapsibleSection bare title="Variante claire" summary={imageLight ? "Ajoutée" : "Facultative"} defaultOpen={imageLight !== ""}>
           <ImageField
-            label="Visuel de gamme, variante claire"
+            label="Visuel de collection, variante claire"
             hint="Affiché sur la vitrine en mode clair."
             kind="logo"
             value={imageLight}
@@ -236,7 +236,7 @@ export function BrandForm({ sheet, brands }: BrandFormProps) {
           disabledReason={publishVerdict.ok ? undefined : publishVerdict.message}
           description={
             status === "PUBLISHED"
-              ? "Ses parfums publiés et son visuel de gamme apparaissent sur le site."
+              ? "Ses parfums publiés et son visuel de collection apparaissent sur le site."
               : perfumeCount > 0
                 ? `Masquée : ${perfumesText(perfumeCount)} aussi.`
                 : "Masquée : absente du site."

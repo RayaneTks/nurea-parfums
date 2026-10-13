@@ -5,12 +5,6 @@ import { brandSlug } from "../src/lib/slugify";
 const prisma = new PrismaClient();
 
 async function main() {
-  const completeEntryByBrand = new Map(
-    mockPerfumes
-      .filter((p) => p.category === "Gammes Complètes")
-      .map((p) => [p.brand, p] as const),
-  );
-
   const brandNames = [...new Set(mockPerfumes.map((p) => p.brand))].sort((a, b) =>
     a.localeCompare(b, "fr")
   );
@@ -19,36 +13,25 @@ async function main() {
 
   for (const name of brandNames) {
     const slug = brandSlug(name);
-    const completeEntry = completeEntryByBrand.get(name);
-    const hasCompleteEntry = Boolean(completeEntry);
-    const catalogMode = hasCompleteEntry ? "COMPLETE" : "CURATED";
+    const catalogMode = "CURATED";
     const b = await prisma.brand.upsert({
       where: { name },
       create: {
         name,
         slug,
         catalogMode,
-        image: completeEntry?.image ?? null,
+        image: null,
       },
       update: {
         slug,
         catalogMode,
-        image: completeEntry?.image ?? null,
       },
     });
     brandIdByName.set(name, b.id);
   }
 
-  // Une marque "Gamme complète" ne doit pas exposer de parfums individuels.
-  await prisma.perfume.deleteMany({
-    where: {
-      brand: { catalogMode: "COMPLETE" },
-    },
-  });
-
   let seededPerfumes = 0;
   for (const p of mockPerfumes) {
-    if (p.category === "Gammes Complètes") continue;
     const brandId = brandIdByName.get(p.brand);
     if (!brandId) throw new Error(`Marque manquante: ${p.brand}`);
     const displayName = p.name;
@@ -74,10 +57,7 @@ async function main() {
     seededPerfumes += 1;
   }
 
-  const completeCount = [...completeEntryByBrand.keys()].length;
-  console.log(
-    `Seed OK — ${seededPerfumes} parfums, ${brandNames.length} marques (${completeCount} en gamme complète).`,
-  );
+  console.log(`Seed OK — ${seededPerfumes} parfums, ${brandNames.length} marques.`);
 }
 
 main()

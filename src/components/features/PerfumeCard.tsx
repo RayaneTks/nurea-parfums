@@ -2,18 +2,11 @@
 
 import type { FC } from "react";
 import type { Perfume } from "@/lib/data";
-import { brandLineLabel, isCompleteRange } from "@/lib/catalog/perfumePresentation";
+import { brandLineLabel } from "@/lib/catalog/perfumePresentation";
 import { PerfumeImage } from "./PerfumeImage";
 
 interface PerfumeCardProps {
   perfume: Perfume;
-  /**
-   * Troisième ligne imposée par la charte, après la marque et le nom.
-   * Calculée par la section : la fiche seule ne connaît pas le nombre de
-   * références d'une marque. Omise quand rien de vrai n'est disponible —
-   * mieux vaut une ligne absente qu'une contenance inventée.
-   */
-  caption?: string;
   onOpen: (perfume: Perfume) => void;
   imagePriority?: boolean;
 }
@@ -30,18 +23,13 @@ interface PerfumeCardProps {
  */
 export const PerfumeCard: FC<PerfumeCardProps> = ({
   perfume,
-  caption,
   onOpen,
   imagePriority = false,
 }) => (
   <button
     type="button"
     onClick={() => onOpen(perfume)}
-    aria-label={
-      isCompleteRange(perfume)
-        ? `${perfume.brand} : voir les parfums de la marque`
-        : `${perfume.brand} — ${perfume.name} : voir comment commander`
-    }
+    aria-label={`${perfume.brand} — ${perfume.name} : voir comment commander`}
     className="nurea-press flex w-full flex-col border border-nurea-border bg-nurea-surface text-left hover:bg-nurea-surface-hover active:bg-nurea-surface-hover"
   >
     <div className="nurea-visuel-parfum relative w-full overflow-hidden">
@@ -68,7 +56,6 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
     <div className="border-t border-nurea-border p-5">
       <p className="nurea-label line-clamp-2">{brandLineLabel(perfume.brand, perfume.line)}</p>
       <p className="nurea-name mt-2 line-clamp-2 text-nurea-text">{perfume.name}</p>
-      {caption ? <p className="nurea-caption mt-2">{caption}</p> : null}
     </div>
   </button>
 );

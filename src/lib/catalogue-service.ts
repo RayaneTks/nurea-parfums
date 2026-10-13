@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import type { Category, Perfume } from "@/lib/data";
+import type { Perfume } from "@/lib/data";
 import { mockPerfumes } from "@/lib/data";
 import { getBlurPlaceholder } from "@/lib/blurPlaceholder";
 import { prisma } from "@/lib/db/prisma";
@@ -41,27 +41,20 @@ const DEMO_PERFUMES = demoCatalogue as Perfume[];
 function perfumesFromMock(source: Perfume[] = mockPerfumes): Perfume[] {
   return source.map((p) => ({
     ...p,
+    category: "Tout voir",
     brandSlug: p.brandSlug ?? p.brand.toLowerCase().trim().replace(/\s+/g, "-"),
   }));
 }
 
 function browseFromMock(source: Perfume[] = mockPerfumes): CatalogBrowseBrand[] {
-  const byBrand = new Map<
-    string,
-    { slug: string; complete: boolean; curatedCount: number }
-  >();
+  const byBrand = new Map<string, { slug: string; count: number }>();
   for (const p of source) {
     const key = p.brand;
     const row = byBrand.get(key) ?? {
       slug: p.brandSlug ?? p.brand.toLowerCase().trim().replace(/\s+/g, "-"),
-      complete: false,
-      curatedCount: 0,
+      count: 0,
     };
-    if (p.category === "Gammes Complètes") {
-      row.complete = true;
-    } else {
-      row.curatedCount += 1;
-    }
+    row.count += 1;
     byBrand.set(key, row);
   }
 
@@ -70,11 +63,7 @@ function browseFromMock(source: Perfume[] = mockPerfumes): CatalogBrowseBrand[] 
       id: row.slug,
       name,
       slug: row.slug,
-      assortment: row.complete ? ("COMPLETE" as const) : ("CURATED" as const),
-      publishedCount: row.complete ? 0 : row.curatedCount,
-      categories: [
-        (row.complete ? "Gammes Complètes" : "Sélections Individuelles") as Category,
-      ],
+      publishedCount: row.count,
     }))
     .sort((a, b) => a.name.localeCompare(b.name, "fr"));
 }
@@ -95,7 +84,7 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
   }
 
   try {
-    const [perfumes, rangeBrands, browseRows] = await Promise.all([
+    const [perfumes, browseRows] = await Promise.all([
       prisma.perfume.findMany({
         where: {
           status: "PUBLISHED",
@@ -123,19 +112,7 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
       prisma.brand.findMany({
         where: {
           status: "PUBLISHED",
-          name: { not: "" },
-          AND: [{ image: { not: null } }, { image: { not: "" } }],
-        },
-        select: { id: true, name: true, slug: true, image: true, imageLight: true },
-        orderBy: { name: "asc" },
-      }),
-      prisma.brand.findMany({
-        where: {
-          status: "PUBLISHED",
-          OR: [
-            { perfumes: { some: { status: "PUBLISHED" } } },
-            { AND: [{ image: { not: null } }, { image: { not: "" } }] },
-          ],
+          perfumes: { some: { status: "PUBLISHED" } },
         },
         select: {
           id: true,
@@ -150,22 +127,6 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
       }),
     ]);
 
-    const maxId = perfumes.reduce((acc, p) => Math.max(acc, p.id), 0);
-
-    const asPerfumesFromBrands: Perfume[] = rangeBrands
-      .filter((b) => isPublicImage(b.image) && b.name.trim() !== "")
-      .map((b, idx) => ({
-        id: maxId + idx + 1,
-        name: b.name,
-        brand: b.name,
-        brandSlug: b.slug,
-        category: "Gammes Complètes" as const,
-        image: b.image!,
-        imageLight: b.imageLight ?? undefined,
-        blurDataURL: getBlurPlaceholder(b.image),
-        tags: ["Gamme complète"],
-      }));
-
     const mappedPerfumes: Perfume[] = perfumes
       .filter((p) => isPublicImage(p.image) && p.brand.name.trim() !== "" && p.name.trim() !== "")
       .map((p) => {
@@ -175,7 +136,7 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
           brand: p.brand.name,
           brandSlug: p.brand.slug,
           line: p.line?.trim() || undefined,
-          category: "Sélections Individuelles" as Category,
+          category: "Tout voir",
           image: p.image,
           imageLight: p.imageLight ?? undefined,
           blurDataURL: getBlurPlaceholder(p.image),
@@ -185,8 +146,7 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
 
     /*
      * « Nouveautés » : les NEW_ARRIVALS_COUNT derniers parfums entrés au catalogue (date d'ajout,
-     * puis identifiant — une séquence — pour départager). Seulement des flacons réels : les visuels
-     * synthétiques de gamme ne sont pas des ajouts. Marqués ici, une fois, pour la grille ET la recherche.
+     * puis identifiant — une séquence — pour départager). Marqués ici, une fois, pour la grille ET la recherche.
      */
     const newest = new Set(
       [...perfumes]
@@ -204,14 +164,12 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
       id: b.id,
       name: b.name,
       slug: b.slug,
-      assortment: "CURATED",
       publishedCount: b.perfumes.length,
-      categories: ["Sélections Individuelles"],
     }));
 
     registerPrismaCatalogSuccess();
     return {
-      perfumes: [...mappedPerfumes, ...asPerfumesFromBrands],
+      perfumes: mappedPerfumes,
       browseBrands,
     };
   } catch (e) {
@@ -238,8 +196,8 @@ const getPublicCatalogueCached = unstable_cache(
   // v5 : deuxième fournée de visuels refaits (28/09/2026, 15 fiches), écrite en base.
   // v6 : l'instantané porte désormais `isNew` (catégorie « Nouveautés ») — un instantané v5 servi
   // au nouveau code laisserait la catégorie vide jusqu'à la prochaine modification du catalogue.
-  // v14 : les visuels de gamme sont proposés en complément des flacons pour toutes les marques.
-  ["public-catalogue-v14"],
+  // v15 : les pages publiques montrent uniquement les fiches parfum ; le visuel de marque reste en bas de page.
+  ["public-catalogue-v15"],
   { tags: [PUBLIC_CATALOGUE_CACHE_TAG] },
 );
 

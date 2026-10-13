@@ -8,14 +8,11 @@ import type { Perfume } from "@/lib/data";
  * marque n'apparaît qu'une fois : trois flacons de la même marque diraient
  * « une marque », pas « une parfumerie ».
  *
- * Les gammes complètes sont écartées : leur « visuel » est celui de la marque,
- * pas celui d'un flacon, et ces pages montrent des flacons.
- *
  * Déterministe : même catalogue, mêmes flacons. Une page qui changerait
  * d'images à chaque visite paraîtrait instable, et ne se mettrait pas en cache.
  */
 export function choisirFlacons(perfumes: readonly Perfume[], combien: number): Perfume[] {
-  const flacons = perfumes.filter((p) => p.category !== "Gammes Complètes" && p.image.trim() !== "");
+  const flacons = perfumes.filter((p) => p.image.trim() !== "");
   const ordonnes = [...flacons.filter((p) => p.isFeatured), ...flacons.filter((p) => !p.isFeatured)];
 
   const vues = new Set<string>();
@@ -45,7 +42,6 @@ export function trouverParfum(
   if (!n) return undefined;
   return perfumes.find(
     (p) =>
-      p.category !== "Gammes Complètes" &&
       p.name.trim().toLowerCase() === n &&
       (!m || p.brand.trim().toLowerCase() === m),
   );

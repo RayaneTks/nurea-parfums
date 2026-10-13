@@ -62,7 +62,7 @@ function RowList<T>({ items, itemKey, label, render }: { items: readonly T[]; it
  */
 export function CatalogueLists({ catalogue }: { catalogue: AdminCatalogue }) {
   const router = useRouter();
-  const { tab, query, stock, visibility, write } = useCatalogueUrl();
+  const { tab, query, stock, visibility, collectionVisual, write } = useCatalogueUrl();
   const removals = usePendingRemovals();
   const words = useMemo(() => searchWords(query), [query]);
 
@@ -80,12 +80,13 @@ export function CatalogueLists({ catalogue }: { catalogue: AdminCatalogue }) {
 
   if (tab === "marques") {
     const counts = brandCounts(brands, words);
-    const shown = filterBrands(brands, { words, visibility });
-    const filtered = words.length > 0 || visibility !== null;
+    const shown = filterBrands(brands, { words, visibility, collectionVisual });
+    const filtered = words.length > 0 || visibility !== null || collectionVisual !== null;
     const visibleOn = visibility === "visibles";
     const hiddenOn = visibility === "masques";
     const showVisible = chipShown(counts.visible, counts.total, visibleOn);
     const showHidden = chipShown(counts.hidden, counts.total, hiddenOn);
+    const showCollectionVisual = chipShown(counts.collectionVisual, counts.total, collectionVisual === true);
     const add = (
       <Button variant="primary" size="sm" leadingIcon={<Plus size={16} />} ariaLabel="Nouvelle marque" onClick={() => router.push(routes.nouvelleMarque())}>
         Marque
@@ -107,7 +108,7 @@ export function CatalogueLists({ catalogue }: { catalogue: AdminCatalogue }) {
     }
     return (
       <div className="flex flex-col gap-3">
-        {showVisible || showHidden ? (
+        {showVisible || showHidden || showCollectionVisual ? (
           <ChipRow>
             {showVisible ? (
               <Chip active={visibleOn} clearable={visibleOn} count={counts.visible || undefined} onClick={() => write({ visibilite: visibleOn ? null : "visibles" })}>
@@ -117,6 +118,11 @@ export function CatalogueLists({ catalogue }: { catalogue: AdminCatalogue }) {
             {showHidden ? (
               <Chip active={hiddenOn} clearable={hiddenOn} count={counts.hidden || undefined} onClick={() => write({ visibilite: hiddenOn ? null : "masques" })}>
                 Masquées
+              </Chip>
+            ) : null}
+            {showCollectionVisual ? (
+              <Chip active={collectionVisual === true} clearable={collectionVisual === true} count={counts.collectionVisual || undefined} onClick={() => write({ gamme: collectionVisual === true ? null : "complete" })}>
+                Visuel de collection
               </Chip>
             ) : null}
           </ChipRow>

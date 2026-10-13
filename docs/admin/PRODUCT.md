@@ -88,10 +88,10 @@ page hors inventaire.
 | E13 À encaisser | `/admin/encaisser?anciennete=30&q=` | Créances groupées par client, plus anciennes d'abord, chip « Plus de 30 jours ». |
 | E14 Fiche client | `/admin/clients/[id]?pages=` | Dû, historique, Appeler / WhatsApp / Snap, relance. |
 | E20 Formulaire client | `/admin/clients/nouveau`, `/admin/clients/[id]/modifier` | Téléphone normalisé, doublon nommé avant l'envoi. |
-| E15 Catalogue | `/admin/catalogue?tab=&q=&stock=&visibilite=` | Parfums / Marques / En avant. |
+| E15 Catalogue | `/admin/catalogue?tab=&q=&stock=&visibilite=&gamme=complete` | Parfums / Marques / En avant ; le filtre Marques cible les marques avec visuel de collection. |
 | E16 Fiche parfum | `/admin/catalogue/parfums/[id]` | Tarifs, stock, visibilité, galerie de visuels story. |
 | E19 Formulaire parfum | `.../parfums/nouveau`, `.../parfums/[id]/modifier` | Fiche (marque, nom, ligne facultative — ex. La Collection Privée), image sombre + variante claire, grille tarifaire. |
-| E17 Formulaire marque | `/admin/catalogue/marques/nouvelle`, `.../[id]/modifier` | Visuel de gamme facultatif, jamais recadré ; les parfums publiés et le visuel coexistent. |
+| E17 Formulaire marque | `/admin/catalogue/marques/nouvelle`, `.../[id]/modifier` | Visuel de collection facultatif, jamais recadré ; les parfums publiés et le visuel coexistent. |
 | E18 Connexion | `/admin/login?retour=` | **Hors shell** : ni header ni tab bar. |
 
 **La fiche d'un document est une sheet adressable, jamais une page** (amendement A-3) :
@@ -155,9 +155,9 @@ ici : deux listes divergent toujours.
   et contre-passation.
 - **Suppression** (document sans paiement, client, parfum) = suppression réelle, avec
   confirmation qui dit vrai et filet « Annuler » de 5 secondes.
-- **Gamme complète** = visuel facultatif affiché après les flacons publiés sur la page de la marque ; il invite à contacter Nuréa pour les références sans visuel individuel.
+- **Visuel de collection** = image facultative affichée après les parfums publiés sur la page de marque ; elle invite à contacter Nuréa pour vérifier d'autres références au catalogue.
 - **Création parfum** : marque obligatoire ; création auto `CURATED` si absente à la soumission.
-- **Images** : `image` = visuel de gamme principal (sombre) ; `imageLight` optionnelle. La conversion WebP se fait **côté serveur** (l'iPhone ne sait pas encoder
+- **Images** : `image` = visuel de collection principal (sombre) ; `imageLight` optionnelle. La conversion WebP se fait **côté serveur** (l'iPhone ne sait pas encoder
   le WebP) ; un logo n'est jamais recadré.
 - **Visuels story** : jusqu'à 24 par parfum, sans recadrage, HEIC accepté, récupérés par
   le partage natif avec fichier. Jamais lus par la vitrine : `image` reste seul juge de
@@ -292,7 +292,7 @@ node scripts/build-admin-pwa-assets.mjs
 
 ## Language
 
-Interface, copy, toasts et erreurs en **français**. Termes usuels : Marque, Gamme complète, Visible, Masqué, Supprimer, Commande, Client.
+Interface, copy, toasts et erreurs en **français**. Termes usuels : Marque, Visuel de collection, Visible, Masqué, Supprimer, Commande, Client.
 
 L'agent répond en français sauf demande contraire.
 

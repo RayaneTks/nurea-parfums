@@ -14,8 +14,8 @@ import Link from "next/link";
 import { X } from "lucide-react";
 import type { Perfume } from "@/lib/data";
 import { useSheetMotion } from "@/hooks/useSheetMotion";
-import { brandLineLabel, isCompleteRange } from "@/lib/catalog/perfumePresentation";
-import { brandPath, perfumePath } from "@/lib/seo/paths";
+import { brandLineLabel } from "@/lib/catalog/perfumePresentation";
+import { perfumePath } from "@/lib/seo/paths";
 import { buttonClass } from "@/components/ui/Button";
 import { OrderChannels } from "./OrderChannels";
 import { SnapchatOrderButton } from "./SnapchatOrderButton";
@@ -107,18 +107,7 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
     }
   };
 
-  /*
-   * La fiche a une adresse à elle : c'est elle qu'on partage en story, et elle que Google indexe.
-   *
-   * La carte de gamme complète n'est pas un flacon : le catalogue la fabrique à partir de la
-   * marque (même nom, identifiant synthétique), et son adresse est celle de la marque.
-   */
-  const brandSheet = isCompleteRange(perfume) && perfume.name === perfume.brand;
-  const sheetHref = perfume.brandSlug
-    ? brandSheet
-      ? brandPath(perfume.brandSlug)
-      : perfumePath(perfume.brandSlug, perfume.name, perfume.id)
-    : null;
+  const sheetHref = perfume.brandSlug ? perfumePath(perfume.brandSlug, perfume.name, perfume.id) : null;
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end justify-center md:items-center">
@@ -178,7 +167,7 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
               <OrderChannels perfume={perfume.name} brand={perfume.brand} primaryOnMobile={false}>
                 {sheetHref ? (
                   <Link href={sheetHref} className={buttonClass("link")}>
-                    {brandSheet ? "Voir la page de la marque" : "Voir la fiche du parfum"}
+                    Voir la fiche du parfum
                   </Link>
                 ) : null}
               </OrderChannels>
