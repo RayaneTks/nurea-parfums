@@ -74,6 +74,7 @@ La v2 (01 §4.8) créait six tables françaises alimentées par **copie** sur un
 | `Perfume` | Parfum du catalogue : visuel bi-thème, mise en avant, statut, stock (`NULL` = non suivi). |
 | `PerfumePricing` | Mémoire de saisie par (parfum, contenance 10 / 50 / 80 ml) : prix, coût DZD, taux. Pré-remplit les lignes. |
 | `PerfumeMedia` | Visuel story d'un parfum (planche 9:16 prête à publier) : chemin dans le bucket (décidé par le serveur), URL, dimensions, poids, ordre. Rangé sur la fiche parfum, **jamais lu par la vitrine** ; `Perfume.image` reste seul juge de la publication. Table née en production le 10/09/2026, conservée telle quelle. |
+| `PerfumeResearchRecord` | Données structurées de recherche parfum (notes, gamme, univers) avec source, preuve des droits et date. Reste en staging jusqu'à validation admin ; ne publie rien et ne modifie pas `Perfume`. Source et réviseur conservés pour l'audit. |
 
 **Gestion**
 
@@ -99,6 +100,7 @@ La v2 (01 §4.8) créait six tables françaises alimentées par **copie** sur un
 | `Brand` → `Perfume` | 1 — 0..N | Cascade | Règle métier existante conservée (02 §4.5) ; l'historique est protégé par les snapshots des lignes. |
 | `Perfume` → `PerfumePricing` | 1 — 0..3 | Cascade | Mémoire de saisie, sans valeur historique. |
 | `Perfume` → `PerfumeMedia` | 1 — 0..24 | Cascade | Un visuel story n'a pas de sens sans son parfum. Les **objets du bucket** ne suivent pas la cascade : le module catalogue lit leurs chemins avant la suppression et les retire **après le commit** (04 §12). Plafond de 24 par parfum : règle serveur. |
+| `AdminUser` → `PerfumeResearchRecord` | 1 — 0..N | Restrict | Une fiche examinée garde son réviseur; un compte ne se supprime pas tant que sa preuve d'approbation existe. |
 | `Perfume` → `SaleLine` | 0..1 — 0..N | SetNull | La ligne garde son snapshot : supprimer un parfum ne rend plus l'historique illisible. |
 | `Customer` → `SaleDocument` | 0..1 — 0..N | SetNull | L'historique survit à la fiche ; le nom reste en snapshot. |
 | `Batch` → `SaleDocument` | 0..1 — 0..N | **Restrict** | Un lot qui porte des documents ne disparaît pas (02 §4.4). |
@@ -223,7 +225,7 @@ erDiagram
 
 ## 3. MLD — `schema.prisma` cible complet
 
-Ce fichier remplace intégralement `prisma/schema.prisma` à la fin de la bascule (§7). Il cible Prisma 6.19 et PostgreSQL ≥ 15 (Supabase).
+Ce fichier remplace intégralement `prisma/schema.prisma` à la fin de la bascule (§7). Il cible Prisma 6.19 et PostgreSQL ≥ 15 (Supabase). La migration additive `20261013100000_perfume_research_private` ajoute ensuite `PerfumeResearchRecord`, décrit au MCD §2.1; contrat et droits : `docs/admin/recherche-parfums.md`.
 
 ```prisma
 // ─────────────────────────────────────────────────────────────────────────────
@@ -714,6 +716,7 @@ Emplacements indicatifs selon la convention du repo `src/server/<domaine>/` ; l'
 | `CashMovement` de nature `TRANSFER`, `ADJUSTMENT`, `SUPPLIER` et leurs contre-passations ; `Pocket` | module **trésorerie** | créer, renommer, archiver une poche ; supprimer une poche sans mouvement ; transfert ; répartir le non attribué ; ajustement ; paiement fournisseur ; annuler un mouvement manuel |
 | L'INSERT physique dans `CashMovement` | une seule fonction bas niveau du module **trésorerie**, appelée par les trois modules ci-dessus avec la nature qui leur appartient | — |
 | `Brand`, `Perfume` (hors deltas de stock), réglage absolu du stock, `PerfumePricing` depuis la fiche, `PerfumeMedia` (et les objets du bucket qu'elle référence) | module **catalogue** | CRUD, visibilité, mise en avant, tarifs, stock ; visuels story : déposer, réordonner, retirer |
+| `PerfumeResearchRecord` | module **perfume-research** | importer en attente, vérifier ou refuser; seuls les enregistrements validés alimentent l'API interne |
 | `Customer` | module **clients** | créer (dont inline), modifier, supprimer |
 | `Setting` (taux, poche par défaut) | module **réglages** (appelé par les encaissements, les dépenses et les poches pour la poche proposée) | écran Réglages ; mémoire de poche (N2) : choisir « Non attribué » se mémorise `NULL`, un T1 à plusieurs paiements mémorise la poche du premier, archiver la poche par défaut la remet à `NULL`. Sans ligne `Setting` (base neuve), la lecture rend le taux 277 et la poche `NULL`, la première écriture fait un `upsert` de l'id 1 (04 §7.4) |
 | `AdminUser` | module **auth** | connexion, backoff |

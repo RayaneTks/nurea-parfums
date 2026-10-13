@@ -39,6 +39,20 @@ enum BrandCatalogMode {
   COMPLETE
 }
 
+/// Sources utilisables pour la base de recherche interne. Fragrantica est volontairement absent.
+enum PerfumeResearchSourceType {
+  BRAND_OFFICIAL
+  PERFUMER_OFFICIAL
+  SUPPLIER
+  LICENSED_DATA_PROVIDER
+}
+
+enum PerfumeResearchStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
 model Brand {
   id          String            @id @default(cuid())
   name        String            @unique
@@ -87,6 +101,36 @@ model Perfume {
   @@index([status])
   @@index([brandId])
   @@index([status, brandId])
+}
+
+/// Faits parfumés sourcés, en attente ou validés. Jamais publiés directement sur la vitrine.
+model PerfumeResearchRecord {
+  id                 String                    @id @default(cuid())
+  brandName          String
+  perfumeName        String
+  brandKey           String
+  perfumeKey         String
+  line               String?
+  sourceType         PerfumeResearchSourceType
+  sourceUrl          String                    @db.VarChar(500)
+  /// Référence de licence, accord ou base juridique vérifiée par l'opérateur.
+  rightsEvidence     String                    @db.VarChar(1000)
+  retrievedAt        DateTime                  @db.Timestamptz(3)
+  topNotes           String[]                  @default([])
+  heartNotes         String[]                  @default([])
+  baseNotes          String[]                  @default([])
+  universeCorrection String?
+  status             PerfumeResearchStatus     @default(PENDING)
+  rightsConfirmed    Boolean                   @default(false)
+  reviewNotes        String?                   @db.VarChar(1000)
+  reviewedAt         DateTime?                 @db.Timestamptz(3)
+  reviewerId         String?
+  reviewer           AdminUser?                @relation("PerfumeResearchReviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
+  createdAt          DateTime                  @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime                  @updatedAt @db.Timestamptz(3)
+
+  @@unique([brandKey, perfumeKey, sourceUrl, retrievedAt], map: "PerfumeResearchRecord_identity_key")
+  @@index([status, brandKey, perfumeKey])
 }
 
 /// Mémoire de saisie par (parfum, volume) : pré-remplit prix, coût et taux d'une nouvelle ligne.
@@ -179,39 +223,39 @@ enum DocumentStatus {
 model SaleDocument {
   /// Identifiant texte fourni par le client à la création (UUID v4, 04 §3.6) : un double tap renvoie le même id
   /// (idempotence). `@default(cuid())` ne sert qu'aux créations serveur (reprise, scripts).
-  id                 String         @id @default(cuid())
-  origin             DocumentOrigin
-  status             DocumentStatus @default(PENDING)
+  id                      String         @id @default(cuid())
+  origin                  DocumentOrigin
+  status                  DocumentStatus @default(PENDING)
   /// Fiche client liée ; SetNull : l'historique survit à la suppression de la fiche.
-  customerId         String?
-  customer           Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerId              String?
+  customer                Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
   /// Snapshot du nom : copié de Customer.fullName au moment du lien, ou saisi pour un client de passage.
   /// Affichage : customer.fullName ?? customerName ?? libellé « client de passage » (06).
-  customerName       String?
+  customerName            String?
   /// Contact libre d'un client de passage (téléphone, Snapchat…).
-  customerContact    String?
+  customerContact         String?
   /// Lot fournisseur ; Restrict. Rattachement refusé par le serveur si le lot est CLOSED.
-  batchId            String?
-  batch              Batch?         @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  batchId                 String?
+  batch                   Batch?         @relation(fields: [batchId], references: [id], onDelete: Restrict)
   /// Date du document : prise de commande, ou moment de la vente directe.
-  orderedAt          DateTime       @default(now()) @db.Timestamptz(3)
+  orderedAt               DateTime       @default(now()) @db.Timestamptz(3)
   /// Livraison prévue. Base de « en retard » (§5.6). Sans heure fixée : 00:00 Europe/Paris du jour prévu.
-  expectedDeliveryAt DateTime?      @db.Timestamptz(3)
+  expectedDeliveryAt      DateTime?      @db.Timestamptz(3)
   /// Vrai si une heure a été choisie : distingue « pas d'heure » de « 00:00 » à l'affichage (06 E10, E11).
   /// Sans effet sur « en retard ». Faux à la reprise (l'existant ne saisit qu'une date, 01 §3.1).
-  expectedDeliveryHasTime Boolean   @default(false)
+  expectedDeliveryHasTime Boolean        @default(false)
   /// Engagement : posé à l'entrée en CONFIRMED ou DELIVERED, effacé au retour en PENDING ou à l'annulation.
   /// Rattache le coût du document à une période (§5.4). CHECK : non nul ⇔ status ∈ (CONFIRMED, DELIVERED).
-  confirmedAt        DateTime?      @db.Timestamptz(3)
+  confirmedAt             DateTime?      @db.Timestamptz(3)
   /// Livraison réelle. CHECK : non nul ⇔ status = DELIVERED.
-  deliveredAt        DateTime?      @db.Timestamptz(3)
+  deliveredAt             DateTime?      @db.Timestamptz(3)
   /// Annulation. CHECK : non nul ⇔ status = CANCELLED.
-  cancelledAt        DateTime?      @db.Timestamptz(3)
-  notes              String?
-  createdAt          DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt          DateTime       @updatedAt @db.Timestamptz(3)
-  lines              SaleLine[]
-  payments           Payment[]
+  cancelledAt             DateTime?      @db.Timestamptz(3)
+  notes                   String?
+  createdAt               DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt               DateTime       @updatedAt @db.Timestamptz(3)
+  lines                   SaleLine[]
+  payments                Payment[]
 
   @@index([status, expectedDeliveryAt])
   @@index([status, confirmedAt])
@@ -442,13 +486,14 @@ model Setting {
 
 /// Compte de connexion, créé par CLI. Mono-opérateur : aucun rôle.
 model AdminUser {
-  id               String    @id @default(cuid())
-  username         String    @unique
-  passwordHash     String
+  id                      String                  @id @default(cuid())
+  username                String                  @unique
+  passwordHash            String
   /// Échecs de connexion consécutifs (backoff persistant, remis à 0 au succès).
-  failedLoginCount Int       @default(0)
+  failedLoginCount        Int                     @default(0)
   /// Connexion refusée jusqu'à cet instant après trop d'échecs.
-  lockedUntil      DateTime? @db.Timestamptz(3)
-  createdAt        DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt        DateTime  @updatedAt @db.Timestamptz(3)
+  lockedUntil             DateTime?               @db.Timestamptz(3)
+  createdAt               DateTime                @default(now()) @db.Timestamptz(3)
+  updatedAt               DateTime                @updatedAt @db.Timestamptz(3)
+  reviewedPerfumeResearch PerfumeResearchRecord[] @relation("PerfumeResearchReviewer")
 }

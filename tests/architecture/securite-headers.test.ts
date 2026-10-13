@@ -100,7 +100,7 @@ describe("en-têtes de sécurité (04 §8.6)", () => {
     expect(rules.map((rule) => rule.source)).toEqual([config.PUBLIC_HEADER_SOURCE, ...config.ADMIN_HEADER_SOURCES]);
 
     const publicMatcher = new RegExp(`^/${config.PUBLIC_HEADER_SOURCE.replace(/^\//, "")}$`);
-    for (const admin of ["/admin", "/admin/", "/admin/commandes", "/api/admin/search", "/admin-sw.js"]) {
+    for (const admin of ["/admin", "/admin/", "/admin/commandes", "/api/admin/search", "/api/admin/perfume-research", "/admin-sw.js"]) {
       expect(publicMatcher.test(admin), `${admin} reçoit aussi les en-têtes de la vitrine`).toBe(false);
     }
     for (const vitrine of ["/", "/contact", "/marque", "/api/perfume-search", "/administration"]) {
