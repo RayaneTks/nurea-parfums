@@ -163,7 +163,7 @@ describe("contrat vitrine : mêmes cartes avant et après des écritures cohére
     // 6. Supprimer un parfum visible : une carte de moins, le compte Explorer suit.
     expectOk(await server.actions.deletePerfumeAction({ id: khamrah.id }));
     const deleted = await publicView();
-    expect(deleted.cards.map((c) => c.name)).toEqual(["Sauvage", "Fahrenheit", "Guerlain"]);
+    expect(deleted.cards.map((c) => c.name)).toEqual(["Sauvage", "Fahrenheit", "Shalimar"]);
     expect(deleted.browse.map((b) => b.slug)).toEqual(["dior", "guerlain"]);
   });
 });

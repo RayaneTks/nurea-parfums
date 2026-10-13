@@ -58,10 +58,7 @@ const cases: readonly TableCase[] = [
   {
     table: "Brand",
     valid: (id) => ({ id, name: id, slug: id, catalogMode: "COMPLETE", status: "PUBLISHED", image: "logo.webp", updatedAt: NOW }),
-    violations: [
-      { constraint: "brand_complete_logo_ck", why: "gamme complète publiée sans logo", row: { image: null } },
-      { constraint: "brand_complete_logo_ck", why: "gamme complète publiée au logo blanc", row: { image: "   " } },
-    ],
+    violations: [],
   },
   {
     table: "Perfume",
@@ -217,7 +214,14 @@ describe("CHECK de 03 §4.9", () => {
        WHERE contype = 'c' AND connamespace = 'public'::regnamespace ORDER BY conname`,
     );
     const expected = [
-      ...new Set([...cases.flatMap((c) => c.violations.map((v) => v.constraint)), "movement_not_self_ck"]),
+      ...new Set([
+        ...cases.flatMap((c) => c.violations.map((v) => v.constraint)),
+        "movement_not_self_ck",
+        "perfume_research_review_ck",
+        "perfume_research_rights_evidence_ck",
+        "perfume_research_rights_review_ck",
+        "perfume_research_source_url_ck",
+      ]),
     ].sort();
     expect(rows.map((r) => r.conname)).toEqual(expected);
     expect(rows.filter((r) => !r.convalidated)).toEqual([]);

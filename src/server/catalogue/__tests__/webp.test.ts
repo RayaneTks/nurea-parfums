@@ -189,6 +189,7 @@ describe("temps de conversion", () => {
    * partent dans la console à chaque exécution) ; sous charge — plusieurs suites en parallèle, ou un agent de
    * construction — elle dépasse deux secondes sans qu'aucune régression n'existe. Un test qui échoue au gré de
    * la charge finit ignoré : celui-ci ne mord que sur un changement d'ordre de grandeur, la vraie régression.
+   * Le délai du test inclut aussi la création de la photo 12 Mpx par le worker.
    */
   it("photo synthétique de 12 Mpx (4000 × 3000, JPEG) : aucune conversion ne dérive en ordre de grandeur", async () => {
     let seed = 7;
@@ -208,5 +209,5 @@ describe("temps de conversion", () => {
     }
     console.info(`Conversion WebP d'une photo de 12 Mpx (${Math.round(photo.length / 1024)} Ko) :`, timings);
     for (const [usage, ms] of Object.entries(timings)) expect(ms, usage).toBeLessThan(8_000);
-  });
+  }, 20_000);
 });
