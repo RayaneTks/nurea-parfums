@@ -70,10 +70,9 @@ Détail : [`docs/catalog-database.md`](docs/catalog-database.md) et
 [`src/domain/publication.ts`](src/domain/publication.ts).
 
 - Un parfum n'est jamais plus visible que sa marque.
-- **Gamme complète** : le visuel de gamme est facultatif et complète les flacons publiés, en bas de
-  la page publique de la marque. Le mode exclusif historique est retiré ; masquer la marque masque
-  toujours ses parfums (avec confirmation). Republier une marque propose aussi de republier ses
-  parfums masqués qui ont un visuel.
+- **Page de marque publique** : les fiches publiées apparaissent d'abord ; le visuel de collection
+  facultatif vient ensuite avec une invitation à vérifier les autres références au catalogue.
+  `catalogMode` est historique et ne masque plus les parfums ; masquer la marque les masque toujours.
 - Un parfum ne se publie qu'avec un visuel. `image` est la variante sombre (principale),
   `imageLight` la claire, facultative.
 - Une référence fournisseur ajoutée avec une photo d'origine reste `DRAFT` : elle est visible dans

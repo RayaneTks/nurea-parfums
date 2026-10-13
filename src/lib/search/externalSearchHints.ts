@@ -226,7 +226,7 @@ export const EXTERNAL_PERFUME_HINTS: ExternalPerfumeHint[] = [
     queries: ["scandal", "scandal jpg", "scandal jean paul gaultier"],
     displayName: "Jean Paul Gaultier — Scandal",
     caption:
-      "JPG — voir gamme complète ou commande Scandal.",
+      "JPG — contactez-nous pour vérifier Scandal au catalogue.",
     similarCatalogIds: [3, 12],
   },
   {

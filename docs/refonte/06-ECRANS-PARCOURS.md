@@ -98,7 +98,7 @@ Les adresses sont celles fixées par `docs/refonte/04-ARCHITECTURE.md` §2.1 et 
 | E12 | `/admin/clients` | `(gestion)/clients/page.tsx` | Clients | — (racine) | `q` | onglet |
 | E13 | `/admin/encaisser` | `(gestion)/encaisser/page.tsx` | **Clients** | `/admin/clients` « Clients » | `anciennete=30`, `q`, `doc` | tuile « À encaisser » et alerte « à relancer » de E01 ; rangée de tête de E12 ; bandeau de E03 ; raccourci du manifeste |
 | E14 | `/admin/clients/[id]` | `(gestion)/clients/[id]/page.tsx` | Clients | `/admin/clients` « Clients » | `doc` | ligne de E12, en-tête de groupe de E13, nom du client dans S01, recherche |
-| E15 | `/admin/catalogue` | `(gestion)/catalogue/page.tsx` | Catalogue | — (racine) | `tab=parfums\|marques\|en-avant` (défaut `parfums`), `q`, `stock=bas\|rupture`, `visibilite=visibles|masques` | onglet ; alerte stock de E01 |
+| E15 | `/admin/catalogue` | `(gestion)/catalogue/page.tsx` | Catalogue | — (racine) | `tab=parfums\|marques\|en-avant` (défaut `parfums`), `q`, `stock=bas\|rupture`, `visibilite=visibles|masques`, `gamme=complete` (marques avec visuel de collection) | onglet ; alerte stock de E01 |
 | E16 | `/admin/catalogue/parfums/[id]` | `(gestion)/catalogue/parfums/[id]/page.tsx` | Catalogue | `/admin/catalogue?tab=parfums` « Catalogue » | — | ligne de E15, recherche (fiche **en consultation**, 02 §4.6) |
 | E17 | `/admin/catalogue/marques/[id]/modifier` et `/admin/catalogue/marques/nouvelle` | `(gestion)/catalogue/marques/…` | Catalogue | `/admin/catalogue?tab=marques` « Marques » | — | ligne de E15 (onglet Marques), « + Marque » |
 | E18 | `/admin/login` | `login/page.tsx` | hors shell | — | `retour=<chemin /admin/…>` | garde de session (04 §8.5) |
@@ -1027,9 +1027,9 @@ flowchart TD
 - **But.** Gérer ce que montre la vitrine : parfums, marques, mise en avant ; basculer une visibilité en 1 tap.
 - **Zones.**
   1. `SegmentedControl` « Parfums · Marques · En avant » (`tab`).
-  2. Zone épinglée : `SearchField` (insensible aux accents) ; chips à compteur rendus seulement s'ils discriminent — Parfums : « Visibles (n) · Masqués (n) · Stock bas (n) · Rupture (n) » ; Marques : « Visibles (n) · Masquées (n) · Gammes complètes (n) » (« Visibles » ajouté le 24/09/2026) ; filtre venu d'un lien toujours affiché et effaçable.
+  2. Zone épinglée : `SearchField` (insensible aux accents) ; chips à compteur rendus seulement s'ils discriminent — Parfums : « Visibles (n) · Masqués (n) · Stock bas (n) · Rupture (n) » ; Marques : « Visibles (n) · Masquées (n) · Visuel de collection (n) » ; filtre venu d'un lien toujours affiché et effaçable.
   3. **Parfums** : `SectionHeader` action « + Parfum » ; liste fenêtrée ; ligne : vignette, nom (+ badge « Rupture » ou « Stock bas » si le stock est suivi), légende marque (+ « · 2 visuels story » quand le parfum en a — écart du 17/09/2026 : on cherche un parfum et l'on voit tout de suite si sa planche est là, sans ouvrir la fiche ; information, pas un badge), à droite **bouton œil** 44 px (œil barré et ligne atténuée si masqué) ; tap ligne → E16.
-  4. **Marques** : action « + Marque » ; ligne : logo (proportions d'origine), nom, légende « Sélection · 14 parfums » ou « Gamme complète », bouton œil ; tap → E17.
+  4. **Marques** : action « + Marque » ; ligne : visuel, nom, nombre de références au catalogue, bouton œil ; tap → E17.
   5. **En avant** : deux emplacements matérialisés (rempli : vignette, nom, « Retirer » ; vide : « Emplacement libre » en pointillés) ; dessous, candidats = **parfums visibles uniquement**, avec la recherche ; tap = mettre en avant (refus au-delà de 2 : toast « Les 2 emplacements sont pris : retire d'abord un parfum. »).
 - **Action principale** : « + Parfum » (Parfums) / « + Marque » (Marques) ; aucune (En avant).
 - **Actions secondaires** : œil ; « Retirer » un emplacement.
@@ -1044,7 +1044,7 @@ flowchart TD
 - **Zones.**
   1. **Visuel** en grand (bascule clair / sombre en CSS, comme la vitrine).
   2. **Identité** : nom ; marque (tap → E17 de la marque).
-  3. **Vitrine** : interrupteur « Visible sur la vitrine » (écriture immédiate, optimiste, rollback + toast portant la raison ; verrouillé avec la raison affichée, même texte que le toast de E15 : « Ajoute un visuel pour publier ce parfum. », « Rends d'abord la marque Dior visible. », « La marque Dior est en gamme complète : repasse-la en Sélection pour publier ce parfum. ») ; interrupteur « Mettre en avant · 1/2 » (seulement si visible).
+  3. **Vitrine** : interrupteur « Visible sur la vitrine » (écriture immédiate, optimiste, rollback + toast portant la raison ; verrouillé avec la raison affichée, même texte que le toast de E15 : « Ajoute un visuel pour publier ce parfum. », « Rends d'abord la marque Dior visible. ») ; interrupteur « Mettre en avant · 1/2 » (seulement si visible).
   4. **Tarifs** (lecture) : une rangée par volume renseigné, dans l'ordre 10 · 50 · 80 ml : « 80 ml · 120 € · coût 9 000 DA (32,49 €) » ; aucun tarif : « Aucun tarif mémorisé » + lien « Modifier ».
   5. **Stock** : rangée « Stock : Non suivi › » ou « Stock : 5 › » → S20.
   6. **Activité** : « Vendu 12 fois · dernier le 14 sept. » — « 12 » compte les **unités** vendues (somme des quantités des lignes du parfum, décision du 17/09/2026 : c'est ce qui sert au réassort), la date est celle du document le plus récent (`orderedAt`), documents annulés exclus ; absent si jamais vendu.
@@ -1074,16 +1074,15 @@ flowchart TD
 
 #### E17 — Formulaire marque · `/admin/catalogue/marques/[id]/modifier` et `/admin/catalogue/marques/nouvelle`
 
-- **But.** Créer et régler une marque (mode, logo, visibilité) sans casser la vitrine.
+- **But.** Créer et régler une marque (visuel de collection, visibilité) sans casser la vitrine.
 - **Zones.**
-  1. **Logo** (`ImageField` **sans recadrage portrait**, proportions d'origine) + variante claire.
+  1. **Visuel de collection** (`ImageField` **sans recadrage portrait**, proportions d'origine) + variante claire, tous deux facultatifs.
   2. **Nom** (normalisé ; si une marque équivalente existe : notice `info` « Louis Vuitton existe déjà — Ouvrir »). En création, si le serveur trouve une équivalente (saisie croisée), il la rend sans rien créer, avec la notice « Louis Vuitton existe déjà au catalogue : elle a été sélectionnée. » ; en modification, renommer vers le nom d'une autre marque est refusé (`CONFLICT`) : « La marque Louis Vuitton porte déjà ce nom : ouvre-la plutôt que d'en renommer une autre. »
-  3. **Mode** : cartes radio « Sélection — seuls les parfums publiés apparaissent » / « Gamme complète — une carte unique avec le logo ».
-  4. **Vitrine** : interrupteur « Visible » (verrouillé en gamme complète sans logo : « Ajoute un logo pour publier une gamme complète. » — le serveur refuse de même, en `CONFLICT`, tout enregistrement d'une gamme complète visible sans logo : jamais masquée en silence) ; rangée « Lien public » (lecture seule, bouton « Copier ») : l'URL de la vitrine filtrée sur la marque (`?maison=<slug>`), **stable au renommage**.
+  3. **Vitrine** : interrupteur « Visible » ; le mode historique `catalogMode` n'exclut plus ses parfums. Rangée « Lien public » (lecture seule, bouton « Copier ») : l'URL de la page marque (`/parfums/<slug>`), **stable au renommage**.
   5. Rangée « Parfums de la marque · 14 › » → `/admin/catalogue?tab=parfums&q=<nom>`.
   6. Modification seulement : « Supprimer la marque » (texte `danger`).
 - **Action principale** : « Enregistrer » (modification) ; « Ajouter la marque » (création).
-- **Dialogues** : un enregistrement qui masque la marque ou la passe en « Gamme complète » alors qu'elle a des parfums visibles → `ConfirmDialog` de la réserve serveur (T14, S18) « Masquer Dior ? » / « Passer Dior en gamme complète ? » : « Ses 14 parfums seront masqués sur la vitrine. » (le nombre compte les parfums visibles ; un seul : « Son parfum visible sera masqué sur la vitrine. ») ; un enregistrement qui la rend visible en « Sélection » alors que des parfums avec visuel sont masqués (`republishable` > 0) → « Republier les 8 parfums qui ont un visuel ? » (`republishBrandPerfumesAction`) ; supprimer → « Supprimer Dior et ses 14 parfums ? Ils disparaissent de la vitrine. Les ventes passées gardent leurs noms. » + « Masquer plutôt ».
+- **Dialogues** : masquer la marque alors qu'elle a des parfums visibles → `ConfirmDialog` de la réserve serveur (T14, S18) « Masquer Dior ? » : « Ses 14 parfums seront masqués sur la vitrine. » (le nombre compte les parfums visibles) ; la rendre visible peut proposer de republier les parfums masqués qui ont un visuel ; supprimer → « Supprimer Dior et ses 14 parfums ? Ils disparaissent de la vitrine. Les ventes passées gardent leurs noms. » + « Masquer plutôt ».
 - **Gestes et états** : comme E19.
 - **Composants** : `PageScaffold`, `ImageField`, `FormSection`, `Input`, `Card` (radio), `ListRow`, `StickyAction`, `ConfirmDialog`, `Toast` ; interrupteur **→ 05**.
 - **Données** : `Brand` (`name`, `slug` en lecture seule, `catalogMode`, `status`, `image`, `imageLight`), comptes de `Perfume` (total, visibles, masqués avec visuel) ; `createBrandAction`, `updateBrandAction` et `setBrandVisibilityAction` (T14 ; rendent `{ brand, hiddenPerfumes, republishable }`), `republishBrandPerfumesAction`, `deleteBrandAction` ; `revalidateAdminCatalogue()`.
@@ -1334,7 +1333,7 @@ Toutes les confirmations de l'app, en un seul endroit : leur description **dit l
 | Supprimer un client (E14) | « Supprimer Fares ? » | « Ses 12 documents sont conservés et restent affichés sous son nom. » | « Supprimer » (`danger`) |
 | Supprimer un parfum (E19) | « Supprimer Sauvage ? » | « Il disparaît de la vitrine immédiatement. Les ventes passées gardent son nom. » (+ « Ses 2 visuels story sont supprimés aussi. » s'il en a) | « Supprimer » (`danger`) + « Masquer plutôt » (`secondary`) |
 | Retirer un visuel story (E16 zone 7) | « Retirer ce visuel ? » | « Il est supprimé de la fiche et du stockage, sans retour possible. Ton téléphone garde les copies déjà enregistrées. » | « Retirer » (`danger`) |
-| Masquer une marque / passer en gamme complète (E15 œil, E17) — réserve serveur de T14, seulement si la marque a des parfums visibles | « Masquer Dior ? » / « Passer Dior en gamme complète ? » | « Ses 14 parfums seront masqués sur la vitrine. » (nombre de parfums **visibles** ; un seul : « Son parfum visible sera masqué sur la vitrine. ») | « Confirmer » (`primary`) |
+| Masquer une marque (E15 œil, E17) — réserve serveur de T14, seulement si la marque a des parfums visibles | « Masquer Dior ? » | « Ses 14 parfums seront masqués sur la vitrine. » (nombre de parfums **visibles** ; un seul : « Son parfum visible sera masqué sur la vitrine. ») | « Confirmer » (`primary`) |
 | Republier (E15, E17) | « Republier les parfums de Dior ? » | « 8 parfums ont un visuel et redeviendront visibles. » | « Republier » (`primary`) + « Plus tard » |
 | Supprimer une marque (E17) | « Supprimer Dior et ses 14 parfums ? » | « Ils disparaissent de la vitrine. Les ventes passées gardent leurs noms. » | « Supprimer » (`danger`) + « Masquer plutôt » |
 | Abandonner une saisie (sheets, S01 en édition, E17, E19, E20, E21) | « Abandonner la saisie ? » | « Tes modifications ne seront pas enregistrées. » | « Abandonner » (`danger`) |

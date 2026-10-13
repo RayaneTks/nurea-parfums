@@ -69,7 +69,7 @@ async function publicView() {
         isFeatured: p.isFeatured ?? false,
       }))
       .sort((a, b) => a.id - b.id),
-    browse: browseBrands.map((b) => ({ name: b.name, slug: b.slug, assortment: b.assortment, publishedCount: b.publishedCount })),
+    browse: browseBrands.map((b) => ({ name: b.name, slug: b.slug, publishedCount: b.publishedCount })),
   };
 }
 
@@ -94,19 +94,17 @@ describe("contrat vitrine : mêmes cartes avant et après des écritures cohére
     expectOk(await server.actions.setPerfumeFeaturedAction({ id: sauvage.id, featured: true }));
 
     const initial = await publicView();
-    expect(initial.cards.map((c) => c.name)).toEqual(["Sauvage", "Fahrenheit", "Khamrah", "Guerlain"]);
+    expect(initial.cards.map((c) => c.name)).toEqual(["Sauvage", "Fahrenheit", "Shalimar", "Khamrah"]);
     expect(initial.cards.find((c) => c.name === "Sauvage")).toMatchObject({ brandSlug: "dior", isFeatured: true });
-    // La recherche publique reconnaît ce qui est au catalogue sans carte : sans visuel, fiche d'une gamme
-    // complète (sa carte est celle de la marque), ou marque masquée.
+    // La recherche publique reconnaît ce qui est au catalogue sans carte : sans visuel ou marque masquée.
     expect(await getUnlistedPerfumes()).toEqual([
       { name: "Poison", brand: "Dior" },
-      { name: "Shalimar", brand: "Guerlain" },
       { name: "Bleu", brand: "Chanel" },
     ]);
     expect(initial.browse).toEqual([
-      { name: "Dior", slug: "dior", assortment: "CURATED", publishedCount: 2 },
-      { name: "Guerlain", slug: "guerlain", assortment: "COMPLETE", publishedCount: 0 },
-      { name: "Lattafa", slug: "lattafa", assortment: "CURATED", publishedCount: 1 },
+      { name: "Dior", slug: "dior", publishedCount: 2 },
+      { name: "Guerlain", slug: "guerlain", publishedCount: 1 },
+      { name: "Lattafa", slug: "lattafa", publishedCount: 1 },
     ]);
 
     // 1. Écritures sans effet public : stock, tarifs, visuels story, fiche masquée créée puis supprimée.
@@ -152,7 +150,7 @@ describe("contrat vitrine : mêmes cartes avant et après des écritures cohére
     expectOk(await server.actions.updateBrandAction({ id: dior.id, name: "Christian Dior" }));
     const renamed = await publicView();
     expect(renamed.cards.filter((c) => c.brandSlug === "dior").map((c) => c.brand)).toEqual(["Christian Dior", "Christian Dior"]);
-    expect(renamed.browse[0]).toEqual({ name: "Christian Dior", slug: "dior", assortment: "CURATED", publishedCount: 2 });
+    expect(renamed.browse[0]).toEqual({ name: "Christian Dior", slug: "dior", publishedCount: 2 });
     expectOk(await server.actions.updateBrandAction({ id: dior.id, name: "Dior" }));
     expect(await publicView()).toEqual(initial);
 

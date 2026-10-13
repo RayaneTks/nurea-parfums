@@ -23,7 +23,7 @@ const NEIGHBOURS = 12;
 
 /** La marque en tête — c'est le mot cherché —, puis ce qu'on en propose, puis comment l'obtenir. */
 function description(brand: SeoBrand): string {
-  const offre = "les parfums de la marque et sa gamme complète sur demande";
+  const offre = "les références répertoriées au catalogue et d'autres références à vérifier sur demande";
   return `Parfums ${brand.name} au meilleur prix à Marseille chez ${SITE_NAME} : ${offre}. Remise en main propre à Marseille ou envoi en France, commande directe sur Snapchat.`;
 }
 
@@ -124,7 +124,7 @@ export default async function BrandPage({ params }: BrandPageProps) {
       {cards.length > 0 ? (
         <section className="nurea-page py-18" aria-labelledby="flacons">
           <h2 id="flacons" className="nurea-label">
-            {cards.length} parfum{cards.length > 1 ? "s" : ""} {brand.name} au catalogue
+            {cards.length} parfum{cards.length > 1 ? "s" : ""} affiché{cards.length > 1 ? "s" : ""} pour {brand.name}
           </h2>
           <ul className="nurea-catalogue-grid mt-6">
             {cards.map(({ perfume, href }, i) => (
@@ -137,13 +137,13 @@ export default async function BrandPage({ params }: BrandPageProps) {
         </section>
       ) : null}
 
-      <section className="nurea-page border-t border-nurea-border py-18" aria-labelledby="gamme-complete">
+      <section className="nurea-page border-t border-nurea-border py-18" aria-labelledby="visuel-collection">
         <div className="grid gap-8 md:grid-cols-[minmax(0,24rem)_1fr] md:items-center">
           {brand.visual ? (
             <div className="nurea-visuel-parfum relative w-full overflow-hidden border border-nurea-border">
               <Image
                 src={brand.visual}
-                alt={`Visuel de la gamme ${brand.name}`}
+                alt={`Visuel de collection ${brand.name}`}
                 fill
                 sizes="(max-width: 768px) 100vw, 24rem"
                 className={`object-cover ${brand.visualLight ? "hidden dark:block" : ""}`}
@@ -151,7 +151,7 @@ export default async function BrandPage({ params }: BrandPageProps) {
               {brand.visualLight ? (
                 <Image
                   src={brand.visualLight}
-                  alt={`Visuel de la gamme ${brand.name}`}
+                  alt={`Visuel de collection ${brand.name}`}
                   fill
                   sizes="(max-width: 768px) 100vw, 24rem"
                   className="block object-cover dark:hidden"
@@ -160,12 +160,12 @@ export default async function BrandPage({ params }: BrandPageProps) {
             </div>
           ) : null}
           <div className="max-w-2xl">
-            <p className="nurea-label">Gamme complète</p>
-            <h2 id="gamme-complete" className="nurea-title mt-4 text-nurea-text">
+            <p className="nurea-label">Visuel de collection</p>
+            <h2 id="visuel-collection" className="nurea-title mt-4 text-nurea-text">
               Vous cherchez une autre référence {brand.name} ?
             </h2>
             <p className="nurea-body nurea-prose mt-5">
-              Même si son flacon n&apos;apparaît pas dans la sélection, contactez-nous pour vérifier la référence, son prix et sa disponibilité.
+              D&apos;autres références de cette marque peuvent aussi être au catalogue. Contactez-nous pour vérifier la référence, son prix et sa disponibilité.
             </p>
             <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-center">
               <a href={CONTACT.snapchat} target="_blank" rel="noopener noreferrer" className={buttonClass("solid")}>

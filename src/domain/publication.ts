@@ -7,8 +7,8 @@
  * visuel en base ; « deux mises en avant au plus » est une règle de service (03 §4.9).
  *
  * Un parfum n'est jamais plus visible que sa marque : la vitrine ne lit que les parfums
- * PUBLISHED d'une marque PUBLISHED, avec un nom et un visuel. Le visuel de gamme complète les
- * flacons publiés en bas de la page marque.
+ * PUBLISHED d'une marque PUBLISHED, avec un nom et un visuel. Le visuel de collection facultatif
+ * s'affiche après les fiches parfum en bas de la page marque.
  */
 
 export type PublicationStatus = "DRAFT" | "PUBLISHED";
@@ -21,7 +21,7 @@ export type BrandPublicationState = {
   name: string;
   status: PublicationStatus;
   catalogMode: BrandCatalogMode;
-  /** Visuel de gamme principal (thème sombre, facultatif). */
+  /** Visuel de collection principal (thème sombre, facultatif). */
   image: string | null;
 };
 
@@ -45,7 +45,7 @@ export function canPublishPerfume(
   return OK;
 }
 
-/** Une marque peut-elle passer « Visible » ? Le visuel de gamme est facultatif. */
+/** Une marque peut-elle passer « Visible » ? Le visuel de collection est facultatif. */
 export function canPublishBrand(_brand: { catalogMode: BrandCatalogMode; image: string | null }): PublicationVerdict {
   return OK;
 }

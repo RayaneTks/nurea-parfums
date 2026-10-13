@@ -5,7 +5,7 @@ import { choisirFlacons, trouverParfum } from "../choisirFlacons";
 let id = 0;
 function parfum(name: string, brand: string, extra: Partial<Perfume> = {}): Perfume {
   id += 1;
-  return { id, name, brand, category: "Sélections Individuelles", image: `/p/${id}.webp`, ...extra };
+  return { id, name, brand, category: "Tout voir", image: `/p/${id}.webp`, ...extra };
 }
 
 describe("choisirFlacons", () => {
@@ -23,10 +23,9 @@ describe("choisirFlacons", () => {
     expect(choisis.map((p) => p.brand.trim().toLowerCase())).toEqual(["dior", "chanel"]);
   });
 
-  it("écarte les gammes complètes et les parfums sans image", () => {
+  it("garde les parfums avec un flacon et écarte ceux sans image", () => {
     const choisis = choisirFlacons(
       [
-        parfum("Gamme", "Lattafa", { category: "Gammes Complètes" }),
         parfum("Sans photo", "Azzaro", { image: " " }),
         parfum("Oud", "Crivelli"),
       ],

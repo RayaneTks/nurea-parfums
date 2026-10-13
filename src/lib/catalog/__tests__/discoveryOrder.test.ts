@@ -14,7 +14,7 @@ function seeded(seed: number): () => number {
 }
 
 const perfume = (id: number, brand: string): Perfume => ({
-  id, name: `Parfum ${id}`, brand, brandSlug: brand.toLowerCase(), category: "Sélections Individuelles", image: `/x/${id}.webp`,
+  id, name: `Parfum ${id}`, brand, brandSlug: brand.toLowerCase(), category: "Tout voir", image: `/x/${id}.webp`,
 });
 
 // 30 parfums, dont 10 d'une seule marque : le cas où un mélange naïf les regroupe.

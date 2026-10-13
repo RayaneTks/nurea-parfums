@@ -47,19 +47,14 @@ describe("canPublishPerfume", () => {
     });
   });
 
-  it("marque en gamme complète : ses parfums ne se publient pas un par un", () => {
-    const r = canPublishPerfume(withVisual, { ...dior, catalogMode: "COMPLETE" });
-    expect(r.ok).toBe(false);
-    expect(!r.ok && r.message).toMatch(/gamme complète.*Sélection/);
+  it("le mode historique ne bloque plus la publication des parfums", () => {
+    expect(canPublishPerfume(withVisual, { ...dior, catalogMode: "COMPLETE" })).toEqual({ ok: true });
   });
 });
 
 describe("canPublishBrand", () => {
-  it("une gamme complète exige un logo", () => {
-    expect(canPublishBrand({ catalogMode: "COMPLETE", image: null })).toEqual({
-      ok: false,
-      message: "Ajoute un logo pour publier une gamme complète.",
-    });
+  it("le visuel de collection reste facultatif, quel que soit le mode historique", () => {
+    expect(canPublishBrand({ catalogMode: "COMPLETE", image: null })).toEqual({ ok: true });
     expect(canPublishBrand({ catalogMode: "COMPLETE", image: "brands/dior.webp" })).toEqual({ ok: true });
   });
 
@@ -93,7 +88,7 @@ describe("isPerfumeVisible — ce que lit la vitrine", () => {
 
   it("jamais plus visible que sa marque", () => {
     expect(isPerfumeVisible(sauvage, { ...dior, status: "DRAFT" })).toBe(false);
-    expect(isPerfumeVisible(sauvage, { ...dior, catalogMode: "COMPLETE" })).toBe(false);
+    expect(isPerfumeVisible(sauvage, { ...dior, catalogMode: "COMPLETE" })).toBe(true);
   });
 
   it("ni masqué, ni sans visuel, ni sans nom", () => {
@@ -104,9 +99,9 @@ describe("isPerfumeVisible — ce que lit la vitrine", () => {
 });
 
 describe("cascade et enregistrement", () => {
-  it("masquer une marque ou la passer en gamme complète masque ses parfums (T14)", () => {
+  it("seul le statut masqué de la marque masque ses parfums (T14)", () => {
     expect(brandHidesPerfumes({ status: "DRAFT", catalogMode: "CURATED" })).toBe(true);
-    expect(brandHidesPerfumes({ status: "PUBLISHED", catalogMode: "COMPLETE" })).toBe(true);
+    expect(brandHidesPerfumes({ status: "PUBLISHED", catalogMode: "COMPLETE" })).toBe(false);
     expect(brandHidesPerfumes({ status: "PUBLISHED", catalogMode: "CURATED" })).toBe(false);
   });
 

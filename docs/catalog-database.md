@@ -15,8 +15,7 @@ refonte de la gestion (bascule du 22/09/2026).
 Source de vérité : [`prisma/schema.prisma`](../prisma/schema.prisma) et ses migrations.
 
 **`Brand`** — `id` (cuid), `name` (unique), `slug` (unique, **jamais recalculé** au renommage :
-c'est la valeur publique du filtre `?maison=`), `catalogMode` (`CURATED` = sélection,
-`COMPLETE` = gamme complète), `status` (`PUBLISHED` / `DRAFT`), `image` (logo, thème sombre),
+c'est la valeur publique du filtre `?maison=`), `catalogMode` (valeur historique, normalisée en `CURATED`), `status` (`PUBLISHED` / `DRAFT`), `image` (visuel de collection, thème sombre),
 `imageLight` (variante claire, facultative).
 
 **`Perfume`** — `id` (entier, séquence Postgres), `brandId`, `name`, `image` (visuel sombre,
@@ -29,16 +28,13 @@ jamais lues par la vitrine.
 ## 2. Qui s'affiche
 
 Écrit une fois dans [`src/domain/publication.ts`](../src/domain/publication.ts), doublé en base
-par les CHECK `perfume_publish_image_ck` et `brand_complete_logo_ck`.
+par le CHECK `perfume_publish_image_ck`.
 
 - Un parfum n'est **jamais plus visible que sa marque** : la vitrine lit les parfums `PUBLISHED`
-  d'une marque `PUBLISHED` en sélection (`CURATED`), avec un nom et un visuel.
-- Une marque en **gamme complète** s'affiche en **une carte** faite de son logo, sans ses parfums.
-  Elle ne peut être visible sans logo.
-- Masquer une marque, ou la passer en gamme complète, masque ses parfums (avec confirmation dans la
-  gestion) et leur retire la mise en avant.
-- Un parfum d'une marque en gamme complète ne peut pas être rendu visible : il faut d'abord repasser
-  la marque en sélection.
+  d'une marque `PUBLISHED`, avec un nom et un visuel. `catalogMode` ne décide plus de l'affichage.
+- Les pages de marque affichent les fiches parfum d'abord ; le visuel de collection facultatif reste
+  en fin de page et invite à vérifier d'autres références au catalogue.
+- Masquer une marque masque ses parfums (avec confirmation dans la gestion) et leur retire la mise en avant.
 
 ## 3. Images
 

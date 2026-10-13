@@ -17,7 +17,7 @@ export function brandCaption(brand: Pick<AdminBrandRow, "perfumeCount">): string
 }
 
 /**
- * Ligne de marque (06 E15 zone 4) : logo aux proportions d'origine, nom, légende, œil de visibilité.
+ * Ligne de marque (06 E15 zone 4) : visuel aux proportions d'origine, nom, légende, œil de visibilité.
  * Masquer une marque qui a des parfums visibles demande confirmation (T14, texte du serveur).
  */
 export function BrandRow({ brand }: { brand: AdminBrandRow }) {

@@ -12,7 +12,7 @@ const perfume = (id: number, brand: string, name: string, line?: string): Perfum
   brand,
   name,
   line,
-  category: "Sélections Individuelles",
+  category: "Tout voir",
   image: "https://cdn.example/p.webp",
 });
 

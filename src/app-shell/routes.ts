@@ -182,7 +182,7 @@ export const routes = {
     q?: string;
     stock?: "bas" | "rupture";
     visibilite?: "visibles" | "masques";
-    /** Onglet Marques : recherche et visibilité. Le filtre historique `gamme` est ignoré. */
+    /** Onglet Marques : filtre les marques qui ont un visuel de collection. */
     gamme?: "complete";
   }) => build("/admin/catalogue", q),
   parfum: (id: string | number) => `/admin/catalogue/parfums/${segment(id)}`,

@@ -7,13 +7,6 @@ import { CONTACT, type Category, type Perfume } from "@/lib/data";
  * commande qui divergeaient selon l'endroit où l'on cliquait.
  */
 
-/** Catégorie « gamme » : la fiche représente une marque, pas un flacon. */
-const COMPLETE_RANGE_CATEGORY = "Gammes Complètes";
-
-export function isCompleteRange(perfume: Perfume): boolean {
-  return perfume.category === COMPLETE_RANGE_CATEGORY;
-}
-
 /**
  * Le parfum appartient-il à cette catégorie ? Seule règle, pour la grille comme pour la recherche.
  *
@@ -22,8 +15,7 @@ export function isCompleteRange(perfume: Perfume): boolean {
  */
 export function inCategory(perfume: Perfume, category: Category): boolean {
   if (category === "Tout voir") return true;
-  if (category === "Nouveautés") return perfume.isNew === true;
-  return perfume.category === category;
+  return category === "Nouveautés" ? perfume.isNew === true : true;
 }
 
 /**
