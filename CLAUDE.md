@@ -206,12 +206,20 @@ Les couches, du bas vers le haut (règles d'import : `docs/refonte/04-ARCHITECTU
 
 ### API : liste fermée
 
-Il ne reste que quatre routes de lecture et deux manifestes :
+La liste des routes de lecture et manifestes reste fermée :
 `app/api/admin/search`, `app/api/admin/picker`, `app/api/admin/export/compta`,
+`app/api/admin/perfume-research` (données validées, session admin exigée),
 `app/api/perfume-search` (vitrine), `app/api/pwa/admin`, `app/api/pwa/shop`.
 Toute écriture passe par une **server action** de `src/server/*/actions.ts`
 (plus `src/actions/contact.ts` côté vitrine) — vérifié par
 `tests/architecture/server-actions.test.ts` et `route-handlers.test.ts`.
+
+La base privée de recherche parfum est un staging interne : l'import JSON et la décision de validation
+passent par des server actions authentifiées. La route GET renvoie les fiches `VERIFIED` par défaut;
+`status=PENDING` expose la file aux seuls admins. Chaque fiche porte son type/source, URL, date, preuve
+des droits et réviseur. L'approbation exige une confirmation des droits enregistrée en base. Fragrantica est refusé
+par le contrat et par la contrainte SQL : aucune donnée Fragrantica n'est importée sans licence écrite
+autorisant explicitement API, réutilisation et stockage. Détails : `docs/admin/recherche-parfums.md`.
 
 ## Règles Critiques & Design
 - **Travail Intelligent** : Ne jamais modifier les proportions d'un logo. Toujours rogner le vide inutile des images sources.

@@ -27,6 +27,7 @@ const OWNERS: Record<string, readonly string[]> = {
   perfume: ["src/server/catalogue/writer.ts", "src/server/catalogue/stock.ts"],
   perfumePricing: ["src/server/catalogue/writer.ts"],
   perfumeMedia: ["src/server/catalogue/media.ts"],
+  perfumeResearchRecord: ["src/server/perfume-research/writer.ts"],
   customer: ["src/server/customers/writer.ts"],
   setting: ["src/server/settings/writer.ts"],
   adminUser: ["src/server/auth/writer.ts"],

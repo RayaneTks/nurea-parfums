@@ -2,13 +2,14 @@ import { describe, expect, it } from "vitest";
 import { exists, importsOf, lineOf, listSources, read, resolveImport, stripComments } from "./support/sources";
 
 /**
- * Liste fermée des routes HTTP de la gestion (docs/refonte/04-ARCHITECTURE.md §3.5) : cinq GET, rien
+ * Liste fermée des routes HTTP de la gestion (docs/refonte/04-ARCHITECTURE.md §3.5) : six GET, rien
  * d'autre. Aucune route n'écrit ; celles de `/api/admin` passent par `defineReadRoute`.
  */
 
 const CLOSED_LIST: { file: string; milestone: string }[] = [
   { file: "app/api/admin/search/route.ts", milestone: "J8" },
   { file: "app/api/admin/picker/route.ts", milestone: "J9" },
+  { file: "app/api/admin/perfume-research/route.ts", milestone: "recherche interne parfum" },
   { file: "app/api/admin/export/compta/route.ts", milestone: "J12" },
   { file: "app/api/pwa/admin/route.ts", milestone: "existant" },
   { file: "app/admin-sw.js/route.ts", milestone: "J16" },

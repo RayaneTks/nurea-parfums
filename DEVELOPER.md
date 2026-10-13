@@ -87,3 +87,18 @@ Détail : [`docs/catalog-database.md`](docs/catalog-database.md) et
   filtre `?maison=`.
 - Filtres du catalogue : choisir un onglet de catégorie remet à zéro les filtres de marque ; l'état
   vit dans l'URL (`cat`, `maison`, `brands`).
+
+## Base privée de recherche parfum
+
+- Voir [`docs/admin/recherche-parfums.md`](docs/admin/recherche-parfums.md) pour l'import JSON, la
+  validation et l'API privée de lecture.
+- N'importer que des données dont les droits de réutilisation sont établis : fournisseur, maison ou
+  parfumeur officiel selon ses conditions, ou fournisseur de données sous licence documentée.
+- Toute fiche reste `PENDING` après import. Un compte admin doit confirmer les droits puis la valider;
+  `/api/admin/perfume-research` ne renvoie que les fiches validées par défaut, et sa file `PENDING` est
+  réservée aux admins.
+- Fragrantica n'est pas une source activée. Ses conditions interdisent le scraping, les endpoints
+  non autorisés et l'usage interne commercial des notes sans licence écrite. Ne pas copier, reformuler
+  ou masquer une donnée Fragrantica pour la faire passer pour une autre source.
+- Importer des fiches par action serveur, jamais par route HTTP d'écriture. N'ajouter une route GET
+  qu'à la liste fermée de `tests/architecture/route-handlers.test.ts`.
