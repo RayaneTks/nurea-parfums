@@ -1,7 +1,7 @@
 import { thumbnailOf } from "@/lib/images/thumbnails";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPerfumeInput, updatePerfumeInput, type UpdatePerfumeInput } from "@/contracts/catalogue";
-import { canFeaturePerfume, canPublishBrand, canPublishPerfume } from "@/domain/publication";
+import { canFeaturePerfume, canPublishPerfume } from "@/domain/publication";
 import {
   FOREIGN,
   INJECTED,
@@ -266,12 +266,16 @@ describe("marques : slug stable et dédoublonnage (04 §12, 02 §4.5)", () => {
     );
   });
 
-  it("gamme complète visible sans logo : refusée avec le message du domaine", async () => {
-    const message = (canPublishBrand({ catalogMode: "COMPLETE", image: null }) as { message: string }).message;
-    expect(expectError(await server.actions.createBrandAction({ name: "Lattafa", catalogMode: "COMPLETE" }), "CONFLICT").message).toBe(message);
-    expect(await server.prisma.brand.count()).toBe(0);
-    const hidden = await brand("Lattafa", { catalogMode: "COMPLETE", status: "DRAFT" });
-    expect(expectError(await server.actions.setBrandVisibilityAction({ id: hidden.id, status: "PUBLISHED" }), "CONFLICT").message).toBe(message);
+  it("visibilité d'une marque sans visuel de collection", async () => {
+    const created = expectOk(await server.actions.createBrandAction({ name: "Lattafa", catalogMode: "COMPLETE" }));
+    expect(created).toMatchObject({ catalogMode: "COMPLETE", status: "PUBLISHED" });
+    expect((await server.prisma.brand.findUniqueOrThrow({ where: { id: created.id } })).image).toBeNull();
+    const hidden = await brand("Dior", { catalogMode: "COMPLETE", status: "DRAFT" });
+    expect(expectOk(await server.actions.setBrandVisibilityAction({ id: hidden.id, status: "PUBLISHED" })).brand).toMatchObject({
+      status: "PUBLISHED",
+      catalogMode: "COMPLETE",
+    });
+    expect((await server.prisma.brand.findUniqueOrThrow({ where: { id: hidden.id } })).image).toBeNull();
   });
 });
 
@@ -292,7 +296,7 @@ describe("publication : règles et messages uniques de publication.ts (04 §12)"
     expect((await row(sauvage.id)).updatedAt).toEqual(before.updatedAt);
   });
 
-  it("marque masquée, marque en gamme complète : refus avec le texte du domaine", async () => {
+  it("marque masquée bloque les parfums; gamme complète ne les bloque pas", async () => {
     const dior = await brand("Dior", { status: "DRAFT" });
     const sauvage = await perfume(dior.id, "Sauvage");
     expect(sauvage.status).toBe("DRAFT");
@@ -301,9 +305,7 @@ describe("publication : règles et messages uniques de publication.ts (04 §12)"
     );
     const guerlain = await brand("Guerlain", { catalogMode: "COMPLETE", image: `${OWNED}brands/${stamp()}.webp` });
     const shalimar = await perfume(guerlain.id, "Shalimar");
-    expect(expectError(await server.actions.setPerfumeStatusAction({ id: shalimar.id, status: "PUBLISHED" }), "CONFLICT").message).toBe(
-      "La marque Guerlain est en gamme complète : repasse-la en Sélection pour publier ce parfum.",
-    );
+    expect(expectOk(await server.actions.setPerfumeStatusAction({ id: shalimar.id, status: "PUBLISHED" })).status).toBe("PUBLISHED");
   });
 
   it("retirer le visuel d'un parfum visible et en avant : masqué, sans mise en avant, et la notice le dit", async () => {
@@ -390,22 +392,12 @@ describe("T14 : masquer une marque ou la passer en gamme complète (03 §4.3)", 
     expect((await row(sauvage.id)).isFeatured).toBe(false);
   });
 
-  it("passer en gamme complète : logo exigé, puis réserve « Passer Dior en gamme complète ? »", async () => {
+  it("passer en gamme complète ne masque pas les parfums et n'exige pas de logo", async () => {
     const dior = await brand("Dior");
-    await perfume(dior.id, "Sauvage");
-    expect(expectError(await server.actions.updateBrandAction({ id: dior.id, catalogMode: "COMPLETE" }), "CONFLICT").message).toBe(
-      "Ajoute un logo pour publier une gamme complète.",
-    );
-    const logo = `${OWNED}brands/${stamp()}.webp`;
-    expect(
-      expectError(await server.actions.updateBrandAction({ id: dior.id, catalogMode: "COMPLETE", image: logo }), "NEEDS_CONFIRMATION")
-        .confirm,
-    ).toMatchObject({ title: "Passer Dior en gamme complète ?", reserves: ["Son parfum visible sera masqué sur la vitrine."] });
-    expectOk(await server.actions.updateBrandAction({ id: dior.id, catalogMode: "COMPLETE", image: logo, confirm: true }));
-    expect(await server.prisma.perfume.count({ where: { status: "PUBLISHED" } })).toBe(0);
-    expect(
-      expectError(await server.actions.republishBrandPerfumesAction({ id: dior.id }), "CONFLICT").message,
-    ).toBe("La marque Dior est en gamme complète : repasse-la en Sélection pour publier ce parfum.");
+    const sauvage = await perfume(dior.id, "Sauvage");
+    expectOk(await server.actions.updateBrandAction({ id: dior.id, catalogMode: "COMPLETE" }));
+    expect(await server.prisma.perfume.findUniqueOrThrow({ where: { id: sauvage.id } })).toMatchObject({ status: "PUBLISHED" });
+    expect((await server.prisma.brand.findUniqueOrThrow({ where: { id: dior.id } })).image).toBeNull();
   });
 
   it("un parfum ne peut pas être publié pendant que sa marque se masque (verrou de la marque)", async () => {
