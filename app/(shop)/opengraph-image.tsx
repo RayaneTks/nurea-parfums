@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { BRAND_COLORS, SCREEN_TINTS } from "@/design/brand";
+import { VITRINE_THEMES } from "@/design/brand";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 /**
@@ -69,7 +69,7 @@ export default async function OpenGraphImage() {
           height: "100%",
           width: "100%",
           padding: 40,
-          background: BRAND_COLORS.noir,
+          background: VITRINE_THEMES.dark.bg,
           fontFamily: "Instrument Sans",
         }}
       >
@@ -81,7 +81,7 @@ export default async function OpenGraphImage() {
             alignItems: "center",
             justifyContent: "center",
             flex: 1,
-            border: `1px solid ${BRAND_COLORS.cuivre}2E`,
+            border: `1px solid ${VITRINE_THEMES.dark.line}`,
           }}
         >
           {/* `next/og` ne rend que des balises HTML : `next/image` n'y existe pas. */}
@@ -99,7 +99,7 @@ export default async function OpenGraphImage() {
               height: 1,
               width: 108,
               marginTop: 54,
-              background: `${BRAND_COLORS.cuivre}7A`,
+              background: VITRINE_THEMES.dark.line,
             }}
           />
 
@@ -109,7 +109,7 @@ export default async function OpenGraphImage() {
               fontSize: 23,
               letterSpacing: "0.26em",
               textTransform: "uppercase",
-              color: SCREEN_TINTS.dark.texte3,
+              color: VITRINE_THEMES.dark.text3,
             }}
           >
             Sélection de grandes marques
@@ -120,7 +120,7 @@ export default async function OpenGraphImage() {
               marginTop: 18,
               fontSize: 27,
               letterSpacing: "0.04em",
-              color: BRAND_COLORS.cuivre,
+              color: VITRINE_THEMES.dark.text2,
             }}
           >
             {/* Une seule chaine : deux noeuds enfants obligeraient a poser un

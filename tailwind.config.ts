@@ -11,34 +11,23 @@ export default {
     "./src/**/*.{ts,tsx}",
   ],
   theme: {
-    container: {
-      center: true,
-      padding: "1.25rem",
-      screens: { "2xl": "1200px" },
-    },
     extend: {
       colors: {
         /**
-         * Vitrine — charte graphique v3.
-         * Valeurs dans `app/globals.css`, documentées dans `src/design/brand.ts`.
+         * Vitrine — jetons sémantiques de `app/globals.css` (DESIGN.md). Écrits en
+         * `oklch()` : pas de modificateur d'opacité Tailwind, on mélange en CSS
+         * (`color-mix`) quand il le faut.
          */
-        nurea: {
-          bg: "rgb(var(--nurea-bg-rgb) / <alpha-value>)",
-          surface: "rgb(var(--nurea-surface-rgb) / <alpha-value>)",
-          "surface-hover": "rgb(var(--nurea-surface-hover-rgb) / <alpha-value>)",
-          text: "rgb(var(--nurea-text-rgb) / <alpha-value>)",
-          muted: "rgb(var(--nurea-text-muted-rgb) / <alpha-value>)",
-          subtle: "rgb(var(--nurea-text-subtle-rgb) / <alpha-value>)",
-          disabled: "rgb(var(--nurea-text-disabled-rgb) / <alpha-value>)",
-          accent: "rgb(var(--nurea-accent-rgb) / <alpha-value>)",
-          "accent-hover": "rgb(var(--nurea-accent-hover-rgb) / <alpha-value>)",
-          "on-accent": "rgb(var(--nurea-on-accent-rgb) / <alpha-value>)",
-          alert: "rgb(var(--nurea-alert-rgb) / <alpha-value>)",
-          /* Déjà translucides : pas de modificateur d'opacité. */
-          "accent-subtle": "var(--nurea-accent-subtle)",
-          border: "var(--nurea-border)",
-          "border-strong": "var(--nurea-border-strong)",
-        },
+        bg: "var(--bg)",
+        "surface-1": "var(--surface-1)",
+        "surface-2": "var(--surface-2)",
+        line: "var(--line)",
+        "fg-1": "var(--text-1)",
+        "fg-2": "var(--text-2)",
+        "fg-3": "var(--text-3)",
+        error: "var(--error)",
+        focus: "var(--focus)",
+        ambient: "var(--ambient)",
         /*
          * Gestion : AUCUNE valeur ici. Les composants de `src/ui` consomment les
          * variables `--admin-*` par des valeurs arbitraires
@@ -52,21 +41,33 @@ export default {
         serif: ["var(--font-serif)", "Georgia", "serif"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
+      /* Vitrine — `rounded-sm|md|lg` (la gestion n'en emploie aucun), `rounded-sheet` pour la feuille. */
       borderRadius: {
-        lg: "0px",
-        md: "2px",
-        sm: "2px",
+        sm: "var(--r-sm)",
+        md: "var(--r-md)",
+        lg: "var(--r-lg)",
+        sheet: "var(--r-xl)",
+      },
+      boxShadow: {
+        float: "var(--shadow-float)",
+      },
+      zIndex: {
+        sticky: "var(--z-sticky)",
+        scrim: "var(--z-scrim)",
+        sheet: "var(--z-sheet)",
+        toast: "var(--z-toast)",
+      },
+      /* Noms propres : `ease-out` et les durées par défaut restent ceux de Tailwind (la gestion s'en sert). */
+      transitionDuration: {
+        "dur-1": "var(--dur-1)",
+        "dur-2": "var(--dur-2)",
+        "dur-3": "var(--dur-3)",
+        "dur-4": "var(--dur-4)",
       },
       transitionTimingFunction: {
-        "out-expo": "cubic-bezier(0.16, 1, 0.3, 1)",
-      },
-      spacing: {
-        /** Charte § 04 — marge de page et intervalle entre sections. */
-        18: "4.5rem",
-      },
-      transitionDuration: {
-        /** Charte § 05 — la seule durée d'interaction de la vitrine. */
-        nurea: "160ms",
+        soft: "var(--ease-out)",
+        sheet: "var(--ease-sheet)",
+        move: "var(--ease-move)",
       },
     },
   },
