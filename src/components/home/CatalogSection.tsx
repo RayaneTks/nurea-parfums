@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 import { PerfumeCard } from "@/components/features/PerfumeCard";
 import { PerfumeDialog } from "@/components/features/PerfumeDialog";
 import { buttonClass } from "@/components/ui/Button";
-import { OPEN_CATALOG_FILTERS_EVENT } from "@/components/layout/Navbar";
+import { OPEN_CATALOG_FILTERS_EVENT, QUERY_SYNC_EVENT, SEARCH_EVENT } from "@/components/layout/Navbar";
 import {
   compareSearchRelevance,
   findExternalPerfumeHint,
@@ -63,6 +63,16 @@ const SIZES: Record<Density, string> = {
   3: "(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 20vw",
 };
 
+/** Ramène le haut du catalogue en vue s'il est hors de la moitié haute de l'écran (au-dessus ou loin dessous). */
+function revealCatalog() {
+  const anchor = document.getElementById("collection");
+  if (!anchor) return;
+  const top = anchor.getBoundingClientRect().top;
+  if (top >= 0 && top < window.innerHeight / 2) return;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  anchor.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+}
+
 export const CatalogSection = ({
   catalogPerfumes,
   browseBrands,
@@ -79,6 +89,21 @@ export const CatalogSection = ({
     window.addEventListener(OPEN_CATALOG_FILTERS_EVENT, open);
     return () => window.removeEventListener(OPEN_CATALOG_FILTERS_EVENT, open);
   }, []);
+
+  /* La barre haute tape, la grille suit ; au premier caractère, le catalogue vient en vue. */
+  useEffect(() => {
+    const search = (event: Event) => {
+      const query = (event as CustomEvent<string>).detail;
+      update({ query });
+      if (query) revealCatalog();
+    };
+    window.addEventListener(SEARCH_EVENT, search);
+    return () => window.removeEventListener(SEARCH_EVENT, search);
+  }, [update]);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(QUERY_SYNC_EVENT, { detail: filters.query }));
+  }, [filters.query]);
 
   const matching = useMemo(
     () =>
@@ -185,7 +210,7 @@ export const CatalogSection = ({
 
   const resultLabel = useMemo(() => {
     const count = sorted.length;
-    if (count === 0) return "0 résultat";
+    if (count === 0) return "0 parfum";
     return `${count} parfum${count > 1 ? "s" : ""}`;
   }, [sorted]);
 

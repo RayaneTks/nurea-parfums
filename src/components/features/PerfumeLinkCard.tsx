@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import Link from "next/link";
 import type { Perfume } from "@/lib/data";
+import { ambientStyle } from "@/lib/catalog/ambient";
 import { brandLineLabel } from "@/lib/catalog/perfumePresentation";
 import { PerfumeImage } from "./PerfumeImage";
 
@@ -8,29 +9,43 @@ interface PerfumeLinkCardProps {
   perfume: Perfume;
   href: string;
   imagePriority?: boolean;
+  /** Largeur affichée du visuel (attribut `sizes`). */
+  sizes?: string;
 }
 
 /**
- * Fiche de grille qui mène à une ADRESSE — pour les pages marque.
+ * Carte de grille qui mène à une ADRESSE — pour les pages marque.
  *
- * `PerfumeCard` est un bouton qui ouvre le détail en surimpression : parfait sur l'accueil, mais
- * un robot ne clique pas, il suit des liens. Sur une page marque, chaque fiche doit donc être un
- * `<a href>` vers la page du parfum, sans quoi ces pages ne recevraient aucun lien interne.
- *
- * Même dessin que `PerfumeCard`, rendu serveur. Charte § 05 : marque, nom ; jamais de prix en
- * grille ; au survol, la couleur de fond et rien d'autre.
+ * `PerfumeCard` ouvre la fiche en surimpression : parfait sur l'accueil, mais un robot ne clique
+ * pas, il suit des liens. Ici, le nom est un `<a href>` vers la page du parfum, étendu à toute la
+ * carte (`::after`). Même dessin et mêmes règles que `PerfumeCard` (`.card`, ambiance au survol et à
+ * l'appui), rendu serveur, sans cœur : la sélection vit sur l'accueil et la fiche. Jamais de prix,
+ * jamais de contenance.
  */
-export const PerfumeLinkCard: FC<PerfumeLinkCardProps> = ({ perfume, href, imagePriority = false }) => (
-  <Link
-    href={href}
-    className="flex h-full w-full flex-col border border-nurea-border bg-nurea-surface text-left transition-colors duration-nurea ease-out hover:bg-nurea-surface-hover"
-  >
-    <div className="nurea-visuel-parfum relative w-full overflow-hidden">
-      <PerfumeImage perfume={perfume} sizes="(max-width: 1023px) 50vw, 33vw" priority={imagePriority} />
-    </div>
-    <div className="border-t border-nurea-border p-5">
-      <p className="nurea-label line-clamp-2">{brandLineLabel(perfume.brand, perfume.line)}</p>
-      <p className="nurea-name mt-2 line-clamp-2 text-nurea-text">{perfume.name}</p>
-    </div>
-  </Link>
-);
+export const PerfumeLinkCard: FC<PerfumeLinkCardProps> = ({
+  perfume,
+  href,
+  imagePriority = false,
+  sizes = "(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw",
+}) => {
+  const brandLine = brandLineLabel(perfume.brand, perfume.line);
+
+  return (
+    <article className="card relative flex w-full min-w-0 flex-col rounded-lg p-2" style={ambientStyle(perfume)}>
+      <div className="relative aspect-[2/3] overflow-hidden rounded-md bg-surface-2">
+        <PerfumeImage perfume={perfume} sizes={sizes} priority={imagePriority} />
+      </div>
+      <div className="flex min-w-0 flex-col gap-1 px-2 pb-2 pt-3">
+        <p className="card-brand t-body line-clamp-2 hyphens-auto [overflow-wrap:anywhere]">{brandLine}</p>
+        <p className="card-name t-subtitle hyphens-auto [overflow-wrap:anywhere]">
+          <Link
+            href={href}
+            className="card-open block w-full text-left after:absolute after:inset-0 after:rounded-lg"
+          >
+            <span className="line-clamp-3">{perfume.name}</span>
+          </Link>
+        </p>
+      </div>
+    </article>
+  );
+};
