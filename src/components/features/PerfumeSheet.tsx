@@ -270,7 +270,7 @@ const SheetContent: FC<PerfumeSheetProps> = ({ perfume, sequence = [], onNavigat
         className="amb relative flex max-h-[94dvh] w-full flex-col overflow-hidden rounded-t-sheet bg-ambient shadow-float transition-[background-color] duration-dur-2 ease-soft will-change-transform md:max-h-[88dvh] md:max-w-[52rem] md:rounded-sheet"
       >
         {/* La zone qui défile. La barre de commande, en dessous, n'en fait pas partie. */}
-        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain">
+        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-none">
           {/* Poignée et fermeture au-dessus du visuel, jamais posées dessus. Glisser ici ferme (téléphone). */}
           <div data-sheet-handle className="relative flex h-12 items-start justify-center pt-2">
             <span aria-hidden className="h-1 w-9 rounded-full bg-fg-3 md:hidden" />
@@ -292,9 +292,10 @@ const SheetContent: FC<PerfumeSheetProps> = ({ perfume, sequence = [], onNavigat
             ref={bodyRef}
             className="flex flex-col gap-6 px-4 pb-6 md:grid md:grid-cols-2 md:items-center md:gap-8 md:px-8 md:pb-8"
           >
-            {/* Le visuel EN ENTIER (2:3, rien de rogné), dans la variante du thème. Sur téléphone, sa
+            {/* Le visuel EN ENTIER (2:3, rien de rogné), dans la variante du thème. Pas une poignée : y
+                glisser déroule ou remonte la fiche, comme partout ailleurs sous la barre du haut. Sur téléphone, sa
                 hauteur se plafonne à 56 % de l'écran pour que la marque et le nom suivent sans défiler. */}
-            <div data-sheet-handle className="relative mx-auto aspect-[2/3] w-[min(100%,calc(56dvh*2/3))] overflow-hidden rounded-md bg-surface-2 md:w-full">
+            <div className="relative mx-auto aspect-[2/3] w-[min(100%,calc(56dvh*2/3))] overflow-hidden rounded-md bg-surface-2 md:w-full">
               <PerfumeImage key={perfume.id} perfume={perfume} sizes="(max-width: 767px) 90vw, 26rem" priority />
             </div>
 

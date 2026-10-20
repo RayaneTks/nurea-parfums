@@ -151,6 +151,8 @@ export function useSheetMotion({
     let startOffset = 0;
     let claimed = false;
     let abandoned = true;
+    /* Décidé au contact, pas au seuil : une liste qui défile encore n'est pas « en haut ». */
+    let mayClose = false;
 
     const onStart = (event: TouchEvent) => {
       abandoned = !openRef.current || !matches(MOBILE_QUERY) || event.touches.length > 1;
@@ -164,6 +166,9 @@ export function useSheetMotion({
       startOffset = (1 - spring.current.value) * distance(panel);
       claimed = moving;
       if (claimed) spring.current = { ...spring.current, velocity: 0 };
+      const onHandle = (event.target as Element | null)?.closest("[data-sheet-handle]");
+      const scroller = scrollRef?.current;
+      mayClose = Boolean(onHandle) || !scroller || scroller.scrollTop <= 0;
       tracker.reset();
       tracker.add(y, event.timeStamp);
     };
@@ -176,16 +181,18 @@ export function useSheetMotion({
 
       if (!claimed) {
         const dx = event.touches[0]!.clientX - startX;
+        /* Vers le bas, depuis la poignée ou une liste en haut : c'est la feuille qui part. On retient le
+           navigateur dès le premier pixel, sinon iOS lance son rebond et les deux bougent ensemble. */
+        if (mayClose && dy > 0 && Math.abs(dy) >= Math.abs(dx) && event.cancelable) event.preventDefault();
         if (Math.abs(dy) < SLOP_PX && Math.abs(dx) < SLOP_PX) return;
         /* Geste de côté : il appartient à la feuille (précédent/suivant), pas au glissé vertical. */
         if (Math.abs(dx) > Math.abs(dy)) {
           abandoned = true;
           return;
         }
-        const onHandle = (event.target as Element | null)?.closest("[data-sheet-handle]");
-        const scroller = scrollRef?.current;
-        const atTop = !scroller || scroller.scrollTop <= 0;
-        if (!(onHandle || (dy > 0 && atTop))) {
+        /* Deux gestes, jamais mêlés : vers le haut, la fiche se déroule (toujours) ; vers le bas, elle
+           remonte tant qu'elle n'est pas en haut, puis la feuille se ferme. */
+        if (!(mayClose && dy > 0)) {
           abandoned = true;
           return;
         }

@@ -131,6 +131,37 @@ test.describe("Fiche en feuille — gestes (téléphone)", () => {
     await expect(sheet(page)).toBeHidden();
   });
 
+  test("dérouler et fermer ne se mêlent pas : le visuel fait défiler, jamais la feuille", async ({ page }) => {
+    await home(page);
+    await openFirst(page);
+    await page.waitForTimeout(600);
+    const scroller = sheet(page).locator("> div").first();
+    const scrollTop = () => scroller.evaluate((el) => el.scrollTop);
+    const shift = () =>
+      sheet(page).evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m42);
+    expect(await scroller.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+    const visual = sheet(page).locator("img").filter({ visible: true }).first();
+    const box = (await visual.boundingBox())!;
+    const centre = { x: box.x + box.width / 2, y: box.y + box.height * 0.7 };
+
+    /* Vers le haut sur le visuel : la fiche se déroule, la feuille ne bouge pas. */
+    await swipe(page, centre, { x: 0, y: -220 }, 12);
+    await expect.poll(scrollTop).toBeGreaterThan(40);
+    expect(Math.abs(await shift())).toBeLessThan(1);
+
+    /* Vers le bas, vite, fiche déroulée : elle remonte, la feuille reste ouverte. */
+    const before = await scrollTop();
+    await swipe(page, { x: centre.x, y: centre.y - 200 }, { x: 0, y: 120 });
+    await expect.poll(scrollTop).toBeLessThan(before);
+    await page.waitForTimeout(500);
+    await expect(sheet(page)).toBeVisible();
+
+    /* Revenue en haut, le même geste ferme. */
+    await scroller.evaluate((el) => el.scrollTo({ top: 0 }));
+    await swipe(page, { x: centre.x, y: centre.y - 200 }, { x: 0, y: 120 });
+    await expect(sheet(page)).toBeHidden();
+  });
+
   test("un glissé vers la gauche passe au parfum suivant, vers la droite revient", async ({ page }) => {
     await home(page);
     await openFirst(page);

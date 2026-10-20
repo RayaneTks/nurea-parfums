@@ -42,20 +42,24 @@ export const ThemeToggle: FC<{ className?: string }> = ({ className }) => {
     root.style.setProperty("--reveal-r", `${Math.ceil(radius)}px`);
     // L'ancien écran reste figé tant que le rappel n'a pas rendu la main : on y attend que les
     // visuels du nouveau thème soient décodés (400 ms au plus), sinon le cercle découvrirait un aplat.
-    document
-      .startViewTransition(async () => {
-        apply();
-        const shown = [...document.querySelectorAll<HTMLImageElement>("#vitrine img")].filter(
-          (img) => img.offsetParent !== null && img.getBoundingClientRect().bottom > 0 && img.getBoundingClientRect().top < innerHeight
-        );
-        await Promise.race([
-          Promise.all(shown.map((img) => img.decode().catch(() => undefined))),
-          new Promise((resolve) => setTimeout(resolve, 400)),
-        ]);
-      })
-      // Transition sautée (onglet masqué, autre transition en cours) : le thème change quand même,
-      // seule l'animation manque ; sa promesse rejetée n'est pas une erreur.
-      .ready.catch(() => {});
+    // Pendant la bascule, le navigateur anime deux photos de l'écran : Safari y perd le flou du verre,
+    // et le texte passerait net sous la barre. Le verre devient opaque le temps de l'animation.
+    root.classList.add("theme-switching");
+    const transition = document.startViewTransition(async () => {
+      apply();
+      const shown = [...document.querySelectorAll<HTMLImageElement>("#vitrine img")].filter(
+        (img) => img.offsetParent !== null && img.getBoundingClientRect().bottom > 0 && img.getBoundingClientRect().top < innerHeight
+      );
+      await Promise.race([
+        Promise.all(shown.map((img) => img.decode().catch(() => undefined))),
+        new Promise((resolve) => setTimeout(resolve, 400)),
+      ]);
+    });
+    // Transition sautée (onglet masqué, autre transition en cours) : le thème change quand même,
+    // seule l'animation manque ; sa promesse rejetée n'est pas une erreur.
+    transition.ready.catch(() => {});
+    const done = () => root.classList.remove("theme-switching");
+    transition.finished.then(done, done);
   };
 
   return (
