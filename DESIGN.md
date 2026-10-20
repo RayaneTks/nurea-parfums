@@ -1,262 +1,252 @@
 ---
 name: Nuréa Parfums — Vitrine
-version: 3
+version: 4
 register: brand
-source: Charte graphique Nuréa Parfums v3
+source: docs/refonte-vitrine/04-PLAN-EXECUTION.md § B (DA « Nuancier nocturne », 20/10/2026)
 ---
 
 # Nuréa Parfums — Système de design de la vitrine
 
 Ce document décrit le registre **vitrine** (`app/(shop)/*`, `src/components/*`).
-Le registre gestion a le sien : [`docs/admin/DESIGN.md`](docs/admin/DESIGN.md).
+Le registre gestion a le sien : [`docs/admin/DESIGN.md`](docs/admin/DESIGN.md). Rien d'ici ne s'y
+applique.
 
-Les valeurs viennent de la charte graphique v3. Elles existent à deux endroits,
-et à deux seulement :
+**Statut (20/10/2026).** La refonte est en cours. Ce document décrit le site **visé** ; tant que la
+refonte n'est pas en ligne, le code de production montre encore l'ancien rendu. La source chiffrée
+est [`docs/refonte-vitrine/04-PLAN-EXECUTION.md`](docs/refonte-vitrine/04-PLAN-EXECUTION.md) § B :
+en cas d'écart, c'est lui qui a raison, et ce fichier qu'il faut corriger. Les règles de métier, de
+droit et de référencement sont dans
+[`docs/refonte-vitrine/01-INVARIANTS.md`](docs/refonte-vitrine/01-INVARIANTS.md).
+
+Les valeurs existent à deux endroits, et à deux seulement :
 
 | Où | Quoi | Pour qui |
 |---|---|---|
-| [`app/globals.css`](app/globals.css) | variables CSS `--nurea-*`, classes de rôle | tout le rendu |
-| [`src/design/brand.ts`](src/design/brand.ts) | mêmes valeurs en TypeScript | ce qui ne lit pas de CSS : `next/og`, manifeste PWA, `themeColor` |
+| [`app/globals.css`](app/globals.css) | jetons CSS (primitifs `--n-*`, sémantiques `--bg`, `--text-1`…), règles de rôle | tout le rendu |
+| [`src/design/brand.ts`](src/design/brand.ts) | hex des deux thèmes | ce qui ne lit pas de CSS : `next/og`, manifeste, `themeColor` |
 
-Toute modification de l'un doit être reportée dans l'autre.
+Toute modification de l'un est reportée dans l'autre.
 
-## Trois règles
+## Concept : « Nuancier nocturne »
 
-Elles ne souffrent pas d'exception. Si un écran a besoin d'y déroger, c'est
-l'écran qu'il faut revoir.
-
-1. **Angles 0.** Aucun arrondi, nulle part — boutons et images compris.
-2. **Aucune ombre.** On sépare au filet 1 px, jamais à la carte flottante.
-   Les blocs partagent leurs bords.
-3. **Survol : la couleur seule**, en 160 ms `ease-out`. Jamais de déplacement,
-   jamais d'agrandissement. Le mouvement répond au **geste**, jamais au survol
-   (§ Mouvement).
+**Une chambre neutre et calme ; la seule couleur est celle du flacon qu'on regarde.** L'interface
+n'a aucun accent de marque : l'accent *est* la teinte dominante du visuel (la **couleur
+d'ambiance**), calculée, bornée, posée sur la fiche et sur la carte pressée. Tout le reste est un
+neutre chaud teinté, en deux thèmes symétriques. Structure, matière et mouvement s'inspirent des
+interfaces d'Apple ; rien ne doit faire « site généré ».
 
 ## Couleurs
 
-Quatre couleurs de marque, répartition visée **74 / 18 / 6 / 2**.
+Deux couches : primitifs (`--n-*`), puis jetons sémantiques. Un thème ne redéfinit **que** le
+sémantique. En CSS on écrit `oklch()` ; le hex sert à `brand.ts`.
 
-| Jeton | Sombre | Rôle |
-|---|---|---|
-| `--nurea-bg` | `#0A0508` noir | fond de tout |
-| `--nurea-text` | `#FDF8F4` ivoire | texte — 19,2:1 |
-| `--nurea-accent` | `#C4956A` cuivre | accent, filets — 7,6:1. Au plus 8 % d'un visuel |
-| `--nurea-bordeaux` | `#7B0B1D` | sceau, cachet. Un seul aplat par support |
+**Thèmes.** Clair et sombre, `prefers-color-scheme` par défaut (sombre si le système ne dit rien),
+bascule manuelle conservée.
 
-Teintes de support, écran uniquement :
+| Jeton | Sombre | Clair | Rôle |
+|---|---|---|---|
+| `--bg` | `oklch(0.16 0.012 20)` `#120B0B` | `oklch(0.975 0.006 70)` `#F9F6F2` | fond de page |
+| `--surface-1` | `oklch(0.21 0.012 20)` `#1E1616` | `oklch(0.945 0.008 70)` `#F0ECE7` | carte, champ, barre (opaque) |
+| `--surface-2` | `oklch(0.26 0.012 20)` `#2A2222` | `oklch(0.91 0.010 65)` `#E6E0DB` | carte pressée, puce active, popover |
+| `--line` | `oklch(0.34 0.012 20)` `#3E3635` | `oklch(0.84 0.012 60)` `#D1C9C3` | filet 1 px (décoratif) |
+| `--text-1` | `oklch(0.95 0.008 60)` `#F3EDE9` | `oklch(0.22 0.012 20)` `#201818` | titres, noms, boutons |
+| `--text-2` | `oklch(0.78 0.012 50)` `#BEB5B1` | `oklch(0.42 0.014 20)` `#554A4A` | texte courant, marque |
+| `--text-3` | `oklch(0.66 0.014 40)` `#9A908C` | `oklch(0.48 0.014 20)` ≈ `#655A5A` | légendes, placeholder |
+| `--error` | `oklch(0.74 0.13 20)` `#F28788` | `oklch(0.50 0.16 20)` `#AC2F3B` | erreur de formulaire seulement |
+| `--focus` | = `--text-1` | = `--text-1` | anneau de focus 2 px, décalé 2 px |
 
-| Jeton | Sombre | Contraste sur le fond |
-|---|---|---|
-| `--nurea-surface` | `#140E12` | — |
-| `--nurea-surface-hover` | `#1C1418` | — |
-| `--nurea-text-muted` | `#E4D2DA` | 14,0:1 |
-| `--nurea-text-subtle` | `#B49FAB` | 8,2:1 |
-| `--nurea-text-disabled` | `#6E5A64` | épuisé, désactivé |
-| `--nurea-alert` | `#D88080` | **erreurs seules** — jamais un accent |
+Contrastes calculés (WCAG) : `--text-1` ≥ 13:1, `--text-2` ≥ 6,5:1, `--text-3` ≥ 4,9:1 sur toutes
+les surfaces, dans les deux thèmes ; `--error` ≥ 6:1 sur `--bg`.
 
-Les teintes sont déclarées en **canaux RVB** (`--nurea-accent-rgb: 196 149 106`).
-Cela ouvre les modificateurs d'opacité Tailwind (`bg-nurea-bg/85`) et permet de
-*dériver* les valeurs translucides au lieu de les recopier : le filet est
-littéralement « le cuivre à 16 % ».
+**Aucune autre couleur n'existe dans la vitrine.** Jamais `#000` ni `#fff`, jamais de violet ou
+d'indigo, jamais de texte en dégradé (tenu par `tests/architecture/anti-slop.test.ts`). Le bordeaux
+et les autres teintes du logo **ne sont pas des jetons**.
 
-### Mode clair — hors charte
+### Couleur d'ambiance
 
-La charte ne décrit qu'une palette sombre. Le thème clair prolonge ses deux
-seuls usages sur ivoire — le bordeaux et le gris de la carte de main — en
-gardant ses paliers de contraste (≥ 7:1 pour tout texte courant).
+Une teinte par parfum, calculée **hors ligne** sur la vignette sombre `…-640.webp` (jamais dans le
+navigateur), stockée en base (`Perfume.ambientHue`, `Perfume.ambientChroma`, nullables) et lue
+comme deux jetons : `--amb` (sombre) et `--amb-light`.
 
-Une conséquence structurante : **le cuivre tombe à 2,5:1 sur ivoire**. Il n'y
-porte donc aucun texte, seulement des filets et des aplats, et l'accent devient
-le bordeaux (10,4:1).
+- Dérivation : sombre `oklch(0.27 clamp(c × 0,6 ; 0,03 ; 0,08) h)`, clair
+  `oklch(0.93 clamp(c × 0,35 ; 0,02 ; 0,05) h)`.
+- Contraste **calculé** sur l'ambiance : `--text-1` ≥ 7:1 et `--text-3` ≥ 4,5:1, sinon on recule
+  vers `--bg`, puis on renonce.
+- **Repli** : pas assez de couleur dans la photo, ou contraste impossible → `NULL`, la fiche reste
+  sur `--surface-1`. Jamais une teinte inventée.
+- Où : fond de la fiche (feuille et page), carte pressée ou survolée, en-tête de la page marque
+  (moyenne des parfums de la marque). **Jamais** le fond de toute la page, la barre ou le texte.
 
-| Jeton | Clair | Contraste |
-|---|---|---|
-| `--nurea-bg` | `#FDF8F4` | — |
-| `--nurea-text` | `#0A0508` | 19,2:1 |
-| `--nurea-accent` | `#7B0B1D` | 10,4:1 |
-| `--nurea-text-muted` | `#3D343A` | 11,4:1 |
-| `--nurea-text-subtle` | `#544D58` | 7,7:1 |
-| `--nurea-alert` | `#9B1020` | 8,0:1 |
+Algorithme complet : `04-PLAN-EXECUTION.md` § B.3 ; script : `scripts/refonte-vitrine/ambiance.mjs`.
 
 ## Typographie
 
-Deux familles à faible contraste, chargées par
-[`src/design/fonts.ts`](src/design/fonts.ts). Aucun délié fin : elles restent
-nettes à 12 px sur écran de téléphone, ce que la didone ne faisait pas.
+Couple choisi au point de contrôle 1 (20/10/2026) : **Fraunces + Figtree**. Toutes deux variables,
+licence libre (OFL), auto-hébergées par `next/font/google` (téléchargées au build, servies depuis
+le site, conformes à la CSP). Budget total des fichiers de police : **≤ 120 Ko**, mesuré au build.
 
-- **Newsreader** — titres et noms de parfum. Graisses 400 et 500, jamais plus.
-- **Instrument Sans** — texte et interface. Graisses 400, 500, 600, jamais sous 400.
+| Police | Rôle | Réglages | Graisses |
+|---|---|---|---|
+| **Fraunces** | titres, noms de parfum | axe optique `opsz` actif, `SOFT` 0, `WONK` 0 | 400, 500 |
+| **Figtree** | texte et interface | chiffres tabulaires | 400, 500, 600 |
 
-Une classe par rôle, définie dans `app/globals.css`. Les tailles sont fluides et
-ne descendent jamais sous les minimums de la charte (Newsreader 20 px,
-Instrument Sans 11 px).
+Jamais d'autre graisse, jamais une troisième famille, jamais de monospace.
 
-| Classe | Police | Taille / interligne |
-|---|---|---|
-| `.nurea-title` | Newsreader 500 | 32 → 56 / 1,06 / −0,022 em |
-| `.nurea-section-title` | Newsreader 500 | 28 → 40 / 1,1 / −0,016 em |
-| `.nurea-name` | Newsreader 500 | 20 → 24 / 1,25 / −0,008 em |
-| `.nurea-lead` | Newsreader 400 | 20 → 24 / 1,45 / −0,006 em — chapô |
-| `.nurea-numeral` | Newsreader 400 | 40 → 64 / 1 / −0,02 em — numéro de chapitre, chiffres tabulaires |
-| `.nurea-body` | Instrument 400 | 16 / 1,8 / 0 |
-| `.nurea-label` | Instrument 600 | 11 / 0,18 em capitales |
-| `.nurea-caption` | Instrument 400 | 12,5 / 1,75 / +0,006 em |
+| Rôle | Taille | Graisse | Interlettrage | Interlignage | Usage |
+|---|---|---|---|---|---|
+| `display` | `clamp(3rem, 2rem + 4vw, 5rem)` | 400 | −0,02 em | 1,05 | H1 de l'accueil, La parfumerie |
+| `title` | `clamp(1.75rem, 1.25rem + 2vw, 2.5rem)` | 500 | −0,015 em | 1,15 | H1 des pages, nom en fiche |
+| `subtitle` | `1.3125rem` | 500 | −0,005 em | 1,3 | H2, nom en carte |
+| `body` | `1rem` | 400 | 0 | 1,6 (sombre : 1,65) | texte, marque en carte (`--text-2`) |
+| `caption` | `0.75rem` | 500 | +0,02 em | 1,4 | compteur, mention légale |
 
-**L'interlettrage dépend de la taille**, jamais une valeur pour tous : un grand
-corps paraît lâche et se resserre, un petit corps se desserre pour rester
-lisible. Newsreader est chargée en police variable avec son **axe optique**
-(`opsz`) : le dessin s'affine en titre et s'épaissit en petit corps, tout seul.
-Les titres équilibrent leurs lignes (`text-wrap: balance`), le texte évite les
-mots orphelins (`text-wrap: pretty`).
+Une règle par rôle ; **aucune taille en dur** (une taille arbitraire signale un rôle manquant).
+`text-wrap: balance` sur `display`/`title`, `pretty` sur `body` ; `tabular-nums` sur ce qui
+s'aligne ; `hyphens: auto` avec `lang="fr"` ; mesure ≤ 65 caractères ; espace insécable dans
+« Nuréa Parfums ». Repli métrique (`adjustFontFallback`) obligatoire.
 
-**N'écrivez pas de taille en dur.** Une taille arbitraire (`text-[13.5px]`) est
-le signe qu'un rôle manque — ajoutez-le ici plutôt que de le contourner.
+Interdites : Inter, Roboto, Arial, Open Sans, Lato, Montserrat, Poppins.
 
-Le **chapô** (`.nurea-lead`) remplace le paragraphe d'introduction : une idée en
-grand, lue d'abord, plutôt que trois lignes grises en corps 16. Une section qui a
-besoin de deux chapôs a besoin de deux sections.
+## Espace, formes, couches
 
-## Grille & espacement
+- **Espacement** (base 4 px) : `--space-1` 4 · `-2` 8 · `-3` 12 · `-4` 16 · `-6` 24 · `-8` 32 ·
+  `-12` 48 · `-16` 64 · `-24` 96 ; entre sections `--space-section: clamp(3rem, 2rem + 4vw, 6rem)`.
+- **Page** : gouttière 16 px (téléphone), 24 px (≥ 768), 32 px (≥ 1024) ; contenu ≤ 1280 px.
+- **Grille** : 2 colonnes par défaut sur téléphone (1 au choix sous 400 px), 3 à 768, 4 à 1024 ;
+  écart 12 px (2 col.), 16 px (3 col. et plus). Points de rupture 640 / 768 / 1024.
+- **Rayons** : `--r-sm` 6 px (puce, badge) · `--r-md` 12 px (bouton, champ, visuel en carte) ·
+  `--r-lg` 20 px (carte, popover) · `--r-xl` 28 px (feuille, en haut seulement) · `--r-full`
+  (cœur, pastille compteur). Règle concentrique : rayon intérieur = rayon extérieur − marge.
+- **Ombre** : une seule, `--shadow-float`, pour ce qui flotte (feuille, popover). Les cartes n'en
+  ont pas : filet `--line` ou clarté de surface.
+- **Couches** : `--z-content` 0 · `--z-sticky` 10 · `--z-scrim` 20 · `--z-sheet` 30 · `--z-toast` 40.
 
-Base 4 px. Échelle : **8 · 16 · 24 · 40 · 72**. Aucune valeur hors échelle.
+## Matière (verre)
 
-| Règle | Valeur |
-|---|---|
-| Marge de page | 72 px · 24 px sur mobile — classe `.nurea-page` |
-| Largeur de texte | 640 px maximum — classe `.nurea-prose` |
-| Gouttière | 24 px |
-| Filets | 1 px, cuivre à 16 % |
+Exactement **deux** surfaces en verre, fixes à l'écran, jamais sur du contenu qui défile :
+la **barre haute** (logo, recherche, Ma sélection, thème) et la **barre d'action basse** de la
+fiche (bouton Snapchat, zone du pouce, `env(safe-area-inset-bottom)`).
 
-Un filet entre deux blocs se pose de préférence par la **gouttière** : une
-grille à `gap: 1px` sur fond `--nurea-border`, chaque cellule reprenant le fond
-de page. Les blocs partagent alors littéralement leur bord, sans bordure à
-attribuer à l'un ou à l'autre (`.nurea-editorial`, page contact, principes).
-
-## Composants
-
-Les briques vivent dans `src/components/ui/` :
-
-- [`Button`](src/components/ui/Button.tsx) — trois variantes, pas une de plus :
-  `solid` (aplat cuivre), `outline` (filet), `link` (texte souligné).
-  `buttonClass()` habille un `next/link` sans recréer un composant polymorphe.
-- [`Field`](src/components/ui/Field.tsx) — libellé, contrôle, erreur. L'état
-  visuel dérive d'`aria-invalid` : il ne peut pas diverger de l'état annoncé.
-- [`ScrollReveal`](src/components/ui/ScrollReveal.tsx) — opacité et 12 px de
-  montée, une seule fois (§ Mouvement). **Pas de variante de direction** : la charte n'admet
-  ni entrée latérale ni agrandissement.
-
-**Un seul bouton plein par écran.** Sur l'accueil, c'est celui du bandeau
-d'ouverture ; toutes les autres incitations sont au filet ou en lien texte.
-
-### Pages éditoriales
-
-La parfumerie (`/marque`), Contact, Légal et la 404 se lisent comme un carnet en
-chapitres : chaque section est portée par une image ou un signe, jamais par un
-paragraphe. Les briques vivent dans `src/components/editorial/` :
-
-| Brique | Rôle |
-|---|---|
-| `BottleMosaic` | Trois flacons du catalogue, un grand et deux petits empilés, bord contre bord. Calage exact : photos 2:3, colonnes 2fr / 1fr (`.nurea-mosaique`). |
-| `Chapters` | Chapitres « 01 · 02 · 03 », une phrase chacun (`.nurea-numeral`). |
-| `OrderSteps` | Le parcours de commande en trois temps — **source unique**, affichée sur La parfumerie et Contact. |
-| `BrandIndex` | L'index des marques en toutes lettres ; chaque nom mène au catalogue filtré. |
-| `Seal` | Le sceau bordeaux : l'aplat unique de la charte, qui authentifie le site officiel. Lettres placées une à une à pas régulier — un `<textPath>` étiré laissait un quart du cercle vide. |
-| `FaqAccordion` | Questions repliées en `<details>`, sans JavaScript. |
-| `Monogram` | Le monogramme teinté par `currentColor` (`.nurea-monogram`, masque CSS). |
-
-Les flacons sont choisis par `choisirFlacons` (`src/lib/catalog/`) : les parfums
-mis en avant d'abord, une marque une seule fois, jamais une gamme complète.
-
-**Le bordeaux reste un aplat par page.** Le sceau est celui de La parfumerie ;
-aucune autre page n'en porte.
-
-### Mentions
-
-Deux mentions sont dues au client, et tenues dans **un** fichier,
-[`src/lib/mentions.ts`](src/lib/mentions.ts) :
-
-- **Les flacons** — les photographies montrent les flacons d'origine des marques ;
-  le parfum est remis dans un flacon Nuréa personnalisé. **Aucun visuel du flacon
-  Nuréa** sur le site, par choix de la marque : la mention, seule, le dit — présentée
-  comme un format au choix (10, 50 ou 80 ml), jamais comme une réserve. À dire là où l'on regarde
-  une photo de flacon : fiche parfum, page Contact, La parfumerie, pied de page.
-- **Les photographies** — réalisées par Nuréa Parfums, reproduction interdite
-  sans accord écrit. Pied de page et informations légales.
-
-### Fiche produit
-
-Ordre imposé : **marque, nom, contenance**. Le prix n'apparaît jamais en
-grille, seulement dans l'échange direct. Une ligne dont la donnée manque est
-omise — mieux vaut une ligne absente qu'une contenance inventée.
-
-Un parfum peut appartenir à une **ligne** de sa marque (« La Collection Privée »
-chez Dior, « Private Blend » chez Tom Ford). L'étiquette de marque devient alors
-**« Marque · Ligne »**, même classe `.nurea-label`, à la même place — carte,
-fiche en surimpression et page du parfum (`brandLineLabel`,
-`src/lib/catalog/perfumePresentation.ts`). Sans ligne, la marque seule : jamais
-de séparateur orphelin.
-
-### États
-
-| État | Traitement |
-|---|---|
-| Repos | `--nurea-surface` |
-| Survol | `--nurea-surface-hover` |
-| Focus | filet cuivre 1 px, `outline-offset: -2px` |
-| Épuisé | 40 % d'opacité |
+Valeurs : fond `color-mix(in oklch, var(--surface-1) 72%, transparent)`, `backdrop-filter:
+blur(12px) saturate(1.2)`, filet `--line`. **Repli opaque** (`--surface-1` à 96 %, sans flou) si le
+navigateur ne sait pas flouter, ou si l'utilisateur demande moins de transparence ou plus de
+contraste. La feuille de fiche est **opaque**. Le site ne dépend jamais du verre.
 
 ## Mouvement
 
-Inspiré des interfaces d'Apple : l'écran répond au doigt comme un objet. Le
-moteur est pur et testé — [`src/lib/motion/physics.ts`](src/lib/motion/physics.ts)
-(ressort, élan, résistance) — et les feuilles le branchent par
+L'écran répond au doigt comme un objet. Moteur pur et testé :
+[`src/lib/motion/physics.ts`](src/lib/motion/physics.ts), branché par
 [`useSheetMotion`](src/hooks/useSheetMotion.ts). Aucune bibliothèque.
 
-| Geste | Réponse |
+| Jeton | Valeur | Pour |
+|---|---|---|
+| `--dur-1` | 120 ms | appui, couleur, bascule |
+| `--dur-2` | 200 ms | survol, popover, puce |
+| `--dur-3` | 360 ms (sortie 270 ms) | feuille, tiroir |
+| `--dur-4` | 600 ms | entrée au premier chargement, une fois |
+| `--ease-out` | `cubic-bezier(0.22, 1, 0.36, 1)` | défaut |
+| `--ease-sheet` | `cubic-bezier(0.32, 0.72, 0, 1)` | feuille |
+| `--ease-move` | `cubic-bezier(0.77, 0, 0.175, 1)` | élément déjà à l'écran qui se déplace |
+| `--press` | `scale(0.97)` | appui |
+
+- Cascade : 40 ms par élément, plafond 400 ms. Entrée : opacité 0 → 1 et `scale(0.95)` → 1, jamais
+  depuis 0. Popover depuis son déclencheur.
+- Feuille sous le doigt : ressort raideur 380, amortissement critique (39), masse 1 ; fermeture si
+  le glissé dépasse 0,11 px/ms ; résistance 0,55 au-delà du bord.
+- On anime `transform`, `opacity`, `clip-path`, `background-color` ; jamais `width`, `height`,
+  `top`. Jamais `transition: all`. Survol seulement sous `@media (hover: hover) and (pointer: fine)`.
+- **Mouvement réduit** : plus aucun déplacement ; fondus gardés à `--dur-1`.
+
+## États (bouton primaire ; les autres composants suivent les mêmes règles)
+
+| État | Rendu |
 |---|---|
-| **Appui** (bouton, fiche) | Dès le contact, pas au lâcher : la couleur bascule sans transition et l'élément cède de 2 % (`scale(0.98)`, `.nurea-press`). Céder n'est pas grandir — la règle 3 tient. |
-| **Feuille** (fiche parfum, filtres — téléphone) | Entre par le bas, sort par le bas : même chemin dans les deux sens. Se saisit par sa poignée (photo, en-tête) ou n'importe où quand son contenu est en haut, et **suit le doigt au pixel**. Tirée vers le haut, elle résiste au lieu de bloquer. Lâchée, elle vise où l'élan la portait : un glissé franc ferme même court, un glissé lent ferme passé la moitié. Le ressort reprend la vitesse exacte du doigt, et la feuille se rattrape en plein vol. |
-| **Boîte** (grand écran) | Fondu et 12 px de montée sur ressort ; le tiroir de filtres vient de la droite et y repart. |
-| **Défilement** | Une entrée, une fois : opacité et 12 px, sur une courbe de ressort sans rebond. |
+| repos | fond `--text-1`, texte `--bg`, rayon `--r-md`, hauteur 48 px, graisse 500 |
+| survol (pointeur fin) | fond `--text-1` mêlé à 90 % au `--bg`, `--dur-2`, couleur seule |
+| focus clavier | anneau 2 px `--focus`, décalé 2 px |
+| appui | `--press`, `--dur-1` |
+| désactivé | fond `--surface-2`, texte `--text-3`, `aria-disabled`, reste atteignable au clavier |
+| chargement | libellé « … », `aria-busy`, largeur figée, inerte |
+| erreur | message **sous** le bouton en `--error`, relié par `aria-describedby` |
+| succès | le libellé devient le résultat (« Nom copié ») 1 600 ms, `aria-live="polite"` |
 
-Ressorts : **amortissement 1** (aucun rebond) par défaut ; un soupçon de rebond
-(0,86) seulement quand le geste a donné de l'élan. Toute fermeture — bouton,
-Échap, fond, glissé — passe par la même sortie animée.
+Bouton secondaire : fond `--surface-1`, filet `--line`, texte `--text-1`. Tertiaire : texte seul,
+souligné au survol. **Un seul bouton primaire par écran.** Cibles tactiles ≥ 44 px. Tout champ a
+une étiquette visible et son erreur dessous.
 
-**Mouvement réduit** demandé : plus de glissement, un fondu court ; plus de
-cession à l'appui. **Transparence réduite** : la barre redevient pleine.
-**Contraste renforcé** : les filets passent à leur version appuyée.
+## Composants signature
 
-### Matière
+- **Carte parfum** : visuel 2:3, puis la marque (`body`, `--text-2`, « Marque · Ligne »), puis le
+  nom (`subtitle`, `--text-1`). Cœur « Ma sélection » 44 px en haut à droite du visuel. Pressée :
+  fond d'ambiance. **Jamais de prix, jamais de contenance.**
+- **Fiche** : feuille depuis le bas (`--r-xl`, poignée 36 × 4 px), fond d'ambiance, visuel 2:3 plein
+  largeur, marque puis nom, mention `MENTION_FLACONS`, barre basse en verre avec « Commander sur
+  Snapchat » (copie « *Nom* (*Marque*) »). Précédent / suivant au glissé horizontal. Adresse
+  `?parfum=<id>` sur l'accueil ; page indexable `/parfums/<marque>/<nom>-<id>` au même contenu.
+- **Recherche** : champ permanent dans la barre haute, résultats dès 2 caractères. Jamais « aucun
+  résultat » : « Vous cherchez *X* ? Écrivez-nous », message pré-rempli.
+- **Filtres** : feuille opaque, compteur direct « Voir 42 parfums », puces actives supprimables,
+  tout dans l'adresse.
+- **Ma sélection** : liste gardée sur l'appareil (`localStorage`, `nurea:selection:v1`), compteur
+  sur le cœur de la barre, feuille qui liste les parfums et un bouton « Commander ces N parfums sur
+  Snapchat » qui compose un seul message. Aucun compte, aucune écriture serveur.
+- **Accueil** : une vraie page d'accueil — une section d'ouverture qui porte le H1 « Nuréa Parfums,
+  Marseille », puis des sections (parfums mis en avant, recherche, catalogue). Jamais le gabarit
+  « grande phrase + deux boutons + photo assombrie ». Composition dessinée sur planche avant le code.
 
-La barre de navigation est une **matière translucide** (fond à 78 %, flou
-20 px) : le contenu passe dessous et reste deviné. Elle garde son filet cuivre ;
-c'est la seule surface translucide du site — jamais une matière posée sur une
-autre.
+## Fiche produit
+
+Ordre imposé : **marque, puis nom**. **Aucune contenance (ml) affichée sur la vitrine** (décision
+du gérant, 20/10/2026) : ni sélecteur, ni « 10 · 50 · 80 ml », ni dans un texte, ni dans le message
+Snapchat ; le volume se discute dans l'échange. Le prix n'apparaît jamais. Une ligne dont la donnée
+manque est omise, jamais inventée (ni note, ni famille olfactive, ni avis, ni rareté).
+
+Un parfum peut appartenir à une **ligne** de sa marque (« La Collection Privée » chez Dior, « Private
+Blend » chez Tom Ford) : l'étiquette devient **« Marque · Ligne »**, partout où la marque s'affiche
+(`brandLineLabel`, `src/lib/catalog/perfumePresentation.ts`). Sans ligne, la marque seule.
+
+## Mentions
+
+Deux mentions dues au client, tenues dans **un** fichier,
+[`src/lib/mentions.ts`](src/lib/mentions.ts), jamais recopiées :
+
+- **Les flacons** (`MENTION_FLACONS`) — les photographies montrent les flacons d'origine des
+  marques ; le parfum est remis dans un flacon Nuréa personnalisé. Aucun visuel du flacon Nuréa sur
+  le site. À dire là où l'on regarde une photo de flacon : fiche parfum, Contact, La parfumerie,
+  pied de page.
+- **Les photographies** (`MENTION_PHOTOS`) — réalisées par Nuréa Parfums, reproduction interdite
+  sans accord écrit. Pied de page et informations légales.
 
 ## Images bi-thème
 
-Règle métier : l'image principale **est** la variante sombre ; `imageLight` est
-une variante claire facultative.
+L'image principale **est** la variante sombre ; `imageLight` est une variante claire facultative.
+Sans elle, le visuel sombre s'affiche dans les deux thèmes. La bascule se fait **en CSS**, jamais en
+JavaScript (`useTheme`) : les grilles restent rendues côté serveur et rien ne clignote. Format
+WebP, 2:3, vignette 640 × 960 servie aux petites largeurs.
 
-La bascule est faite **en CSS** (`dark:`), jamais en JavaScript — voir
-[`PerfumeImage`](src/components/features/PerfumeImage.tsx) et
-[`BrandLogo`](src/components/layout/BrandLogo.tsx). Les grilles restent ainsi
-rendues côté serveur et rien ne clignote en attendant le thème résolu. Sans
-variante claire — le cas courant — une seule image est demandée.
+## Logos
+
+Logos et monogrammes de `public/branding/` : **ivoire sur sombre, noir sur clair**, bascule en CSS.
+Les variantes colorées ne servent plus. Interdits : déformer, incliner, faire pivoter, ombrer,
+dégrader le logo ; poser le monogramme **nu** sur une photo (version cerclée) ; écrire « Nurea »
+sans accent.
 
 ## Coque
 
-La barre de navigation et le pied de page vivent dans
-[`app/(shop)/layout.tsx`](app/(shop)/layout.tsx), qui rend aussi l'unique
-`<main id="main-content">`. Les pages ne rendent que leur contenu : ni barre,
-ni pied, ni `<main>`.
+La barre haute et le pied de page vivent dans [`app/(shop)/layout.tsx`](app/(shop)/layout.tsx), qui
+rend aussi l'unique `<main id="main-content">` et le lien d'évitement. Les pages ne rendent que leur
+contenu.
 
-## Interdits
+## Écriture
 
-- Déformer, incliner ou faire pivoter le monogramme.
-- Ombre portée, biseau, vernis, dégradé sur le logo.
-- Poser le monogramme **nu** sur une photo — la version cerclée est obligatoire.
-- Fond hors palette.
-- Écrire « Nurea » sans accent aigu.
-- Le cuivre ne porte jamais de texte courant sur fond ivoire.
+- Vocabulaire : **Marque · Parfum · Ligne · Contenance · Catalogue**. Jamais « Maison », « Galerie »,
+  « Sillage ».
+- Boutons : verbe + objet (« Commander sur Snapchat », « Écrire à Nuréa »).
+- Pas d'étiquette creuse (« DÉCOUVRIR ») ; interdits : « N'hésitez pas », « Bienvenue sur »,
+  « Cliquez ici ».
+
+## Accessibilité
+
+WCAG 2.2 AA au moins ; cibles ≥ 44 px ; focus visible partout ; `prefers-reduced-motion`,
+`prefers-reduced-transparency`, `prefers-contrast` respectés ; zoom jamais bloqué, page tenue à
+200 % ; texte en `rem` ; un seul `<h1>` par page ; texte de remplacement sur chaque visuel.

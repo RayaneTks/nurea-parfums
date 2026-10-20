@@ -23,11 +23,11 @@ demande**.
 
 ### Refonte de la vitrine (décidée le 20/10/2026)
 
-La **charte graphique v3 est abandonnée**. Tout travail visuel sur la vitrine (`app/(shop)`,
+L'**ancienne charte (v3) est abandonnée**. Tout travail visuel sur la vitrine (`app/(shop)`,
 `src/components`, `app/globals.css`) suit **`docs/refonte-vitrine/`** : lire `00-LISEZ-MOI.md`, puis
 les invariants (01), le playbook (02) et la direction artistique (03). Ordre imposé : **document
 amont → planche montrée au gérant → code**. Tant que la phase 0 (choix de la DA) n'est pas faite, ne
-pas étendre l'ancien style (aucun nouveau composant « noir + cuivre »).
+pas étendre l'ancien style (aucun nouveau composant dans l'ancienne charte).
 
 Le brief : une expérience premium, éditoriale, distincte des interfaces génériques et pensée
 d'abord pour le mobile ; examiner les parcours et les données réels, ne jamais inventer de faits
@@ -133,7 +133,7 @@ Deux registres **disjoints**, jusque dans les feuilles de style :
 | | Vitrine (`brand`) | Gestion (`product`) |
 |---|---|---|
 | Routes | `app/(shop)/*` | `app/admin/*` (shell : groupe `app/admin/(gestion)`) |
-| Layout | `app/(shop)/layout.tsx` — `globals.css`, Newsreader + Instrument Sans, sombre par défaut | `app/admin/layout.tsx` — `globals.admin.css`, `-apple-system`, thème clair |
+| Layout | `app/(shop)/layout.tsx` — `globals.css`, Fraunces + Figtree, thème du système (sombre s'il ne dit rien) | `app/admin/layout.tsx` — `globals.admin.css`, `-apple-system`, thème clair |
 | Composants | `src/components/*` | `src/features/*` + `src/ui/*` + `src/app-shell/*` |
 | Docs | `PRODUCT.md`, `DESIGN.md` (racine) | `docs/admin/PRODUCT.md`, `docs/admin/DESIGN.md`, `docs/refonte/*` |
 
@@ -142,7 +142,7 @@ une feuille de style l'embarquerait dans les deux registres. Il lit l'en-tête
 `x-nurea-admin-route` posé par `proxy.ts` pour appliquer la classe de registre.
 
 ### Vitrine
-- `src/design/` — `brand.ts` (charte en TS), `fonts.ts` (Newsreader + Instrument Sans).
+- `src/design/` — `brand.ts` (jetons en TS), `fonts.ts` (Fraunces + Figtree).
   Les jetons CSS eux-mêmes vivent dans `app/globals.css`.
 - `src/components/ui/` — briques : `Button`, `Field`, `ScrollReveal`, `Icons`.
 - `src/components/layout/` — Navbar, Footer, BrandLogo. **Montés par le layout**,
@@ -282,42 +282,28 @@ Stratégie, attentes et suivi : `docs/SEO.md`. Gestes hors code : `docs/seo/INST
 - **Pas de balisage `Product`** tant qu'aucun prix n'est public : Google le compterait en erreur.
 - Le titre (H1) de l'accueil porte « Nuréa Parfums » et « Marseille » : ne pas le réduire à une accroche.
 
-## Règles Vitrine (charte graphique v3)
+## Règles Vitrine
 
-> **Charte v3 abandonnée le 20/10/2026.** Les règles ci-dessous décrivent le site **tel qu'il est
-> aujourd'hui**, pas ce qu'on construit. Pour tout nouveau travail visuel : `docs/refonte-vitrine/`.
-> Restent valables les règles de **métier, de droit et de référencement** (flacons, photos, fiche
-> produit, SEO, images) : voir `docs/refonte-vitrine/01-INVARIANTS.md`.
+**La référence est `DESIGN.md`** (DA « Nuancier nocturne », refonte décidée le 20/10/2026, chiffrée
+dans `docs/refonte-vitrine/04-PLAN-EXECUTION.md` § B). La refonte est en cours : tant qu'elle n'est
+pas en ligne, le code de production montre encore l'ancien rendu ; on ne l'étend pas. Les règles de
+**métier, de droit et de référencement** : `docs/refonte-vitrine/01-INVARIANTS.md`.
 
-La référence complète est `DESIGN.md`. Les trois règles sans exception :
-- **Angles 0** — aucun arrondi, boutons et images compris.
-- **Aucune ombre** — on sépare au filet 1 px ; les blocs partagent leurs bords.
-- **Survol : la couleur seule**, 160 ms `ease-out`. Jamais de déplacement ni
-  d'agrandissement. Le mouvement répond au **geste** : appui qui cède de 2 %, feuilles
-  qui suivent le doigt (`src/lib/motion/`, `useSheetMotion`) — `DESIGN.md` § Mouvement.
-
-Le reste :
-- **Jetons** : `app/globals.css` (`--nurea-*`, en canaux RVB) et `src/design/brand.ts`
-  pour ce qui ne lit pas de CSS (`next/og`, manifeste, `themeColor`). Les deux
-  doivent rester synchronisés.
-- **Typographie** : une classe par rôle (`.nurea-title`, `.nurea-name`,
-  `.nurea-body`, `.nurea-label`, `.nurea-caption`). Une taille arbitraire en dur
-  signale un rôle manquant — ajoutez-le plutôt que de le contourner.
-- **Boutons** : `src/components/ui/Button.tsx`, trois variantes. **Un seul bouton
-  plein par écran.**
-- **Images bi-thème** : bascule en CSS (`dark:`), jamais via `useTheme` — voir
-  `PerfumeImage` et `BrandLogo`. Les grilles restent rendues côté serveur.
-- **Coque** : Navbar, Footer et l'unique `<main id="main-content">` sont rendus par
+Ce qui ne se discute pas :
+- **Jetons** : `app/globals.css` et `src/design/brand.ts` (pour ce qui ne lit pas de CSS : `next/og`,
+  manifeste, `themeColor`), toujours synchronisés. Aucune couleur hors jetons.
+- **Typographie** : une règle par rôle ; une taille arbitraire en dur signale un rôle manquant.
+- **Boutons** : `src/components/ui/Button.tsx`. **Un seul bouton primaire par écran.**
+- **Images bi-thème** : bascule en CSS (`dark:`), jamais via `useTheme` — voir `PerfumeImage` et
+  `BrandLogo`. Les grilles restent rendues côté serveur.
+- **Coque** : barre, pied de page et l'unique `<main id="main-content">` sont rendus par
   `app/(shop)/layout.tsx`. Une page ne rend que son contenu.
-- **Mode clair** : hors charte, dérivé. Le cuivre y tombe à 2,5:1 — il n'y porte
-  aucun texte, l'accent devient le bordeaux.
-- **Fiche produit** : ordre imposé marque / nom / contenance ; jamais de prix en
-  grille. Une ligne sans donnée vraie est omise, pas inventée.
-- **Flacons** : les photos montrent les flacons d'origine des marques ; le client reçoit
-  son parfum dans un **flacon Nuréa personnalisé** (10 / 50 / 80 ml). Toute surface qui
-  montre un flacon le dit, par `MENTION_FLACONS` (`src/lib/mentions.ts`) — jamais une
-  formulation recopiée. Les photos sont de Nuréa Parfums (`MENTION_PHOTOS`).
-- **Bordeaux** : un seul aplat par page — le sceau (`Seal`) sur La parfumerie.
+- **Fiche produit** : marque puis nom. **Aucune contenance affichée sur la vitrine**, jamais de prix.
+  Une ligne sans donnée vraie est omise, pas inventée.
+- **Flacons** : les photos montrent les flacons d'origine des marques ; le client reçoit son parfum
+  dans un **flacon Nuréa personnalisé**. Toute surface qui montre un flacon le dit, par
+  `MENTION_FLACONS` (`src/lib/mentions.ts`) — jamais une formulation recopiée. Les photos sont de
+  Nuréa Parfums (`MENTION_PHOTOS`).
 
 ## Règles Gestion (PWA)
 
