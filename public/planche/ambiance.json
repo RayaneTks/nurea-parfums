@@ -1,0 +1,146 @@
+[
+  {
+    "id": 60,
+    "brand": "Chanel",
+    "name": "Bleu de Chanel",
+    "line": null,
+    "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458447086-631839c7-640.webp",
+    "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458447239-95a47d1e-640.webp",
+    "hue": 244,
+    "chroma": 0.067,
+    "kept": 0.262,
+    "weight": 0.0172,
+    "dark": {
+      "oklch": "oklch(0.27 0.040 244)",
+      "hex": "#142839",
+      "contrastText1": 13,
+      "contrastText3": 4.84
+    },
+    "light": {
+      "oklch": "oklch(0.93 0.023 244)",
+      "hex": "#DBEAF7",
+      "contrastText1": 14.21,
+      "contrastText3": 5.36
+    }
+  },
+  {
+    "id": 188,
+    "brand": "BDK Parfums",
+    "name": "Rouge Smoking",
+    "line": null,
+    "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790181011427-b03989e2-640.webp",
+    "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790181016277-1621814c-640.webp",
+    "hue": 47,
+    "chroma": 0.062,
+    "kept": 0.584,
+    "weight": 0.0396,
+    "dark": {
+      "oklch": "oklch(0.27 0.037 47)",
+      "hex": "#352116",
+      "contrastText1": 13.11,
+      "contrastText3": 4.88
+    },
+    "light": {
+      "oklch": "oklch(0.93 0.022 47)",
+      "hex": "#F5E4DC",
+      "contrastText1": 14.12,
+      "contrastText3": 5.32
+    }
+  },
+  {
+    "id": 299,
+    "brand": "Maison Crivelli",
+    "name": "Hibiscus Mahajád",
+    "line": null,
+    "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547093054-f3b69115-640.webp",
+    "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547094087-a9d179b9-640.webp",
+    "hue": 26,
+    "chroma": 0.101,
+    "kept": 0.259,
+    "weight": 0.0221,
+    "dark": {
+      "oklch": "oklch(0.27 0.060 26)",
+      "hex": "#3F1916",
+      "contrastText1": 13.29,
+      "contrastText3": 4.95
+    },
+    "light": {
+      "oklch": "oklch(0.93 0.035 26)",
+      "hex": "#FFE0DC",
+      "contrastText1": 14.06,
+      "contrastText3": 5.3
+    }
+  },
+  {
+    "id": 23,
+    "brand": "Aesop",
+    "name": "Marrakech Intense",
+    "line": null,
+    "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802604749-af82e0c2-640.webp",
+    "imageLight": null,
+    "hue": 50,
+    "chroma": 0.063,
+    "kept": 0.531,
+    "weight": 0.0371,
+    "dark": {
+      "oklch": "oklch(0.27 0.038 50)",
+      "hex": "#352115",
+      "contrastText1": 13.12,
+      "contrastText3": 4.89
+    },
+    "light": {
+      "oklch": "oklch(0.93 0.022 50)",
+      "hex": "#F5E4DB",
+      "contrastText1": 14.11,
+      "contrastText3": 5.32
+    }
+  },
+  {
+    "id": 57,
+    "brand": "Tom Ford",
+    "name": "Vanille Fatale",
+    "line": null,
+    "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576124917-77ac4335-640.webp",
+    "imageLight": null,
+    "hue": 245,
+    "chroma": 0.072,
+    "kept": 0.452,
+    "weight": 0.0325,
+    "dark": {
+      "oklch": "oklch(0.27 0.043 245)",
+      "hex": "#13283A",
+      "contrastText1": 13,
+      "contrastText3": 4.84
+    },
+    "light": {
+      "oklch": "oklch(0.93 0.025 245)",
+      "hex": "#DBEAF8",
+      "contrastText1": 14.22,
+      "contrastText3": 5.36
+    }
+  },
+  {
+    "id": 117,
+    "brand": "Giorgio Armani",
+    "name": "Emporio Armani Stronger With You Powerfully",
+    "line": null,
+    "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802661870-53c03f17-640.webp",
+    "imageLight": null,
+    "hue": 31,
+    "chroma": 0.122,
+    "kept": 0.965,
+    "weight": 0.122,
+    "dark": {
+      "oklch": "oklch(0.27 0.073 31)",
+      "hex": "#43150F",
+      "contrastText1": 13.38,
+      "contrastText3": 4.98
+    },
+    "light": {
+      "oklch": "oklch(0.93 0.043 31)",
+      "hex": "#FFDED7",
+      "contrastText1": 13.84,
+      "contrastText3": 5.22
+    }
+  }
+]

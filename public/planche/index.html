@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="fr" data-type="c1">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Planche — refonte vitrine Nuréa</title>
+<style>
+/* Planche T1 — docs/refonte-vitrine/04-PLAN-EXECUTION.md § B. Pas du code de production. */
+@font-face { font-family: "Fraunces"; src: url(fonts/fraunces.woff2) format("woff2"); font-weight: 400 500; font-display: swap; }
+@font-face { font-family: "Figtree"; src: url(fonts/figtree.woff2) format("woff2"); font-weight: 400 600; font-display: swap; }
+@font-face { font-family: "Bricolage Grotesque"; src: url(fonts/bricolage.woff2) format("woff2"); font-weight: 400 600; font-stretch: 75% 100%; font-display: swap; }
+@font-face { font-family: "Literata"; src: url(fonts/literata.woff2) format("woff2"); font-weight: 400 500; font-display: swap; }
+@font-face { font-family: "Hanken Grotesk"; src: url(fonts/hanken.woff2) format("woff2"); font-weight: 400 600; font-display: swap; }
+
+/* ── Jetons § B.2 (sémantique seulement par thème) ─────────────────────── */
+:root {
+  --bg: oklch(0.975 0.006 70); --surface-1: oklch(0.945 0.008 70); --surface-2: oklch(0.91 0.010 65);
+  --line: oklch(0.84 0.012 60); --text-1: oklch(0.22 0.012 20); --text-2: oklch(0.42 0.014 20);
+  --text-3: oklch(0.48 0.014 20); --error: oklch(0.50 0.16 20); --focus: var(--text-1);
+  --shadow-float: 0 12px 32px -8px oklch(0.2 0.01 20 / 0.18); --glass-edge: transparent;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: oklch(0.16 0.012 20); --surface-1: oklch(0.21 0.012 20); --surface-2: oklch(0.26 0.012 20);
+    --line: oklch(0.34 0.012 20); --text-1: oklch(0.95 0.008 60); --text-2: oklch(0.78 0.012 50);
+    --text-3: oklch(0.66 0.014 40); --error: oklch(0.74 0.13 20);
+    --shadow-float: 0 12px 32px -8px oklch(0 0 0 / 0.35); --glass-edge: oklch(1 0 0 / 0.06);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: oklch(0.16 0.012 20); --surface-1: oklch(0.21 0.012 20); --surface-2: oklch(0.26 0.012 20);
+  --line: oklch(0.34 0.012 20); --text-1: oklch(0.95 0.008 60); --text-2: oklch(0.78 0.012 50);
+  --text-3: oklch(0.66 0.014 40); --error: oklch(0.74 0.13 20);
+  --shadow-float: 0 12px 32px -8px oklch(0 0 0 / 0.35); --glass-edge: oklch(1 0 0 / 0.06);
+  color-scheme: dark;
+}
+
+/* ── Échelles § B.5, mouvement § B.7 ───────────────────────────────────── */
+:root {
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px; --space-8: 32px;
+  --space-12: 48px; --space-16: 64px; --space-section: clamp(3rem, 2rem + 4vw, 6rem);
+  --r-sm: 6px; --r-md: 12px; --r-lg: 20px; --r-xl: 28px; --r-full: 999px;
+  --z-sticky: 10; --z-scrim: 20; --z-sheet: 30; --z-toast: 40;
+  --dur-1: 120ms; --dur-2: 200ms; --dur-3: 360ms; --dur-4: 600ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1); --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  --gutter: 16px;
+}
+
+/* ── Couples typographiques § B.4 ──────────────────────────────────────── */
+[data-type="c1"] { --f-title: "Fraunces", Georgia, serif; --f-text: "Figtree", system-ui, sans-serif; --title-vars: normal; }
+[data-type="c2"] { --f-title: "Bricolage Grotesque", system-ui, sans-serif; --f-text: "Bricolage Grotesque", system-ui, sans-serif; --title-vars: "wdth" 88; }
+[data-type="c3"] { --f-title: "Literata", Georgia, serif; --f-text: "Hanken Grotesk", system-ui, sans-serif; --title-vars: normal; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text-2);
+  font: 400 1rem/1.6 var(--f-text); font-kerning: normal; -webkit-font-smoothing: antialiased;
+  transition: background-color var(--dur-2) var(--ease-out);
+}
+:root[data-theme="dark"] body { line-height: 1.65; }
+img { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* Rôles de texte */
+.display, .title, .subtitle { font-family: var(--f-title); font-variation-settings: var(--title-vars); color: var(--text-1); text-wrap: balance; margin: 0; }
+.display { font-size: clamp(3rem, 2rem + 4vw, 5rem); font-weight: 400; letter-spacing: -0.02em; line-height: 1.05; }
+.title { font-size: clamp(1.75rem, 1.25rem + 2vw, 2.5rem); font-weight: 500; letter-spacing: -0.015em; line-height: 1.15; }
+.subtitle { font-size: 1.3125rem; font-weight: 500; letter-spacing: -0.005em; line-height: 1.3; }
+.body { font-size: 1rem; margin: 0; text-wrap: pretty; }
+.caption { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; line-height: 1.4; color: var(--text-3); font-variant-numeric: tabular-nums; margin: 0; }
+
+/* ── Outils de la planche (hors design) ─────────────────────────────────── */
+.tools {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 8px var(--gutter);
+  padding-top: max(8px, env(safe-area-inset-top));
+  background: oklch(0.35 0.02 250); color: oklch(0.97 0.01 250); font: 500 0.75rem/1 system-ui, sans-serif;
+}
+.tools span { align-self: center; opacity: 0.75; margin-right: 2px; }
+.tools button { min-height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid oklch(0.6 0.02 250); background: transparent; color: inherit; }
+.tools button[aria-pressed="true"] { background: oklch(0.97 0.01 250); color: oklch(0.25 0.02 250); }
+.tools .sep { width: 100%; height: 0; }
+
+/* ── Barre haute en verre § B.6 ────────────────────────────────────────── */
+.bar {
+  position: sticky; top: 0; z-index: var(--z-sticky);
+  padding: var(--space-3) var(--gutter) var(--space-3);
+  background: color-mix(in oklch, var(--surface-1) 72%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2); backdrop-filter: blur(12px) saturate(1.2);
+  border-bottom: 1px solid var(--line); box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+.bar-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.logo { height: 22px; width: auto; }
+.logo-dark { display: none; }
+:root[data-theme="dark"] .logo-dark { display: block; } :root[data-theme="dark"] .logo-light { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .logo-dark { display: block; } :root:not([data-theme="light"]) .logo-light { display: none; } }
+.icon-btn {
+  position: relative; display: grid; place-items: center; width: 44px; height: 44px;
+  border: 0; border-radius: var(--r-full); background: transparent; color: var(--text-1); cursor: pointer;
+  transition: background-color var(--dur-2) var(--ease-out), transform var(--dur-1) var(--ease-out);
+}
+.icon-btn:active { transform: scale(0.97); background: var(--surface-2); }
+.icon-btn svg { width: 22px; height: 22px; }
+.count {
+  position: absolute; top: 6px; right: 4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--r-full);
+  background: var(--text-1); color: var(--bg); font: 600 0.6875rem/18px var(--f-text); font-variant-numeric: tabular-nums; text-align: center;
+}
+.count[hidden] { display: none; }
+.search {
+  margin-top: var(--space-3); display: flex; align-items: center; gap: var(--space-2);
+  height: 44px; padding: 0 var(--space-3); border-radius: var(--r-md);
+  background: var(--surface-2); color: var(--text-3);
+}
+.search svg { width: 18px; height: 18px; flex: none; }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text-1); font: 400 1rem var(--f-text); outline: none; }
+.search input::placeholder { color: var(--text-3); }
+:root[data-glass="off"] .bar, :root[data-glass="off"] .action-bar {
+  -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in oklch, var(--surface-1) 96%, var(--bg));
+}
+@supports not (backdrop-filter: blur(1px)) { .bar, .action-bar { background: color-mix(in oklch, var(--surface-1) 96%, var(--bg)); } }
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .bar, .action-bar { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--surface-1); }
+}
+
+/* ── Page ──────────────────────────────────────────────────────────────── */
+main { max-width: 1280px; margin: 0 auto; padding: var(--space-8) var(--gutter) var(--space-section); }
+.intro { max-width: 34ch; margin-bottom: var(--space-12); }
+.intro .body { margin-top: var(--space-4); max-width: 34ch; }
+.list-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--space-4); }
+
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+@media (min-width: 768px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); } :root { --gutter: 24px; } }
+@media (min-width: 1024px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } :root { --gutter: 32px; } }
+
+.card {
+  position: relative; display: flex; flex-direction: column; gap: var(--space-3); width: 100%;
+  padding: var(--space-2) var(--space-2) var(--space-4); border: 0; border-radius: var(--r-lg);
+  background: var(--surface-1); text-align: left; cursor: pointer;
+  transition: background-color var(--dur-2) var(--ease-out), transform var(--dur-1) var(--ease-out);
+}
+.card:active { transform: scale(0.97); background: var(--amb); transition-duration: var(--dur-1); }
+@media (hover: hover) and (pointer: fine) { .card:hover { background: var(--amb); } }
+.visual { position: relative; aspect-ratio: 2 / 3; border-radius: var(--r-md); overflow: hidden; background: var(--surface-2); }
+.visual img { width: 100%; height: 100%; object-fit: cover; }
+.visual .img-light { display: none; }
+:root:not([data-theme="dark"]) .has-light .img-light { display: block; } :root:not([data-theme="dark"]) .has-light .img-dark { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .has-light .img-light { display: none; } :root:not([data-theme="light"]) .has-light .img-dark { display: block; } }
+/* Sans variante claire, le visuel sombre est cadré dans le thème clair */
+:root:not([data-theme="dark"]) .visual:not(.has-light) { outline: 1px solid var(--line); outline-offset: -1px; }
+.card-text { display: flex; flex-direction: column; gap: 2px; padding: 0 var(--space-2); min-width: 0; }
+.card-text .subtitle { font-size: 1.0625rem; overflow-wrap: anywhere; hyphens: auto; }
+@media (min-width: 400px) { .card-text .subtitle { font-size: 1.1875rem; } }
+.card-text .brand { font-size: 0.875rem; line-height: 1.4; color: var(--text-2); }
+.card-text .caption { margin-top: var(--space-1); }
+.heart {
+  position: absolute; top: var(--space-2); right: var(--space-2); z-index: 1;
+  display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--r-full);
+  border: 0; background: color-mix(in oklch, var(--surface-1) 80%, transparent); color: var(--text-1); cursor: pointer;
+  transition: transform var(--dur-1) var(--ease-out);
+}
+.heart:active { transform: scale(0.92); }
+.heart svg { width: 20px; height: 20px; }
+.heart[aria-pressed="true"] svg path { fill: currentColor; }
+
+/* Planche : ambiances calculées */
+.swatches { margin-top: var(--space-section); }
+.swatches .title { margin-bottom: var(--space-2); }
+.swatches > .body { color: var(--text-3); margin-bottom: var(--space-6); max-width: 60ch; }
+.sw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); }
+.sw { padding: var(--space-4); border-radius: var(--r-lg); background: var(--amb); min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-3); }
+.sw .subtitle { font-size: 1rem; }
+.sw .caption { color: var(--text-3); }
+
+/* ── Feuille de fiche ──────────────────────────────────────────────────── */
+.scrim {
+  position: fixed; inset: 0; z-index: var(--z-scrim); background: oklch(0.12 0.01 20 / 0.5);
+  opacity: 0; pointer-events: none; transition: opacity var(--dur-3) var(--ease-out);
+}
+.scrim.open { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-sheet);
+  max-height: calc(100dvh - 24px); max-width: 560px; margin: 0 auto; display: flex; flex-direction: column;
+  border-radius: var(--r-xl) var(--r-xl) 0 0; background: var(--amb, var(--surface-1)); box-shadow: var(--shadow-float);
+  transform: translateY(100%); transition: transform 270ms var(--ease-sheet);
+  overscroll-behavior: contain;
+}
+.sheet.open { transform: translateY(0); transition-duration: var(--dur-3); }
+.sheet.dragging { transition: none; }
+.sheet-scroll { overflow-y: auto; overscroll-behavior: contain; padding: 0 var(--gutter) var(--space-6); }
+.grip { display: grid; place-items: center; height: 28px; cursor: grab; touch-action: none; flex: none; }
+.grip::before { content: ""; width: 36px; height: 4px; border-radius: var(--r-full); background: var(--text-3); opacity: 0.6; }
+.sheet-close { position: absolute; top: var(--space-2); right: var(--space-2); }
+.sheet .visual { max-width: 320px; margin: var(--space-2) auto var(--space-6); border-radius: var(--r-lg); }
+.sheet .brand { font-size: 1rem; color: var(--text-2); margin: 0 0 var(--space-1); }
+.sheet .title { overflow-wrap: anywhere; hyphens: auto; }
+.sizes { margin-top: var(--space-6); }
+.sizes .caption { margin-bottom: var(--space-2); }
+.sizes-row { display: flex; gap: var(--space-2); }
+.size {
+  flex: 1; min-height: 48px; border-radius: var(--r-full); border: 1px solid var(--line);
+  background: transparent; color: var(--text-1); font-weight: 500; font-variant-numeric: tabular-nums; cursor: pointer;
+  transition: background-color var(--dur-2) var(--ease-out), color var(--dur-2) var(--ease-out), transform var(--dur-1) var(--ease-out);
+}
+.size:active { transform: scale(0.97); }
+.size[aria-checked="true"] { background: var(--text-1); color: var(--bg); border-color: var(--text-1); }
+.mention { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid color-mix(in oklch, var(--text-3) 30%, transparent); max-width: 60ch; }
+.action-bar {
+  flex: none; display: flex; gap: var(--space-2); align-items: center;
+  padding: var(--space-3) var(--gutter); padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  background: color-mix(in oklch, var(--surface-1) 72%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2); backdrop-filter: blur(12px) saturate(1.2);
+  border-top: 1px solid var(--line); box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+.btn {
+  flex: 1; min-height: 48px; padding: 0 var(--space-4); border: 0; border-radius: var(--r-md);
+  background: var(--text-1); color: var(--bg); font-weight: 500; cursor: pointer;
+  transition: background-color var(--dur-2) var(--ease-out), transform var(--dur-1) var(--ease-out);
+}
+.btn:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) { .btn:hover { background: color-mix(in oklch, var(--text-1) 90%, var(--bg)); } }
+.btn-2 { flex: none; width: 48px; padding: 0; display: grid; place-items: center; background: var(--surface-1); color: var(--text-1); border: 1px solid var(--line); }
+.btn-2 svg { width: 22px; height: 22px; }
+.btn-2[aria-pressed="true"] svg path { fill: currentColor; }
+.sel-list { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.sel-list li { display: flex; gap: var(--space-3); align-items: center; }
+.sel-list img { width: 48px; aspect-ratio: 2/3; object-fit: cover; border-radius: var(--r-sm); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet, .sheet.open { transition: opacity var(--dur-1) linear; transform: none; opacity: 0; pointer-events: none; }
+  .sheet.open { opacity: 1; pointer-events: auto; }
+  .card:active, .btn:active, .size:active, .icon-btn:active, .heart:active { transform: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="tools" role="toolbar" aria-label="Réglages de la planche">
+  <span>Polices</span>
+  <button data-set-type="c1" aria-pressed="true">1 · Fraunces + Figtree</button>
+  <button data-set-type="c2" aria-pressed="false">2 · Bricolage</button>
+  <button data-set-type="c3" aria-pressed="false">3 · Literata + Hanken</button>
+  <i class="sep"></i>
+  <span>Thème</span>
+  <button data-set-theme="system" aria-pressed="true">Auto</button>
+  <button data-set-theme="dark" aria-pressed="false">Sombre</button>
+  <button data-set-theme="light" aria-pressed="false">Clair</button>
+  <span style="margin-left:8px">Verre</span>
+  <button data-set-glass="on" aria-pressed="true">Oui</button>
+  <button data-set-glass="off" aria-pressed="false">Repli</button>
+</div>
+
+<header class="bar">
+  <div class="bar-row">
+    <img class="logo logo-light" src="/branding/logos/nurea-logo-horizontal-black.webp" alt="Nuréa Parfums" height="22">
+    <img class="logo logo-dark" src="/branding/logos/nurea-logo-horizontal-dark.webp" alt="Nuréa Parfums" height="22">
+    <div style="display:flex">
+      <button class="icon-btn" id="open-selection" aria-label="Ma sélection, 0 parfum">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg>
+        <span class="count" hidden>0</span>
+      </button>
+    </div>
+  </div>
+  <label class="search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+    <span class="sr">Rechercher un parfum ou une marque</span>
+    <input type="search" placeholder="Un parfum, une marque" autocomplete="off" enterkeyhint="search">
+  </label>
+</header>
+
+<main id="main-content">
+  <section class="intro">
+    <h1 class="display">Nuréa Parfums, Marseille</h1>
+    <p class="body">Les parfums des grandes marques, remis dans un flacon Nuréa de 10, 50 ou 80&nbsp;ml. La commande se fait sur Snapchat.</p>
+  </section>
+
+  <div class="list-head">
+    <h2 class="subtitle">Catalogue</h2>
+    <p class="caption" id="total"></p>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <section class="swatches" aria-labelledby="sw-title">
+    <h2 class="title" id="sw-title">Couleurs d'ambiance</h2>
+    <p class="body">Calculées sur chaque photo, jamais choisies à la main. Elles colorent la fiche et la carte qu'on touche, rien d'autre. Contraste du texte le plus pâle indiqué (minimum 4,5).</p>
+    <div class="sw-grid" id="swatches"></div>
+  </section>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" inert>
+  <div class="grip" id="grip" aria-hidden="true"></div>
+  <button class="icon-btn sheet-close" id="close" aria-label="Fermer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
+  <div class="sheet-scroll" id="sheet-body"></div>
+  <div class="action-bar" id="action-bar"></div>
+</section>
+<p class="sr" aria-live="polite" id="live"></p>
+
+<script>
+const PERFUMES = [{"id":60,"brand":"Chanel","name":"Bleu de Chanel","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458447086-631839c7-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458447239-95a47d1e-640.webp","dark":"oklch(0.27 0.040 244)","light":"oklch(0.93 0.023 244)","c3d":4.84,"c3l":5.36},{"id":188,"brand":"BDK Parfums","name":"Rouge Smoking","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790181011427-b03989e2-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790181016277-1621814c-640.webp","dark":"oklch(0.27 0.037 47)","light":"oklch(0.93 0.022 47)","c3d":4.88,"c3l":5.32},{"id":299,"brand":"Maison Crivelli","name":"Hibiscus Mahajád","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547093054-f3b69115-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547094087-a9d179b9-640.webp","dark":"oklch(0.27 0.060 26)","light":"oklch(0.93 0.035 26)","c3d":4.95,"c3l":5.3},{"id":23,"brand":"Aesop","name":"Marrakech Intense","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802604749-af82e0c2-640.webp","imageLight":null,"dark":"oklch(0.27 0.038 50)","light":"oklch(0.93 0.022 50)","c3d":4.89,"c3l":5.32},{"id":57,"brand":"Tom Ford","name":"Vanille Fatale","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576124917-77ac4335-640.webp","imageLight":null,"dark":"oklch(0.27 0.043 245)","light":"oklch(0.93 0.025 245)","c3d":4.84,"c3l":5.36},{"id":117,"brand":"Giorgio Armani","name":"Emporio Armani Stronger With You Powerfully","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802661870-53c03f17-640.webp","imageLight":null,"dark":"oklch(0.27 0.073 31)","light":"oklch(0.93 0.043 31)","c3d":4.98,"c3l":5.22}];
+const MENTION_FLACONS = "Photo : le flacon d'origine de la marque, pour reconnaître la référence. Votre parfum vous est remis dans un flacon Nuréa personnalisé.";
+const SNAPCHAT = "https://snapchat.com/add/nureaparfums";
+const HEART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg>';
+const root = document.documentElement;
+const $ = (s) => document.querySelector(s);
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const selection = new Set();
+let current = null, size = 80, lastTrigger = null;
+
+const isDark = () => root.dataset.theme === "dark" || (root.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+const amb = (p) => (isDark() ? p.dark : p.light);
+const visual = (p, eager) => `<div class="visual${p.imageLight ? " has-light" : ""}">
+  <img class="img-dark" src="${p.image}" alt="${esc(p.name)}, ${esc(p.brand)} : flacon d'origine" width="640" height="960" ${eager ? "" : 'loading="lazy"'}>
+  ${p.imageLight ? `<img class="img-light" src="${p.imageLight}" alt="${esc(p.name)}, ${esc(p.brand)} : flacon d'origine" width="640" height="960" loading="lazy">` : ""}</div>`;
+
+function render() {
+  $("#grid").innerHTML = PERFUMES.map((p, i) => `<div style="position:relative;--amb:${amb(p)}">
+    <button class="card" data-open="${p.id}" style="--amb:${amb(p)}" aria-label="${esc(p.brand)}, ${esc(p.name)} : voir la fiche">
+      ${visual(p, i < 2)}
+      <span class="card-text"><span class="brand">${esc(p.brand)}</span><span class="subtitle">${esc(p.name)}</span><span class="caption">10 · 50 · 80&nbsp;ml</span></span>
+    </button>
+    <button class="heart" data-heart="${p.id}" aria-pressed="${selection.has(p.id)}" aria-label="Ajouter ${esc(p.name)} à ma sélection">${HEART}</button></div>`).join("");
+  $("#total").textContent = `${PERFUMES.length} parfums`;
+  $("#swatches").innerHTML = PERFUMES.map((p) => `<div class="sw" style="--amb:${amb(p)}"><span class="subtitle">${esc(p.name)}</span>
+    <span class="caption">${amb(p)}<br>contraste ${String(isDark() ? p.c3d : p.c3l).replace(".", ",")}:1</span></div>`).join("");
+  if (current) $("#sheet").style.setProperty("--amb", amb(current));
+}
+
+function updateCount() {
+  const n = selection.size, c = $(".count");
+  c.hidden = n === 0; c.textContent = n;
+  $("#open-selection").setAttribute("aria-label", `Ma sélection, ${n} parfum${n > 1 ? "s" : ""}`);
+}
+function toggleHeart(id) {
+  selection.has(id) ? selection.delete(id) : selection.add(id);
+  document.querySelectorAll(`[data-heart="${id}"]`).forEach((b) => b.setAttribute("aria-pressed", selection.has(id)));
+  updateCount();
+}
+
+async function copyAndGo(text, btn) {
+  try { await navigator.clipboard.writeText(text); } catch {}
+  const label = btn.textContent; btn.textContent = "Nom copié, Snapchat s'ouvre"; $("#live").textContent = `Copié : ${text}`;
+  setTimeout(() => { btn.textContent = label; }, 1600);
+  setTimeout(() => window.open(SNAPCHAT, "_blank", "noopener"), 400);
+}
+
+function openSheet(html, actions, ambient, trigger) {
+  lastTrigger = trigger;
+  const sheet = $("#sheet");
+  sheet.style.setProperty("--amb", ambient || "var(--surface-1)");
+  $("#sheet-body").innerHTML = html; $("#action-bar").innerHTML = actions;
+  sheet.inert = false; sheet.classList.add("open"); $("#scrim").classList.add("open");
+  document.body.style.overflow = "hidden";
+  setTimeout(() => $("#close").focus({ preventScroll: true }), 50);
+}
+function closeSheet() {
+  const sheet = $("#sheet");
+  sheet.classList.remove("open", "dragging"); sheet.style.transform = ""; $("#scrim").classList.remove("open");
+  sheet.inert = true; document.body.style.overflow = ""; current = null;
+  lastTrigger?.focus({ preventScroll: true });
+}
+
+function openPerfume(p, trigger) {
+  current = p; size = 80;
+  openSheet(`${visual(p, true)}
+    <p class="brand">${esc(p.brand)}</p>
+    <h2 class="title" id="sheet-title">${esc(p.name)}</h2>
+    <div class="sizes"><p class="caption" id="size-label">Contenance</p>
+      <div class="sizes-row" role="radiogroup" aria-labelledby="size-label">
+        ${[10, 50, 80].map((v) => `<button class="size" role="radio" data-size="${v}" aria-checked="${v === 80}">${v}&nbsp;ml</button>`).join("")}
+      </div></div>
+    <p class="caption mention">${MENTION_FLACONS}</p>`,
+    `<button class="btn" id="order">Commander sur Snapchat</button>
+     <button class="btn btn-2" data-heart="${p.id}" aria-pressed="${selection.has(p.id)}" aria-label="Ajouter à ma sélection">${HEART}</button>`,
+    amb(p), trigger);
+}
+function openSelection(trigger) {
+  const items = PERFUMES.filter((p) => selection.has(p.id));
+  openSheet(`<h2 class="title" id="sheet-title" style="margin-top:8px">Ma sélection</h2>
+    ${items.length ? `<ul class="sel-list">${items.map((p) => `<li><img src="${p.image}" alt=""><span><span class="caption" style="display:block">${esc(p.brand)}</span><span class="subtitle" style="font-size:1rem">${esc(p.name)}</span></span></li>`).join("")}</ul>`
+      : `<p class="body" style="margin-top:12px">Touchez le cœur d'un parfum pour le garder ici. Vous enverrez toute la liste en un seul message.</p>`}`,
+    items.length ? `<button class="btn" id="order-all">Commander ${items.length > 1 ? `ces ${items.length} parfums` : "ce parfum"} sur Snapchat</button>`
+      : `<button class="btn" id="browse">Parcourir le catalogue</button>`,
+    null, trigger);
+}
+
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.dataset.setType) { root.dataset.type = t.dataset.setType; press(t); }
+  else if (t.dataset.setTheme) { t.dataset.setTheme === "system" ? delete root.dataset.theme : (root.dataset.theme = t.dataset.setTheme); press(t); render(); }
+  else if (t.dataset.setGlass) { root.dataset.glass = t.dataset.setGlass; press(t); }
+  else if (t.dataset.heart) toggleHeart(+t.dataset.heart);
+  else if (t.dataset.open) openPerfume(PERFUMES.find((p) => p.id === +t.dataset.open), t);
+  else if (t.dataset.size) { size = +t.dataset.size; document.querySelectorAll(".size").forEach((b) => b.setAttribute("aria-checked", +b.dataset.size === size)); }
+  else if (t.id === "order") copyAndGo(`Bonjour, je voudrais ${current.name} (${current.brand}), ${size} ml.`, t);
+  else if (t.id === "order-all") copyAndGo(`Bonjour, je voudrais : ${PERFUMES.filter((p) => selection.has(p.id)).map((p) => `${p.name} (${p.brand})`).join(", ")}.`, t);
+  else if (t.id === "browse" || t.id === "close") closeSheet();
+  else if (t.id === "open-selection") openSelection(t);
+});
+$("#scrim").addEventListener("click", closeSheet);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("#sheet").classList.contains("open")) closeSheet(); });
+function press(btn) { btn.parentElement.querySelectorAll(`[data-${Object.keys(btn.dataset)[0].replace(/[A-Z]/g, (m) => "-" + m.toLowerCase())}]`).forEach((b) => b.setAttribute("aria-pressed", b === btn)); }
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+
+/* Glisser pour fermer : suivi 1:1, fermeture sur vitesse > 0,11 px/ms ou distance > 30 % */
+(() => {
+  const sheet = $("#sheet"), grip = $("#grip");
+  let y0 = 0, t0 = 0, last = 0, lastT = 0, v = 0, dy = 0;
+  grip.addEventListener("pointerdown", (e) => { grip.setPointerCapture(e.pointerId); y0 = last = e.clientY; t0 = lastT = e.timeStamp; v = 0; dy = 0; sheet.classList.add("dragging"); });
+  grip.addEventListener("pointermove", (e) => {
+    if (!sheet.classList.contains("dragging")) return;
+    dy = e.clientY - y0; const d = dy < 0 ? dy * 0.2 : dy;
+    v = (e.clientY - last) / Math.max(1, e.timeStamp - lastT); last = e.clientY; lastT = e.timeStamp;
+    sheet.style.transform = `translateY(${d}px)`;
+  });
+  const end = () => {
+    if (!sheet.classList.contains("dragging")) return;
+    sheet.classList.remove("dragging");
+    if (v > 0.11 || dy > sheet.offsetHeight * 0.3) closeSheet(); else sheet.style.transform = "";
+  };
+  grip.addEventListener("pointerup", end); grip.addEventListener("pointercancel", end);
+})();
+
+render();
+</script>
+</body>
+</html>
