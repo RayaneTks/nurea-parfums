@@ -126,6 +126,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 20/10 | refonte | **T14 faite** (`00a0001`, `refonte/vitrine`) : fiche `/parfums/<marque>/<nom>-<id>` au contenu de la feuille, page marque à l'ambiance moyenne, index A→Z ; URLs, canoniques, 308 inchangés, sitemap identique (151 adresses). S7 arrêtée au plafond de contexte : **T15 à reprendre** en session neuve (`PROMPT-SUITE-S7.md`, étape 2). |
 | 20/10 | refonte | **PC 3 passé** (gérant, iPhone) : fiche, gestes, Snapchat en 2 taps. Correctif avant le « oui » (`f4bee0f`) : dérouler et fermer la fiche séparés, barre opaque pendant la bascule de thème. Suite : S7 (T14, T15), `docs/refonte-vitrine/PROMPT-SUITE-S7.md`. |
 | 20/10 | visuels | Fournée 11 (livraison `nurea-visuels-alien-a-black-vanilla`, 85 parfums dont 30 déjà en ligne) : 42 parfums relus OK, appliqués, publiés ; 13 à refaire non appliqués (520, 525, 528, 531, 535 à 540, 542, 543, 554 : mauvais bouchon ou jus ; Zara surtout). Sans visuel : 527, 562. Clés sur `main` : `public-catalogue-v21`, `seo-catalogue-v17`, `unlisted-perfumes-v11` (la refonte porte v20 : prendre ≥ v22 au rebase). Page : 39 à refaire, 231 validés, 283 à créer. |
 | 20/10 | refonte | **T13 faite** (`7d86433`, `refonte/vitrine`) : « Ma sélection » en feuille sur l'accueil (`?selection=1`), un seul message Snapchat pour N parfums, rien côté serveur. **Attente PC 3** (fiche et commande, iPhone). |
