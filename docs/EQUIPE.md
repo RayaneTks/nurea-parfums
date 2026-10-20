@@ -27,7 +27,7 @@ Quand deux chantiers se gênent, l'ordre ci-dessus tranche, et le pilote arbitre
 |---|---|---|---|---|---|
 | **Pilotage** | session « refonte vitrine », planificateur (Fable pour la DA, Opus pour exécuter) | ce fichier, `docs/refonte-vitrine/`, arbitrages | — | non (décide, ne déploie pas seul) | ce fichier |
 | **Refonte vitrine** | même session, branche `refonte/vitrine`, worktree `.claude/worktrees/refonte-vitrine` | `app/(shop)`, `src/components`, `app/globals.css`, `src/design/{brand,fonts}.ts`, `tailwind.config.ts`, `scripts/refonte-vitrine/`, colonnes `ambientHue`/`ambientChroma` | gestion ; `image`, `imageLight`, `status` des fiches ; l'artefact du graphiste | non avant T23, sauf la migration d'ambiance (§ 4.3) | `docs/refonte-vitrine/00-LISEZ-MOI.md` |
-| **Visuels et page du graphiste** | session « visuels » (conversation de l'artefact) | `.tmp/outils-visuels/`, `.tmp/audit-visuels/`, l'artefact `https://claude.ai/artifact/UA62cGXzx3QiB62RKLAE6Y`, Storage `perfumes/*`, champs `image`/`imageLight`/`status` des fiches, `scripts/catalogue/`, les clés de cache de `src/lib/catalogue-service.ts` | le style de la vitrine, la gestion, les migrations | oui, sur `main`, fournée par fournée | mémoire `visuels-boite-a-outils.md` (à versionner, § 7) |
+| **Visuels et page du graphiste** | session « visuels » (conversation de l'artefact) | `.tmp/outils-visuels/`, `.tmp/audit-visuels/`, la page `public/graphiste-k7q2m9xw4t.html` (https://nureaparfums.fr/graphiste-k7q2m9xw4t.html), images dans Storage `designer/*`, Storage `perfumes/*`, champs `image`/`imageLight`/`status` des fiches, `scripts/catalogue/`, les clés de cache de `src/lib/catalogue-service.ts` | le style de la vitrine, la gestion, les migrations | oui, sur `main`, fournée par fournée | mémoire `visuels-boite-a-outils.md` (à versionner, § 7) |
 | **Gestion** | aucune session ouverte | `app/admin`, `src/features`, `src/ui`, `src/app-shell`, `src/server` | — | sur demande du gérant seulement | `PASSATION.md`, `docs/refonte/` |
 
 Une nouvelle session qui ne sait pas où elle se range : elle le demande au gérant **avant** d'écrire,
@@ -126,6 +126,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 20/10 | visuels | Page du graphiste déplacée de l'artefact Claude (refusé au partage public : trop d'images intégrées) vers le site : `public/graphiste-k7q2m9xw4t.html` (noindex, adresse cachée), 984 images dans `catalog/designer/NNN.webp`. Maj = `node scripts/visuels/page.mjs` puis copie dans `public/` + push `main`. Ne pas supprimer `designer/`. |
 | 20/10 | refonte | **PC 2 passé** (gérant, iPhone) : accueil, fiche (visuel entier, fond d'ambiance), bascule clair/sombre en cercle. Branche `refonte/vitrine` à `f4ba99c`. Suite : T10, T11, puis migration d'ambiance seule sur `main` (accord du gérant). |
 | 20/10 | refonte | T9 faite sur `refonte/vitrine` (`985374a`) : grille 2 colonnes, densité, « Charger la suite » par 24, rail A→Z. Accueil 55 images (332 avant), LCP 1,9 s. **PC 2 en attente du gérant** (aperçu Vercel de la branche). |
 | 20/10 | refonte | T8 faite sur `refonte/vitrine` (`7e68b14`) : carte parfum (fond d'ambiance au survol/appui, cœur « Ma sélection »), visuel (repli si photo introuvable), squelette, bouton 8 états. Rien en production. Prochaine : T9 (grille, PC 2). |
