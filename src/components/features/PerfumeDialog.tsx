@@ -11,6 +11,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { vitrineRoot } from "@/lib/vitrineRoot";
+import { ambientStyle } from "@/lib/catalog/ambient";
 import Link from "next/link";
 import { X } from "lucide-react";
 import type { Perfume } from "@/lib/data";
@@ -128,44 +129,39 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
         aria-modal="true"
         aria-labelledby={titleId}
         onKeyDown={onKeyDown}
-        className="relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-sheet bg-surface-1 shadow-float will-change-transform md:max-h-[86dvh] md:max-w-[46rem] md:rounded-sheet"
+        style={ambientStyle(perfume)}
+        className="amb relative flex max-h-[94dvh] w-full flex-col overflow-hidden rounded-t-sheet bg-ambient shadow-float will-change-transform md:max-h-[88dvh] md:max-w-[52rem] md:rounded-sheet"
       >
         {/* La zone qui défile. La barre de commande, en dessous, n'en fait pas partie. */}
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <div className="md:grid md:grid-cols-2">
-            <div
-              data-sheet-handle
-              className="relative aspect-[2/3] max-h-[55dvh] w-full overflow-hidden border-b border-line md:border-b-0 md:border-r"
+          {/* Poignée et fermeture au-dessus du visuel, jamais posées dessus. Glisser ici ferme (téléphone). */}
+          <div data-sheet-handle className="relative flex h-12 items-start justify-center pt-2">
+            <span aria-hidden className="h-1 w-9 rounded-full bg-fg-3 md:hidden" />
+            <button
+              type="button"
+              onClick={close}
+              aria-label="Fermer"
+              className="press absolute right-2 top-1 flex h-11 w-11 items-center justify-center rounded-full text-fg-1 transition-[background-color,transform] duration-dur-2 ease-soft mouse-hover:bg-surface-2"
             >
-              <PerfumeImage
-                perfume={perfume}
-                sizes="(max-width: 767px) 100vw, 23rem"
-                priority
-              />
-              {/* Poignée : la feuille se ferme d'un glissé vers le bas (téléphone). */}
-              <span
-                aria-hidden
-                className="absolute left-1/2 top-2 h-1 w-10 -translate-x-1/2 bg-fg-3 md:hidden"
-              />
-              <button
-                type="button"
-                onClick={close}
-                aria-label="Fermer"
-                className="absolute right-0 top-0 flex h-12 w-12 items-center justify-center rounded-full bg-[color-mix(in_oklch,var(--surface-1)_80%,transparent)] text-fg-1 transition-[background-color] duration-dur-2 ease-soft mouse-hover:bg-surface-2"
-              >
-                <X size={20} strokeWidth={1.5} />
-              </button>
+              <X size={20} strokeWidth={1.5} aria-hidden />
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-6 px-4 pb-6 md:grid md:grid-cols-2 md:items-center md:gap-8 md:px-8 md:pb-8">
+            {/* Le visuel EN ENTIER (2:3, rien de rogné), dans la variante du thème. Sur téléphone, sa
+                hauteur se plafonne à 56 % de l'écran pour que la marque et le nom suivent sans défiler. */}
+            <div data-sheet-handle className="relative mx-auto aspect-[2/3] w-[min(100%,calc(56dvh*2/3))] overflow-hidden rounded-md bg-surface-2 md:w-full">
+              <PerfumeImage perfume={perfume} sizes="(max-width: 767px) 90vw, 26rem" priority />
             </div>
 
-            <div className="flex flex-col p-6 md:p-8">
+            <div className="flex flex-col gap-2 text-center md:text-left">
               <p className="t-body">{brandLineLabel(perfume.brand, perfume.line)}</p>
-              <h2 id={titleId} className="t-title mt-2">
+              <h2 id={titleId} className="t-title">
                 {perfume.name}
               </h2>
+              <p className="t-body">Prix et disponibilité : écrivez-nous.</p>
 
-              <p className="t-caption mt-2">Prix et disponibilité : écrivez-nous.</p>
-
-              <OrderChannels perfume={perfume.name} brand={perfume.brand} primaryOnMobile={false}>
+              <OrderChannels perfume={perfume.name} brand={perfume.brand} primaryOnMobile={false} className="items-center md:items-start">
                 {sheetHref ? (
                   <Link href={sheetHref} className={buttonClass("link")}>
                     Voir la fiche du parfum
@@ -176,9 +172,10 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
           </div>
         </div>
 
-        {/* Téléphone : l'action principale, toujours à portée de pouce. `safe-area` : au-dessus de
-            la barre d'accueil de l'iPhone, jamais dessous. */}
-        <div className="border-t border-line bg-surface-1 px-6 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 md:hidden">
+        {/* Téléphone : l'action principale, toujours à portée de pouce, sur la barre basse en verre
+            (DESIGN.md § Matière, seconde surface permise). `safe-area` : au-dessus de la barre
+            d'accueil de l'iPhone, jamais dessous. */}
+        <div className="glass border-t border-line px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 md:hidden">
           <SnapchatOrderButton perfume={perfume.name} brand={perfume.brand} />
         </div>
       </div>
