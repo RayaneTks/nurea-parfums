@@ -119,6 +119,17 @@ export const CatalogSection = ({
     [catalogPerfumes, filters]
   );
 
+  /* Ce que verrait la grille avec d'autres marques : la recherche tient, la catégorie saute (comme à la validation). */
+  const queryMatches = useMemo(
+    () => catalogPerfumes.filter((perfume) => fuzzySearchMatch(perfume, filters.query)),
+    [catalogPerfumes, filters.query]
+  );
+  const countForBrands = useCallback(
+    (slugs: ReadonlySet<string>) =>
+      slugs.size === 0 ? queryMatches.length : queryMatches.filter((perfume) => slugs.has(slugOf(perfume))).length,
+    [queryMatches]
+  );
+
   const sorted = useMemo(() => {
     const list = [...matching];
     if (filters.sort === "name") return list.sort(byName);
@@ -257,6 +268,7 @@ export const CatalogSection = ({
         open={drawerOpen}
         brands={browseBrands}
         selected={filters.brandSlugs}
+        countFor={countForBrands}
         onApply={applyBrandFilter}
         onClose={() => setDrawerOpen(false)}
       />
@@ -298,12 +310,18 @@ export const CatalogSection = ({
               <FilterChip label={filters.category} onRemove={() => changeCategory("Tout voir")} />
             )}
             {filters.brandSlug !== "" && <FilterChip label={brandName} onRemove={() => update({ brandSlug: "" })} />}
-            {filters.brandSlugs.size > 0 && (
+            {/* Une puce par marque cochée : chacune se retire seule. */}
+            {[...filters.brandSlugs].map((slug) => (
               <FilterChip
-                label={`${filters.brandSlugs.size} marque${filters.brandSlugs.size > 1 ? "s" : ""}`}
-                onRemove={() => update({ brandSlugs: new Set() })}
+                key={slug}
+                label={browseBrands.find((brand) => brand.slug === slug)?.name ?? slug}
+                onRemove={() => {
+                  const next = new Set(filters.brandSlugs);
+                  next.delete(slug);
+                  update({ brandSlugs: next });
+                }}
               />
-            )}
+            ))}
             {filters.sort !== "default" && <FilterChip label="Tri choisi" onRemove={() => update({ sort: "default" })} />}
             <button type="button" onClick={reset} className={buttonClass("link", "ml-auto px-2")}>
               Tout effacer
