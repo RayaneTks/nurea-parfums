@@ -52,10 +52,10 @@ export const SnapchatOrderButton: FC<SnapchatOrderButtonProps> = ({ perfume, bra
         <SnapchatIcon className="h-4 w-4 shrink-0" aria-hidden />
         Commander sur Snapchat
       </a>
-      <p className="nurea-caption flex items-center justify-center gap-2 text-center" aria-live="polite">
+      <p className="t-caption flex items-center justify-center gap-2 text-center" aria-live="polite">
         {copied ? (
           <>
-            <Check size={14} strokeWidth={1.5} aria-hidden className="shrink-0 text-nurea-accent" />
+            <Check size={14} strokeWidth={1.5} aria-hidden className="shrink-0 text-fg-1" />
             Nom copié : collez-le dans la conversation.
           </>
         ) : (

@@ -59,7 +59,7 @@ export const OrderChannels: FC<OrderChannelsProps> = ({ perfume, brand, children
       {children}
 
       {/* Toute surface qui montre un flacon et propose de le commander dit ce que l'on reçoit. */}
-      <p className="nurea-caption mt-3 w-full border-t border-nurea-border pt-4">{MENTION_FLACONS}</p>
+      <p className="t-caption mt-3 w-full border-t border-line pt-4">{MENTION_FLACONS}</p>
     </div>
   );
 };

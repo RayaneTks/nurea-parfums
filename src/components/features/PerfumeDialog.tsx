@@ -42,7 +42,7 @@ const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1
  * Téléphone — la fiche doit se lire comme une fiche, pas comme une visionneuse. La photo en 2:3
  * pleine largeur occupait 560 px sur 812 : nom et bouton de commande tombaient sous le pli, et
  * le geste « toucher un parfum » semblait n'ouvrir qu'un agrandissement. Désormais :
- *   - la photo est plafonnée (`.nurea-fiche-visuel`) : le nom apparaît sans défiler ;
+ *   - la photo est plafonnée (`max-h-[55dvh]`) : le nom apparaît sans défiler ;
  *   - « Commander sur Snapchat » est tenu dans une barre collée au bas de la feuille, hors de la
  *     zone qui défile : il reste visible quoi qu'on fasse ;
  *   - une poignée en haut dit que la feuille se ferme d'un glissé vers le bas.
@@ -117,7 +117,7 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
       <div
         ref={scrimRef}
         aria-hidden
-        className="absolute inset-0 bg-nurea-bg/85 opacity-0"
+        className="absolute inset-0 bg-[color-mix(in_oklch,var(--bg)_85%,transparent)] opacity-0"
         onClick={close}
       />
 
@@ -127,14 +127,14 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
         aria-modal="true"
         aria-labelledby={titleId}
         onKeyDown={onKeyDown}
-        className="relative flex max-h-[92dvh] w-full flex-col border-t border-nurea-border bg-nurea-bg will-change-transform md:max-h-[86dvh] md:max-w-[46rem] md:border"
+        className="relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-sheet bg-surface-1 shadow-float will-change-transform md:max-h-[86dvh] md:max-w-[46rem] md:rounded-sheet"
       >
         {/* La zone qui défile. La barre de commande, en dessous, n'en fait pas partie. */}
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <div className="md:grid md:grid-cols-2">
             <div
               data-sheet-handle
-              className="nurea-fiche-visuel relative w-full overflow-hidden border-b border-nurea-border md:border-b-0 md:border-r"
+              className="relative aspect-[2/3] max-h-[55dvh] w-full overflow-hidden border-b border-line md:border-b-0 md:border-r"
             >
               <PerfumeImage
                 perfume={perfume}
@@ -144,25 +144,25 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
               {/* Poignée : la feuille se ferme d'un glissé vers le bas (téléphone). */}
               <span
                 aria-hidden
-                className="absolute left-1/2 top-2 h-1 w-10 -translate-x-1/2 bg-nurea-text/70 md:hidden"
+                className="absolute left-1/2 top-2 h-1 w-10 -translate-x-1/2 bg-fg-3 md:hidden"
               />
               <button
                 type="button"
                 onClick={close}
                 aria-label="Fermer"
-                className="absolute right-0 top-0 flex h-12 w-12 items-center justify-center bg-nurea-bg text-nurea-text transition-colors duration-nurea ease-out hover:bg-nurea-surface-hover"
+                className="absolute right-0 top-0 flex h-12 w-12 items-center justify-center rounded-full bg-[color-mix(in_oklch,var(--surface-1)_80%,transparent)] text-fg-1 transition-[background-color] duration-dur-2 ease-soft mouse-hover:bg-surface-2"
               >
                 <X size={20} strokeWidth={1.5} />
               </button>
             </div>
 
             <div className="flex flex-col p-6 md:p-8">
-              <p className="nurea-label">{brandLineLabel(perfume.brand, perfume.line)}</p>
-              <h2 id={titleId} className="nurea-name mt-2 text-nurea-text">
+              <p className="t-body">{brandLineLabel(perfume.brand, perfume.line)}</p>
+              <h2 id={titleId} className="t-title mt-2">
                 {perfume.name}
               </h2>
 
-              <p className="nurea-caption mt-2">Prix et disponibilité : écrivez-nous.</p>
+              <p className="t-caption mt-2">Prix et disponibilité : écrivez-nous.</p>
 
               <OrderChannels perfume={perfume.name} brand={perfume.brand} primaryOnMobile={false}>
                 {sheetHref ? (
@@ -177,7 +177,7 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
 
         {/* Téléphone : l'action principale, toujours à portée de pouce. `safe-area` : au-dessus de
             la barre d'accueil de l'iPhone, jamais dessous. */}
-        <div className="border-t border-nurea-border bg-nurea-bg px-6 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 md:hidden">
+        <div className="border-t border-line bg-surface-1 px-6 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 md:hidden">
           <SnapchatOrderButton perfume={perfume.name} brand={perfume.brand} />
         </div>
       </div>
