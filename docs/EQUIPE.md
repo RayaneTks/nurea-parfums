@@ -126,6 +126,8 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 20/10 | refonte | **T11 faite** (`2b8cc4e`) : feuille « Marques » neuve, bouton « Voir N parfums » à jour avant validation, une puce par marque ; `e2e/catalog-filters.spec.ts` réécrit, 8/8. Reste avant T12 : migration d'ambiance seule sur `main` puis `--apply`, sur « oui » du gérant. |
+| 20/10 | refonte | **T10 faite** (`5f79c5c`) : recherche en direct depuis la barre haute (accueil), état vide « Vous cherchez *X* de *Y* ? Écrivez-nous » avec contact pré-rempli, plus jamais « aucun résultat » ; `PerfumeLinkCard` au dessin neuf. |
 | 20/10 | visuels | Page du graphiste déplacée de l'artefact Claude (refusé au partage public : trop d'images intégrées) vers le site : `public/graphiste-k7q2m9xw4t.html` (noindex, adresse cachée), 984 images dans `catalog/designer/NNN.webp`. Maj = `node scripts/visuels/page.mjs` puis copie dans `public/` + push `main`. Ne pas supprimer `designer/`. |
 | 20/10 | refonte | **PC 2 passé** (gérant, iPhone) : accueil, fiche (visuel entier, fond d'ambiance), bascule clair/sombre en cercle. Branche `refonte/vitrine` à `f4ba99c`. Suite : T10, T11, puis migration d'ambiance seule sur `main` (accord du gérant). |
 | 20/10 | refonte | T9 faite sur `refonte/vitrine` (`985374a`) : grille 2 colonnes, densité, « Charger la suite » par 24, rail A→Z. Accueil 55 images (332 avant), LCP 1,9 s. **PC 2 en attente du gérant** (aperçu Vercel de la branche). |
