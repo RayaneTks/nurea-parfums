@@ -126,6 +126,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 20/10 | refonte | T7 faite sur `refonte/vitrine` (`8459575`) : colonnes d'ambiance + script, essai à blanc seulement. Migration sur `main` prévue au PC 2, seule. |
 | 20/10 | pilotage | Création de ce fichier. Décisions V1 à V7 pour la session visuels. |
 | 20/10 | refonte | T5 (coque) et T6 (jeu d'essai) sur `refonte/vitrine`. T7 en cours : colonnes d'ambiance (migration `20261020120000_perfume_ambient`, pas encore en production), clé `public-catalogue-v20` sur la branche. Essai à blanc sur 233 fiches publiées : 34 en repli (14,6 %), dont les ~50 photos de flacon d'origine sur fond blanc (visuels à venir). |
 | 20/10 | visuels | Fournée 10 appliquée. Clés sur `main` au 20/10 : `public-catalogue-v19`, `seo-catalogue-v15`, `unlisted-perfumes-v9`. |

@@ -27,7 +27,7 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 | Cadrage (décisions du gérant, DA chiffrée, plan, passation) — Fable, 20/10/2026 | **fait** — `03-DA.md` § 7, `04-PLAN-EXECUTION.md`, `PROMPT-OPUS.md` |
 | 0. Décider : **T1 planche** (3 couples typo × 2 thèmes, 6 parfums, ambiance) → point de contrôle 1, puis T2 docs | **T1 faite, point de contrôle 1 passé** le 20/10 : direction validée, polices **Fraunces + Figtree**, **aucune contenance affichée**, vraie page d'accueil à venir (T15, sur planche). **T2 faite** le 20/10 : `DESIGN.md`, `.impeccable.md`, `PRODUCT.md`, `docs/charte-graphique.html`, `CLAUDE.md` § Règles Vitrine décrivent la nouvelle DA |
 | 1. Fondations (S2) | **T3 faite** (jetons et thèmes, `9e2d3b6`) et **T4 faite** (Fraunces + Figtree, `a7bdfeb`), branche `refonte/vitrine`, worktree `.claude/worktrees/refonte-vitrine`. T5 et T6 faites en S3 (voir ligne suivante) |
-| 1 → 2 (S3) | **T5 faite** (coque : barre en verre, pied de page, 404, logotype ivoire/noir, `398f3c0`) et **T6 faite** (jeu d'essai `/essai-extremes`, dev seulement, `b52b376`). **Prochaine tâche : T7** (ambiance en base, à blanc), session S4 |
+| 1 → 2 (S3) | **T5 faite** (coque : barre en verre, pied de page, 404, logotype ivoire/noir, `398f3c0`) et **T6 faite** (jeu d'essai `/essai-extremes`, dev seulement, `b52b376`). **T7 faite** (ambiance en base, essai à blanc, `8459575`). **Prochaine tâche : T8** (carte et visuel, effort high), session S4 |
 | 2 → 6 (T7 → T23, sessions S4 → S10) | à faire (`04-PLAN-EXECUTION.md` § D et § F) |
 
 Décisions du 20/10 : direction **A+C « Nuancier nocturne »** ; **clair + sombre** ; **rien** de la
@@ -72,6 +72,23 @@ refusables au point de contrôle 1.
 - **Dev depuis le worktree** : configuration `vitrine-dev` dans `.claude/launch.json` du dossier
   principal (`npm --prefix <worktree> run dev`) ; sans `.env` dans le worktree, la vitrine montre
   le catalogue de démonstration.
+
+### Remarques de T7 (20/10)
+
+- Essai à blanc sur la production (lecture seule) : **233** fiches publiées (le plan en comptait 193),
+  34 en repli (14,6 %), tous sans couleur réelle (flacon noir, argent, transparent, photo d'origine
+  sur fond blanc = visuel à venir, chantier visuels). Planche relue, aucun `--set`.
+- **Correction du plan** : `--apply` « après le PC 2 » suppose la colonne en production. Décision :
+  au PC 2, la migration `20261020120000_perfume_ambient` part **seule** sur `main` (schéma + migration,
+  colonnes vides, sans risque), puis essai à blanc frais et `--apply`. Les visuels arrivés entre-temps
+  sont ainsi pris en compte.
+- Après la refonte, chaque fournée de visuels se termine par `ambiance.mjs --ids … --apply` :
+  contrat écrit dans `docs/EQUIPE.md` § 4.2.
+- Constat pour le PC 2 : 41 % des ambiances tombent dans l'ambre/or (scènes très dorées). Juger les
+  cartes avec les vrais visuels ; décision V7 de `docs/EQUIPE.md`.
+- T8 doit dériver `--amb`/`--amb-light` de `ambientHue`/`ambientChroma` en TypeScript, avec la même
+  règle que le script (§ B.3, étapes 5–6) et un test de parité contre `ambiance.mjs` (il exporte
+  `stored` et, à exposer, `derive`).
 
 ## Outils prêts
 
