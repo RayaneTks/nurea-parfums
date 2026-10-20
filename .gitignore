@@ -73,6 +73,34 @@ migration-artifacts/
 # Carte du code (graphify) : locale, propre à ce poste, reconstruite par `graphify update .`
 graphify-out/
 
-# Outils d'agents installés localement (oh-my-claudecode pour Codex) : propres au poste, hors dépôt.
-.agents/
+# Outils d'agents propres au poste (oh-my-claudecode pour Codex, etc.) : hors dépôt.
 .codex/
+.agents/*
+!.agents/skills/
+.agents/skills/*
+# Skills du dépôt : copies figées, texte seulement, versions et empreintes dans PROVENANCE.md.
+!.agents/skills/PROVENANCE.md
+!.agents/skills/frontend-ui-engineering/
+!.agents/skills/performance-optimization/
+!.agents/skills/code-review-and-quality/
+!.agents/skills/code-simplification/
+!.agents/skills/debugging-and-error-recovery/
+!.agents/skills/security-and-hardening/
+!.agents/skills/accessibility/
+!.agents/skills/core-web-vitals/
+!.agents/skills/performance/
+!.agents/skills/seo/
+!.agents/skills/best-practices/
+!.agents/skills/web-quality-audit/
+!.agents/skills/emil-design-eng/
+!.agents/skills/review-animations/
+!.agents/skills/animation-performance/
+!.agents/skills/break-ui/
+!.agents/skills/web-design-guidelines/
+!.agents/skills/vercel-react-best-practices/
+!.agents/skills/ponytail/
+!.agents/skills/ponytail-review/
+!.agents/skills/ponytail-audit/
+!.agents/skills/ponytail-debt/
+!.agents/skills/caveman/
+!.agents/skills/graphify/
