@@ -33,6 +33,36 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 - 24 skills versionnés (`.agents/skills/`, texte seulement) et la table « quel skill pour quelle tâche » dans `AGENTS.md`. Provenance et versions : `.agents/skills/PROVENANCE.md`.
 - Carte du code : `graphify query "<question>" --graph C:/Users/User/Desktop/nurea-parfums/graphify-out/graph.json`.
 
+## Reprise : phase 0, pas à pas
+
+**Réglages de la session.** Session **vide** (le contexte de la préparation pesait 700 000 jetons :
+tout est ici, pas besoin de le relire). Modèle Fable 5.1, effort `high` (`xhigh` seulement si la
+planche déçoit). **Aucun sous-agent en parallèle**, `graphify` avant tout fichier. Le gérant est sur
+un forfait à budget limité : vérifier `get_usage` (fenêtre de 5 h) avant un gros chantier et dire
+la consommation à la fin.
+
+1. Lire 01, 02, 03 dans l'ordre (pas les annexes, sauf besoin ponctuel).
+2. Faire trancher au gérant les 3 décisions de `03-DA.md` § 7 : thème, logo/monogramme,
+   « Ma sélection » + sélecteur de contenance.
+3. Construire **une** page HTML autonome `.tmp/refonte-vitrine/planche/index.html` : même grille de
+   6 parfums réels (données du catalogue public ou de `src/lib/catalog/demo-catalogue.json`) et même
+   fiche, dans les directions retenues, avec trois couples typographiques. Les fichiers de polices à
+   télécharger passent par un accord explicite du gérant (nom, source, taille).
+4. Calculer la couleur d'ambiance des visuels réels (script jetable avec `sharp`, sortie JSON,
+   contraste vérifié) et la montrer sur la planche.
+5. La montrer **sur téléphone** (aperçu Vercel d'une branche, ou fichier ouvert directement).
+6. Après choix seulement : réécrire `DESIGN.md`, `.impeccable.md`, `PRODUCT.md`,
+   `docs/charte-graphique.html`, puis passer à la phase 1.
+
+## À ne pas perdre (hors refonte)
+
+- **Liste fournisseur** : 292 parfums, 73 marques, envoyée au gérant le 03/10 (sans mention masqué /
+  visuel). À sa réponse : corriger l'orthographe en base et ajouter ce qui manque. Le fichier se
+  régénère depuis la base (lecture seule).
+- **Répertoire de recherche** (`src/lib/search/repertoire-parfums.json`, 3 741 références) : écrit de
+  mémoire, **non vérifié** ligne à ligne ; manquent Zara, Matière Première, Zimaya, Orientica.
+- **Vérifier la CI de `main`** après le dernier push (le test d'affichage prend ~30 min).
+
 ## Règle d'or
 
 Le document amont avant le code. Tant que `DESIGN.md` décrit la charte v3, il est **faux** pour la
