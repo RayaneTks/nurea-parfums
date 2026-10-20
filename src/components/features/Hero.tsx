@@ -1,105 +1,36 @@
 import type { FC } from "react";
-import { getImageProps } from "next/image";
-import { preload } from "react-dom";
-import Link from "next/link";
-import { buttonClass } from "@/components/ui/Button";
-import { SITE_NAME } from "@/lib/site";
 
-/*
- * Deux cadrages, pas deux tailles. Sur téléphone, le bandeau est EN HAUTEUR et `object-cover`
- * n'affiche qu'une tranche centrale de la photo paysage : le navigateur téléchargeait l'original
- * (2814 px, 139 Ko) pour en montrer un tiers. Il reçoit maintenant cette tranche, découpée une fois
- * (`visuel-hero-portrait.webp`, 39 Ko) ; tablette et ordinateur gardent le paysage, décliné par le
- * chargeur d'images (`src/lib/images/loader.ts`). Chargement immédiat : c'est l'élément le plus
- * grand du premier écran, celui que mesure le LCP.
- */
-const { props: heroImg } = getImageProps({
-  src: "/branding/visuel-hero.webp",
-  alt: "",
-  width: 2814,
-  height: 1504,
-  sizes: "100vw",
-  loading: "eager",
-});
-/** Tranche portrait en deux largeurs : 480 pour les téléphones ordinaires, 800 pour les écrans denses. */
-const HERO_PORTRAIT_SRCSET = "/branding/visuel-hero-portrait-480.webp 480w, /branding/visuel-hero-portrait.webp 800w";
+interface HeroProps {
+  /** Parfums publiés au catalogue. */
+  perfumeCount: number;
+  /** Marques qui ont au moins un parfum publié. */
+  brandCount: number;
+}
+
+const plural = (n: number, word: string) => `${n} ${word}${n > 1 ? "s" : ""}`;
 
 /**
- * Ouverture de la vitrine.
+ * Ouverture de l'accueil (04-PLAN-EXECUTION.md § B.10, composition A « Couverture »).
  *
- * Composant serveur : rien ici ne dépend du thème résolu côté client. Le voile
- * posé sur la photo est un jeton (`--nurea-hero-scrim`) qui suit le thème tout
- * seul — c'est ce qui évite d'embarquer `next-themes` dans le premier écran.
+ * Le H1, unique, porte la marque et la ville (référencement : `01-INVARIANTS.md`), puis une ligne
+ * de faits comptés sur le catalogue publié — rien d'autre n'y est affirmé. Aucune photo, aucun
+ * bouton : l'image du premier écran est le visuel du premier parfum mis en avant, juste dessous
+ * (`FeaturedSection`), et le seul bouton plein reste celui de la fiche.
  *
- * Charte § 05 : un seul bouton plein par écran. C'est celui-ci ; toutes les
- * autres incitations de la page d'accueil sont au filet ou en lien texte.
- * Le monogramme n'apparaît pas en filigrane : la charte interdit de le poser
- * nu sur une photo.
+ * « Nuréa Parfums, » ne se coupe pas dès 360 px ; plus étroit, il passe sur deux lignes plutôt que
+ * de déborder de l'écran.
  */
-export const Hero: FC = () => {
-  /*
-   * Annoncée dès l'en-tête du document, avant la feuille de style : le navigateur n'attend plus de
-   * découvrir l'<img> pour la demander. Une annonce par cadrage, filtrée par la même media query que
-   * <source> — un téléphone ne télécharge jamais la version paysage, ni l'inverse.
-   */
-  preload(HERO_PORTRAIT_SRCSET.split(" ")[0]!, { as: "image", imageSrcSet: HERO_PORTRAIT_SRCSET, imageSizes: "100vw", media: "(orientation: portrait)", fetchPriority: "high" });
-  preload(heroImg.src, { as: "image", imageSrcSet: heroImg.srcSet, imageSizes: "100vw", media: "(orientation: landscape)", fetchPriority: "high" });
-  return (
-  <header className="relative isolate flex min-h-[88svh] items-center border-b border-nurea-border md:min-h-[92svh]">
-    <picture>
-      <source media="(orientation: portrait)" srcSet={HERO_PORTRAIT_SRCSET} sizes="100vw" />
-      <source media="(orientation: landscape)" srcSet={heroImg.srcSet} sizes="100vw" />
-      {/* Un <img> nu, voulu : `getImageProps` + <picture>, la recette Next pour deux cadrages. */}
-      <img
-        {...heroImg}
-        alt=""
-        fetchPriority="high"
-        className="absolute inset-0 -z-10 h-full w-full object-cover object-[center_30%]"
-      />
-    </picture>
-    <div
-      aria-hidden
-      className="absolute inset-0 -z-10"
-      style={{ background: "var(--nurea-hero-scrim)" }}
-    />
-
-    <div className="nurea-page pb-18 pt-32 md:pt-40">
-      {/*
-       * Le titre de la page porte la marque ET la ville. Il ne disait que « L'excellence du
-       * parfum » : une accroche que cent boutiques pourraient signer, et aucun des deux mots
-       * qu'on tape pour nous trouver. Or Google lit le titre de la page d'accueil pour choisir
-       * le nom du site qu'il affiche, et pour savoir de quoi — et d'où — parle la page.
-       * Le dessin ne change pas : la ligne d'étiquette et l'accroche sont les deux moitiés du
-       * même titre.
-       */}
-      <h1>
-        <span className="nurea-label block">{SITE_NAME} · Parfumerie à Marseille</span>
-        <span className="nurea-title mt-6 block max-w-[14ch] text-nurea-text">
-          L&apos;excellence du parfum
-        </span>
-      </h1>
-
-      <p className="nurea-body nurea-prose mt-6">
-        Retrouvez vos parfums préférés au meilleur prix. Une sélection
-        rigoureuse des plus grandes marques, pour homme et pour femme,
-        disponible immédiatement.
+export const Hero: FC<HeroProps> = ({ perfumeCount, brandCount }) => (
+  <section aria-labelledby="accueil-titre" className="page-x pt-6">
+    <h1 id="accueil-titre" className="t-display">
+      <span className="min-[360px]:whitespace-nowrap">Nuréa Parfums,</span>{" "}
+      <span className="block text-fg-2">Marseille</span>
+    </h1>
+    {/* Catalogue vide (base injoignable) : aucun « 0 parfum » affiché. */}
+    {perfumeCount > 0 && (
+      <p className="t-caption mt-2">
+        {plural(perfumeCount, "parfum")} · {plural(brandCount, "marque")} · Commande sur Snapchat
       </p>
-
-      <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-        {/* Ancre interne : `scroll-behavior` et `scroll-padding-top` la
-            traitent nativement, sans écouteur de clic. */}
-        <a href="#collection" className={buttonClass("solid")}>
-          Voir le catalogue
-        </a>
-        <Link href="/contact" className={buttonClass("outline")}>
-          Commander un parfum
-        </Link>
-      </div>
-
-      <p className="nurea-label mt-10 text-nurea-subtle">
-        Échanges privés · Conseils sur-mesure
-      </p>
-    </div>
-  </header>
+    )}
+  </section>
 );
-};

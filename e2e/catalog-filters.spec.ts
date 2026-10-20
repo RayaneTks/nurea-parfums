@@ -6,9 +6,9 @@ import { test, expect, type Page } from "@playwright/test";
  * puce qui se retire seule, et tout tient dans l'adresse.
  */
 
-/** Le nombre affiché par la barre d'outils (« 12 parfums »). */
+/** Compteur de résultats de la barre d'outils ; l'en-tête « Catalogue » porte le total, il ne bouge pas. */
 async function gridCount(page: Page): Promise<number> {
-  const text = await page.locator("#collection").getByText(/^\d+ parfums?$/).first().innerText();
+  const text = await page.locator("#collection > header ~ *").getByText(/^\d+ parfums?$/).first().innerText();
   return Number.parseInt(text, 10);
 }
 

@@ -26,10 +26,9 @@ describe("chargeur d'images", () => {
     expect(loader({ src: visual, width: 1080 })).toBe(visual);
   });
 
-  it("choisit la plus petite déclinaison qui suffit pour la photo d'accueil", () => {
-    expect(loader({ src: "/branding/visuel-hero.webp", width: 640 })).toBe("/branding/visuel-hero-750.webp");
-    expect(loader({ src: "/branding/visuel-hero.webp", width: 1080 })).toBe("/branding/visuel-hero-1280.webp");
-    expect(loader({ src: "/branding/visuel-hero.webp", width: 3840 })).toBe("/branding/visuel-hero.webp");
+  it("choisit la plus petite déclinaison qui suffit pour un visuel fixe", () => {
+    expect(loader({ src: "/branding/logos/nurea-wordmark-ivory.webp", width: 256 })).toBe("/branding/logos/nurea-wordmark-ivory-640.webp");
+    expect(loader({ src: "/branding/logos/nurea-wordmark-ivory.webp", width: 1080 })).toBe("/branding/logos/nurea-wordmark-ivory.webp");
   });
 
   it("laisse passer tout le reste tel quel", () => {

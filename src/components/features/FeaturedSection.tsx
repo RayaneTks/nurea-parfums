@@ -1,98 +1,113 @@
-import type { FC } from "react";
-import Link from "next/link";
+"use client";
+
+import type { FC, MouseEvent } from "react";
 import type { Perfume } from "@/lib/data";
-import { buttonClass } from "@/components/ui/Button";
-import { ScrollReveal } from "@/components/ui/ScrollReveal";
-import { contactHref } from "@/lib/catalog/perfumePresentation";
+import { ambientStyle } from "@/lib/catalog/ambient";
+import { brandLineLabel } from "@/lib/catalog/perfumePresentation";
+import { perfumePath, slugify } from "@/lib/seo/paths";
+import { cn } from "@/lib/utils";
 import { PerfumeImage } from "./PerfumeImage";
+
+/**
+ * Demande d'ouverture d'une fiche (`detail` = id du parfum). Le catalogue de l'accueil
+ * (`CatalogSection`) l'écoute et l'annule pour dire qu'il s'en charge : la fiche s'ouvre en feuille
+ * (`?parfum=<id>`), comme depuis une carte, sans recharger la page.
+ */
+export const OPEN_PERFUME_EVENT = "nurea:open-perfume";
+
+/** Demande faite avant que le catalogue soit prêt (page en cours d'hydratation) : il la reprend. */
+let pending: number | null = null;
+
+/** Le catalogue, à son montage : la fiche demandée trop tôt, une seule fois. */
+export function takePendingPerfume(): number | null {
+  const id = pending;
+  pending = null;
+  return id;
+}
+
+/** Le catalogue annule l'événement s'il ouvre la fiche ; sinon la demande attend son montage. */
+function requestSheet(id: number) {
+  const handled = !window.dispatchEvent(new CustomEvent(OPEN_PERFUME_EVENT, { detail: id, cancelable: true }));
+  if (!handled) pending = id;
+}
 
 interface FeaturedSectionProps {
   perfumes: Perfume[];
 }
 
 /**
- * Bandeaux éditoriaux des parfums mis en avant — la photo à sa taille exacte, le
- * texte prend le reste, en alternance.
+ * Les bandeaux « une » de l'accueil (04-PLAN-EXECUTION.md § B.10, composition A) : un par parfum
+ * mis en avant, bord à bord, au fond de son ambiance (§ B.3.8 amendé ; repli `--surface-1`).
  *
- * Les blocs partagent leurs bords et ne sont séparés qu'au filet (charte § 04) :
- * aucune carte flottante, aucun espace entre eux. L'incitation est au filet, le
- * seul aplat plein de la page d'accueil revenant à l'ouverture.
+ * Dedans, dans la gouttière : marque, nom (lien vers la fiche), visuel 2:3 (bouton vers la fiche).
+ * Dès 768 px, texte et visuel côte à côte ; le second bandeau en miroir. Le premier visuel est
+ * l'élément LCP de la page : préchargé, prioritaire.
  *
- * `.nurea-page` : le bandeau tenait toute la largeur de la fenêtre, seul bloc du
- * site à le faire — navigation, ouverture, catalogue et pied de page tiennent
- * tous dans la marge de page (charte § 04). Sur un écran de 1920, la photo
- * commençait donc au ras de la vitre, 430 px avant le logo, et le texte
- * s'arrêtait à 780 px du bord droit : ce vide-là ne se lisait pas comme une
- * marge, mais comme un trou. Dans la marge commune, il redevient celui de
- * toutes les autres sections — et la photo s'aligne sur le logo.
- *
- * `max-md:px-0` : sur téléphone, la marge de page est retirée et la photo tient
- * toute la largeur de l'écran — c'est là qu'elle est la plus petite, et 48 px de
- * marge lui coûtaient un huitième de sa largeur. Le texte, lui, garde son
- * retrait de 24 px, celui de la charte, posé par la cellule elle-même.
+ * Nom et visuel ouvrent la feuille de fiche, même touchés avant que le catalogue soit prêt (la
+ * demande attend). Le nom est un vrai lien vers la page indexable du parfum : sans JavaScript, ou
+ * par un clic modifié (nouvel onglet), il y mène.
  */
 export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => (
-  <section aria-label="Parfums du moment" className="nurea-page max-md:px-0">
-    {perfumes.map((perfume, index) => (
-      <article
-        key={perfume.id}
-        data-reverse={index % 2 === 1}
-        className="nurea-editorial border-b border-nurea-border"
-      >
-        {/*
-          Mobile : le cadre prend le ratio des photos, rien n'est rogné.
+  <div className="mt-6 flex flex-col gap-3">
+    {perfumes.map((perfume, index) => {
+      const brandLine = brandLineLabel(perfume.brand, perfume.line);
+      const href = perfumePath(perfume.brandSlug ?? slugify(perfume.brand), perfume.name, perfume.id);
+      const titleId = `une-${perfume.id}`;
+      const mirror = index % 2 === 1;
 
-          Desktop : la hauteur du bandeau et la largeur de la colonne sont la
-          même valeur à un 2:3 près (`.nurea-editorial`, `app/globals.css`) — la
-          photo remplit donc sa cellule au pixel, sans bande vide de part et
-          d'autre. `object-contain` ne sert plus qu'au cas limite où le texte
-          rend la rangée plus haute que le visuel : le flacon reste entier.
+      const openFromLink = (event: MouseEvent<HTMLAnchorElement>) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        requestSheet(perfume.id);
+      };
 
-          `sizes` décrit la largeur réelle — toute la largeur sur téléphone,
-          277 px tant que la hauteur est au plancher (sous 1100 px de fenêtre),
-          puis les deux tiers de 38vw, jusqu'au plafond de 427 px. Le chargeur
-          d'images (`src/lib/images/loader.ts`) s'en sert : la vignette 640 px
-          quand elle suffit, l'original 1024 × 1536 sinon — sur téléphone, où
-          la photo occupe l'écran, c'est l'original, et c'est voulu.
-        */}
-        <div className="nurea-visuel-parfum relative w-full md:aspect-auto">
-          <PerfumeImage
-            perfume={perfume}
-            sizes="(max-width: 767px) 100vw, (max-width: 1099px) 280px, (max-width: 1684px) 26vw, 427px"
-            // Pas de priorité : la section est sous le bandeau d'accueil, hors du premier écran. Son
-            // préchargement (145 Ko) disputait la bande passante au visuel d'accueil, l'élément LCP.
-            className="md:object-contain"
-          />
-        </div>
+      return (
+        <section
+          key={perfume.id}
+          aria-labelledby={titleId}
+          style={ambientStyle(perfume)}
+          className="amb bg-ambient py-6 md:py-8 lg:py-12"
+        >
+          <div
+            className={cn(
+              "page-x grid gap-4 md:items-center md:gap-x-8 lg:gap-x-12",
+              mirror ? "md:grid-cols-[45%_1fr] lg:grid-cols-[40%_1fr]" : "md:grid-cols-[1fr_45%] lg:grid-cols-[1fr_40%]"
+            )}
+          >
+            <div className={cn("flex min-w-0 flex-col gap-0.5 md:row-start-1", mirror ? "md:col-start-2" : "md:col-start-1")}>
+              <p className="t-body">{brandLine}</p>
+              <h2 id={titleId} className="t-title hyphens-auto [overflow-wrap:anywhere]">
+                <a
+                  href={href}
+                  onClick={openFromLink}
+                  className="underline-offset-[6px] decoration-1 mouse-hover:underline"
+                >
+                  {perfume.name}
+                </a>
+              </h2>
+            </div>
 
-        {/* Retrait de 40 px et non de 72 : la marge de page en pose déjà 72 à
-            l'extérieur, et les deux cumulées ne laissaient que 200 px de texte
-            entre 768 et 1024 px — moins que le bouton qu'elles doivent tenir.
-
-            La révélation porte sur le contenu, pas sur la cellule : une cellule
-            à `opacity: 0` laisserait voir la couleur de gouttière en aplat. */}
-        <div className="flex flex-col justify-center px-6 py-12 md:px-10 md:py-18">
-          <ScrollReveal className="flex flex-col items-start">
-            <p className="nurea-label">Parfum du moment</p>
-
-            <p className="nurea-caption mt-6">{perfume.brand}</p>
-            <h2 className="nurea-section-title mt-1 text-nurea-text">{perfume.name}</h2>
-
-            <p className="nurea-body nurea-prose mt-6">
-              Une référence choisie pour sa tenue et son caractère, disponible
-              immédiatement. Écrivez-nous pour connaître le prix du jour et
-              réserver votre flacon.
-            </p>
-
-            <Link
-              href={contactHref(perfume.name, perfume.brand)}
-              className={buttonClass("outline", "mt-10")}
+            <button
+              type="button"
+              onClick={() => requestSheet(perfume.id)}
+              aria-label={`Voir la fiche : ${perfume.name}, ${brandLine}`}
+              className={cn(
+                "press relative block aspect-[2/3] w-full overflow-hidden rounded-md bg-surface-2 md:row-start-1",
+                mirror ? "md:col-start-1" : "md:col-start-2"
+              )}
             >
-              Commander ce parfum
-            </Link>
-          </ScrollReveal>
-        </div>
-      </article>
-    ))}
-  </section>
+              {/* Téléphone : « 213px » et non « 100vw », voulu. Un écran dense (×2,6 à ×3) demandait
+                  l'original 1 024 px (105 Ko) pour un visuel de 358 px ; 213 × 3 = 639 lui fait prendre
+                  la vignette 640 (44 Ko), soit une densité de 1,8 — l'élément LCP de la page. */}
+              <PerfumeImage
+                perfume={perfume}
+                sizes="(min-width: 1024px) 40vw, (min-width: 768px) 45vw, 213px"
+                preloadByTheme={index === 0}
+              />
+            </button>
+          </div>
+        </section>
+      );
+    })}
+  </div>
 );
