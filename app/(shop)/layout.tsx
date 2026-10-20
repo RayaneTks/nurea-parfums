@@ -104,18 +104,15 @@ export const metadata: Metadata = {
 /**
  * Coque commune à toutes les pages de la vitrine.
  *
- * La barre de navigation et le pied de page vivent ici, pas dans chaque page :
- * ils sont présents partout, et les y recopier avait fini par produire quatre
- * enveloppes légèrement différentes. Les pages ne rendent plus que leur contenu.
+ * La barre haute, le pied de page et l'unique `<main id="main-content">` vivent ici,
+ * pas dans chaque page : les pages ne rendent que leur contenu (DESIGN.md § Coque).
  */
 export default function ShopLayout({ children }: { children: ReactNode }) {
   return (
-    <div
-      className={`${brandFontClassName} flex min-h-svh flex-col`}
-    >
+    <div className={`${brandFontClassName} flex min-h-svh flex-col bg-bg`}>
       <a
         href="#main-content"
-        className="nurea-label sr-only focus:not-sr-only focus:fixed focus:left-6 focus:top-6 focus:z-[100] focus:bg-nurea-accent focus:px-6 focus:py-4 focus:text-nurea-on-accent"
+        className="sr-only rounded-md bg-fg-1 px-4 py-3 font-medium text-bg focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-toast"
       >
         Aller au contenu principal
       </a>

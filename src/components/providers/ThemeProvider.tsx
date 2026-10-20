@@ -11,8 +11,9 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="dark"
-      enableSystem={false}
+      /* Thème du système ; sombre s'il ne dit rien (`:root` est sombre). */
+      defaultTheme="system"
+      enableSystem
       /*
        * Sans animation au changement de thème. Chaque carte anime sa couleur (160 ms, charte) : au
        * basculement, c'était plus de cent transitions simultanées, que les téléphones rendaient par
