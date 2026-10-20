@@ -126,6 +126,8 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 20/10 | refonte | **T13 faite** (`7d86433`, `refonte/vitrine`) : « Ma sélection » en feuille sur l'accueil (`?selection=1`), un seul message Snapchat pour N parfums, rien côté serveur. **Attente PC 3** (fiche et commande, iPhone). |
+| 20/10 | refonte | **T12 faite** (`288cf48`, `refonte/vitrine`) : fiche en feuille `?parfum=<id>`, précédent/suivant au glissé, Snapchat en 2 taps (copie « Nom (Marque) »), fermeture à 0,11 px/ms. |
 | 20/10 | refonte | **Ambiance écrite en production** : `ambiance.mjs --apply`, 233 fiches publiées, 199 avec couleur, 34 en repli (recompté en base). Journal des anciennes valeurs : `.tmp/refonte-vitrine/ambiance-journal-2026-10-20T20-23-19-078Z.json` (worktree refonte). Visuels : chaque fournée finit par `--ids … --apply` (§ 4.2). |
 | 20/10 | refonte | **Migration `20261020120000_perfume_ambient` en production** (`8ba4e33`, seule sur `main`) : colonnes `ambientHue`/`ambientChroma`, CHECK `perfume_ambient_ck`. Rien ne les lit encore sur `main`. Aucune autre migration attendue d'ici T23 (§ 4.3). |
 | 20/10 | refonte | Correctif carte sur `refonte/vitrine` (`b0b54da`) : nom et marque coupés entre les mots, plus « Seduc-tion ». |
