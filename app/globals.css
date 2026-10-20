@@ -354,6 +354,29 @@
     }
   }
 
+  /* ─── Bascule de thème (`ThemeToggle`) ─────────────────────────────────
+     Le nouveau thème s'ouvre en cercle depuis le bouton (--reveal-x/y, posés
+     au clic) ; l'ancien reste dessous, immobile. Mouvement réduit : aucune
+     transition n'est lancée (voir le composant). */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-new(root) {
+    animation: theme-reveal var(--dur-4) var(--ease-out);
+  }
+
+  @keyframes theme-reveal {
+    from {
+      clip-path: circle(0 at var(--reveal-x, 50%) var(--reveal-y, 0));
+    }
+    to {
+      clip-path: circle(150vmax at var(--reveal-x, 50%) var(--reveal-y, 0));
+    }
+  }
+
   /* ─── Appui — l'élément cède dès le contact ──────────────────────────── */
   .press {
     transition: transform var(--dur-1) var(--ease-out);
