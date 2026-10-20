@@ -30,7 +30,7 @@ un bug (02 §8). Si un changement rend un document faux, on amende le document d
 | `catalog-database.md` | Contrat de lecture du catalogue par la vitrine. |
 | `admin-supabase-setup.md` | Compte de gestion, Supabase Storage, variables d'environnement. |
 | `SECURITE.md` | Réponse à l'audit de sécurité du 23/09/2026, et ce qui reste à faire hors du code (comptes, 2FA). |
-| `charte-graphique.html` | La charte graphique v3, page autonome (ouvrir dans un navigateur). |
+| `charte-graphique.html` | **Abandonnée le 20/10/2026** (refonte de la vitrine) ; gardée jusqu'à la nouvelle DA, puis remplacée. |
 | `shared/agent-tiers.md` | Tiers d'agents et règles de délégation. |
 
 ## Subdirectories
@@ -39,6 +39,7 @@ un bug (02 §8). Si un changement rend un document faux, on amende le document d
 |-----------|---------|
 | `admin/` | Produit et design de Nuréa Gestion. |
 | `refonte/` | Dossier pilote de la refonte, 00 → 08. Se lit dans l'ordre. |
+| `refonte-vitrine/` | Refonte de la **vitrine** (catalogue public) : invariants, playbook de savoir-faire, DA. Se lit dans l'ordre. |
 | `shared/` | Documentation commune d'orchestration. |
 
 ## For Agents
