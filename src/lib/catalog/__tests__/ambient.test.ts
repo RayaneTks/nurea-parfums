@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ambientStyle, deriveAmbient } from "../ambient";
+import { ambientStyle, averageAmbient, deriveAmbient } from "../ambient";
 
 type Derived = { oklch: string } | null;
 // Spécificateur élargi en `string` : TypeScript n'a pas de déclaration pour un `.mjs`, Vitest le charge.
@@ -44,5 +44,28 @@ describe("ambientStyle", () => {
   it("ne pose rien sans ambiance : la surface neutre prend le relais", () => {
     expect(ambientStyle({})).toBeUndefined();
     expect(ambientStyle({ ambientHue: 30, ambientChroma: null })).toBeUndefined();
+  });
+});
+
+describe("averageAmbient", () => {
+  it("garde la teinte d'un parfum seul", () => {
+    expect(averageAmbient([{ ambientHue: 40, ambientChroma: 0.1 }])).toEqual({ ambientHue: 40, ambientChroma: 0.1 });
+  });
+
+  it("moyenne sur le cercle : 350° et 10° donnent 0°, pas 180°", () => {
+    expect(averageAmbient([{ ambientHue: 350, ambientChroma: 0.1 }, { ambientHue: 10, ambientChroma: 0.1 }])?.ambientHue).toBe(0);
+  });
+
+  it("ignore les parfums en repli", () => {
+    expect(averageAmbient([{ ambientHue: 120, ambientChroma: 0.06 }, { ambientHue: null, ambientChroma: null }, {}])).toEqual({
+      ambientHue: 120,
+      ambientChroma: 0.06,
+    });
+  });
+
+  it("repli sans aucune ambiance, ou quand les teintes s'annulent", () => {
+    expect(averageAmbient([])).toBeNull();
+    expect(averageAmbient([{ ambientHue: null, ambientChroma: null }])).toBeNull();
+    expect(averageAmbient([{ ambientHue: 0, ambientChroma: 0.1 }, { ambientHue: 180, ambientChroma: 0.1 }])).toBeNull();
   });
 });

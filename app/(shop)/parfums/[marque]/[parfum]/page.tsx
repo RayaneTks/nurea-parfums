@@ -7,6 +7,7 @@ import { PerfumeLinkCard } from "@/components/features/PerfumeLinkCard";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buttonClass } from "@/components/ui/Button";
 import { getSeoPerfume } from "@/lib/catalogue-service";
+import { ambientStyle } from "@/lib/catalog/ambient";
 import { brandLineLabel } from "@/lib/catalog/perfumePresentation";
 import { toCardPerfume } from "@/lib/catalog/seoCatalogue";
 import { brandPath, CATALOGUE_PATH, fullPerfumeName, perfumeIdFromSegment, perfumePath } from "@/lib/seo/paths";
@@ -48,8 +49,9 @@ export async function generateMetadata({ params }: PerfumePageProps): Promise<Me
  * sont plus les bons — renommage, lien ancien, faute de frappe dans le nom —, la page redirige
  * en 308 vers l'adresse exacte : une seule URL par flacon, et aucune ancienne qui meure.
  *
- * Aucune donnée inventée : ni notes olfactives, ni prix (le prix ne se donne qu'en message
- * privé — règle de la vitrine). Le nom, la marque, le visuel, et comment commander.
+ * Même contenu que la fiche en feuille de l'accueil (`PerfumeSheet`, § B.9) : fond d'ambiance,
+ * visuel 2:3 entier, marque puis nom, les moyens de commande d'`OrderChannels` et la mention des
+ * flacons. Aucune donnée inventée : ni notes olfactives, ni prix, ni contenance.
  */
 export default async function PerfumePage({ params }: PerfumePageProps) {
   const { marque, parfum } = await params;
@@ -64,8 +66,8 @@ export default async function PerfumePage({ params }: PerfumePageProps) {
   const others = brand.perfumes.filter((p) => p.id !== perfume.id).slice(0, SAME_BRAND);
 
   return (
-    <>
-      <section className="nurea-page border-b border-nurea-border py-18 pt-32 md:pt-40">
+    <div className="page-x flex flex-col gap-[var(--space-section)] pb-[var(--space-section)] pt-2">
+      <section className="flex flex-col gap-2">
         <Breadcrumbs
           items={[
             { name: "Accueil", path: "/" },
@@ -75,53 +77,51 @@ export default async function PerfumePage({ params }: PerfumePageProps) {
           ]}
         />
 
-        <div className="mt-8 border border-nurea-border md:grid md:grid-cols-2">
-          <div className="nurea-visuel-parfum relative w-full border-b border-nurea-border md:border-b-0 md:border-r">
-            <PerfumeImage perfume={card} sizes="(max-width: 767px) 100vw, 50vw" priority />
+        <div
+          style={ambientStyle(card)}
+          className="amb flex flex-col gap-6 rounded-lg bg-ambient p-4 md:grid md:grid-cols-2 md:items-center md:gap-8 md:p-8"
+        >
+          <div className="relative mx-auto aspect-[2/3] w-[min(100%,calc(48dvh*2/3))] overflow-hidden rounded-md bg-surface-2 md:w-full">
+            <PerfumeImage perfume={card} sizes="(max-width: 767px) 90vw, 40vw" priority />
           </div>
 
-          <div className="flex flex-col p-6 md:p-10">
-            {/* Charte : marque (et sa gamme), puis nom. Les deux dans le titre : c'est ainsi qu'on les cherche. */}
-            <h1>
+          <div className="flex flex-col gap-2 text-center md:text-left">
+            {/* Marque (et sa gamme), puis nom. Les deux dans le titre : c'est ainsi qu'on les cherche. */}
+            <h1 className="flex flex-col gap-2">
               <Link
                 href={brandPath(brand.slug)}
-                className="nurea-label block transition-colors duration-nurea ease-out hover:text-nurea-accent"
+                className="t-body flex min-h-11 items-center self-center underline-offset-4 mouse-hover:text-fg-1 mouse-hover:underline md:self-start"
               >
                 {brandLineLabel(brand.name, perfume.line)}
               </Link>
-              <span className="nurea-title mt-3 block text-nurea-text">{perfume.name}</span>
+              <span className="t-title">{perfume.name}</span>
             </h1>
+            <p className="t-body">Prix et disponibilité : écrivez-nous.</p>
 
-            <p className="nurea-body mt-6">
-              {perfume.name}, de {brand.name}, au catalogue {SITE_NAME}. Remise en main propre à
-              Marseille, ou envoi partout en France.
-            </p>
-
-            <p className="nurea-caption mt-8">Écrivez-nous pour le prix et la disponibilité</p>
-            <OrderChannels perfume={perfume.name} brand={brand.name} />
+            <OrderChannels perfume={perfume.name} brand={brand.name} className="items-center md:items-start" />
           </div>
         </div>
       </section>
 
       {others.length > 0 ? (
-        <section className="nurea-page py-18" aria-labelledby="meme-marque">
-          <div className="flex items-baseline justify-between gap-6">
-            <h2 id="meme-marque" className="nurea-label">
+        <section aria-labelledby="meme-marque" className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6">
+            <h2 id="meme-marque" className="t-subtitle">
               Autres parfums {brand.name}
             </h2>
             <Link href={brandPath(brand.slug)} className={buttonClass("link")}>
               Toute la marque
             </Link>
           </div>
-          <ul className="nurea-catalogue-grid mt-6">
+          <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
             {others.map((p) => (
-              <li key={p.id}>
+              <li key={p.id} className="flex">
                 <PerfumeLinkCard perfume={toCardPerfume(brand, p)} href={perfumePath(brand.slug, p.name, p.id)} />
               </li>
             ))}
           </ul>
         </section>
       ) : null}
-    </>
+    </div>
   );
 }

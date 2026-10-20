@@ -71,3 +71,29 @@ export function ambientStyle(perfume: { ambientHue?: number | null; ambientChrom
   if (!dark && !light) return undefined;
   return { ...(dark && { "--amb": dark }), ...(light && { "--amb-light": light }) } as CSSProperties;
 }
+
+/**
+ * Ambiance d'une marque (§ B.3.8, en-tête de la page marque) : moyenne circulaire des teintes de
+ * ses parfums, pondérée par leur chroma ; chroma = moyenne. Repli (`null`) si aucun parfum n'a
+ * d'ambiance, ou si leurs teintes s'opposent au point que la moyenne n'en représente aucune
+ * (longueur résultante < 0,5) : jamais une teinte inventée.
+ */
+export function averageAmbient(
+  perfumes: readonly { ambientHue?: number | null; ambientChroma?: number | null }[],
+): { ambientHue: number; ambientChroma: number } | null {
+  let x = 0;
+  let y = 0;
+  let weight = 0;
+  let count = 0;
+  for (const { ambientHue: hue, ambientChroma: chroma } of perfumes) {
+    if (hue == null || chroma == null || chroma <= 0) continue;
+    const rad = (hue * Math.PI) / 180;
+    x += chroma * Math.cos(rad);
+    y += chroma * Math.sin(rad);
+    weight += chroma;
+    count += 1;
+  }
+  if (count === 0 || Math.hypot(x, y) < 0.5 * weight) return null;
+  const hue = Math.round((Math.atan2(y, x) * 180) / Math.PI);
+  return { ambientHue: (hue + 360) % 360, ambientChroma: weight / count };
+}

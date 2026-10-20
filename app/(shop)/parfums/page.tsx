@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { JsonLdScript } from "@/components/seo/JsonLd";
+import { buttonClass } from "@/components/ui/Button";
 import { getSeoCatalogue } from "@/lib/catalogue-service";
 import type { SeoBrand } from "@/lib/catalog/seoCatalogue";
 import { brandPath, CATALOGUE_PATH } from "@/lib/seo/paths";
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 
 /** « Ô » comme « O », un chiffre sous « 0-9 » : l'index se lit comme un annuaire. */
 function initialOf(name: string): string {
-  const letter = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().charAt(0).toUpperCase();
+  const letter = name.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().charAt(0).toUpperCase();
   return /[A-Z]/.test(letter) ? letter : "0-9";
 }
 
@@ -34,8 +35,8 @@ function groupByInitial(brands: SeoBrand[]): [string, SeoBrand[]][] {
 
 function countLabel(brand: SeoBrand): string {
   const n = brand.perfumes.length;
-  if (n === 0) return "Références à vérifier sur demande";
-  return `${n} parfum${n > 1 ? "s" : ""} affiché${n > 1 ? "s" : ""}`;
+  if (n === 0) return "Sur demande";
+  return `${n} parfum${n > 1 ? "s" : ""}`;
 }
 
 /**
@@ -44,14 +45,14 @@ function countLabel(brand: SeoBrand): string {
  * C'est le pivot du maillage : lié depuis la barre de navigation et le pied de page de toutes
  * les pages, il mène à chaque page marque, qui mène à chaque fiche parfum. Sans lui, ces pages
  * n'existeraient pour Google que par le sitemap — découvertes, mais sans aucun lien pour dire
- * qu'elles comptent.
+ * qu'elles comptent. Sur téléphone, la rangée de lettres évite de dérouler tout l'annuaire.
  */
 export default async function BrandsIndexPage() {
   const brands = await getSeoCatalogue();
   const groups = groupByInitial(brands);
 
   return (
-    <>
+    <div className="page-x flex flex-col gap-8 pb-[var(--space-section)] pt-2">
       <JsonLdScript
         data={{
           "@type": "CollectionPage",
@@ -71,15 +72,15 @@ export default async function BrandsIndexPage() {
         }}
       />
 
-      <section className="nurea-page border-b border-nurea-border py-18 pt-32 md:pt-40">
+      <section className="flex flex-col gap-4">
         <Breadcrumbs
           items={[
             { name: "Accueil", path: "/" },
             { name: "Les marques", path: CATALOGUE_PATH },
           ]}
         />
-        <h1 className="nurea-title mt-6 text-nurea-text">Toutes les marques</h1>
-        <p className="nurea-body nurea-prose mt-6">
+        <h1 className="t-title">Toutes les marques</h1>
+        <p className="t-body t-measure hyphens-manual">
           {brands.length > 0
             ? `${brands.length} marques au catalogue ${SITE_NAME}, des grandes maisons à la parfumerie de niche. `
             : ""}
@@ -88,38 +89,66 @@ export default async function BrandsIndexPage() {
         </p>
       </section>
 
-      <section className="nurea-page py-18">
-        {groups.length === 0 ? (
-          <p className="nurea-body">
-            Le catalogue se met à jour. En attendant,{" "}
-            <Link href="/contact" className="underline underline-offset-4">
-              écrivez-nous
-            </Link>{" "}
-            pour le parfum que vous cherchez.
-          </p>
-        ) : (
-          <div className="flex flex-col gap-12">
+      {groups.length === 0 ? (
+        <p className="t-body">
+          Le catalogue se met à jour. En attendant,{" "}
+          <Link href="/contact" className="text-fg-1 underline underline-offset-4">
+            écrivez-nous
+          </Link>{" "}
+          pour le parfum que vous cherchez.
+        </p>
+      ) : (
+        <>
+          <nav aria-label="Aller à la lettre">
+            <ul className="flex flex-wrap">
+              {groups.map(([initial]) => (
+                <li key={initial}>
+                  <a
+                    href={`#lettre-${initial}`}
+                    className="t-body t-nums flex h-11 min-w-11 items-center justify-center rounded-md px-2 text-fg-1 transition-colors duration-dur-1 ease-soft mouse-hover:bg-surface-2"
+                  >
+                    {initial}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <div className="flex flex-col gap-10">
             {groups.map(([initial, group]) => (
-              <div key={initial} className="grid gap-4 border-t border-nurea-border pt-6 md:grid-cols-[6rem_1fr]">
-                <h2 className="nurea-name text-nurea-accent">{initial}</h2>
-                <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+              <section
+                key={initial}
+                id={`lettre-${initial}`}
+                aria-labelledby={`titre-${initial}`}
+                className="grid scroll-mt-24 gap-2 border-t border-line pt-4 md:grid-cols-[6rem_1fr]"
+              >
+                <h2 id={`titre-${initial}`} className="t-subtitle">
+                  {initial}
+                </h2>
+                <ul className="grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
                   {group.map((brand) => (
                     <li key={brand.slug}>
                       <Link
                         href={brandPath(brand.slug)}
-                        className="group flex items-baseline justify-between gap-4 border-b border-nurea-border py-3 transition-colors duration-nurea ease-out hover:text-nurea-accent"
+                        className="group flex min-h-11 items-baseline justify-between gap-4 border-b border-line py-3"
                       >
-                        <span className="nurea-body text-nurea-text group-hover:text-nurea-accent">{brand.name}</span>
-                        <span className="nurea-caption shrink-0">{countLabel(brand)}</span>
+                        <span className="t-body min-w-0 text-fg-1 underline-offset-4 [overflow-wrap:anywhere] group-mouse-hover:underline">
+                          {brand.name}
+                        </span>
+                        <span className="t-caption shrink-0">{countLabel(brand)}</span>
                       </Link>
                     </li>
                   ))}
                 </ul>
-              </div>
+              </section>
             ))}
           </div>
-        )}
-      </section>
-    </>
+
+          <Link href="/contact" className={buttonClass("link", "self-start")}>
+            Une marque manque ? Écrivez-nous
+          </Link>
+        </>
+      )}
+    </div>
   );
 }

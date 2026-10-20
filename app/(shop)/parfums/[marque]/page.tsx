@@ -10,6 +10,7 @@ import { SnapchatIcon } from "@/components/ui/Icons";
 import { CONTACT } from "@/lib/data";
 import { MENTION_FLACONS } from "@/lib/mentions";
 import { getSeoBrand, getSeoCatalogue } from "@/lib/catalogue-service";
+import { ambientStyle, averageAmbient } from "@/lib/catalog/ambient";
 import { toCardPerfume, type SeoBrand } from "@/lib/catalog/seoCatalogue";
 import { brandPath, CATALOGUE_PATH, fullPerfumeName, perfumePath } from "@/lib/seo/paths";
 import { pageOg, SITE_NAME, SITE_URL } from "@/lib/site";
@@ -56,6 +57,7 @@ function neighboursOf(all: SeoBrand[], slug: string): SeoBrand[] {
  * Elle répond aux recherches « parfum <marque> Marseille », que l'accueil — une seule page pour
  * tout le catalogue — ne pouvait pas toutes porter. Rien n'y est inventé : le nom de la marque,
  * ses flacons au catalogue, et les conditions de vente réelles (Marseille, envoi, Snapchat).
+ * L'en-tête prend l'ambiance moyenne de ses parfums (§ B.3.8), la surface neutre en repli.
  */
 export default async function BrandPage({ params }: BrandPageProps) {
   const { marque } = await params;
@@ -66,9 +68,10 @@ export default async function BrandPage({ params }: BrandPageProps) {
   const path = brandPath(brand.slug);
   const cards = brand.perfumes.map((p) => ({ perfume: toCardPerfume(brand, p), href: perfumePath(brand.slug, p.name, p.id) }));
   const neighbours = neighboursOf(all, brand.slug);
+  const formHref = `/contact?${new URLSearchParams({ marque: brand.name })}`;
 
   return (
-    <>
+    <div className="page-x flex flex-col gap-[var(--space-section)] pb-[var(--space-section)] pt-2">
       <JsonLdScript
         data={{
           "@type": "CollectionPage",
@@ -93,7 +96,7 @@ export default async function BrandPage({ params }: BrandPageProps) {
         }}
       />
 
-      <section className="nurea-page border-b border-nurea-border py-18 pt-32 md:pt-40">
+      <section className="flex flex-col gap-2">
         <Breadcrumbs
           items={[
             { name: "Accueil", path: "/" },
@@ -102,108 +105,108 @@ export default async function BrandPage({ params }: BrandPageProps) {
           ]}
         />
 
-        <p className="nurea-label mt-6">Catalogue de la marque</p>
-        <h1 className="nurea-title mt-4 text-nurea-text">Parfums {brand.name}</h1>
-
-        <p className="nurea-body nurea-prose mt-6">
-          {`Les parfums ${brand.name} du catalogue ${SITE_NAME}, au meilleur prix. Le prix et la disponibilité se confirment en message privé, avant toute commande.`}{" "}
-          Remise en main propre à Marseille, ou envoi partout en France.
-        </p>
-
-        <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
-          <a href={CONTACT.snapchat} target="_blank" rel="noopener noreferrer" className={buttonClass("solid")}>
-            <SnapchatIcon className="h-4 w-4 shrink-0" aria-hidden />
-            Commander sur Snapchat
-          </a>
-          <Link href={`/contact?${new URLSearchParams({ marque: brand.name })}`} className={buttonClass("link")}>
-            Passer par le formulaire
-          </Link>
-        </div>
+        <header
+          style={ambientStyle(averageAmbient(brand.perfumes) ?? {})}
+          className="amb flex flex-col gap-4 rounded-lg bg-ambient px-4 py-8 md:px-8 md:py-12"
+        >
+          <h1 className="t-title">Parfums {brand.name}</h1>
+          <p className="t-body t-measure hyphens-manual">
+            {`Les parfums ${brand.name} du catalogue ${SITE_NAME}, au meilleur prix. Le prix et la disponibilité se confirment en message privé, avant toute commande.`}{" "}
+            Remise en main propre à Marseille, ou envoi partout en France.
+          </p>
+          <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+            <a href={CONTACT.snapchat} target="_blank" rel="noopener noreferrer" className={buttonClass("solid")}>
+              <SnapchatIcon className="h-4 w-4 shrink-0" aria-hidden />
+              Commander sur Snapchat
+            </a>
+            <Link href={formHref} className={buttonClass("link", "self-center sm:self-auto")}>
+              Passer par le formulaire
+            </Link>
+          </div>
+        </header>
       </section>
 
       {cards.length > 0 ? (
-        <section className="nurea-page py-18" aria-labelledby="flacons">
-          <h2 id="flacons" className="nurea-label">
-            {cards.length} parfum{cards.length > 1 ? "s" : ""} affiché{cards.length > 1 ? "s" : ""} pour {brand.name}
+        <section aria-labelledby="flacons" className="flex flex-col gap-4">
+          <h2 id="flacons" className="t-subtitle">
+            {cards.length} parfum{cards.length > 1 ? "s" : ""} {brand.name}
           </h2>
-          <ul className="nurea-catalogue-grid mt-6">
+          <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
             {cards.map(({ perfume, href }, i) => (
-              <li key={perfume.id}>
+              <li key={perfume.id} className="flex">
                 <PerfumeLinkCard perfume={perfume} href={href} imagePriority={i < 2} />
               </li>
             ))}
           </ul>
-          <p className="nurea-caption mt-6 border-t border-nurea-border pt-4">{MENTION_FLACONS}</p>
+          <p className="t-caption border-t border-line pt-4">{MENTION_FLACONS}</p>
         </section>
       ) : null}
 
-      <section className="nurea-page border-t border-nurea-border py-18" aria-labelledby="visuel-collection">
-        <div className="grid gap-8 md:grid-cols-[minmax(0,24rem)_1fr] md:items-center">
-          {brand.visual ? (
-            <div className="nurea-visuel-parfum relative w-full overflow-hidden border border-nurea-border">
+      <section
+        aria-labelledby="autre-reference"
+        className="grid gap-6 border-t border-line pt-[var(--space-section)] md:grid-cols-[minmax(0,20rem)_1fr] md:items-center md:gap-8"
+      >
+        {brand.visual ? (
+          <div className="relative aspect-[2/3] w-full max-w-xs overflow-hidden rounded-md bg-surface-2">
+            <Image
+              src={brand.visual}
+              alt={`Visuel de collection ${brand.name}`}
+              fill
+              sizes="20rem"
+              className={`object-cover ${brand.visualLight ? "hidden dark:block" : ""}`}
+            />
+            {brand.visualLight ? (
               <Image
-                src={brand.visual}
+                src={brand.visualLight}
                 alt={`Visuel de collection ${brand.name}`}
                 fill
-                sizes="(max-width: 768px) 100vw, 24rem"
-                className={`object-cover ${brand.visualLight ? "hidden dark:block" : ""}`}
+                sizes="20rem"
+                className="block object-cover dark:hidden"
               />
-              {brand.visualLight ? (
-                <Image
-                  src={brand.visualLight}
-                  alt={`Visuel de collection ${brand.name}`}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 24rem"
-                  className="block object-cover dark:hidden"
-                />
-              ) : null}
-            </div>
-          ) : null}
-          <div className="max-w-2xl">
-            <p className="nurea-label">Visuel de collection</p>
-            <h2 id="visuel-collection" className="nurea-title mt-4 text-nurea-text">
-              Vous cherchez une autre référence {brand.name} ?
-            </h2>
-            <p className="nurea-body nurea-prose mt-5">
-              D&apos;autres références de cette marque peuvent aussi être au catalogue. Contactez-nous pour vérifier la référence, son prix et sa disponibilité.
-            </p>
-            <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-center">
-              <a href={CONTACT.snapchat} target="_blank" rel="noopener noreferrer" className={buttonClass("solid")}>
-                <SnapchatIcon className="h-4 w-4 shrink-0" aria-hidden />
-                Demander sur Snapchat
-              </a>
-              <Link href={`/contact?${new URLSearchParams({ marque: brand.name })}`} className={buttonClass("link")}>
-                Passer par le formulaire
-              </Link>
-            </div>
+            ) : null}
+          </div>
+        ) : null}
+        <div className="flex flex-col gap-4">
+          <h2 id="autre-reference" className="t-subtitle">
+            Vous cherchez une autre référence {brand.name} ?
+          </h2>
+          <p className="t-body t-measure hyphens-manual">
+            D&apos;autres références de cette marque peuvent aussi être au catalogue. Écrivez-nous pour vérifier la
+            référence, son prix et sa disponibilité.
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+            <a href={CONTACT.snapchat} target="_blank" rel="noopener noreferrer" className={buttonClass("outline")}>
+              <SnapchatIcon className="h-4 w-4 shrink-0" aria-hidden />
+              Demander sur Snapchat
+            </a>
+            <Link href={formHref} className={buttonClass("link", "self-center sm:self-auto")}>
+              Passer par le formulaire
+            </Link>
           </div>
         </div>
       </section>
 
       {neighbours.length > 0 ? (
-        <section className="nurea-page border-t border-nurea-border py-18" aria-labelledby="autres-marques">
-          <h2 id="autres-marques" className="nurea-label">
+        <section aria-labelledby="autres-marques" className="flex flex-col gap-2 border-t border-line pt-[var(--space-section)]">
+          <h2 id="autres-marques" className="t-subtitle">
             Autres marques
           </h2>
-          <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-3">
+          <ul className="flex flex-wrap gap-x-6">
             {neighbours.map((b) => (
               <li key={b.slug}>
-                <Link
-                  href={brandPath(b.slug)}
-                  className="nurea-body text-nurea-muted transition-colors duration-nurea ease-out hover:text-nurea-accent"
-                >
+                <Link href={brandPath(b.slug)} className={buttonClass("link", "text-fg-2 mouse-hover:text-fg-1")}>
                   {b.name}
                 </Link>
               </li>
             ))}
             <li>
-              <Link href={CATALOGUE_PATH} className="nurea-body text-nurea-accent">
+              <Link href={CATALOGUE_PATH} className={buttonClass("link", "underline")}>
                 Toutes les marques
               </Link>
             </li>
           </ul>
         </section>
       ) : null}
-    </>
+    </div>
   );
 }
