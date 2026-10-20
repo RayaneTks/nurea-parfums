@@ -11,6 +11,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { vitrineRoot } from "@/lib/vitrineRoot";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { ambientStyle } from "@/lib/catalog/ambient";
 import Link from "next/link";
 import { X } from "lucide-react";
@@ -137,14 +138,18 @@ const DialogContent: FC<PerfumeDialogProps> = ({ perfume, onClose }) => {
           {/* Poignée et fermeture au-dessus du visuel, jamais posées dessus. Glisser ici ferme (téléphone). */}
           <div data-sheet-handle className="relative flex h-12 items-start justify-center pt-2">
             <span aria-hidden className="h-1 w-9 rounded-full bg-fg-3 md:hidden" />
-            <button
-              type="button"
-              onClick={close}
-              aria-label="Fermer"
-              className="press absolute right-2 top-1 flex h-11 w-11 items-center justify-center rounded-full text-fg-1 transition-[background-color,transform] duration-dur-2 ease-soft mouse-hover:bg-surface-2"
-            >
-              <X size={20} strokeWidth={1.5} aria-hidden />
-            </button>
+            <div className="absolute right-2 top-1 flex">
+              {/* Voir le même parfum dans l'autre lumière, sans quitter la fiche. */}
+              <ThemeToggle className="rounded-full" />
+              <button
+                type="button"
+                onClick={close}
+                aria-label="Fermer"
+                className="press flex h-11 w-11 items-center justify-center rounded-full text-fg-1 transition-[background-color,transform] duration-dur-2 ease-soft mouse-hover:bg-surface-2"
+              >
+                <X size={20} strokeWidth={1.5} aria-hidden />
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-col gap-6 px-4 pb-6 md:grid md:grid-cols-2 md:items-center md:gap-8 md:px-8 md:pb-8">

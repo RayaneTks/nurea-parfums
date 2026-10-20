@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
-import { Heart, Moon, Search, Sun } from "lucide-react";
+import { Heart, Search } from "lucide-react";
 import { useSyncExternalStore, type FC } from "react";
 import { BrandLogo } from "./BrandLogo";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { parseSelection, readSelectionRaw, subscribeSelection } from "@/lib/selection";
 import { cn } from "@/lib/utils";
 
@@ -45,7 +45,6 @@ const ICON_BUTTON =
  */
 export const Navbar: FC = () => {
   const pathname = usePathname();
-  const { resolvedTheme, setTheme } = useTheme();
   const count = useSyncExternalStore(subscribeSelection, readSelectionCount, () => 0);
 
   return (
@@ -128,16 +127,7 @@ export const Navbar: FC = () => {
             )}
           </button>
 
-          {/* L'icône suit le thème en CSS ; seul le geste lit `resolvedTheme`. */}
-          <button
-            type="button"
-            onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}
-            aria-label="Changer de thème (clair ou sombre)"
-            className={ICON_BUTTON}
-          >
-            <Sun size={20} strokeWidth={1.5} aria-hidden className="[.light_&]:hidden" />
-            <Moon size={20} strokeWidth={1.5} aria-hidden className="hidden [.light_&]:block" />
-          </button>
+          <ThemeToggle />
         </div>
       </div>
     </header>
