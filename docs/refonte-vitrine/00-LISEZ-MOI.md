@@ -26,12 +26,27 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 | Préparation (recherche, invariants, playbook, photo « avant », garde-fou anti-slop) | **faite** |
 | Cadrage (décisions du gérant, DA chiffrée, plan, passation) — Fable, 20/10/2026 | **fait** — `03-DA.md` § 7, `04-PLAN-EXECUTION.md`, `PROMPT-OPUS.md` |
 | 0. Décider : **T1 planche** (3 couples typo × 2 thèmes, 6 parfums, ambiance) → point de contrôle 1, puis T2 docs | **T1 faite, point de contrôle 1 passé** le 20/10 : direction validée, polices **Fraunces + Figtree**, **aucune contenance affichée**, vraie page d'accueil à venir (T15, sur planche). **T2 faite** le 20/10 : `DESIGN.md`, `.impeccable.md`, `PRODUCT.md`, `docs/charte-graphique.html`, `CLAUDE.md` § Règles Vitrine décrivent la nouvelle DA |
-| 1 → 6 (T3 → T23, sessions S2 → S10) | **prochaine tâche : T3** (jetons et thèmes), session S2 ; puis T4 ; reste à faire (`04-PLAN-EXECUTION.md` § D et § F) |
+| 1. Fondations (S2) | **T3 faite** (jetons et thèmes, `9e2d3b6`) et **T4 faite** (Fraunces + Figtree, `a7bdfeb`), branche `refonte/vitrine`, worktree `.claude/worktrees/refonte-vitrine`. **Prochaine tâche : T5** (coque), session S3 |
+| 1 → 6 (T5 → T23, sessions S3 → S10) | à faire (`04-PLAN-EXECUTION.md` § D et § F) |
 
 Décisions du 20/10 : direction **A+C « Nuancier nocturne »** ; **clair + sombre** ; **rien** de la
 charte v3 n'est repris (seuls les logos/monogrammes, ivoire sur sombre, noir sur clair) ; vocabulaire
 Marque · Parfum · Ligne · Contenance · Catalogue ; « Ma sélection » et sélecteur 10/50/80 retenus,
 refusables au point de contrôle 1.
+
+### Remarques de S2 (20/10)
+
+- Sur `refonte/vitrine`, la vitrine a perdu l'ancien style (jetons v3 supprimés en T3) : attendu, les
+  composants sont réécrits de T5 à T17. Ne jamais fusionner cette branche avant T23.
+- Classes neuves : rôles `.t-display` → `.t-caption`, `.page-x`, `.glass` (verre, seul emploi de
+  `backdrop-filter`), `.amb` (ambiance), `.press` ; Tailwind : `bg-bg`, `bg-surface-1`, `text-fg-1`,
+  `border-line`, `rounded-sm|md|lg|sheet`, `shadow-float`, `duration-dur-1…4`, `ease-soft|sheet|move`.
+- **Build dans le worktree** : `npm run build` échoue (Turbopack refuse la jonction `node_modules`).
+  Mesurer avec `NUREA_SKIP_MIGRATE_DEPLOY=1 DATABASE_URL=… DIRECT_URL=… node node_modules/next/dist/bin/next build --webpack`.
+  Vercel n'est pas concerné.
+- **Polices** : 85,5 Ko réellement chargés (fichiers latins seuls). `next/font` émet aussi
+  latin-ext et vietnamien (89 Ko de plus), téléchargés seulement si une page affiche un caractère de
+  leur plage.
 
 ## Outils prêts
 
