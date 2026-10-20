@@ -10,6 +10,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import { createPortal } from "react-dom";
+import { vitrineRoot } from "@/lib/vitrineRoot";
 import Link from "next/link";
 import { X } from "lucide-react";
 import type { Perfume } from "@/lib/data";
@@ -190,5 +191,6 @@ export const PerfumeDialog: FC<PerfumeDialogProps> = (props) => {
   useEffect(() => setMounted(true), []);
 
   if (!mounted) return null;
-  return createPortal(<DialogContent {...props} />, document.body);
+  // Dans le bloc de la vitrine, pas dans <body> : sinon la fiche perd ses polices (`vitrineRoot`).
+  return createPortal(<DialogContent {...props} />, vitrineRoot());
 };
