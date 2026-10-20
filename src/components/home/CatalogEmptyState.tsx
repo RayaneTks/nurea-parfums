@@ -1,6 +1,6 @@
 "use client";
 
-import type { FC } from "react";
+import type { FC, ReactNode } from "react";
 import Link from "next/link";
 import { buttonClass } from "@/components/ui/Button";
 import {
@@ -33,14 +33,31 @@ export const CatalogEmptyState: FC<CatalogEmptyStateProps> = ({
   suggestedBrandInCatalog,
   externalHint,
   extendedSearch,
+}) => (
+  /* Annoncé sans voler le focus : le visiteur tape encore dans la barre haute. */
+  <div aria-live="polite" aria-atomic="true">
+    <EmptyContent
+      query={query}
+      suggestedBrandInCatalog={suggestedBrandInCatalog}
+      externalHint={externalHint}
+      extendedSearch={extendedSearch}
+    />
+  </div>
+);
+
+const EmptyContent: FC<CatalogEmptyStateProps> = ({
+  query,
+  suggestedBrandInCatalog,
+  externalHint,
+  extendedSearch,
 }) => {
   const trimmed = query.trim();
 
   if (trimmed === "") {
     return (
       <EmptyShell
-        title="Aucun parfum ne correspond à ces filtres"
-        body="Élargissez la sélection, ou parcourez les suggestions ci-dessous."
+        title="Ces filtres ne laissent aucun parfum"
+        body="Retirez un filtre, ou parcourez les pistes ci-dessous. Une référence précise vous manque ? Écrivez-nous."
       />
     );
   }
@@ -48,8 +65,8 @@ export const CatalogEmptyState: FC<CatalogEmptyStateProps> = ({
   if (extendedSearch.status === "loading") {
     return (
       <EmptyShell
-        title="Recherche en cours…"
-        body="Nous vérifions aussi nos stocks étendus."
+        title={<>Nous cherchons <Name>{trimmed}</Name>…</>}
+        body="Nous regardons aussi les références qui ne sont pas encore en ligne."
         withContactLink={false}
       />
     );
@@ -70,10 +87,10 @@ export const CatalogEmptyState: FC<CatalogEmptyStateProps> = ({
         testId="unlisted-match"
         title={
           brandOnly
-            ? `Vous cherchez un parfum ${unlisted.brand} ?`
-            : `Vous cherchez « ${unlisted.name} » de ${unlisted.brand} ?`
+            ? <>Vous cherchez un parfum <Name>{unlisted.brand}</Name> ?</>
+            : <>Vous cherchez <Name>{unlisted.name}</Name> de <Name>{unlisted.brand}</Name> ?</>
         }
-        body={`Tout ce que nous proposons n'est pas encore en ligne : chaque fiche demande ses visuels, et le site en ajoute au fil de l'eau. Écrivez-nous, nous vous dirons ce qu'il en est${brandOnly ? " pour cette marque" : " pour ce parfum"}.`}
+        body={`Tout ce que nous proposons n'est pas encore en ligne : chaque fiche attend ses photos. Écrivez-nous, nous vous dirons ce qu'il en est${brandOnly ? " pour cette marque" : " pour ce parfum"}.`}
         contactHref={contactHref(brandOnly ? { marque: unlisted.brand } : { parfum: unlisted.name, marque: unlisted.brand })}
       />
     );
@@ -86,19 +103,19 @@ export const CatalogEmptyState: FC<CatalogEmptyStateProps> = ({
       : null;
 
   /* Parfum qui existe ailleurs, pas encore chez nous : on le nomme, on dit qu'il n'est peut-être
-     pas encore ajouté, et la demande part pré-remplie. Jamais « aucun résultat » pour un vrai parfum. */
+     pas encore ajouté, et la demande part pré-remplie. */
   if (reference) {
     const brandOnly = reference.on === "brand";
-    const maison = reference.line ? `${reference.brand} (${reference.line})` : reference.brand;
+    const brand = reference.line ? `${reference.brand} (${reference.line})` : reference.brand;
     return (
       <EmptyShell
         testId="reference-match"
         title={
           brandOnly
-            ? `Vous cherchez un parfum ${reference.brand} ?`
-            : `Vous cherchez « ${reference.name} » de ${maison} ?`
+            ? <>Vous cherchez un parfum <Name>{reference.brand}</Name> ?</>
+            : <>Vous cherchez <Name>{reference.name}</Name> de <Name>{brand}</Name> ?</>
         }
-        body={`${brandOnly ? "Cette marque n'a peut-être pas encore été ajoutée" : "Ce parfum n'a peut-être pas encore été ajouté"} au catalogue : nous l'enrichissons au fil des demandes. Écrivez-nous, nous vous dirons s'il est disponible.`}
+        body={`${brandOnly ? "Cette marque n'a peut-être pas encore été ajoutée" : "Ce parfum n'a peut-être pas encore été ajouté"} au catalogue : il s'enrichit au fil des demandes. Écrivez-nous, nous vous dirons s'il est disponible.`}
         contactHref={contactHref(brandOnly ? { marque: reference.brand } : { parfum: reference.name, marque: reference.brand })}
       />
     );
@@ -118,12 +135,13 @@ export const CatalogEmptyState: FC<CatalogEmptyStateProps> = ({
     return (
       <EmptyShell
         testId="external-api-suggestion"
-        title={`Vous cherchez « ${label} »${brand ? ` de ${brand}` : ""} ?`}
+        title={brand ? <>Vous cherchez <Name>{label}</Name> de <Name>{brand}</Name> ?</> : <>Vous cherchez <Name>{label}</Name> ?</>}
         body={
           suggestedBrandInCatalog
-            ? `La gamme ${suggestedBrandInCatalog} est déjà au catalogue. Cette référence peut être demandée directement.`
-            : "Cette référence n'est pas encore en ligne. Nous pouvons confirmer une disponibilité ou vous proposer une alternative."
+            ? `La marque ${suggestedBrandInCatalog} est déjà au catalogue. Cette référence se demande directement.`
+            : "Cette référence n'est pas encore en ligne. Écrivez-nous : nous confirmons sa disponibilité ou proposons une alternative."
         }
+        contactHref={contactHref({ parfum: label, marque: brand ?? undefined })}
       />
     );
   }
@@ -131,33 +149,41 @@ export const CatalogEmptyState: FC<CatalogEmptyStateProps> = ({
   if (externalHint) {
     return (
       <EmptyShell
-        title={`Vous cherchez « ${externalHint.displayName} » ?`}
+        title={<>Vous cherchez <Name>{externalHint.displayName}</Name> ?</>}
         body={externalHint.caption ?? EXTERNAL_SEARCH_FALLBACK_MESSAGE}
         footnote={
           externalHint.footnote === "none"
             ? null
             : externalHint.footnote === "legacy-offline"
               ? "Cette référence n'a pas de fiche au catalogue. Écrivez-nous : nous confirmons les commandes et les alternatives possibles."
-              : "Pour un conseil ou une commande précise, passez par la page Contact : nous reprenons l'échange avec vous."
+              : "Pour un conseil ou une commande précise, écrivez-nous : nous reprenons l'échange avec vous."
         }
+        contactHref={contactHref({ parfum: externalHint.displayName })}
       />
     );
   }
 
+  /* Rien de reconnu : on ne ferme pas la porte, la saisie part telle quelle dans la demande. */
   return (
     <EmptyShell
-      title={`Aucun résultat pour « ${trimmed} »`}
+      title={<>Vous cherchez <Name>{trimmed}</Name> ?</>}
       body={
         extendedSearch.status === "error"
-          ? "Le service de recherche élargie est momentanément indisponible. Vous pouvez reformuler, ou nous écrire directement."
-          : EXTERNAL_SEARCH_FALLBACK_MESSAGE
+          ? "Notre recherche élargie ne répond pas pour l'instant. Écrivez-nous : nous vérifions à la main."
+          : "Il n'est peut-être pas encore au catalogue : il s'enrichit au fil des demandes. Écrivez-nous, nous vous dirons s'il est disponible ou vous proposerons une piste proche."
       }
+      contactHref={contactHref({ parfum: trimmed })}
     />
   );
 };
 
+/** Le nom cherché, en italique de titrage : il porte la phrase. */
+const Name: FC<{ children: ReactNode }> = ({ children }) => (
+  <em className="[overflow-wrap:anywhere]">{children}</em>
+);
+
 interface EmptyShellProps {
-  title: string;
+  title: ReactNode;
   body: string;
   footnote?: string | null;
   withContactLink?: boolean;
@@ -173,6 +199,7 @@ function contactHref(params: { parfum?: string; marque?: string }): string {
   return `/contact?${search.toString()}`;
 }
 
+/* Grille vide = l'action utile de l'écran : le lien de contact y est le bouton plein. */
 const EmptyShell: FC<EmptyShellProps> = ({
   title,
   body,
@@ -181,16 +208,13 @@ const EmptyShell: FC<EmptyShellProps> = ({
   contactHref = "/contact",
   testId,
 }) => (
-  <div
-    data-testid={testId}
-    className="nurea-prose border border-nurea-border p-6 md:p-10"
-  >
-    <p className="nurea-name text-nurea-text">{title}</p>
-    <p className="nurea-body mt-4">{body}</p>
-    {footnote ? <p className="nurea-caption mt-4">{footnote}</p> : null}
+  <div data-testid={testId} className="flex flex-col items-start gap-4 rounded-lg bg-surface-1 p-6 md:p-10">
+    <p className="t-title t-measure">{title}</p>
+    <p className="t-body t-measure text-fg-2">{body}</p>
+    {footnote ? <p className="t-caption t-measure">{footnote}</p> : null}
     {withContactLink ? (
-      <Link href={contactHref} className={buttonClass("outline", "mt-8")}>
-        Nous écrire
+      <Link href={contactHref} className={buttonClass("solid", "mt-4")}>
+        Écrivez-nous
       </Link>
     ) : null}
   </div>
