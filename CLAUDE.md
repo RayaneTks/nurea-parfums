@@ -4,6 +4,10 @@ Fichier de contexte projet chargé automatiquement par Claude Code.
 
 ## Consignes permanentes des agents
 
+**Avant tout : lire `docs/EQUIPE.md`** — qui fait quoi entre les sessions Nuréa (refonte vitrine,
+visuels, gestion), ce que chacune peut toucher, contrats entre chantiers, format de rendu au gérant,
+journal commun. Le tenir à jour : une ligne au journal par événement qui touche un autre chantier.
+
 Lire et appliquer `AGENTS.md` à la racine : boucle de travail, exigences de tests, et la table
 **« quel skill pour quelle tâche »**. Les 24 skills sont dans `.agents/skills/` (versionnés, texte
 seulement ; versions et empreintes : `.agents/skills/PROVENANCE.md`). On en lit **un seul, à la
