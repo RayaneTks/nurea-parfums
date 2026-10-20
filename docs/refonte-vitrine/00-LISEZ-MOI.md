@@ -113,6 +113,12 @@ refusables au point de contrôle 1.
 
 ### Remarques de T9 (20/10)
 
+- **Retours du gérant au PC 2 (vidéo et captures iPhone), corrigés sur la branche** : fiche ouverte sans
+  fond (`296fc91`) ; fiche en Times, car le portail vers `<body>` sortait du bloc qui porte les
+  polices → **toute feuille, tout tiroir et toute fiche s'ouvre dans `vitrineRoot()`**
+  (`src/lib/vitrineRoot.ts`, `877a68b`) ; visuel entier 2:3 et fond d'ambiance dans la fiche
+  (`22ebe69`, étape vers T12) ; bouton clair/sombre dans la fiche, révélé en cercle
+  (`ThemeToggle`, View Transitions, `6157f70`). T12 garde le geste, précédent/suivant et `?parfum=`.
 - **Adresse** : `?n=` (24 par page, borné à 960) et `?densite=1|3` (2 par défaut, rien d'écrit) en
   plus des filtres ; changer recherche, tri ou marques repart de la page 1, la densité non.
   `readFilters` / `writeFilters` exportés et testés.
