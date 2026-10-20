@@ -126,6 +126,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 20/10 | refonte | T8 faite sur `refonte/vitrine` (`7e68b14`) : carte parfum (fond d'ambiance au survol/appui, cœur « Ma sélection »), visuel (repli si photo introuvable), squelette, bouton 8 états. Rien en production. Prochaine : T9 (grille, PC 2). |
 | 20/10 | refonte | T7 faite sur `refonte/vitrine` (`8459575`) : colonnes d'ambiance + script, essai à blanc seulement. Migration sur `main` prévue au PC 2, seule. |
 | 20/10 | pilotage | Création de ce fichier. Décisions V1 à V7 pour la session visuels. |
 | 20/10 | refonte | T5 (coque) et T6 (jeu d'essai) sur `refonte/vitrine`. T7 en cours : colonnes d'ambiance (migration `20261020120000_perfume_ambient`, pas encore en production), clé `public-catalogue-v20` sur la branche. Essai à blanc sur 233 fiches publiées : 34 en repli (14,6 %), dont les ~50 photos de flacon d'origine sur fond blanc (visuels à venir). |
