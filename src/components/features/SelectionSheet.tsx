@@ -150,7 +150,7 @@ const SheetContent: FC<SelectionSheetProps> = ({ catalogue, onOpenPerfume, onBro
           </div>
         </header>
 
-        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-none">
           {count === 0 ? (
             /* État vide : une invitation, pas un constat. */
             <div className="flex flex-col items-start gap-4 px-6 py-8">

@@ -164,6 +164,16 @@
     }
   }
 
+  /* Bascule de thème en cours (`ThemeToggle`) : les photos de l'écran perdent le flou sur Safari. */
+  :root.theme-switching {
+    --glass: var(--glass-solid);
+  }
+
+  /* Opaque tout de suite (la première photo est prise à l'image suivante), translucide en fondu après. */
+  :root.theme-switching .glass {
+    transition: none;
+  }
+
   html {
     background-color: var(--bg);
     color: var(--text-2);
@@ -271,6 +281,8 @@
     -webkit-backdrop-filter: blur(12px) saturate(1.2);
     backdrop-filter: blur(12px) saturate(1.2);
     box-shadow: inset 0 1px 0 var(--glass-edge);
+    /* Retour au verre après une bascule de thème : fondu, pas de saut. */
+    transition: background-color var(--dur-2) var(--ease-out);
   }
 
   @supports not (backdrop-filter: blur(1px)) {
