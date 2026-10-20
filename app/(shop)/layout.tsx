@@ -16,6 +16,7 @@ import {
 } from "@/lib/site";
 import { THEME_COLOR } from "@/design/brand";
 import { brandFontClassName } from "@/design/fonts";
+import { VITRINE_ROOT_ID } from "@/lib/vitrineRoot";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -109,7 +110,7 @@ export const metadata: Metadata = {
  */
 export default function ShopLayout({ children }: { children: ReactNode }) {
   return (
-    <div className={`${brandFontClassName} flex min-h-svh flex-col bg-bg`}>
+    <div id={VITRINE_ROOT_ID} className={`${brandFontClassName} flex min-h-svh flex-col bg-bg`}>
       <a
         href="#main-content"
         className="sr-only rounded-md bg-fg-1 px-4 py-3 font-medium text-bg focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-toast"
