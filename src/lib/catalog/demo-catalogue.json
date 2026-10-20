@@ -7,7 +7,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458433328-149bf650.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458433460-1ee36f66.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 12,
+"ambientChroma": 0.152
 },
 {
 "id": 131,
@@ -17,7 +19,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790181107619-4c71e763.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790181111538-b74166ec.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 334,
+"ambientChroma": 0.05
 },
 {
 "id": 299,
@@ -28,8 +32,12 @@
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547093054-f3b69115.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547094087-a9d179b9.webp",
 "isFeatured": false,
-"tags": ["Nouveau"],
-"isNew": true
+"tags": [
+"Nouveau"
+],
+"isNew": true,
+"ambientHue": 26,
+"ambientChroma": 0.101
 },
 {
 "id": 35,
@@ -39,7 +47,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547095774-ec7c216d.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547095916-abea3df7.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 55,
+"ambientChroma": 0.079
 },
 {
 "id": 85,
@@ -49,7 +59,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802608836-4c9b3c3a.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802609155-9541bf33.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 17,
+"ambientChroma": 0.075
 },
 {
 "id": 28,
@@ -59,7 +71,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774715983196-1895835f.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774715990733-b616d1a5.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 258,
+"ambientChroma": 0.077
 },
 {
 "id": 58,
@@ -69,7 +83,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576125541-4dbd1f72.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576125850-229b5b15.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 320,
+"ambientChroma": 0.07
 },
 {
 "id": 100,
@@ -79,7 +95,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052142818-6828f0b4.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052145936-49cbd2e8.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 59,
+"ambientChroma": 0.093
 },
 {
 "id": 106,
@@ -89,7 +107,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052684102-eb912530.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052689146-749aefb2.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 78,
+"ambientChroma": 0.092
 },
 {
 "id": 300,
@@ -100,8 +120,12 @@
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790517431059-966587a5.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790517438144-15af24d0.webp",
 "isFeatured": false,
-"tags": ["Nouveau"],
-"isNew": true
+"tags": [
+"Nouveau"
+],
+"isNew": true,
+"ambientHue": 50,
+"ambientChroma": 0.07
 },
 {
 "id": 65,
@@ -111,7 +135,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585724096-95c100c2.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585724437-564b8cf0.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 51,
+"ambientChroma": 0.079
 },
 {
 "id": 78,
@@ -121,7 +147,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458435064-ca643b6b.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458435207-bcbe6347.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 42,
+"ambientChroma": 0.056
 },
 {
 "id": 88,
@@ -131,7 +159,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585727635-de1c8f23.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585728035-1dd41ff6.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 55,
+"ambientChroma": 0.064
 },
 {
 "id": 103,
@@ -141,7 +171,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458452272-ddc9aac2.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458452412-8b622729.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 68,
+"ambientChroma": 0.067
 },
 {
 "id": 19,
@@ -151,7 +183,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585719449-98b02859.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585720143-a831e856.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 28,
+"ambientChroma": 0.111
 },
 {
 "id": 23,
@@ -160,7 +194,9 @@
 "brandSlug": "aesop",
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802604749-af82e0c2.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 50,
+"ambientChroma": 0.063
 },
 {
 "id": 60,
@@ -170,7 +206,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458447086-631839c7.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458447239-95a47d1e.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 244,
+"ambientChroma": 0.067
 },
 {
 "id": 108,
@@ -180,7 +218,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802615192-515d92c7.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802615568-11829484.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 49,
+"ambientChroma": 0.08
 },
 {
 "id": 16,
@@ -200,7 +240,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458436872-d8925998.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458437021-3679242f.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 25,
+"ambientChroma": 0.105
 },
 {
 "id": 10,
@@ -220,7 +262,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585725107-89564f99.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585725412-45a176cf.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 55,
+"ambientChroma": 0.082
 },
 {
 "id": 47,
@@ -230,7 +274,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713715990-593f2dd9.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713724196-f997b353.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 28,
+"ambientChroma": 0.08
 },
 {
 "id": 44,
@@ -240,7 +286,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802617527-573b1850.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802617869-0b0c2eb8.webp",
-"isFeatured": true
+"isFeatured": true,
+"ambientHue": 23,
+"ambientChroma": 0.084
 },
 {
 "id": 101,
@@ -250,7 +298,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052233136-59980066.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052238345-646f06fe.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 46,
+"ambientChroma": 0.085
 },
 {
 "id": 48,
@@ -270,7 +320,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576127493-1d471542.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576127808-8808bb71.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 61,
+"ambientChroma": 0.074
 },
 {
 "id": 22,
@@ -280,7 +332,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802605648-322a1160.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802606010-696e544f.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 243,
+"ambientChroma": 0.082
 },
 {
 "id": 295,
@@ -291,8 +345,12 @@
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790176468599-70b33ed1.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790176475361-07354303.webp",
 "isFeatured": false,
-"tags": ["Nouveau"],
-"isNew": true
+"tags": [
+"Nouveau"
+],
+"isNew": true,
+"ambientHue": 54,
+"ambientChroma": 0.059
 },
 {
 "id": 188,
@@ -302,7 +360,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790181011427-b03989e2.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790181016277-1621814c.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 47,
+"ambientChroma": 0.062
 },
 {
 "id": 99,
@@ -312,7 +372,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547089553-8542b45f.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547089684-84b9d4a9.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 36,
+"ambientChroma": 0.086
 },
 {
 "id": 13,
@@ -322,7 +384,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458454613-4773c869.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458454836-c642ea43.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 37,
+"ambientChroma": 0.082
 },
 {
 "id": 34,
@@ -332,7 +396,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713806138-010ffbd9.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713812849-a0ae5da2.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 260,
+"ambientChroma": 0.064
 },
 {
 "id": 296,
@@ -343,8 +409,12 @@
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790177874314-c28317dd.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790177878919-52e474ec.webp",
 "isFeatured": false,
-"tags": ["Nouveau"],
-"isNew": true
+"tags": [
+"Nouveau"
+],
+"isNew": true,
+"ambientHue": 58,
+"ambientChroma": 0.067
 },
 {
 "id": 297,
@@ -355,8 +425,12 @@
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585731330-ad08e537.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585731654-b5fad367.webp",
 "isFeatured": false,
-"tags": ["Nouveau"],
-"isNew": true
+"tags": [
+"Nouveau"
+],
+"isNew": true,
+"ambientHue": 53,
+"ambientChroma": 0.073
 },
 {
 "id": 45,
@@ -366,7 +440,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550430051-007138e2.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550430741-5c0e539f.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 29,
+"ambientChroma": 0.092
 },
 {
 "id": 81,
@@ -376,7 +452,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802606735-6e46e57c.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802607069-abec49f0.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 270,
+"ambientChroma": 0.121
 },
 {
 "id": 144,
@@ -386,7 +464,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790875976865-6bfc4dd7.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790875977622-3908e392.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 44,
+"ambientChroma": 0.078
 },
 {
 "id": 298,
@@ -397,8 +477,12 @@
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547094587-432d5a07.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547094732-5fd1b4d0.webp",
 "isFeatured": false,
-"tags": ["Nouveau"],
-"isNew": true
+"tags": [
+"Nouveau"
+],
+"isNew": true,
+"ambientHue": 54,
+"ambientChroma": 0.096
 },
 {
 "id": 9,
@@ -408,7 +492,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547095175-b9004bc8.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547095317-2c0690ae.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 36,
+"ambientChroma": 0.092
 },
 {
 "id": 83,
@@ -418,7 +504,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802607715-4c9022b5.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802608046-fb137f07.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 30,
+"ambientChroma": 0.158
 },
 {
 "id": 59,
@@ -428,7 +516,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802618497-974d6b38.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802618799-4f2ebd9f.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 97,
+"ambientChroma": 0.064
 },
 {
 "id": 54,
@@ -438,7 +528,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550433320-3437a6f6.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550433641-9aca1cf5.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 86,
+"ambientChroma": 0.083
 },
 {
 "id": 174,
@@ -448,7 +540,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802659868-acde5f05.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802660209-a42a2fbc.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 30,
+"ambientChroma": 0.085
 },
 {
 "id": 105,
@@ -458,7 +552,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585728684-5d40beb4.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585728941-b849188d.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 59,
+"ambientChroma": 0.06
 },
 {
 "id": 18,
@@ -468,7 +564,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774649944806-da016eac.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774750970249-3e941518.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 251,
+"ambientChroma": 0.065
 },
 {
 "id": 27,
@@ -478,7 +576,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458440374-dd872935.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458440528-7e15aa4f.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 61,
+"ambientChroma": 0.092
 },
 {
 "id": 79,
@@ -498,7 +598,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802612176-6ec5d8be.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802612587-44a2dc5b.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 42,
+"ambientChroma": 0.084
 },
 {
 "id": 63,
@@ -508,7 +610,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458448268-e6142afd.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458448648-79ba3fe7.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 25,
+"ambientChroma": 0.1
 },
 {
 "id": 109,
@@ -518,7 +622,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052959203-7ede6d95.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052967635-037158ea.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 344,
+"ambientChroma": 0.118
 },
 {
 "id": 77,
@@ -528,7 +634,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585722889-54fa47ba.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585723207-b4094a88.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 43,
+"ambientChroma": 0.086
 },
 {
 "id": 14,
@@ -538,7 +646,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585726969-80f37d00.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458446042-baf96f60.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 66,
+"ambientChroma": 0.082
 },
 {
 "id": 40,
@@ -548,7 +658,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547090149-1e747dd0.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547090283-6397aa1c.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 67,
+"ambientChroma": 0.087
 },
 {
 "id": 26,
@@ -557,7 +669,9 @@
 "brandSlug": "giorgio-armani",
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458456557-d19cc778.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 51,
+"ambientChroma": 0.126
 },
 {
 "id": 32,
@@ -567,7 +681,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458453995-8fca56f4.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458454161-e132508d.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 257,
+"ambientChroma": 0.078
 },
 {
 "id": 33,
@@ -577,7 +693,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547097012-f3865d08.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547097178-4445ff63.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 47,
+"ambientChroma": 0.119
 },
 {
 "id": 187,
@@ -587,7 +705,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790212655203-86e082ce.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790212662531-d191eaf3.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 261,
+"ambientChroma": 0.058
 },
 {
 "id": 94,
@@ -597,7 +717,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968290895-eb1461d9.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968294808-d378ff4c.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 272,
+"ambientChroma": 0.051
 },
 {
 "id": 87,
@@ -607,7 +729,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802609797-6101d39d.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802610178-0191eb8d.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 90,
+"ambientChroma": 0.076
 },
 {
 "id": 31,
@@ -617,7 +741,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576123644-cdb27965.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576124264-f6b63fef.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 260,
+"ambientChroma": 0.074
 },
 {
 "id": 57,
@@ -626,7 +752,9 @@
 "brandSlug": "tom-ford",
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576124917-77ac4335.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 245,
+"ambientChroma": 0.072
 },
 {
 "id": 20,
@@ -636,7 +764,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576129348-7e6c9c08.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576129645-23145945.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 76,
+"ambientChroma": 0.063
 },
 {
 "id": 66,
@@ -646,7 +776,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458441054-2dc76d20.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458441189-8eb4b595.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 51,
+"ambientChroma": 0.079
 },
 {
 "id": 104,
@@ -656,7 +788,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802613258-576c5535.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802613599-2fed16b9.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 48,
+"ambientChroma": 0.076
 },
 {
 "id": 62,
@@ -666,7 +800,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458449690-1f755ccf.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458450047-cfe36663.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 108,
+"ambientChroma": 0.092
 },
 {
 "id": 110,
@@ -676,7 +812,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779053012486-4fb33bad.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779053020203-918ca090.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 6,
+"ambientChroma": 0.105
 },
 {
 "id": 73,
@@ -686,7 +824,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458437442-8290d05c.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458437576-9e0449d4.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 147,
+"ambientChroma": 0.079
 },
 {
 "id": 29,
@@ -696,7 +836,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458442787-c64e25b4.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458442927-22ad9979.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 56,
+"ambientChroma": 0.076
 },
 {
 "id": 42,
@@ -706,7 +848,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547091309-2585e5ea.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547091453-eec3deb2.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 41,
+"ambientChroma": 0.07
 },
 {
 "id": 117,
@@ -715,7 +859,9 @@
 "brandSlug": "giorgio-armani",
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802661870-53c03f17.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 31,
+"ambientChroma": 0.122
 },
 {
 "id": 15,
@@ -734,7 +880,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585720797-beaee350.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585721323-0daf8170.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 51,
+"ambientChroma": 0.064
 },
 {
 "id": 11,
@@ -744,7 +892,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576126479-7e2c3fc9.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576126822-3a52ac3c.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 227,
+"ambientChroma": 0.061
 },
 {
 "id": 51,
@@ -754,7 +904,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713923236-db2ec2a9.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713927452-f34e5637.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 40,
+"ambientChroma": 0.1
 },
 {
 "id": 17,
@@ -774,7 +926,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458441625-3ec1b6e1.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458441762-2037ea3a.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 55,
+"ambientChroma": 0.065
 },
 {
 "id": 90,
@@ -784,7 +938,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458449105-32da5cb5.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458449248-44003fd2.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 58,
+"ambientChroma": 0.086
 },
 {
 "id": 107,
@@ -794,7 +950,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458453396-1fbf84b0.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458453553-ab1db8b7.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 260,
+"ambientChroma": 0.084
 },
 {
 "id": 75,
@@ -804,7 +962,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585721960-0c312574.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585722293-ef80fc87.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 37,
+"ambientChroma": 0.102
 },
 {
 "id": 37,
@@ -814,7 +974,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585726038-2a2c9e1d.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585726356-2104bbdf.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 45,
+"ambientChroma": 0.091
 },
 {
 "id": 39,
@@ -824,7 +986,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774712575155-4c58739c.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774712590554-0b7f6cb2.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 56,
+"ambientChroma": 0.076
 },
 {
 "id": 21,
@@ -833,7 +997,9 @@
 "brandSlug": "giorgio-armani",
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458457110-9d1b4c93.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 36,
+"ambientChroma": 0.135
 },
 {
 "id": 86,
@@ -843,7 +1009,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774648410484-80b59742.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774648420217-32db745b.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 59,
+"ambientChroma": 0.067
 },
 {
 "id": 56,
@@ -852,7 +1020,9 @@
 "brandSlug": "tom-ford",
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774714348932-7e181121.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 53,
+"ambientChroma": 0.078
 },
 {
 "id": 95,
@@ -862,7 +1032,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968404315-093fba78.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968411095-d848238a.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 56,
+"ambientChroma": 0.065
 },
 {
 "id": 68,
@@ -872,7 +1044,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458442220-47ebb239.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458442365-f284088d.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 30,
+"ambientChroma": 0.087
 },
 {
 "id": 91,
@@ -882,7 +1056,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774651420850-1f0d4e2a.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774651499106-4daadc53.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 31,
+"ambientChroma": 0.093
 },
 {
 "id": 71,
@@ -892,7 +1068,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458435657-8fe99753.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458435799-d476360d.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 56,
+"ambientChroma": 0.07
 },
 {
 "id": 92,
@@ -902,7 +1080,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458443948-6de1448f.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458444094-aef2df0b.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 52,
+"ambientChroma": 0.077
 },
 {
 "id": 98,
@@ -912,7 +1092,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968751258-b3c8b3a4.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968757720-53330d12.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 55,
+"ambientChroma": 0.068
 },
 {
 "id": 96,
@@ -922,7 +1104,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968456546-62813f0e.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968463428-23ab6a3e.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 52,
+"ambientChroma": 0.077
 },
 {
 "id": 84,
@@ -932,7 +1116,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458434466-a8cf15c3.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458434641-392f057d.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 29,
+"ambientChroma": 0.087
 },
 {
 "id": 97,
@@ -942,7 +1128,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968695979-065907e5.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968701975-ea93b5d9.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 57,
+"ambientChroma": 0.065
 },
 {
 "id": 25,
@@ -952,7 +1140,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576130341-a4960c27.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576131419-93f95dce.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 256,
+"ambientChroma": 0.05
 },
 {
 "id": 69,
@@ -961,7 +1151,9 @@
 "brandSlug": "carolina-herrera",
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774646967856-88b2daff.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 77,
+"ambientChroma": 0.042
 },
 {
 "id": 61,
@@ -971,7 +1163,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802610849-89596096.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802611508-907853ef.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 51,
+"ambientChroma": 0.103
 },
 {
 "id": 74,
@@ -981,7 +1175,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458438018-79824467.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458438157-89154e60.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 67,
+"ambientChroma": 0.076
 },
 {
 "id": 30,
@@ -991,7 +1187,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458443365-8a72e98d.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458443505-ee871bd6.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 55,
+"ambientChroma": 0.068
 },
 {
 "id": 223,
@@ -1002,8 +1200,12 @@
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802616204-f05162ce.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802616532-457a2000.webp",
 "isFeatured": false,
-"tags": ["Nouveau"],
-"isNew": true
+"tags": [
+"Nouveau"
+],
+"isNew": true,
+"ambientHue": 44,
+"ambientChroma": 0.072
 },
 {
 "id": 53,
@@ -1013,7 +1215,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550432323-5647395c.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550432625-011ca5a0.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 28,
+"ambientChroma": 0.082
 },
 {
 "id": 89,
@@ -1023,7 +1227,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774649032962-e9c27a0f.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774649039911-49a068cd.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 65,
+"ambientChroma": 0.073
 },
 {
 "id": 70,
@@ -1033,7 +1239,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458436237-885b52c1.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458436390-cc95a063.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 27,
+"ambientChroma": 0.149
 },
 {
 "id": 43,
@@ -1043,7 +1251,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547091907-d7d60fb6.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547092045-29f68f36.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 260,
+"ambientChroma": 0.055
 },
 {
 "id": 52,
@@ -1053,7 +1263,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550431351-537cc8d2.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550431686-26b5dbd6.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 55,
+"ambientChroma": 0.054
 },
 {
 "id": 64,
@@ -1073,7 +1285,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458439202-45b4009d.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458439377-0ea1094e.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 19,
+"ambientChroma": 0.106
 },
 {
 "id": 38,
@@ -1083,7 +1297,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547088963-9dbd1551.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547089108-fd11535e.webp",
-"isFeatured": true
+"isFeatured": true,
+"ambientHue": 248,
+"ambientChroma": 0.062
 },
 {
 "id": 55,
@@ -1093,7 +1309,9 @@
 "category": "Tout voir",
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550434268-e29c5209.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550434585-113e9ad2.webp",
-"isFeatured": false
+"isFeatured": false,
+"ambientHue": 71,
+"ambientChroma": 0.075
 },
 {
 "id": 275,
@@ -1104,8 +1322,12 @@
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802657724-6b2b5f53.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802658232-5e044166.webp",
 "isFeatured": false,
-"tags": ["Nouveau"],
-"isNew": true
+"tags": [
+"Nouveau"
+],
+"isNew": true,
+"ambientHue": 57,
+"ambientChroma": 0.074
 },
 {
 "id": 308,
@@ -1116,7 +1338,11 @@
 "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790875978581-ddabefa3.webp",
 "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790875979080-b95f1a2e.webp",
 "isFeatured": false,
-"tags": ["Nouveau"],
-"isNew": true
+"tags": [
+"Nouveau"
+],
+"isNew": true,
+"ambientHue": 47,
+"ambientChroma": 0.068
 }
 ]

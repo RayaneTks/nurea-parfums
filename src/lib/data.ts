@@ -42,6 +42,9 @@ export interface Perfume {
   category: Category;
   image: string;
   imageLight?: string;
+  /** Couleur d'ambiance (04-PLAN-EXECUTION § B.3) : teinte 0–359 et chroma source ; absentes = repli. */
+  ambientHue?: number;
+  ambientChroma?: number;
   /** Placeholder low-res (Data URL) */
   blurDataURL?: string;
   tags?: string[];

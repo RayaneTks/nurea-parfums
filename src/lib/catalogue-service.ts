@@ -98,6 +98,8 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
           line: true,
           image: true,
           imageLight: true,
+          ambientHue: true,
+          ambientChroma: true,
           isFeatured: true,
           createdAt: true,
           brand: {
@@ -139,6 +141,8 @@ async function loadPublicCatalogFromDb(): Promise<CachedPublicCatalogue> {
           category: "Tout voir",
           image: p.image,
           imageLight: p.imageLight ?? undefined,
+          ambientHue: p.ambientHue ?? undefined,
+          ambientChroma: p.ambientChroma?.toNumber(),
           blurDataURL: getBlurPlaceholder(p.image),
           isFeatured: p.isFeatured,
         };
@@ -197,7 +201,8 @@ const getPublicCatalogueCached = unstable_cache(
   // v6 : l'instantané porte désormais `isNew` (catégorie « Nouveautés ») — un instantané v5 servi
   // au nouveau code laisserait la catégorie vide jusqu'à la prochaine modification du catalogue.
   // v15 : les pages publiques montrent uniquement les fiches parfum ; le visuel de marque reste en bas de page.
-  ["public-catalogue-v19"],
+  // v20 : l'instantané porte la couleur d'ambiance (ambientHue, ambientChroma, refonte vitrine T7).
+  ["public-catalogue-v20"],
   { tags: [PUBLIC_CATALOGUE_CACHE_TAG] },
 );
 
