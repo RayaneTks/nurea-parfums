@@ -28,7 +28,7 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 | 0. Décider : **T1 planche** (3 couples typo × 2 thèmes, 6 parfums, ambiance) → point de contrôle 1, puis T2 docs | **T1 faite, point de contrôle 1 passé** le 20/10 : direction validée, polices **Fraunces + Figtree**, **aucune contenance affichée**, vraie page d'accueil à venir (T15, sur planche). **T2 faite** le 20/10 : `DESIGN.md`, `.impeccable.md`, `PRODUCT.md`, `docs/charte-graphique.html`, `CLAUDE.md` § Règles Vitrine décrivent la nouvelle DA |
 | 1. Fondations (S2) | **T3 faite** (jetons et thèmes, `9e2d3b6`) et **T4 faite** (Fraunces + Figtree, `a7bdfeb`), branche `refonte/vitrine`, worktree `.claude/worktrees/refonte-vitrine`. T5 et T6 faites en S3 (voir ligne suivante) |
 | 1 → 2 (S3) | **T5 faite** (coque : barre en verre, pied de page, 404, logotype ivoire/noir, `398f3c0`) et **T6 faite** (jeu d'essai `/essai-extremes`, dev seulement, `b52b376`). **T7 faite** (ambiance en base, essai à blanc, `8459575`) |
-| 2 (S4) | **T8 faite** (carte, visuel, squelette, bouton 8 états, icônes, `7e68b14`). **Prochaine tâche : T9** (grille, pagination, densité ; PC 2), session S5 |
+| 2 (S4) | **T8 faite** (carte, visuel, squelette, bouton 8 états, icônes, `7e68b14`). **T9 faite** (grille, densité, « Charger la suite », rail A→Z, `985374a`). **Point de contrôle 2 en attente** : le gérant regarde l'accueil sur son téléphone (aperçu Vercel de `refonte/vitrine`). Oui → **T10** (recherche), session S5 ; non de goût → session Fable |
 | 2 → 6 (T7 → T23, sessions S4 → S10) | à faire (`04-PLAN-EXECUTION.md` § D et § F) |
 
 Décisions du 20/10 : direction **A+C « Nuancier nocturne »** ; **clair + sombre** ; **rien** de la
@@ -110,6 +110,19 @@ refusables au point de contrôle 1.
   `upgrade-insecure-requests` ; WebKit passe alors `http://localhost` en https et rien ne charge.
   Juger les captures tablette/bureau, ou le navigateur intégré à 390 px. Production non concernée.
 - Grille, « charger la suite » et `nurea-catalogue-grid` mort : T9. Tiroir de filtres à l'ancienne : T11.
+
+### Remarques de T9 (20/10)
+
+- **Adresse** : `?n=` (24 par page, borné à 960) et `?densite=1|3` (2 par défaut, rien d'écrit) en
+  plus des filtres ; changer recherche, tri ou marques repart de la page 1, la densité non.
+  `readFilters` / `writeFilters` exportés et testés.
+- **Grille** : `ul/li`, colonnes par densité dans `CatalogSection` (`GRID`, `SIZES`). Une carte dans
+  une case en flex doit garder `w-full` (le conteneur de requête n'a pas de largeur propre).
+- **Barre d'outils** dans le flux, sans champ de recherche (la barre haute a le sien). Le bouton
+  « Marques » ouvre encore l'ancien tiroir : T11.
+- **Mesure** : Lighthouse n'est pas installé ; `LCP` mesuré par Playwright au même profil (4G lente,
+  processeur ×4) sur un build local (`next start -p 3001`, configuration `vitrine-prod` du
+  `.claude/launch.json` principal). Médiane 1 872 ms, élément = visuel d'accueil (T15).
 
 ## Outils prêts
 
