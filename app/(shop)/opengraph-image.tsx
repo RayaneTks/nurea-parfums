@@ -35,7 +35,7 @@ const domain = SITE_URL.replace(/^https?:\/\//, "");
  *   large (59 Ko) — deux fois sa taille d'affichage, pour rester net sur les
  *   écrans à haute densité.
  *
- *   LA POLICE DE LA CHARTE POUR LE RESTE. Instrument Sans porte les deux
+ *   LA POLICE DE TITRE POUR LE RESTE. Fraunces (instance statique 500) porte les deux
  *   lignes de texte. Sans elle, `next/og` compose en Noto Sans, une neutre
  *   correcte mais étrangère à la marque — le détail se voit quand la vignette
  *   arrive à côté du logotype, qui lui est juste.
@@ -56,9 +56,9 @@ export default async function OpenGraphImage() {
    * la fonction deployee.
    */
   const dossier = join(process.cwd(), "app", "(shop)", "_og");
-  const [logotype, sans] = await Promise.all([
+  const [logotype, titre] = await Promise.all([
     readFile(join(dossier, "logotype.png")),
-    readFile(join(dossier, "InstrumentSans-Medium.ttf")),
+    readFile(join(dossier, "Fraunces-Medium.ttf")),
   ]);
 
   return new ImageResponse(
@@ -70,7 +70,7 @@ export default async function OpenGraphImage() {
           width: "100%",
           padding: 40,
           background: VITRINE_THEMES.dark.bg,
-          fontFamily: "Instrument Sans",
+          fontFamily: "Fraunces",
         }}
       >
         {/* Cadre au filet 1 px — la charte sépare au filet, jamais à l'ombre. */}
@@ -135,8 +135,8 @@ export default async function OpenGraphImage() {
       ...size,
       fonts: [
         {
-          name: "Instrument Sans",
-          data: Uint8Array.from(sans).buffer,
+          name: "Fraunces",
+          data: Uint8Array.from(titre).buffer,
           weight: 500,
           style: "normal",
         },
