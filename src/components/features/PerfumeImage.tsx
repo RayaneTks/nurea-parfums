@@ -1,4 +1,6 @@
-import type { FC } from "react";
+"use client";
+
+import { useState, type FC } from "react";
 import Image from "next/image";
 import type { Perfume } from "@/lib/data";
 import { NUREA_IMAGE_BLUR_DATA_URL } from "@/lib/blurPlaceholder";
@@ -11,74 +13,47 @@ interface PerfumeImageProps {
   className?: string;
 }
 
-const FALLBACK = "/placeholder.svg";
-
 /**
- * Visuel d'un parfum, dans la variante du thème courant.
+ * Visuel d'un parfum (2:3), dans la variante du thème courant. À poser dans un cadre `relative`
+ * au ratio 2:3 : l'image le remplit.
  *
- * Règle métier (voir `CLAUDE.md`) : l'image principale **est** la variante
- * sombre ; `imageLight` est une variante claire facultative.
- *
- * La bascule est faite en CSS, pas en JavaScript. C'est ce qui permet aux
- * grilles et au détail de rester rendus côté serveur, et supprime le
- * clignotement qu'imposait un montage client avant de connaître le thème
- * résolu. Quand il n'existe pas de variante claire — le cas courant — une seule
- * image est demandée.
+ * - `image` **est** la variante sombre ; `imageLight`, facultative, la remplace en thème clair.
+ *   Bascule en CSS (`.light` sur <html>), jamais `useTheme` : sans JavaScript la page reste
+ *   sombre et son visuel s'affiche ; rien ne clignote. `display: none` retire la variante masquée
+ *   de l'arbre d'accessibilité : un seul texte de remplacement annoncé.
+ * - Petites largeurs : la vignette 640 × 960, choisie par `src/lib/images/loader.ts` selon `sizes`.
+ * - Fichier introuvable : un aplat neutre et une légende, jamais l'icône d'image cassée.
  */
-export const PerfumeImage: FC<PerfumeImageProps> = ({
-  perfume,
-  sizes,
-  priority = false,
-  className,
-}) => {
-  const dark = perfume.image || FALLBACK;
+export const PerfumeImage: FC<PerfumeImageProps> = ({ perfume, sizes, priority = false, className }) => {
+  const [failed, setFailed] = useState(false);
   const light = perfume.imageLight?.trim();
-  const alt = `${perfume.brand} — ${perfume.name}`;
-  const blurDataURL = perfume.blurDataURL || NUREA_IMAGE_BLUR_DATA_URL;
+  // Les photos montrent le flacon d'origine de la marque (MENTION_FLACONS, dite par la fiche).
+  const alt = `${perfume.name} de ${perfume.brand}, flacon d'origine`;
 
-  if (!light) {
+  if (failed || !perfume.image) {
     return (
-      <Image
-        src={dark}
-        alt={alt}
-        fill
-        sizes={sizes}
-        priority={priority}
-        quality={80}
-        placeholder="blur"
-        blurDataURL={blurDataURL}
-        className={cn("object-cover", className)}
-      />
+      <div role="img" aria-label={alt} className="absolute inset-0 flex items-end bg-surface-2 p-3">
+        <span className="t-caption">Photo indisponible</span>
+      </div>
     );
   }
 
-  /* `display: none` retire la variante masquée de l'arbre d'accessibilité :
-     les deux portent donc le même texte de remplacement sans être annoncées
-     deux fois. Seule la variante sombre est préchargée — c'est celle que le
-     rendu serveur affiche. */
+  const common = {
+    fill: true,
+    sizes,
+    quality: 80,
+    placeholder: "blur" as const,
+    blurDataURL: perfume.blurDataURL || NUREA_IMAGE_BLUR_DATA_URL,
+    onError: () => setFailed(true),
+  };
+
+  if (!light) return <Image src={perfume.image} alt={alt} priority={priority} {...common} className={cn("object-cover", className)} />;
+
+  // Seule la variante sombre est préchargée : c'est celle du rendu sans JavaScript.
   return (
     <>
-      <Image
-        src={dark}
-        alt={alt}
-        fill
-        sizes={sizes}
-        priority={priority}
-        quality={80}
-        placeholder="blur"
-        blurDataURL={blurDataURL}
-        className={cn("hidden object-cover dark:block", className)}
-      />
-      <Image
-        src={light}
-        alt={alt}
-        fill
-        sizes={sizes}
-        quality={80}
-        placeholder="blur"
-        blurDataURL={blurDataURL}
-        className={cn("block object-cover dark:hidden", className)}
-      />
+      <Image src={perfume.image} alt={alt} priority={priority} {...common} className={cn("object-cover [.light_&]:hidden", className)} />
+      <Image src={light} alt={alt} {...common} className={cn("hidden object-cover [.light_&]:block", className)} />
     </>
   );
 };

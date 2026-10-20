@@ -65,7 +65,7 @@ const THEMES = {
 };
 const MIN_TEXT1 = 7, MIN_TEXT3 = 4.5, MIN_WEIGHT = 0.08;
 
-function derive(theme, hue, cSrc) {
+export function derive(theme, hue, cSrc) {
   const t = THEMES[theme];
   const C = clamp(cSrc * t.k, t.cMin, t.cMax);
   for (let i = 0, L = t.L; i <= 5; i++, L += t.step) {

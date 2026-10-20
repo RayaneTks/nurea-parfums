@@ -2,8 +2,10 @@
 
 import type { FC } from "react";
 import type { Perfume } from "@/lib/data";
+import { ambientStyle } from "@/lib/catalog/ambient";
 import { brandLineLabel } from "@/lib/catalog/perfumePresentation";
 import { PerfumeImage } from "./PerfumeImage";
+import { SelectionHeart } from "./SelectionHeart";
 
 interface PerfumeCardProps {
   perfume: Perfume;
@@ -12,50 +14,52 @@ interface PerfumeCardProps {
 }
 
 /**
- * Fiche produit du catalogue — charte § 05.
+ * Carte parfum (DESIGN.md § Composants signature, 04-PLAN-EXECUTION § B.9).
  *
- * Ordre imposé : marque (« Marque · Ligne » si le parfum appartient à une ligne de la marque), nom, contenance. Le prix n'apparaît jamais en grille,
- * seulement dans l'échange direct.
- *
- * Survol : la couleur de fond, rien d'autre. Ni déplacement, ni agrandissement,
- * ni ombre — c'est la règle du § 05, et elle n'a pas d'exception.
- * Appui (`.nurea-press`) : la couleur bascule dès le contact et la fiche cède de 2 %.
+ * Visuel 2:3, puis « Marque · Ligne », puis le nom. **Jamais de prix, jamais de contenance.**
+ * Toute la carte ouvre la fiche (bouton du nom étendu par `::after`) ; le cœur « Ma sélection »
+ * est un bouton à part, posé au-dessus. Survol et appui : le fond prend la couleur d'ambiance du
+ * parfum, ou `--surface-2` sans elle ; à l'appui la carte cède (`--press`). Règles : `.card`,
+ * `app/globals.css`. Rayons concentriques : carte 20 − marge 8 = visuel 12.
  */
-export const PerfumeCard: FC<PerfumeCardProps> = ({
-  perfume,
-  onOpen,
-  imagePriority = false,
-}) => (
-  <button
-    type="button"
-    onClick={() => onOpen(perfume)}
-    aria-label={`${perfume.brand} — ${perfume.name} : voir comment commander`}
-    className="nurea-press flex w-full flex-col border border-nurea-border bg-nurea-surface text-left hover:bg-nurea-surface-hover active:bg-nurea-surface-hover"
-  >
-    <div className="nurea-visuel-parfum relative w-full overflow-hidden">
-      <PerfumeImage
-        perfume={perfume}
-        sizes="(max-width: 1023px) 50vw, 33vw"
-        priority={imagePriority}
-      />
+export const PerfumeCard: FC<PerfumeCardProps> = ({ perfume, onOpen, imagePriority = false }) => {
+  const brandLine = brandLineLabel(perfume.brand, perfume.line);
 
-      {perfume.tags?.length ? (
-        <div className="absolute left-0 top-0 flex flex-col">
-          {perfume.tags.map((tag) => (
-            <span
-              key={tag}
-              className="nurea-label bg-nurea-accent px-3 py-2 text-nurea-on-accent"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      ) : null}
-    </div>
+  return (
+    <article className="card relative flex min-w-0 flex-col rounded-lg p-2" style={ambientStyle(perfume)}>
+      <div className="relative aspect-[2/3] overflow-hidden rounded-md bg-surface-2">
+        <PerfumeImage
+          perfume={perfume}
+          sizes="(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
+          priority={imagePriority}
+        />
+        {perfume.tags?.length ? (
+          <ul className="absolute left-2 top-2 flex flex-col items-start gap-1">
+            {perfume.tags.map((tag) => (
+              <li key={tag} className="t-caption rounded-sm bg-surface-1 px-2 py-1 text-fg-1">
+                {tag}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
 
-    <div className="border-t border-nurea-border p-5">
-      <p className="nurea-label line-clamp-2">{brandLineLabel(perfume.brand, perfume.line)}</p>
-      <p className="nurea-name mt-2 line-clamp-2 text-nurea-text">{perfume.name}</p>
-    </div>
-  </button>
-);
+      <div className="flex min-w-0 flex-col gap-1 px-2 pb-2 pt-3">
+        <p className="t-body line-clamp-2 [overflow-wrap:anywhere]">{brandLine}</p>
+        <p className="card-name t-subtitle [overflow-wrap:anywhere]">
+          <button
+            type="button"
+            onClick={() => onOpen(perfume)}
+            aria-label={`${brandLine} — ${perfume.name} : voir comment commander`}
+            className="card-open block w-full text-left after:absolute after:inset-0 after:rounded-lg"
+          >
+            {/* La limite de lignes vit dans le bouton : posée sur le <p>, elle ne voit qu'une boîte. */}
+            <span className="line-clamp-3">{perfume.name}</span>
+          </button>
+        </p>
+      </div>
+
+      <SelectionHeart id={perfume.id} name={perfume.name} className="absolute right-3 top-3" />
+    </article>
+  );
+};
