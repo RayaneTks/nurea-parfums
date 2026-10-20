@@ -11,6 +11,8 @@ interface PerfumeCardProps {
   perfume: Perfume;
   onOpen: (perfume: Perfume) => void;
   imagePriority?: boolean;
+  /** Largeur affichée du visuel (attribut `sizes`) ; défaut = grille à deux colonnes sur téléphone. */
+  sizes?: string;
 }
 
 /**
@@ -22,15 +24,20 @@ interface PerfumeCardProps {
  * parfum, ou `--surface-2` sans elle ; à l'appui la carte cède (`--press`). Règles : `.card`,
  * `app/globals.css`. Rayons concentriques : carte 20 − marge 8 = visuel 12.
  */
-export const PerfumeCard: FC<PerfumeCardProps> = ({ perfume, onOpen, imagePriority = false }) => {
+export const PerfumeCard: FC<PerfumeCardProps> = ({
+  perfume,
+  onOpen,
+  imagePriority = false,
+  sizes = "(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw",
+}) => {
   const brandLine = brandLineLabel(perfume.brand, perfume.line);
 
   return (
-    <article className="card relative flex min-w-0 flex-col rounded-lg p-2" style={ambientStyle(perfume)}>
+    <article className="card relative flex w-full min-w-0 flex-col rounded-lg p-2" style={ambientStyle(perfume)}>
       <div className="relative aspect-[2/3] overflow-hidden rounded-md bg-surface-2">
         <PerfumeImage
           perfume={perfume}
-          sizes="(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
+          sizes={sizes}
           priority={imagePriority}
         />
         {perfume.tags?.length ? (
@@ -45,8 +52,8 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({ perfume, onOpen, imagePriori
       </div>
 
       <div className="flex min-w-0 flex-col gap-1 px-2 pb-2 pt-3">
-        <p className="t-body line-clamp-2 [overflow-wrap:anywhere]">{brandLine}</p>
-        <p className="card-name t-subtitle [overflow-wrap:anywhere]">
+        <p className="card-brand t-body line-clamp-2 hyphens-auto [overflow-wrap:anywhere]">{brandLine}</p>
+        <p className="card-name t-subtitle hyphens-auto [overflow-wrap:anywhere]">
           <button
             type="button"
             onClick={() => onOpen(perfume)}

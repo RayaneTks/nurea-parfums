@@ -5,8 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { PerfumeCard } from "@/components/features/PerfumeCard";
 import { PerfumeDialog } from "@/components/features/PerfumeDialog";
-import { ScrollReveal } from "@/components/ui/ScrollReveal";
-import { Button, buttonClass } from "@/components/ui/Button";
+import { buttonClass } from "@/components/ui/Button";
 import { OPEN_CATALOG_FILTERS_EVENT } from "@/components/layout/Navbar";
 import {
   compareSearchRelevance,
@@ -21,8 +20,8 @@ import { inCategory } from "@/lib/catalog/perfumePresentation";
 import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
 import { brandSlug } from "@/lib/slugify";
 import { CatalogEmptyState } from "./CatalogEmptyState";
-import { CatalogToolbar, SortControl } from "./CatalogToolbar";
-import { useCatalogFilters } from "./useCatalogFilters";
+import { CatalogToolbar } from "./CatalogToolbar";
+import { PAGE_SIZE, useCatalogFilters, writeFilters, type Density } from "./useCatalogFilters";
 import { useExtendedSearch } from "./useExtendedSearch";
 
 /** Le panneau de filtres n'est chargé qu'à la première ouverture. */
@@ -30,9 +29,6 @@ const CatalogFilterDrawer = dynamic(
   () => import("./CatalogFilterDrawer").then((m) => m.CatalogFilterDrawer),
   { ssr: false }
 );
-
-/** Au-delà, la grille est tronquée jusqu'à demande explicite. */
-const INITIAL_VISIBLE = 12;
 
 interface CatalogSectionProps {
   catalogPerfumes: Perfume[];
@@ -43,6 +39,30 @@ function slugOf(perfume: Perfume): string {
   return perfume.brandSlug ?? brandSlug(perfume.brand);
 }
 
+const byName = (a: Perfume, b: Perfume) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" });
+const byBrand = (a: Perfume, b: Perfume) =>
+  a.brand.localeCompare(b.brand, "fr", { sensitivity: "base" }) || byName(a, b);
+
+/** Initiale sans accent (« É » → « E ») ; un chiffre ou un signe → « # ». */
+function initialOf(brand: string): string {
+  const letter = brand.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().charAt(0).toUpperCase();
+  return /[A-Z]/.test(letter) ? letter : "#";
+}
+
+/** Colonnes par densité : téléphone, puis +1 à 768 px, +2 à 1024 px (04-PLAN-EXECUTION § B.5). */
+const GRID: Record<Density, string> = {
+  1: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+  2: "grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
+  3: "grid-cols-3 md:grid-cols-4 lg:grid-cols-5",
+};
+
+/** Largeur affichée d'un visuel, pour que le chargeur choisisse vignette (640) ou original. */
+const SIZES: Record<Density, string> = {
+  1: "(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw",
+  2: "(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw",
+  3: "(max-width: 767px) 33vw, (max-width: 1023px) 25vw, 20vw",
+};
+
 export const CatalogSection = ({
   catalogPerfumes,
   browseBrands,
@@ -52,7 +72,6 @@ export const CatalogSection = ({
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [openedPerfume, setOpenedPerfume] = useState<Perfume | null>(null);
-  const [showAll, setShowAll] = useState(false);
 
   /* La barre de navigation n'a pas de lien direct vers cet état : elle diffuse. */
   useEffect(() => {
@@ -77,44 +96,48 @@ export const CatalogSection = ({
 
   const sorted = useMemo(() => {
     const list = [...matching];
-    const byName = (a: Perfume, b: Perfume) =>
-      a.name.localeCompare(b.name, "fr", { sensitivity: "base" });
-
-    if (filters.sort === "name") {
-      const oneBrand = filters.brandSlug !== "" || filters.brandSlugs.size === 1;
-      return list.sort(byName);
-    }
-    if (filters.sort === "brand") {
-      return list.sort(
-        (a, b) =>
-          a.brand.localeCompare(b.brand, "fr", { sensitivity: "base" }) ||
-          byName(a, b)
-      );
-    }
+    if (filters.sort === "name") return list.sort(byName);
+    if (filters.sort === "brand") return list.sort(byBrand);
     /* Sans tri explicite, une recherche classe par pertinence. */
     if (filters.query.trim()) {
       return list.sort((a, b) => compareSearchRelevance(a, b, filters.query.trim()));
     }
     return list;
-  }, [matching, filters.sort, filters.query, filters.brandSlug, filters.brandSlugs]);
+  }, [matching, filters.sort, filters.query]);
 
   /*
-   * La grille rend TOUTES les fiches ; seule leur visibilité est tronquée.
-   *
-   * Elle n'en écrivait que douze dans le DOM, les autres n'apparaissant qu'au
-   * clic sur « Voir les N références ». Or Google n'interagit pas avec la
-   * page : son robot ne clique pas. Le catalogue déclarait donc douze noms de
-   * parfum sur quatre-vingt-dix-neuf, et les quatre-vingt-sept autres étaient
-   * hors de portée de toute recherche, quelles que soient les autres
-   * optimisations.
-   *
-   * Le contenu masqué en CSS reste indexé — c'est le cas documenté des onglets
-   * et des accordéons ; c'est le contenu ABSENT du DOM qui ne l'est pas. Les
-   * images restent en chargement paresseux, donc aucune requête réseau
-   * supplémentaire à l'affichage.
+   * La grille rend les `n` premiers parfums (`?n=`, par 24) : 193 cartes d'un coup faisaient 332
+   * images et 2 300 nœuds. Pour les moteurs, « Charger la suite » est un vrai lien (`?n=48`) et
+   * chaque parfum a sa page indexable (`/parfums/<marque>/<nom>-<id>`, sitemap).
    */
-  const truncated = !hasNarrowingFilters && !showAll && sorted.length > INITIAL_VISIBLE;
-  const cutoff = truncated ? INITIAL_VISIBLE : sorted.length;
+  const visible = sorted.slice(0, filters.n);
+  const remaining = sorted.length - visible.length;
+
+  /* Rail A→Z : l'initiale de chaque marque présente, dans l'ordre « Marque A–Z ». */
+  const brandOrder = useMemo(() => [...matching].sort(byBrand), [matching]);
+  const letters = useMemo(() => [...new Set(brandOrder.map((p) => initialOf(p.brand)))], [brandOrder]);
+
+  /* Après « Charger la suite » ou une lettre du rail : focus sur la carte visée, une fois rendue. */
+  const [focusRequest, setFocusRequest] = useState<{ index: number; scroll: boolean } | null>(null);
+  useEffect(() => {
+    if (!focusRequest) return;
+    const target = document.querySelector<HTMLElement>(`#collection [data-index="${focusRequest.index}"] .card-open`);
+    if (target && focusRequest.scroll) target.closest("li")?.scrollIntoView({ block: "center" });
+    target?.focus({ preventScroll: true });
+    setFocusRequest(null);
+  }, [focusRequest]);
+
+  const loadMore = () => {
+    setFocusRequest({ index: filters.n, scroll: false });
+    update({ n: filters.n + PAGE_SIZE });
+  };
+
+  const jumpToLetter = (letter: string) => {
+    const index = brandOrder.findIndex((p) => initialOf(p.brand) === letter);
+    if (index < 0) return;
+    update({ sort: "brand", n: Math.max(filters.n, Math.ceil((index + 1) / PAGE_SIZE) * PAGE_SIZE) });
+    setFocusRequest({ index, scroll: true });
+  };
 
   /* La recherche élargie ne part que si le catalogue local n'a rien donné. */
   const extendedSearch = useExtendedSearch(filters.query, sorted.length === 0);
@@ -187,7 +210,6 @@ export const CatalogSection = ({
   const changeCategory = useCallback(
     (category: Category) => {
       selectCategory(category);
-      setShowAll(false);
       revealCatalogTop();
     },
     [selectCategory, revealCatalogTop]
@@ -199,7 +221,6 @@ export const CatalogSection = ({
     (slugs: Set<string>) => {
       update({ brandSlugs: slugs, brandSlug: "", category: "Tout voir" });
       setDrawerOpen(false);
-      setShowAll(false);
       revealCatalogTop();
     },
     [update, revealCatalogTop]
@@ -222,115 +243,105 @@ export const CatalogSection = ({
         />
       )}
 
-      <section
-        id="collection"
-        className="nurea-page scroll-mt-[calc(env(safe-area-inset-top,0px)+3.5rem)] pb-18 md:scroll-mt-[calc(env(safe-area-inset-top,0px)+4.25rem)]"
-      >
-        <ScrollReveal className="py-12 md:py-18">
-          <p className="nurea-label">Catalogue</p>
-          <h2 className="nurea-section-title mt-4 text-nurea-text">Le catalogue</h2>
-          <p className="nurea-body nurea-prose mt-4">
-            Notre sélection des plus grandes marques, pour homme et pour femme.
-            Les prix se donnent en direct : écrivez-nous sur Snapchat pour
-            commander.
+      <section id="collection" aria-labelledby="catalogue-titre" className="page-x flex scroll-mt-32 flex-col gap-6 pb-16 md:scroll-mt-20">
+        <header className="flex flex-col gap-3 pt-12">
+          <h2 id="catalogue-titre" className="t-title">Le catalogue</h2>
+          <p className="t-body t-measure">
+            Notre sélection des plus grandes marques, pour homme et pour femme. Les prix se donnent
+            en direct : écrivez-nous sur Snapchat pour commander.
           </p>
-        </ScrollReveal>
+        </header>
 
         <CatalogToolbar
-          query={filters.query}
           category={filters.category}
           sort={filters.sort}
+          density={filters.density}
           resultLabel={resultLabel}
-          onQueryChange={(query) => update({ query })}
+          brandCount={filters.brandSlugs.size}
           onCategoryChange={changeCategory}
           onSortChange={(sort) => update({ sort })}
-        />
-
-        {/* Téléphone : le nombre et le tri sous la barre collante, pas dedans (voir `SortControl`). */}
-        <SortControl
-          id="catalogue-tri-mobile"
-          sort={filters.sort}
-          resultLabel={resultLabel}
-          onSortChange={(sort) => update({ sort })}
-          className="justify-between pt-4 md:hidden"
+          onDensityChange={(density) => update({ density })}
+          onOpenBrands={() => setDrawerOpen(true)}
         />
 
         {hasAnyFilter && (
-          <div className="flex flex-wrap items-center gap-2 py-6">
-            <span className="nurea-caption mr-2">Filtres</span>
+          <div className="flex flex-wrap items-center gap-2">
             {filters.query.trim() !== "" && (
-              <FilterChip
-                label={`« ${filters.query.trim()} »`}
-                onRemove={() => update({ query: "" })}
-              />
+              <FilterChip label={`« ${filters.query.trim()} »`} onRemove={() => update({ query: "" })} />
             )}
             {filters.category !== "Tout voir" && (
-              <FilterChip
-                label={filters.category}
-                onRemove={() => changeCategory("Tout voir")}
-              />
+              <FilterChip label={filters.category} onRemove={() => changeCategory("Tout voir")} />
             )}
-            {filters.brandSlug !== "" && (
-              <FilterChip
-                label={brandName}
-                onRemove={() => update({ brandSlug: "" })}
-              />
-            )}
+            {filters.brandSlug !== "" && <FilterChip label={brandName} onRemove={() => update({ brandSlug: "" })} />}
             {filters.brandSlugs.size > 0 && (
               <FilterChip
                 label={`${filters.brandSlugs.size} marque${filters.brandSlugs.size > 1 ? "s" : ""}`}
                 onRemove={() => update({ brandSlugs: new Set() })}
               />
             )}
-            {filters.sort !== "default" && (
-              <FilterChip
-                label="Tri personnalisé"
-                onRemove={() => update({ sort: "default" })}
-              />
-            )}
-            <button
-              type="button"
-              onClick={reset}
-              className="nurea-label ml-auto h-11 px-2 transition-colors duration-nurea ease-out hover:text-nurea-text"
-            >
+            {filters.sort !== "default" && <FilterChip label="Tri choisi" onRemove={() => update({ sort: "default" })} />}
+            <button type="button" onClick={reset} className={buttonClass("link", "ml-auto px-2")}>
               Tout effacer
             </button>
           </div>
         )}
 
-        {sorted.length > 0 ? (
+        {/* Rail A→Z : dès trois colonnes (768 px), parcourir sans filtrer. */}
+        {sorted.length > PAGE_SIZE && letters.length > 1 && (
+          <nav aria-label="Marques de A à Z" className="hidden md:block">
+            <ul className="flex flex-wrap gap-1">
+              {letters.map((letter) => (
+                <li key={letter}>
+                  <button
+                    type="button"
+                    onClick={() => jumpToLetter(letter)}
+                    aria-label={`Marques en ${letter}`}
+                    className="press flex h-11 w-11 items-center justify-center rounded-sm text-fg-2 transition-[background-color,color,transform] duration-dur-2 ease-soft mouse-hover:bg-surface-1 mouse-hover:text-fg-1"
+                  >
+                    {letter}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+
+        {visible.length > 0 ? (
           <>
-            <div className="nurea-catalogue-grid pt-6">
-              {sorted.map((perfume, index) => (
-                /*
-                 * `display: contents` efface l'enveloppe de la mise en page :
-                 * la fiche reste l'élément de grille, exactement comme avant.
-                 * Masquer la fiche elle-même aurait exigé de battre le `flex`
-                 * de sa classe, donc un `!important`.
-                 */
-                <div
-                  key={perfume.id}
-                  className={index < cutoff ? "contents" : "hidden"}
-                >
+            <ul className={`grid gap-3 md:gap-4 ${GRID[filters.density]}`}>
+              {visible.map((perfume, index) => (
+                <li key={perfume.id} data-index={index} className="flex min-w-0">
                   <PerfumeCard
                     perfume={perfume}
                     onOpen={openPerfume}
-                    imagePriority={index < 4}
+                    sizes={SIZES[filters.density]}
+                    imagePriority={index === 0}
                   />
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
 
-            {truncated && (
-              <div className="flex justify-center pt-12">
-                <Button variant="outline" onClick={() => setShowAll(true)}>
-                  Voir les {sorted.length} références
-                </Button>
+            {remaining > 0 && (
+              <div className="flex flex-col items-center gap-2 pt-4">
+                {/* Un vrai lien : sans JavaScript, et pour les moteurs, il mène à la page suivante. */}
+                <a
+                  href={`?${writeFilters({ ...filters, n: filters.n + PAGE_SIZE })}`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    loadMore();
+                  }}
+                  className={buttonClass("outline")}
+                >
+                  Charger la suite
+                </a>
+                <p className="t-caption">
+                  {visible.length} sur {sorted.length} parfums
+                </p>
               </div>
             )}
           </>
         ) : (
-          <div className="pt-6">
+          <div className="flex flex-col gap-12">
             <CatalogEmptyState
               query={filters.query}
               suggestedBrandInCatalog={suggestedBrandInCatalog}
@@ -339,25 +350,23 @@ export const CatalogSection = ({
             />
 
             {inspirations.length > 0 && (
-              <div className="pt-12">
-                <p className="nurea-label mb-6">
+              <section aria-labelledby="catalogue-pistes" className="flex flex-col gap-4">
+                <h3 id="catalogue-pistes" className="t-subtitle">
                   {filters.query.trim() ? "Pistes au catalogue" : "Inspirations"}
-                </p>
-                <div className="nurea-catalogue-grid">
+                </h3>
+                <ul className={`grid gap-3 md:gap-4 ${GRID[filters.density]}`}>
                   {inspirations.map((perfume) => (
-                    <PerfumeCard
-                      key={perfume.id}
-                      perfume={perfume}
-                      onOpen={openPerfume}
-                    />
+                    <li key={perfume.id} className="flex min-w-0">
+                      <PerfumeCard perfume={perfume} onOpen={openPerfume} sizes={SIZES[filters.density]} />
+                    </li>
                   ))}
-                </div>
-              </div>
+                </ul>
+              </section>
             )}
           </div>
         )}
 
-        <div className="flex justify-center pt-18">
+        <div className="flex justify-center pt-8">
           <a href="#main-content" className={buttonClass("link")}>
             Haut de page
           </a>
@@ -378,9 +387,9 @@ const FilterChip = ({
     type="button"
     onClick={onRemove}
     aria-label={`Retirer le filtre ${label}`}
-    className="inline-flex h-11 max-w-full items-center gap-2 border border-nurea-border px-3 text-sm text-nurea-muted transition-colors duration-nurea ease-out hover:bg-nurea-surface-hover hover:text-nurea-text"
+    className="press inline-flex h-11 max-w-full items-center gap-2 rounded-sm bg-surface-2 px-3 text-fg-1 transition-[background-color,transform] duration-dur-2 ease-soft mouse-hover:bg-surface-1"
   >
     <span className="min-w-0 truncate">{label}</span>
-    <X size={14} strokeWidth={1.5} aria-hidden className="shrink-0" />
+    <X size={16} strokeWidth={1.5} aria-hidden className="shrink-0" />
   </button>
 );

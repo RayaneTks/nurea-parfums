@@ -5,6 +5,11 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { categories, type Category } from "@/lib/data";
 
 export type SortKey = "default" | "name" | "brand";
+/** Colonnes sur téléphone ; +1 à 768 px, +2 à 1024 px (04-PLAN-EXECUTION § B.5). */
+export type Density = 1 | 2 | 3;
+
+/** Taille d'une page de la grille : « Charger la suite » en ajoute autant (`?n=`). */
+export const PAGE_SIZE = 24;
 
 export interface CatalogFilters {
   /** Recherche libre. */
@@ -15,6 +20,9 @@ export interface CatalogFilters {
   brandSlug: string;
   /** Sélection multiple, venue du panneau de filtres. */
   brandSlugs: ReadonlySet<string>;
+  /** Nombre de parfums affichés (`?n=`), multiple de `PAGE_SIZE`. */
+  n: number;
+  density: Density;
 }
 
 const EMPTY_FILTERS: CatalogFilters = {
@@ -23,12 +31,15 @@ const EMPTY_FILTERS: CatalogFilters = {
   sort: "default",
   brandSlug: "",
   brandSlugs: new Set(),
+  n: PAGE_SIZE,
+  density: 2,
 };
 
-function readFilters(params: URLSearchParams): CatalogFilters {
+export function readFilters(params: URLSearchParams): CatalogFilters {
   const rawCategory = params.get("cat") ?? "";
   const rawSort = params.get("sort") ?? "";
   const rawBrands = params.get("brands")?.trim() ?? "";
+  const rawDensity = params.get("densite");
 
   return {
     query: params.get("q")?.trim() ?? "",
@@ -38,10 +49,19 @@ function readFilters(params: URLSearchParams): CatalogFilters {
     sort: rawSort === "name" || rawSort === "brand" ? rawSort : "default",
     brandSlug: params.get("maison")?.trim() ?? "",
     brandSlugs: new Set(rawBrands ? rawBrands.split(",").filter(Boolean) : []),
+    n: readCount(params.get("n")),
+    density: rawDensity === "1" || rawDensity === "3" ? Number(rawDensity) as Density : 2,
   };
 }
 
-function writeFilters(filters: CatalogFilters): string {
+/** `?n=` : arrondi à la page supérieure, borné (une adresse trafiquée ne rend pas 10 000 cartes). */
+function readCount(raw: string | null): number {
+  const value = Number.parseInt(raw ?? "", 10);
+  if (!Number.isFinite(value) || value <= PAGE_SIZE) return PAGE_SIZE;
+  return Math.min(Math.ceil(value / PAGE_SIZE) * PAGE_SIZE, 40 * PAGE_SIZE);
+}
+
+export function writeFilters(filters: CatalogFilters): string {
   const params = new URLSearchParams();
   if (filters.query) params.set("q", filters.query);
   if (filters.category !== "Tout voir") params.set("cat", filters.category);
@@ -50,6 +70,8 @@ function writeFilters(filters: CatalogFilters): string {
   if (filters.brandSlugs.size > 0) {
     params.set("brands", [...filters.brandSlugs].join(","));
   }
+  if (filters.n > PAGE_SIZE) params.set("n", String(filters.n));
+  if (filters.density !== 2) params.set("densite", String(filters.density));
   return params.toString();
 }
 
@@ -94,8 +116,10 @@ export function useCatalogFilters() {
     return () => window.clearTimeout(timer);
   }, [serialized, pathname]);
 
+  /** Changer ce qu'on regarde (recherche, tri, marques…) repart de la première page ; la densité et `n`, non. */
   const update = useCallback((patch: Partial<CatalogFilters>) => {
-    setFilters((current) => ({ ...current, ...patch }));
+    const keepsPage = Object.keys(patch).every((key) => key === "n" || key === "density");
+    setFilters((current) => ({ ...current, ...(keepsPage ? {} : { n: PAGE_SIZE }), ...patch }));
   }, []);
 
   /** Choisir une catégorie annule les filtres de marque : ils se contredisent. */
@@ -105,10 +129,12 @@ export function useCatalogFilters() {
       category,
       brandSlug: "",
       brandSlugs: new Set(),
+      n: PAGE_SIZE,
     }));
   }, []);
 
-  const reset = useCallback(() => setFilters(EMPTY_FILTERS), []);
+  /** « Tout effacer » vide les filtres, pas la densité choisie. */
+  const reset = useCallback(() => setFilters((current) => ({ ...EMPTY_FILTERS, density: current.density })), []);
 
   /** Le tri seul ne restreint rien : il ne compte pas comme un filtre actif. */
   const hasNarrowingFilters =
