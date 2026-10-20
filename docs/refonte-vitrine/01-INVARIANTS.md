@@ -15,7 +15,7 @@ Tout ce qui est écrit ici est vérifiable : chaque ligne renvoie à son fichier
 | **Jamais de prix en grille.** Le prix se donne dans l'échange. | `PRODUCT.md` |
 | Le seul canal ouvert est **Snapchat**. WhatsApp est « bientôt » : jamais présenté comme cliquable tant que le numéro n'existe pas. Le formulaire de contact reste. | `ChannelSoon`, `OrderChannels` |
 | Le bouton « Commander sur Snapchat » **copie le nom du parfum** et reste visible sans défiler (fiche, contact). | `SnapchatOrderButton` |
-| Fiche produit : **marque / nom / contenance**, dans cet ordre. Une donnée absente est **omise**, jamais inventée. | `perfumePresentation.ts` |
+| Fiche produit : **marque / nom**, dans cet ordre. **Aucune contenance affichée sur la vitrine** (décision du gérant, 20/10/2026) : le volume se discute sur Snapchat. Une donnée absente est **omise**, jamais inventée. | `perfumePresentation.ts` |
 | Un parfum ou une marque **sans visuel sombre est masqué** (statut brouillon). Un parfum masqué reste trouvable en recherche, avec invitation à écrire. | `catalogue-service.ts` |
 | Le client reçoit son parfum en **flacon Nuréa personnalisé** de **10, 50 ou 80 ml**. Aucun visuel de ce flacon sur le site (choix du gérant) : la mention seule. | `src/lib/mentions.ts` |
 | La recherche ne finit **jamais** dans le vide : un parfum connu mais absent du catalogue donne « vous cherchez X de Y ? écrivez-nous », demande pré-remplie. | `searchRepertoire.ts` |
