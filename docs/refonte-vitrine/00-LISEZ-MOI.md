@@ -26,8 +26,9 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 | Préparation (recherche, invariants, playbook, photo « avant », garde-fou anti-slop) | **faite** |
 | Cadrage (décisions du gérant, DA chiffrée, plan, passation) — Fable, 20/10/2026 | **fait** — `03-DA.md` § 7, `04-PLAN-EXECUTION.md`, `PROMPT-OPUS.md` |
 | 0. Décider : **T1 planche** (3 couples typo × 2 thèmes, 6 parfums, ambiance) → point de contrôle 1, puis T2 docs | **T1 faite, point de contrôle 1 passé** le 20/10 : direction validée, polices **Fraunces + Figtree**, **aucune contenance affichée**, vraie page d'accueil à venir (T15, sur planche). **T2 faite** le 20/10 : `DESIGN.md`, `.impeccable.md`, `PRODUCT.md`, `docs/charte-graphique.html`, `CLAUDE.md` § Règles Vitrine décrivent la nouvelle DA |
-| 1. Fondations (S2) | **T3 faite** (jetons et thèmes, `9e2d3b6`) et **T4 faite** (Fraunces + Figtree, `a7bdfeb`), branche `refonte/vitrine`, worktree `.claude/worktrees/refonte-vitrine`. **Prochaine tâche : T5** (coque), session S3 |
-| 1 → 6 (T5 → T23, sessions S3 → S10) | à faire (`04-PLAN-EXECUTION.md` § D et § F) |
+| 1. Fondations (S2) | **T3 faite** (jetons et thèmes, `9e2d3b6`) et **T4 faite** (Fraunces + Figtree, `a7bdfeb`), branche `refonte/vitrine`, worktree `.claude/worktrees/refonte-vitrine`. T5 et T6 faites en S3 (voir ligne suivante) |
+| 1 → 2 (S3) | **T5 faite** (coque : barre en verre, pied de page, 404, logotype ivoire/noir, `398f3c0`) et **T6 faite** (jeu d'essai `/essai-extremes`, dev seulement, `b52b376`). **Prochaine tâche : T7** (ambiance en base, à blanc), session S4 |
+| 2 → 6 (T7 → T23, sessions S4 → S10) | à faire (`04-PLAN-EXECUTION.md` § D et § F) |
 
 Décisions du 20/10 : direction **A+C « Nuancier nocturne »** ; **clair + sombre** ; **rien** de la
 charte v3 n'est repris (seuls les logos/monogrammes, ivoire sur sombre, noir sur clair) ; vocabulaire
@@ -47,6 +48,30 @@ refusables au point de contrôle 1.
 - **Polices** : 85,5 Ko réellement chargés (fichiers latins seuls). `next/font` émet aussi
   latin-ext et vietnamien (89 Ko de plus), téléchargés seulement si une page affiche un caractère de
   leur plage.
+
+### Remarques de S3 (20/10)
+
+- **Barre haute** : collante (`sticky`), pas fixe — aucune page n'a à compenser sa hauteur. Le
+  champ envoie `/?q=` (résultats en direct : T10). Le cœur diffuse `nurea:open-selection` et lit
+  `nurea:selection:v1` ; la feuille et l'écriture viennent en T13 (événement
+  `nurea:selection-change` à diffuser après chaque écriture, sinon le compteur ne bouge pas).
+- **Point faible à trancher au PC 2** : sous 1024 px, « Marques », « La parfumerie » et « Contact »
+  ne sont plus dans la barre (le plan n'y met que logo, recherche, cœur, thème) ; on ne les trouve
+  qu'en pied de page. Contact est la page de commande : proposition → un lien « Contact » ou un
+  menu court sur téléphone, à montrer sur la planche de T15.
+- **Accueil** : la photo de fond actuelle et son texte posé dessus sont le gabarit interdit
+  (DESIGN.md § Accueil). Elle disparaît en T15 ; si une image neuve est utile, le prompt sera
+  fourni au gérant (génération ChatGPT).
+- **Logotype** : `nurea-wordmark-ivory/black` (le logo horizontal portait un monogramme cuivre),
+  variantes 640 px ajoutées et servies par `src/lib/images/loader.ts`.
+- **Jeu d'essai** : `/essai-extremes?jeu=extremes|0|1|193` (le dossier `_extremes` prévu n'est
+  pas routable sous Next). Relevé : cartes à hauteur 0 (anciennes classes), image cassée sans repli,
+  nom de 60 caractères sans coupure → T8.
+- **capture.mjs** : ses « gestes » (ouvrir une fiche, les filtres) échouent tant que le catalogue
+  n'est pas réécrit : normal jusqu'à T11.
+- **Dev depuis le worktree** : configuration `vitrine-dev` dans `.claude/launch.json` du dossier
+  principal (`npm --prefix <worktree> run dev`) ; sans `.env` dans le worktree, la vitrine montre
+  le catalogue de démonstration.
 
 ## Outils prêts
 
