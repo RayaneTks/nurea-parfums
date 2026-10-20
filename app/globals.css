@@ -345,6 +345,15 @@
     }
   }
 
+  /* Trois colonnes à 320 px (densité « petits visuels ») : ~4,5 rem. La
+     marque passe au pas `caption`, sinon « Versace » se coupe en deux. */
+  @container (max-width: 6rem) {
+    .card-brand {
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+  }
+
   /* ─── Appui — l'élément cède dès le contact ──────────────────────────── */
   .press {
     transition: transform var(--dur-1) var(--ease-out);

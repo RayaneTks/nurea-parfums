@@ -1,165 +1,115 @@
 "use client";
 
-import type { ChangeEvent, FC } from "react";
-import { Search, X } from "lucide-react";
+import type { FC } from "react";
+import { Columns2, Columns3, SlidersHorizontal, Square, type LucideIcon } from "lucide-react";
 import { categories, type Category } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import type { SortKey } from "./useCatalogFilters";
-
-const SEARCH_ID = "catalogue-recherche";
+import type { Density, SortKey } from "./useCatalogFilters";
 
 const SORT_OPTIONS: ReadonlyArray<{ value: SortKey; label: string }> = [
-  // L'ordre par défaut change à chaque visite (`discoveryOrder`) : « Ordre du catalogue » ne le disait plus.
-  { value: "default", label: "Sélection du moment" },
-  { value: "name", label: "Nom (A–Z)" },
-  { value: "brand", label: "Marque (A–Z)" },
+  // L'ordre par défaut change à chaque visite (`discoveryOrder`).
+  { value: "default", label: "Du moment" },
+  { value: "name", label: "Nom A–Z" },
+  { value: "brand", label: "Marque A–Z" },
 ];
 
-interface SortControlProps {
-  id: string;
-  sort: SortKey;
-  resultLabel: string;
-  onSortChange: (sort: SortKey) => void;
-  className?: string;
-}
+const DENSITIES: ReadonlyArray<{ value: Density; label: string; Icon: LucideIcon }> = [
+  { value: 1, label: "Grands visuels", Icon: Square },
+  { value: 2, label: "Visuels moyens", Icon: Columns2 },
+  { value: 3, label: "Petits visuels", Icon: Columns3 },
+];
 
-/**
- * Nombre de résultats et tri, côte à côte.
- *
- * Rendu deux fois par la section, jamais en même temps : dans la barre collante sur grand écran,
- * sous elle sur téléphone (`CatalogSection`). Sur téléphone il n'a pas sa place dans la barre :
- * il écrasait les onglets jusqu'à « TOUT VO », et la barre collante mangeait 150 px d'écran en
- * permanence. D'où l'`id` en paramètre — deux listes déroulantes ne partagent pas un identifiant.
- */
-export const SortControl: FC<SortControlProps> = ({ id, sort, resultLabel, onSortChange, className }) => (
-  <div className={cn("flex items-center gap-4", className)}>
-    <span className="nurea-caption whitespace-nowrap" aria-live="polite">
-      {resultLabel}
-    </span>
-    <label htmlFor={id} className="sr-only">
-      Trier le catalogue
-    </label>
-    <select
-      id={id}
-      value={sort}
-      onChange={(event) => onSortChange(event.target.value as SortKey)}
-      className="h-11 border border-nurea-border bg-nurea-surface px-3 text-sm text-nurea-text outline-none transition-colors duration-nurea ease-out focus:border-nurea-accent"
-    >
-      {SORT_OPTIONS.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  </div>
-);
+/* Puce (DESIGN.md : `--r-sm`) ; active = `--surface-2`. 44 px de haut, la cible tactile. */
+const CHIP =
+  "press inline-flex h-11 shrink-0 items-center gap-2 rounded-sm border border-line px-4 text-fg-2 transition-[background-color,color,transform] duration-dur-2 ease-soft mouse-hover:text-fg-1 aria-pressed:border-surface-2 aria-pressed:bg-surface-2 aria-pressed:text-fg-1 aria-selected:border-surface-2 aria-selected:bg-surface-2 aria-selected:text-fg-1";
 
 interface CatalogToolbarProps {
-  query: string;
   category: Category;
   sort: SortKey;
+  density: Density;
   resultLabel: string;
-  onQueryChange: (value: string) => void;
+  /** Marques cochées dans le panneau, pour le libellé du bouton. */
+  brandCount: number;
   onCategoryChange: (category: Category) => void;
   onSortChange: (sort: SortKey) => void;
+  onDensityChange: (density: Density) => void;
+  onOpenBrands: () => void;
 }
 
 /**
- * Recherche, catégories et tri — collés sous la barre de navigation.
- *
- * Le bloc reste visible pendant tout le défilement du catalogue. Il ne se
- * masque plus au défilement vers le bas : ce comportement demandait un
- * accumulateur de gestes, et faisait disparaître les filtres au moment précis
- * où l'on parcourt les résultats qu'ils produisent.
+ * Outils du catalogue, au-dessus de la grille, dans le flux : la barre haute est déjà collante,
+ * une seconde couche collante mangerait l'écran du téléphone. La recherche vit dans la barre haute
+ * (T5) : pas de second champ ici. Tout passe en retour à la ligne plutôt que de déborder à 320 px.
  */
 export const CatalogToolbar: FC<CatalogToolbarProps> = ({
-  query,
   category,
   sort,
+  density,
   resultLabel,
-  onQueryChange,
+  brandCount,
   onCategoryChange,
   onSortChange,
+  onDensityChange,
+  onOpenBrands,
 }) => (
-  <div className="sticky top-[calc(env(safe-area-inset-top,0px)+3.5rem)] z-30 -mx-6 border-b border-nurea-border bg-nurea-bg px-6 md:top-[calc(env(safe-area-inset-top,0px)+4.25rem)] md:-mx-18 md:px-18">
-    <div className="relative flex items-center border-b border-nurea-border">
-      <label htmlFor={SEARCH_ID} className="sr-only">
-        Rechercher une marque ou un parfum
-      </label>
-      <Search
-        size={18}
-        strokeWidth={1.5}
-        aria-hidden
-        className="pointer-events-none absolute left-0 text-nurea-subtle"
-      />
-      <input
-        id={SEARCH_ID}
-        type="search"
-        name="q"
-        value={query}
-        onChange={(event: ChangeEvent<HTMLInputElement>) =>
-          onQueryChange(event.target.value)
-        }
-        placeholder="Marque ou parfum…"
-        autoComplete="off"
-        enterKeyHint="search"
-        className="h-14 w-full border-0 bg-transparent pl-8 pr-12 text-base text-nurea-text outline-none placeholder:text-nurea-subtle"
-      />
-      {query !== "" && (
-        <button
-          type="button"
-          onClick={() => onQueryChange("")}
-          aria-label="Effacer la recherche"
-          className="absolute right-0 flex h-11 w-11 items-center justify-center text-nurea-subtle transition-colors duration-nurea ease-out hover:text-nurea-text"
-        >
-          <X size={18} strokeWidth={1.5} />
-        </button>
-      )}
+  <div className="flex flex-col gap-3">
+    <div className="flex flex-wrap items-center gap-2">
+      <div role="tablist" aria-label="Catégories" className="flex flex-wrap gap-2">
+        {categories.map((item) => (
+          <button
+            key={item}
+            type="button"
+            role="tab"
+            aria-selected={item === category}
+            onClick={() => onCategoryChange(item)}
+            className={CHIP}
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+      <button type="button" onClick={onOpenBrands} aria-pressed={brandCount > 0} className={cn(CHIP, "ml-auto")}>
+        <SlidersHorizontal size={18} strokeWidth={1.5} aria-hidden />
+        {brandCount > 0 ? `Marques · ${brandCount}` : "Marques"}
+      </button>
     </div>
 
-    <div className="flex items-center justify-between gap-x-6 py-2">
-      {/* Téléphone : les onglets ont toute la largeur, et leur bord droit s'efface pour dire qu'ils
-          défilent. `-mr-6` : la rangée va jusqu'au bord de l'écran, là où le pouce la pousse. */}
-      <div
-        role="tablist"
-        aria-label="Catégories"
-        className="no-scrollbar nurea-defilement -ml-3 -mr-6 flex min-w-0 flex-1 overflow-x-auto pr-6 md:-mr-3 md:pr-0"
-      >
-        {categories.map((item) => {
-          const active = item === category;
-          return (
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      <p className="t-caption" aria-live="polite">
+        {resultLabel}
+      </p>
+      <div className="flex items-center gap-2">
+        <label htmlFor="catalogue-tri" className="sr-only">
+          Trier le catalogue
+        </label>
+        <select
+          id="catalogue-tri"
+          value={sort}
+          onChange={(event) => onSortChange(event.target.value as SortKey)}
+          // 1rem : en dessous, iOS agrandit la page au focus.
+          className="t-body h-11 rounded-md border border-line bg-surface-1 px-3 text-fg-1 transition-[background-color] duration-dur-2 ease-soft mouse-hover:bg-surface-2"
+        >
+          {SORT_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <div role="group" aria-label="Taille des visuels" className="flex">
+          {DENSITIES.map(({ value, label, Icon }) => (
             <button
-              key={item}
+              key={value}
               type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => onCategoryChange(item)}
-              className={cn(
-                "nurea-label relative shrink-0 px-3 py-4 transition-colors duration-nurea ease-out",
-                active
-                  ? "text-nurea-accent"
-                  : "text-nurea-subtle hover:text-nurea-text"
-              )}
+              aria-label={label}
+              aria-pressed={density === value}
+              onClick={() => onDensityChange(value)}
+              className="press flex h-11 w-11 items-center justify-center rounded-md text-fg-3 transition-[background-color,color,transform] duration-dur-2 ease-soft mouse-hover:text-fg-1 aria-pressed:bg-surface-2 aria-pressed:text-fg-1"
             >
-              {item}
-              {active && (
-                <span
-                  aria-hidden
-                  className="absolute inset-x-3 bottom-0 h-px bg-nurea-accent"
-                />
-              )}
+              <Icon size={18} strokeWidth={1.5} aria-hidden />
             </button>
-          );
-        })}
+          ))}
+        </div>
       </div>
-
-      <SortControl
-        id="catalogue-tri"
-        sort={sort}
-        resultLabel={resultLabel}
-        onSortChange={onSortChange}
-        className="hidden shrink-0 md:flex"
-      />
     </div>
   </div>
 );
