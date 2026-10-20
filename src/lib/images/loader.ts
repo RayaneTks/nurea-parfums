@@ -16,11 +16,6 @@ type Variant = { width: number; src: string };
 
 /** Largeurs disponibles des visuels fixes, de la plus petite à la plus grande (l'original clôt la liste). */
 const LOCAL_VARIANTS: Readonly<Record<string, readonly Variant[]>> = {
-  "/branding/visuel-hero.webp": [
-    { width: 750, src: "/branding/visuel-hero-750.webp" },
-    { width: 1280, src: "/branding/visuel-hero-1280.webp" },
-    { width: 1920, src: "/branding/visuel-hero-1920.webp" },
-  ],
   // Le logotype s'affiche sur ~130 px : `next/image` demande 256 (1x) puis 640 (2x et plus).
   "/branding/logos/nurea-wordmark-ivory.webp": [
     { width: 640, src: "/branding/logos/nurea-wordmark-ivory-640.webp" },

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Hero } from "@/components/features/Hero";
 import { FeaturedSection } from "@/components/features/FeaturedSection";
+import { BrandIndex, topBrands } from "@/components/features/BrandIndex";
 import { CatalogSection } from "@/components/home/CatalogSection";
 import { CatalogSkeleton } from "@/components/features/PerfumeCardSkeleton";
 import { getCachedCatalogue } from "@/lib/catalogue-service";
@@ -52,12 +53,16 @@ export default async function HomePage() {
   const featured = perfumes.filter((p) => p.isFeatured).slice(0, MAX_FEATURED);
   // Nouvel ordre à chaque visite, marques variées en tête — tiré ici, côté serveur (`discoveryOrder`).
   const catalogue = discoveryOrder(perfumes);
+  // Compteurs de l'ouverture et index des marques : comptés ici, sur le catalogue publié, rien d'autre.
+  const brandCount = new Set(perfumes.map((p) => p.brandSlug ?? p.brand)).size;
 
   return (
     <>
-      <Hero />
+      <Hero perfumeCount={perfumes.length} brandCount={brandCount} />
 
       {featured.length > 0 && <FeaturedSection perfumes={featured} />}
+
+      <BrandIndex brands={topBrands(perfumes)} />
 
       {/* `CatalogSection` lit les filtres dans l'URL : sans cette frontière,
           la page entière basculerait en rendu client. */}

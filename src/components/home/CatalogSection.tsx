@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { PerfumeCard } from "@/components/features/PerfumeCard";
 import { PerfumeSheet } from "@/components/features/PerfumeSheet";
+import { OPEN_PERFUME_EVENT, takePendingPerfume } from "@/components/features/FeaturedSection";
 import { buttonClass } from "@/components/ui/Button";
 import { OPEN_CATALOG_FILTERS_EVENT, OPEN_SELECTION_EVENT, QUERY_SYNC_EVENT, SEARCH_EVENT } from "@/components/layout/Navbar";
 import { SelectionSheet } from "@/components/features/SelectionSheet";
@@ -266,6 +267,22 @@ export const CatalogSection = ({
   );
   const openPerfume = (perfume: Perfume) => update({ parfum: String(perfume.id) });
 
+  /* Les bandeaux de l'accueil demandent une fiche par événement ; l'annuler leur dit « pris ».
+     Une demande faite avant ce montage (tap pendant l'hydratation) est reprise ici. */
+  useEffect(() => {
+    const known = (id: number | null): id is number => id != null && catalogPerfumes.some((perfume) => perfume.id === id);
+    const early = takePendingPerfume();
+    if (known(early)) update({ parfum: String(early) });
+    const open = (event: Event) => {
+      const id = (event as CustomEvent<number>).detail;
+      if (!known(id)) return;
+      event.preventDefault();
+      update({ parfum: String(id) });
+    };
+    window.addEventListener(OPEN_PERFUME_EVENT, open);
+    return () => window.removeEventListener(OPEN_PERFUME_EVENT, open);
+  }, [catalogPerfumes, update]);
+
   const applyBrandFilter = useCallback(
     (slugs: Set<string>) => {
       update({ brandSlugs: slugs, brandSlug: "", category: "Tout voir" });
@@ -305,12 +322,11 @@ export const CatalogSection = ({
         />
       )}
 
-      <section id="collection" aria-labelledby="catalogue-titre" className="page-x flex scroll-mt-32 flex-col gap-6 pb-16 md:scroll-mt-20">
-        <header className="flex flex-col gap-3 pt-12">
-          <h2 id="catalogue-titre" className="t-title">Le catalogue</h2>
-          <p className="t-body t-measure">
-            Notre sélection des plus grandes marques, pour homme et pour femme. Les prix se donnent
-            en direct : écrivez-nous sur Snapchat pour commander.
+      <section id="collection" aria-labelledby="catalogue-titre" className="page-x mt-[var(--space-section)] flex scroll-mt-32 flex-col gap-6 pb-16 md:scroll-mt-20">
+        <header className="flex items-baseline justify-between gap-4">
+          <h2 id="catalogue-titre" className="t-title">Catalogue</h2>
+          <p className="t-caption">
+            {catalogPerfumes.length} parfum{catalogPerfumes.length > 1 ? "s" : ""}
           </p>
         </header>
 
@@ -378,12 +394,15 @@ export const CatalogSection = ({
           <>
             <ul className={`grid gap-3 md:gap-4 ${GRID[filters.density]}`}>
               {visible.map((perfume, index) => (
-                <li key={perfume.id} data-index={index} className="flex min-w-0">
+                /* Une carte loin de l'écran n'est ni dessinée ni chargée (`content-visibility`) : sous
+                   réseau lent, Chrome demandait les premières cartes, deux écrans plus bas, en même
+                   temps que le visuel du bandeau d'accueil (l'élément LCP). Hauteur réservée en
+                   attendant, puis la vraie, retenue (`auto`). */
+                <li key={perfume.id} data-index={index} className="flex min-w-0 [content-visibility:auto] [contain-intrinsic-block-size:auto_22rem]">
                   <PerfumeCard
                     perfume={perfume}
                     onOpen={openPerfume}
                     sizes={SIZES[filters.density]}
-                    imagePriority={index === 0}
                   />
                 </li>
               ))}

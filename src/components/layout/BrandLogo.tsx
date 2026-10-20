@@ -1,5 +1,6 @@
 import type { FC } from "react";
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
+import { preload } from "react-dom";
 import { cn } from "@/lib/utils";
 import { SITE_NAME } from "@/lib/site";
 
@@ -24,22 +25,38 @@ const HEIGHT = 24;
  * posée sur `<html>` montre la variante noire — sans JavaScript, la page reste
  * sombre et garde un logo lisible.
  */
-export const BrandLogo: FC<BrandLogoProps> = ({ className, priority = false }) => (
+const IVORY = "/branding/logos/nurea-wordmark-ivory.webp";
+const BLACK = "/branding/logos/nurea-wordmark-black.webp";
+
+/**
+ * `priority` : chaque variante est annoncée pour le seul thème du système, sans priorité haute.
+ * Préchargé d'office, l'ivoire partait aussi en thème clair et disputait le débit au visuel du
+ * premier bandeau de l'accueil (l'élément LCP). Les deux images restent paresseuses : React
+ * n'en précharge aucune de lui-même.
+ */
+export const BrandLogo: FC<BrandLogoProps> = ({ className, priority = false }) => {
+  if (priority) {
+    for (const [src, media] of [[IVORY, "(prefers-color-scheme: dark)"], [BLACK, "(prefers-color-scheme: light)"]] as const) {
+      const { props } = getImageProps({ src, alt: "", width: WIDTH, height: HEIGHT });
+      preload(props.src, { as: "image", imageSrcSet: props.srcSet, media });
+    }
+  }
+  return (
   <>
     <Image
-      src="/branding/logos/nurea-wordmark-ivory.webp"
+      src={IVORY}
       alt={SITE_NAME}
       width={WIDTH}
       height={HEIGHT}
-      priority={priority}
       className={cn("block w-auto [.light_&]:hidden", className)}
     />
     <Image
-      src="/branding/logos/nurea-wordmark-black.webp"
+      src={BLACK}
       alt={SITE_NAME}
       width={WIDTH}
       height={HEIGHT}
       className={cn("hidden w-auto [.light_&]:block", className)}
     />
   </>
-);
+  );
+};
