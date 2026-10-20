@@ -13,7 +13,9 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 |---|---|---|
 | 01 | [`01-INVARIANTS.md`](01-INVARIANTS.md) | Ce qui ne change pas : métier, mentions légales, référencement, technique, filets de tests |
 | 02 | [`02-PLAYBOOK.md`](02-PLAYBOOK.md) | Le savoir-faire à appliquer (typo, couleur, espace, mouvement, interaction, images, rédaction), la méthode en 7 phases et leurs portes de qualité |
-| 03 | [`03-DA.md`](03-DA.md) | Constat de l'existant, trois directions, recommandation, fonctions signature, risques, critères d'acceptation, décisions à prendre |
+| 03 | [`03-DA.md`](03-DA.md) | Constat de l'existant, trois directions, recommandation, fonctions signature, risques, critères d'acceptation, **décisions prises (§ 7)** |
+| 04 | [`04-PLAN-EXECUTION.md`](04-PLAN-EXECUTION.md) | **Le plan que l'exécutant suit** : décisions verrouillées, DA chiffrée (palette OKLCH, ambiance, typo, échelles, verre, mouvement, états), fichiers, 23 tâches, 4 points de contrôle, 10 sessions, risques, « terminé » |
+| — | [`PROMPT-OPUS.md`](PROMPT-OPUS.md) | Prompt autonome à coller dans une session vide Opus 5.5 (effort medium) pour exécuter, tâche par tâche |
 | — | [`annexes/benchmark-da.md`](annexes/benchmark-da.md) | 14 sites mesurés, 10 principes, manifeste anti-« IA générique » de 20 points, 12 interactions |
 | — | [`annexes/recherche-skills.md`](annexes/recherche-skills.md) | Skills et outils examinés ; ce qui est écarté et pourquoi |
 
@@ -22,8 +24,14 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 | Phase | État |
 |---|---|
 | Préparation (recherche, invariants, playbook, photo « avant », garde-fou anti-slop) | **faite** |
-| 0. Décider (DA sur planche, thème, polices, vocabulaire) | à faire — décisions en `03-DA.md` § 7 |
-| 1 → 6 | à faire (`02-PLAYBOOK.md` § 11) |
+| Cadrage (décisions du gérant, DA chiffrée, plan, passation) — Fable, 20/10/2026 | **fait** — `03-DA.md` § 7, `04-PLAN-EXECUTION.md`, `PROMPT-OPUS.md` |
+| 0. Décider : **T1 planche** (3 couples typo × 2 thèmes, 6 parfums, ambiance) → point de contrôle 1, puis T2 docs | à faire — prochaine tâche : **T1** (session S1, `PROMPT-OPUS.md`) |
+| 1 → 6 (T3 → T23, sessions S2 → S10) | à faire (`04-PLAN-EXECUTION.md` § D et § F) |
+
+Décisions du 20/10 : direction **A+C « Nuancier nocturne »** ; **clair + sombre** ; **rien** de la
+charte v3 n'est repris (seuls les logos/monogrammes, ivoire sur sombre, noir sur clair) ; vocabulaire
+Marque · Parfum · Ligne · Contenance · Catalogue ; « Ma sélection » et sélecteur 10/50/80 retenus,
+refusables au point de contrôle 1.
 
 ## Outils prêts
 
@@ -33,26 +41,13 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 - 24 skills versionnés (`.agents/skills/`, texte seulement) et la table « quel skill pour quelle tâche » dans `AGENTS.md`. Provenance et versions : `.agents/skills/PROVENANCE.md`.
 - Carte du code : `graphify query "<question>" --graph C:/Users/User/Desktop/nurea-parfums/graphify-out/graph.json`.
 
-## Reprise : phase 0, pas à pas
+## Reprise : exécution
 
-**Réglages de la session.** Session **vide** (le contexte de la préparation pesait 700 000 jetons :
-tout est ici, pas besoin de le relire). Modèle Fable 5.1, effort `high` (`xhigh` seulement si la
-planche déçoit). **Aucun sous-agent en parallèle**, `graphify` avant tout fichier. Le gérant est sur
-un forfait à budget limité : vérifier `get_usage` (fenêtre de 5 h) avant un gros chantier et dire
-la consommation à la fin.
-
-1. Lire 01, 02, 03 dans l'ordre (pas les annexes, sauf besoin ponctuel).
-2. Faire trancher au gérant les 3 décisions de `03-DA.md` § 7 : thème, logo/monogramme,
-   « Ma sélection » + sélecteur de contenance.
-3. Construire **une** page HTML autonome `.tmp/refonte-vitrine/planche/index.html` : même grille de
-   6 parfums réels (données du catalogue public ou de `src/lib/catalog/demo-catalogue.json`) et même
-   fiche, dans les directions retenues, avec trois couples typographiques. Les fichiers de polices à
-   télécharger passent par un accord explicite du gérant (nom, source, taille).
-4. Calculer la couleur d'ambiance des visuels réels (script jetable avec `sharp`, sortie JSON,
-   contraste vérifié) et la montrer sur la planche.
-5. La montrer **sur téléphone** (aperçu Vercel d'une branche, ou fichier ouvert directement).
-6. Après choix seulement : réécrire `DESIGN.md`, `.impeccable.md`, `PRODUCT.md`,
-   `docs/charte-graphique.html`, puis passer à la phase 1.
+Session **vide**, `/model opus 5.5`, effort `medium` (`high` pour T1, T8, T12) : coller
+`PROMPT-OPUS.md` en remplaçant `<TÂCHE>` par la prochaine tâche de la table ci-dessus. Une phase par
+session, un commit par tâche, `get_usage` au début et à la fin. Les polices à télécharger passent par
+un accord explicite du gérant (nom, source, taille). Un « non » de goût à un point de contrôle
+renvoie vers une session **Fable** (effort `high`) qui amende `04-PLAN-EXECUTION.md` § B.
 
 ## À ne pas perdre (hors refonte)
 
@@ -66,4 +61,4 @@ la consommation à la fin.
 ## Règle d'or
 
 Le document amont avant le code. Tant que `DESIGN.md` décrit la charte v3, il est **faux** pour la
-refonte : le réécrire est le premier geste de la phase 0, pas le dernier.
+refonte : le réécrire (T2) est le premier geste après la planche validée (T1), jamais avant.
