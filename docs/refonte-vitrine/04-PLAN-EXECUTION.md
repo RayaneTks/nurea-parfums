@@ -19,7 +19,9 @@ document. `02-PLAYBOOK.md` et `03-DA.md` seulement sur un point précis (ils son
 | Héritage v3 | **Rien.** Aucun jeton, classe, composant, police, règle d'aspect repris. `app/globals.css`, `src/design/brand.ts`, `src/design/fonts.ts`, `src/components/**` sont **réécrits**, pas retouchés | gérant |
 | Actifs de marque | Logos et monogrammes de `public/branding/` conservés, proportions intactes : **ivoire sur sombre, noir sur clair**. Variantes cuivre et bordeaux inutilisées | gérant (« tu as nos logos ») |
 | Vocabulaire | Marque · Parfum · Ligne · Contenance · Catalogue. Jamais Maison, Galerie, Sillage. Boutons verbe + objet (« Commander sur Snapchat », « Écrire à Nuréa ») | Fable |
-| Fonctions neuves | **« Ma sélection »** et **sélecteur 10 / 50 / 80 ml** retenus ; refusables par le gérant au point de contrôle 1 | Fable |
+| Fonctions neuves | **« Ma sélection »** retenue. **Aucune contenance (ml) affichée nulle part** : ni sélecteur, ni « 10 · 50 · 80 ml » en carte, ni dans un texte, ni dans le message Snapchat. Le site reste un catalogue de ce qui est disponible ; le volume se discute sur Snapchat | gérant, PC 1 (20/10) |
+| Polices | **C1 : Fraunces + Figtree** | gérant, PC 1 (20/10) |
+| Accueil | Une **vraie page d'accueil** : section d'ouverture (hero) puis sections ; la planche T1 n'était qu'une maquette de la grille et de la fiche | gérant, PC 1 (20/10) |
 | Données | Aucune famille olfactive, note, avis, rareté. Une ligne sans donnée vraie est omise | gérant (règle existante) |
 | Photos | Visuels actuels conservés ; 64 fiches sans variante claire montrent le visuel sombre dans les deux thèmes | gérant |
 | Périmètre | `app/(shop)`, `src/components`, `app/globals.css`, `src/design/{brand,fonts}.ts`, `app/not-found.tsx`, images OG, docs vitrine. **Rien** dans `app/admin`, `src/features`, `src/ui`, `src/app-shell`, `src/server` (sauf T7 : lecture d'une colonne) | `01-INVARIANTS.md` |
@@ -108,7 +110,7 @@ jamais deux sans proches, jamais de monospace. Budget total **≤ 120 Ko** (woff
 `latin` + `latin-ext` si « Œ » l'exige) ; mesuré au build (`.next/static/media`), sinon on passe à
 des instances statiques (2 graisses).
 
-Trois couples candidats, **montrés sur la planche T1**, le gérant choisit :
+Trois couples candidats, **montrés sur la planche T1**. **Retenu au PC 1 (20/10) : C1, Fraunces + Figtree** ; C2 et C3 sont abandonnés (T4 n'installe que C1) :
 
 | Couple | Titres et noms de parfum | Texte et interface | Pourquoi |
 |---|---|---|---|
@@ -117,7 +119,7 @@ Trois couples candidats, **montrés sur la planche T1**, le gérant choisit :
 | **C3** | **Literata** (variable : `opsz` 7–72, `wght` 200–900) | **Hanken Grotesk** (variable `wght` 100–900) | Serif de lecture, chaleureux ; grotesque sobre pour l'UI. Le choix le plus sûr |
 
 Critères de choix sur téléphone (390 px, les deux thèmes) : (1) le nom d'un parfum long (« Hibiscus
-Mahajád », « La Collection Privée ») tient sur deux lignes sans césure ; (2) « 50 ml » et « 80 ml »
+Mahajád », « La Collection Privée ») tient sur deux lignes sans césure ; (2) les chiffres (compteurs)
 s'alignent (chiffres tabulaires) ; (3) le texte courant à 1 rem reste lisible en `--text-2` sur
 `--surface-1` ; (4) le titre à 3 rem ne « bave » pas en thème sombre. Choix noté dans `DESIGN.md`.
 
@@ -136,7 +138,7 @@ Réglages (`globals.css`, règles de rôle, pas de taille arbitraire) :
 Rapports : caption→body 1,33 ; body→subtitle 1,31 ; body→title 1,75 → 2,5 ; body→display 3 → 5.
 `text-wrap: balance` sur `display`/`title`, `pretty` sur `body` ; `font-variant-numeric:
 tabular-nums` sur tout ce qui s'aligne ; `hyphens: auto` + `lang="fr"` ; mesure ≤ 65 ch ;
-espaces insécables dans « 50 ml », « Nuréa Parfums ». Repli métrique (`adjustFontFallback`, défaut
+espace insécable dans « Nuréa Parfums ». Repli métrique (`adjustFontFallback`, défaut
 de `next/font`) obligatoire.
 
 ### B.5 Échelles
@@ -215,13 +217,12 @@ souligné au survol. **Un seul bouton primaire par écran.** Cibles ≥ 44 px (z
 ### B.9 Composants signature (spécification courte, détail dans la tâche)
 
 - **Carte parfum** : visuel 2:3 (`--r-md`), puis marque en `body` `--text-2` (« Marque · Ligne »),
-  nom en `subtitle` `--text-1`, contenances « 10 · 50 · 80 ml » en `caption` `--text-3`. Cœur
+  nom en `subtitle` `--text-1`. **Aucune contenance.** Cœur
   « Ma sélection » 44 px en haut à droite du visuel, cerclé `--surface-1` à 80 %. Pressée : fond
   = ambiance. Jamais de prix.
 - **Fiche** : feuille depuis le bas (`--r-xl`), poignée 36 × 4 px, fond ambiance, visuel 2:3 plein
-  largeur, marque / nom / contenance, sélecteur de contenance (3 pastilles, 80 présélectionné),
-  mention `MENTION_FLACONS`, barre basse en verre avec « Commander sur Snapchat » (copie « *Nom*,
-  50 ml ») ; précédent/suivant par glissé horizontal ; URL `?parfum=<id>` sur l'accueil, page
+  largeur, marque / nom (**aucune contenance, aucun sélecteur**),
+  mention `MENTION_FLACONS`, barre basse en verre avec « Commander sur Snapchat » (copie « *Nom* (*Marque*) ») ; précédent/suivant par glissé horizontal ; URL `?parfum=<id>` sur l'accueil, page
   indexable `/parfums/<marque>/<nom>-<id>` au même contenu.
 - **Recherche** : champ permanent dans la barre haute, résultats dès 2 caractères, état vide =
   « Vous cherchez *X* ? Écrivez-nous » avec message pré-rempli ; jamais « aucun résultat ».
@@ -317,7 +318,7 @@ Modèle : Opus 5.5 ; effort `medium` sauf mention. `PC` = point de contrôle gé
 ### Phase 3 — fiche et pages du catalogue
 
 **T12 — Fiche en feuille** · L · Opus **high** · PC 3
-- Fichiers : `PerfumeDialog.tsx` → `PerfumeSheet.tsx` (feuille `useSheetMotion`, fond ambiance, sélecteur 10/50/80, précédent/suivant au glissé, `?parfum=<id>`), `SnapchatOrderButton.tsx` (barre basse en verre, copie « *Nom*, 50 ml », succès 1 600 ms), `OrderChannels.tsx`, `ChannelSoon.tsx` (WhatsApp « bientôt », jamais cliquable).
+- Fichiers : `PerfumeDialog.tsx` → `PerfumeSheet.tsx` (feuille `useSheetMotion`, fond ambiance, précédent/suivant au glissé, `?parfum=<id>`), `SnapchatOrderButton.tsx` (barre basse en verre, copie « *Nom* (*Marque*) », succès 1 600 ms), `OrderChannels.tsx`, `ChannelSoon.tsx` (WhatsApp « bientôt », jamais cliquable).
 - Acceptation : depuis une fiche, message prêt en **2 taps** (compteur `e2e/helpers/tap.ts`) ; fermeture au glissé rapide (> 0,11 px/ms) et au bouton et à Échap ; focus rendu au déclencheur ; `prefers-reduced-motion` : apparition en fondu ; `npm test`.
 
 **T13 — Ma sélection** · M · Opus medium
@@ -332,7 +333,7 @@ Modèle : Opus 5.5 ; effort `medium` sauf mention. `PC` = point de contrôle gé
 
 **T15 — Accueil : composition** · M · Opus medium
 - Fichiers : `Hero.tsx`, `FeaturedSection.tsx`, `app/(shop)/page.tsx`.
-- Spécification : pas de héros « phrase + deux boutons + photo assombrie ». L'accueil **est** le catalogue : H1 « Nuréa Parfums, Marseille » en `display`, une ligne de `body`, la recherche, puis la grille ; les 2 parfums mis en avant forment la première rangée en 1 colonne (visuel plein cadre), rupture de grille **une** fois.
+- Spécification : **une vraie page d'accueil** (demande du gérant au PC 1) : section d'ouverture (hero) qui porte le H1 « Nuréa Parfums, Marseille », puis sections (les 2 parfums mis en avant, la recherche, le catalogue). Interdit : le gabarit « grande phrase + deux boutons + photo assombrie ». La composition se dessine d'abord sur une **planche d'accueil** (HTML autonome sur la branche `refonte/planche`, même méthode que T1, vrais visuels) montrée au gérant **avant** le code ; une question de goût sur cette composition → session Fable.
 - Acceptation : H1 unique portant « Nuréa Parfums » et « Marseille » ; aucune modale ni bannière à l'arrivée ; depuis l'accueil, message Snapchat en **4 taps**.
 
 **T16 — La parfumerie, Contact, Légal, 404** · M · Opus medium
@@ -376,7 +377,7 @@ Modèle : Opus 5.5 ; effort `medium` sauf mention. `PC` = point de contrôle gé
 |---|---|---|---|
 | **1** | T1 | Planche sur son téléphone : 3 couples × 2 thèmes, 6 parfums, fiche, ambiance, verre et repli | « On part là-dessus, avec ce couple de polices ? Ma sélection et le sélecteur : on garde ? » |
 | **2** | T9 | Accueil réel (aperçu Vercel de la branche) : barre, grille, cartes, pagination, les 193 pastilles d'ambiance | « La page d'accueil sur ton téléphone te plaît ? Les teintes sont justes ? » |
-| **3** | T12 | Fiche en feuille, sélecteur, Snapchat en 2 taps | « La fiche et le geste de commande sont bons ? » |
+| **3** | T12 | Fiche en feuille, Snapchat en 2 taps | « La fiche et le geste de commande sont bons ? » |
 | **4** | T22 | Site complet depuis Snapchat, captures avant/après | « On met en ligne ? » |
 
 **Règle de retour.** Une réponse « non » se classe en deux :
@@ -441,6 +442,7 @@ l'état dans `00-LISEZ-MOI.md`, et la suivante reprend.
 - `tests/architecture/anti-slop.test.ts` vert, ≤ 3 dérogations motivées ; `backdrop-filter` ≤ 2.
 - Fiche → message Snapchat en 2 taps ; accueil → 4 taps ; « Ma sélection » → un message pour N.
 - Recherche d'un parfum absent → invitation à écrire, jamais « aucun résultat ».
+- **Aucune contenance (ml) affichée** sur la vitrine (`grep -rn " ml" app/\(shop\) src/components` sans résultat visible).
 - Aucune modale, bannière ou fenêtre à l'arrivée.
 - URLs, canoniques, sitemap, 308, JSON-LD, mentions légales : identiques (`01-INVARIANTS.md`).
 - Deux thèmes complets, 193 fiches visibles dans chacun ; logos ivoire/noir, proportions intactes.

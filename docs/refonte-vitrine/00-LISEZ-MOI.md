@@ -25,7 +25,7 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 |---|---|
 | Préparation (recherche, invariants, playbook, photo « avant », garde-fou anti-slop) | **faite** |
 | Cadrage (décisions du gérant, DA chiffrée, plan, passation) — Fable, 20/10/2026 | **fait** — `03-DA.md` § 7, `04-PLAN-EXECUTION.md`, `PROMPT-OPUS.md` |
-| 0. Décider : **T1 planche** (3 couples typo × 2 thèmes, 6 parfums, ambiance) → point de contrôle 1, puis T2 docs | **T1 faite** le 20/10 (branche `refonte/planche`, page `/planche/index.html` de l'aperçu Vercel) — **attente du point de contrôle 1** (choix du couple de polices, oui/non sur la direction, Ma sélection et sélecteur). Ensuite : T2. Note pour T4 : Bricolage pèse 128 Ko seule (budget 120) |
+| 0. Décider : **T1 planche** (3 couples typo × 2 thèmes, 6 parfums, ambiance) → point de contrôle 1, puis T2 docs | **T1 faite, point de contrôle 1 passé** le 20/10 : direction validée, polices **Fraunces + Figtree**, **aucune contenance affichée**, vraie page d'accueil à venir (T15, sur planche). **Prochaine tâche : T2** (documents amont), session S2 |
 | 1 → 6 (T3 → T23, sessions S2 → S10) | à faire (`04-PLAN-EXECUTION.md` § D et § F) |
 
 Décisions du 20/10 : direction **A+C « Nuancier nocturne »** ; **clair + sombre** ; **rien** de la
