@@ -126,6 +126,9 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 20/10 | refonte | **Ambiance écrite en production** : `ambiance.mjs --apply`, 233 fiches publiées, 199 avec couleur, 34 en repli (recompté en base). Journal des anciennes valeurs : `.tmp/refonte-vitrine/ambiance-journal-2026-10-20T20-23-19-078Z.json` (worktree refonte). Visuels : chaque fournée finit par `--ids … --apply` (§ 4.2). |
+| 20/10 | refonte | **Migration `20261020120000_perfume_ambient` en production** (`8ba4e33`, seule sur `main`) : colonnes `ambientHue`/`ambientChroma`, CHECK `perfume_ambient_ck`. Rien ne les lit encore sur `main`. Aucune autre migration attendue d'ici T23 (§ 4.3). |
+| 20/10 | refonte | Correctif carte sur `refonte/vitrine` (`b0b54da`) : nom et marque coupés entre les mots, plus « Seduc-tion ». |
 | 20/10 | refonte | **T11 faite** (`2b8cc4e`) : feuille « Marques » neuve, bouton « Voir N parfums » à jour avant validation, une puce par marque ; `e2e/catalog-filters.spec.ts` réécrit, 8/8. Reste avant T12 : migration d'ambiance seule sur `main` puis `--apply`, sur « oui » du gérant. |
 | 20/10 | refonte | **T10 faite** (`5f79c5c`) : recherche en direct depuis la barre haute (accueil), état vide « Vous cherchez *X* de *Y* ? Écrivez-nous » avec contact pré-rempli, plus jamais « aucun résultat » ; `PerfumeLinkCard` au dessin neuf. |
 | 20/10 | visuels | Page du graphiste déplacée de l'artefact Claude (refusé au partage public : trop d'images intégrées) vers le site : `public/graphiste-k7q2m9xw4t.html` (noindex, adresse cachée), 984 images dans `catalog/designer/NNN.webp`. Maj = `node scripts/visuels/page.mjs` puis copie dans `public/` + push `main`. Ne pas supprimer `designer/`. |
