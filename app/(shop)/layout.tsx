@@ -18,7 +18,10 @@ import { THEME_COLOR } from "@/design/brand";
 import { brandFontClassName } from "@/design/fonts";
 
 export const viewport: Viewport = {
-  themeColor: THEME_COLOR,
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: THEME_COLOR.dark },
+    { media: "(prefers-color-scheme: light)", color: THEME_COLOR.light },
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,

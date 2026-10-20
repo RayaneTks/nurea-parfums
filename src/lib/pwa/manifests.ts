@@ -1,7 +1,9 @@
 import type { MetadataRoute } from "next";
+import { THEME_COLOR } from "@/design/brand";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_SHORT_NAME, SITE_URL } from "@/lib/site";
 
-const publicTheme = "#0A0508";
+/** Fond sombre de la vitrine — le thème par défaut quand le système ne dit rien. */
+const publicTheme = THEME_COLOR.dark;
 /** Bordeaux de marque — écran de lancement et icônes. */
 const adminBrand = "#7B0B1D";
 /**

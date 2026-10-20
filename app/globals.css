@@ -3,742 +3,301 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   NURÉA PARFUMS — Vitrine
-   Charte graphique v3. Source des valeurs : `src/design/brand.ts`.
+   NURÉA PARFUMS — Vitrine · DA « Nuancier nocturne » (20/10/2026)
 
-   Trois règles structurent tout ce fichier :
-     · Angles 0. Aucun arrondi, nulle part.
-     · Ombres : aucune. On sépare au filet 1 px, jamais à la carte flottante.
-     · Transition 160 ms ease-out sur la couleur seule. Jamais de déplacement
-       ni d'agrandissement au survol.
+   Référence lisible : `DESIGN.md`. Valeurs chiffrées : `docs/refonte-vitrine/
+   04-PLAN-EXECUTION.md` § B. Les hex des deux thèmes sont recopiés dans
+   `src/design/brand.ts` pour ce qui ne lit pas de CSS (OG, manifeste, themeColor).
+
+   Deux couches de jetons :
+     · primitifs `--n-*` — les valeurs, déclarées une fois ;
+     · sémantiques (`--bg`, `--text-1`…) — les rôles. Un thème ne redéfinit que
+       ceux-ci.
+   Thèmes : `:root` / `.dark` (sombre, repli si le système ne dit rien) et
+   `.light`. La classe est posée sur <html> par next-themes.
 
    Le registre gestion a sa propre feuille : `src/design/globals.admin.css`.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @layer base {
-  /* ─── Sombre — thème de référence de la charte ─────────────────────────
-     Les teintes sont déclarées en canaux RVB : Tailwind peut ainsi leur
-     appliquer un modificateur d'opacité (`bg-nurea-bg/80`), et les valeurs
-     translucides se *dérivent* de la teinte source au lieu d'être recopiées.
-     Le filet, par exemple, est littéralement « le cuivre à 16 % ». */
+  /* ─── Primitifs ─────────────────────────────────────────────────────────
+     Neutres chauds teintés (teinte 20 → 70). Aucune autre couleur n'existe. */
   :root {
-    /* Marque */
-    --nurea-bg-rgb: 10 5 8; /* noir     — fond de tout */
-    --nurea-text-rgb: 253 248 244; /* ivoire   — 19,2:1 sur noir */
-    --nurea-accent-rgb: 196 149 106; /* cuivre   — 7,6:1 sur noir */
-    --nurea-bordeaux-rgb: 123 11 29; /* bordeaux — sceau, cachet */
+    /* Nuit — fonds du thème sombre */
+    --n-night-16: oklch(0.16 0.012 20); /* #120B0B */
+    --n-night-21: oklch(0.21 0.012 20); /* #1E1616 */
+    --n-night-26: oklch(0.26 0.012 20); /* #2A2222 */
+    --n-night-34: oklch(0.34 0.012 20); /* #3E3635 */
+    /* Brume — textes du thème sombre */
+    --n-mist-95: oklch(0.95 0.008 60); /* #F3EDE9 */
+    --n-mist-78: oklch(0.78 0.012 50); /* #BEB5B1 */
+    --n-mist-66: oklch(0.66 0.014 40); /* #9A908C */
+    /* Jour — fonds du thème clair */
+    --n-day-975: oklch(0.975 0.006 70); /* #F9F6F2 */
+    --n-day-945: oklch(0.945 0.008 70); /* #F0ECE7 */
+    --n-day-91: oklch(0.91 0.01 65); /* #E6E0DB */
+    --n-day-84: oklch(0.84 0.012 60); /* #D1C9C3 */
+    /* Encre — textes du thème clair */
+    --n-ink-22: oklch(0.22 0.012 20); /* #201818 */
+    --n-ink-42: oklch(0.42 0.014 20); /* #554A4A */
+    --n-ink-48: oklch(0.48 0.014 20); /* ≈ #655A5A */
+    /* Erreur — formulaires seulement */
+    --n-red-74: oklch(0.74 0.13 20); /* #F28788 */
+    --n-red-50: oklch(0.5 0.16 20); /* #AC2F3B */
+  }
 
-    /* Teintes de support — écran uniquement */
-    --nurea-surface-rgb: 20 14 18;
-    --nurea-surface-hover-rgb: 28 20 24;
-    --nurea-text-muted-rgb: 228 210 218; /* 14,0:1 */
-    --nurea-text-subtle-rgb: 180 159 171; /* 8,2:1  */
-    --nurea-text-disabled-rgb: 110 90 100;
-    --nurea-alert-rgb: 216 128 128; /* erreurs seules, jamais un accent */
-
-    /* Interaction */
-    --nurea-accent-hover-rgb: 212 170 132;
-    /* Texte porté par un aplat d'accent. */
-    --nurea-on-accent-rgb: 10 5 8;
-
+  /* ─── Sémantiques : sombre ──────────────────────────────────────────── */
+  :root,
+  .dark {
     color-scheme: dark;
+    --bg: var(--n-night-16);
+    --surface-1: var(--n-night-21);
+    --surface-2: var(--n-night-26);
+    --line: var(--n-night-34); /* 1,65:1 — décoratif */
+    --text-1: var(--n-mist-95); /* 16,8:1 bg · 13,4:1 surface-2 */
+    --text-2: var(--n-mist-78); /* 9,7:1 bg · 7,7:1 surface-2 */
+    --text-3: var(--n-mist-66); /* 6,3:1 bg · 5,0:1 surface-2 */
+    --error: var(--n-red-74); /* 8,0:1 bg */
+    --focus: var(--text-1);
+    --on-primary: var(--bg);
+    --shadow-float: 0 12px 32px -8px oklch(0 0 0 / 0.35);
+    --glass-edge: oklch(1 0 0 / 0.06);
+    --leading-body: 1.65;
   }
 
-  /* ─── Clair — hors charte, dérivé ─────────────────────────────────────
-     La charte ne décrit qu'une palette sombre. Ce thème prolonge ses deux
-     seuls usages sur ivoire (le bordeaux et le gris de la carte de main) en
-     gardant ses paliers de contraste. Le cuivre y tombe à 2,5:1 : il n'y
-     porte aucun texte, uniquement filets et aplats. L'accent devient donc le
-     bordeaux — et le filet suit, sans quoi il disparaîtrait. */
+  /* ─── Sémantiques : clair ───────────────────────────────────────────── */
   .light {
-    --nurea-bg-rgb: 253 248 244;
-    --nurea-text-rgb: 10 5 8; /* 19,2:1 sur ivoire */
-    --nurea-accent-rgb: 123 11 29; /* 10,4:1 */
-
-    --nurea-surface-rgb: 246 238 232;
-    --nurea-surface-hover-rgb: 237 226 217;
-    --nurea-text-muted-rgb: 61 52 58; /* 11,4:1 */
-    --nurea-text-subtle-rgb: 84 77 88; /* 7,7:1  */
-    --nurea-text-disabled-rgb: 140 131 145;
-    --nurea-alert-rgb: 155 16 32; /* 8,0:1 */
-
-    --nurea-accent-hover-rgb: 94 8 22;
-    --nurea-on-accent-rgb: 253 248 244;
-
     color-scheme: light;
+    --bg: var(--n-day-975);
+    --surface-1: var(--n-day-945);
+    --surface-2: var(--n-day-91);
+    --line: var(--n-day-84); /* 1,52:1 — décoratif */
+    --text-1: var(--n-ink-22); /* 16,2:1 bg · 13,3:1 surface-2 */
+    --text-2: var(--n-ink-42); /* 7,9:1 bg · 6,5:1 surface-2 */
+    --text-3: var(--n-ink-48); /* ≥ 5,9:1 bg · ≥ 4,9:1 surface-2 */
+    --error: var(--n-red-50); /* 6,1:1 bg */
+    --focus: var(--text-1);
+    --on-primary: var(--bg);
+    --shadow-float: 0 12px 32px -8px oklch(0.2 0.01 20 / 0.18);
+    --glass-edge: transparent;
+    --leading-body: 1.6;
   }
 
-  /* ─── Teintes résolues ─────────────────────────────────────────────────
-     Déclarées une fois, hors des blocs de thème : seuls les canaux changent
-     d'un thème à l'autre, jamais ces formules. */
+  /* ─── Dérivés, échelles, mouvement (communs aux deux thèmes) ───────────
+     Les dérivés se recalculent sur <html> avec les valeurs du thème actif. */
   :root {
-    --nurea-bg: rgb(var(--nurea-bg-rgb));
-    --nurea-text: rgb(var(--nurea-text-rgb));
-    --nurea-accent: rgb(var(--nurea-accent-rgb));
-    --nurea-accent-hover: rgb(var(--nurea-accent-hover-rgb));
-    --nurea-bordeaux: rgb(var(--nurea-bordeaux-rgb, 123 11 29));
-    --nurea-surface: rgb(var(--nurea-surface-rgb));
-    --nurea-surface-hover: rgb(var(--nurea-surface-hover-rgb));
-    --nurea-text-muted: rgb(var(--nurea-text-muted-rgb));
-    --nurea-text-subtle: rgb(var(--nurea-text-subtle-rgb));
-    --nurea-text-disabled: rgb(var(--nurea-text-disabled-rgb));
-    --nurea-alert: rgb(var(--nurea-alert-rgb));
-    --nurea-on-accent: rgb(var(--nurea-on-accent-rgb));
+    --glass: color-mix(in oklch, var(--surface-1) 72%, transparent);
+    --glass-solid: color-mix(in oklch, var(--surface-1) 96%, transparent);
+    --primary-hover: color-mix(in oklch, var(--text-1) 90%, var(--bg));
 
-    /* Charte § 04 — filet 1 px, cuivre à 16 % d'opacité. */
-    --nurea-border: rgb(var(--nurea-accent-rgb) / 0.16);
-    --nurea-border-strong: rgb(var(--nurea-accent-rgb) / 0.4);
-    --nurea-accent-subtle: rgb(var(--nurea-accent-rgb) / 0.12);
-    --nurea-overlay: rgb(var(--nurea-bg-rgb) / 0.85);
+    /* Espacement — base 4 px */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+    --space-24: 6rem;
+    --space-section: clamp(3rem, 2rem + 4vw, 6rem);
+    --gutter: 1rem;
+    --content-max: 80rem; /* 1280 px */
 
-    /* Charte § 05 — la seule durée d'interaction, sur la couleur seule. */
-    --nurea-transition: 160ms ease-out;
+    /* Rayons — concentriques : intérieur = extérieur − marge */
+    --r-sm: 6px;
+    --r-md: 12px;
+    --r-lg: 20px;
+    --r-xl: 28px;
+    --r-full: 999px;
 
-    /* Voile posé sur le visuel d'accueil. Le sombre laisse la photo porter la
-       page ; le clair doit la noyer pour que le texte noir tienne dessus. */
-    --nurea-hero-scrim: rgb(var(--nurea-bg-rgb) / 0.72);
-  }
+    /* Couches */
+    --z-content: 0;
+    --z-sticky: 10;
+    --z-scrim: 20;
+    --z-sheet: 30;
+    --z-toast: 40;
 
-  .light {
-    --nurea-hero-scrim: rgb(var(--nurea-bg-rgb) / 0.9);
-  }
-
-  /* Le bordeaux du mode clair est plus dense que le cuivre du mode sombre :
-     à 16 % le filet y devient un trait dur. On le desserre. */
-  .light {
-    --nurea-border: rgb(var(--nurea-accent-rgb) / 0.14);
-    --nurea-accent-subtle: rgb(var(--nurea-accent-rgb) / 0.07);
-  }
-
-  html {
-    background-color: var(--nurea-bg);
-    scroll-behavior: smooth;
-    /* Barre de navigation fixe + ancres (#collection, scrollIntoView) */
-    scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 3.5rem);
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
+    /* Mouvement */
+    --dur-1: 120ms; /* appui, couleur, bascule */
+    --dur-2: 200ms; /* survol, popover, puce */
+    --dur-3: 360ms; /* feuille, tiroir */
+    --dur-3-exit: 270ms;
+    --dur-4: 600ms; /* entrée au premier chargement, une fois */
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-move: cubic-bezier(0.77, 0, 0.175, 1);
+    --press: scale(0.97);
+    --stagger: 40ms; /* par élément, plafond 400 ms */
+    --stagger-max: 400ms;
   }
 
   @media (min-width: 768px) {
-    html {
-      scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 4.25rem);
+    :root {
+      --gutter: 1.5rem;
     }
+  }
+
+  @media (min-width: 1024px) {
+    :root {
+      --gutter: 2rem;
+    }
+  }
+
+  /* Mouvement réduit : plus aucun déplacement ; les fondus restent, courts. */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --dur-2: var(--dur-1);
+      --dur-3: 0ms;
+      --dur-3-exit: 0ms;
+      --dur-4: 0ms;
+      --press: none;
+      --stagger: 0ms;
+      --stagger-max: 0ms;
+    }
+  }
+
+  /* Transparence réduite ou contraste renforcé : le verre redevient opaque. */
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    :root {
+      --glass: var(--glass-solid);
+    }
+  }
+
+  html {
+    background-color: var(--bg);
+    color: var(--text-2);
+    font-family: var(--font-sans), system-ui, sans-serif;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    min-height: 100svh;
-    background-color: var(--nurea-bg);
-    color: var(--nurea-text);
-    font-family: var(--font-sans), system-ui, sans-serif;
-    /* Limite le « rubber band » qui révèle le contenu sous les bords fixes */
-    overscroll-behavior: none;
+    background-color: var(--bg);
+    color: var(--text-2);
+    font-size: 1rem;
+    line-height: var(--leading-body);
   }
 
-  /* Le filet est la seule séparation du système : il devient la bordure par
-     défaut, ce qui évite d'avoir à la rappeler sur chaque `border`. */
-  *,
-  *::before,
-  *::after {
-    border-color: var(--nurea-border);
-  }
-
-  /* Charte § 05 — focus : filet cuivre à l'intérieur du bord. */
   :focus-visible {
-    outline: 1px solid var(--nurea-accent);
-    outline-offset: -2px;
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
   }
 
   ::selection {
-    background: var(--nurea-accent);
-    color: var(--nurea-on-accent);
+    background-color: var(--surface-2);
+    color: var(--text-1);
   }
 }
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   ÉCHELLE TYPOGRAPHIQUE — charte § 03
-   Une classe par rôle. Les tailles fluides descendent jusqu'aux minimums de
-   la charte (Newsreader 20 px, Instrument Sans 11 px) sans jamais passer
-   dessous, et ne montent pas au-delà de la valeur nominale.
-   ═══════════════════════════════════════════════════════════════════════════ */
 
 @layer components {
-  /* Titre de page — Newsreader 500 · 56 / 1,06 / −0,022 em */
-  /* Interlettrage propre à chaque taille, jamais une valeur pour toutes : un grand corps
-     paraît lâche et se resserre, un petit corps se desserre pour rester lisible. Newsreader
-     porte un axe optique (`opsz`) : ses dessins s'affinent en grand, s'épaississent en petit. */
-  .nurea-title {
+  /* ─── Rôles de texte — une règle par rôle, aucune taille en dur ────────
+     Titres : Fraunces (axe optique automatique, SOFT 0, WONK 0).
+     Texte : Figtree. */
+  .t-display,
+  .t-title,
+  .t-subtitle {
     font-family: var(--font-serif), Georgia, serif;
-    font-size: clamp(2rem, 6.5vw, 3.5rem);
-    font-weight: 500;
-    line-height: 1.06;
-    letter-spacing: -0.022em;
+    font-variation-settings: "SOFT" 0, "WONK" 0;
+    color: var(--text-1);
     text-wrap: balance;
   }
 
-  /* Titre de section — Newsreader 500 · 40 / 1,1 */
-  .nurea-section-title {
-    font-family: var(--font-serif), Georgia, serif;
-    font-size: clamp(1.75rem, 4.5vw, 2.5rem);
-    font-weight: 500;
-    line-height: 1.1;
-    letter-spacing: -0.016em;
-    text-wrap: balance;
-  }
-
-  /* Nom de parfum — Newsreader 500 · 24 / 1,25 / −0,008 em */
-  .nurea-name {
-    font-family: var(--font-serif), Georgia, serif;
-    font-size: clamp(1.25rem, 2.4vw, 1.5rem);
-    font-weight: 500;
-    line-height: 1.25;
-    letter-spacing: -0.008em;
-  }
-
-  /* Texte courant — Instrument Sans 400 · 16 / 1,8 */
-  .nurea-body {
-    font-size: 1rem;
+  .t-display {
+    font-size: clamp(3rem, 2rem + 4vw, 5rem);
     font-weight: 400;
-    line-height: 1.8;
-    color: var(--nurea-text-muted);
-    text-wrap: pretty;
-  }
-
-  /* Étiquette — Instrument Sans 600 · 11 / 0,18 em capitales */
-  .nurea-label {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    line-height: 1.4;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--nurea-accent);
-  }
-
-  /* Légende — Instrument Sans 400 · 12,5 / 1,75 */
-  .nurea-caption {
-    font-size: 0.78125rem;
-    font-weight: 400;
-    line-height: 1.75;
-    letter-spacing: 0.006em;
-    color: var(--nurea-text-subtle);
-  }
-
-  /* Chapô — Newsreader 400 · 20 → 24 / 1,45.
-     La phrase qui porte une section, lue avant le reste. Elle remplace le
-     paragraphe d'introduction : une idée, en grand, plutôt que trois lignes
-     grises en corps 16. Newsreader ne descend jamais sous 20 px (charte § 03). */
-  .nurea-lead {
-    font-family: var(--font-serif), Georgia, serif;
-    font-size: clamp(1.25rem, 2.2vw, 1.5rem);
-    font-weight: 400;
-    line-height: 1.45;
-    letter-spacing: -0.006em;
-    color: var(--nurea-text);
-    text-wrap: pretty;
-  }
-
-  /* Numéro de chapitre — Newsreader 400 · 40 → 64 / 1.
-     La numérotation « 01 · 02 · 03 » est celle de la charte elle-même : elle
-     ordonne une lecture sans l'alourdir d'un intertitre de plus. Chiffres
-     tabulaires, pour que 01 et 03 tiennent la même largeur. */
-  .nurea-numeral {
-    font-family: var(--font-serif), Georgia, serif;
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    font-weight: 400;
-    line-height: 1;
     letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums lining-nums;
-    color: var(--nurea-accent);
+    line-height: 1.05;
   }
 
-  /* ─── Mise en page — charte § 04 ───────────────────────────────────── */
-
-  /* Marge de page : 72 px, 24 px sur mobile. */
-  .nurea-page {
-    width: 100%;
-    max-width: 1200px;
-    margin-inline: auto;
-    padding-inline: 1.5rem;
-  }
-
-  @media (min-width: 768px) {
-    .nurea-page {
-      padding-inline: 4.5rem;
-    }
-  }
-
-  /* Largeur de texte : 640 px maximum. */
-  .nurea-prose {
-    max-width: 40rem;
-  }
-
-  /* ─── Boutons — charte § 05 ────────────────────────────────────────────
-     Hauteur 48 px, 44 px sur mobile. Padding 15/28. Un seul bouton plein par
-     écran. Transition sur la couleur uniquement.
-     Les variantes sont composées par `src/components/ui/Button.tsx`. */
-  .nurea-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.625rem;
-    min-height: 2.75rem;
-    padding: 0.9375rem 1.75rem;
-    border: 1px solid transparent;
-    font-size: 0.75rem;
-    font-weight: 600;
-    line-height: 1;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    text-align: center;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    transition:
-      background-color var(--nurea-transition),
-      border-color var(--nurea-transition),
-      color var(--nurea-transition),
-      transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  @media (min-width: 768px) {
-    .nurea-btn {
-      min-height: 3rem;
-    }
-  }
-
-  /* Appui : la réponse part dès que le doigt touche, sans attendre qu'il se lève. La couleur
-     bascule sans transition et le bouton cède de 2 % — un objet qu'on presse, pas un objet qui
-     grandit. Le survol, lui, reste la couleur seule (règle 3). */
-  .nurea-btn:active:not(:disabled),
-  .nurea-btn-link:active,
-  .nurea-press:active {
-    transform: scale(0.98);
-    transition-duration: 0ms;
-  }
-
-  .nurea-btn,
-  .nurea-btn-link,
-  .nurea-press {
-    touch-action: manipulation;
-  }
-
-  .nurea-press {
-    -webkit-tap-highlight-color: transparent;
-    transition:
-      background-color var(--nurea-transition),
-      color var(--nurea-transition),
-      transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .nurea-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  /* Lien texte souligné — 13,5 px / 500, filet cuivre à 40 %. */
-  .nurea-btn-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 2.75rem;
-    padding-block: 0.375rem;
-    border-bottom: 1px solid var(--nurea-border-strong);
-    font-size: 0.84375rem;
+  .t-title {
+    font-size: clamp(1.75rem, 1.25rem + 2vw, 2.5rem);
     font-weight: 500;
-    color: var(--nurea-accent);
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    transition:
-      color var(--nurea-transition),
-      border-color var(--nurea-transition),
-      transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    letter-spacing: -0.015em;
+    line-height: 1.15;
   }
 
-  .nurea-btn-link:hover {
-    border-bottom-color: var(--nurea-accent);
+  .t-subtitle {
+    font-size: 1.3125rem;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    line-height: 1.3;
+    text-wrap: pretty;
   }
 
-  /* ─── Champs de formulaire ─────────────────────────────────────────── */
-  .nurea-field {
-    display: block;
-    width: 100%;
-    min-height: 3rem;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--nurea-border);
-    background-color: var(--nurea-surface);
-    color: var(--nurea-text);
+  .t-body {
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-size: 1rem;
-    line-height: 1.5;
-    transition:
-      border-color var(--nurea-transition),
-      background-color var(--nurea-transition);
+    font-weight: 400;
+    line-height: var(--leading-body);
+    color: var(--text-2);
+    text-wrap: pretty;
+    hyphens: auto;
   }
 
-  .nurea-field::placeholder {
-    color: var(--nurea-text-subtle);
+  .t-caption {
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
   }
 
-  .nurea-field:focus {
-    border-color: var(--nurea-accent);
-    outline: none;
+  .t-measure {
+    max-width: 65ch;
   }
 
-  .nurea-field[aria-invalid="true"] {
-    border-color: var(--nurea-alert);
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   GRILLES
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* Le cadre d'un visuel de parfum.
- *
- * Les 99 photos du catalogue sont toutes en 1024 x 1536, soit un portrait 2:3
- * — vérifié une à une, sans exception. Les conteneurs, eux, demandaient un
- * carré sur les fiches et du 4:3 sur mobile : avec `object-cover`, un tiers de
- * la hauteur disparaissait sur les cartes, et la MOITIÉ dans la fiche produit
- * et le parfum du moment. Le flacon était coupé en haut et en bas.
- *
- * Ce ratio-ci correspond exactement à celui des fichiers : rien n'est rogné,
- * et rien ne laisse de bande vide. Nommer la règle plutôt que de répéter
- * `aspect-[2/3]` à trois endroits évite qu'ils divergent — et si le format des
- * photos change un jour, c'est ici, et ici seulement, qu'il faudra le dire.
- */
-.nurea-visuel-parfum {
-  aspect-ratio: 2 / 3;
-}
-
-/* Catalogue — les fiches partagent leurs bords, séparées au filet. */
-.nurea-catalogue-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem;
-}
-
-@media (min-width: 1024px) {
-  .nurea-catalogue-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-/* Bandeau éditorial — la photo à sa taille exacte, le texte prend le reste.
-   Le filet qui les sépare est la gouttière elle-même : une grille à `gap: 1px`
-   sur fond cuivre, comme les tableaux de la charte. Les blocs partagent donc
-   littéralement leur bord, sans bordure à poser sur l'un ou sur l'autre. */
-.nurea-editorial {
-  /* Hauteur du bandeau, et largeur qui s'en déduit par le 2:3 des photos du
-     catalogue (`.nurea-visuel-parfum`). Les deux dimensions tiennent dans une
-     seule valeur : elles ne peuvent pas diverger, donc la photo remplit sa
-     cellule au pixel et ne laisse aucune bande vide. */
-  --nurea-editorial-hauteur: clamp(26rem, 38vw, 40rem);
-  --nurea-editorial-visuel: calc(var(--nurea-editorial-hauteur) * 2 / 3);
-
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1px;
-  background-color: var(--nurea-border);
-}
-
-.nurea-editorial > * {
-  background-color: var(--nurea-bg);
-}
-
-@media (min-width: 768px) {
-  /* À parts égales, la colonne du visuel faisait près du double de la largeur
-     de la photo : contenue, celle-ci flottait entre deux bandes vides, et le
-     texte étouffait dans la moitié qui restait. La colonne ne fait donc plus
-     que la largeur de la photo, et le texte prend tout le reste. */
-  .nurea-editorial {
-    grid-template-columns: var(--nurea-editorial-visuel) minmax(0, 1fr);
+  .t-nums {
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Alternance : on permute les colonnes plutôt que l'ordre, pour que la
-     gouttière reste au milieu dans les deux sens. La colonne étroite passe à
-     droite avec la photo. */
-  .nurea-editorial[data-reverse="true"] {
-    grid-template-columns: minmax(0, 1fr) var(--nurea-editorial-visuel);
+  /* ─── Page — gouttière et largeur de contenu ─────────────────────────── */
+  .page-x {
+    width: 100%;
+    max-width: calc(var(--content-max) + 2 * var(--gutter));
+    margin-inline: auto;
+    padding-inline: var(--gutter);
   }
 
-  .nurea-editorial[data-reverse="true"] > *:first-child {
-    grid-area: 1 / 2;
+  /* ─── Verre — deux surfaces au plus : barre haute, barre d'action basse ─
+     Repli opaque si le navigateur ne floute pas (et, plus haut, si
+     l'utilisateur demande moins de transparence ou plus de contraste). */
+  .glass {
+    background-color: var(--glass);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+    backdrop-filter: blur(12px) saturate(1.2);
+    box-shadow: inset 0 1px 0 var(--glass-edge);
   }
 
-  .nurea-editorial[data-reverse="true"] > *:last-child {
-    grid-area: 1 / 1;
+  @supports not (backdrop-filter: blur(1px)) {
+    .glass {
+      background-color: var(--glass-solid);
+    }
   }
 
-  /* La cellule donne la hauteur du bandeau, et doit remplir la rangée quoi qu'il
-     arrive. Ne pas remplacer ce `min-height` par le seul `aspect-ratio` de la
-     classe : le ratio l'emporte sur l'étirement de la grille, et dès que le
-     texte est le plus haut des deux — entre 768 et 1024 px, mesuré — la cellule
-     s'arrête avant le bas de la rangée et laisse voir la gouttière cuivre en
-     aplat sous la photo. Ici elle s'étire : la photo reste entière et centrée,
-     jamais rognée, et rien ne transparaît. */
-  .nurea-editorial > .nurea-visuel-parfum {
-    min-height: var(--nurea-editorial-hauteur);
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   FICHE PARFUM ET BARRE DU CATALOGUE — téléphone d'abord
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* Le visuel de la fiche en surimpression.
- *
- * Grand écran : le 2:3 exact des photos, dans sa colonne — rien n'est rogné.
- *
- * Téléphone : la photo en 2:3 sur toute la largeur faisait 560 px sur un écran
- * de 812, et le nom tombait sous le pli. Le bouton de commande, lui, est tenu
- * dans une barre collée au bas de la feuille (`PerfumeDialog`) : il ne reste à
- * faire tenir que la photo et le nom.
- *
- * Trois hauteurs, dans cet ordre :
- *   150vw               — la photo entière (2:3), jamais plus ;
- *   92dvh − 13rem       — la place laissée par la feuille (92dvh), la barre de
- *                         commande et le bloc marque + nom (13rem à eux deux) ;
- *   135vw               — plancher : on ne retire JAMAIS plus de 10 % de la
- *                         hauteur, 5 % en haut et 5 % en bas.
- *
- * Mesuré : 430 × 932 → photo entière ; 390 × 844 → 3 % retirés ; 375 × 812 →
- * 4 % ; 375 × 667 → 10 %, et le nom passe juste sous le pli plutôt que de
- * couper le flacon.
- *
- * Une première version plafonnait à min(125vw, 52dvh) : jusqu'à 25 % de la
- * hauteur partait, et sur les photos où le flacon est haut ou décentré, le
- * rognage le coupait. Le plancher de 135vw est là pour que ça ne revienne pas. */
-.nurea-fiche-visuel {
-  height: min(150vw, max(135vw, calc(92dvh - 13rem)));
-}
-
-@media (min-width: 768px) {
-  .nurea-fiche-visuel {
-    height: auto;
-    aspect-ratio: 2 / 3;
-  }
-}
-
-/* Rangée qui défile à l'horizontale (onglets du catalogue).
- *
- * Le bord droit s'efface sur 32 px : c'est ce qui dit « il y a une suite » sans
- * flèche ni ombre. Un masque, pas un dégradé posé par-dessus — il n'ajoute
- * aucune couleur, il retire seulement de l'opacité au contenu. */
-.nurea-defilement {
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
-  mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
-}
-
-@media (min-width: 768px) {
-  .nurea-defilement {
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   PAGES ÉDITORIALES — La parfumerie, Contact, Légal, 404
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* Le monogramme, teinté par `currentColor`.
- *
- * Un seul fichier vectoriel, sa forme servant de masque : la couleur vient du
- * texte, donc du thème, sans décliner un fichier par teinte ni recopier le
- * tracé dans chaque page. `contain` garde ses proportions — la charte interdit
- * de les toucher. */
-.nurea-monogram {
-  display: block;
-  aspect-ratio: 1;
-  background-color: currentColor;
-  -webkit-mask: url("/branding/monogram/logo4_monogram_free_ivory_1024.svg") center / contain no-repeat;
-  mask: url("/branding/monogram/logo4_monogram_free_ivory_1024.svg") center / contain no-repeat;
-}
-
-/* Grille à filets — les blocs partagent leur bord (charte § 04), comme
-   `.nurea-editorial` : la gouttière de 1 px sur fond cuivre EST le filet. */
-.nurea-filets {
-  display: grid;
-  gap: 1px;
-  background-color: var(--nurea-border);
-}
-
-.nurea-filets > * {
-  background-color: var(--nurea-bg);
-}
-
-/* Mosaïque de flacons : un grand visuel et deux petits, empilés.
- *
- * Les photos du catalogue sont toutes en 2:3 (`.nurea-visuel-parfum`). Une
- * colonne double à gauche et une simple à droite tombent donc juste : le grand
- * visuel (2 × 3 unités) a exactement la hauteur des deux petits empilés
- * (2 × 1,5). Rien n'est rogné, aucune bande vide — c'est de l'arithmétique,
- * pas un réglage à l'œil. */
-.nurea-mosaique {
-  grid-template-columns: 2fr 1fr;
-}
-
-.nurea-mosaique > :first-child {
-  grid-row: span 2;
-}
-
-/* Questions fréquentes en accordéon, sans JavaScript.
- *
- * `<details>` est lu par les moteurs et par les lecteurs d'écran avec son
- * contenu : le balisage FAQPage reste valide, les réponses sont dans la page.
- * Le signe tourne d'un huitième de tour à l'ouverture — une rotation n'est pas
- * un déplacement, et elle répond au geste, pas au survol. */
-.nurea-faq summary {
-  list-style: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.nurea-faq summary::-webkit-details-marker {
-  display: none;
-}
-
-.nurea-faq-signe {
-  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.nurea-faq[open] .nurea-faq-signe {
-  transform: rotate(45deg);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   MOUVEMENT
-   Aucun mouvement au survol. Le mouvement répond au geste : appui, feuilles qui
-   suivent le doigt (`useSheetMotion`). Au défilement, une seule entrée : une
-   opacité et 12 px de montée, une fois, sur une courbe qui se pose comme un
-   ressort sans rebond (départ franc, arrivée très douce).
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.nurea-reveal {
-  opacity: 0;
-  transform: translateY(12px);
-  transition:
-    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Barre de navigation : une matière translucide, le contenu passe dessous et
-   reste deviné. Le filet cuivre la borde toujours (règle 2) ; seule la matière
-   change. Sans prise en charge du flou, ou si l'on a demandé moins de
-   transparence, elle redevient pleine. */
-.nurea-material {
-  background-color: rgb(var(--nurea-bg-rgb) / 0.78);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
-}
-
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .nurea-material {
-    background-color: rgb(var(--nurea-bg-rgb));
-  }
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  .nurea-material {
-    background-color: rgb(var(--nurea-bg-rgb));
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* Contraste renforcé demandé : les filets passent de 16 % à leur version appuyée. */
-@media (prefers-contrast: more) {
-  :root {
-    --nurea-border: var(--nurea-border-strong);
-  }
-}
-
-.nurea-reveal[data-revealed="true"] {
-  opacity: 1;
-  transform: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
+  /* ─── Couleur d'ambiance ────────────────────────────────────────────────
+     Le parfum pose `--amb` (sombre) et `--amb-light` (clair) en style en
+     ligne ; sans eux (repli), la surface neutre. Jamais le fond de la page,
+     jamais la barre, jamais le texte. */
+  .amb {
+    --ambient: var(--amb, var(--surface-1));
   }
 
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .light .amb,
+  .amb.light {
+    --ambient: var(--amb-light, var(--surface-1));
   }
 
-  .nurea-reveal {
-    opacity: 1;
-    transform: none;
+  /* ─── Appui — l'élément cède dès le contact ──────────────────────────── */
+  .press {
+    transition: transform var(--dur-1) var(--ease-out);
   }
 
-  .nurea-btn:active:not(:disabled),
-  .nurea-btn-link:active,
-  .nurea-press:active {
-    transform: none;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   UTILITAIRES
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-@layer utilities {
-  /* Rangée de filtres défilante : la barre native casserait le filet. */
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .thin-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: var(--nurea-border-strong) transparent;
-  }
-
-  .thin-scrollbar::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  .thin-scrollbar::-webkit-scrollbar-thumb {
-    background-color: var(--nurea-border-strong);
-  }
-
-  .pb-safe {
-    padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
-  }
-
-  /* Bouton natif du champ `type="search"` : hors charte, retiré. */
-  input[type="search"]::-webkit-search-decoration,
-  input[type="search"]::-webkit-search-cancel-button,
-  input[type="search"]::-webkit-search-results-button,
-  input[type="search"]::-webkit-search-results-decoration {
-    -webkit-appearance: none;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   PROTECTION DES VISUELS
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-@layer base {
-  /*
-   * Les photos de flacons sont le travail de la maison : on retire le glisser-déposer et l'appui
-   * long qui les enregistrent d'un geste. Voir `src/components/security/ContentGuard.tsx` pour ce
-   * que cette protection vaut exactement — de la friction, pas un verrou.
-   *
-   * La sélection de texte n'est PAS touchée : une adresse, un nom de parfum, un horaire doivent
-   * rester copiables. Les images n'en portent pas.
-   */
-  img {
-    -webkit-user-drag: none;
-    -webkit-touch-callout: none;
-    user-select: none;
+  .press:active {
+    transform: var(--press);
   }
 }
