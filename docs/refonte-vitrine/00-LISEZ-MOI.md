@@ -27,7 +27,8 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 | Cadrage (décisions du gérant, DA chiffrée, plan, passation) — Fable, 20/10/2026 | **fait** — `03-DA.md` § 7, `04-PLAN-EXECUTION.md`, `PROMPT-OPUS.md` |
 | 0. Décider : **T1 planche** (3 couples typo × 2 thèmes, 6 parfums, ambiance) → point de contrôle 1, puis T2 docs | **T1 faite, point de contrôle 1 passé** le 20/10 : direction validée, polices **Fraunces + Figtree**, **aucune contenance affichée**, vraie page d'accueil à venir (T15, sur planche). **T2 faite** le 20/10 : `DESIGN.md`, `.impeccable.md`, `PRODUCT.md`, `docs/charte-graphique.html`, `CLAUDE.md` § Règles Vitrine décrivent la nouvelle DA |
 | 1. Fondations (S2) | **T3 faite** (jetons et thèmes, `9e2d3b6`) et **T4 faite** (Fraunces + Figtree, `a7bdfeb`), branche `refonte/vitrine`, worktree `.claude/worktrees/refonte-vitrine`. T5 et T6 faites en S3 (voir ligne suivante) |
-| 1 → 2 (S3) | **T5 faite** (coque : barre en verre, pied de page, 404, logotype ivoire/noir, `398f3c0`) et **T6 faite** (jeu d'essai `/essai-extremes`, dev seulement, `b52b376`). **T7 faite** (ambiance en base, essai à blanc, `8459575`). **Prochaine tâche : T8** (carte et visuel, effort high), session S4 |
+| 1 → 2 (S3) | **T5 faite** (coque : barre en verre, pied de page, 404, logotype ivoire/noir, `398f3c0`) et **T6 faite** (jeu d'essai `/essai-extremes`, dev seulement, `b52b376`). **T7 faite** (ambiance en base, essai à blanc, `8459575`) |
+| 2 (S4) | **T8 faite** (carte, visuel, squelette, bouton 8 états, icônes, `7e68b14`). **Prochaine tâche : T9** (grille, pagination, densité ; PC 2), session S5 |
 | 2 → 6 (T7 → T23, sessions S4 → S10) | à faire (`04-PLAN-EXECUTION.md` § D et § F) |
 
 Décisions du 20/10 : direction **A+C « Nuancier nocturne »** ; **clair + sombre** ; **rien** de la
@@ -89,6 +90,26 @@ refusables au point de contrôle 1.
 - T8 doit dériver `--amb`/`--amb-light` de `ambientHue`/`ambientChroma` en TypeScript, avec la même
   règle que le script (§ B.3, étapes 5–6) et un test de parité contre `ambiance.mjs` (il exporte
   `stored` et, à exposer, `derive`).
+
+### Remarques de T8 (20/10)
+
+- **Carte** : `PerfumeCard` = `<article class="card">` ; le bouton du nom s'étend à toute la carte
+  (`::after`), le cœur est un bouton à part. Règles dans `app/globals.css` (`.card`, `.card-open`,
+  `.card-name`, conteneur : nom au pas `body` sous 9 rem). Survol/appui → `--card-press` =
+  `--amb` / `--amb-light`, ou `--surface-2` en repli.
+- **Ambiance** : `src/lib/catalog/ambient.ts` (`ambientStyle(perfume)` pose `--amb`/`--amb-light` en
+  style en ligne). Parité avec `derive()` de `ambiance.mjs` : 1 008 cas. À réutiliser en T12 (fiche)
+  et T14 (en-tête de marque).
+- **Sélection** : `src/lib/selection.ts` (clé, événement, lecture tolérante, bascule) et
+  `SelectionHeart.tsx` déjà écrits et testés ; la barre les lit. **T13 n'a plus qu'à faire la
+  feuille** et le message Snapchat groupé.
+- **Bouton** : API gardée (`variant`, `buttonClass`) + `state` (`loading` | `success` | `error`) et
+  `feedback` ; `disabled` devient `aria-disabled` (reste au clavier). `SUCCESS_MS` = 1 600, la
+  remise au repos est à la charge de l'appelant (T12 : « Nom copié »). Module sans `"use client"`.
+- **Captures iPhone sur localhost sans style** : la CSP de la vitrine pose
+  `upgrade-insecure-requests` ; WebKit passe alors `http://localhost` en https et rien ne charge.
+  Juger les captures tablette/bureau, ou le navigateur intégré à 390 px. Production non concernée.
+- Grille, « charger la suite » et `nurea-catalogue-grid` mort : T9. Tiroir de filtres à l'ancienne : T11.
 
 ## Outils prêts
 
