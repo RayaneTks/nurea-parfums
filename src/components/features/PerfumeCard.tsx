@@ -52,8 +52,8 @@ export const PerfumeCard: FC<PerfumeCardProps> = ({
       </div>
 
       <div className="flex min-w-0 flex-col gap-1 px-2 pb-2 pt-3">
-        <p className="card-brand t-body line-clamp-2 hyphens-auto [overflow-wrap:anywhere]">{brandLine}</p>
-        <p className="card-name t-subtitle hyphens-auto [overflow-wrap:anywhere]">
+        <p className="card-brand t-body line-clamp-2 hyphens-manual [overflow-wrap:anywhere]">{brandLine}</p>
+        <p className="card-name t-subtitle hyphens-manual [overflow-wrap:anywhere]">
           <button
             type="button"
             onClick={() => onOpen(perfume)}
