@@ -126,6 +126,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 20/10 | refonte | T9 faite sur `refonte/vitrine` (`985374a`) : grille 2 colonnes, densité, « Charger la suite » par 24, rail A→Z. Accueil 55 images (332 avant), LCP 1,9 s. **PC 2 en attente du gérant** (aperçu Vercel de la branche). |
 | 20/10 | refonte | T8 faite sur `refonte/vitrine` (`7e68b14`) : carte parfum (fond d'ambiance au survol/appui, cœur « Ma sélection »), visuel (repli si photo introuvable), squelette, bouton 8 états. Rien en production. Prochaine : T9 (grille, PC 2). |
 | 20/10 | refonte | T7 faite sur `refonte/vitrine` (`8459575`) : colonnes d'ambiance + script, essai à blanc seulement. Migration sur `main` prévue au PC 2, seule. |
 | 20/10 | pilotage | Création de ce fichier. Décisions V1 à V7 pour la session visuels. |
