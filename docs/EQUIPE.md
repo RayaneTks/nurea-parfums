@@ -25,6 +25,7 @@ Quand deux chantiers se gênent, l'ordre ci-dessus tranche, et le pilote arbitre
 
 | Chantier | Session | Touche | Ne touche jamais | Écrit en production ? | Document pilote |
 |---|---|---|---|---|---|
+| 20/10 | refonte | **Planche d'accueil T15 refusée** (gérant, iPhone) : « trop cheap », remarque de goût. Arrêt de l'exécution ; prochaine étape = session **Fable** (effort high) sur la composition de l'accueil, puis nouvelle planche. T14 reste valable (`00a0001`). |
 | 20/10 | refonte | **Planche d'accueil T15** (`cee4774`, `refonte/planche`, `/planche/accueil.html` de l'aperçu) : ouverture « Nuréa Parfums, Marseille » + nuancier des teintes de flacons, 2 parfums mis en avant, chercher par marque, catalogue. **Attente du « oui » du gérant** avant tout code d'accueil. |
 | **Pilotage** | session « refonte vitrine », planificateur (Fable pour la DA, Opus pour exécuter) | ce fichier, `docs/refonte-vitrine/`, arbitrages | — | non (décide, ne déploie pas seul) | ce fichier |
 | **Refonte vitrine** | même session, branche `refonte/vitrine`, worktree `.claude/worktrees/refonte-vitrine` | `app/(shop)`, `src/components`, `app/globals.css`, `src/design/{brand,fonts}.ts`, `tailwind.config.ts`, `scripts/refonte-vitrine/`, colonnes `ambientHue`/`ambientChroma` | gestion ; `image`, `imageLight`, `status` des fiches ; l'artefact du graphiste | non avant T23, sauf la migration d'ambiance (§ 4.3) | `docs/refonte-vitrine/00-LISEZ-MOI.md` |
