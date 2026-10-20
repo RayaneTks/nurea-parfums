@@ -53,7 +53,9 @@ export const PerfumeImage: FC<PerfumeImageProps> = ({ perfume, sizes, priority =
   return (
     <>
       <Image src={perfume.image} alt={alt} priority={priority} {...common} className={cn("object-cover [.light_&]:hidden", className)} />
-      <Image src={light} alt={alt} {...common} className={cn("hidden object-cover [.light_&]:block", className)} />
+      {/* Image prioritaire (fiche ouverte) : l'autre variante se charge aussi tout de suite, masquée,
+          pour que la bascule de thème la trouve prête. Dans les grilles elle reste paresseuse. */}
+      <Image src={light} alt={alt} loading={priority ? "eager" : undefined} {...common} className={cn("hidden object-cover [.light_&]:block", className)} />
     </>
   );
 };
