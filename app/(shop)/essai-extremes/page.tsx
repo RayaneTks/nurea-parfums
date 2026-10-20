@@ -8,6 +8,7 @@ import type { CatalogBrowseBrand } from "@/lib/catalog/catalogBrowseTypes";
 import { brandSlug } from "@/lib/slugify";
 import type { Perfume } from "@/lib/data";
 import fixture from "../../../e2e/fixtures/vitrine-extremes.json";
+import { PlancheT8 } from "./PlancheT8";
 
 /**
  * Jeu d'essai extrême de la refonte (T6) — DÉVELOPPEMENT SEULEMENT, retiré avant T23.
@@ -29,6 +30,9 @@ function many(count: number): Perfume[] {
   const source = [...EXTREMES, ...DEMO_PERFUMES];
   return Array.from({ length: count }, (_, i) => ({ ...source[i % source.length]!, id: 800000 + i }));
 }
+
+/** Planche T8 : les cas extrêmes, puis six fiches de démonstration qui ont une ambiance. */
+const PLANCHE = [...EXTREMES, ...DEMO_PERFUMES.filter((p) => p.ambientHue != null).slice(0, 6)];
 
 const SETS: Record<string, () => Perfume[]> = {
   extremes: () => EXTREMES,
@@ -75,6 +79,7 @@ export default async function EssaiExtremesPage({
           ))}
         </ul>
       </nav>
+      {jeu === "extremes" && <PlancheT8 perfumes={PLANCHE} />}
       <Suspense>
         <CatalogSection catalogPerfumes={perfumes} browseBrands={browseOf(perfumes)} />
       </Suspense>

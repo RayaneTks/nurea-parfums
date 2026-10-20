@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { Heart, Moon, Search, Sun } from "lucide-react";
 import { useSyncExternalStore, type FC } from "react";
 import { BrandLogo } from "./BrandLogo";
+import { parseSelection, readSelectionRaw, subscribeSelection } from "@/lib/selection";
 import { cn } from "@/lib/utils";
 
 /** Événement écouté par `CatalogSection` pour ouvrir les filtres (bouton retiré de la barre en T5, filtres refaits en T11). */
@@ -13,11 +14,6 @@ export const OPEN_CATALOG_FILTERS_EVENT = "nurea:open-catalog-filters";
 
 /** Diffusé par le cœur de la barre ; la feuille « Ma sélection » (T13) l'écoute. */
 export const OPEN_SELECTION_EVENT = "nurea:open-selection";
-
-/** Clé de « Ma sélection » sur l'appareil (DESIGN.md § Composants signature). */
-const SELECTION_KEY = "nurea:selection:v1";
-/** Diffusé dans l'onglet courant quand la sélection change (`storage` ne couvre que les autres onglets). */
-export const SELECTION_CHANGE_EVENT = "nurea:selection-change";
 
 const NAV_LINKS = [
   { href: "/", label: "Catalogue" },
@@ -32,21 +28,7 @@ function isCurrent(pathname: string, href: string): boolean {
 }
 
 function readSelectionCount(): number {
-  try {
-    const ids: unknown = JSON.parse(localStorage.getItem(SELECTION_KEY) ?? "[]");
-    return Array.isArray(ids) ? ids.length : 0;
-  } catch {
-    return 0;
-  }
-}
-
-function subscribeSelection(onChange: () => void): () => void {
-  window.addEventListener("storage", onChange);
-  window.addEventListener(SELECTION_CHANGE_EVENT, onChange);
-  return () => {
-    window.removeEventListener("storage", onChange);
-    window.removeEventListener(SELECTION_CHANGE_EVENT, onChange);
-  };
+  return parseSelection(readSelectionRaw()).length;
 }
 
 const ICON_BUTTON =
