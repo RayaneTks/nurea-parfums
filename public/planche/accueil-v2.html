@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="fr" data-compo="a">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Planche v2 — accueil Nuréa</title>
+<style>
+/* Planche T15 v2 — deux compositions de l'accueil (A « Couverture », B « Nuancier »).
+   Jetons : 04-PLAN-EXECUTION.md § B, DESIGN.md. Pas du code de production. */
+@font-face { font-family: "Fraunces"; src: url(fonts/fraunces.woff2) format("woff2"); font-weight: 400 500; font-display: swap; }
+@font-face { font-family: "Figtree"; src: url(fonts/figtree.woff2) format("woff2"); font-weight: 400 600; font-display: swap; }
+
+:root {
+  --bg: oklch(0.975 0.006 70); --surface-1: oklch(0.945 0.008 70); --surface-2: oklch(0.91 0.010 65);
+  --line: oklch(0.84 0.012 60); --text-1: oklch(0.22 0.012 20); --text-2: oklch(0.42 0.014 20);
+  --text-3: oklch(0.48 0.014 20); --focus: var(--text-1);
+  --shadow-float: 0 12px 32px -8px oklch(0.2 0.01 20 / 0.18); --glass-edge: transparent;
+  --leading: 1.6; color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: oklch(0.16 0.012 20); --surface-1: oklch(0.21 0.012 20); --surface-2: oklch(0.26 0.012 20);
+    --line: oklch(0.34 0.012 20); --text-1: oklch(0.95 0.008 60); --text-2: oklch(0.78 0.012 50);
+    --text-3: oklch(0.66 0.014 40); --shadow-float: 0 12px 32px -8px oklch(0 0 0 / 0.35);
+    --glass-edge: oklch(1 0 0 / 0.06); --leading: 1.65; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: oklch(0.16 0.012 20); --surface-1: oklch(0.21 0.012 20); --surface-2: oklch(0.26 0.012 20);
+  --line: oklch(0.34 0.012 20); --text-1: oklch(0.95 0.008 60); --text-2: oklch(0.78 0.012 50);
+  --text-3: oklch(0.66 0.014 40); --shadow-float: 0 12px 32px -8px oklch(0 0 0 / 0.35);
+  --glass-edge: oklch(1 0 0 / 0.06); --leading: 1.65; color-scheme: dark;
+}
+:root {
+  --space-section: clamp(3rem, 2rem + 4vw, 6rem);
+  --r-sm: 6px; --r-md: 12px; --r-lg: 20px; --r-xl: 28px; --r-full: 999px;
+  --dur-1: 120ms; --dur-2: 200ms; --dur-3: 360ms; --dur-4: 600ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1); --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  --gutter: 16px;
+}
+@media (min-width: 768px) { :root { --gutter: 24px; } }
+@media (min-width: 1024px) { :root { --gutter: 32px; } }
+
+/* Ambiance : chaque parfum pose --amb-d / --amb-l ; repli = surface neutre. */
+.amb { --amb: var(--amb-l, var(--surface-1)); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .amb { --amb: var(--amb-d, var(--surface-1)); } }
+:root[data-theme="dark"] .amb { --amb: var(--amb-d, var(--surface-1)); }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text-2); font: 400 1rem/var(--leading) "Figtree", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+img { display: block; max-width: 100%; }
+button, a { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
+button { touch-action: manipulation; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+h1, h2, p, ul { margin: 0; }
+ul { padding: 0; list-style: none; }
+[hidden] { display: none !important; }
+
+.display, .title, .subtitle { font-family: "Fraunces", Georgia, serif; color: var(--text-1); text-wrap: balance; }
+.display { font-size: clamp(3rem, 2rem + 4vw, 5rem); font-weight: 400; letter-spacing: -0.02em; line-height: 1.05; }
+.title { font-size: clamp(1.75rem, 1.25rem + 2vw, 2.5rem); font-weight: 500; letter-spacing: -0.015em; line-height: 1.15; }
+.subtitle { font-size: 1.3125rem; font-weight: 500; letter-spacing: -0.005em; line-height: 1.3; }
+.body { text-wrap: pretty; }
+.caption { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; line-height: 1.4; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.page { width: 100%; max-width: calc(1280px + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
+@media (min-width: 360px) { .nb { white-space: nowrap; } }
+
+/* ── Outils de la planche (hors design) ─────────────────────────────────── */
+.tools { position: sticky; top: 0; z-index: 11; display: flex; flex-wrap: nowrap; height: 48px; align-items: center; gap: 6px; padding: 8px var(--gutter); padding-top: max(8px, env(safe-area-inset-top)); background: oklch(0.35 0.02 250); color: oklch(0.97 0.01 250); font: 500 0.75rem/1 system-ui, sans-serif; }
+.tools span { opacity: 0.75; margin-right: 4px; }
+.tools button { min-height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid oklch(0.6 0.02 250); background: transparent; color: inherit; cursor: pointer; }
+.tools button[aria-pressed="true"] { background: oklch(0.97 0.01 250); color: oklch(0.25 0.02 250); }
+.tools .hint { margin-left: auto; opacity: 0.6; }
+
+/* ── Barre haute en verre § B.6 (identique à la vitrine) ─────────────────── */
+.bar { position: sticky; top: 48px; z-index: 10; padding: 0 0 12px; background: color-mix(in oklch, var(--surface-1) 72%, transparent); -webkit-backdrop-filter: blur(12px) saturate(1.2); backdrop-filter: blur(12px) saturate(1.2); border-bottom: 1px solid var(--line); box-shadow: inset 0 1px 0 var(--glass-edge); }
+:root.theme-switching .bar { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--surface-1); }
+@supports not (backdrop-filter: blur(1px)) { .bar { background: color-mix(in oklch, var(--surface-1) 96%, var(--bg)); } }
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .bar { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--surface-1); } }
+.bar-row { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+.logo { height: 24px; width: auto; }
+.logo-dark { display: none; }
+:root[data-theme="dark"] .logo-dark { display: block; } :root[data-theme="dark"] .logo-light { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .logo-dark { display: block; } :root:not([data-theme="light"]) .logo-light { display: none; } }
+.icon-btn { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: var(--r-md); background: transparent; color: var(--text-1); cursor: pointer; transition: transform var(--dur-1) var(--ease-out), background-color var(--dur-2) var(--ease-out); }
+.icon-btn:active { transform: scale(0.97); background: var(--surface-2); }
+.icon-btn svg { width: 20px; height: 20px; }
+.ic-moon { display: none; }
+:root[data-theme="light"] .ic-sun { display: none; } :root[data-theme="light"] .ic-moon { display: block; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .ic-sun { display: none; } :root:not([data-theme="dark"]) .ic-moon { display: block; } }
+.search { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface-1); color: var(--text-3); }
+.search svg { width: 18px; height: 18px; flex: none; }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text-1); font: 400 1rem "Figtree", sans-serif; outline: none; }
+.search input::placeholder { color: var(--text-3); }
+@media (min-width: 768px) { .bar { padding-bottom: 0; } .bar .page { display: flex; align-items: center; gap: 16px; height: 64px; } .bar-row { flex: none; height: auto; gap: 24px; } .bar-row + .search { flex: 1; max-width: 24rem; margin-left: auto; } .bar-row .actions { order: 3; } }
+
+/* Bascule de thème en cercle (View Transitions), comme ThemeToggle.tsx */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-new(root) { animation: theme-reveal var(--dur-4) var(--ease-sheet); }
+@media (pointer: coarse) { ::view-transition-new(root) { animation-duration: 800ms; } }
+@keyframes theme-reveal { from { clip-path: circle(0 at var(--reveal-x, 50%) var(--reveal-y, 0)); } to { clip-path: circle(var(--reveal-r, 150vmax) at var(--reveal-x, 50%) var(--reveal-y, 0)); } }
+
+/* ── A. Couverture ───────────────────────────────────────────────────────
+   1. H1 en display sur le fond ; 2. le parfum mis en avant occupe un bandeau à SON ambiance :
+   marque, nom en title, visuel 2:3 dans la gouttière ; 3. le second, même bandeau, miroir dès 768. */
+.open { padding-top: 24px; }
+.open .display .city { display: block; color: var(--text-2); }
+.open .facts { margin-top: 8px; }
+.une { margin-top: 24px; padding-block: 24px; background: var(--amb); }
+.une + .une { margin-top: 12px; }
+.une-in { display: grid; gap: 16px; }
+.une-text { display: grid; gap: 2px; }
+.une-text .brand { color: var(--text-2); }
+.une-text .title { overflow-wrap: anywhere; hyphens: auto; }
+.une-visual { display: block; width: 100%; padding: 0; border: 0; border-radius: var(--r-md); background: var(--surface-2); aspect-ratio: 2 / 3; overflow: hidden; cursor: pointer; transition: transform var(--dur-1) var(--ease-out); }
+.une-visual:active { transform: scale(0.98); }
+.une-visual img { width: 100%; height: 100%; object-fit: cover; }
+.une-text a { color: inherit; text-decoration: none; }
+@media (hover: hover) and (pointer: fine) { .une-text a:hover { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 1px; } }
+@media (min-width: 768px) {
+  .une { padding-block: 32px; }
+  .une-in { grid-template-columns: 1fr 45%; align-items: center; column-gap: 32px; }
+  .une-visual { grid-column: 2; grid-row: 1; }
+  .une-text { grid-column: 1; grid-row: 1; }
+  .une.mirror .une-in { grid-template-columns: 45% 1fr; }
+  .une.mirror .une-visual { grid-column: 1; }
+  .une.mirror .une-text { grid-column: 2; }
+}
+@media (min-width: 1024px) {
+  .une { padding-block: 48px; }
+  .une-in { grid-template-columns: 1fr 40%; column-gap: 48px; }
+  .une.mirror .une-in { grid-template-columns: 40% 1fr; }
+  .une-text .title { font-size: clamp(2.5rem, 1.5rem + 2vw, 3.5rem); }
+}
+
+/* ── B. Nuancier ─────────────────────────────────────────────────────────
+   1. H1 en title, une ligne (masthead) ; 2. mur de visuels rangés par teinte, bord à bord,
+   3 colonnes à 390 (4 à 768, 6 à 1024), écart 2 px ; les deux mis en avant = grandes tuiles 2 × 2. */
+.open-b .title { margin: 0; }
+.open-b .facts { margin-top: 8px; }
+.mosaic { margin-top: 16px; }
+.mosaic ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; grid-auto-flow: dense; }
+.mosaic li { aspect-ratio: 2 / 3; }
+.mosaic li.big { aspect-ratio: auto; grid-column: span 2; grid-row: span 2; }
+.mosaic li.big.second { grid-column: 2 / span 2; grid-row: 5 / span 2; }
+.mosaic button { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: var(--surface-2); overflow: hidden; cursor: pointer; transition: transform var(--dur-1) var(--ease-out); }
+.mosaic button:active { transform: scale(0.97); }
+.mosaic img { width: 100%; height: 100%; object-fit: cover; }
+.mosaic-foot { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding-top: 12px; }
+@media (min-width: 768px) { .mosaic ul { grid-template-columns: repeat(4, minmax(0, 1fr)); } .mosaic li.big.second { grid-column: 3 / span 2; grid-row: 4 / span 2; } }
+@media (min-width: 1024px) { .mosaic ul { grid-template-columns: repeat(6, minmax(0, 1fr)); } .mosaic li.big.second { grid-column: 5 / span 2; grid-row: 3 / span 2; } }
+
+/* ── Marques : un index, pas des puces ──────────────────────────────────── */
+.section { padding-top: var(--space-section); }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.index-list { border-top: 1px solid var(--line); }
+.index-list li { border-bottom: 1px solid var(--line); }
+.index-list a { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; min-height: 56px; padding: 14px 0; text-decoration: none; transition: color var(--dur-2) var(--ease-out); }
+.index-list a:active .subtitle { color: var(--text-2); }
+@media (hover: hover) and (pointer: fine) { .index-list a:hover .subtitle { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 1px; } }
+.links { display: flex; flex-wrap: wrap; gap: 0 24px; margin-top: 8px; }
+.link { display: inline-flex; align-items: center; min-height: 44px; color: var(--text-1); text-underline-offset: 4px; text-decoration-thickness: 1px; }
+@media (min-width: 768px) { .index-list { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; } }
+@media (min-width: 1024px) { .index-list { grid-template-columns: repeat(4, 1fr); } }
+
+/* ── Catalogue (déjà en place : barre d'outils, grille, « Charger la suite ») */
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 20px; border-radius: var(--r-md); font-weight: 500; cursor: pointer; transition: transform var(--dur-1) var(--ease-out); }
+.btn:active { transform: scale(0.97); }
+.btn-outline { border: 1px solid var(--line); background: var(--surface-1); color: var(--text-1); }
+.btn-solid { border: 0; background: var(--text-1); color: var(--bg); width: 100%; }
+.btn svg { width: 18px; height: 18px; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 768px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
+@media (min-width: 1024px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.card { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 8px; border: 0; border-radius: var(--r-lg); background: var(--surface-1); text-align: left; cursor: pointer; transition: transform var(--dur-1) var(--ease-out), background-color var(--dur-2) var(--ease-out); }
+.card:active { transform: scale(0.97); background: var(--amb); }
+@media (hover: hover) and (pointer: fine) { .card:hover { background: var(--amb); } }
+.card .visual { aspect-ratio: 2 / 3; border-radius: var(--r-md); background: var(--surface-2); overflow: hidden; margin-bottom: 8px; }
+.card .visual img { width: 100%; height: 100%; object-fit: cover; }
+.card .brand { padding: 0 8px; font-size: 0.875rem; line-height: 1.4; color: var(--text-2); }
+.card .subtitle { padding: 0 8px 8px; font-size: 1.0625rem; overflow-wrap: anywhere; }
+.more { display: flex; justify-content: center; margin-top: 24px; }
+
+.foot { margin-top: var(--space-section); padding-block: 32px; border-top: 1px solid var(--line); display: grid; gap: 16px; }
+.foot .links { margin: 0; }
+.foot .caption { max-width: 60ch; }
+
+/* Thème : image claire si elle existe */
+.v-light { display: none; }
+:root:not([data-theme="dark"]) .has-light .v-dark { display: none; } :root:not([data-theme="dark"]) .has-light .v-light { display: block; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .has-light .v-dark { display: block; } :root:not([data-theme="light"]) .has-light .v-light { display: none; } }
+
+/* Fiche en feuille (déjà en place : PerfumeSheet) — ici pour compter les taps */
+.scrim { position: fixed; inset: 0; z-index: 20; background: color-mix(in oklch, var(--bg) 85%, transparent); opacity: 0; pointer-events: none; transition: opacity var(--dur-3) var(--ease-out); }
+.scrim.open { opacity: 1; pointer-events: auto; }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; max-height: 94dvh; display: flex; flex-direction: column; border-radius: var(--r-xl) var(--r-xl) 0 0; background: var(--amb); box-shadow: var(--shadow-float); transform: translateY(100%); transition: transform 270ms var(--ease-sheet); overflow: hidden; }
+.sheet:not(.open) { visibility: hidden; transition: transform 270ms var(--ease-sheet), opacity 270ms, visibility 0s 270ms; }
+.sheet.open { transform: none; transition-duration: var(--dur-3); }
+@media (min-width: 768px) { .sheet { left: 50%; right: auto; bottom: 50%; width: min(52rem, 92vw); border-radius: var(--r-xl); transform: translate(-50%, 60%); opacity: 0; } .sheet.open { transform: translate(-50%, 50%); opacity: 1; } }
+.sheet-scroll { overflow-y: auto; padding: 0 16px 24px; }
+.sheet-top { position: relative; height: 48px; display: flex; justify-content: center; padding-top: 8px; }
+.grip { width: 36px; height: 4px; border-radius: 4px; background: var(--text-3); }
+.sheet-top .icon-btn { position: absolute; top: 4px; right: 8px; }
+.sheet .visual { width: min(100%, calc(56dvh * 2 / 3)); margin: 0 auto 24px; aspect-ratio: 2 / 3; border-radius: var(--r-md); overflow: hidden; background: var(--surface-2); }
+.sheet .visual img { width: 100%; height: 100%; object-fit: cover; }
+.sheet .text { display: grid; gap: 8px; text-align: center; }
+.sheet .mention { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+.sheet-bar { padding: 12px 16px max(16px, env(safe-area-inset-bottom)); background: color-mix(in oklch, var(--surface-1) 72%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-top: 1px solid var(--line); }
+.taps { position: fixed; left: 50%; bottom: 96px; z-index: 40; transform: translateX(-50%); padding: 8px 14px; border-radius: var(--r-full); background: oklch(0.35 0.02 250); color: oklch(0.97 0.01 250); font: 500 0.8125rem/1.2 system-ui, sans-serif; opacity: 0; transition: opacity var(--dur-2); pointer-events: none; white-space: nowrap; }
+.taps.on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .sheet, .sheet.open { transition: opacity var(--dur-1); } }
+</style>
+</head>
+<body>
+<div class="tools" role="toolbar" aria-label="Outils de la planche">
+  <span>Accueil 2</span>
+  <button type="button" data-compo-set="a" aria-pressed="true">A · Couverture</button>
+  <button type="button" data-compo-set="b" aria-pressed="false">B · Nuancier</button>
+  
+</div>
+
+<header class="bar">
+  <div class="page">
+    <div class="bar-row">
+      <a href="#" aria-label="Nuréa Parfums — accueil">
+        <img class="logo logo-light" src="/branding/logos/nurea-logo-horizontal-black-640.webp" alt="Nuréa Parfums" width="640" height="136">
+        <img class="logo logo-dark" src="/branding/logos/nurea-logo-horizontal-dark-640.webp" alt="Nuréa Parfums" width="640" height="136">
+      </a>
+      <div class="actions" style="display:flex">
+        <button class="icon-btn" type="button" aria-label="Ma sélection"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg></button>
+        <button class="icon-btn" type="button" aria-label="Changer de thème (clair ou sombre)" id="theme-btn">
+          <svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>
+          <svg class="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5Z"/></svg>
+        </button>
+      </div>
+    </div>
+    <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input type="search" placeholder="Parfum, marque…" aria-label="Rechercher un parfum ou une marque"></label>
+  </div>
+</header>
+
+<main>
+  <div class="compo" id="compo-a">
+    <section class="page open" aria-labelledby="h1a">
+      <h1 class="display" id="h1a"><span class="nb">Nuréa Parfums,</span><span class="city">Marseille</span></h1>
+      <p class="caption facts" id="facts-a"></p>
+    </section>
+    <div id="unes"></div>
+    <section class="page section" aria-labelledby="h-brands-a">
+      <div class="section-head"><h2 class="title" id="h-brands-a">Marques</h2></div>
+      <ul class="index-list" data-brands></ul>
+      <div class="links"><a class="link" href="#">Toutes les marques, de A à Z</a><a class="link" href="#">Un parfum manque ? Écrivez-nous</a></div>
+    </section>
+    <section class="page section" aria-labelledby="h-cat-a" data-catalogue>
+      <div class="section-head"><h2 class="title" id="h-cat-a">Catalogue</h2><p class="caption" data-count></p></div>
+    </section>
+  </div>
+
+  <div class="compo" id="compo-b" hidden>
+    <section class="page open open-b" aria-labelledby="h1b">
+      <h1 class="title" id="h1b"><span class="nb">Nuréa Parfums,</span> Marseille</h1>
+      <p class="caption facts" id="facts-b"></p>
+    </section>
+    <section class="mosaic" aria-label="Le catalogue par couleur de flacon">
+      <ul id="mosaic"></ul>
+      <div class="page mosaic-foot"><p class="caption">Chaque flacon est rangé par sa couleur, du rouge au bleu.</p><a class="link" href="#cat-b">Tout le catalogue</a></div>
+    </section>
+    <section class="page section" aria-labelledby="h-brands-b">
+      <div class="section-head"><h2 class="title" id="h-brands-b">Marques</h2></div>
+      <ul class="index-list" data-brands></ul>
+      <div class="links"><a class="link" href="#">Toutes les marques, de A à Z</a><a class="link" href="#">Un parfum manque ? Écrivez-nous</a></div>
+    </section>
+    <section class="page section" aria-labelledby="h-cat-b" id="cat-b" data-catalogue>
+      <div class="section-head"><h2 class="title" id="h-cat-b">Catalogue</h2><p class="caption" data-count></p></div>
+    </section>
+  </div>
+
+  <footer class="page foot">
+    <p class="caption">Photo : le flacon d'origine de la marque, pour reconnaître la référence. Votre parfum vous est remis dans un flacon Nuréa personnalisé.</p>
+    <div class="links"><a class="link" href="#">Toutes les marques</a><a class="link" href="#">La parfumerie</a><a class="link" href="#">Contact et commande</a><a class="link" href="#">Mentions légales</a></div>
+  </footer>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<section class="sheet amb" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" inert>
+  <div class="sheet-scroll">
+    <div class="sheet-top"><span class="grip" aria-hidden="true"></span><button class="icon-btn" type="button" aria-label="Fermer" id="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div id="sheet-body"></div>
+  </div>
+  <div class="sheet-bar"><button class="btn btn-solid" type="button" id="snap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3c3 0 5 2.2 5 5.2v2.3l1.6.4c.4.1.5.6.1.8l-1.6.9c.6 1.6 1.8 2.8 3.4 3.3-.6.8-1.7 1-2.6 1.1-.3.8-.6 1.3-1.6 1.1-1.8-.3-2.7 1.2-4.3 1.2s-2.5-1.5-4.3-1.2c-1 .2-1.3-.3-1.6-1.1-.9-.1-2-.3-2.6-1.1 1.6-.5 2.8-1.7 3.4-3.3l-1.6-.9c-.4-.2-.3-.7.1-.8l1.6-.4V8.2C7 5.2 9 3 12 3Z"/></svg>Commander sur Snapchat</button></div>
+</section>
+<p class="taps" id="taps" role="status"></p>
+
+<script>
+const D = {"total":111,"brandCount":36,"featured":[{"id":44,"brand":"Louis Vuitton","slug":"louis-vuitton","line":null,"name":"Symphony","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802617527-573b1850-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802617869-0b0c2eb8-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802617527-573b1850.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802617869-0b0c2eb8.webp","hue":23,"dark":"oklch(0.27 0.050 23)","light":"oklch(0.93 0.029 23)","featured":true},{"id":38,"brand":"Louis Vuitton","slug":"louis-vuitton","line":null,"name":"Afternoon Swim","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547088963-9dbd1551-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547089108-fd11535e-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547088963-9dbd1551.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547089108-fd11535e.webp","hue":248,"dark":"oklch(0.27 0.037 248)","light":"oklch(0.93 0.022 248)","featured":true}],"brands":[{"name":"Louis Vuitton","slug":"louis-vuitton","n":10},{"name":"Tom Ford","slug":"tom-ford","n":9},{"name":"Cacharel","slug":"cacharel","n":8},{"name":"Chanel","slug":"chanel","n":8},{"name":"Burberry","slug":"burberry","n":6},{"name":"Carolina Herrera","slug":"carolina-herrera","n":6},{"name":"Cartier","slug":"cartier","n":6},{"name":"Yves Saint Laurent","slug":"yves-saint-laurent","n":6}],"catalogue":[{"id":75,"brand":"Cacharel","slug":"cacharel","line":null,"name":"Yes I Am","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585721960-0c312574-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585722293-ef80fc87-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585721960-0c312574.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585722293-ef80fc87.webp","hue":37,"dark":"oklch(0.27 0.061 37)","light":"oklch(0.93 0.036 37)","featured":false},{"id":38,"brand":"Louis Vuitton","slug":"louis-vuitton","line":null,"name":"Afternoon Swim","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547088963-9dbd1551-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547089108-fd11535e-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547088963-9dbd1551.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547089108-fd11535e.webp","hue":248,"dark":"oklch(0.27 0.037 248)","light":"oklch(0.93 0.022 248)","featured":true},{"id":300,"brand":"Yves Saint Laurent","slug":"yves-saint-laurent","line":null,"name":"Babycat","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790517431059-966587a5-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790517438144-15af24d0-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790517431059-966587a5.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790517438144-15af24d0.webp","hue":50,"dark":"oklch(0.27 0.042 50)","light":"oklch(0.93 0.025 50)","featured":false},{"id":62,"brand":"Chanel","slug":"chanel","line":null,"name":"N°19","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458449690-1f755ccf-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458450047-cfe36663-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458449690-1f755ccf.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458450047-cfe36663.webp","hue":108,"dark":"oklch(0.27 0.055 108)","light":"oklch(0.93 0.032 108)","featured":false},{"id":110,"brand":"Escada","slug":"escada","line":null,"name":"Candy Love","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779053012486-4fb33bad-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779053020203-918ca090-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779053012486-4fb33bad.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779053020203-918ca090.webp","hue":6,"dark":"oklch(0.27 0.063 6)","light":"oklch(0.93 0.037 6)","featured":false},{"id":187,"brand":"Maison Crivelli","slug":"maison-crivelli","line":null,"name":"Oud Maracujá","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790212655203-86e082ce-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790212662531-d191eaf3-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790212655203-86e082ce.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790212662531-d191eaf3.webp","hue":261,"dark":"oklch(0.27 0.035 261)","light":"oklch(0.93 0.020 261)","featured":false},{"id":21,"brand":"Giorgio Armani","slug":"giorgio-armani","line":null,"name":"Stronger With You Intensely","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458457110-9d1b4c93-640.webp","imageLight":null,"orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458457110-9d1b4c93.webp","origLight":null,"hue":36,"dark":"oklch(0.27 0.080 36)","light":"oklch(0.93 0.047 36)","featured":false},{"id":52,"brand":"Tom Ford","slug":"tom-ford","line":null,"name":"Black Orchid","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550431351-537cc8d2-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550431686-26b5dbd6-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550431351-537cc8d2.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550431686-26b5dbd6.webp","hue":55,"dark":"oklch(0.27 0.032 55)","light":"oklch(0.93 0.020 55)","featured":false},{"id":19,"brand":"Boucheron","slug":"boucheron","line":null,"name":"Quatre en Rouge","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585719449-98b02859-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585720143-a831e856-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585719449-98b02859.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585720143-a831e856.webp","hue":28,"dark":"oklch(0.27 0.067 28)","light":"oklch(0.93 0.039 28)","featured":false},{"id":88,"brand":"Cerruti","slug":"cerruti","line":null,"name":"1881 pour Femme","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585727635-de1c8f23-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585728035-1dd41ff6-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585727635-de1c8f23.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585728035-1dd41ff6.webp","hue":55,"dark":"oklch(0.27 0.038 55)","light":"oklch(0.93 0.022 55)","featured":false},{"id":11,"brand":"Versace","slug":"versace","line":null,"name":"Eros","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576126479-7e2c3fc9-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576126822-3a52ac3c-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576126479-7e2c3fc9.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576126822-3a52ac3c.webp","hue":227,"dark":"oklch(0.27 0.037 227)","light":"oklch(0.93 0.021 227)","featured":false},{"id":93,"brand":"Cartier","slug":"cartier","line":null,"name":"Déclaration Haute Fraîcheur","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585725107-89564f99-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585725412-45a176cf-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585725107-89564f99.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585725412-45a176cf.webp","hue":55,"dark":"oklch(0.27 0.049 55)","light":"oklch(0.93 0.029 55)","featured":false},{"id":85,"brand":"Burberry","slug":"burberry","line":null,"name":"Her","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802608836-4c9b3c3a-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802609155-9541bf33-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802608836-4c9b3c3a.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802609155-9541bf33.webp","hue":17,"dark":"oklch(0.27 0.045 17)","light":"oklch(0.93 0.026 17)","featured":false},{"id":67,"brand":"Carolina Herrera","slug":"carolina-herrera","line":null,"name":"Good Girl Suprême","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458441625-3ec1b6e1-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458441762-2037ea3a-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458441625-3ec1b6e1.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458441762-2037ea3a.webp","hue":55,"dark":"oklch(0.27 0.039 55)","light":"oklch(0.93 0.023 55)","featured":false},{"id":101,"brand":"Prada","slug":"prada","line":null,"name":"Paradoxe","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052233136-59980066-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052238345-646f06fe-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052233136-59980066.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052238345-646f06fe.webp","hue":46,"dark":"oklch(0.27 0.051 46)","light":"oklch(0.93 0.030 46)","featured":false},{"id":297,"brand":"Giardini Di Toscana","slug":"giardini-di-toscana","line":null,"name":"Bianco Latte","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585731330-ad08e537-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585731654-b5fad367-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585731330-ad08e537.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585731654-b5fad367.webp","hue":53,"dark":"oklch(0.27 0.044 53)","light":"oklch(0.93 0.026 53)","featured":false},{"id":94,"brand":"Maison Francis Kurkdjian","slug":"maison-francis-kurkdjian","line":null,"name":"Oud Satin Mood","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968290895-eb1461d9-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968294808-d378ff4c-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968290895-eb1461d9.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968294808-d378ff4c.webp","hue":272,"dark":"oklch(0.27 0.031 272)","light":"oklch(0.93 0.020 272)","featured":false},{"id":22,"brand":"Antonio Banderas","slug":"antonio-banderas","line":null,"name":"Blue Seduction","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802605648-322a1160-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802606010-696e544f-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802605648-322a1160.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802606010-696e544f.webp","hue":243,"dark":"oklch(0.27 0.049 243)","light":"oklch(0.93 0.029 243)","featured":false},{"id":45,"brand":"Nishane","slug":"nishane","line":null,"name":"Hundred Silent Ways","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550430051-007138e2-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550430741-5c0e539f-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550430051-007138e2.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790550430741-5c0e539f.webp","hue":29,"dark":"oklch(0.27 0.055 29)","light":"oklch(0.93 0.032 29)","featured":false},{"id":105,"brand":"Elizabeth Arden","slug":"elisabeth-arden","line":null,"name":"Green Tea","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585728684-5d40beb4-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585728941-b849188d-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585728684-5d40beb4.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585728941-b849188d.webp","hue":59,"dark":"oklch(0.27 0.036 59)","light":"oklch(0.93 0.021 59)","featured":false},{"id":174,"brand":"Givenchy","slug":"givenchy","line":null,"name":"L'Interdit Rouge","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802659868-acde5f05-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802660209-a42a2fbc-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802659868-acde5f05.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802660209-a42a2fbc.webp","hue":30,"dark":"oklch(0.27 0.051 30)","light":"oklch(0.93 0.030 30)","featured":false},{"id":81,"brand":"Britney Spears","slug":"britney-spears","line":null,"name":"Midnight Fantasy","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802606735-6e46e57c-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802607069-abec49f0-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802606735-6e46e57c.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802607069-abec49f0.webp","hue":270,"dark":"oklch(0.27 0.073 270)","light":"oklch(0.93 0.042 270)","featured":false},{"id":78,"brand":"Byredo","slug":"byredo","line":null,"name":"Bal d'Afrique","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458435064-ca643b6b-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458435207-bcbe6347-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458435064-ca643b6b.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458435207-bcbe6347.webp","hue":42,"dark":"oklch(0.27 0.034 42)","light":"oklch(0.93 0.020 42)","featured":false},{"id":33,"brand":"Sospiro","slug":"sospiro","line":null,"name":"Erba Gold","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547097012-f3865d08-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547097178-4445ff63-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547097012-f3865d08.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790547097178-4445ff63.webp","hue":47,"dark":"oklch(0.27 0.071 47)","light":"oklch(0.93 0.042 47)","featured":false}],"mosaic":[{"id":76,"brand":"Cacharel","slug":"cacharel","line":null,"name":"Yes I Am Bloom Up!","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458439202-45b4009d-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458439377-0ea1094e-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458439202-45b4009d.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458439377-0ea1094e.webp","hue":19,"dark":"oklch(0.27 0.064 19)","light":"oklch(0.93 0.037 19)","featured":false},{"id":47,"brand":"Ralph Lauren","slug":"ralph-lauren","line":null,"name":"Polo Red","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713715990-593f2dd9-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713724196-f997b353-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713715990-593f2dd9.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774713724196-f997b353.webp","hue":28,"dark":"oklch(0.27 0.048 28)","light":"oklch(0.93 0.028 28)","featured":false},{"id":102,"brand":"Elie Saab","slug":"elie-saab","line":null,"name":"Girl of Now Forever","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802612176-6ec5d8be-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802612587-44a2dc5b-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802612176-6ec5d8be.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802612587-44a2dc5b.webp","hue":42,"dark":"oklch(0.27 0.050 42)","light":"oklch(0.93 0.029 42)","featured":false},{"id":98,"brand":"Louis Vuitton","slug":"louis-vuitton","line":null,"name":"Imagination","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968751258-b3c8b3a4-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968757720-53330d12-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968751258-b3c8b3a4.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968757720-53330d12.webp","hue":55,"dark":"oklch(0.27 0.041 55)","light":"oklch(0.93 0.024 55)","featured":false},{"id":14,"brand":"Cartier","slug":"cartier","line":null,"name":"Pasha de Cartier","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585726969-80f37d00-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458446042-baf96f60-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790585726969-80f37d00.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458446042-baf96f60.webp","hue":66,"dark":"oklch(0.27 0.049 66)","light":"oklch(0.93 0.029 66)","featured":false},{"id":69,"brand":"Carolina Herrera","slug":"carolina-herrera","line":null,"name":"Good Girl Dot Drama","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774646967856-88b2daff-640.webp","imageLight":null,"orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774646967856-88b2daff.webp","origLight":null,"hue":77,"dark":"oklch(0.27 0.030 77)","light":"oklch(0.93 0.020 77)","featured":false},{"id":87,"brand":"Burberry","slug":"burberry","line":null,"name":"Weekend","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802609797-6101d39d-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802610178-0191eb8d-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802609797-6101d39d.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802610178-0191eb8d.webp","hue":90,"dark":"oklch(0.27 0.046 90)","light":"oklch(0.93 0.027 90)","featured":false},{"id":62,"brand":"Chanel","slug":"chanel","line":null,"name":"N°19","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458449690-1f755ccf-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458450047-cfe36663-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458449690-1f755ccf.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458450047-cfe36663.webp","hue":108,"dark":"oklch(0.27 0.055 108)","light":"oklch(0.93 0.032 108)","featured":false},{"id":73,"brand":"Cacharel","slug":"cacharel","line":null,"name":"Eden","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458437442-8290d05c-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458437576-9e0449d4-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458437442-8290d05c.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458437576-9e0449d4.webp","hue":147,"dark":"oklch(0.27 0.047 147)","light":"oklch(0.93 0.028 147)","featured":false},{"id":11,"brand":"Versace","slug":"versace","line":null,"name":"Eros","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576126479-7e2c3fc9-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576126822-3a52ac3c-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576126479-7e2c3fc9.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576126822-3a52ac3c.webp","hue":227,"dark":"oklch(0.27 0.037 227)","light":"oklch(0.93 0.021 227)","featured":false},{"id":18,"brand":"Yves Saint Laurent","slug":"yves-saint-laurent","line":null,"name":"Y L'Elixir","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774649944806-da016eac-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774750970249-3e941518-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774649944806-da016eac.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1774750970249-3e941518.webp","hue":251,"dark":"oklch(0.27 0.039 251)","light":"oklch(0.93 0.023 251)","featured":false},{"id":107,"brand":"Escada","slug":"escada","line":null,"name":"Taj Sunset","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458453396-1fbf84b0-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458453553-ab1db8b7-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458453396-1fbf84b0.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458453553-ab1db8b7.webp","hue":260,"dark":"oklch(0.27 0.050 260)","light":"oklch(0.93 0.029 260)","featured":false},{"id":81,"brand":"Britney Spears","slug":"britney-spears","line":null,"name":"Midnight Fantasy","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802606735-6e46e57c-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802607069-abec49f0-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802606735-6e46e57c.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802607069-abec49f0.webp","hue":270,"dark":"oklch(0.27 0.073 270)","light":"oklch(0.93 0.042 270)","featured":false},{"id":94,"brand":"Maison Francis Kurkdjian","slug":"maison-francis-kurkdjian","line":null,"name":"Oud Satin Mood","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968290895-eb1461d9-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968294808-d378ff4c-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968290895-eb1461d9.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1778968294808-d378ff4c.webp","hue":272,"dark":"oklch(0.27 0.031 272)","light":"oklch(0.93 0.020 272)","featured":false},{"id":58,"brand":"Tom Ford","slug":"tom-ford","line":null,"name":"Velvet Orchid","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576125541-4dbd1f72-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576125850-229b5b15-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576125541-4dbd1f72.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790576125850-229b5b15.webp","hue":320,"dark":"oklch(0.27 0.042 320)","light":"oklch(0.93 0.025 320)","featured":false},{"id":109,"brand":"Escada","slug":"escada","line":null,"name":"Party Love","image":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052959203-7ede6d95-640.webp","imageLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052967635-037158ea-640.webp","orig":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052959203-7ede6d95.webp","origLight":"https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1779052967635-037158ea.webp","hue":344,"dark":"oklch(0.27 0.071 344)","light":"oklch(0.93 0.041 344)","featured":false}]};
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const amb = (p) => (p.dark ? `--amb-d:${p.dark};` : "") + (p.light ? `--amb-l:${p.light};` : "");
+const brandLine = (p) => esc(p.line ? `${p.brand} · ${p.line}` : p.brand);
+const all = new Map([...D.featured, ...D.catalogue, ...D.mosaic].map((p) => [p.id, p]));
+// A : le visuel mis en avant est l'élément LCP — vignette 640 jusqu'à 640 px de large, original au-delà.
+const SIZES_UNE = "(min-width: 1024px) 40vw, (min-width: 768px) 45vw, 100vw";
+const img = (p, { eager = false, cls = "", srcset = false } = {}) => {
+  const set = (dark) => srcset ? ` srcset="${dark ? p.image : p.imageLight} 640w, ${dark ? p.orig : p.origLight} 1024w" sizes="${SIZES_UNE}"` : "";
+  return `<img class="v-dark" src="${p.image}"${set(true)} alt="" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">${p.imageLight ? `<img class="v-light" src="${p.imageLight}"${set(false)} alt="" ${eager ? '' : 'loading="lazy"'} decoding="async">` : ''}`;
+};
+const visual = (p, eager) => `<div class="visual${p.imageLight ? ' has-light' : ''}">${img(p, { eager })}</div>`;
+
+document.getElementById("facts-a").textContent = `${D.total} parfums · ${D.brandCount} marques · Commande sur Snapchat`;
+document.getElementById("facts-b").textContent = `${D.total} parfums · ${D.brandCount} marques · Commande sur Snapchat`;
+
+// A — deux bandeaux « une »
+document.getElementById("unes").innerHTML = D.featured.map((p, i) => `<section class="une amb${i ? ' mirror' : ''}" style="${amb(p)}--i:1" aria-labelledby="une-${p.id}"><div class="page une-in"><div class="une-text"><p class="body brand">${brandLine(p)}</p><h2 class="title" id="une-${p.id}"><a href="#" data-id="${p.id}">${esc(p.name)}</a></h2></div><button class="une-visual${p.imageLight ? ' has-light' : ''}" type="button" data-id="${p.id}" aria-label="Voir la fiche : ${esc(p.name)}">${img(p, { eager: i === 0, srcset: true })}</button></div></section>`).join("");
+
+// B — mosaïque : 2 grandes tuiles (mis en avant) + 16 petites rangées par teinte
+const tiles = [{ p: D.featured[0], big: true }, ...D.mosaic.slice(0, 7).map((p) => ({ p })), { p: D.featured[1], big: true, second: true }, ...D.mosaic.slice(7).map((p) => ({ p }))];
+document.getElementById("mosaic").innerHTML = tiles.map(({ p, big, second }, i) => `<li class="${big ? 'big' : ''}${second ? ' second' : ''}${i < 10 ? '' : ''}" style="--i:${Math.min(i, 9)}"><button type="button" class="${p.imageLight ? 'has-light' : ''}" data-id="${p.id}" aria-label="${esc(p.name)}, ${brandLine(p)}">${img(p, { eager: i === 0 })}</button></li>`).join("");
+
+// Marques et catalogue : les mêmes dans les deux compositions
+const brandsHtml = D.brands.map((b) => `<li><a href="#"><span class="subtitle">${esc(b.name)}</span><span class="caption">${b.n} parfum${b.n > 1 ? 's' : ''}</span></a></li>`).join("");
+document.querySelectorAll("[data-brands]").forEach((ul) => (ul.innerHTML = brandsHtml));
+const catalogueHtml = `<div class="toolbar"><button class="btn btn-outline" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M7 12h10M10 17h4"/></svg>Marques</button><button class="icon-btn" type="button" aria-label="Densité de la grille"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></button></div><ul class="grid">${D.catalogue.map((p) => `<li><button class="card amb" type="button" data-id="${p.id}" style="${amb(p)}">${visual(p)}<span class="brand">${brandLine(p)}</span><span class="subtitle">${esc(p.name)}</span></button></li>`).join('')}</ul><div class="more"><button class="btn btn-outline" type="button">Charger la suite</button></div>`;
+document.querySelectorAll("[data-catalogue]").forEach((s) => { s.querySelector("[data-count]").textContent = `${D.total} parfums`; s.insertAdjacentHTML("beforeend", catalogueHtml); });
+
+// Compositions
+const root = document.documentElement;
+function setCompo(c) {
+  root.dataset.compo = c;
+  document.getElementById("compo-a").hidden = c !== "a";
+  document.getElementById("compo-b").hidden = c !== "b";
+  document.querySelectorAll("[data-compo-set]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.compoSet === c)));
+  history.replaceState(null, "", "#" + c);
+  scrollTo(0, 0);
+}
+document.querySelectorAll("[data-compo-set]").forEach((b) => b.addEventListener("click", () => setCompo(b.dataset.compoSet)));
+setCompo(location.hash === "#b" ? "b" : "a");
+
+// Compteur de taps : depuis l'accueil, message Snapchat prêt en 4 taps au plus (T15)
+let taps = 0;
+const tapsEl = document.getElementById("taps");
+const sheet = document.getElementById("sheet"), scrim = document.getElementById("scrim");
+let opener = null;
+function open(p) {
+  sheet.setAttribute("style", amb(p));
+  document.getElementById("sheet-body").innerHTML = `${visual(p, true)}<div class="text"><p class="body">${brandLine(p)}</p><h2 class="title" id="sheet-title">${esc(p.name)}</h2><p class="body">Prix et disponibilité : écrivez-nous.</p><p class="caption mention">Photo : le flacon d'origine de la marque, pour reconnaître la référence. Votre parfum vous est remis dans un flacon Nuréa personnalisé.</p></div>`;
+  sheet.inert = false; sheet.classList.add("open"); scrim.classList.add("open");
+  document.getElementById("close").focus({ preventScroll: true });
+}
+function close() { sheet.classList.remove("open"); scrim.classList.remove("open"); sheet.inert = true; opener?.focus({ preventScroll: true }); taps = 0; }
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-id]");
+  if (t) { e.preventDefault(); opener = t; taps = 1; open(all.get(Number(t.dataset.id))); }
+});
+document.getElementById("snap").addEventListener("click", () => {
+  taps += 1;
+  const p = all.get(Number(opener?.dataset.id));
+  tapsEl.textContent = `« ${p.name} (${p.brand}) » copié — ${taps} taps depuis l'accueil`;
+  tapsEl.classList.add("on"); setTimeout(() => tapsEl.classList.remove("on"), 2200);
+});
+document.getElementById("close").addEventListener("click", close);
+scrim.addEventListener("click", close);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && sheet.classList.contains("open")) close(); });
+
+// Thème : le vrai geste de la vitrine (cercle depuis le bouton, View Transitions)
+const isDark = () => (root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches);
+document.getElementById("theme-btn").addEventListener("click", (event) => {
+  const next = isDark() ? "light" : "dark";
+  const apply = () => { root.dataset.theme = next; };
+  if (!document.startViewTransition || matchMedia("(prefers-reduced-motion: reduce)").matches) { apply(); return; }
+  const box = event.currentTarget.getBoundingClientRect();
+  const x = box.left + box.width / 2, y = box.top + box.height / 2;
+  const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  root.style.setProperty("--reveal-x", x + "px"); root.style.setProperty("--reveal-y", y + "px"); root.style.setProperty("--reveal-r", Math.ceil(radius) + "px");
+  root.classList.add("theme-switching");
+  const transition = document.startViewTransition(async () => {
+    apply();
+    const shown = [...document.querySelectorAll("main img")].filter((i) => i.offsetParent !== null && i.getBoundingClientRect().bottom > 0 && i.getBoundingClientRect().top < innerHeight);
+    await Promise.race([Promise.all(shown.map((i) => i.decode().catch(() => undefined))), new Promise((r) => setTimeout(r, 400))]);
+  });
+  transition.ready.catch(() => {});
+  const done = () => root.classList.remove("theme-switching");
+  transition.finished.then(done, done);
+});
+</script>
+</body>
+</html>
