@@ -198,7 +198,8 @@ une étiquette visible et son erreur dessous.
   texte et visuel côte à côte, le second bandeau en miroir), puis l'**index des marques** (lignes au
   filet, nom en `subtitle`, compteur, jamais des puces), puis le catalogue, puis le pied de page. Jamais
   le gabarit « grande phrase + deux boutons + photo assombrie », jamais de texte sur une photo, aucun
-  bouton dans l'ouverture.
+  bouton dans l'ouverture. Le visuel du premier bandeau est l'élément LCP : vignette 640 sur
+  téléphone, préchargé pour le thème du système ; le nom et le visuel ouvrent la fiche en feuille.
 
 ## Fiche produit
 
