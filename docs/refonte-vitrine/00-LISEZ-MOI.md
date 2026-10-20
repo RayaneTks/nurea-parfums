@@ -28,7 +28,7 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 | 0. Décider : **T1 planche** (3 couples typo × 2 thèmes, 6 parfums, ambiance) → point de contrôle 1, puis T2 docs | **T1 faite, point de contrôle 1 passé** le 20/10 : direction validée, polices **Fraunces + Figtree**, **aucune contenance affichée**, vraie page d'accueil à venir (T15, sur planche). **T2 faite** le 20/10 : `DESIGN.md`, `.impeccable.md`, `PRODUCT.md`, `docs/charte-graphique.html`, `CLAUDE.md` § Règles Vitrine décrivent la nouvelle DA |
 | 1. Fondations (S2) | **T3 faite** (jetons et thèmes, `9e2d3b6`) et **T4 faite** (Fraunces + Figtree, `a7bdfeb`), branche `refonte/vitrine`, worktree `.claude/worktrees/refonte-vitrine`. T5 et T6 faites en S3 (voir ligne suivante) |
 | 1 → 2 (S3) | **T5 faite** (coque : barre en verre, pied de page, 404, logotype ivoire/noir, `398f3c0`) et **T6 faite** (jeu d'essai `/essai-extremes`, dev seulement, `b52b376`). **T7 faite** (ambiance en base, essai à blanc, `8459575`) |
-| 2 (S4) | **T8 faite** (carte, visuel, squelette, bouton 8 états, icônes, `7e68b14`). **T9 faite** (grille, densité, « Charger la suite », rail A→Z, `985374a`). **Point de contrôle 2 passé** le 20/10 (accueil, fiche, bascule de thème validés sur iPhone, après corrections `296fc91` → `f4ba99c`). **T10 faite** (recherche en direct, état vide qui invite à écrire, `5f79c5c`) et **T11 faite** (feuille des marques avec « Voir N parfums », une puce par marque, `2b8cc4e`). Correctif carte en S5 (coupure entre les mots, `b0b54da`). **Migration d'ambiance en production** (`8ba4e33`, seule sur `main`) et `--apply` le 20/10 : 199 fiches publiées sur 233 ont leur couleur, 34 en repli (14,6 %). **T12 faite** (fiche en feuille, `?parfum=<id>`, précédent/suivant au glissé, Snapchat en 2 taps, `288cf48`) et **T13 faite** (« Ma sélection », un seul message Snapchat, `7d86433`). **Point de contrôle 3 passé** le 20/10 (iPhone), après correctif des gestes et du verre à la bascule de thème (`f4bee0f`). **Prochaine : T14 puis T15** (session S7, prompt : `PROMPT-SUITE-S7.md`) |
+| 2 (S4) | **T8 faite** (carte, visuel, squelette, bouton 8 états, icônes, `7e68b14`). **T9 faite** (grille, densité, « Charger la suite », rail A→Z, `985374a`). **Point de contrôle 2 passé** le 20/10 (accueil, fiche, bascule de thème validés sur iPhone, après corrections `296fc91` → `f4ba99c`). **T10 faite** (recherche en direct, état vide qui invite à écrire, `5f79c5c`) et **T11 faite** (feuille des marques avec « Voir N parfums », une puce par marque, `2b8cc4e`). Correctif carte en S5 (coupure entre les mots, `b0b54da`). **Migration d'ambiance en production** (`8ba4e33`, seule sur `main`) et `--apply` le 20/10 : 199 fiches publiées sur 233 ont leur couleur, 34 en repli (14,6 %). **T12 faite** (fiche en feuille, `?parfum=<id>`, précédent/suivant au glissé, Snapchat en 2 taps, `288cf48`) et **T13 faite** (« Ma sélection », un seul message Snapchat, `7d86433`). **Point de contrôle 3 passé** le 20/10 (iPhone), après correctif des gestes et du verre à la bascule de thème (`f4bee0f`). **T14 faite** (fiche indexable au contenu de la feuille, page marque à l'ambiance moyenne, index A→Z, `00a0001` ; sitemap identique avant/après). **Prochaine : T15** (planche d'accueil, puis code sur « oui » ; reprendre `PROMPT-SUITE-S7.md` à l'étape 2) |
 | 2 → 6 (T7 → T23, sessions S4 → S10) | à faire (`04-PLAN-EXECUTION.md` § D et § F) |
 
 Décisions du 20/10 : direction **A+C « Nuancier nocturne »** ; **clair + sombre** ; **rien** de la
@@ -129,6 +129,21 @@ refusables au point de contrôle 1.
 - **Mesure** : Lighthouse n'est pas installé ; `LCP` mesuré par Playwright au même profil (4G lente,
   processeur ×4) sur un build local (`next start -p 3001`, configuration `vitrine-prod` du
   `.claude/launch.json` principal). Médiane 1 872 ms, élément = visuel d'accueil (T15).
+
+### Remarques de T14 (20/10)
+
+- **Build de contrôle** : `next build` (Turbopack) refuse la jonction `node_modules` du worktree
+  (« Symlink … points out of the filesystem root »). Passer par
+  `node node_modules/next/dist/bin/next build --webpack` avec `NUREA_SKIP_MIGRATE_DEPLOY=1` et des
+  `DATABASE_URL`/`DIRECT_URL` locales. Sitemap : `.next/server/app/sitemap.xml.body`.
+- **Voir les pages SEO en local** : sans base, `getSeoCatalogue()` rend vide (404 sur marque et fiche,
+  voulu). La base locale jetable `nurea_test` a été remplie du catalogue de démo (36 marques, 111
+  parfums, `updatedAt` fixe au 02/10) ; une suite `test:db` la recrée. `next start -p 3002` avec ces
+  URL (le port 3001 sert à une autre session).
+- **Ambiance de marque** : `averageAmbient()` (`src/lib/catalog/ambient.ts`) — moyenne circulaire
+  pondérée par la chroma ; repli si aucune ambiance ou si les teintes s'opposent (longueur < 0,5).
+- Ouverts : la rangée de lettres de l'index tient sur 3 lignes à 390 px ; le visuel de collection de
+  la page marque garde son ancien format (2:3 plafonné à 20 rem).
 
 ### Remarques de T12–T13 (20/10)
 
