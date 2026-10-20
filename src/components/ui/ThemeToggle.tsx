@@ -33,11 +33,29 @@ export const ThemeToggle: FC<{ className?: string }> = ({ className }) => {
       return;
     }
     const box = event.currentTarget.getBoundingClientRect();
-    root.style.setProperty("--reveal-x", `${box.left + box.width / 2}px`);
-    root.style.setProperty("--reveal-y", `${box.top + box.height / 2}px`);
-    // Transition sautée (onglet masqué, autre transition en cours) : le thème change quand même,
-    // seule l'animation manque ; sa promesse rejetée n'est pas une erreur.
-    document.startViewTransition(apply).ready.catch(() => {});
+    const x = box.left + box.width / 2;
+    const y = box.top + box.height / 2;
+    // Rayon final = distance au coin le plus éloigné : toute la durée sert à l'animation visible.
+    const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    root.style.setProperty("--reveal-x", `${x}px`);
+    root.style.setProperty("--reveal-y", `${y}px`);
+    root.style.setProperty("--reveal-r", `${Math.ceil(radius)}px`);
+    // L'ancien écran reste figé tant que le rappel n'a pas rendu la main : on y attend que les
+    // visuels du nouveau thème soient décodés (400 ms au plus), sinon le cercle découvrirait un aplat.
+    document
+      .startViewTransition(async () => {
+        apply();
+        const shown = [...document.querySelectorAll<HTMLImageElement>("#vitrine img")].filter(
+          (img) => img.offsetParent !== null && img.getBoundingClientRect().bottom > 0 && img.getBoundingClientRect().top < innerHeight
+        );
+        await Promise.race([
+          Promise.all(shown.map((img) => img.decode().catch(() => undefined))),
+          new Promise((resolve) => setTimeout(resolve, 400)),
+        ]);
+      })
+      // Transition sautée (onglet masqué, autre transition en cours) : le thème change quand même,
+      // seule l'animation manque ; sa promesse rejetée n'est pas une erreur.
+      .ready.catch(() => {});
   };
 
   return (

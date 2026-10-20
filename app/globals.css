@@ -364,8 +364,16 @@
     mix-blend-mode: normal;
   }
 
+  /* Courbe des feuilles iOS : départ franc, arrivée très douce. Un peu plus
+     lent au doigt (téléphone) qu'à la souris, où l'œil suit moins loin. */
   ::view-transition-new(root) {
-    animation: theme-reveal var(--dur-4) var(--ease-out);
+    animation: theme-reveal var(--dur-4) var(--ease-sheet);
+  }
+
+  @media (pointer: coarse) {
+    ::view-transition-new(root) {
+      animation-duration: 800ms;
+    }
   }
 
   @keyframes theme-reveal {
@@ -373,7 +381,7 @@
       clip-path: circle(0 at var(--reveal-x, 50%) var(--reveal-y, 0));
     }
     to {
-      clip-path: circle(150vmax at var(--reveal-x, 50%) var(--reveal-y, 0));
+      clip-path: circle(var(--reveal-r, 150vmax) at var(--reveal-x, 50%) var(--reveal-y, 0));
     }
   }
 
