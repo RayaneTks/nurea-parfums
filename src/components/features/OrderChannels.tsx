@@ -1,7 +1,7 @@
 import type { FC, ReactNode } from "react";
 import Link from "next/link";
 import { MENTION_FLACONS } from "@/lib/mentions";
-import { contactHref, whatsappOrderUrl } from "@/lib/catalog/perfumePresentation";
+import { contactHref, orderMessage, whatsappOrderUrl } from "@/lib/catalog/perfumePresentation";
 import { buttonClass } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { ChannelSoon } from "@/components/ui/ChannelSoon";
@@ -28,7 +28,7 @@ interface OrderChannelsProps {
  *
  * Un seul composant pour le détail en surimpression ET la fiche parfum indexable. Ces appels à
  * l'action avaient déjà été recopiés trois fois, et les trois copies avaient divergé (voir
- * `PerfumeDialog`) : une quatrième copie aurait recommencé.
+ * `PerfumeSheet`) : une quatrième copie aurait recommencé.
  *
  * Charte § 05 : Snapchat prend l'unique aplat de l'écran — c'est le seul canal ouvert —,
  * WhatsApp le filet, le formulaire le lien texte. Sans état ni effet : rendu serveur possible.
@@ -39,7 +39,7 @@ export const OrderChannels: FC<OrderChannelsProps> = ({ perfume, brand, classNam
 
   return (
     <div className={cn("mt-3 flex flex-col items-start gap-3", className)}>
-      <SnapchatOrderButton perfume={perfume} brand={brand} className={primaryOnMobile ? undefined : "max-md:hidden"} />
+      <SnapchatOrderButton message={orderMessage([{ name: perfume, brand }])} className={primaryOnMobile ? undefined : "max-md:hidden"} />
 
       {commandeWhatsApp ? (
         <a

@@ -86,6 +86,12 @@ export function rubberband(overshoot: number, dimension: number, constant = 0.55
 }
 
 /**
+ * Vitesse de fermeture d'une feuille (04-PLAN-EXECUTION § B.7) : 0,11 px/ms, soit 110 px/s, vers le
+ * bas. Au-delà, la feuille se ferme quelle que soit la distance parcourue.
+ */
+export const DISMISS_VELOCITY = 110;
+
+/**
  * Vitesse d'un doigt, lue sur ses derniers points plutôt que sur le dernier seul : un seul écart
  * entre deux événements est trop bruité pour décider d'une fermeture.
  */

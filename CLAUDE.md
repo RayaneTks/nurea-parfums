@@ -149,7 +149,7 @@ une feuille de style l'embarquerait dans les deux registres. Il lit l'en-tête
   jamais par une page.
 - `src/components/home/` — CatalogSection et ses pièces : `CatalogToolbar`,
   `CatalogEmptyState`, `CatalogFilterDrawer`, `useCatalogFilters`, `useExtendedSearch`.
-- `src/components/features/` — Hero, FeaturedSection, PerfumeCard, PerfumeDialog,
+- `src/components/features/` — Hero, FeaturedSection, PerfumeCard, PerfumeSheet (fiche en feuille, `?parfum=<id>`),
   PerfumeImage, ContactForm.
 - `src/components/editorial/` — briques des pages éditoriales (La parfumerie, Contact,
   Légal, 404) : `BottleMosaic`, `Chapters`, `OrderSteps`, `BrandIndex`, `Seal`,

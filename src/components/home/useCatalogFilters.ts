@@ -23,6 +23,8 @@ export interface CatalogFilters {
   /** Nombre de parfums affichés (`?n=`), multiple de `PAGE_SIZE`. */
   n: number;
   density: Density;
+  /** Fiche ouverte (`?parfum=<id>`) : un lien partagé rouvre la même fiche. */
+  parfum: string;
 }
 
 const EMPTY_FILTERS: CatalogFilters = {
@@ -33,6 +35,7 @@ const EMPTY_FILTERS: CatalogFilters = {
   brandSlugs: new Set(),
   n: PAGE_SIZE,
   density: 2,
+  parfum: "",
 };
 
 export function readFilters(params: URLSearchParams): CatalogFilters {
@@ -51,6 +54,7 @@ export function readFilters(params: URLSearchParams): CatalogFilters {
     brandSlugs: new Set(rawBrands ? rawBrands.split(",").filter(Boolean) : []),
     n: readCount(params.get("n")),
     density: rawDensity === "1" || rawDensity === "3" ? Number(rawDensity) as Density : 2,
+    parfum: params.get("parfum")?.trim() ?? "",
   };
 }
 
@@ -72,6 +76,7 @@ export function writeFilters(filters: CatalogFilters): string {
   }
   if (filters.n > PAGE_SIZE) params.set("n", String(filters.n));
   if (filters.density !== 2) params.set("densite", String(filters.density));
+  if (filters.parfum) params.set("parfum", filters.parfum);
   return params.toString();
 }
 
@@ -116,9 +121,9 @@ export function useCatalogFilters() {
     return () => window.clearTimeout(timer);
   }, [serialized, pathname]);
 
-  /** Changer ce qu'on regarde (recherche, tri, marques…) repart de la première page ; la densité et `n`, non. */
+  /** Changer ce qu'on regarde (recherche, tri, marques…) repart de la première page ; la densité, `n` et la fiche ouverte, non. */
   const update = useCallback((patch: Partial<CatalogFilters>) => {
-    const keepsPage = Object.keys(patch).every((key) => key === "n" || key === "density");
+    const keepsPage = Object.keys(patch).every((key) => key === "n" || key === "density" || key === "parfum");
     setFilters((current) => ({ ...current, ...(keepsPage ? {} : { n: PAGE_SIZE }), ...patch }));
   }, []);
 
