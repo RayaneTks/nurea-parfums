@@ -6,6 +6,7 @@
 Ce fichier est la racine de la hiérarchie `AGENTS.md` utilisée par les skills (ex. `deepinit`) pour aider les agents à naviguer dans le dépôt.
 
 ## Key Files
+- `docs/EQUIPE.md` — **fil conducteur des sessions Nuréa** : rôles, périmètres, contrats, format de rendu, journal commun. À lire en premier.
 - `CLAUDE.md` — contexte projet principal (architecture, règles métier, règles de base de données vitales).
 - `DEVELOPER.md` — commandes sûres, base de test locale, ce qu'il ne faut jamais lancer.
 - `PASSATION.md` — état du chantier et reprise.
