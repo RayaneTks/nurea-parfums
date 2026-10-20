@@ -28,7 +28,7 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 | 0. Décider : **T1 planche** (3 couples typo × 2 thèmes, 6 parfums, ambiance) → point de contrôle 1, puis T2 docs | **T1 faite, point de contrôle 1 passé** le 20/10 : direction validée, polices **Fraunces + Figtree**, **aucune contenance affichée**, vraie page d'accueil à venir (T15, sur planche). **T2 faite** le 20/10 : `DESIGN.md`, `.impeccable.md`, `PRODUCT.md`, `docs/charte-graphique.html`, `CLAUDE.md` § Règles Vitrine décrivent la nouvelle DA |
 | 1. Fondations (S2) | **T3 faite** (jetons et thèmes, `9e2d3b6`) et **T4 faite** (Fraunces + Figtree, `a7bdfeb`), branche `refonte/vitrine`, worktree `.claude/worktrees/refonte-vitrine`. T5 et T6 faites en S3 (voir ligne suivante) |
 | 1 → 2 (S3) | **T5 faite** (coque : barre en verre, pied de page, 404, logotype ivoire/noir, `398f3c0`) et **T6 faite** (jeu d'essai `/essai-extremes`, dev seulement, `b52b376`). **T7 faite** (ambiance en base, essai à blanc, `8459575`) |
-| 2 (S4) | **T8 faite** (carte, visuel, squelette, bouton 8 états, icônes, `7e68b14`). **T9 faite** (grille, densité, « Charger la suite », rail A→Z, `985374a`). **Point de contrôle 2 passé** le 20/10 (accueil, fiche, bascule de thème validés sur iPhone, après corrections `296fc91` → `f4ba99c`). **Prochaines : T10, T11** (session S5 suite), puis la migration d'ambiance seule sur `main` et `--apply` (§ Remarques de T7), sur accord explicite du gérant |
+| 2 (S4) | **T8 faite** (carte, visuel, squelette, bouton 8 états, icônes, `7e68b14`). **T9 faite** (grille, densité, « Charger la suite », rail A→Z, `985374a`). **Point de contrôle 2 passé** le 20/10 (accueil, fiche, bascule de thème validés sur iPhone, après corrections `296fc91` → `f4ba99c`). **T10 faite** (recherche en direct, état vide qui invite à écrire, `5f79c5c`) et **T11 faite** (feuille des marques avec « Voir N parfums », une puce par marque, `2b8cc4e`). **Prochaine : migration d'ambiance seule sur `main` et `--apply`** (§ Remarques de T7), sur accord explicite du gérant ; puis **T12** (session S6) |
 | 2 → 6 (T7 → T23, sessions S4 → S10) | à faire (`04-PLAN-EXECUTION.md` § D et § F) |
 
 Décisions du 20/10 : direction **A+C « Nuancier nocturne »** ; **clair + sombre** ; **rien** de la
@@ -129,6 +129,18 @@ refusables au point de contrôle 1.
 - **Mesure** : Lighthouse n'est pas installé ; `LCP` mesuré par Playwright au même profil (4G lente,
   processeur ×4) sur un build local (`next start -p 3001`, configuration `vitrine-prod` du
   `.claude/launch.json` principal). Médiane 1 872 ms, élément = visuel d'accueil (T15).
+
+### Remarques de T10–T11 (20/10)
+
+- **Recherche** : sur l'accueil, la barre diffuse la saisie (`SEARCH_EVENT`, vide sous 2 caractères), le
+  catalogue filtre et renvoie sa requête (`QUERY_SYNC_EVENT`) quand une puce l'efface. Hors accueil, le
+  champ envoie `/?q=`. Une frappe avant l'hydratation du catalogue n'est pas transmise.
+- **État vide** : chaque cas finit sur « Écrivez-nous », contact pré-rempli (`parfum`, `marque`). La
+  page Contact elle-même reste à l'ancienne (T16).
+- **e2e vitrine en local** : le harnais complet exige la base e2e et se connecte à la gestion ; pour la
+  vitrine seule, une config jetable (`testDir: ./e2e`, `baseURL` du serveur de dev, Pixel 7 + Chrome
+  bureau) suffit. WebKit ne charge rien sur `http://localhost` (CSP, voir T8).
+- `e2e/parcours/recherche.spec.ts` est celui de la gestion ; le parcours recherche de la vitrine s'écrit en T21.
 
 ## Outils prêts
 
