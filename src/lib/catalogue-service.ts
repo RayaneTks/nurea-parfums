@@ -197,7 +197,7 @@ const getPublicCatalogueCached = unstable_cache(
   // v6 : l'instantané porte désormais `isNew` (catégorie « Nouveautés ») — un instantané v5 servi
   // au nouveau code laisserait la catégorie vide jusqu'à la prochaine modification du catalogue.
   // v15 : les pages publiques montrent uniquement les fiches parfum ; le visuel de marque reste en bas de page.
-  ["public-catalogue-v19"],
+  ["public-catalogue-v21"],
   { tags: [PUBLIC_CATALOGUE_CACHE_TAG] },
 );
 
@@ -230,7 +230,7 @@ async function loadUnlistedPerfumesFromDb(): Promise<UnlistedPerfume[]> {
 // visuel — la recherche doit les reconnaître sans attendre une mutation de la gestion qui purge le tag.
 // v4 : second lot de la liste du fournisseur (identifications du 12/10/2026), même raison.
 // v5 : quelques notes d'amour ajoutées en base avec son flacon d'origine, même raison.
-const getUnlistedPerfumesCached = unstable_cache(loadUnlistedPerfumesFromDb, ["unlisted-perfumes-v9"], {
+const getUnlistedPerfumesCached = unstable_cache(loadUnlistedPerfumesFromDb, ["unlisted-perfumes-v11"], {
   tags: [PUBLIC_CATALOGUE_CACHE_TAG],
 });
 
@@ -249,7 +249,7 @@ export async function getCachedCatalogue(): Promise<CachedPublicCatalogue> {
 
 // v3 : mêmes corrections que « public-catalogue-v5 », écrites en base sans purge du tag.
 // v10 : chaque parfum porte sa gamme (`line`).
-const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v15"], {
+const getSeoCatalogueCached = unstable_cache(loadSeoCatalogue, ["seo-catalogue-v17"], {
   tags: [PUBLIC_CATALOGUE_CACHE_TAG],
 });
 
