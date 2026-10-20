@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { PerfumeCard } from "@/components/features/PerfumeCard";
-import { PerfumeDialog } from "@/components/features/PerfumeDialog";
+import { PerfumeSheet } from "@/components/features/PerfumeSheet";
 import { buttonClass } from "@/components/ui/Button";
 import { OPEN_CATALOG_FILTERS_EVENT, QUERY_SYNC_EVENT, SEARCH_EVENT } from "@/components/layout/Navbar";
 import {
@@ -81,7 +81,6 @@ export const CatalogSection = ({
     useCatalogFilters();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [openedPerfume, setOpenedPerfume] = useState<Perfume | null>(null);
 
   /* La barre de navigation n'a pas de lien direct vers cet état : elle diffuse. */
   useEffect(() => {
@@ -251,7 +250,13 @@ export const CatalogSection = ({
     [selectCategory, revealCatalogTop]
   );
 
-  const openPerfume = (perfume: Perfume) => setOpenedPerfume(perfume);
+  /* La fiche ouverte vit dans l'adresse (`?parfum=<id>`) : un lien partagé rouvre la même fiche.
+     Précédent/suivant parcourent la liste telle qu'affichée (filtres et tri compris). */
+  const openedPerfume = useMemo(
+    () => (filters.parfum ? catalogPerfumes.find((perfume) => String(perfume.id) === filters.parfum) ?? null : null),
+    [catalogPerfumes, filters.parfum]
+  );
+  const openPerfume = (perfume: Perfume) => update({ parfum: String(perfume.id) });
 
   const applyBrandFilter = useCallback(
     (slugs: Set<string>) => {
@@ -274,9 +279,11 @@ export const CatalogSection = ({
       />
 
       {openedPerfume && (
-        <PerfumeDialog
+        <PerfumeSheet
           perfume={openedPerfume}
-          onClose={() => setOpenedPerfume(null)}
+          sequence={sorted}
+          onNavigate={openPerfume}
+          onClose={() => update({ parfum: "" })}
         />
       )}
 

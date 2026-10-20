@@ -27,6 +27,16 @@ export function brandLineLabel(brand: string, line?: string | null): string {
   return gamme === "" ? brand : `${brand} · ${gamme}`;
 }
 
+/**
+ * Ce que le bouton Snapchat copie : « Nom (Marque) », une ligne par parfum. Snapchat n'accepte pas
+ * de message pré-rempli ; le client colle ce texte, et la commande arrive sans ambiguïté.
+ */
+export function orderMessage(items: readonly { name: string; brand: string }[]): string {
+  return items
+    .map(({ name, brand }) => (brand.trim() ? `${name.trim()} (${brand.trim()})` : name.trim()))
+    .join("\n");
+}
+
 /** Formulaire de contact pré-rempli avec le parfum consulté. */
 export function contactHref(perfume: string, brand: string): string {
   const params = new URLSearchParams({ parfum: perfume, marque: brand });

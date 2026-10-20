@@ -31,3 +31,11 @@ describe("pagination et densité dans l'adresse", () => {
     expect(read(search)).toMatchObject({ query: "dior", sort: "brand", n: 72, density: 3 });
   });
 });
+
+describe("fiche ouverte dans l'adresse", () => {
+  it("relit ?parfum=<id> et l'écrit après les filtres", () => {
+    expect(read("parfum=42").parfum).toBe("42");
+    expect(read("").parfum).toBe("");
+    expect(writeFilters({ ...read("q=dior"), parfum: "42" })).toBe("q=dior&parfum=42");
+  });
+});

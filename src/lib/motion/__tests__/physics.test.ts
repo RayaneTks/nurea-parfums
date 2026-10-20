@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  DISMISS_VELOCITY,
   SPRING_FLICK,
   SPRING_SETTLE,
   VelocityTracker,
@@ -80,5 +81,19 @@ describe("vitesse du doigt", () => {
     tracker.add(0, 0);
     tracker.add(50, 16);
     expect(tracker.velocity(400)).toBe(0);
+  });
+});
+
+describe("seuil de fermeture d'une feuille (§ B.7 : 0,11 px/ms)", () => {
+  const speedOf = (pxPerMs: number) => {
+    const tracker = new VelocityTracker();
+    for (let t = 0; t <= 80; t += 16) tracker.add(t * pxPerMs, t);
+    return tracker.velocity(80);
+  };
+
+  it("ferme au-dessus de 0,11 px/ms, pas en dessous", () => {
+    expect(DISMISS_VELOCITY).toBe(110);
+    expect(speedOf(0.12)).toBeGreaterThan(DISMISS_VELOCITY);
+    expect(speedOf(0.1)).toBeLessThan(DISMISS_VELOCITY);
   });
 });

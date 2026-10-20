@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
 import {
+  DISMISS_VELOCITY,
   SPRING_FLICK,
   SPRING_SETTLE,
   VelocityTracker,
@@ -18,7 +19,6 @@ const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
 /** Mouvement à parcourir avant de décider qui, de la feuille ou du défilement, prend le geste. */
 const SLOP_PX = 8;
 /** Au-delà, un glissé vers le bas ferme quelle que soit la distance parcourue. */
-const DISMISS_VELOCITY = 400;
 /** Grand écran : la boîte monte de 12 px en apparaissant — la seule montée que la charte admette. */
 const RISE_PX = 12;
 /** Mouvement réduit : la feuille se contente d'un fondu. Sans élan à transmettre, un ressort vif. */
@@ -146,6 +146,7 @@ export function useSheetMotion({
     if (!panel) return;
 
     const tracker = new VelocityTracker();
+    let startX = 0;
     let startY = 0;
     let startOffset = 0;
     let claimed = false;
@@ -158,6 +159,7 @@ export function useSheetMotion({
       const moving = frame.current !== null;
       /* Rattrapée en plein vol : elle s'arrête sous le doigt, là où elle est. */
       stop();
+      startX = event.touches[0]!.clientX;
       startY = y;
       startOffset = (1 - spring.current.value) * distance(panel);
       claimed = moving;
@@ -173,7 +175,13 @@ export function useSheetMotion({
       const dy = y - startY;
 
       if (!claimed) {
-        if (Math.abs(dy) < SLOP_PX) return;
+        const dx = event.touches[0]!.clientX - startX;
+        if (Math.abs(dy) < SLOP_PX && Math.abs(dx) < SLOP_PX) return;
+        /* Geste de côté : il appartient à la feuille (précédent/suivant), pas au glissé vertical. */
+        if (Math.abs(dx) > Math.abs(dy)) {
+          abandoned = true;
+          return;
+        }
         const onHandle = (event.target as Element | null)?.closest("[data-sheet-handle]");
         const scroller = scrollRef?.current;
         const atTop = !scroller || scroller.scrollTop <= 0;
