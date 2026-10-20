@@ -3,6 +3,7 @@ import Link from "next/link";
 import { MENTION_FLACONS } from "@/lib/mentions";
 import { contactHref, whatsappOrderUrl } from "@/lib/catalog/perfumePresentation";
 import { buttonClass } from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
 import { ChannelSoon } from "@/components/ui/ChannelSoon";
 import { WhatsAppIcon } from "@/components/ui/Icons";
 import { SnapchatOrderButton } from "./SnapchatOrderButton";
@@ -10,6 +11,8 @@ import { SnapchatOrderButton } from "./SnapchatOrderButton";
 interface OrderChannelsProps {
   perfume: string;
   brand: string;
+  /** Alignement de la colonne (la fiche en surimpression centre tout sur téléphone). */
+  className?: string;
   /** Liens supplémentaires, rendus après le formulaire (ex. « Voir la fiche du parfum »). */
   children?: ReactNode;
   /**
@@ -30,12 +33,12 @@ interface OrderChannelsProps {
  * Charte § 05 : Snapchat prend l'unique aplat de l'écran — c'est le seul canal ouvert —,
  * WhatsApp le filet, le formulaire le lien texte. Sans état ni effet : rendu serveur possible.
  */
-export const OrderChannels: FC<OrderChannelsProps> = ({ perfume, brand, children, primaryOnMobile = true }) => {
+export const OrderChannels: FC<OrderChannelsProps> = ({ perfume, brand, className, children, primaryOnMobile = true }) => {
   /* `null` tant que le canal n'est pas ouvert — voir `CONTACT.whatsapp`. */
   const commandeWhatsApp = whatsappOrderUrl(perfume, brand);
 
   return (
-    <div className="mt-3 flex flex-col items-start gap-3">
+    <div className={cn("mt-3 flex flex-col items-start gap-3", className)}>
       <SnapchatOrderButton perfume={perfume} brand={brand} className={primaryOnMobile ? undefined : "max-md:hidden"} />
 
       {commandeWhatsApp ? (
