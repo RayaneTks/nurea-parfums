@@ -1,0 +1,51 @@
+{
+  "_lisez-moi": "Jeu d'essai de la refonte vitrine (T6). Données FICTIVES, jamais en base, jamais publiées : elles servent à casser la mise en page (noms extrêmes, accents, image absente). Lu par app/(shop)/essai-extremes/page.tsx, page de développement seulement, retirée avant T23.",
+  "extremes": [
+    {
+      "id": 900001,
+      "name": "Eaudeparfumextraordinairementconcentreepourlesgrandesoccasio",
+      "brand": "Marque d'essai",
+      "category": "Tout voir",
+      "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458433328-149bf650.webp",
+      "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458433460-1ee36f66.webp"
+    },
+    {
+      "id": 900002,
+      "name": "Nom court",
+      "brand": "Y",
+      "category": "Tout voir",
+      "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802604749-af82e0c2.webp"
+    },
+    {
+      "id": 900003,
+      "name": "Ligne très longue",
+      "brand": "Marque d'essai",
+      "line": "La Collection Privée des Ateliers d'Essai, Édition Exceptionnelle Numérotée",
+      "category": "Tout voir",
+      "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802604749-af82e0c2.webp"
+    },
+    {
+      "id": 900004,
+      "name": "Éclat d'Œillet, çà et là",
+      "brand": "Œuvre Française d'Essai",
+      "category": "Tout voir",
+      "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458433328-149bf650.webp",
+      "imageLight": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790458433460-1ee36f66.webp"
+    },
+    {
+      "id": 900005,
+      "name": "Image cassée",
+      "brand": "Marque d'essai",
+      "category": "Tout voir",
+      "image": "/essai/flacon-introuvable.webp"
+    },
+    {
+      "id": 900006,
+      "name": "Hibiscus Mahajád Extrait de Parfum Intense",
+      "brand": "Ateliers d'Essai Réunis de Grasse et d'Ailleurs",
+      "line": "Private Blend",
+      "category": "Tout voir",
+      "image": "https://lkdhqqzocmxtyarseizc.supabase.co/storage/v1/object/public/catalog/perfumes/1790802604749-af82e0c2.webp"
+    }
+  ]
+}
