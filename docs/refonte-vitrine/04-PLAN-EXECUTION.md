@@ -232,6 +232,62 @@ souligné au survol. **Un seul bouton primaire par écran.** Cibles ≥ 44 px (z
   l'icône cœur de la barre, feuille listant les parfums, un bouton « Commander ces N parfums sur
   Snapchat » qui compose un seul message.
 
+### B.10 Accueil : composition (Fable, 21/10/2026, après le refus de la planche du 20/10)
+
+**Diagnostic de la planche refusée** (`refonte/planche` `cee4774`, « beaucoup trop cheap ») :
+(1) premier écran sans image — un titre et une phrase sur un aplat, alors que les visuels sont le seul
+atout du site ; (2) la bande de 15 teintes se lit comme une barre de progression ; (3) quatre sections
+de même poids (même `subtitle`, même marge), aucun moment fort ni contraste d'échelle ; (4) les
+« mis en avant » sont des cartes de grille recolorées, rien ne dit « choisi » ; (5) les pastilles de
+marques sont des filtres d'application, pas une parfumerie. Remède : **l'image dans le premier écran,
+en grand, composée avec la typographie** (jamais posée dessus), et un rythme de sections contrasté.
+
+Deux compositions franchement différentes sont sur la planche `public/planche/accueil-v2.html`
+(`refonte/planche`). **Le gérant en choisit une** ; celle qu'il retient devient la spécification de
+T15, l'autre est retirée de ce document. Ce qui est **commun aux deux** :
+
+| Élément | Valeur |
+|---|---|
+| Barre haute | inchangée (logo, recherche permanente, cœur, thème) : 113 px à 390 (56 + 44 + 12 + filet) |
+| H1 | unique, « Nuréa Parfums, Marseille », `<span class="nb">` insécable sur « Nuréa Parfums, » ; « Marseille » en `--text-2` |
+| Ligne de faits | `caption`, 8 px sous le H1 : « *N* parfums · *M* marques · Commande sur Snapchat » — *N* et *M* = fiches et marques publiées, rien d'autre |
+| Marques | un **index**, pas des puces : les 8 marques les plus fournies, une ligne de 56 px chacune (`padding` 14 px), filet `--line` entre les lignes et au-dessus de la première ; nom en `subtitle`, nombre en `caption` « *n* parfums » à droite, ligne entière = lien `/parfums/<slug>` ; 1 colonne < 768, 2 colonnes à 768 (`column-gap` 32), 4 à 1024. Dessous, deux liens tertiaires de 44 px : « Toutes les marques, de A à Z » (`/parfums`), « Un parfum manque ? Écrivez-nous » (`/contact`) |
+| Catalogue | tel que validé (barre d'outils, grille 2/3/4, « Charger la suite », fiche en feuille, Ma sélection) ; titre de section « Catalogue » en `title`, compteur en `caption` |
+| Titres de section | `title` (28 px à 390, 40 px dès 1 000), jamais `subtitle` |
+| Respiration | sections séparées par `--space-section` ; H1 à 24 px sous la barre |
+| Pied de page | inchangé (`MENTION_FLACONS`, liens) |
+| Mouvement | aucune entrée animée au chargement en T15 (T18 la fera comme ailleurs) ; appui `--press` sur toute surface tactile ; survol (pointeur fin) = nom souligné, rien sur l'image ; bascule de thème en cercle inchangée |
+| Taps | visuel ou nom → fiche (1), « Commander sur Snapchat » (2) : **2 taps**, 4 exigés |
+| Interdits tenus | aucun bouton dans l'ouverture (le seul bouton plein de l'écran reste celui de la fiche) ; aucune photo assombrie, aucun texte sur photo ; aucune donnée autre que nom, marque, ligne, visuels, ambiance, compteurs |
+
+**A — « Couverture »** (éditoriale, verticale : un parfum en grand)
+
+| | 390 | 768 | 1280 |
+|---|---|---|---|
+| H1 | `display` 48 px, 2 lignes (101 px) ; 3 lignes voulues à 320 | 63 px | 80 px |
+| Bandeau « une » (× 2, un par parfum mis en avant) | `<section>` **bord à bord**, fond = **ambiance du parfum** (`--amb`, repli `--surface-1`), `padding-block` 24, premier bandeau à 24 px sous la ligne de faits, 12 px entre les deux. Dedans, dans la gouttière : marque (`body`, `--text-2`), nom (`title`, H2, lien vers la fiche) à 2 px, puis le visuel 2:3 à 16 px, largeur 358, rayon `--r-md`, bouton vers la fiche | `padding-block` 32 ; grille 2 colonnes : texte `1fr` à gauche, visuel **45 %** (324 × 486) à droite, `column-gap` 32, centrés verticalement ; **second bandeau en miroir** (visuel à gauche) | `padding-block` 48 ; visuel **40 %** (486 × 729), `column-gap` 48 ; nom toujours en `title` (40 px) |
+| Premier écran (390 × 844, barre comprise) | H1 137→238, faits 246→263, bandeau dès 287 : marque 311→333, nom 335→367, visuel 383→920 → **461 px du visuel visibles (86 %)**, aucune ligne de texte coupée | | |
+| LCP | le visuel du premier bandeau : `priority` + `preload`, `sizes="(min-width: 1024px) 40vw, (min-width: 768px) 45vw, 100vw"` ; le chargeur sert la **vignette 640** jusqu'à 640 px demandés (téléphone, tablette), **l'original 1024** au-delà (bureau). Une seule image dans le premier écran : budget tenu (1,9 s mesuré aujourd'hui avec une image de même ordre) | | |
+
+Amendement de § B.3.8 : l'ambiance peut aussi être le **fond du bandeau d'un parfum mis en avant sur
+l'accueil** — un bandeau de section, au même titre que l'en-tête de la page marque ; toujours
+**jamais** le fond de toute la page ni la barre. Le contraste y est garanti par la dérivation
+(`--text-1` ≥ 7:1, `--text-3` ≥ 4,5:1), donc marque en `--text-2` et nom en `--text-1` y sont lisibles.
+
+**B — « Nuancier »** (le catalogue en image dès l'ouverture, rangé par couleur)
+
+| | 390 | 768 | 1280 |
+|---|---|---|---|
+| H1 | `title` 28 px, **une ligne** (masthead), même ligne de faits | 35 px | 40 px |
+| Mur | `<ul>` **bord à bord** (ni gouttière ni rayon), 16 px sous les faits, **24 cases** : les 2 mis en avant en **grandes tuiles 2 × 2** + **16 petites**, écart 2 px, `grid-auto-flow: dense`. 3 colonnes : petite tuile 128,7 × 193, grande 257 × 388, **8 rangées** (1 560 px) ; grande tuile 1 en haut à gauche, grande tuile 2 à `grid-column: 2 / span 2; grid-row: 5 / span 2` | 4 colonnes : 190 × 286, grande 383 × 574, 6 rangées ; tuile 2 à `3 / span 2`, rangée `4` | 6 colonnes : 212 × 318, grande 425 × 637, 4 rangées ; tuile 2 à `5 / span 2`, rangée `3` |
+| Tirage des 16 petites | parmi les fiches publiées **avec ambiance** (jamais une fiche en repli, elle n'a pas de couleur), hors mis en avant : classes de 30° de `ambientHue`, **au moins une par classe non vide**, le reste au prorata de la taille des classes, prise au milieu de chaque tranche ; puis **tri par teinte croissante**. Moins de 16 éligibles → on montre ce qu'il y a, les rangées suivent. Tirage côté serveur, stable pour une même liste | | |
+| Tuile | `<button>` plein, `aria-label` « *Nom*, *Marque* », aucun texte visible (le nom vient à l'ouverture de la fiche) ; appui `--press` | | |
+| Sous le mur | `caption` « Chaque flacon est rangé par sa couleur, du rouge au bleu. » à gauche, lien tertiaire « Tout le catalogue » (ancre de la section) à droite, 12 px sous le mur, dans la gouttière | | |
+| Premier écran (390 × 844) | H1 137→169, faits 177→194, mur dès 210 : rangées 1–2 (210→598), rangée 3 (600→793), rangée 4 coupée à 51 px → **9 flacons visibles** (1 grand, 8 petits, 3 entamés) | | |
+| Images | **vignette 640 partout**, grandes tuiles comprises (425 px CSS au plus : l'original n'y apporte rien de visible et coûterait ~110 Ko de plus) ; grande tuile 1 en `priority`, le reste paresseux. Premier écran ≈ 9 vignettes ≈ 320 Ko : c'est le prix de cette composition, à mesurer en T19 (cible LCP ≤ 2,5 s tenue par la grande tuile seule) | | |
+
+Index des marques et catalogue : identiques à A, dans cet ordre, après le mur.
+
 ---
 
 ## C. Cartographie des fichiers (par tâche)
@@ -247,7 +303,7 @@ souligné au survol. **Un seul bouton primaire par écran.** Cibles ≥ 44 px (z
 | Ambiance (T7) | `prisma/schema.prisma` + migration, `scripts/refonte-vitrine/ambiance.mjs` (nouveau), `src/lib/catalog/getCatalogPerfumes.ts` et `src/lib/data.ts` (deux champs), `demo-catalogue.json` (régénéré) | ajout |
 | Filets | `tests/architecture/anti-slop.test.ts` (inchangé), `css-registers.test.ts`, `e2e/catalog-filters.spec.ts` (sélecteurs à refaire), `e2e/layout-invariants.spec.ts` (gestion, inchangé) | T21 |
 | Docs | `DESIGN.md`, `.impeccable.md`, `PRODUCT.md`, `docs/charte-graphique.html`, `CLAUDE.md` § Règles Vitrine, `docs/refonte-vitrine/00-LISEZ-MOI.md` | T2, puis T23 |
-| Planche | `public/planche/index.html` + `public/planche/fonts/` (**branche `refonte/planche` seulement, jamais sur `main`**) | T1 |
+| Planche | `public/planche/index.html` + `public/planche/fonts/` (**branche `refonte/planche` seulement, jamais sur `main`**) ; `accueil.html` (refusée), `accueil-v2.html` (A et B) | T1, T15 |
 
 ---
 
@@ -331,10 +387,10 @@ Modèle : Opus 5.5 ; effort `medium` sauf mention. `PC` = point de contrôle gé
 
 ### Phase 4 — pages éditoriales et aperçus
 
-**T15 — Accueil : composition** · M · Opus medium
-- Fichiers : `Hero.tsx`, `FeaturedSection.tsx`, `app/(shop)/page.tsx`.
-- Spécification : **une vraie page d'accueil** (demande du gérant au PC 1) : section d'ouverture (hero) qui porte le H1 « Nuréa Parfums, Marseille », puis sections (les 2 parfums mis en avant, la recherche, le catalogue). Interdit : le gabarit « grande phrase + deux boutons + photo assombrie ». La composition se dessine d'abord sur une **planche d'accueil** (HTML autonome sur la branche `refonte/planche`, même méthode que T1, vrais visuels) montrée au gérant **avant** le code ; une question de goût sur cette composition → session Fable.
-- Acceptation : H1 unique portant « Nuréa Parfums » et « Marseille » ; aucune modale ni bannière à l'arrivée ; depuis l'accueil, message Snapchat en **4 taps**.
+**T15 — Accueil : composition** · M · Opus medium · **après le choix du gérant (A ou B, § B.10)**
+- Fichiers : `Hero.tsx` (ouverture : H1, ligne de faits, puis bandeaux « une » en A ou mur en B), `FeaturedSection.tsx` (A : le bandeau d'un parfum ; B : le mur et son tirage — ou renommer, le nom suit la composition retenue), nouveau `src/components/features/BrandIndex.tsx` (index des marques), `app/(shop)/page.tsx` (ordre des sections, compteurs, tirage côté serveur).
+- Spécification : **§ B.10, à la lettre** (une seule des deux compositions, celle que le gérant a choisie ; la planche `public/planche/accueil-v2.html` est la référence visuelle). Historique : la première planche (`cee4774`) a été refusée le 20/10 (« beaucoup trop cheap ») ; la composition a été redessinée par Fable le 21/10. Interdit : le gabarit « grande phrase + deux boutons + photo assombrie », tout texte posé sur une photo, toute donnée hors nom / marque / ligne / visuels / ambiance / compteurs.
+- Acceptation : H1 unique portant « Nuréa Parfums » et « Marseille » ; aucune modale ni bannière à l'arrivée ; depuis l'accueil, message Snapchat en **4 taps** (2 attendus) ; premier écran à 390 × 844 conforme au tableau de § B.10 (positions à ± 8 px) ; `scrollWidth === innerWidth` à 320 ; deux thèmes ; **LCP ≤ 2,5 s** sur build local, profil de T9, élément LCP = celui nommé en § B.10 ; `npm run typecheck && npm run lint && npm test` ; e2e « Snapchat depuis l'accueil » (T20 l'archive).
 
 **T16 — La parfumerie, Contact, Légal, 404** · M · Opus medium
 - Fichiers : `marque/page.tsx`, `contact/page.tsx`, `legal/page.tsx` (contenu juridique inchangé), `app/not-found.tsx`, `ContactForm.tsx` (étiquettes visibles, erreurs sous champ, premier champ en erreur focalisé, leurre et guard inchangés), `src/components/editorial/*` (réécrits ou supprimés ; `Seal`, `Monogram` : monogramme cerclé seulement sur photo).

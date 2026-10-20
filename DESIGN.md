@@ -190,9 +190,16 @@ une étiquette visible et son erreur dessous.
 - **Ma sélection** : liste gardée sur l'appareil (`localStorage`, `nurea:selection:v1`), compteur
   sur le cœur de la barre, feuille qui liste les parfums et un bouton « Commander ces N parfums sur
   Snapchat » qui compose un seul message. Aucun compte, aucune écriture serveur.
-- **Accueil** : une vraie page d'accueil — une section d'ouverture qui porte le H1 « Nuréa Parfums,
-  Marseille », puis des sections (parfums mis en avant, recherche, catalogue). Jamais le gabarit
-  « grande phrase + deux boutons + photo assombrie ». Composition dessinée sur planche avant le code.
+- **Accueil** : une vraie page d'accueil, composée le 21/10/2026 (`04-PLAN-EXECUTION.md` § B.10,
+  planche `accueil-v2.html` sur `refonte/planche`). Ordre : ouverture (H1 « Nuréa Parfums, Marseille »
+  + ligne de faits « *N* parfums · *M* marques · Commande sur Snapchat »), **l'image dans le premier
+  écran** — soit **A « Couverture »** : chaque parfum mis en avant sur un bandeau bord à bord à *son*
+  ambiance (marque, nom en `title`, visuel 2:3), soit **B « Nuancier »** : un mur de visuels bord à
+  bord rangés par teinte, les deux mis en avant en grandes tuiles — puis l'**index des marques**
+  (lignes au filet, nom en `subtitle`, compteur, jamais des puces), puis le catalogue, puis le pied de
+  page. Le gérant choisit A ou B sur la planche ; la composition retenue reste seule ici. Jamais le
+  gabarit « grande phrase + deux boutons + photo assombrie », jamais de texte sur une photo, aucun
+  bouton dans l'ouverture.
 
 ## Fiche produit
 
