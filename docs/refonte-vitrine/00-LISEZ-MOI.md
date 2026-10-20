@@ -25,8 +25,8 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 |---|---|
 | Préparation (recherche, invariants, playbook, photo « avant », garde-fou anti-slop) | **faite** |
 | Cadrage (décisions du gérant, DA chiffrée, plan, passation) — Fable, 20/10/2026 | **fait** — `03-DA.md` § 7, `04-PLAN-EXECUTION.md`, `PROMPT-OPUS.md` |
-| 0. Décider : **T1 planche** (3 couples typo × 2 thèmes, 6 parfums, ambiance) → point de contrôle 1, puis T2 docs | **T1 faite, point de contrôle 1 passé** le 20/10 : direction validée, polices **Fraunces + Figtree**, **aucune contenance affichée**, vraie page d'accueil à venir (T15, sur planche). **Prochaine tâche : T2** (documents amont), session S2 |
-| 1 → 6 (T3 → T23, sessions S2 → S10) | à faire (`04-PLAN-EXECUTION.md` § D et § F) |
+| 0. Décider : **T1 planche** (3 couples typo × 2 thèmes, 6 parfums, ambiance) → point de contrôle 1, puis T2 docs | **T1 faite, point de contrôle 1 passé** le 20/10 : direction validée, polices **Fraunces + Figtree**, **aucune contenance affichée**, vraie page d'accueil à venir (T15, sur planche). **T2 faite** le 20/10 : `DESIGN.md`, `.impeccable.md`, `PRODUCT.md`, `docs/charte-graphique.html`, `CLAUDE.md` § Règles Vitrine décrivent la nouvelle DA |
+| 1 → 6 (T3 → T23, sessions S2 → S10) | **prochaine tâche : T3** (jetons et thèmes), session S2 ; puis T4 ; reste à faire (`04-PLAN-EXECUTION.md` § D et § F) |
 
 Décisions du 20/10 : direction **A+C « Nuancier nocturne »** ; **clair + sombre** ; **rien** de la
 charte v3 n'est repris (seuls les logos/monogrammes, ivoire sur sombre, noir sur clair) ; vocabulaire
@@ -60,5 +60,5 @@ renvoie vers une session **Fable** (effort `high`) qui amende `04-PLAN-EXECUTION
 
 ## Règle d'or
 
-Le document amont avant le code. Tant que `DESIGN.md` décrit la charte v3, il est **faux** pour la
-refonte : le réécrire (T2) est le premier geste après la planche validée (T1), jamais avant.
+Le document amont avant le code. `DESIGN.md` décrit la nouvelle DA depuis T2 (20/10) : le code
+de la vitrine le rattrape tâche par tâche (T3 → T23).
