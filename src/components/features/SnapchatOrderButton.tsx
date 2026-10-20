@@ -14,6 +14,8 @@ interface SnapchatOrderButtonProps {
   label?: string;
   /** Légende avant le geste ; elle annonce la copie. */
   hint?: string;
+  /** Libellé du succès (§ B.8), le temps de `SUCCESS_MS`. */
+  copiedLabel?: string;
   className?: string;
 }
 
@@ -35,6 +37,7 @@ export const SnapchatOrderButton: FC<SnapchatOrderButtonProps> = ({
   message,
   label = "Commander sur Snapchat",
   hint = "Le bouton copie aussi le nom du parfum.",
+  copiedLabel = "Nom copié",
   className,
 }) => {
   const [copied, setCopied] = useState(false);
@@ -68,10 +71,10 @@ export const SnapchatOrderButton: FC<SnapchatOrderButtonProps> = ({
         ) : (
           <SnapchatIcon className="h-4 w-4 shrink-0" aria-hidden />
         )}
-        <span aria-live="polite">{copied ? "Nom copié" : label}</span>
+        <span aria-live="polite">{copied ? copiedLabel : label}</span>
       </a>
       <p className="t-caption text-center">
-        {copied ? "Collez-le dans la conversation." : hint}
+        {copied ? "Il ne reste qu'à coller dans la conversation." : hint}
       </p>
     </div>
   );

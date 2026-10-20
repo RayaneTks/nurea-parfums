@@ -6,7 +6,8 @@ import { X } from "lucide-react";
 import { PerfumeCard } from "@/components/features/PerfumeCard";
 import { PerfumeSheet } from "@/components/features/PerfumeSheet";
 import { buttonClass } from "@/components/ui/Button";
-import { OPEN_CATALOG_FILTERS_EVENT, QUERY_SYNC_EVENT, SEARCH_EVENT } from "@/components/layout/Navbar";
+import { OPEN_CATALOG_FILTERS_EVENT, OPEN_SELECTION_EVENT, QUERY_SYNC_EVENT, SEARCH_EVENT } from "@/components/layout/Navbar";
+import { SelectionSheet } from "@/components/features/SelectionSheet";
 import {
   compareSearchRelevance,
   findExternalPerfumeHint,
@@ -88,6 +89,13 @@ export const CatalogSection = ({
     window.addEventListener(OPEN_CATALOG_FILTERS_EVENT, open);
     return () => window.removeEventListener(OPEN_CATALOG_FILTERS_EVENT, open);
   }, []);
+
+  /* Le cœur de la barre ouvre « Ma sélection » ; hors de l'accueil, il passe par `/?selection=1`. */
+  useEffect(() => {
+    const open = () => update({ selection: true });
+    window.addEventListener(OPEN_SELECTION_EVENT, open);
+    return () => window.removeEventListener(OPEN_SELECTION_EVENT, open);
+  }, [update]);
 
   /* La barre haute tape, la grille suit ; au premier caractère, le catalogue vient en vue. */
   useEffect(() => {
@@ -278,6 +286,16 @@ export const CatalogSection = ({
         onClose={() => setDrawerOpen(false)}
       />
 
+      {filters.selection && (
+        <SelectionSheet
+          catalogue={catalogPerfumes}
+          onOpenPerfume={openPerfume}
+          onBrowse={revealCatalog}
+          onClose={() => update({ selection: false })}
+        />
+      )}
+
+      {/* Après la sélection : ouverte depuis elle, la fiche se monte par-dessus. */}
       {openedPerfume && (
         <PerfumeSheet
           perfume={openedPerfume}

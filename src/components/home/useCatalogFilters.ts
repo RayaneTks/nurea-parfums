@@ -25,6 +25,8 @@ export interface CatalogFilters {
   density: Density;
   /** Fiche ouverte (`?parfum=<id>`) : un lien partagé rouvre la même fiche. */
   parfum: string;
+  /** Feuille « Ma sélection » ouverte (`?selection=1`) : le cœur de la barre y mène depuis toute page. */
+  selection: boolean;
 }
 
 const EMPTY_FILTERS: CatalogFilters = {
@@ -36,6 +38,7 @@ const EMPTY_FILTERS: CatalogFilters = {
   n: PAGE_SIZE,
   density: 2,
   parfum: "",
+  selection: false,
 };
 
 export function readFilters(params: URLSearchParams): CatalogFilters {
@@ -55,6 +58,7 @@ export function readFilters(params: URLSearchParams): CatalogFilters {
     n: readCount(params.get("n")),
     density: rawDensity === "1" || rawDensity === "3" ? Number(rawDensity) as Density : 2,
     parfum: params.get("parfum")?.trim() ?? "",
+    selection: params.get("selection") === "1",
   };
 }
 
@@ -76,6 +80,7 @@ export function writeFilters(filters: CatalogFilters): string {
   }
   if (filters.n > PAGE_SIZE) params.set("n", String(filters.n));
   if (filters.density !== 2) params.set("densite", String(filters.density));
+  if (filters.selection) params.set("selection", "1");
   if (filters.parfum) params.set("parfum", filters.parfum);
   return params.toString();
 }
@@ -121,9 +126,9 @@ export function useCatalogFilters() {
     return () => window.clearTimeout(timer);
   }, [serialized, pathname]);
 
-  /** Changer ce qu'on regarde (recherche, tri, marques…) repart de la première page ; la densité, `n` et la fiche ouverte, non. */
+  /** Changer ce qu'on regarde (recherche, tri, marques…) repart de la première page ; la densité, `n` et les feuilles ouvertes, non. */
   const update = useCallback((patch: Partial<CatalogFilters>) => {
-    const keepsPage = Object.keys(patch).every((key) => key === "n" || key === "density" || key === "parfum");
+    const keepsPage = Object.keys(patch).every((key) => key === "n" || key === "density" || key === "parfum" || key === "selection");
     setFilters((current) => ({ ...current, ...(keepsPage ? {} : { n: PAGE_SIZE }), ...patch }));
   }, []);
 
