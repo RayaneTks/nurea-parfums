@@ -18,12 +18,17 @@ import { cn } from "@/lib/utils";
  */
 export type ButtonVariant = "solid" | "outline" | "link";
 
+/* Forme commune (DESIGN.md § États) : 48 px, `--r-md`, graisse 500, appui `--press`. */
+const BOX =
+  "press inline-flex min-h-12 items-center justify-center gap-2 rounded-md px-6 font-medium transition-[background-color,transform] duration-dur-1 ease-soft";
+
 const VARIANTS: Record<ButtonVariant, string> = {
-  solid:
-    "nurea-btn bg-nurea-accent text-nurea-on-accent hover:bg-nurea-accent-hover",
-  outline:
-    "nurea-btn border-nurea-accent text-nurea-accent hover:bg-nurea-accent-subtle",
-  link: "nurea-btn-link",
+  /** Primaire — un seul par écran. */
+  solid: `${BOX} bg-fg-1 text-bg mouse-hover:bg-[var(--primary-hover)]`,
+  /** Secondaire. */
+  outline: `${BOX} border border-line bg-surface-1 text-fg-1 mouse-hover:bg-surface-2`,
+  /** Tertiaire : texte seul, souligné au survol. */
+  link: "inline-flex min-h-11 items-center text-fg-1 underline-offset-4 mouse-hover:underline",
 };
 
 export function buttonClass(

@@ -1,33 +1,28 @@
 import type { FC, ReactNode } from "react";
 import Link from "next/link";
-import { Mail, MapPin } from "lucide-react";
 import { BrandLogo } from "./BrandLogo";
 import { CONTACT } from "@/lib/data";
 import { SnapchatIcon, WhatsAppIcon } from "@/components/ui/Icons";
-import { MENTION_FLACONS_COURTE, MENTION_PHOTOS } from "@/lib/mentions";
+import { MENTION_FLACONS, MENTION_PHOTOS } from "@/lib/mentions";
 import { SITE_NAME } from "@/lib/site";
 
 const NAVIGATION = [
   { href: "/", label: "Le catalogue" },
   { href: "/parfums", label: "Toutes les marques" },
   { href: "/marque", label: "La parfumerie" },
-  { href: "/contact", label: "Contact & commande" },
+  { href: "/contact", label: "Contact et commande" },
 ] as const;
 
 const LEGAL = [
   { href: "/legal", label: "Mentions légales" },
   { href: "/legal", label: "Politique de confidentialité" },
   { href: "/legal", label: "CGV / CGU" },
-  { href: "/legal", label: "Livraison & retours" },
+  { href: "/legal", label: "Livraison et retours" },
 ] as const;
 
 /*
- * WhatsApp est retiré du pied de page tant que le canal n'est pas ouvert.
- *
- * Ici, contrairement aux écrans de commande, aucune mention « bientôt » : un
- * pied de page est une liste de raccourcis, pas un endroit où l'on annonce.
- * Le canal se réannoncera de lui-même le jour où `CONTACT.whatsapp` portera un
- * numéro.
+ * WhatsApp n'apparaît que le jour où `CONTACT.whatsapp` porte un numéro : un pied
+ * de page est une liste de raccourcis, pas un endroit où l'on annonce « bientôt ».
  */
 const SOCIAL = [
   { href: CONTACT.snapchat, label: "Snapchat", Icon: SnapchatIcon },
@@ -36,50 +31,45 @@ const SOCIAL = [
     : []),
 ] as const;
 
+const LINK = "transition-colors duration-dur-2 ease-soft mouse-hover:text-fg-1";
+
 /**
- * Pied de page.
- *
- * Composant serveur : l'année provient du rendu, et le logo est servi dans ses
- * deux variantes commutées en CSS. Ce bloc n'a donc plus besoin d'attendre
- * l'hydratation pour s'afficher entièrement.
+ * Pied de page — composant serveur : l'année vient du rendu, le logo bascule en
+ * CSS. Il porte les deux mentions dues au client (`src/lib/mentions.ts`).
  */
 export const Footer: FC = () => (
-  <footer className="border-t border-nurea-border">
-    <div className="nurea-page grid gap-12 py-18 md:grid-cols-2 lg:grid-cols-4">
-      <div className="flex flex-col gap-6">
-        <Link href="/" aria-label={`${SITE_NAME} — accueil`} className="w-fit">
-          <BrandLogo className="h-8" />
+  <footer className="mt-[var(--space-section)] border-t border-line bg-surface-1">
+    <div className="page-x grid gap-12 py-12 md:grid-cols-2 lg:grid-cols-4">
+      <div className="flex flex-col gap-4">
+        <Link href="/" aria-label={`${SITE_NAME} — accueil`} className="flex h-11 w-fit items-center">
+          <BrandLogo className="h-6" />
         </Link>
-
-        <p className="nurea-caption max-w-xs">
-          Une sélection tenue à la main, pour homme et pour femme, sans
-          intermédiaire entre vous et le flacon.
+        <p className="t-body t-measure">
+          Une sélection tenue à la main, pour homme et pour femme, sans intermédiaire entre vous et
+          le flacon.
         </p>
-        <p className="nurea-caption max-w-xs">{MENTION_FLACONS_COURTE}</p>
-
-        <div className="flex gap-3">
+        <p className="t-caption t-measure">{MENTION_FLACONS}</p>
+        <ul className="flex gap-2">
           {SOCIAL.map(({ href, label, Icon }) => (
-            <a
-              key={label}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={label}
-              className="flex h-11 w-11 items-center justify-center border border-nurea-border text-nurea-muted transition-colors duration-nurea ease-out hover:border-nurea-accent hover:text-nurea-accent"
-            >
-              <Icon className="h-[18px] w-[18px]" />
-            </a>
+            <li key={label}>
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className="press flex h-11 w-11 items-center justify-center rounded-md border border-line text-fg-1 transition-[background-color,transform] duration-dur-2 ease-soft mouse-hover:bg-surface-2"
+              >
+                <Icon className="h-5 w-5" />
+              </a>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
 
       <FooterColumn title="Navigation">
         {NAVIGATION.map(({ href, label }) => (
           <li key={label}>
-            <Link
-              href={href}
-              className="transition-colors duration-nurea ease-out hover:text-nurea-text"
-            >
+            <Link href={href} className={LINK}>
               {label}
             </Link>
           </li>
@@ -87,30 +77,20 @@ export const Footer: FC = () => (
       </FooterColumn>
 
       <FooterColumn title="Contact">
-        <li className="flex items-start gap-3">
-          <Mail size={16} strokeWidth={1.5} aria-hidden className="mt-1 shrink-0 text-nurea-accent" />
-          <a
-            href={`mailto:${CONTACT.email}`}
-            className="min-w-0 break-words transition-colors duration-nurea ease-out hover:text-nurea-text"
-          >
+        <li>
+          <a href={`mailto:${CONTACT.email}`} className={`${LINK} break-words`}>
             {/* Coupure permise après l'arobase : sans elle, « .fr » tombait seul sur sa ligne. */}
             {CONTACT.email.split("@")[0]}@<wbr />
             {CONTACT.email.split("@")[1]}
           </a>
         </li>
-        <li className="flex items-start gap-3">
-          <MapPin size={16} strokeWidth={1.5} aria-hidden className="mt-1 shrink-0 text-nurea-accent" />
-          <span>{CONTACT.location}. Envoi possible sur demande.</span>
-        </li>
+        <li>{CONTACT.location}. Envoi possible sur demande.</li>
       </FooterColumn>
 
       <FooterColumn title="Légal">
         {LEGAL.map(({ href, label }) => (
           <li key={label}>
-            <Link
-              href={href}
-              className="transition-colors duration-nurea ease-out hover:text-nurea-text"
-            >
+            <Link href={href} className={LINK}>
               {label}
             </Link>
           </li>
@@ -118,24 +98,20 @@ export const Footer: FC = () => (
       </FooterColumn>
     </div>
 
-    <div className="nurea-page flex flex-col gap-3 border-t border-nurea-border py-8 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-col gap-1">
-        <p className="nurea-caption">
-          © {new Date().getFullYear()} {SITE_NAME}. Tous droits réservés.
-        </p>
-        <p className="nurea-caption">{MENTION_PHOTOS}</p>
-      </div>
-      <p className="nurea-label text-nurea-subtle">Marseille</p>
+    <div className="page-x flex flex-col gap-1 border-t border-line py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      <p className="t-caption">
+        © {new Date().getFullYear()} {SITE_NAME}, Marseille. Tous droits réservés.
+      </p>
+      <p className="t-caption">{MENTION_PHOTOS}</p>
     </div>
   </footer>
 );
 
-const FooterColumn: FC<{ title: string; children: ReactNode }> = ({
-  title,
-  children,
-}) => (
-  <div className="flex flex-col gap-6">
-    <h2 className="nurea-label">{title}</h2>
-    <ul className="flex flex-col gap-3 text-sm text-nurea-muted">{children}</ul>
+const FooterColumn: FC<{ title: string; children: ReactNode }> = ({ title, children }) => (
+  <div className="flex flex-col gap-4">
+    <h2 className="t-caption">{title}</h2>
+    <ul className="t-body flex flex-col [&_a]:inline-flex [&_a]:min-h-11 [&_a]:items-center">
+      {children}
+    </ul>
   </div>
 );

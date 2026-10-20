@@ -1,29 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
-import { BrandLogo } from "./BrandLogo";
+import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { createPortal } from "react-dom";
-import { ArrowLeft, Menu, Moon, SlidersHorizontal, Sun, X } from "lucide-react";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type FC,
-  type KeyboardEvent as ReactKeyboardEvent,
-} from "react";
+import { Heart, Moon, Search, Sun } from "lucide-react";
+import { useSyncExternalStore, type FC } from "react";
+import { BrandLogo } from "./BrandLogo";
 import { cn } from "@/lib/utils";
 
-/** Événement écouté par `CatalogSection` quand la barre n'a pas de rappel direct. */
+/** Événement écouté par `CatalogSection` pour ouvrir les filtres (bouton retiré de la barre en T5, filtres refaits en T11). */
 export const OPEN_CATALOG_FILTERS_EVENT = "nurea:open-catalog-filters";
+
+/** Diffusé par le cœur de la barre ; la feuille « Ma sélection » (T13) l'écoute. */
+export const OPEN_SELECTION_EVENT = "nurea:open-selection";
+
+/** Clé de « Ma sélection » sur l'appareil (DESIGN.md § Composants signature). */
+const SELECTION_KEY = "nurea:selection:v1";
+/** Diffusé dans l'onglet courant quand la sélection change (`storage` ne couvre que les autres onglets). */
+export const SELECTION_CHANGE_EVENT = "nurea:selection-change";
 
 const NAV_LINKS = [
   { href: "/", label: "Catalogue" },
   { href: "/parfums", label: "Marques" },
-  { href: "/marque", label: "La Parfumerie" },
+  { href: "/marque", label: "La parfumerie" },
   { href: "/contact", label: "Contact" },
 ] as const;
 
@@ -32,242 +31,133 @@ function isCurrent(pathname: string, href: string): boolean {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-interface NavbarProps {
-  /** Accueil : ouvre le panneau de filtres. Par défaut, diffuse l'événement. */
-  onOpenFilters?: () => void;
+function readSelectionCount(): number {
+  try {
+    const ids: unknown = JSON.parse(localStorage.getItem(SELECTION_KEY) ?? "[]");
+    return Array.isArray(ids) ? ids.length : 0;
+  } catch {
+    return 0;
+  }
 }
 
-export const Navbar: FC<NavbarProps> = ({ onOpenFilters }) => {
-  const router = useRouter();
+function subscribeSelection(onChange: () => void): () => void {
+  window.addEventListener("storage", onChange);
+  window.addEventListener(SELECTION_CHANGE_EVENT, onChange);
+  return () => {
+    window.removeEventListener("storage", onChange);
+    window.removeEventListener(SELECTION_CHANGE_EVENT, onChange);
+  };
+}
+
+const ICON_BUTTON =
+  "press relative flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-fg-1 transition-[background-color,transform] duration-dur-2 ease-soft mouse-hover:bg-surface-2";
+
+/**
+ * Barre haute de la vitrine, en verre (DESIGN.md § Matière) : logo, recherche
+ * permanente, Ma sélection, thème. Collante plutôt que fixe : elle tient sa
+ * place dans le flux, aucune page n'a à compenser sa hauteur.
+ *
+ * Sur téléphone, le champ passe sous le logo, pleine largeur ; dès 768 px il
+ * rejoint la ligne. Le champ envoie `?q=` à l'accueil, que le catalogue lit
+ * déjà ; les résultats en direct arrivent en T10.
+ */
+export const Navbar: FC = () => {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
-
-  const [mounted, setMounted] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const menuPanelRef = useRef<HTMLDivElement>(null);
-  const menuWasOpen = useRef(false);
-
-  const isHome = pathname === "/";
-  const isDark = resolvedTheme !== "light";
-
-  useEffect(() => setMounted(true), []);
-
-  const openFilters = useCallback(() => {
-    if (onOpenFilters) {
-      onOpenFilters();
-      return;
-    }
-    window.dispatchEvent(new CustomEvent(OPEN_CATALOG_FILTERS_EVENT));
-  }, [onOpenFilters]);
-
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
-  const toggleTheme = () => setTheme(isDark ? "light" : "dark");
-
-  /* Le focus revient au déclencheur à la fermeture, part dans le panneau à
-     l'ouverture : sans cela le clavier repart du haut du document. */
-  useEffect(() => {
-    if (menuWasOpen.current && !menuOpen) menuButtonRef.current?.focus();
-    menuWasOpen.current = menuOpen;
-  }, [menuOpen]);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const frame = requestAnimationFrame(() => {
-      menuPanelRef.current?.querySelector<HTMLElement>("a, button")?.focus();
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [menuOpen]);
-
-  /* Verrou de défilement pendant le plein écran. */
-  useEffect(() => {
-    if (!menuOpen) return;
-    const { documentElement, body } = document;
-    documentElement.style.overflow = "hidden";
-    body.style.overflow = "hidden";
-    return () => {
-      documentElement.style.overflow = "";
-      body.style.overflow = "";
-    };
-  }, [menuOpen]);
-
-  const trapFocus = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Escape") {
-      event.stopPropagation();
-      closeMenu();
-      return;
-    }
-    if (event.key !== "Tab" || !menuPanelRef.current) return;
-
-    const focusable = [
-      ...menuPanelRef.current.querySelectorAll<HTMLElement>(
-        "a[href], button:not([disabled])"
-      ),
-    ];
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    if (!first || !last) return;
-
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  };
+  const count = useSyncExternalStore(subscribeSelection, readSelectionCount, () => 0);
 
   return (
-    <nav className="nurea-material fixed inset-x-0 top-0 z-50 border-b border-nurea-border pt-[env(safe-area-inset-top,0px)]">
-      <div className="nurea-page flex h-14 items-center justify-between md:h-[4.25rem]">
-        {/* Retour ou menu — mobile seulement */}
-        <div className="flex w-11 justify-start md:hidden">
-          {isHome ? (
-            <button
-              ref={menuButtonRef}
-              type="button"
-              onClick={() => setMenuOpen(true)}
-              aria-label="Ouvrir le menu"
-              className="flex h-11 w-11 items-center justify-center text-nurea-muted transition-colors duration-nurea ease-out hover:text-nurea-text"
-            >
-              <Menu size={22} strokeWidth={1.5} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => router.back()}
-              aria-label="Retour"
-              className="flex h-11 w-11 items-center justify-center border border-nurea-border text-nurea-text transition-colors duration-nurea ease-out hover:bg-nurea-surface-hover"
-            >
-              <ArrowLeft size={18} strokeWidth={1.5} />
-            </button>
-          )}
-        </div>
-
-        {/* Logo — centré sur mobile, à gauche sur desktop */}
+    <header className="glass sticky top-0 z-sticky border-b border-line pt-[env(safe-area-inset-top,0px)]">
+      <div className="page-x flex flex-wrap items-center gap-x-2 md:h-16 md:flex-nowrap md:gap-x-4">
         <Link
           href="/"
           aria-label="Nuréa Parfums — accueil"
-          className="absolute left-1/2 flex -translate-x-1/2 items-center md:static md:translate-x-0"
+          className="mr-auto flex h-14 shrink-0 items-center md:mr-0 md:h-auto"
         >
-          <BrandLogo priority className="h-[30px] md:h-9" />
+          <BrandLogo priority className="h-6" />
         </Link>
 
-        {/* Navigation desktop */}
-        <div className="hidden items-center gap-10 md:flex">
-          {NAV_LINKS.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              aria-current={isCurrent(pathname, href) ? "page" : undefined}
-              className={cn(
-                "nurea-label py-2 transition-colors duration-nurea ease-out",
-                isCurrent(pathname, href)
-                  ? "text-nurea-accent"
-                  : "text-nurea-subtle hover:text-nurea-text"
-              )}
-            >
-              {label}
-            </Link>
-          ))}
-        </div>
+        <nav aria-label="Navigation principale" className="hidden lg:block">
+          <ul className="flex items-center">
+            {NAV_LINKS.map(({ href, label }) => {
+              const current = isCurrent(pathname, href);
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    aria-current={current ? "page" : undefined}
+                    className={cn(
+                      "flex h-11 items-center px-3 transition-colors duration-dur-2 ease-soft",
+                      current ? "text-fg-1" : "text-fg-3 mouse-hover:text-fg-1"
+                    )}
+                  >
+                    {label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
-        {/* Actions */}
-        <div className="flex items-center justify-end md:w-auto">
+        <form
+          action="/"
+          method="get"
+          role="search"
+          className="order-last mb-3 basis-full md:order-none md:mb-0 md:ml-auto md:max-w-sm md:flex-1 md:basis-auto"
+        >
+          <label className="relative block">
+            <span className="sr-only">Rechercher un parfum ou une marque</span>
+            <Search
+              size={18}
+              strokeWidth={1.5}
+              aria-hidden
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-3"
+            />
+            <input
+              type="search"
+              name="q"
+              enterKeyHint="search"
+              autoComplete="off"
+              placeholder="Parfum, marque…"
+              className="h-11 w-full rounded-md border border-line bg-surface-1 pl-10 pr-3 text-fg-1 transition-colors duration-dur-2 ease-soft placeholder:text-fg-3"
+            />
+          </label>
+        </form>
+
+        <div className="flex items-center">
           <button
             type="button"
-            onClick={toggleTheme}
+            onClick={() => window.dispatchEvent(new CustomEvent(OPEN_SELECTION_EVENT))}
             aria-label={
-              mounted && !isDark ? "Passer en thème sombre" : "Passer en thème clair"
+              count > 0
+                ? `Ma sélection, ${count} parfum${count > 1 ? "s" : ""}`
+                : "Ma sélection, vide"
             }
-            className="flex h-11 w-11 items-center justify-center text-nurea-muted transition-colors duration-nurea ease-out hover:text-nurea-text"
+            className={ICON_BUTTON}
           >
-            {mounted && !isDark ? (
-              <Moon size={18} strokeWidth={1.5} />
-            ) : (
-              <Sun size={18} strokeWidth={1.5} />
+            <Heart size={20} strokeWidth={1.5} aria-hidden />
+            {count > 0 && (
+              <span
+                aria-hidden
+                className="t-caption absolute right-0.5 top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-fg-1 px-1 text-bg"
+              >
+                {count}
+              </span>
             )}
           </button>
 
-          {isHome && (
-            <button
-              type="button"
-              onClick={openFilters}
-              aria-label="Filtrer le catalogue"
-              className="flex h-11 items-center gap-2 px-2 text-nurea-muted transition-colors duration-nurea ease-out hover:text-nurea-text md:pr-0"
-            >
-              <SlidersHorizontal size={18} strokeWidth={1.5} />
-              <span className="nurea-label hidden text-current md:inline">Filtrer</span>
-            </button>
-          )}
+          {/* L'icône suit le thème en CSS ; seul le geste lit `resolvedTheme`. */}
+          <button
+            type="button"
+            onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}
+            aria-label="Changer de thème (clair ou sombre)"
+            className={ICON_BUTTON}
+          >
+            <Sun size={20} strokeWidth={1.5} aria-hidden className="[.light_&]:hidden" />
+            <Moon size={20} strokeWidth={1.5} aria-hidden className="hidden [.light_&]:block" />
+          </button>
         </div>
       </div>
-
-      {/* Menu plein écran — mobile */}
-      {mounted &&
-        createPortal(
-          /* Même règle que le tiroir de filtres : fermé, le panneau sort de
-             l'arbre d'accessibilité au lieu d'y rester en modale ouverte. */
-          <div
-            ref={menuPanelRef}
-            onKeyDown={trapFocus}
-            {...(menuOpen
-              ? { role: "dialog", "aria-modal": true, "aria-label": "Menu principal" }
-              : { inert: true, "aria-hidden": true })}
-            className={cn(
-              "fixed inset-0 z-[60] flex flex-col bg-nurea-bg pb-[env(safe-area-inset-bottom,0px)] pt-[env(safe-area-inset-top,0px)] transition-opacity duration-nurea ease-out md:hidden",
-              menuOpen ? "opacity-100" : "pointer-events-none opacity-0"
-            )}
-          >
-            <div className="flex h-14 items-center justify-between border-b border-nurea-border px-6">
-              <span className="nurea-label text-nurea-subtle">Menu</span>
-              <button
-                type="button"
-                onClick={closeMenu}
-                aria-label="Fermer le menu"
-                className="-mr-3 flex h-11 w-11 items-center justify-center text-nurea-muted transition-colors duration-nurea ease-out hover:text-nurea-text"
-              >
-                <X size={22} strokeWidth={1.5} />
-              </button>
-            </div>
-
-            <div className="flex flex-1 flex-col justify-center px-6">
-              {NAV_LINKS.map(({ href, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={closeMenu}
-                  aria-current={isCurrent(pathname, href) ? "page" : undefined}
-                  className={cn(
-                    "nurea-section-title border-b border-nurea-border py-6 transition-colors duration-nurea ease-out",
-                    isCurrent(pathname, href) ? "text-nurea-accent" : "text-nurea-text"
-                  )}
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-
-            <div className="flex items-center justify-between border-t border-nurea-border px-6 py-4">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="nurea-label flex h-11 items-center gap-2 text-nurea-subtle transition-colors duration-nurea ease-out hover:text-nurea-text"
-              >
-                {isDark ? <Sun size={16} strokeWidth={1.5} /> : <Moon size={16} strokeWidth={1.5} />}
-                {isDark ? "Thème clair" : "Thème sombre"}
-              </button>
-              <Image
-                src="/branding/monogram/np-free-cuivre.webp"
-                alt=""
-                width={28}
-                height={28}
-                className="h-7 w-7"
-              />
-            </div>
-          </div>,
-          document.body
-        )}
-    </nav>
+    </header>
   );
 };
