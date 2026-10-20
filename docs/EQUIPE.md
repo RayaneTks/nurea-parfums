@@ -126,6 +126,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 20/10 | refonte | **PC 3 passé** (gérant, iPhone) : fiche, gestes, Snapchat en 2 taps. Correctif avant le « oui » (`f4bee0f`) : dérouler et fermer la fiche séparés, barre opaque pendant la bascule de thème. Suite : S7 (T14, T15), `docs/refonte-vitrine/PROMPT-SUITE-S7.md`. |
 | 20/10 | refonte | **T13 faite** (`7d86433`, `refonte/vitrine`) : « Ma sélection » en feuille sur l'accueil (`?selection=1`), un seul message Snapchat pour N parfums, rien côté serveur. **Attente PC 3** (fiche et commande, iPhone). |
 | 20/10 | refonte | **T12 faite** (`288cf48`, `refonte/vitrine`) : fiche en feuille `?parfum=<id>`, précédent/suivant au glissé, Snapchat en 2 taps (copie « Nom (Marque) »), fermeture à 0,11 px/ms. |
 | 20/10 | refonte | **Ambiance écrite en production** : `ambiance.mjs --apply`, 233 fiches publiées, 199 avec couleur, 34 en repli (recompté en base). Journal des anciennes valeurs : `.tmp/refonte-vitrine/ambiance-journal-2026-10-20T20-23-19-078Z.json` (worktree refonte). Visuels : chaque fournée finit par `--ids … --apply` (§ 4.2). |
