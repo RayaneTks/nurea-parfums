@@ -1,7 +1,7 @@
 /**
  * « Ma sélection » — liste d'identifiants gardée sur l'appareil (DESIGN.md § Composants signature).
  * Aucun compte, aucune écriture serveur. Lue par le cœur de la barre (compteur) et le cœur des
- * cartes ; la feuille qui la liste arrive en T13.
+ * cartes, et listée par la feuille de l'accueil (`SelectionSheet`, `?selection=1`).
  */
 
 /** Clé `localStorage` ; changer de format = changer de version (`v2`). */

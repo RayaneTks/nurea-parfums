@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Heart, Search } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore, type FC } from "react";
 import { BrandLogo } from "./BrandLogo";
@@ -23,7 +23,7 @@ export const QUERY_SYNC_EVENT = "nurea:query";
 /** En deçà, une requête est trop vague pour filtrer (04-PLAN-EXECUTION § B : résultats dès 2 caractères). */
 const MIN_LIVE_QUERY = 2;
 
-/** Diffusé par le cœur de la barre ; la feuille « Ma sélection » (T13) l'écoute. */
+/** Diffusé par le cœur de la barre sur l'accueil ; la feuille « Ma sélection » y vit (avec le catalogue). */
 export const OPEN_SELECTION_EVENT = "nurea:open-selection";
 
 const NAV_LINKS = [
@@ -56,6 +56,7 @@ const ICON_BUTTON =
  */
 export const Navbar: FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const count = useSyncExternalStore(subscribeSelection, readSelectionCount, () => 0);
   const onHome = pathname === "/";
   const [query, setQuery] = useState("");
@@ -155,7 +156,11 @@ export const Navbar: FC = () => {
         <div className="flex items-center">
           <button
             type="button"
-            onClick={() => window.dispatchEvent(new CustomEvent(OPEN_SELECTION_EVENT))}
+            onClick={() =>
+              pathname === "/"
+                ? window.dispatchEvent(new CustomEvent(OPEN_SELECTION_EVENT))
+                : router.push("/?selection=1")
+            }
             aria-label={
               count > 0
                 ? `Ma sélection, ${count} parfum${count > 1 ? "s" : ""}`

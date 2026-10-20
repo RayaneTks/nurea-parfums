@@ -38,4 +38,10 @@ describe("fiche ouverte dans l'adresse", () => {
     expect(read("").parfum).toBe("");
     expect(writeFilters({ ...read("q=dior"), parfum: "42" })).toBe("q=dior&parfum=42");
   });
+
+  it("relit ?selection=1, rien d'autre", () => {
+    expect(read("selection=1").selection).toBe(true);
+    expect(read("selection=oui").selection).toBe(false);
+    expect(writeFilters({ ...read(""), selection: true, parfum: "7" })).toBe("selection=1&parfum=7");
+  });
 });
