@@ -21,7 +21,7 @@ import { WhatsAppIcon } from "@/components/ui/Icons";
  * boutons reviennent : les appels à ce composant sont alors à retirer.
  */
 export const ChannelSoon: FC<{ className?: string }> = ({ className }) => (
-  <p className={`nurea-caption flex items-center gap-2 text-nurea-muted${className ? ` ${className}` : ""}`}>
+  <p className={`t-caption flex items-center gap-2 text-fg-3${className ? ` ${className}` : ""}`}>
     <WhatsAppIcon className="h-4 w-4 shrink-0" aria-hidden />
     WhatsApp — bientôt disponible
   </p>
