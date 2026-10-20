@@ -25,6 +25,9 @@ export type SeoPerfume = {
   line: string | null;
   image: string;
   imageLight: string | null;
+  /** Couleur d'ambiance (04-PLAN-EXECUTION § B.3), les deux ou aucune ; null = repli. */
+  ambientHue: number | null;
+  ambientChroma: number | null;
   blurDataURL: string;
   /** ISO 8601 — `unstable_cache` sérialise en JSON, une `Date` n'y survivrait pas. */
   updatedAt: string;
@@ -60,7 +63,16 @@ export async function loadSeoCatalogue(): Promise<SeoBrand[]> {
       updatedAt: true,
       perfumes: {
         where: { status: "PUBLISHED", name: { not: "" }, image: { not: "" } },
-        select: { id: true, name: true, line: true, image: true, imageLight: true, updatedAt: true },
+        select: {
+          id: true,
+          name: true,
+          line: true,
+          image: true,
+          imageLight: true,
+          ambientHue: true,
+          ambientChroma: true,
+          updatedAt: true,
+        },
         orderBy: { name: "asc" },
       },
     },
@@ -77,6 +89,8 @@ export async function loadSeoCatalogue(): Promise<SeoBrand[]> {
           line: p.line?.trim() || null,
           image: p.image,
           imageLight: p.imageLight,
+          ambientHue: p.ambientHue,
+          ambientChroma: p.ambientChroma?.toNumber() ?? null,
           blurDataURL: getBlurPlaceholder(p.image),
           updatedAt: p.updatedAt.toISOString(),
         }));
@@ -105,6 +119,8 @@ export function toCardPerfume(brand: SeoBrand, perfume: SeoPerfume): Perfume {
     category: "Tout voir",
     image: perfume.image,
     imageLight: perfume.imageLight ?? undefined,
+    ambientHue: perfume.ambientHue ?? undefined,
+    ambientChroma: perfume.ambientChroma ?? undefined,
     blurDataURL: perfume.blurDataURL,
   };
 }

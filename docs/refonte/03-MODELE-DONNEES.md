@@ -298,6 +298,11 @@ model Perfume {
   /// NULL = pas de gamme ; jamais une chaîne vide (CHECK perfume_line_ck). Ajoutée le 03/10/2026
   /// par la migration ordinaire `20261003100000_perfume_line`, après la refonte.
   line       String?
+  /// Couleur d'ambiance de la vitrine (04-PLAN-EXECUTION de docs/refonte-vitrine, § B.3), les deux
+  /// ou aucune (CHECK perfume_ambient_ck). Ajoutées le 20/10/2026 par `20261020120000_perfume_ambient` ;
+  /// écrites par `scripts/refonte-vitrine/ambiance.mjs`, jamais par la gestion.
+  ambientHue    Int?
+  ambientChroma Decimal? @db.Decimal(4, 3)
   /// Visuel principal (thème sombre, WebP). Chaîne vide = sans visuel ⇒ CHECK : status = DRAFT.
   image      String
   /// Variante du visuel pour le thème clair (optionnelle).
@@ -822,6 +827,8 @@ ALTER TABLE "Perfume" ADD CONSTRAINT perfume_stock_ck
   CHECK (stock IS NULL OR stock >= 0) NOT VALID;
 -- Hors migration de contrat : posée valide par `20261003100000_perfume_line` (colonne neuve, toute NULL).
 -- ALTER TABLE "Perfume" ADD CONSTRAINT perfume_line_ck CHECK (line IS NULL OR btrim(line) <> '');
+-- Hors migration de contrat : posée valide par `20261020120000_perfume_ambient` (refonte vitrine T7).
+-- perfume_ambient_ck : "ambientHue" et "ambientChroma" tous deux NULL, ou teinte 0–359 et chroma 0–0,4.
 -- Contenances réelles 10 / 50 / 80 ml (30 → 10 et 100 → 80 traduits en production le 10/09/2026).
 ALTER TABLE "PerfumePricing" ADD CONSTRAINT pricing_volume_ck
   CHECK ("volumeMl" IN (10, 50, 80)) NOT VALID;

@@ -68,6 +68,10 @@ const cases: readonly TableCase[] = [
       { constraint: "perfume_stock_ck", why: "stock négatif", row: { stock: -1 } },
       { constraint: "perfume_line_ck", why: "gamme vide", row: { line: "" } },
       { constraint: "perfume_line_ck", why: "gamme blanche", row: { line: "   " } },
+      { constraint: "perfume_ambient_ck", why: "teinte sans chroma", row: { ambientHue: 120 } },
+      { constraint: "perfume_ambient_ck", why: "chroma sans teinte", row: { ambientChroma: "0.050" } },
+      { constraint: "perfume_ambient_ck", why: "teinte hors cercle", row: { ambientHue: 360, ambientChroma: "0.050" } },
+      { constraint: "perfume_ambient_ck", why: "chroma hors borne", row: { ambientHue: 120, ambientChroma: "0.500" } },
     ],
   },
   {

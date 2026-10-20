@@ -84,6 +84,12 @@ model Perfume {
   image      String
   /// Variante du visuel pour le thème clair (optionnelle).
   imageLight String?
+  /// Couleur d'ambiance (refonte vitrine, 04-PLAN-EXECUTION § B.3) : teinte dominante du visuel
+  /// sombre, 0–359, et chroma source médiane, 0–0,4. Les deux NULL = repli (surface neutre) ;
+  /// jamais l'une sans l'autre (CHECK perfume_ambient_ck). Écrites par
+  /// scripts/refonte-vitrine/ambiance.mjs seulement.
+  ambientHue    Int?
+  ambientChroma Decimal?          @db.Decimal(4, 3)
   /// Mise en avant vitrine : 2 au plus, et seulement un parfum PUBLISHED (règle serveur du module catalogue).
   isFeatured Boolean           @default(false)
   /// Unités en stock, tous volumes confondus. NULL = non suivi (jamais d'alerte) ; 0 = rupture. CHECK >= 0.
