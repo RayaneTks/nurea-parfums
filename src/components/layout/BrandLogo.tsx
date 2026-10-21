@@ -11,23 +11,24 @@ interface BrandLogoProps {
 }
 
 /**
- * Taille affichée (h-6), au ratio du fichier (2794 × 504) : `next/image` en déduit
- * 256 px (1x) et 640 px (2x et plus), que le chargeur sert par la variante `-640`.
+ * Taille affichée (h-10), au ratio du fichier (3375 × 719) : `next/image` en déduit
+ * 256 px (1x) et 384 px (2x), que le chargeur sert par la variante `-640`.
  */
-const WIDTH = 133;
-const HEIGHT = 24;
+const WIDTH = 188;
+const HEIGHT = 40;
 
 /**
- * Logotype « Nuréa Parfums » : ivoire sur sombre, noir sur clair.
+ * Logo « Nuréa Parfums » complet — monogramme NP dans son cercle, puis le nom (gérant, 21/10/2026) :
+ * monogramme doré et nom ivoire en thème sombre, monogramme bordeaux et nom noir en thème clair.
+ * À 40 px de haut : plus bas, « NURÉA » et « PARFUMS » deviennent illisibles à côté du cercle.
  *
  * La bascule se fait en CSS, jamais par `useTheme` : le logo s'affiche dès le
  * rendu serveur. Le thème sombre est celui de `:root` ; seule la classe `.light`
- * posée sur `<html>` montre la variante noire — sans JavaScript, la page reste
+ * posée sur `<html>` montre la variante claire — sans JavaScript, la page reste
  * sombre et garde un logo lisible.
  */
-/** Logotype aux couleurs de marque : doré en thème sombre, bordeaux en thème clair (gérant, 21/10/2026). */
-const GOLD = "/branding/logos/nurea-wordmark-gold.webp";
-const WINE = "/branding/logos/nurea-wordmark-bordeaux.webp";
+const GOLD = "/branding/logos/nurea-logo-horizontal-dark.webp";
+const WINE = "/branding/logos/nurea-logo-horizontal-light.webp";
 
 /**
  * `priority` : chaque variante est annoncée pour le seul thème du système, sans priorité haute.
