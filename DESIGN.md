@@ -248,7 +248,9 @@ WebP, 2:3, vignette 640 × 960 servie aux petites largeurs.
 ## Logos
 
 Logos et monogrammes de `public/branding/` : **doré sur sombre, bordeaux sur clair** (couleurs de marque,
-21/10/2026 ; logotype `nurea-wordmark-gold` / `nurea-wordmark-bordeaux`), bascule en CSS. La gestion garde
+21/10/2026). Barre, pied de page et 404 montrent le **logo complet** — monogramme NP dans son cercle puis
+le nom : `nurea-logo-horizontal-dark` (monogramme doré, nom ivoire) en sombre, `nurea-logo-horizontal-light`
+(monogramme bordeaux, nom noir) en clair, à 40 px de haut (`BrandLogo.tsx`) ; bascule en CSS. La gestion garde
 ses propres logos.
 Les variantes colorées ne servent plus. Interdits : déformer, incliner, faire pivoter, ombrer,
 dégrader le logo ; poser le monogramme **nu** sur une photo (version cerclée) ; écrire « Nurea »
