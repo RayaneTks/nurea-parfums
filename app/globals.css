@@ -401,7 +401,7 @@
 
   @media (pointer: coarse) {
     ::view-transition-new(root) {
-      animation-duration: 800ms;
+      animation-duration: 800ms; /* mouvement-ok: bascule de thème au doigt, plus lente que --dur-4 ; sautée en mouvement réduit (ThemeToggle) */
     }
   }
 
@@ -474,6 +474,8 @@
     align-self: start;
     gap: var(--space-3);
     margin-top: var(--space-6);
+    /* Cascade (§ B.7) : les actions suivent le titre d'un cran. */
+    --enter-delay: var(--stagger);
   }
 
   /* Sous 375 px, le titre passe sur trois lignes : le bloc ne tient plus au-dessus du bouchon. La photo
@@ -721,6 +723,19 @@
   .suggestions {
     animation: suggestions-in var(--dur-2) var(--ease-out) backwards;
     box-shadow: var(--shadow-float);
+  }
+
+  /* Mouvement réduit : plus de montée, le fondu seul (§ B.7). */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .suggestions {
+      animation-name: fade-in;
+    }
   }
 
 }
