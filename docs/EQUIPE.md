@@ -128,6 +128,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 21/10 | refonte | **Couleur de marque Nuréa** (décision du gérant) : doré `#C4956A` en thème sombre, bordeaux `#8B3A3A` en thème clair — jetons `--accent`/`--on-accent`, logotype de la barre à ces couleurs (`c33c2fe`, `refonte/vitrine`) ; `DESIGN.md`, 03, 04, `PRODUCT.md`, `REPRISE.md`, `PROMPT-REPRISE.md` à jour. Usage dans l'accueil : prochaine session. |
 | 21/10 | refonte | **« À l'affiche » validé par le gérant** (« globalement ok »). Mémoire finalisée : `REPRISE.md` à jour, prompt de reprise `docs/refonte-vitrine/PROMPT-REPRISE.md`. Prochaine priorité : renforcer l'identité Nuréa sur l'accueil. |
 | 21/10 | refonte | **Finitions d'« À l'affiche »** (`a9d344c`) : angles nets (`clip-path`), fond pris dans le ciel de chaque photo (fini l'orange artificiel d'Afternoon Swim), espacements. **Mémoire consolidée** : `docs/refonte-vitrine/REPRISE.md` (à lire en premier), § B.10 condensé, outils de mesure versionnés (`scripts/refonte-vitrine/`, `4defbd2`). **Attente validation du gérant.** |
 | 21/10 | refonte | **À l'affiche selon la référence du gérant** (`c62d3a6`, `refonte/vitrine`) : deux bandeaux photographiques horizontaux en miroir (visuel entier fondu dans sa photo floutée, nom intégré à la scène). Captures envoyées au gérant. **Attente de sa réponse.** |

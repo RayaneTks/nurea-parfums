@@ -29,9 +29,10 @@ Toute modification de l'un est reportée dans l'autre.
 
 ## Concept : « Nuancier nocturne »
 
-**Une chambre neutre et calme ; la seule couleur est celle du flacon qu'on regarde.** L'interface
-n'a aucun accent de marque : l'accent *est* la teinte dominante du visuel (la **couleur
-d'ambiance**), calculée, bornée, posée sur la fiche et sur la carte pressée. Tout le reste est un
+**Une chambre neutre et calme, signée aux couleurs de Nuréa ; la couleur vive est celle du flacon qu'on
+regarde.** Deux couleurs seulement : la **couleur de marque** (doré en sombre, bordeaux en clair, celles du
+monogramme) et la **couleur d'ambiance** de chaque parfum, teinte dominante de son visuel, calculée, bornée,
+posée sur la fiche et sur la carte pressée. Tout le reste est un
 neutre chaud teinté, en deux thèmes symétriques. Structure, matière et mouvement s'inspirent des
 interfaces d'Apple ; rien ne doit faire « site généré ».
 
@@ -59,8 +60,14 @@ Contrastes calculés (WCAG) : `--text-1` ≥ 13:1, `--text-2` ≥ 6,5:1, `--text
 les surfaces, dans les deux thèmes ; `--error` ≥ 6:1 sur `--bg`.
 
 **Aucune autre couleur n'existe dans la vitrine.** Jamais `#000` ni `#fff`, jamais de violet ou
-d'indigo, jamais de texte en dégradé (tenu par `tests/architecture/anti-slop.test.ts`). Le bordeaux
-et les autres teintes du logo **ne sont pas des jetons**.
+d'indigo, jamais de texte en dégradé (tenu par `tests/architecture/anti-slop.test.ts`).
+
+**Couleur de marque Nuréa (décision du gérant, 21/10/2026)** : les deux couleurs du monogramme — **doré `#C4956A` en thème sombre, bordeaux `#8B3A3A` en thème clair** — sont le jeton `--accent` (`--on-accent` pour le texte posé dessus ; 7,3:1 et 7,1:1 sur le fond, ≥ 5,8:1 sur toutes les surfaces). Elles portent l'identité de la maison : logotype, monogramme, moments de marque de l'accueil. Garde-fous : jamais en fond de toute la page, jamais en dégradé ni en bordure décorative, jamais à la place de l'ambiance (qui reste la couleur de chaque parfum) ; l'usage détaillé dans l'accueil est le prochain chantier.
+
+| Jeton | Sombre | Clair | Rôle |
+|---|---|---|---|
+| `--accent` | `oklch(0.704 0.081 63.4)` `#C4956A` (doré) | `oklch(0.458 0.111 22.5)` `#8B3A3A` (bordeaux) | couleur de marque |
+| `--on-accent` | = `--bg` sombre | = `--bg` clair | texte sur l'accent |
 
 ### Couleur d'ambiance
 
@@ -234,7 +241,9 @@ WebP, 2:3, vignette 640 × 960 servie aux petites largeurs.
 
 ## Logos
 
-Logos et monogrammes de `public/branding/` : **ivoire sur sombre, noir sur clair**, bascule en CSS.
+Logos et monogrammes de `public/branding/` : **doré sur sombre, bordeaux sur clair** (couleurs de marque,
+21/10/2026 ; logotype `nurea-wordmark-gold` / `nurea-wordmark-bordeaux`), bascule en CSS. La gestion garde
+ses propres logos.
 Les variantes colorées ne servent plus. Interdits : déformer, incliner, faire pivoter, ombrer,
 dégrader le logo ; poser le monogramme **nu** sur une photo (version cerclée) ; écrire « Nurea »
 sans accent.

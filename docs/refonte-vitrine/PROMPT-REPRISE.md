@@ -34,14 +34,17 @@ chaque rendu finit par « Ce que tu dois faire ».
   **« À l'affiche » validé le 21/10** (deux bandeaux horizontaux en miroir), Marques en index typographique.
 - Copy : jamais « le même parfum » (le parfum Nuréa n'est pas celui de la marque) ; plus de « Marseille » ;
   l'accroche « Le parfum que vous aimez, dans un flacon Nuréa. » reste provisoire (avis juridique attendu).
+- **Couleur de marque** (21/10) : doré `#C4956A` en sombre, bordeaux `#8B3A3A` en clair, jeton `--accent` ;
+  logotype déjà à ces couleurs ; jamais en fond de page, en dégradé ni en bordure décorative.
 - Un thème ne change que des couleurs ; ne jamais recadrer un visuel 2:3 dans un cadre fixe ; ne jamais
   générer un faux flacon Nuréa ; demander au gérant toute ressource visuelle manquante.
 - Ne pas reproposer les essais écartés listés dans REPRISE.md.
 
 ## 4. Ta mission
 
-Priorité donnée par le gérant : **renforcer l'identité Nuréa sur la page d'accueil**, sans refonte et sans
-toucher aux composants ni aux sections validées. Commence par un court audit (ce qui dit « Nuréa » aujourd'hui,
+Priorité donnée par le gérant : **renforcer l'identité Nuréa sur la page d'accueil**, notamment la hero,
+avec la couleur de marque (doré / bordeaux) et le monogramme — sans refonte et sans toucher aux composants ni
+aux sections validées. Commence par un court audit (ce qui dit « Nuréa » aujourd'hui,
 ce qui manque), propose **une** direction argumentée, puis exécute. Ensuite : T16 → T23
 (`04-PLAN-EXECUTION.md`), un point de contrôle gérant à chaque étape visuelle.
 
