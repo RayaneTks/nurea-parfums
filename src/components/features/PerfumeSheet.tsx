@@ -15,7 +15,7 @@ import { vitrineRoot } from "@/lib/vitrineRoot";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { ambientStyle } from "@/lib/catalog/ambient";
 import Link from "next/link";
-import { X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { Perfume } from "@/lib/data";
 import { useSheetMotion } from "@/hooks/useSheetMotion";
 import { VelocityTracker, rubberband } from "@/lib/motion/physics";
@@ -297,8 +297,16 @@ const SheetContent: FC<PerfumeSheetProps> = ({ perfume, sequence = [], onNavigat
             {/* Le visuel EN ENTIER (2:3, rien de rogné), dans la variante du thème. Pas une poignée : y
                 glisser déroule ou remonte la fiche, comme partout ailleurs sous la barre du haut. Sur téléphone, sa
                 hauteur se plafonne à 56 % de l'écran pour que la marque et le nom suivent sans défiler. */}
-            <div className="relative mx-auto aspect-[2/3] w-[min(100%,calc(56dvh*2/3))] overflow-hidden rounded-md bg-surface-2 md:w-full">
-              <PerfumeImage key={perfume.id} perfume={perfume} sizes="(max-width: 767px) 90vw, 26rem" priority />
+            {/* Téléphone : un chevron fin de chaque côté du visuel, dans la marge, dit qu'un parfum voisin attend
+                — on glisse, ou on le touche (cible 44 px). Absent au premier et au dernier parfum. */}
+            <div className="relative -mx-4 px-4 md:mx-0 md:px-0">
+              <div className="relative mx-auto aspect-[2/3] w-[min(100%,calc(56dvh*2/3))] overflow-hidden rounded-md bg-surface-2 md:w-full">
+                <PerfumeImage key={perfume.id} perfume={perfume} sizes="(max-width: 767px) 90vw, 26rem" priority />
+              </div>
+              {previous ? (
+                <SwipeHint side="left" label={`Parfum précédent : ${previous.name}`} onClick={() => navigate(previous, -1)} />
+              ) : null}
+              {next ? <SwipeHint side="right" label={`Parfum suivant : ${next.name}`} onClick={() => navigate(next, 1)} /> : null}
             </div>
 
             <div className="flex flex-col gap-2 text-center md:text-left">
@@ -334,6 +342,23 @@ const SheetContent: FC<PerfumeSheetProps> = ({ perfume, sequence = [], onNavigat
         </div>
       </div>
     </div>
+  );
+};
+
+/** Chevron de parfum voisin (téléphone) : discret au repos, il cède à l'appui comme tout ce qui se touche. */
+const SwipeHint: FC<{ side: "left" | "right"; label: string; onClick: () => void }> = ({ side, label, onClick }) => {
+  const Icon = side === "left" ? ChevronLeft : ChevronRight;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className={`press absolute inset-y-0 my-auto flex h-11 w-11 items-center justify-center text-fg-2 md:hidden ${
+        side === "left" ? "left-0" : "right-0"
+      }`}
+    >
+      <Icon size={20} strokeWidth={1.5} aria-hidden />
+    </button>
   );
 };
 
