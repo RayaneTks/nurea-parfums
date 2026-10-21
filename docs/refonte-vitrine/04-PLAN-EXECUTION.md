@@ -248,7 +248,8 @@ Statut des sections, essais écartés, règles et priorités : **`REPRISE.md`**.
 **Hero.** La photographie du flacon Nuréa (`public/branding/hero/flacon-*`, deux lumières, portrait < 768 px,
 paysage au-delà ; brief `annexes/brief-photo-hero.md`) est le fond de toute la hero ; le sol se fond dans la
 page par un masque bas ; rien n'est assombri. Téléphone : hauteur = format de la photo (`125vw`) ; grille à
-deux rangées, la première haute de 29 % (le bouchon commence à 30 % de la photo) : le H1 (`title`) s'y cale
+deux rangées, la première haute de 29 % (le bouchon commence à 41 % de la photo du 21/10) — sous 375 px, où le titre
+passe sur trois lignes, la photo descend de `--space-8` (haut fondu) et la rangée vaut `--space-8` + 21,5 % : le H1 (`title`) s'y cale
 en bas, les entrées suivent à 24 px sur une ligne — `Button` plein « Voir le catalogue » (`#collection`),
 Snapchat en bouton rond 44 px (celui du cœur), icône seule et intitulé en `aria-label` ; dès 768 px, lien avec
 texte, titre et entrées à gauche, hauteur `clamp(26rem, 50vh, 32rem)` puis `clamp(32rem, 80vh, 48rem)`. H1 =

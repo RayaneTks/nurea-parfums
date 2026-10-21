@@ -2,7 +2,7 @@
 
 Prompt de reprise après `/clear` : `PROMPT-REPRISE.md`.
 
-Mis à jour le 21/10/2026. Ce fichier dit **où on en est** ; le détail chiffré est dans
+Mis à jour le 21/10/2026 (photos de la hero remplacées). Ce fichier dit **où on en est** ; le détail chiffré est dans
 `04-PLAN-EXECUTION.md` § B (DA) et § B.10 (accueil), les règles dans `CLAUDE.md`, `DESIGN.md`,
 `01-INVARIANTS.md`. Ne rien décider ici qui n'y soit pas écrit.
 
@@ -38,10 +38,10 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 | Section | État | Ce qui est en place |
 |---|---|---|
 | DA « Nuancier nocturne », Fraunces + Figtree, deux thèmes | **validé** (PC 1, 20/10) | jetons `globals.css` + `brand.ts` |
-| Couleur de marque : doré (sombre) / bordeaux (clair) | **décidé** (gérant, 21/10) ; en place : **couple Nuréa** sur toute la vitrine (fonds, encres, accent ; `0133fc6`), logo complet monogramme + nom dans la barre et le pied de page (`a141675`), accent sur ce qui agit et ce qui est choisi (`DESIGN.md` § Couleurs) ; **présence de la marque dans la hero à concevoir** | `globals.css`, `brand.ts`, `BrandLogo.tsx` |
+| Couleur de marque : doré (sombre) / bordeaux (clair) | **décidé** (gérant, 21/10) ; en place : **couple Nuréa** sur toute la vitrine (fonds, encres, accent ; `0133fc6`), logo complet monogramme + nom dans la barre et le pied de page (`a141675`), accent sur ce qui agit et ce qui est choisi (`DESIGN.md` § Couleurs)  ; dans la hero, **l'étiquette du flacon** porte le monogramme dans la couleur du thème (photos du 21/10, `cd64c4d`) — direction retenue : pas de second monogramme décoratif dans la hero (doublon de l'étiquette et de la barre) ; **à valider par le gérant sur captures** | `globals.css`, `brand.ts`, `BrandLogo.tsx` |
 | Composants (boutons, cartes, champs, filtres, feuille, Ma sélection) | **validé** (PC 2–3) | `src/components/ui`, `PerfumeCard`, `PerfumeSheet`… — **ne pas les redessiner** |
 | Catalogue (grille, filtres, recherche, fiche, Snapchat 2 taps) | **validé** | `CatalogSection` et ses pièces |
-| Hero | **en cours** — base jugée bonne par le gérant, pas encore validée | photo du flacon Nuréa en fond ; titre puis « Voir le catalogue » + Snapchat en bouton rond 44 px sur une ligne, au-dessus et à gauche du flacon ; accroche « Le parfum que vous aimez, dans un flacon Nuréa. » (formulation du gérant, **non verrouillée**, avis juridique attendu) |
+| Hero | **en cours** — base jugée bonne par le gérant, pas encore validée | photo du flacon Nuréa en fond (photos du gérant du 21/10 : flacon rempli, étiquette au monogramme, clair/sombre alignés à 0 px ; verrerie et petits flacons autour, que le brief excluait — choix du gérant) ; sous 375 px la photo descend de `--space-8` pour que Snapchat ne touche pas le bouchon ; titre puis « Voir le catalogue » + Snapchat en bouton rond 44 px sur une ligne, au-dessus et à gauche du flacon ; accroche « Le parfum que vous aimez, dans un flacon Nuréa. » (formulation du gérant, **non verrouillée**, avis juridique attendu) |
 | À l'affiche | **validé** (21/10, « globalement ok » après finitions) | deux bandeaux horizontaux en miroir (Symphony flacon à gauche, Afternoon Swim flacon à droite) ; visuel entier fondu dans sa propre photo floutée (coin haut droit ×3) ; nom intégré sur un voile `--bg` ; tout le bandeau ouvre la fiche ; 4:3 mobile, 16:9 sur 62 rem en quinconce sur bureau |
 | Marques | **en cours**, pas encore jugé | index typographique : 12 marques, nom + nombre, « Toutes les marques » → `/parfums` |
 | La parfumerie, Contact, Légal, 404, OG, mouvement, audit, mise en ligne | **à faire** | T16 → T23 (`04-PLAN-EXECUTION.md`) |
@@ -84,13 +84,14 @@ miniatures (répétaient les produits).
 |---|---|
 | Images qui bougent à la bascule de thème (même fichier) | **corrigé** 21/10 : interlignage commun (1,65/1,6 avant) ; 0 px mesuré |
 | Variantes claire/sombre décalées dans les fichiers (29 paires sur 103, liste : `annexes/alignement-clair-sombre.md`) | **à corriger** par la session visuels (refaire au même cadrage) ; production (233 fiches) pas encore mesurée |
-| Photos de la hero : sans étiquette, flacon vide, décalées entre clair et sombre (4,25 px / 10,10 px), définition sous le brief | **à refaire** par le gérant (brief : `annexes/brief-photo-hero.md`) ; remplacement fichier pour fichier |
+| Photos de la hero : sans étiquette, flacon vide, décalées entre clair et sombre (4,25 px / 10,10 px), définition sous le brief | **corrigé** 21/10 (`cd64c4d`) : photos du gérant, liseré vert de 3 px rogné à droite, 0 px de décalage ; plus lourdes → WebP 74, LCP 2 112 / 1 292 ms (1 532 / 1 064 avant, budget 2 500) |
+| e2e `catalog-filters` « le tri par marque… réordonne la grille » échoue sur téléphone (Pixel 7) | **à corriger** : déjà présent avant `cd64c4d` (même échec sur l'aperçu Vercel) ; hors hero |
 | Titre et description Google de l'accueil (« grandes marques… à Marseille… au meilleur prix ») | **à revoir** avec l'avis juridique |
 
 ## Prochaines priorités
 
 1. **Renforcer l'identité Nuréa sur la page d'accueil** (demande du gérant), notamment la hero, avec la
    couleur de marque (doré en sombre, bordeaux en clair) et le monogramme — sans toucher aux composants ni aux
-   sections validées, sans relancer une refonte. Décider où l'accent apparaît et le faire valider sur captures.
-2. Ressources attendues du gérant : avis juridique (accroche, présentation face aux marques), photos de la
-   hero refaites, puis T16 → T23.
+   sections validées, sans relancer une refonte. **Fait le 21/10** (photos à l'étiquette NP, `cd64c4d`) ;
+   attend le jugement du gérant sur captures avant d'ajouter quoi que ce soit.
+2. Avis juridique attendu (accroche, présentation face aux marques), puis T16 → T23.

@@ -63,6 +63,6 @@ ce qui manque), propose **une** direction argumentée, puis exécute. Ensuite : 
 
 ## 6. En attente côté gérant (ne pas bloquer dessus)
 
-Avis juridique (accroche, présentation face aux marques, titre et description Google) ; photos de la hero
-refaites (étiquette, flacon rempli, même cadrage clair/sombre) ; 29 paires de visuels clair/sombre décalées
+Avis juridique (accroche, présentation face aux marques, titre et description Google) ; jugement de la hero
+avec les nouvelles photos (reçues et en place le 21/10) ; 29 paires de visuels clair/sombre décalées
 (session visuels, `annexes/alignement-clair-sombre.md`).
