@@ -197,7 +197,7 @@ une étiquette visible et son erreur dessous.
   fond d'ambiance. **Jamais de prix, jamais de contenance.**
 - **Fiche** : feuille depuis le bas (`--r-xl`, poignée 36 × 4 px), fond d'ambiance, visuel 2:3 plein
   largeur, marque puis nom, mention `MENTION_FLACONS`, barre basse en verre avec « Commander sur
-  Snapchat » (copie « *Nom* (*Marque*) »). Précédent / suivant au glissé horizontal. Adresse
+  Snapchat » (copie « *Nom* (*Marque*) »). Précédent / suivant au glissé horizontal ; sur téléphone, un chevron fin (`fg-2`, 20 px) de chaque côté du visuel, dans la marge, l'annonce et se touche (cible 44 px), absent en bout de liste (demande du gérant, 21/10). Adresse
   `?parfum=<id>` sur l'accueil ; page indexable `/parfums/<marque>/<nom>-<id>` au même contenu.
 - **Navigation** : dès 1024 px, les quatre liens (Catalogue, Marques, La parfumerie, Contact) dans la barre haute ; en deçà, un bouton **Menu** tout à droite de la barre ouvre une feuille par le bas (tiroir à droite sur tablette) : les quatre pages en `title`, la page en cours en `--accent`, « Commander sur Snapchat » en seul bouton plein (`MobileMenu`). Ni barre d'onglets fixe (elle mangerait le catalogue et heurterait la barre d'action de la fiche), ni troisième ligne dans la barre. Sous 360 px, logo à 32 px de haut pour tenir sur une ligne.
 - **Recherche** : champ permanent dans la barre haute, résultats dès 2 caractères. Jamais « aucun

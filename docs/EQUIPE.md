@@ -131,6 +131,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 21/10 | refonte | **Chevrons de parfum voisin** dans la fiche sur téléphone (`f90953e`, demande du gérant) : un chevron fin de chaque côté du visuel, dans la marge, qui se touche aussi. **Attente avis.** |
 | 21/10 | visuels | **Audit des 272 visuels** (flacon vs photo d'origine + alignement sombre/clair mesuré par points de repère) : 36 paires dont le flacon bouge au changement de mode (écart > 1,3 % ou taille > 2,5 %) et 3 flacons non conformes (98 jus, 507 jus, 510 bouchon doré au lieu d'argent) repassés à refaire sur la page, avec la consigne chiffrée. Aucun visuel retiré du site. Photos de référence fausses repérées : 508 Lost Cherry (montre Ombré Leather), 331 CK One (montre CK IN2U). Page : 39 à refaire, 244 validés, 270 à créer. |
 | 21/10 | refonte | **T18 validée** par le gérant (aperçu, fiche, glissé). **H1 de l'accueil** « Nuréa, votre parfum / sans le prix des grandes marques. » (`a7d0923`) : le nom revient dans le titre (e2e et SEO), l'accroche ne se lit plus « les grandes marques moins cher ». |
 | 21/10 | refonte | **T18 codée** (`7482aac`, `refonte/vitrine`) : mouvement déjà conforme pour l'essentiel ; cascade titre → actions dans la hero, suggestions en fondu seul en mouvement réduit, `ScrollReveal` mort supprimé, test `vitrine-mouvement` ajouté. e2e : 2 échecs antérieurs (tri par marque ; H1 sans « Nuréa » depuis l'accroche). **Attente test au doigt du gérant.** |

@@ -45,7 +45,7 @@ chaque rendu finit par « Ce que tu dois faire ».
 
 ## 4. Ta mission
 
-**T16, le menu, T17 (vignettes de partage) et l'index des Marques sont validés** (21/10) : ne pas y revenir. **T18 (mouvement) est codée** (`7482aac`), en attente du test au doigt du gérant. Ta mission : **T19 — Audit**
+**T16, le menu, T17 (vignettes de partage) et l'index des Marques sont validés** (21/10) : ne pas y revenir. **T18 (mouvement) est validée** ; chevrons de parfum voisin dans la fiche (`f90953e`) en attente d'avis. Ta mission : **T19 — Audit**
 (`04-PLAN-EXECUTION.md` § T19), puis T20 → T23, un point de contrôle gérant sur captures à chaque étape visuelle.
 
 Images : le gérant autorise la génération **sans aucun être vivant** (ni visage, ni main) ; flacon Nuréa copié sur la
