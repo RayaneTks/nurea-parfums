@@ -128,6 +128,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 21/10 | refonte | **PC accueil codé : « non »** (goût) : « ultra cheap pour un site de parfum catalogue », tout ce qui précède le catalogue. Troisième refus de l'accueil. Suite : session Fable, `PROMPT-FABLE-ACCUEIL-2.md` (références du gérant d'abord). Le reste de la refonte n'est pas en cause. |
 | 21/10 | refonte | **T15 faite** (`3492c18`, `refonte/vitrine`) : accueil A « Couverture » codé (H1, bandeaux à l'ambiance, index des marques), Snapchat en 2 taps, LCP 1,8 s (sombre) / 2,0 s (clair). Supprimé : photo d'accueil `public/branding/visuel-hero*`. **Attente PC du gérant.** Rien ne touche la gestion ni les visuels. |
 | 21/10 | refonte | **Accueil : le gérant choisit A « Couverture »** (B « trop chargée » ; réserve « très simple, bof »). § B.10 réduit à A, `DESIGN.md` § Accueil à jour, `PROMPT-SUITE-T15.md` écrit. Prochaine session : T15 (code) sur `refonte/vitrine`. Rien ne touche la gestion ni les visuels. |
 | 21/10 | refonte | **Accueil redessiné (Fable)** après le refus de la planche T15 : diagnostic et deux compositions chiffrées dans `04-PLAN-EXECUTION.md` § B.10 (A « Couverture » : le parfum mis en avant sur un bandeau à son ambiance ; B « Nuancier » : mur de visuels rangés par teinte) ; planche v2 `refonte/planche`, `/planche/accueil-v2.html`. Attente du choix du gérant (A, B, aucune). Aucun code d'accueil d'ici là ; rien ne touche la gestion ni les visuels. |
