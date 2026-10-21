@@ -506,26 +506,113 @@
   }
 
   /* ─── À l'affiche (`FeaturedSection`) ───────────────────────────────────
-     Deux compositions horizontales de même poids : la photo entière (2:3,
-     jamais recadrée — un cadre fixe coupait le bouchon de l'un ou la base de
-     l'autre, les flacons ne sont pas tous au même endroit) à gauche, bord à
-     bord dans l'objet ; à droite, sur la couleur du flacon, la marque et le nom
-     calés en bas. Empilées sur téléphone, côte à côte dès 768 px. */
+     Deux bandeaux photographiques horizontaux, en miroir. Grille : le visuel
+     entier (2:3, toute la hauteur) d'un côté, le texte de l'autre. Derrière,
+     la même photo agrandie et floutée remplit le bandeau ; le visuel s'y fond
+     par son bord (masque) ; un voile à la couleur du fond, côté texte, assure
+     le contraste du nom. 4:3 sur téléphone, 16:7 dès 768 px, 16:9 sur
+     62 rem en quinconce dès 1024 px. */
   .affiche {
     display: grid;
     gap: var(--space-4);
   }
 
-  .affiche-compo {
+  .bandeau {
     container-type: inline-size;
+    position: relative;
+    isolation: isolate;
     display: grid;
-    grid-template-columns: 52% minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    aspect-ratio: 4 / 3;
     overflow: hidden;
     border-radius: var(--r-lg);
+    background-color: var(--surface-2);
+    transition: transform var(--dur-1) var(--ease-out);
   }
 
-  /* Composition étroite (téléphone de 320 px) : le nom passe au pas `subtitle` plutôt que de se
-     couper au milieu d'un mot — comme le nom dans les cartes du catalogue. */
+  .bandeau:has(.bandeau-ouvrir:active) {
+    transform: var(--press);
+  }
+
+  .bandeau:has(.bandeau-ouvrir:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .bandeau-miroir {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  /* Agrandie au-delà des bords : le flou ne laisse pas de lisière claire. */
+  .bandeau-fond {
+    position: absolute;
+    inset: -12%;
+    z-index: -2;
+    filter: blur(24px) saturate(1.1);
+  }
+
+  /* Le fond montre le décor, pas le flacon : agrandi ×2 depuis le bord côté texte, le flacon flouté
+     (au centre de la photo) passe sous le visuel net — sinon son fantôme marque la jonction. */
+  .bandeau-fond img {
+    transform: scale(2);
+    transform-origin: 100% 70%;
+  }
+
+  .bandeau-miroir .bandeau-fond img {
+    transform-origin: 0% 70%;
+  }
+
+  .bandeau-voile {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: linear-gradient(to left, color-mix(in oklch, var(--bg) 62%, transparent), color-mix(in oklch, var(--bg) 18%, transparent) 70%);
+  }
+
+  .bandeau-miroir .bandeau-voile {
+    background-image: linear-gradient(to right, color-mix(in oklch, var(--bg) 62%, transparent), color-mix(in oklch, var(--bg) 18%, transparent) 70%);
+  }
+
+  .bandeau-visuel {
+    position: relative;
+    height: 100%;
+    aspect-ratio: 2 / 3;
+    -webkit-mask-image: linear-gradient(to right, #000 60%, transparent);
+    mask-image: linear-gradient(to right, #000 60%, transparent);
+  }
+
+  .bandeau-miroir .bandeau-visuel {
+    order: 2;
+    -webkit-mask-image: linear-gradient(to left, #000 60%, transparent);
+    mask-image: linear-gradient(to left, #000 60%, transparent);
+  }
+
+  .bandeau-texte {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: var(--space-1);
+    padding: var(--space-4) var(--space-3) var(--space-6);
+  }
+
+  .bandeau-miroir .bandeau-texte {
+    padding-inline: var(--space-4) var(--space-2);
+  }
+
+  /* Bouton étendu : tout le bandeau ouvre la fiche ; le lien du nom reste au-dessus. */
+  .bandeau-ouvrir {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .bandeau-ouvrir:focus-visible {
+    outline: none;
+  }
+
+  /* Bandeau étroit (téléphone de 320 px) : le nom passe au pas `subtitle`. */
   @container (max-width: 20rem) {
     .affiche-nom {
       font-size: 1.3125rem;
@@ -533,43 +620,47 @@
     }
   }
 
-  .affiche-photo {
-    aspect-ratio: 2 / 3;
-    transition: opacity var(--dur-1) var(--ease-out);
-  }
-
-  .affiche-photo:active {
-    opacity: 0.9;
-  }
-
-  .affiche-legende {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    gap: var(--space-1);
-    padding: var(--space-4);
-  }
-
   @media (min-width: 768px) {
     .affiche {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: var(--space-6);
     }
 
-    .affiche-compo {
-      grid-template-columns: 48% minmax(0, 1fr);
+    .bandeau {
+      aspect-ratio: 16 / 7;
+    }
+  }
+
+  /* Bureau : deux bandeaux de 62 rem en 16:9, le premier calé à gauche, le second à droite — la photo
+     garde une vraie part du bandeau (37 %) au lieu de se perdre dans 1 280 px de flou. */
+  @media (min-width: 1024px) {
+    .bandeau {
+      width: min(100%, 62rem);
+      aspect-ratio: 16 / 9;
     }
 
-    .affiche-legende {
-      padding: var(--space-6);
+    /* À cette échelle (photo agrandie sur ~1 000 px), 24 px de flou laissaient des contours nets. */
+    .bandeau-fond {
+      filter: blur(56px) saturate(1.1);
+    }
+
+    .bandeau-miroir {
+      justify-self: end;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .bandeau-texte {
+      padding: var(--space-12);
+    }
+
+    .bandeau-miroir .bandeau-texte {
+      padding-inline: var(--space-12) var(--space-8);
     }
   }
 
   /* ─── Entrée à l'arrivée (une fois) ──────────────────────────────────────
      Jetons § B.7 : opacité 0 → 1 et 0,95 → 1, cascade par `--enter-delay`.
-     Le visuel de vitrine part de 0,4 (Chrome ne compterait son LCP qu'à la
-     fin d'un fondu depuis 0). `backwards` : rien ne reste posé après.
-     Mouvement réduit : `--dur-4` 0. */
+     `backwards` : rien ne reste posé après. Mouvement réduit : `--dur-4` 0. */
   @keyframes enter {
     from {
       opacity: 0;
