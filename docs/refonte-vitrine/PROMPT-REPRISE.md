@@ -1,6 +1,6 @@
 # Prompt de reprise — refonte de la vitrine Nuréa (après /clear)
 
-À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (hero, suggestions validées ; cap sur T16).
+À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (T16 codée, attente PC du gérant ; cap sur T17).
 
 ---
 
@@ -45,12 +45,10 @@ chaque rendu finit par « Ce que tu dois faire ».
 
 ## 4. Ta mission
 
-**T16 — La parfumerie, Contact, Légal, 404** (`04-PLAN-EXECUTION.md` § T16) : réécrire ces pages dans la DA
-validée. Commence par lire les pages actuelles (`app/(shop)/marque`, `contact`, `legal`, `app/not-found.tsx`,
-`src/components/editorial/*`, `ContactForm.tsx`) et leurs données réelles ; propose **une** composition par page,
-en quelques lignes, puis exécute — contenu juridique inchangé, formulaire par `src/actions/contact.ts` inchangé,
-`MENTION_FLACONS` sur La parfumerie et Contact, 404 qui renvoie à la recherche, aucune contenance ni prix,
-rien d'inventé. Point de contrôle gérant sur captures (320 / 390 / 430 / 1280, clair et sombre) avant T17.
+**T16 est codée** (La parfumerie, Contact, Légal, 404 ; photos éditoriales : `annexes/photos-editoriales.md`) :
+d'abord recueillir l'avis du gérant sur ses captures et corriger. Puis **T17 — Images OG** (`04-PLAN-EXECUTION.md`).
+Le gérant autorise la génération d'images **sans aucun être vivant** (ni visage, ni main) ; tout écran montré est une
+capture réelle incrustée, jamais un écran généré ; chaque image en deux lumières au même cadrage ; vérifier avant de montrer.
 Ensuite : T17 → T23, un point de contrôle à chaque étape visuelle.
 
 ## 5. Méthode

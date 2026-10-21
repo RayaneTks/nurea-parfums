@@ -2,7 +2,7 @@
 
 Prompt de reprise après `/clear` : `PROMPT-REPRISE.md`.
 
-Mis à jour le 21/10/2026 (hero et suggestions de recherche validées ; prochain : T16). Ce fichier dit **où on en est** ; le détail chiffré est dans
+Mis à jour le 21/10/2026 (T16 codée, attente PC ; prochain : T17). Ce fichier dit **où on en est** ; le détail chiffré est dans
 `04-PLAN-EXECUTION.md` § B (DA) et § B.10 (accueil), les règles dans `CLAUDE.md`, `DESIGN.md`,
 `01-INVARIANTS.md`. Ne rien décider ici qui n'y soit pas écrit.
 
@@ -46,7 +46,8 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 | Hero | **validé** (gérant, 21/10, « ok » après les photos à l'étiquette et « Nuréa » en accent) | photo du flacon Nuréa en fond (photos du gérant du 21/10 : flacon rempli, étiquette au monogramme, clair/sombre alignés à 0 px ; verrerie et petits flacons autour, que le brief excluait — choix du gérant) ; sous 375 px la photo descend de `--space-8` pour que Snapchat ne touche pas le bouchon ; titre puis « Voir le catalogue » + Snapchat en bouton rond 44 px sur une ligne, au-dessus et à gauche du flacon ; accroche « Le parfum que vous aimez, dans un flacon Nuréa. » (formulation du gérant, **non verrouillée**, avis juridique attendu) |
 | À l'affiche | **validé** (21/10, « globalement ok » après finitions) | deux bandeaux horizontaux en miroir (Symphony flacon à gauche, Afternoon Swim flacon à droite) ; visuel entier fondu dans sa propre photo floutée (coin haut droit ×3) ; nom intégré sur un voile `--bg` ; tout le bandeau ouvre la fiche ; 4:3 mobile, 16:9 sur 62 rem en quinconce sur bureau |
 | Marques | **en cours**, pas encore jugé | index typographique : 12 marques, nom + nombre, « Toutes les marques » → `/parfums` |
-| La parfumerie, Contact, Légal, 404, OG, mouvement, audit, mise en ligne | **à faire** | T16 → T23 (`04-PLAN-EXECUTION.md`) |
+| La parfumerie, Contact, Légal, 404 (T16) | **codé** (21/10, `2ae7205`, `79410b9`) — **attente PC du gérant** | pages réécrites dans la DA ; photos éditoriales générées sans être vivant (demande du gérant) : atelier + une photo par temps de commande, écrans réels du catalogue et du profil Snapchat incrustés (`annexes/photos-editoriales.md`) ; 404 avec recherche ; « 10, 50 ou 80 ml » retiré ; FAQ : « nous vendons les grandes marques… au meilleur prix » retiré (faux) ; LCP /marque 2,4 / 2,1 s, /contact 0,85 s |
+| OG, mouvement, audit, mise en ligne | **à faire** | T17 → T23 (`04-PLAN-EXECUTION.md`) |
 
 ## Règles à ne pas remettre en cause sans justification
 
