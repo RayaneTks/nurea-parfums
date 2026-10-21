@@ -49,7 +49,7 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 | La parfumerie, Contact, Légal, 404 (T16) | **validé** (gérant, 21/10, « ok good » ; `2ae7205`, `79410b9`, téléphones refaits `d362aa5`) | pages réécrites dans la DA ; photos éditoriales générées sans être vivant (demande du gérant) : atelier + une photo par temps de commande, écrans réels du catalogue et du profil Snapchat incrustés (`annexes/photos-editoriales.md`) ; 404 avec recherche ; « 10, 50 ou 80 ml » retiré ; FAQ : « nous vendons les grandes marques… au meilleur prix » retiré (faux) ; LCP /marque 2,4 / 2,1 s, /contact 0,85 s |
 | Menu sur téléphone et tablette (signalé par le gérant : on ne pouvait naviguer que par le pied de page) | **validé** (gérant, 21/10, « ça va, c'est pas mal » ; `29ed262`) | bouton Menu à droite de la barre sous 1024 px, feuille par le bas (DESIGN.md § Navigation) |
 | Vignettes de partage (T17) | **validé** (gérant, 21/10, « ok c bien » ; `dcbb5a9`) | site : photo réelle du flacon Nuréa de la hero + logo complet + « Catalogue de parfums, commande sur Snapchat » + domaine ; fiche parfum : visuel sombre entier sur son ambiance, marque puis nom, mention des flacons ; JPEG 50–75 Ko (WhatsApp ignore les aperçus de plus de ~300 Ko) ; `/parfums` avait perdu son og:image, rétablie ; rendu : `app/(shop)/_og/vignettes.tsx`, essai sans base : `scripts/refonte-vitrine/og-essai.tsx` |
-| Mouvement (T18) | **codé** (`7482aac`) ; **attente test au doigt du gérant** sur l'aperçu | l'existant suivait déjà § B.7 (feuilles au ressort, appui, survol sous pointeur fin) ; ajouté : cascade de 40 ms titre → actions dans la hero, suggestions en fondu seul en mouvement réduit, courbe de la fiche lue dans le jeton ; `ScrollReveal` supprimé (code mort, aucune entrée au défilement : automatisme refusé) ; règles tenues par `tests/architecture/vitrine-mouvement.test.ts` (dérogation `mouvement-ok:`) |
+| Mouvement (T18) | **validé** (gérant, 21/10 : aperçu, ouverture/fermeture, glissé « good » ; `7482aac`) ; **chevrons de parfum voisin** ajoutés à sa demande (`f90953e`), **à valider** | l'existant suivait déjà § B.7 (feuilles au ressort, appui, survol sous pointeur fin) ; ajouté : cascade de 40 ms titre → actions dans la hero, suggestions en fondu seul en mouvement réduit, courbe de la fiche lue dans le jeton ; `ScrollReveal` supprimé (code mort, aucune entrée au défilement : automatisme refusé) ; règles tenues par `tests/architecture/vitrine-mouvement.test.ts` (dérogation `mouvement-ok:`) |
 | Audit, mise en ligne | **à faire** | T19 → T23 (`04-PLAN-EXECUTION.md`) |
 
 ## Règles à ne pas remettre en cause sans justification
@@ -99,6 +99,6 @@ miniatures (répétaient les produits).
 
 ## Prochaines priorités
 
-1. **T18** : test au doigt du gérant sur l'aperçu (ouvrir et fermer une fiche, glisser d'un parfum à l'autre, ouvrir le menu). Puis **T19 — Audit** (`04-PLAN-EXECUTION.md` § T19), T20 → T23.
+1. Avis du gérant sur les chevrons de la fiche (`f90953e`). Puis **T19 — Audit** (`04-PLAN-EXECUTION.md` § T19), T20 → T23.
 3. En attente côté gérant, sans bloquer : avis juridique (accroche, présentation face aux marques, titre et description
    Google, prix visibles dans les stories Snapchat incrustées) ; 29 paires de visuels clair/sombre décalées (session visuels).
