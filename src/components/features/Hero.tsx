@@ -35,9 +35,9 @@ function sources(lumiere: Lumiere) {
  * forment un seul bloc au-dessus et à gauche du flacon (le bas du titre au-dessus du bouchon), les
  * entrées sur une ligne. Dès 768 px : la photo paysage, le titre et les entrées à gauche.
  *
- * Composants inchangés : `Button` plein, lien tertiaire. Le H1, unique, est l'accroche ; il nomme (« Nuréa » en `--accent`, seul moment de marque du titre, DESIGN.md § Couleurs)
- * Nuréa, pas la ville (gérant, 21/10 : les clients viennent de Snapchat, envois partout en France). **Accroche provisoire** : le gérant ne l'a pas validée, et toute formulation qui
- * rapproche le produit d'un parfum de marque attend un avis juridique (01-INVARIANTS § 1).
+ * Composants inchangés : `Button` plein, lien tertiaire. Le H1, unique, est l'accroche : « Sentez bon, sans payer le
+ * prix fort. » (choix du gérant, 21/10), sans la ville (les clients viennent de Snapchat, envois partout en France).
+ * Elle évoque le prix face aux marques : l'avis juridique attendu la couvre aussi (01-INVARIANTS § 1).
  *
  * Chaque lumière est annoncée pour son seul thème et chaque cadrage pour sa seule largeur ; les deux
  * images restent paresseuses (la variante masquée ne prend pas de débit), comme `PerfumeImage`.
@@ -70,9 +70,9 @@ export const Hero: FC = () => {
         </picture>
       </div>
 
-      {/* Accroche provisoire (une des formulations du gérant, non validée ; avis juridique attendu). */}
+      {/* Accroche choisie par le gérant le 21/10 ; avis juridique attendu (elle évoque le prix). */}
       <h1 id="accueil-titre" className="hero-titre t-title enter">
-        Le parfum que vous aimez, dans un flacon <span className="text-accent">Nuréa</span>.
+        Sentez bon, sans payer le prix fort.
       </h1>
       <div className="hero-entrees enter">
         <a href="#collection" className={buttonClass("solid")}>
