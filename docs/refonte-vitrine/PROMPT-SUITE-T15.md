@@ -1,7 +1,7 @@
-# Suite de T15 — l'accueil « Vitrine » est codé ; ce qui reste à l'exécutant
+# Suite de T15 — l'accueil « Chambre » est codé ; ce qui reste à l'exécutant
 
-État au 21/10/2026 : l'accueil a été **codé par Fable** (composition « Vitrine », `04-PLAN-EXECUTION.md`
-§ B.10, commit `53d7829` sur `refonte/vitrine`). Il attend le point de contrôle du gérant sur
+État au 21/10/2026 : l'accueil a été **codé par Fable** (composition « Chambre », `04-PLAN-EXECUTION.md`
+§ B.10, commit `2978930` sur `refonte/vitrine`). Il attend le point de contrôle du gérant sur
 l'aperçu Vercel de la branche, sur son téléphone. Ce fichier remplace l'ancien prompt T15 (composition A,
 refusée).
 
@@ -20,7 +20,7 @@ refusée).
 
 ## Ce que l'exécutant ne fait pas
 
-Modifier § B.10, la composition, les rôles de texte de l'accueil ; remettre un cadre, un bouton ou un
-texte sur le visuel ; ajouter avant le catalogue une fonction qui existe déjà ailleurs (recherche,
+Modifier § B.10, la composition, l'accroche ou les rôles de texte de la hero ; poser du texte sur le
+visuel ou l'assombrir ; remplacer le visuel de la chambre sans la décision du gérant (§ B.10, ressource) ; ajouter avant le catalogue une fonction qui existe déjà ailleurs (recherche,
 filtres, nouveautés, comment commander). Toucher la gestion (`app/admin`, `src/features`, `src/ui`, `src/app-shell`,
 `src/server`).
