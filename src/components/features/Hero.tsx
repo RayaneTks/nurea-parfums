@@ -21,8 +21,8 @@ const LARGE = "(min-width: 768px)";
 type Lumiere = "sombre" | "clair";
 
 function sources(lumiere: Lumiere) {
-  const portrait = getImageProps({ src: PHOTO.portrait[lumiere], alt: ALT, width: PHOTO.portrait.width, height: PHOTO.portrait.height, sizes: "100vw", quality: 82 }).props;
-  const paysage = getImageProps({ src: PHOTO.paysage[lumiere], alt: ALT, width: PHOTO.paysage.width, height: PHOTO.paysage.height, sizes: "100vw", quality: 82 }).props;
+  const portrait = getImageProps({ src: PHOTO.portrait[lumiere], alt: ALT, width: PHOTO.portrait.width, height: PHOTO.portrait.height, sizes: "100vw" }).props;
+  const paysage = getImageProps({ src: PHOTO.paysage[lumiere], alt: ALT, width: PHOTO.paysage.width, height: PHOTO.paysage.height, sizes: "100vw" }).props;
   return { portrait, paysage };
 }
 
@@ -75,7 +75,7 @@ export const Hero: FC = () => {
           Avis juridique attendu : elle compare le prix aux grandes marques. */}
       <h1 id="accueil-titre" className="hero-titre t-title enter">
         <span className="text-accent">Nuréa</span>, votre parfum <br />
-        sans le prix des grandes&nbsp;marques.
+        sans le prix des <span className="hero-insecable">grandes marques.</span>
       </h1>
       <div className="hero-entrees enter">
         <a href="#collection" className={buttonClass("solid")}>

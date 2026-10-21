@@ -22,7 +22,7 @@ const ETAPES: readonly { title: string; text: string; photo: EditorialPhotoName 
 export const OrderSteps: FC<{ wide?: boolean; className?: string }> = ({ wide = false, className }) => (
   <ol className={cn("grid gap-6", wide && "md:grid-cols-3", className)}>
     {ETAPES.map(({ title, text, photo }) => (
-      <li key={title} className={cn("grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-4", wide && "md:grid-cols-1 md:content-start md:items-start")}>
+      <li key={title} className={cn("grid grid-cols-[min(7rem,40%)_minmax(0,1fr)] items-center gap-4", wide && "md:grid-cols-1 md:content-start md:items-start")}>
         <EditorialPhoto
           name={photo}
           sizes={wide ? "(min-width: 768px) 30vw, 112px" : "112px"}

@@ -52,7 +52,9 @@ export const Navbar: FC = () => {
 
   return (
     <>
-      <header className="glass sticky top-0 z-sticky border-b border-line pt-[env(safe-area-inset-top,0px)]">
+      {/* Sous 280 px (téléphone zoomé à 200 %), la barre passe sur trois lignes : collante, elle mangerait
+          plus d'un tiers de l'écran. Elle défile alors avec la page. */}
+      <header className="glass sticky top-0 z-sticky border-b max-[279px]:static border-line pt-[env(safe-area-inset-top,0px)]">
         <div className="page-x flex flex-wrap items-center gap-x-2 md:h-16 md:flex-nowrap md:gap-x-4">
           <Link
             href="/"

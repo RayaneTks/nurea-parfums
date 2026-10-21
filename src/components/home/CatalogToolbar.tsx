@@ -79,7 +79,7 @@ export const CatalogToolbar: FC<CatalogToolbarProps> = ({
       <p className="t-caption" aria-live="polite">
         {resultLabel}
       </p>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <label htmlFor="catalogue-tri" className="sr-only">
           Trier le catalogue
         </label>

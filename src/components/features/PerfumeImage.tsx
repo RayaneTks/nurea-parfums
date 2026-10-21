@@ -48,7 +48,6 @@ export const PerfumeImage: FC<PerfumeImageProps> = ({ perfume, sizes, priority =
   const common = {
     fill: true,
     sizes,
-    quality: 80,
     placeholder: "blur" as const,
     blurDataURL: perfume.blurDataURL || NUREA_IMAGE_BLUR_DATA_URL,
     onError: () => setFailed(true),
@@ -66,7 +65,7 @@ export const PerfumeImage: FC<PerfumeImageProps> = ({ perfume, sizes, priority =
    */
   if (preloadByTheme) {
     for (const [src, media] of [[perfume.image, "(prefers-color-scheme: dark)"], [light, "(prefers-color-scheme: light)"]] as const) {
-      const { props } = getImageProps({ src, alt: "", fill: true, sizes, quality: 80 });
+      const { props } = getImageProps({ src, alt: "", fill: true, sizes });
       preload(props.src, { as: "image", imageSrcSet: props.srcSet, imageSizes: props.sizes, media, fetchPriority: "high" });
     }
   }
