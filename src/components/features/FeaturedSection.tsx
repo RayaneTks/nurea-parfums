@@ -1,6 +1,6 @@
 "use client";
 
-import type { FC, MouseEvent } from "react";
+import type { CSSProperties, FC, MouseEvent } from "react";
 import type { Perfume } from "@/lib/data";
 import { ambientStyle } from "@/lib/catalog/ambient";
 import { brandLineLabel } from "@/lib/catalog/perfumePresentation";
@@ -31,29 +31,39 @@ function requestSheet(id: number) {
   if (!handled) pending = id;
 }
 
+const plural = (n: number, word: string) => `${n} ${word}${n > 1 ? "s" : ""}`;
+
 interface FeaturedSectionProps {
+  /** Les parfums mis en avant, deux au plus, dans l'ordre du catalogue. */
   perfumes: Perfume[];
+  /** Parfums publiés au catalogue. */
+  perfumeCount: number;
+  /** Marques qui ont au moins un parfum publié. */
+  brandCount: number;
 }
 
 /**
- * Les bandeaux « une » de l'accueil (04-PLAN-EXECUTION.md § B.10, composition A) : un par parfum
- * mis en avant, bord à bord, au fond de son ambiance (§ B.3.8 amendé ; repli `--surface-1`).
+ * La une de l'accueil (04-PLAN-EXECUTION.md § B.10, composition « La une ») : chaque parfum mis en
+ * avant est une **scène** — son visuel 2:3 bord à bord, sans cadre ni carte, puis sa **légende** sur
+ * un bandeau à la couleur de son flacon (l'ambiance, § B.3.8 ; repli `--surface-1`) : marque, nom.
+ * Entre les deux scènes, la **phrase de la maison** : ce qu'est Nuréa, en chiffres comptés sur le
+ * catalogue publié, rien d'autre.
  *
- * Dedans, dans la gouttière : marque, nom (lien vers la fiche), visuel 2:3 (bouton vers la fiche).
- * Dès 768 px, texte et visuel côte à côte ; le second bandeau en miroir. Le premier visuel est
- * l'élément LCP de la page : préchargé, prioritaire.
+ * Téléphone : scène, phrase, scène, à la suite. Dès 768 px, les deux scènes côte à côte et la
+ * phrase dessous ; dès 1024 px, la phrase à gauche et les deux scènes à sa droite (grille
+ * `.une`, `app/globals.css`). Le premier visuel est l'élément LCP : préchargé pour le thème du
+ * système, vignette 640 jusqu'à la tablette.
  *
- * Nom et visuel ouvrent la feuille de fiche, même touchés avant que le catalogue soit prêt (la
+ * Visuel et nom ouvrent la fiche en feuille, même touchés avant que le catalogue soit prêt (la
  * demande attend). Le nom est un vrai lien vers la page indexable du parfum : sans JavaScript, ou
  * par un clic modifié (nouvel onglet), il y mène.
  */
-export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => (
-  <div className="mt-6 flex flex-col gap-3">
-    {perfumes.map((perfume, index) => {
+export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes, perfumeCount, brandCount }) => (
+  <div className="une">
+    {perfumes.slice(0, 2).map((perfume, index) => {
       const brandLine = brandLineLabel(perfume.brand, perfume.line);
       const href = perfumePath(perfume.brandSlug ?? slugify(perfume.brand), perfume.name, perfume.id);
       const titleId = `une-${perfume.id}`;
-      const mirror = index % 2 === 1;
 
       const openFromLink = (event: MouseEvent<HTMLAnchorElement>) => {
         if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -66,48 +76,41 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => (
           key={perfume.id}
           aria-labelledby={titleId}
           style={ambientStyle(perfume)}
-          className="amb bg-ambient py-6 md:py-8 lg:py-12"
+          className={cn("amb scene", index === 0 ? "scene-1" : "scene-2")}
         >
-          <div
-            className={cn(
-              "page-x grid gap-4 md:items-center md:gap-x-8 lg:gap-x-12",
-              mirror ? "md:grid-cols-[45%_1fr] lg:grid-cols-[40%_1fr]" : "md:grid-cols-[1fr_45%] lg:grid-cols-[1fr_40%]"
-            )}
+          <button
+            type="button"
+            onClick={() => requestSheet(perfume.id)}
+            aria-label={`Voir la fiche : ${perfume.name}, ${brandLine}`}
+            className={cn("scene-visual relative block w-full overflow-hidden bg-surface-2", index === 0 && "settle")}
           >
-            <div className={cn("flex min-w-0 flex-col gap-0.5 md:row-start-1", mirror ? "md:col-start-2" : "md:col-start-1")}>
-              <p className="t-body">{brandLine}</p>
-              <h2 id={titleId} className="t-title hyphens-auto [overflow-wrap:anywhere]">
-                <a
-                  href={href}
-                  onClick={openFromLink}
-                  className="underline-offset-[6px] decoration-1 mouse-hover:underline"
-                >
-                  {perfume.name}
-                </a>
-              </h2>
-            </div>
+            {/* Téléphone : « 213px » et non « 100vw », voulu. Un écran dense (×2,6 à ×3) demanderait
+                l'original 1 024 px (105 Ko) ; 213 × 3 = 639 lui fait prendre la vignette 640 (44 Ko),
+                affichée sur 390 px — densité 1,64, l'élément LCP de la page. Tablette et bureau :
+                320 × 2 = 640, la même vignette. */}
+            <PerfumeImage perfume={perfume} sizes="(min-width: 768px) 320px, 213px" preloadByTheme={index === 0} />
+          </button>
 
-            <button
-              type="button"
-              onClick={() => requestSheet(perfume.id)}
-              aria-label={`Voir la fiche : ${perfume.name}, ${brandLine}`}
-              className={cn(
-                "press relative block aspect-[2/3] w-full overflow-hidden rounded-md bg-surface-2 md:row-start-1",
-                mirror ? "md:col-start-1" : "md:col-start-2"
-              )}
-            >
-              {/* Téléphone : « 213px » et non « 100vw », voulu. Un écran dense (×2,6 à ×3) demandait
-                  l'original 1 024 px (105 Ko) pour un visuel de 358 px ; 213 × 3 = 639 lui fait prendre
-                  la vignette 640 (44 Ko), soit une densité de 1,8 — l'élément LCP de la page. */}
-              <PerfumeImage
-                perfume={perfume}
-                sizes="(min-width: 1024px) 40vw, (min-width: 768px) 45vw, 213px"
-                preloadByTheme={index === 0}
-              />
-            </button>
+          <div className="scene-label enter bg-ambient" style={{ "--enter-delay": "80ms" } as CSSProperties}>
+            <p className="t-body">{brandLine}</p>
+            <h2 id={titleId} className="t-subtitle hyphens-auto [overflow-wrap:anywhere]">
+              <a href={href} onClick={openFromLink} className="underline-offset-[6px] decoration-1 mouse-hover:underline">
+                {perfume.name}
+              </a>
+            </h2>
           </div>
         </section>
       );
     })}
+
+    {/* Catalogue vide (base injoignable) : aucun « 0 parfum » affirmé. */}
+    {perfumeCount > 0 && (
+      <div className="une-phrase enter" style={{ "--enter-delay": "160ms" } as CSSProperties}>
+        <p className="t-title t-measure">
+          Nuréa Parfums réunit à Marseille {plural(perfumeCount, "parfum")} de {plural(brandCount, "marque")}. On
+          choisit au catalogue, on commande sur Snapchat — remis en main propre ou envoyé.
+        </p>
+      </div>
+    )}
   </div>
 );

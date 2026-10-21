@@ -405,4 +405,165 @@
   .press:active {
     transform: var(--press);
   }
+
+  /* ─── Accueil : « La une » (04-PLAN-EXECUTION.md § B.10) ─────────────────
+     Manchette (H1), puis chaque parfum mis en avant en scène : son visuel
+     2:3 bord à bord, sans cadre, et sa légende sur un bandeau à la couleur
+     de son flacon. Entre les deux scènes, la phrase de la maison.
+     Téléphone : à la suite. Tablette : les scènes côte à côte, la phrase
+     dessous. Bureau : la phrase à gauche, les scènes à sa droite. */
+  .une {
+    display: grid;
+    grid-template-areas: "s1" "phrase" "s2";
+    row-gap: var(--space-12);
+  }
+
+  .scene-1 {
+    grid-area: s1;
+  }
+
+  .scene-2 {
+    grid-area: s2;
+  }
+
+  .une-phrase {
+    grid-area: phrase;
+    width: 100%;
+    max-width: calc(var(--content-max) + 2 * var(--gutter));
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .scene-visual {
+    aspect-ratio: 2 / 3;
+    transition: opacity var(--dur-1) var(--ease-out);
+  }
+
+  /* L'appui sur une image bord à bord ne la rétrécit pas (on verrait le fond) : elle cède en clarté. */
+  .scene-visual:active {
+    opacity: 0.9;
+  }
+
+  .scene-label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-3) var(--gutter);
+  }
+
+  @media (min-width: 768px) {
+    .une {
+      grid-template-areas: "s1 s2" "phrase phrase";
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--space-6);
+      width: 100%;
+      max-width: calc(var(--content-max) + 2 * var(--gutter));
+      margin-inline: auto;
+      padding-inline: var(--gutter);
+    }
+
+    .une-phrase {
+      padding-inline: 0;
+    }
+
+    .scene-label {
+      padding-inline: var(--space-4);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .une {
+      grid-template-areas: "phrase s1 s2";
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      column-gap: var(--space-8);
+      align-items: start;
+    }
+
+    /* Les scènes se règlent sur la hauteur de l'écran (l'image domine) ; la phrase
+       devient une colonne de légende, au pas `subtitle` (le rôle, pas une taille à part). */
+    .scene-visual {
+      width: auto;
+      height: clamp(28rem, 70vh, 42rem);
+    }
+
+    .une-phrase {
+      align-self: center;
+      max-width: 28rem;
+    }
+
+    .une-phrase > p {
+      font-size: 1.3125rem;
+      font-weight: 500;
+      letter-spacing: -0.005em;
+      line-height: 1.3;
+    }
+  }
+
+  /* ─── Rayon des marques (`BrandShelf`) ──────────────────────────────────
+     Un rayon qu'on fait glisser, calé sur la gouttière ; dès 1024 px les
+     huit tiennent sur une ligne. */
+  .rayon {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 9rem;
+    gap: var(--space-3);
+    padding-inline: var(--gutter);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+
+  .rayon::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hors écran, le rayon n'est pas dessiné et ses vignettes ne partent pas :
+     sous réseau lent, elles prenaient le débit de l'image de une (LCP mesuré
+     2,4 s au lieu de 1,9 s). Hauteur réservée : visuel 2:3 + deux lignes. */
+  .rayon > li {
+    scroll-snap-align: start;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 9rem auto 18.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    .rayon {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: var(--space-4);
+      width: 100%;
+      max-width: calc(var(--content-max) + 2 * var(--gutter));
+      margin-inline: auto;
+      overflow: visible;
+    }
+  }
+
+  /* ─── Entrée à l'arrivée (une fois) ──────────────────────────────────────
+     Jetons § B.7 : opacité 0 → 1 et 0,95 → 1, cascade par `--enter-delay`.
+     L'image bord à bord ne part pas de 0 (Chrome ne compterait son LCP qu'à
+     la fin du fondu) ni de plus petit (on verrait ses bords) : elle recule
+     de 1,03 à 1 dans son cadre. `backwards` : rien ne reste posé après. */
+  @keyframes enter {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+  }
+
+  @keyframes settle {
+    from {
+      opacity: 0.4;
+      transform: scale(1.03);
+    }
+  }
+
+  .enter {
+    animation: enter var(--dur-4) var(--ease-out) var(--enter-delay, 0ms) backwards;
+  }
+
+  .settle > img {
+    animation: settle var(--dur-4) var(--ease-out) backwards;
+  }
 }
