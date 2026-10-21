@@ -38,7 +38,7 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 | Section | État | Ce qui est en place |
 |---|---|---|
 | DA « Nuancier nocturne », Fraunces + Figtree, deux thèmes | **validé** (PC 1, 20/10) | jetons `globals.css` + `brand.ts` |
-| Couleur de marque : doré (sombre) / bordeaux (clair) | **décidé** (gérant, 21/10) ; en place : **couple Nuréa** sur toute la vitrine (fonds, encres, accent ; `0133fc6`), logo complet monogramme + nom dans la barre et le pied de page (`a141675`), accent sur ce qui agit et ce qui est choisi (`DESIGN.md` § Couleurs)  ; dans la hero, **l'étiquette du flacon** porte le monogramme dans la couleur du thème (photos du 21/10, `cd64c4d`) — direction retenue : pas de second monogramme décoratif dans la hero (doublon de l'étiquette et de la barre) ; **à valider par le gérant sur captures** | `globals.css`, `brand.ts`, `BrandLogo.tsx` |
+| Couleur de marque : doré (sombre) / bordeaux (clair) | **décidé** (gérant, 21/10) ; en place : **couple Nuréa** sur toute la vitrine (fonds, encres, accent ; `0133fc6`), logo complet monogramme + nom dans la barre et le pied de page (`a141675`), accent sur ce qui agit et ce qui est choisi (`DESIGN.md` § Couleurs)  ; dans la hero, **l'étiquette du flacon** porte le monogramme dans la couleur du thème (photos du 21/10, `cd64c4d`) ; le mot **« Nuréa » du titre en accent** (`606ff14`, exception notée dans `DESIGN.md` § Couleurs) ; pas de second monogramme décoratif (doublon de l'étiquette et de la barre) ; **à valider par le gérant sur captures** | `globals.css`, `brand.ts`, `BrandLogo.tsx` |
 | Composants (boutons, cartes, champs, filtres, feuille, Ma sélection) | **validé** (PC 2–3) | `src/components/ui`, `PerfumeCard`, `PerfumeSheet`… — **ne pas les redessiner** |
 | Catalogue (grille, filtres, recherche, fiche, Snapchat 2 taps) | **validé** | `CatalogSection` et ses pièces |
 | Hero | **en cours** — base jugée bonne par le gérant, pas encore validée | photo du flacon Nuréa en fond (photos du gérant du 21/10 : flacon rempli, étiquette au monogramme, clair/sombre alignés à 0 px ; verrerie et petits flacons autour, que le brief excluait — choix du gérant) ; sous 375 px la photo descend de `--space-8` pour que Snapchat ne touche pas le bouchon ; titre puis « Voir le catalogue » + Snapchat en bouton rond 44 px sur une ligne, au-dessus et à gauche du flacon ; accroche « Le parfum que vous aimez, dans un flacon Nuréa. » (formulation du gérant, **non verrouillée**, avis juridique attendu) |
@@ -92,6 +92,6 @@ miniatures (répétaient les produits).
 
 1. **Renforcer l'identité Nuréa sur la page d'accueil** (demande du gérant), notamment la hero, avec la
    couleur de marque (doré en sombre, bordeaux en clair) et le monogramme — sans toucher aux composants ni aux
-   sections validées, sans relancer une refonte. **Fait le 21/10** (photos à l'étiquette NP, `cd64c4d`) ;
+   sections validées, sans relancer une refonte. **Fait le 21/10** (photos à l'étiquette NP, `cd64c4d` ; « Nuréa » du titre en accent, `606ff14`) ;
    attend le jugement du gérant sur captures avant d'ajouter quoi que ce soit.
 2. Avis juridique attendu (accroche, présentation face aux marques), puis T16 → T23.
