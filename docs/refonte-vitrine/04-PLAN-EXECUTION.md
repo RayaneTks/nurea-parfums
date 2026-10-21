@@ -49,13 +49,13 @@ manifeste, `themeColor`).
 
 | Jeton | OKLCH | Hex | Rôle | Contraste |
 |---|---|---|---|---|
-| `--bg` | `oklch(0.16 0.012 20)` | `#120B0B` | fond de page | — |
-| `--surface-1` | `oklch(0.21 0.012 20)` | `#1E1616` | carte, champ, barre (opaque) | — |
-| `--surface-2` | `oklch(0.26 0.012 20)` | `#2A2222` | carte pressée, puce active, popover | — |
-| `--line` | `oklch(0.34 0.012 20)` | `#3E3635` | filet 1 px | 1,65:1 sur bg (décoratif) |
-| `--text-1` | `oklch(0.95 0.008 60)` | `#F3EDE9` | titres, noms, boutons | 16,8:1 bg · 13,4:1 surface-2 |
-| `--text-2` | `oklch(0.78 0.012 50)` | `#BEB5B1` | texte courant, marque | 9,7:1 bg · 7,7:1 surface-2 |
-| `--text-3` | `oklch(0.66 0.014 40)` | `#9A908C` | légendes, placeholder | 6,3:1 bg · 5,0:1 surface-2 |
+| `--bg` | `oklch(0.16 0.02 20)` | `#150A0A` | fond de page | — |
+| `--surface-1` | `oklch(0.21 0.019 20)` | `#201515` | carte, champ, barre (opaque) | — |
+| `--surface-2` | `oklch(0.26 0.018 20)` | `#2C2120` | carte pressée, puce active, popover | — |
+| `--line` | `oklch(0.34 0.016 22)` | `#403534` | filet 1 px | 1,65:1 sur bg (décoratif) |
+| `--text-1` | `oklch(0.95 0.016 75)` | `#F5EDE3` | titres, noms, boutons | 16,8:1 bg · 13,4:1 surface-2 |
+| `--text-2` | `oklch(0.78 0.022 70)` | `#C1B5A9` | texte courant, marque | 9,7:1 bg · 7,7:1 surface-2 |
+| `--text-3` | `oklch(0.66 0.024 65)` | `#9D9083` | légendes, placeholder | 6,3:1 bg · 5,0:1 surface-2 |
 | `--error` | `oklch(0.74 0.13 20)` | `#F28788` | erreur de formulaire seulement | 8,0:1 bg |
 | `--focus` | = `--text-1` | | anneau de focus 2 px, décalé 2 px | ≥ 3:1 partout |
 
@@ -63,18 +63,22 @@ manifeste, `themeColor`).
 
 | Jeton | OKLCH | Hex | Rôle | Contraste |
 |---|---|---|---|---|
-| `--bg` | `oklch(0.975 0.006 70)` | `#F9F6F2` | fond de page | — |
-| `--surface-1` | `oklch(0.945 0.008 70)` | `#F0ECE7` | carte, champ, barre | — |
-| `--surface-2` | `oklch(0.91 0.010 65)` | `#E6E0DB` | pressé, actif, popover | — |
-| `--line` | `oklch(0.84 0.012 60)` | `#D1C9C3` | filet 1 px | 1,52:1 bg |
-| `--text-1` | `oklch(0.22 0.012 20)` | `#201818` | titres, noms, boutons | 16,2:1 bg · 13,3:1 surface-2 |
-| `--text-2` | `oklch(0.42 0.014 20)` | `#554A4A` | texte courant | 7,9:1 bg · 6,5:1 surface-2 |
-| `--text-3` | `oklch(0.48 0.014 20)` | ≈ `#655A5A` | légendes, placeholder | ≥ 5,9:1 bg · ≥ 4,9:1 surface-2 |
+| `--bg` | `oklch(0.975 0.012 75)` | `#FCF6EE` | fond de page | — |
+| `--surface-1` | `oklch(0.945 0.014 72)` | `#F3ECE3` | carte, champ, barre | — |
+| `--surface-2` | `oklch(0.91 0.010 65)` | `#E9E0D6` | pressé, actif, popover | — |
+| `--line` | `oklch(0.84 0.018 62)` | `#D3C8BF` | filet 1 px | 1,52:1 bg |
+| `--text-1` | `oklch(0.22 0.025 20)` | `#251616` | titres, noms, boutons | 16,2:1 bg · 13,3:1 surface-2 |
+| `--text-2` | `oklch(0.42 0.03 20)` | `#5D4746` | texte courant | 8,0:1 bg · 6,6:1 surface-2 |
+| `--text-3` | `oklch(0.48 0.03 20)` | ≈ `#6E5757` | légendes, placeholder | ≥ 5,9:1 bg · ≥ 4,9:1 surface-2 |
 | `--error` | `oklch(0.50 0.16 20)` | `#AC2F3B` | erreur | 6,1:1 bg |
 | `--focus` | = `--text-1` | | | |
 
 Interdits (tenus par `anti-slop.test.ts`) : `#000`, `#fff`, violet/indigo, texte en dégradé.
 **Couleur de marque Nuréa (décision du gérant, 21/10/2026)** : les deux couleurs du monogramme — **doré `#C4956A` en thème sombre, bordeaux `#8B3A3A` en thème clair** — sont le jeton `--accent` (`--on-accent` pour le texte posé dessus ; 7,3:1 et 7,1:1 sur le fond, ≥ 5,8:1 sur toutes les surfaces). Elles portent l'identité de la maison : logotype, monogramme, moments de marque de l'accueil. Garde-fous : jamais en fond de toute la page, jamais en dégradé ni en bordure décorative, jamais à la place de l'ambiance (qui reste la couleur de chaque parfum) ; l'usage détaillé dans l'accueil est le prochain chantier.
+
+**Le couple Nuréa** (21/10/2026) : chaque thème est un couple du monogramme, et les deux se répondent. **Sombre** : une nuit teintée bordeaux (fonds, teinte 20) sous des encres ivoire-champagne (textes, teinte 65 → 75) et le doré. **Clair** : un papier ivoire (fonds, teinte 62 → 75) sous une encre noir-bordeaux (textes, teinte 20) et le bordeaux. Le fond d'un thème est de la famille d'encre de l'autre. Les luminances n'ont pas bougé : les contrastes sont ceux d'avant.
+
+**Où vit l'accent** — ce qui agit et ce qui est choisi, rien d'autre : le bouton principal (`solid`, survol `--accent-hover`), l'anneau clavier (`--focus`), un filtre ou une densité actifs (filet et texte accent sur `--accent-wash`), une case cochée, la pastille de la sélection, la page en cours dans la barre, le lien d'évitement, la sélection de texte, le souligné des liens au survol. Les titres, le texte courant, les cartes et les fonds restent neutres. Détail et jetons : `DESIGN.md` § Couleurs.
 
 Ancienne règle (20/10, remplacée) : aucune autre couleur n'existe dans la vitrine ; le bordeaux et le cuivre du logo **ne sont pas des
 jetons**.

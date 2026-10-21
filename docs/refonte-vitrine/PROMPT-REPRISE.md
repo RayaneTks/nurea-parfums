@@ -35,7 +35,8 @@ chaque rendu finit par « Ce que tu dois faire ».
 - Copy : jamais « le même parfum » (le parfum Nuréa n'est pas celui de la marque) ; plus de « Marseille » ;
   l'accroche « Le parfum que vous aimez, dans un flacon Nuréa. » reste provisoire (avis juridique attendu).
 - **Couleur de marque** (21/10) : doré `#C4956A` en sombre, bordeaux `#8B3A3A` en clair, jeton `--accent` ;
-  logotype déjà à ces couleurs ; jamais en fond de page, en dégradé ni en bordure décorative.
+  logotype déjà à ces couleurs ; fonds et encres forment le couple (nuit bordeaux + ivoire en sombre,
+  ivoire + encre bordeaux en clair) ; l'accent marque ce qui agit et ce qui est choisi, jamais un décor.
 - Un thème ne change que des couleurs ; ne jamais recadrer un visuel 2:3 dans un cadre fixe ; ne jamais
   générer un faux flacon Nuréa ; demander au gérant toute ressource visuelle manquante.
 - Ne pas reproposer les essais écartés listés dans REPRISE.md.

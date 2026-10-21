@@ -23,8 +23,8 @@ assombrie, ni recadrée sur le flacon.
 - **Mur enduit, uni**, sans texture marquée, sans angle de pièce visible.
 - **Deux fonds**, à photographier **sans bouger l'appareil ni le flacon** (trépied fixe, on change
   seulement le fond et l'exposition) :
-  - **clair chaud**, le plus proche possible de `#F9F6F2` (ivoire très clair, légèrement chaud) ;
-  - **sombre chaud**, le plus proche possible de `#120B0B` (presque noir, très légèrement brun-rouge).
+  - **clair chaud**, le plus proche possible de `#FCF6EE` (ivoire très clair, légèrement chaud) ;
+  - **sombre chaud**, le plus proche possible de `#150A0A` (presque noir, très légèrement brun-rouge). Valeurs du 21/10 (couple Nuréa) ; les photos livrées avant restent valables, l'écart est infime.
   L'ajustement final de la couleur du mur est fait par nous : viser juste à la prise de vue suffit.
 
 ## La lumière
