@@ -28,6 +28,7 @@ const config = [
       // Copies de travail des agents (worktrees) : leurs sources et leur .next ne sont pas ce dépôt.
       ".claude/**",
       "playwright-report/**",
+      "playwright-report-vitrine/**",
       "test-results/**",
       "eslint.config.js",
       "postcss.config.js",
