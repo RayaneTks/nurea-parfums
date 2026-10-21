@@ -2,9 +2,9 @@
 
 import type { FC } from "react";
 import type { Perfume } from "@/lib/data";
-import { ambientStyle } from "@/lib/catalog/ambient";
 import { brandLineLabel } from "@/lib/catalog/perfumePresentation";
 import { perfumePath, slugify } from "@/lib/seo/paths";
+import { cn } from "@/lib/utils";
 import { openSheetFromLink, requestSheet } from "./openPerfume";
 import { PerfumeImage } from "./PerfumeImage";
 
@@ -14,15 +14,19 @@ interface FeaturedSectionProps {
 }
 
 /**
- * « À l'affiche » (04-PLAN-EXECUTION.md § B.10) : les deux vedettes de l'accueil, visibles ensemble, de
- * même poids, chacune en **composition horizontale** — sa photographie entière (2:3, jamais recadrée :
- * fidèle et reconnaissable quel que soit le parfum mis en avant) à gauche, bord à bord dans l'objet ; à
- * droite, sur la couleur du flacon (ambiance, § B.3.8 ; repli `--surface-1`), la marque et le nom en
- * `title`, calés en bas. Un seul objet arrondi (`--r-lg`). Empilées sur téléphone, côte à côte dès 768 px.
+ * « À l'affiche » (04-PLAN-EXECUTION.md § B.10, référence du gérant du 21/10) : deux **bandeaux
+ * photographiques horizontaux**, l'un sous l'autre, en miroir — le premier, flacon à gauche et texte à
+ * droite ; le second, texte à gauche et flacon à droite.
  *
- * Ce qui la distingue du catalogue : le format horizontal, la photo sans passe-partout ni cœur, le nom à
- * l'échelle `title` sur la couleur du parfum. Toute la photo ouvre la fiche en feuille, même touchée avant
- * que le catalogue soit prêt ; le nom est un vrai lien vers la page indexable.
+ * Dans chaque bandeau, une seule scène : le visuel du parfum, **entier** (2:3, jamais recadré, flacon
+ * intact), occupe toute la hauteur d'un côté et se fond par son bord dans la même photo, agrandie et
+ * floutée, qui remplit le reste du bandeau — l'univers du parfum se prolonge derrière le texte. Le nom
+ * (`title`) et la marque se posent dans cette zone calme, sur un voile discret à la couleur du fond de la
+ * page (sombre en thème sombre, ivoire en clair : le contraste suit le thème, comme les visuels).
+ *
+ * Tout le bandeau ouvre la fiche en feuille (bouton étendu) ; « Voir la fiche » le dit ; le nom est un
+ * vrai lien vers la page indexable. Bandeau `--r-lg`, 4:3 sur téléphone, 16:7 dès 768 px ; sur bureau,
+ * 62 rem en 16:9, le premier calé à gauche, le second à droite.
  */
 export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
   const shown = perfumes.slice(0, 2);
@@ -34,28 +38,41 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
         À l&apos;affiche
       </h2>
       <div className="affiche">
-        {shown.map((perfume) => {
+        {shown.map((perfume, index) => {
           const brandLine = brandLineLabel(perfume.brand, perfume.line);
           const href = perfumePath(perfume.brandSlug ?? slugify(perfume.brand), perfume.name, perfume.id);
           const titleId = `une-${perfume.id}`;
           return (
-            <article key={perfume.id} aria-labelledby={titleId} style={ambientStyle(perfume)} className="amb affiche-compo bg-ambient">
+            <article key={perfume.id} aria-labelledby={titleId} className={cn("bandeau", index % 2 === 1 && "bandeau-miroir")}>
+              {/* L'univers du parfum : la même photo, agrandie et floutée, derrière toute la scène. */}
+              <div className="bandeau-fond" aria-hidden="true">
+                <PerfumeImage perfume={perfume} sizes="213px" />
+              </div>
+              <div className="bandeau-voile" aria-hidden="true" />
+
+              <div className="bandeau-visuel" aria-hidden="true">
+                <PerfumeImage perfume={perfume} sizes="(min-width: 768px) 360px, 213px" />
+              </div>
+
+              <div className="bandeau-texte">
+                <p className="t-body">{brandLine}</p>
+                <h3 id={titleId} className="affiche-nom t-title hyphens-manual [overflow-wrap:anywhere]">
+                  <a href={href} onClick={openSheetFromLink(perfume.id)} className="relative z-[2] underline-offset-[6px] decoration-1 mouse-hover:underline">
+                    {perfume.name}
+                  </a>
+                </h3>
+                <span className="t-body mt-2 text-fg-1 underline decoration-1 underline-offset-4" aria-hidden="true">
+                  Voir la fiche
+                </span>
+              </div>
+
+              {/* Tout le bandeau ouvre la fiche (bouton étendu, sous le lien du nom). */}
               <button
                 type="button"
                 onClick={() => requestSheet(perfume.id)}
                 aria-label={`Voir la fiche : ${perfume.name}, ${brandLine}`}
-                className="affiche-photo relative block w-full overflow-hidden bg-surface-2"
-              >
-                <PerfumeImage perfume={perfume} sizes="(min-width: 768px) 25vw, 213px" />
-              </button>
-              <div className="affiche-legende">
-                <p className="t-body">{brandLine}</p>
-                <h3 id={titleId} className="affiche-nom t-title hyphens-auto [overflow-wrap:anywhere]">
-                  <a href={href} onClick={openSheetFromLink(perfume.id)} className="underline-offset-[6px] decoration-1 mouse-hover:underline">
-                    {perfume.name}
-                  </a>
-                </h3>
-              </div>
+                className="bandeau-ouvrir"
+              />
             </article>
           );
         })}
