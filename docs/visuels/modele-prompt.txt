@@ -1,0 +1,23 @@
+Generate a perfume product photo on a canvas of exactly 900×1200 pixels (portrait 3:4 ratio).
+
+STRICT LAYOUT RULES (do not deviate):
+- The perfume bottle must be centered horizontally, with its base resting at 85–90% of the image height (around y=1050px). The bottle height should be 500–620px tall.
+- The upper 40% of the image (above y=480px) is dedicated to the background ambiance: lighting, textures, materials, atmosphere. No bottle in this zone.
+- Bottom-left corner: reserve a 120×80px area (x:0–120, y:1080–1200) for a small logo placement — keep this zone clean with no busy details.
+- No text, no watermarks, no price tags.
+
+BOTTLE — reproduce exactly the real [NOM DU PARFUM] bottle by [MARQUE], as sold today. Do not invent, add or remove any detail, text or ornament:
+- [Description du flacon]
+
+STYLE BRIEF — [NOM DU PARFUM] by [MARQUE]:
+- [Décrire l'univers : ex. "dark masculine woody oud — deep mahogany tones, amber candlelight glow, black velvet texture in background"]
+- [Couleur dominante : ex. "deep burgundy and gold accents"]
+- [Ambiance : ex. "editorial luxury, cinematic lighting, soft shadows"]
+- [Matériaux au fond : ex. "cracked dark marble, draped silk fabric, rose petals"]
+
+TECHNICAL:
+- Ultra-sharp product photography style
+- Professional studio lighting with dramatic shadows
+- Bottle must be perfectly in focus, photorealistic
+- Background out of focus (bokeh) to keep bottle as hero
+- No busy patterns that would conflict with the bottle silhouette

@@ -17,7 +17,8 @@ Tout ce qui est écrit ici est vérifiable : chaque ligne renvoie à son fichier
 | Le bouton « Commander sur Snapchat » **copie le nom du parfum** et reste visible sans défiler (fiche, contact). | `SnapchatOrderButton` |
 | Fiche produit : **marque / nom**, dans cet ordre. **Aucune contenance affichée sur la vitrine** (décision du gérant, 20/10/2026) : le volume se discute sur Snapchat. Une donnée absente est **omise**, jamais inventée. | `perfumePresentation.ts` |
 | Un parfum ou une marque **sans visuel sombre est masqué** (statut brouillon). Un parfum masqué reste trouvable en recherche, avec invitation à écrire. | `catalogue-service.ts` |
-| Le client reçoit son parfum en **flacon Nuréa personnalisé** de **10, 50 ou 80 ml**. Aucun visuel de ce flacon sur le site (choix du gérant) : la mention seule. | `src/lib/mentions.ts` |
+| Le client reçoit son parfum en **flacon Nuréa personnalisé** de **10, 50 ou 80 ml**. Le flacon Nuréa ne se montre qu'en **photographie réelle** dans la hero de l'accueil et dans la vignette de partage du site, qui reprend la même photo (décision du gérant, 21/10/2026, brief `annexes/brief-photo-hero.md` ; vignette : T17) ; ailleurs, la mention seule. | `src/lib/mentions.ts` |
+| **Le parfum Nuréa n'est pas le parfum de la marque** (pas de transvasement, gérant, 21/10/2026). Aucun texte n'affirme l'identité ou l'équivalence avec un parfum de marque : jamais « le même parfum », « identique », « équivalent ». Présenter un produit comme l'imitation d'un produit de marque peut constituer une publicité comparative illicite (C. conso., art. L122-2) : **toute accroche qui rapproche Nuréa d'un parfum de marque passe d'abord par un avis juridique** (signalé au gérant le 21/10, en attente). | décision du gérant |
 | La recherche ne finit **jamais** dans le vide : un parfum connu mais absent du catalogue donne « vous cherchez X de Y ? écrivez-nous », demande pré-remplie. | `searchRepertoire.ts` |
 | Une **ligne** de marque (La Collection Privée, Emporio Armani, Private Blend…) s'affiche « Marque · Ligne ». | `brandLineLabel` |
 
@@ -40,7 +41,8 @@ Tout ce qui est écrit ici est vérifiable : chaque ligne renvoie à son fichier
 - Chaque page déclare sa **canonique** ; le layout n'en pose aucune. Pas de hreflang.
 - `app/sitemap.ts` : `lastModified` seulement quand il est vrai. ~180 URL aujourd'hui.
 - **Pas de balisage `Product`** tant qu'aucun prix n'est public. JSON-LD : toujours `jsonLdHtml()`.
-- Le H1 de l'accueil porte « Nuréa Parfums » et « Marseille ».
+- Le H1 de l'accueil est l'accroche et nomme « Nuréa » ; « Nuréa Parfums » reste dans le titre de la page. « Marseille » n'y est plus exigé et ne s'écrit plus dans la
+  copy de l'accueil (gérant, 21/10/2026 : acquisition par Snapchat, envois partout en France).
 - Aperçu social : `opengraph-image.tsx` de chaque page (à reprendre dans la nouvelle DA).
 
 ## 4. Technique

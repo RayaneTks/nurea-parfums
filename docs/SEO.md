@@ -55,7 +55,7 @@ Règles tenues, et pourquoi :
 
 - **Titre de l'accueil** : « Nuréa Parfums — Parfums de grandes marques à Marseille ».
 - **Titre de page (H1) de l'accueil** : il disait « L'excellence du parfum » — aucun des mots
-  qu'on tape. Il porte maintenant « Nuréa Parfums · Parfumerie à Marseille », sans changer le dessin.
+  qu'on tape. Il porte depuis le 21/10/2026 « Nuréa, votre parfum / sans le prix des grandes marques. » (le nom ouvre l'accroche du gérant ; plus de « Marseille » dans la copy de l'accueil).
 - **Données structurées** : `OnlineStore` (une *boutique*, là où Nurae est une *marque*), ville
   Marseille, zone servie Marseille + France, noms alternatifs (`Nurea Parfums`, `Nureaparfum`,
   `nureaparfums.fr`…), `WebSite` avec les mêmes noms — c'est ce que Google lit pour choisir le

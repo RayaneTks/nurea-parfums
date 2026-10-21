@@ -29,9 +29,10 @@ Toute modification de l'un est reportée dans l'autre.
 
 ## Concept : « Nuancier nocturne »
 
-**Une chambre neutre et calme ; la seule couleur est celle du flacon qu'on regarde.** L'interface
-n'a aucun accent de marque : l'accent *est* la teinte dominante du visuel (la **couleur
-d'ambiance**), calculée, bornée, posée sur la fiche et sur la carte pressée. Tout le reste est un
+**Une chambre neutre et calme, signée aux couleurs de Nuréa ; la couleur vive est celle du flacon qu'on
+regarde.** Deux couleurs seulement : la **couleur de marque** (doré en sombre, bordeaux en clair, celles du
+monogramme) et la **couleur d'ambiance** de chaque parfum, teinte dominante de son visuel, calculée, bornée,
+posée sur la fiche et sur la carte pressée. Tout le reste est un
 neutre chaud teinté, en deux thèmes symétriques. Structure, matière et mouvement s'inspirent des
 interfaces d'Apple ; rien ne doit faire « site généré ».
 
@@ -45,13 +46,13 @@ bascule manuelle conservée.
 
 | Jeton | Sombre | Clair | Rôle |
 |---|---|---|---|
-| `--bg` | `oklch(0.16 0.012 20)` `#120B0B` | `oklch(0.975 0.006 70)` `#F9F6F2` | fond de page |
-| `--surface-1` | `oklch(0.21 0.012 20)` `#1E1616` | `oklch(0.945 0.008 70)` `#F0ECE7` | carte, champ, barre (opaque) |
-| `--surface-2` | `oklch(0.26 0.012 20)` `#2A2222` | `oklch(0.91 0.010 65)` `#E6E0DB` | carte pressée, puce active, popover |
-| `--line` | `oklch(0.34 0.012 20)` `#3E3635` | `oklch(0.84 0.012 60)` `#D1C9C3` | filet 1 px (décoratif) |
-| `--text-1` | `oklch(0.95 0.008 60)` `#F3EDE9` | `oklch(0.22 0.012 20)` `#201818` | titres, noms, boutons |
-| `--text-2` | `oklch(0.78 0.012 50)` `#BEB5B1` | `oklch(0.42 0.014 20)` `#554A4A` | texte courant, marque |
-| `--text-3` | `oklch(0.66 0.014 40)` `#9A908C` | `oklch(0.48 0.014 20)` ≈ `#655A5A` | légendes, placeholder |
+| `--bg` | `oklch(0.16 0.02 20)` `#150A0A` | `oklch(0.975 0.012 75)` `#FCF6EE` | fond de page |
+| `--surface-1` | `oklch(0.21 0.019 20)` `#201515` | `oklch(0.945 0.014 72)` `#F3ECE3` | carte, champ, barre (opaque) |
+| `--surface-2` | `oklch(0.26 0.018 20)` `#2C2120` | `oklch(0.91 0.010 65)` `#E9E0D6` | carte pressée, puce active, popover |
+| `--line` | `oklch(0.34 0.016 22)` `#403534` | `oklch(0.84 0.018 62)` `#D3C8BF` | filet 1 px (décoratif) |
+| `--text-1` | `oklch(0.95 0.016 75)` `#F5EDE3` | `oklch(0.22 0.025 20)` `#251616` | titres, noms, boutons |
+| `--text-2` | `oklch(0.78 0.022 70)` `#C1B5A9` | `oklch(0.42 0.03 20)` `#5D4746` | texte courant, marque |
+| `--text-3` | `oklch(0.66 0.024 65)` `#9D9083` | `oklch(0.48 0.03 20)` ≈ `#6E5757` | légendes, placeholder |
 | `--error` | `oklch(0.74 0.13 20)` `#F28788` | `oklch(0.50 0.16 20)` `#AC2F3B` | erreur de formulaire seulement |
 | `--focus` | = `--text-1` | = `--text-1` | anneau de focus 2 px, décalé 2 px |
 
@@ -59,8 +60,20 @@ Contrastes calculés (WCAG) : `--text-1` ≥ 13:1, `--text-2` ≥ 6,5:1, `--text
 les surfaces, dans les deux thèmes ; `--error` ≥ 6:1 sur `--bg`.
 
 **Aucune autre couleur n'existe dans la vitrine.** Jamais `#000` ni `#fff`, jamais de violet ou
-d'indigo, jamais de texte en dégradé (tenu par `tests/architecture/anti-slop.test.ts`). Le bordeaux
-et les autres teintes du logo **ne sont pas des jetons**.
+d'indigo, jamais de texte en dégradé (tenu par `tests/architecture/anti-slop.test.ts`).
+
+**Couleur de marque Nuréa (décision du gérant, 21/10/2026)** : les deux couleurs du monogramme — **doré `#C4956A` en thème sombre, bordeaux `#8B3A3A` en thème clair** — sont le jeton `--accent` (`--on-accent` pour le texte posé dessus ; 7,3:1 et 7,1:1 sur le fond, ≥ 5,8:1 sur toutes les surfaces). Elles portent l'identité de la maison : logotype, monogramme, moments de marque de l'accueil. Garde-fous : jamais en fond de toute la page, jamais en dégradé ni en bordure décorative, jamais à la place de l'ambiance (qui reste la couleur de chaque parfum) ; dans l'accueil : le logo de la barre, l'étiquette NP de la photo du flacon.
+
+**Le couple Nuréa** (21/10/2026) : chaque thème est un couple du monogramme, et les deux se répondent. **Sombre** : une nuit teintée bordeaux (fonds, teinte 20) sous des encres ivoire-champagne (textes, teinte 65 → 75) et le doré. **Clair** : un papier ivoire (fonds, teinte 62 → 75) sous une encre noir-bordeaux (textes, teinte 20) et le bordeaux. Le fond d'un thème est de la famille d'encre de l'autre. Les luminances n'ont pas bougé : les contrastes sont ceux d'avant.
+
+**Où vit l'accent** — ce qui agit et ce qui est choisi, rien d'autre : le bouton principal (`solid`, survol `--accent-hover`), l'anneau clavier (`--focus`), un filtre ou une densité actifs (filet et texte accent sur `--accent-wash`), une case cochée, la pastille de la sélection, la page en cours dans la barre, le lien d'évitement, la sélection de texte, le souligné des liens au survol. Aucun titre en accent (l'exception du mot « Nuréa » dans le titre de la hero est tombée avec l'accroche du 21/10). Les titres, le texte courant, les cartes et les fonds restent neutres.
+
+| Jeton | Sombre | Clair | Rôle |
+|---|---|---|---|
+| `--accent` | `oklch(0.704 0.081 63.4)` `#C4956A` (doré) | `oklch(0.458 0.111 22.5)` `#8B3A3A` (bordeaux) | couleur de marque |
+| `--on-accent` | = `--bg` sombre | = `--bg` clair | texte sur l'accent |
+| `--accent-hover` | vers `--text-1` (plus clair) | vers `--text-1` (plus profond) | survol du bouton principal |
+| `--accent-wash` | accent à 14 % | accent à 14 % | fond d'un état choisi |
 
 ### Couleur d'ambiance
 
@@ -97,8 +110,11 @@ Jamais d'autre graisse, jamais une troisième famille, jamais de monospace.
 | `display` | `clamp(3rem, 2rem + 4vw, 5rem)` | 400 | −0,02 em | 1,05 | H1 de l'accueil, La parfumerie |
 | `title` | `clamp(1.75rem, 1.25rem + 2vw, 2.5rem)` | 500 | −0,015 em | 1,15 | H1 des pages, nom en fiche |
 | `subtitle` | `1.3125rem` | 500 | −0,005 em | 1,3 | H2, nom en carte |
-| `body` | `1rem` | 400 | 0 | 1,6 (sombre : 1,65) | texte, marque en carte (`--text-2`) |
+| `body` | `1rem` | 400 | 0 | 1,6 | texte, marque en carte (`--text-2`) |
 | `caption` | `0.75rem` | 500 | +0,02 em | 1,4 | compteur, mention légale |
+
+Un thème ne change **que des couleurs** : aucune dimension (interlignage, espacement, rayon) ne dépend
+du thème, sinon la bascule déplace la page (tenu par `tests/architecture/vitrine-tokens.test.ts`).
 
 Une règle par rôle ; **aucune taille en dur** (une taille arbitraire signale un rôle manquant).
 `text-wrap: balance` sur `display`/`title`, `pretty` sur `body` ; `tabular-nums` sur ce qui
@@ -181,18 +197,32 @@ une étiquette visible et son erreur dessous.
   fond d'ambiance. **Jamais de prix, jamais de contenance.**
 - **Fiche** : feuille depuis le bas (`--r-xl`, poignée 36 × 4 px), fond d'ambiance, visuel 2:3 plein
   largeur, marque puis nom, mention `MENTION_FLACONS`, barre basse en verre avec « Commander sur
-  Snapchat » (copie « *Nom* (*Marque*) »). Précédent / suivant au glissé horizontal. Adresse
+  Snapchat » (copie « *Nom* (*Marque*) »). Précédent / suivant au glissé horizontal ; sur téléphone, un chevron fin (`fg-2`, 20 px) de chaque côté du visuel, dans la marge, l'annonce et se touche (cible 44 px), absent en bout de liste (demande du gérant, 21/10). Adresse
   `?parfum=<id>` sur l'accueil ; page indexable `/parfums/<marque>/<nom>-<id>` au même contenu.
+- **Navigation** : dès 1024 px, les quatre liens (Catalogue, Marques, La parfumerie, Contact) dans la barre haute ; en deçà, un bouton **Menu** tout à droite de la barre ouvre une feuille par le bas (tiroir à droite sur tablette) : les quatre pages en `title`, la page en cours en `--accent`, « Commander sur Snapchat » en seul bouton plein (`MobileMenu`). Ni barre d'onglets fixe (elle mangerait le catalogue et heurterait la barre d'action de la fiche), ni troisième ligne dans la barre. Sous 360 px, logo à 32 px de haut pour tenir sur une ligne.
 - **Recherche** : champ permanent dans la barre haute, résultats dès 2 caractères. Jamais « aucun
   résultat » : « Vous cherchez *X* ? Écrivez-nous », message pré-rempli.
+  **Suggestions** (21/10/2026, `SearchBox`) : dès 2 caractères, un panneau sous le champ — `--surface-1`,
+  filet `--line`, `--r-lg`, ombre `--shadow-float`, entrée `--dur-2` — propose jusqu'à **cinq parfums**
+  (vignette 2:3 de 36 px, marque en `caption` `--text-2`, nom en `body` `--text-1`), puis « Voir les
+  N parfums » ; quand rien ne répond, une seule rangée « Vous cherchez *X* de *Y* ? Écrivez-nous »
+  (« Écrivez-nous » en accent : c'est ce qui agit). Rangée survolée ou active : `--surface-2`. Une
+  rangée est un vrai lien ; sur l'accueil elle ouvre la feuille, ailleurs la page du parfum. Motif
+  combobox WAI-ARIA (flèches, Entrée, Échap, `aria-activedescendant`). Jamais de prix ni de contenance
+  dans une rangée ; pas de mise en gras de la partie tapée.
 - **Filtres** : feuille opaque, compteur direct « Voir 42 parfums », puces actives supprimables,
   tout dans l'adresse.
 - **Ma sélection** : liste gardée sur l'appareil (`localStorage`, `nurea:selection:v1`), compteur
   sur le cœur de la barre, feuille qui liste les parfums et un bouton « Commander ces N parfums sur
   Snapchat » qui compose un seul message. Aucun compte, aucune écriture serveur.
-- **Accueil** : une vraie page d'accueil — une section d'ouverture qui porte le H1 « Nuréa Parfums,
-  Marseille », puis des sections (parfums mis en avant, recherche, catalogue). Jamais le gabarit
-  « grande phrase + deux boutons + photo assombrie ». Composition dessinée sur planche avant le code.
+- **Accueil** : composition **« Flacon »** (21/10/2026, `04-PLAN-EXECUTION.md` § B.10). **Hero** : la
+  photographie du flacon Nuréa en fond, en deux lumières et deux cadrages ; sur téléphone, le titre puis
+  les deux entrées sur une ligne (`Button` plein « Voir le catalogue », Snapchat en bouton rond 44 px),
+  au-dessus et à gauche du flacon. **À l'affiche** : deux bandeaux photographiques horizontaux en miroir —
+  le visuel entier d'un côté, fondu dans la même photo floutée qui porte la marque et le nom en `title` ;
+  en quinconce sur bureau. **Marques** : un index typographique (12 noms
+  et leur nombre de parfums, « Toutes les marques »), sans images. Puis le catalogue. Composants et
+  arrondis du design system inchangés ; aucun onglet, surtitre, compteur décoratif ni texte qui défile.
 
 ## Fiche produit
 
@@ -226,7 +256,11 @@ WebP, 2:3, vignette 640 × 960 servie aux petites largeurs.
 
 ## Logos
 
-Logos et monogrammes de `public/branding/` : **ivoire sur sombre, noir sur clair**, bascule en CSS.
+Logos et monogrammes de `public/branding/` : **doré sur sombre, bordeaux sur clair** (couleurs de marque,
+21/10/2026). Barre, pied de page et 404 montrent le **logo complet** — monogramme NP dans son cercle puis
+le nom : `nurea-logo-horizontal-dark` (monogramme doré, nom ivoire) en sombre, `nurea-logo-horizontal-light`
+(monogramme bordeaux, nom noir) en clair, à 40 px de haut (`BrandLogo.tsx`) ; bascule en CSS. La gestion garde
+ses propres logos.
 Les variantes colorées ne servent plus. Interdits : déformer, incliner, faire pivoter, ombrer,
 dégrader le logo ; poser le monogramme **nu** sur une photo (version cerclée) ; écrire « Nurea »
 sans accent.

@@ -4,6 +4,10 @@ Fichier de contexte projet chargé automatiquement par Claude Code.
 
 ## Consignes permanentes des agents
 
+**Avant tout : lire `docs/EQUIPE.md`** — qui fait quoi entre les sessions Nuréa (refonte vitrine,
+visuels, gestion), ce que chacune peut toucher, contrats entre chantiers, format de rendu au gérant,
+journal commun. Le tenir à jour : une ligne au journal par événement qui touche un autre chantier.
+
 Lire et appliquer `AGENTS.md` à la racine : boucle de travail, exigences de tests, et la table
 **« quel skill pour quelle tâche »**. Les 24 skills sont dans `.agents/skills/` (versionnés, texte
 seulement ; versions et empreintes : `.agents/skills/PROVENANCE.md`). On en lit **un seul, à la
@@ -280,7 +284,11 @@ Stratégie, attentes et suivi : `docs/SEO.md`. Gestes hors code : `docs/seo/INST
   une page neuve pour un doublon de l'accueil). Pas de hreflang : le site n'a qu'une langue.
 - **Sitemap** (`app/sitemap.ts`) : `lastModified` seulement quand il est vrai (`updatedAt`).
 - **Pas de balisage `Product`** tant qu'aucun prix n'est public : Google le compterait en erreur.
-- Le titre (H1) de l'accueil porte « Nuréa Parfums » et « Marseille » : ne pas le réduire à une accroche.
+- Le titre (H1) de l'accueil est l'accroche et nomme « Nuréa » (gérant, 21/10/2026) ; « Nuréa Parfums »
+  reste dans le titre de la page. Plus de
+  « Marseille » dans la copy de l'accueil (gérant, 21/10/2026 : les clients arrivent par Snapchat, les
+  envois couvrent toute la France). Le titre et la description de la page attendent l'avis juridique
+  (`docs/refonte-vitrine/01-INVARIANTS.md` § 1) et seront revus avec lui.
 
 ## Règles Vitrine
 
