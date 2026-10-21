@@ -128,6 +128,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 21/10 | refonte | **Hero validée** par le gérant (« ok »). Signalé ensuite : animation absente et site très lent sur PC — en cours. |
 | 21/10 | refonte | **« Nuréa » du titre de la hero en couleur de marque** (`606ff14`, `refonte/vitrine`) ; exception écrite dans `DESIGN.md` § Couleurs. **Attente PC du gérant.** |
 | 21/10 | refonte | **Nouvelles photos de la hero en place** (`cd64c4d`, `refonte/vitrine`) : flacon rempli, étiquette NP doré (sombre) / bordeaux (clair), clair/sombre alignés à 0 px ; liseré vert rogné ; LCP 2 112 / 1 292 ms ; Snapchat dégagé du bouchon sous 375 px. Pas de second monogramme dans la hero. **Attente PC du gérant.** e2e tri par marque (téléphone) rouge, antérieur. |
 | 21/10 | refonte | **Logo complet dans la barre** (demande du gérant) : monogramme NP + nom, doré/ivoire en sombre, bordeaux/noir en clair, 40 px de haut, aussi au pied de page et sur la 404 (`a141675`, `refonte/vitrine`). |
