@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Hero } from "@/components/features/Hero";
 import { FeaturedSection } from "@/components/features/FeaturedSection";
+import { SeasonSection } from "@/components/features/SeasonSection";
 import { BrandShelf, topBrands } from "@/components/features/BrandShelf";
 import { CatalogSection } from "@/components/home/CatalogSection";
 import { CatalogSkeleton } from "@/components/features/PerfumeCardSkeleton";
 import { getCachedCatalogue } from "@/lib/catalogue-service";
 import { discoveryOrder } from "@/lib/catalog/discoveryOrder";
+import { selectionDuMoment } from "@/lib/catalog/saison";
 import { pageOg, DEFAULT_DESCRIPTION, SITE_NAME } from "@/lib/site";
 
 /** Données via `getCachedCatalogue` (tag `public-catalogue`) — pas de HTML figé au build. */
@@ -51,20 +53,24 @@ export const metadata: Metadata = {
 
 /**
  * L'accueil (04-PLAN-EXECUTION.md § B.10, composition « Flacon ») : la hero de la marque — qui est
- * Nuréa, ce qu'elle propose, par où entrer —, puis les parfums à l'affiche en compact, le rayon des
- * marques, et le catalogue avec sa recherche et ses filtres, intouchés.
+ * Nuréa, ce qu'elle propose, par où entrer —, puis les parfums à l'affiche en compact, les parfums du
+ * moment (sélection de saison), le rayon des marques, et le catalogue avec sa recherche et ses filtres, intouchés.
  */
 export default async function HomePage() {
   const { perfumes, browseBrands } = await getCachedCatalogue();
   const featured = perfumes.filter((p) => p.isFeatured).slice(0, MAX_FEATURED);
   // Nouvel ordre à chaque visite, marques variées en tête — tiré ici, côté serveur (`discoveryOrder`).
   const catalogue = discoveryOrder(perfumes);
+  // Sélection de saison (`saison.ts`) : lue à chaque visite, la page est dynamique.
+  const moment = selectionDuMoment(perfumes);
 
   return (
     <>
       <Hero />
 
       <FeaturedSection perfumes={featured} />
+
+      {moment ? <SeasonSection titre={moment.titre} perfumes={moment.perfumes} /> : null}
 
       <BrandShelf brands={topBrands(perfumes)} />
 

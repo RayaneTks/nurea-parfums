@@ -9,7 +9,8 @@ import { countTaps } from "../helpers/tap";
  * tenue par l'adresse (`?parfum=<id>`), apparition en fondu quand le mouvement est réduit.
  */
 
-const cards = (page: Page) => page.getByRole("button", { name: /voir comment commander$/ });
+/** Les cartes du catalogue (la sélection de saison, au-dessus, a les mêmes cartes, rendues après le chargement). */
+const cards = (page: Page) => page.locator("#collection").getByRole("button", { name: /voir comment commander$/ });
 const sheet = (page: Page) => page.getByRole("dialog").filter({ has: page.locator("h2") });
 
 async function home(page: Page) {
