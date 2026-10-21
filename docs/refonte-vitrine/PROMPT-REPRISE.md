@@ -1,6 +1,6 @@
 # Prompt de reprise — refonte de la vitrine Nuréa (après /clear)
 
-À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (T17 codée, attente PC ; cap sur T18).
+À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (T17 et Marques validées ; cap sur T18).
 
 ---
 
@@ -32,7 +32,7 @@ chaque rendu finit par « Ce que tu dois faire ».
   (boutons, cartes, arrondis, champs, filtres, fiche, Ma sélection) ; catalogue validé.
 - Accueil : **hero validée le 21/10** (photos du flacon Nuréa à l'étiquette NP, « Nuréa » du titre en accent,
   « Voir le catalogue » + Snapchat en bouton rond), **« À l'affiche » validé le 21/10** (deux bandeaux
-  horizontaux en miroir), Marques en index typographique (pas encore jugé).
+  horizontaux en miroir), Marques en index typographique (validé le 21/10).
 - **Suggestions sous le champ de recherche validées le 21/10** (`SearchBox`, T10 bis) : ne pas y revenir.
 - Copy : jamais « le même parfum » (le parfum Nuréa n'est pas celui de la marque) ; plus de « Marseille » ;
   l'accroche « Le parfum que vous aimez, dans un flacon Nuréa. » reste provisoire (avis juridique attendu).
@@ -45,8 +45,7 @@ chaque rendu finit par « Ce que tu dois faire ».
 
 ## 4. Ta mission
 
-**T16 et le menu sur téléphone sont validés** (21/10). **T17 (vignettes de partage) est codée** (`dcbb5a9`) et montrée
-au gérant avec l'index des Marques : prendre sa réponse d'abord (corriger si « non »). Ta mission : **T18 — Mouvement**
+**T16, le menu, T17 (vignettes de partage) et l'index des Marques sont validés** (21/10) : ne pas y revenir. Ta mission : **T18 — Mouvement**
 (`04-PLAN-EXECUTION.md` § T18), puis T19 → T23, un point de contrôle gérant sur captures à chaque étape visuelle.
 
 Images : le gérant autorise la génération **sans aucun être vivant** (ni visage, ni main) ; flacon Nuréa copié sur la
