@@ -97,7 +97,7 @@ miniatures (répétaient les produits).
 | e2e `catalog-filters` « le tri par marque… réordonne la grille » échoue sur téléphone (Pixel 7) | **corrigé** 21/10 (`65e7ff9`) : bug du test (`innerText` vide hors écran), le tri était juste |
 | e2e « dérouler et fermer » instable | **expliqué** : serveur de dev sous charge ; 10/10 sur build. Lancer les e2e sur un build (`next start`) |
 | Avertissement du mode dev : `images.qualities` ne déclare pas 80 (visuels du catalogue) | **corrigé** 21/10 (`65e7ff9`) : props `quality` mortes retirées (le chargeur les ignore) |
-| Titre et description Google de l'accueil (« grandes marques… à Marseille… au meilleur prix ») | **proposé** (`annexes/audit-final.md` § Titre) : A sans comparaison, B avec l'accroche ; rien publié avant l'accord du gérant et l'avis juridique |
+| Titre et description Google de l'accueil (« grandes marques… à Marseille… au meilleur prix ») | **décidé** (gérant, 21/10) : « Nuréa Parfums — Catalogue de parfums, commande sur Snapchat » + description sans comparaison (`81bd363`, branche ; en ligne à T23). **Reste** : descriptions de `/parfums`, des pages marque et des fiches (« au meilleur prix à Marseille ») — même problème, à reprendre |
 
 ## Prochaines priorités
 
