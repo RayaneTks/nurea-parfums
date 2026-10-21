@@ -1,6 +1,6 @@
 # Prompt de reprise — refonte de la vitrine Nuréa (après /clear)
 
-À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (T16 codée, attente PC du gérant ; cap sur T17).
+À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (T16 et menu validés ; cap sur T17).
 
 ---
 
@@ -45,11 +45,15 @@ chaque rendu finit par « Ce que tu dois faire ».
 
 ## 4. Ta mission
 
-**T16 est codée** (La parfumerie, Contact, Légal, 404 ; photos éditoriales : `annexes/photos-editoriales.md`) :
-d'abord recueillir l'avis du gérant sur ses captures et corriger. Puis **T17 — Images OG** (`04-PLAN-EXECUTION.md`).
-Le gérant autorise la génération d'images **sans aucun être vivant** (ni visage, ni main) ; tout écran montré est une
-capture réelle incrustée, jamais un écran généré ; chaque image en deux lumières au même cadrage ; vérifier avant de montrer.
-Ensuite : T17 → T23, un point de contrôle à chaque étape visuelle.
+**T16 et le menu sur téléphone sont validés** (21/10) : ne pas y revenir. Ta mission : **T17 — Images OG**
+(`04-PLAN-EXECUTION.md` § T17), puis T18 → T23, un point de contrôle gérant sur captures à chaque étape visuelle.
+Montrer aussi au gérant l'index des Marques de l'accueil (jamais jugé).
+
+Images : le gérant autorise la génération **sans aucun être vivant** (ni visage, ni main) ; flacon Nuréa copié sur la
+photo réelle ; un écran de téléphone se génère **en vert chroma** puis reçoit une **capture réelle** (méthode et outils :
+`annexes/photos-editoriales.md`, `scripts/refonte-vitrine/incruste-ecran.py`, `barre-etat.py`) ; chaque image en sombre
+ET clair au même cadrage ; générations Codex **une à la fois** (d'autres sessions écrivent dans le même dossier) et
+chaque image vérifiée avant usage. Le contenu Snapchat du gérant reste net (sa décision).
 
 ## 5. Méthode
 

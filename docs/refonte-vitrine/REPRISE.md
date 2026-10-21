@@ -2,7 +2,7 @@
 
 Prompt de reprise après `/clear` : `PROMPT-REPRISE.md`.
 
-Mis à jour le 21/10/2026 (T16 codée, attente PC ; prochain : T17). Ce fichier dit **où on en est** ; le détail chiffré est dans
+Mis à jour le 21/10/2026 au soir (T16 et menu validés ; prochain : T17). Ce fichier dit **où on en est** ; le détail chiffré est dans
 `04-PLAN-EXECUTION.md` § B (DA) et § B.10 (accueil), les règles dans `CLAUDE.md`, `DESIGN.md`,
 `01-INVARIANTS.md`. Ne rien décider ici qui n'y soit pas écrit.
 
@@ -46,8 +46,8 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 | Hero | **validé** (gérant, 21/10, « ok » après les photos à l'étiquette et « Nuréa » en accent) | photo du flacon Nuréa en fond (photos du gérant du 21/10 : flacon rempli, étiquette au monogramme, clair/sombre alignés à 0 px ; verrerie et petits flacons autour, que le brief excluait — choix du gérant) ; sous 375 px la photo descend de `--space-8` pour que Snapchat ne touche pas le bouchon ; titre puis « Voir le catalogue » + Snapchat en bouton rond 44 px sur une ligne, au-dessus et à gauche du flacon ; accroche « Le parfum que vous aimez, dans un flacon Nuréa. » (formulation du gérant, **non verrouillée**, avis juridique attendu) |
 | À l'affiche | **validé** (21/10, « globalement ok » après finitions) | deux bandeaux horizontaux en miroir (Symphony flacon à gauche, Afternoon Swim flacon à droite) ; visuel entier fondu dans sa propre photo floutée (coin haut droit ×3) ; nom intégré sur un voile `--bg` ; tout le bandeau ouvre la fiche ; 4:3 mobile, 16:9 sur 62 rem en quinconce sur bureau |
 | Marques | **en cours**, pas encore jugé | index typographique : 12 marques, nom + nombre, « Toutes les marques » → `/parfums` |
-| La parfumerie, Contact, Légal, 404 (T16) | **codé** (21/10, `2ae7205`, `79410b9`) — **attente PC du gérant** | pages réécrites dans la DA ; photos éditoriales générées sans être vivant (demande du gérant) : atelier + une photo par temps de commande, écrans réels du catalogue et du profil Snapchat incrustés (`annexes/photos-editoriales.md`) ; 404 avec recherche ; « 10, 50 ou 80 ml » retiré ; FAQ : « nous vendons les grandes marques… au meilleur prix » retiré (faux) ; LCP /marque 2,4 / 2,1 s, /contact 0,85 s |
-| Menu sur téléphone et tablette (signalé par le gérant : on ne pouvait naviguer que par le pied de page) | **codé** (21/10, `29ed262`) — attente PC | bouton Menu à droite de la barre sous 1024 px, feuille par le bas (DESIGN.md § Navigation) |
+| La parfumerie, Contact, Légal, 404 (T16) | **validé** (gérant, 21/10, « ok good » ; `2ae7205`, `79410b9`, téléphones refaits `d362aa5`) | pages réécrites dans la DA ; photos éditoriales générées sans être vivant (demande du gérant) : atelier + une photo par temps de commande, écrans réels du catalogue et du profil Snapchat incrustés (`annexes/photos-editoriales.md`) ; 404 avec recherche ; « 10, 50 ou 80 ml » retiré ; FAQ : « nous vendons les grandes marques… au meilleur prix » retiré (faux) ; LCP /marque 2,4 / 2,1 s, /contact 0,85 s |
+| Menu sur téléphone et tablette (signalé par le gérant : on ne pouvait naviguer que par le pied de page) | **validé** (gérant, 21/10, « ça va, c'est pas mal » ; `29ed262`) | bouton Menu à droite de la barre sous 1024 px, feuille par le bas (DESIGN.md § Navigation) |
 | OG, mouvement, audit, mise en ligne | **à faire** | T17 → T23 (`04-PLAN-EXECUTION.md`) |
 
 ## Règles à ne pas remettre en cause sans justification
@@ -96,8 +96,7 @@ miniatures (répétaient les produits).
 
 ## Prochaines priorités
 
-1. **T16 — La parfumerie, Contact, Légal, 404** (`04-PLAN-EXECUTION.md`) : réécrire ces pages dans la DA
-   validée (composants figés, mobile d'abord), `MENTION_FLACONS` sur La parfumerie et Contact, formulaire
-   par `src/actions/contact.ts` inchangé, 404 qui renvoie à la recherche. Point de contrôle gérant sur captures.
-2. Puis T17 → T23. Avis juridique toujours attendu (accroche, présentation face aux marques) — ne pas bloquer.
-3. Marques (index typographique de l'accueil) : pas encore jugé par le gérant ; à lui montrer avec T16.
+1. **T17 — Images OG** (`04-PLAN-EXECUTION.md` § T17), puis T18 → T23, un point de contrôle gérant à chaque étape visuelle.
+2. Marques (index typographique de l'accueil) : toujours pas jugé par le gérant — le lui montrer.
+3. En attente côté gérant, sans bloquer : avis juridique (accroche, présentation face aux marques, titre et description
+   Google, prix visibles dans les stories Snapchat incrustées) ; 29 paires de visuels clair/sombre décalées (session visuels).
