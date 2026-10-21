@@ -201,6 +201,14 @@ une étiquette visible et son erreur dessous.
   `?parfum=<id>` sur l'accueil ; page indexable `/parfums/<marque>/<nom>-<id>` au même contenu.
 - **Recherche** : champ permanent dans la barre haute, résultats dès 2 caractères. Jamais « aucun
   résultat » : « Vous cherchez *X* ? Écrivez-nous », message pré-rempli.
+  **Suggestions** (21/10/2026, `SearchBox`) : dès 2 caractères, un panneau sous le champ — `--surface-1`,
+  filet `--line`, `--r-lg`, ombre `--shadow-float`, entrée `--dur-2` — propose jusqu'à **cinq parfums**
+  (vignette 2:3 de 36 px, marque en `caption` `--text-2`, nom en `body` `--text-1`), puis « Voir les
+  N parfums » ; quand rien ne répond, une seule rangée « Vous cherchez *X* de *Y* ? Écrivez-nous »
+  (« Écrivez-nous » en accent : c'est ce qui agit). Rangée survolée ou active : `--surface-2`. Une
+  rangée est un vrai lien ; sur l'accueil elle ouvre la feuille, ailleurs la page du parfum. Motif
+  combobox WAI-ARIA (flèches, Entrée, Échap, `aria-activedescendant`). Jamais de prix ni de contenance
+  dans une rangée ; pas de mise en gras de la partie tapée.
 - **Filtres** : feuille opaque, compteur direct « Voir 42 parfums », puces actives supprimables,
   tout dans l'adresse.
 - **Ma sélection** : liste gardée sur l'appareil (`localStorage`, `nurea:selection:v1`), compteur

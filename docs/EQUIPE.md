@@ -128,6 +128,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 21/10 | refonte | **Suggestions sous le champ de recherche** (`61cb116`, `refonte/vitrine`, demande du gérant) : jusqu'à 5 parfums avec visuel, « Voir les N parfums », sinon l'invitation à écrire ; une rangée ouvre la fiche (feuille sur l'accueil, page ailleurs) ; combobox accessible. Via l'API de recherche existante, aucune dépendance. **Attente avis du gérant.** |
 | 21/10 | refonte | **Lenteur Firefox corrigée** (`7b1d3cb`, `refonte/vitrine`) : fond flou des bandeaux « À l'affiche » agrandi par la mise en page au lieu de `transform: scale(3)` ; bascule de thème de nouveau animée dans Firefox, rendu identique. **Attente test du gérant sur Firefox.** |
 | 21/10 | refonte | **Hero validée** par le gérant (« ok »). Signalé ensuite : animation absente et site très lent sur PC — en cours. |
 | 21/10 | refonte | **« Nuréa » du titre de la hero en couleur de marque** (`606ff14`, `refonte/vitrine`) ; exception écrite dans `DESIGN.md` § Couleurs. **Attente PC du gérant.** |
