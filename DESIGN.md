@@ -190,20 +190,21 @@ une étiquette visible et son erreur dessous.
 - **Ma sélection** : liste gardée sur l'appareil (`localStorage`, `nurea:selection:v1`), compteur
   sur le cœur de la barre, feuille qui liste les parfums et un bouton « Commander ces N parfums sur
   Snapchat » qui compose un seul message. Aucun compte, aucune écriture serveur.
-- **Accueil** : composition **« Vitrine »** (Fable, 21/10/2026, `04-PLAN-EXECUTION.md` § B.10), après
-  trois refus. Avant le catalogue : la **manchette** (H1 « Nuréa Parfums, Marseille » en `title`, les
-  deux compteurs en `caption`, rien d'autre), puis chaque parfum mis en avant en **vitrine** — un
-  objet posé sur un **champ de sa couleur** : le champ (ambiance, bord à bord) commence sous le haut
-  du visuel 2:3, qui déborde, décalé vers la droite ; sur le champ, la marque en `body` puis le **nom
-  en `display`** (le grand format typographique de la page est au produit) ; la seconde vitrine en
-  miroir —, puis le **rayon des marques** (les 8 plus fournies, chacune montrée par un de ses
-  flacons, glissé sur téléphone, 8 colonnes dès 1024 px), le catalogue, le pied de page. Bureau : la
-  légende à gauche, centrée sur la hauteur du visuel. Mouvement : entrée à l'arrivée, une fois (champ,
-  visuel, légende en cascade : l'objet se pose sur son champ), rien d'autre. Jamais le gabarit
-  « grande phrase + deux boutons + photo assombrie », jamais de texte sur une photo, aucun bouton
-  avant le catalogue, aucune fonction dupliquée (recherche, filtres, nouveautés restent dans la barre
-  et le catalogue). Le visuel de la première vitrine est l'élément LCP : vignette 640, préchargé pour
-  le thème du système ; nom et visuel ouvrent la fiche en feuille.
+- **Accueil** : composition **« Chambre »** (Fable, 21/10/2026, `04-PLAN-EXECUTION.md` § B.10), après
+  trois refus. La première section est la **hero de la marque** : surtitre « Nuréa Parfums — Marseille »
+  et accroche « Les grands parfums, dans un flacon Nuréa. » (tous deux dans le H1, `caption` puis
+  `display`), une phrase de faits (`body`, compteurs du catalogue publié), deux entrées (bouton plein
+  « Voir le catalogue », lien « Commander sur Snapchat »), et **le visuel de la chambre** — une nature
+  morte de matières à parfum sous une lumière rasante, en deux lumières (nuit / jour), sans flacon ni
+  marque : la hero appartient à Nuréa, pas aux parfums à l'affiche (`public/branding/hero/`,
+  `docs/refonte-vitrine/annexes/hero-chambre.md`). Téléphone : le texte, puis le visuel 3:2 ancré en
+  bas ; bureau : texte à gauche, visuel 4:5 à droite. Puis **« À l'affiche »** (les deux parfums mis en
+  avant, compacts, côte à côte, légende sur leur couleur), le **rayon des marques** (les 8 plus fournies,
+  chacune montrée par un de ses flacons), le catalogue, le pied de page. Mouvement : entrée à l'arrivée,
+  une fois, en cascade ; rien d'autre. Jamais de photo assombrie ni de texte sur photo, un seul bouton
+  plein par écran, aucune fonction dupliquée (recherche, filtres, nouveautés restent dans la barre et le
+  catalogue). Le visuel de la hero est l'élément LCP : déclinaison 640, préchargée pour le thème du
+  système.
 
 ## Fiche produit
 
