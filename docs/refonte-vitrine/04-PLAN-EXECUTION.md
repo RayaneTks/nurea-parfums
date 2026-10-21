@@ -400,8 +400,8 @@ Modèle : Opus 5.5 ; effort `medium` sauf mention. `PC` = point de contrôle gé
 - Acceptation : formulaire envoie via `src/actions/contact.ts` inchangé ; `MENTION_FLACONS` sur La parfumerie et Contact ; 404 renvoie à la recherche.
 
 **T17 — Images OG** · S · Opus medium
-- Fichiers : les 5 `opengraph-image.tsx`, `twitter-image.tsx`, `app/(shop)/_og/`.
-- Acceptation : chaque route répond 200 en `image/png`, 1200 × 630, police de titre, logotype ivoire sur `--bg` sombre ; fiche parfum : visuel + ambiance.
+- Fichiers : les `opengraph-image.tsx` (site, `marque`, `contact`, `legal`, `parfums`, fiche parfum), `twitter-image.tsx`, `app/(shop)/_og/` (`vignettes.tsx` : les deux rendus).
+- Acceptation : chaque route répond 200 en **`image/jpeg`** (amendé le 21/10 : le PNG de `next/og` pèse 600 à 800 Ko avec une photo, WhatsApp n'affiche plus l'aperçu au-delà d'environ 300 Ko ; JPEG 50 à 75 Ko), 1200 × 630, police de titre, logotype ivoire et doré sur fond sombre. Site : la photo réelle du flacon Nuréa de la hero, logo complet, « Catalogue de parfums, commande sur Snapchat » et le domaine (plus de « Marseille » ni de « grandes marques »). Fiche parfum : visuel sombre **entier** (2:3, jamais recadré) sur sa couleur d'ambiance, marque puis nom, `MENTION_FLACONS` ; fiche introuvable → vignette du site. Essai sans base : `scripts/refonte-vitrine/og-essai.tsx`.
 
 ### Phase 5 — mouvement et qualité
 
