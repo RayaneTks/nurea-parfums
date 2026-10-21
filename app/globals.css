@@ -406,76 +406,88 @@
     transform: var(--press);
   }
 
-  /* ─── Accueil : hero « Chambre » (04-PLAN-EXECUTION.md § B.10) ──────────
-     La première section du site de la marque : surtitre, accroche, faits,
-     deux entrées, et le visuel de la chambre. Téléphone : le texte, puis le
-     visuel bord à bord. Bureau : texte à gauche, visuel à droite, centrés. */
+  /* ─── Accueil : hero « Flacon » (04-PLAN-EXECUTION.md § B.10) ────────────
+     La photo du flacon Nuréa ; son mur, de la couleur de la page, s'y fond
+     par le haut et par le bas (masque, pas un dégradé de couleur : la page
+     apparaît au travers). Le texte se pose sur ce mur, dans la zone vide.
+     Téléphone : texte, puis photo portrait remontée sous le texte de
+     --recouvrement. Dès 768 px : photo paysage en fond, texte à gauche. */
   .hero {
-    display: grid;
-    row-gap: var(--space-8);
-    padding-top: var(--space-8);
+    --recouvrement: 8rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
   }
 
+  /* Au-dessus de la photo : en flex, l'ordre de peinture suit `order`, pas le code source. */
   .hero-texte {
+    position: relative;
+    z-index: 1;
+    order: -1;
     width: 100%;
     max-width: calc(var(--content-max) + 2 * var(--gutter));
     margin-inline: auto;
-    padding-inline: var(--gutter);
+    padding: var(--space-6) var(--gutter) 0;
   }
 
-  .hero-entrees {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-2) var(--space-6);
-    margin-top: var(--space-6);
-  }
-
-  /* Téléphone : un cadre 3:2 ancré en bas de la scène (les matières, le socle), pour que le
-     visuel tienne sous le texte dans le premier écran ; dès 768 px, la scène 4:5 entière. */
-  .hero-visuel {
-    aspect-ratio: 3 / 2;
+  .hero-photo {
+    position: relative;
+    aspect-ratio: 4 / 5;
     width: 100%;
+    margin-top: calc(-1 * var(--recouvrement));
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--recouvrement), #000 calc(100% - var(--space-12)), transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 var(--recouvrement), #000 calc(100% - var(--space-12)), transparent 100%);
   }
 
-  .hero-visuel img {
-    object-position: 50% 100%;
+  .hero-photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 100% 100%;
   }
 
+  /* Hauteur réglée pour que la photo paysage, recadrée par la droite, garde le flacon à droite du
+     texte : au-delà, le recadrage le pousserait sous les mots. */
   @media (min-width: 768px) {
     .hero {
-      padding-top: var(--space-12);
+      justify-content: center;
+      min-height: clamp(26rem, 50vh, 32rem);
     }
 
-    .hero-visuel {
-      aspect-ratio: 4 / 5;
-      width: calc(100% - 2 * var(--gutter));
-      max-width: 40rem;
-      margin-inline: auto;
+    .hero-texte {
+      order: 0;
+      padding-block: var(--space-16);
+    }
+
+    .hero-texte > * {
+      max-width: 26rem;
+    }
+
+    .hero-photo {
+      position: absolute;
+      inset: 0;
+      aspect-ratio: auto;
+      margin: 0;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--space-12), #000 calc(100% - var(--space-16)), transparent 100%);
+      mask-image: linear-gradient(to bottom, transparent 0, #000 var(--space-12), #000 calc(100% - var(--space-16)), transparent 100%);
+    }
+
+    .hero-photo-img {
+      object-position: 100% 50%;
     }
   }
 
   @media (min-width: 1024px) {
     .hero {
-      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
-      column-gap: var(--space-16);
-      align-items: center;
-      width: 100%;
-      max-width: calc(var(--content-max) + 2 * var(--gutter));
-      margin-inline: auto;
-      padding-inline: var(--gutter);
-      padding-block: var(--space-12) var(--space-8);
+      min-height: clamp(32rem, 80vh, 48rem);
     }
 
-    .hero-texte {
-      padding-inline: 0;
+    .hero-texte > * {
+      max-width: 30rem;
     }
 
-    .hero-visuel {
-      width: 100%;
-      max-width: none;
-      height: clamp(30rem, 76vh, 44rem);
-      aspect-ratio: auto;
+    .hero-texte > h1 {
+      max-width: 36rem;
     }
   }
 
@@ -556,18 +568,8 @@
     }
   }
 
-  @keyframes enter-visuel {
-    from {
-      opacity: 0.4;
-      transform: scale(0.97);
-    }
-  }
-
   .enter {
     animation: enter var(--dur-4) var(--ease-out) var(--enter-delay, 0ms) backwards;
   }
 
-  .enter-visuel {
-    animation: enter-visuel var(--dur-4) var(--ease-out) var(--enter-delay, 0ms) backwards;
-  }
 }

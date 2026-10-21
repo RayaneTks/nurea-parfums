@@ -1,77 +1,82 @@
-"use client";
-
-import type { CSSProperties, FC } from "react";
-import Image, { getImageProps } from "next/image";
+import type { FC } from "react";
+import { getImageProps } from "next/image";
 import { preload } from "react-dom";
 import { buttonClass } from "@/components/ui/Button";
 import { SnapchatIcon } from "@/components/ui/Icons";
 import { CONTACT } from "@/lib/data";
 
-interface HeroProps {
-  /** Parfums publiés au catalogue. */
-  perfumeCount: number;
-  /** Marques qui ont au moins un parfum publié. */
-  brandCount: number;
+/**
+ * La photographie de la hero : le flacon Nuréa, seul, contre un mur uni, en deux lumières et deux
+ * cadrages (brief : `docs/refonte-vitrine/annexes/brief-photo-hero.md`). Portrait 4:5 sous 768 px,
+ * paysage 16:9 au-delà. Déclinaisons (640, 1280) déclarées dans `src/lib/images/loader.ts`.
+ */
+const PHOTO = {
+  portrait: { width: 1122, height: 1402, sombre: "/branding/hero/flacon-portrait-sombre.webp", clair: "/branding/hero/flacon-portrait-clair.webp" },
+  paysage: { width: 1672, height: 941, sombre: "/branding/hero/flacon-paysage-sombre.webp", clair: "/branding/hero/flacon-paysage-clair.webp" },
+} as const;
+
+const ALT = "Un flacon Nuréa posé contre un mur, dans la lumière d'une fenêtre.";
+const LARGE = "(min-width: 768px)";
+
+type Lumiere = "sombre" | "clair";
+
+function sources(lumiere: Lumiere) {
+  const portrait = getImageProps({ src: PHOTO.portrait[lumiere], alt: ALT, width: PHOTO.portrait.width, height: PHOTO.portrait.height, sizes: "100vw", quality: 82 }).props;
+  const paysage = getImageProps({ src: PHOTO.paysage[lumiere], alt: ALT, width: PHOTO.paysage.width, height: PHOTO.paysage.height, sizes: "100vw", quality: 82 }).props;
+  return { portrait, paysage };
 }
 
 /**
- * Le visuel de la hero, en deux lumières : la nuit (thème sombre, variante de référence) et le jour
- * (thème clair). Une nature morte de matières à parfum sous une lumière rasante, dans la chambre
- * neutre de la DA — l'univers olfactif de la parfumerie, sans flacon ni marque : la hero appartient
- * à Nuréa, pas aux parfums temporairement à l'affiche. Déclinaison 640 servie aux petites largeurs
- * (`src/lib/images/loader.ts`).
- */
-const HERO_IMAGE = {
-  dark: "/branding/hero/chambre-nuit.webp",
-  light: "/branding/hero/chambre-jour.webp",
-  alt: "Matières à parfum sous une lumière rasante : jasmin, ambre, bois de santal et bergamote sur un socle de pierre.",
-  /* Téléphone : « 213px » et non la largeur réelle, voulu — 213 × 3 = 639 fait prendre la déclinaison 640
-     (densité 1,64 sur 390 px), l'élément LCP de la page. Bureau : la colonne fait au plus 560 px. */
-  sizes: "(min-width: 1024px) 560px, 213px",
-} as const;
-
-const plural = (n: number, word: string) => `${n} ${word}${n > 1 ? "s" : ""}`;
-
-const enterAt = (ms: number) => ({ "--enter-delay": `${ms}ms` }) as CSSProperties;
-
-/**
- * La hero de l'accueil (04-PLAN-EXECUTION.md § B.10, composition « Chambre ») : la première section
- * d'un site de marque — qui est Nuréa, ce qu'elle propose, et par où entrer.
+ * La hero de l'accueil (04-PLAN-EXECUTION.md § B.10, composition « Flacon »).
  *
- * Composition : surtitre, accroche en `display`, une phrase de faits, deux entrées (le catalogue en
- * bouton plein, Snapchat en lien), et le visuel de la chambre. Téléphone : le texte, puis le visuel
- * bord à bord ; dès 1024 px, texte à gauche et visuel à droite, centrés. Le H1, unique, porte la
- * marque et la ville dans son surtitre (référencement : `01-INVARIANTS.md`) et l'accroche dans son
- * grand format. Tout ce qui est affirmé est un fait publié ailleurs sur le site (Contact, pied de
- * page, `PRODUCT.md`) : les compteurs sont comptés sur le catalogue publié.
+ * La photographie du flacon Nuréa occupe la hero ; son mur, de la couleur du fond de la page, se fond
+ * dedans par le haut et par le bas (masque), si bien que le texte et les entrées se posent sur le
+ * même mur que le flacon, dans la zone vide prévue à la prise de vue. Rien n'est assombri.
+ * Téléphone : le texte en haut, la photo portrait dessous, dont le haut (le mur) passe sous le
+ * texte ; dès 768 px, la photo paysage en fond, le texte à gauche, le flacon à droite.
+ *
+ * Composants inchangés : `Button` plein, lien tertiaire. Le H1, unique, porte la marque ; plus la ville
+ * (gérant, 21/10 : les clients viennent de Snapchat, les envois couvrent toute la France). **Accroche provisoire** : le gérant ne l'a pas validée, et toute formulation qui
+ * rapproche le produit d'un parfum de marque attend un avis juridique (01-INVARIANTS § 1).
+ *
+ * Chaque lumière est annoncée pour son seul thème et chaque cadrage pour sa seule largeur ; les deux
+ * images restent paresseuses (la variante masquée ne prend pas de débit), comme `PerfumeImage`.
  */
-export const Hero: FC<HeroProps> = ({ perfumeCount, brandCount }) => {
-  /* Comme le visuel d'une fiche : chaque lumière est annoncée pour son seul thème, l'autre ne prend
-     pas de débit ; la variante affichée est en cache quand la mise en page la demande. */
-  for (const [src, media] of [
-    [HERO_IMAGE.dark, "(prefers-color-scheme: dark)"],
-    [HERO_IMAGE.light, "(prefers-color-scheme: light)"],
-  ] as const) {
-    const { props } = getImageProps({ src, alt: "", fill: true, sizes: HERO_IMAGE.sizes, quality: 80 });
-    preload(props.src, { as: "image", imageSrcSet: props.srcSet, imageSizes: props.sizes, media, fetchPriority: "high" });
-  }
+export const Hero: FC = () => {
+  const sombre = sources("sombre");
+  const clair = sources("clair");
 
-  const common = { fill: true, sizes: HERO_IMAGE.sizes, quality: 80 };
+  for (const [props, theme] of [
+    [sombre, "dark"],
+    [clair, "light"],
+  ] as const) {
+    preload(props.portrait.src, { as: "image", imageSrcSet: props.portrait.srcSet, imageSizes: "100vw", media: `(prefers-color-scheme: ${theme}) and (max-width: 767px)`, fetchPriority: "high" });
+    preload(props.paysage.src, { as: "image", imageSrcSet: props.paysage.srcSet, imageSizes: "100vw", media: `(prefers-color-scheme: ${theme}) and ${LARGE}`, fetchPriority: "high" });
+  }
 
   return (
     <section aria-labelledby="accueil-titre" className="hero">
-      <div className="hero-texte">
-        <h1 id="accueil-titre">
-          <span className="t-caption enter block">Nuréa Parfums — Marseille</span>
-          <span className="t-display enter mt-3 block" style={enterAt(60)}>
-            Les grands parfums, dans un flacon Nuréa.
-          </span>
+      <div className="hero-photo">
+        {/* Bascule de lumière en CSS (`.light` sur <html>), jamais `useTheme` : sans JavaScript, la nuit. */}
+        <picture className="contents [.light_&]:hidden">
+          <source media={LARGE} srcSet={sombre.paysage.srcSet} sizes="100vw" />
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- alt fourni par getImageProps */}
+          <img {...sombre.portrait} loading="lazy" decoding="async" className="hero-photo-img" />
+        </picture>
+        <picture className="hidden [.light_&]:contents">
+          <source media={LARGE} srcSet={clair.paysage.srcSet} sizes="100vw" />
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- alt fourni par getImageProps */}
+          <img {...clair.portrait} loading="lazy" decoding="async" className="hero-photo-img" />
+        </picture>
+      </div>
+
+      <div className="hero-texte enter">
+        <h1 id="accueil-titre" className="t-title">
+          Vos parfums préférés, dans notre flacon.
+          <span className="block text-fg-2">Nuréa Parfums, envoi partout en France.</span>
         </h1>
-        <p className="t-body t-measure enter mt-5" style={enterAt(120)}>
-          {perfumeCount > 0 ? `${plural(perfumeCount, "parfum")} de ${plural(brandCount, "marque")}, à choisir` : "Un catalogue à choisir"} au
-          catalogue et à commander sur Snapchat. Remise en main propre à Marseille, ou envoi.
-        </p>
-        <div className="hero-entrees enter" style={enterAt(180)}>
+        <p className="t-body t-measure mt-4">Choisissez au catalogue, commandez sur Snapchat.</p>
+        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2">
           <a href="#collection" className={buttonClass("solid")}>
             Voir le catalogue
           </a>
@@ -80,12 +85,6 @@ export const Hero: FC<HeroProps> = ({ perfumeCount, brandCount }) => {
             Commander sur Snapchat
           </a>
         </div>
-      </div>
-
-      <div className="hero-visuel enter-visuel relative overflow-hidden bg-surface-2" style={enterAt(60)}>
-        {/* Bascule de lumière en CSS (`.light` sur <html>), jamais `useTheme` : sans JavaScript, la nuit. */}
-        <Image src={HERO_IMAGE.dark} alt={HERO_IMAGE.alt} {...common} className="object-cover [.light_&]:hidden" />
-        <Image src={HERO_IMAGE.light} alt={HERO_IMAGE.alt} {...common} className="hidden object-cover [.light_&]:block" />
       </div>
     </section>
   );
