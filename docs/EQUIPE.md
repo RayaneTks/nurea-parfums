@@ -128,6 +128,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 21/10 | refonte | **Menu validé** par le gérant. **Téléphones des photos refaits** (`d362aa5`) après son « pas pro » : écran vert à la génération, vraie capture de l'appli Snapchat qu'il a fournie, **stories nettes à sa demande** malgré leurs prix (exception voulue, notée dans `annexes/photos-editoriales.md`, risque comparatif signalé). **Attente PC.** |
 | 21/10 | refonte | **Menu sur téléphone** (`29ed262`, `refonte/vitrine`, signalé par le gérant) : sous 1024 px la barre n'avait aucun lien ; bouton Menu à droite, feuille par le bas (4 pages + Commander sur Snapchat) ; barre tenue sur une ligne dès 320 px. **Attente PC du gérant.** |
 | 21/10 | refonte | **T16 codée** (`2ae7205`, `79410b9`, `refonte/vitrine`) : La parfumerie, Contact, Légal, 404 dans la DA (elles s'affichaient sans style) ; photos éditoriales générées sans être vivant, écrans réels du catalogue et de Snapchat incrustés (stories floutées : elles portent des prix) ; 404 avec recherche ; contenances et « grandes marques au meilleur prix » retirés. **Attente PC du gérant.** e2e accueil non relancé (serveur de dev figé). |
 | 21/10 | refonte | **Suggestions de recherche validées** par le gérant (« ça me paraît correct »). Prompt de reprise réorienté sur T16. |
