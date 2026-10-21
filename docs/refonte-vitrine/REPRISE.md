@@ -2,7 +2,7 @@
 
 Prompt de reprise après `/clear` : `PROMPT-REPRISE.md`.
 
-Mis à jour le 21/10/2026 au soir (T16 et menu validés ; prochain : T17). Ce fichier dit **où on en est** ; le détail chiffré est dans
+Mis à jour le 21/10/2026 au soir (T17 codée, attente PC du gérant ; prochain : T18). Ce fichier dit **où on en est** ; le détail chiffré est dans
 `04-PLAN-EXECUTION.md` § B (DA) et § B.10 (accueil), les règles dans `CLAUDE.md`, `DESIGN.md`,
 `01-INVARIANTS.md`. Ne rien décider ici qui n'y soit pas écrit.
 
@@ -48,7 +48,8 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 | Marques | **en cours**, pas encore jugé | index typographique : 12 marques, nom + nombre, « Toutes les marques » → `/parfums` |
 | La parfumerie, Contact, Légal, 404 (T16) | **validé** (gérant, 21/10, « ok good » ; `2ae7205`, `79410b9`, téléphones refaits `d362aa5`) | pages réécrites dans la DA ; photos éditoriales générées sans être vivant (demande du gérant) : atelier + une photo par temps de commande, écrans réels du catalogue et du profil Snapchat incrustés (`annexes/photos-editoriales.md`) ; 404 avec recherche ; « 10, 50 ou 80 ml » retiré ; FAQ : « nous vendons les grandes marques… au meilleur prix » retiré (faux) ; LCP /marque 2,4 / 2,1 s, /contact 0,85 s |
 | Menu sur téléphone et tablette (signalé par le gérant : on ne pouvait naviguer que par le pied de page) | **validé** (gérant, 21/10, « ça va, c'est pas mal » ; `29ed262`) | bouton Menu à droite de la barre sous 1024 px, feuille par le bas (DESIGN.md § Navigation) |
-| OG, mouvement, audit, mise en ligne | **à faire** | T17 → T23 (`04-PLAN-EXECUTION.md`) |
+| Vignettes de partage (T17) | **codé**, attente PC du gérant (`dcbb5a9`) | site : photo réelle du flacon Nuréa de la hero + logo complet + « Catalogue de parfums, commande sur Snapchat » + domaine ; fiche parfum : visuel sombre entier sur son ambiance, marque puis nom, mention des flacons ; JPEG 50–75 Ko (WhatsApp ignore les aperçus de plus de ~300 Ko) ; `/parfums` avait perdu son og:image, rétablie ; rendu : `app/(shop)/_og/vignettes.tsx`, essai sans base : `scripts/refonte-vitrine/og-essai.tsx` |
+| Mouvement, audit, mise en ligne | **à faire** | T18 → T23 (`04-PLAN-EXECUTION.md`) |
 
 ## Règles à ne pas remettre en cause sans justification
 
@@ -96,7 +97,7 @@ miniatures (répétaient les produits).
 
 ## Prochaines priorités
 
-1. **T17 — Images OG** (`04-PLAN-EXECUTION.md` § T17), puis T18 → T23, un point de contrôle gérant à chaque étape visuelle.
-2. Marques (index typographique de l'accueil) : toujours pas jugé par le gérant — le lui montrer.
+1. **T18 — Mouvement** (`04-PLAN-EXECUTION.md` § T18), puis T19 → T23, un point de contrôle gérant à chaque étape visuelle.
+2. Attente du gérant : vignettes de partage (T17) et index des Marques de l'accueil, montrés le 21/10 sur captures.
 3. En attente côté gérant, sans bloquer : avis juridique (accroche, présentation face aux marques, titre et description
    Google, prix visibles dans les stories Snapchat incrustées) ; 29 paires de visuels clair/sombre décalées (session visuels).

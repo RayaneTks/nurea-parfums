@@ -128,6 +128,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 21/10 | refonte | **T17 codée** (`dcbb5a9`, `refonte/vitrine`) : vignettes de partage — site = photo réelle du flacon Nuréa + logo complet, sans « Marseille » ni « grandes marques » ; fiche = visuel entier sur son ambiance + mention des flacons ; JPEG 50–75 Ko (WhatsApp) ; og:image rétablie sur `/parfums`. Index des Marques montré. **Attente PC du gérant.** |
 | 21/10 | refonte | **T16 validée** (« ok good ») avec les téléphones refaits, menu validé. Prompt de reprise réorienté sur T17. |
 | 21/10 | refonte | **Menu validé** par le gérant. **Téléphones des photos refaits** (`d362aa5`) après son « pas pro » : écran vert à la génération, vraie capture de l'appli Snapchat qu'il a fournie, **stories nettes à sa demande** malgré leurs prix (exception voulue, notée dans `annexes/photos-editoriales.md`, risque comparatif signalé). **Attente PC.** |
 | 21/10 | refonte | **Menu sur téléphone** (`29ed262`, `refonte/vitrine`, signalé par le gérant) : sous 1024 px la barre n'avait aucun lien ; bouton Menu à droite, feuille par le bas (4 pages + Commander sur Snapchat) ; barre tenue sur une ligne dès 320 px. **Attente PC du gérant.** |
