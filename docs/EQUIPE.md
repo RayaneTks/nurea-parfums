@@ -131,6 +131,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 21/10 | refonte | **T18 validée** par le gérant (aperçu, fiche, glissé). **H1 de l'accueil** « Nuréa, votre parfum / sans le prix des grandes marques. » (`a7d0923`) : le nom revient dans le titre (e2e et SEO), l'accroche ne se lit plus « les grandes marques moins cher ». |
 | 21/10 | refonte | **T18 codée** (`7482aac`, `refonte/vitrine`) : mouvement déjà conforme pour l'essentiel ; cascade titre → actions dans la hero, suggestions en fondu seul en mouvement réduit, `ScrollReveal` mort supprimé, test `vitrine-mouvement` ajouté. e2e : 2 échecs antérieurs (tri par marque ; H1 sans « Nuréa » depuis l'accroche). **Attente test au doigt du gérant.** |
 | 21/10 | visuels | Fournée 13 (livraison `nurea-visuels-2026-10-21-corrections`, 38 fiches dont les marques Dior et Hugo Boss) : tous relus contre les vrais flacons, tous OK, appliqués ; 28 parfums passés en ligne. Page : 0 à refaire, 283 validés, 270 à créer. 307 Gold Supreme Bouquet : flacon = photo officielle YSL détourée. Clés : `public-catalogue-v24`, `seo-catalogue-v20`, `unlisted-perfumes-v14`. |
 | 21/10 | refonte | **T17 codée** (`dcbb5a9`, `refonte/vitrine`) : vignettes de partage — site = photo réelle du flacon Nuréa + logo complet, sans « Marseille » ni « grandes marques » ; fiche = visuel entier sur son ambiance + mention des flacons ; JPEG 50–75 Ko (WhatsApp) ; og:image rétablie sur `/parfums`. Index des Marques montré. **Attente PC du gérant.** |
