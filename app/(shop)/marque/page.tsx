@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
+import { EditorialPhoto } from "@/components/editorial/EditorialPhoto";
 import { FaqAccordion } from "@/components/editorial/FaqAccordion";
 import { OrderSteps } from "@/components/editorial/OrderSteps";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -20,17 +20,12 @@ export const metadata: Metadata = {
 
 const DOMAINE = SITE_URL.replace(/^https?:\/\//, "");
 
-/** La photo du flacon Nuréa (celle de la hero, cadrage portrait) : la seule image vraie de la marque. */
-const PHOTO = { width: 1118, height: 1402, sombre: "/branding/hero/flacon-portrait-sombre.webp", clair: "/branding/hero/flacon-portrait-clair.webp" };
-const PHOTO_ALT = "Un flacon Nuréa, l'étiquette au monogramme, près de petits flacons et de verrerie.";
-const PHOTO_SIZES = "(min-width: 768px) 40vw, 100vw";
-
 /**
  * La parfumerie — qui est Nuréa, comment on commande, comment la reconnaître.
  *
- *   ouverture  — le titre, une phrase, la photo du flacon Nuréa ;
- *   commander  — trois temps ;
- *   photos     — ce que montrent les photos du catalogue (`MENTION_FLACONS`) — loin de la photo du
+ *   ouverture  — le titre, une phrase, la photo de l'atelier (`EditorialPhoto`) ;
+ *   commander  — trois temps, chacun avec sa photo ;
+ *   photos     — ce que montrent les photos du catalogue (`MENTION_FLACONS`) — loin des photos du
  *                flacon Nuréa, dont elle passerait sinon pour la légende ;
  *   site       — l'adresse et l'orthographe, contre les homonymes ;
  *   questions  — repliées ;
@@ -58,18 +53,14 @@ export default function MarquePage() {
           </p>
         </div>
 
-        {/* Bascule de lumière en CSS, jamais `useTheme` ; la variante masquée reste paresseuse. */}
-        <div className="overflow-hidden rounded-lg bg-surface-1">
-          <Image src={PHOTO.sombre} alt={PHOTO_ALT} width={PHOTO.width} height={PHOTO.height} sizes={PHOTO_SIZES} quality={82} className="h-auto w-full [.light_&]:hidden" />
-          <Image src={PHOTO.clair} alt={PHOTO_ALT} width={PHOTO.width} height={PHOTO.height} sizes={PHOTO_SIZES} quality={82} className="hidden h-auto w-full [.light_&]:block" />
-        </div>
+        <EditorialPhoto name="atelier" priority sizes="(min-width: 768px) 24rem, 100vw" className="aspect-[2/3] rounded-lg max-md:aspect-[4/5]" />
       </section>
 
       <section aria-labelledby="commander-titre" className="mt-[var(--space-section)]">
         <h2 id="commander-titre" className="t-title mb-6">
           Commander
         </h2>
-        <OrderSteps />
+        <OrderSteps wide />
       </section>
 
       <section aria-labelledby="photos-titre" className="mt-[var(--space-section)] flex flex-col gap-2">
