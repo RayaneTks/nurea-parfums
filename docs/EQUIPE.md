@@ -25,7 +25,8 @@ Quand deux chantiers se gênent, l'ordre ci-dessus tranche, et le pilote arbitre
 
 | Chantier | Session | Touche | Ne touche jamais | Écrit en production ? | Document pilote |
 |---|---|---|---|---|---|
-| 21/10 | refonte | **Accroche de la hero** remplacée par « Sentez bon, sans payer le prix fort. » (`97b9da3`, choix du gérant) ; « Nuréa » en accent dans le titre retiré avec l'ancienne phrase. Avis juridique toujours attendu. |
+| 21/10 | refonte | **Accroche finale du gérant** : « Votre parfum, sans le prix des grandes marques. » (`306fe06`). Elle compare le prix aux grandes marques : **avis juridique obligatoire avant la mise en ligne** (T23). |
+| 21/10 | refonte | **Accroche de la hero** remplacée par « Votre parfum, sans le prix des grandes marques. » (`97b9da3`, choix du gérant) ; « Nuréa » en accent dans le titre retiré avec l'ancienne phrase. Avis juridique toujours attendu. |
 | 21/10 | refonte | **T17 et index des Marques validés** par le gérant (« ok c bien »). Prochain : T18. |
 | 20/10 | refonte | **Planche d'accueil T15 refusée** (gérant, iPhone) : « trop cheap », remarque de goût. Arrêt de l'exécution ; prochaine étape = session **Fable** (effort high) sur la composition de l'accueil, puis nouvelle planche. T14 reste valable (`00a0001`). |
 | 20/10 | refonte | **Planche d'accueil T15** (`cee4774`, `refonte/planche`, `/planche/accueil.html` de l'aperçu) : ouverture « Nuréa Parfums, Marseille » + nuancier des teintes de flacons, 2 parfums mis en avant, chercher par marque, catalogue. **Attente du « oui » du gérant** avant tout code d'accueil. |
