@@ -15,20 +15,20 @@
     color-scheme: light dark;
     --serif: "Fraunces", Georgia, serif;
     --sans: "Figtree", system-ui, sans-serif;
-    --bg: oklch(0.16 0.012 20); --surface-1: oklch(0.21 0.012 20); --surface-2: oklch(0.26 0.012 20);
-    --line: oklch(0.34 0.012 20); --text-1: oklch(0.95 0.008 60); --text-2: oklch(0.78 0.012 50);
-    --text-3: oklch(0.66 0.014 40); --error: oklch(0.74 0.13 20);
+    --bg: oklch(0.16 0.02 20); --surface-1: oklch(0.21 0.019 20); --surface-2: oklch(0.26 0.018 20);
+    --line: oklch(0.34 0.016 22); --text-1: oklch(0.95 0.016 75); --text-2: oklch(0.78 0.022 70);
+    --text-3: oklch(0.66 0.024 65); --error: oklch(0.74 0.13 20);
   }
   :root[data-theme="light"] {
-    --bg: oklch(0.975 0.006 70); --surface-1: oklch(0.945 0.008 70); --surface-2: oklch(0.91 0.010 65);
-    --line: oklch(0.84 0.012 60); --text-1: oklch(0.22 0.012 20); --text-2: oklch(0.42 0.014 20);
-    --text-3: oklch(0.48 0.014 20); --error: oklch(0.50 0.16 20);
+    --bg: oklch(0.975 0.012 75); --surface-1: oklch(0.945 0.014 72); --surface-2: oklch(0.91 0.010 65);
+    --line: oklch(0.84 0.018 62); --text-1: oklch(0.22 0.025 20); --text-2: oklch(0.42 0.03 20);
+    --text-3: oklch(0.48 0.03 20); --error: oklch(0.50 0.16 20);
   }
   @media (prefers-color-scheme: light) {
     :root:not([data-theme="dark"]) {
-      --bg: oklch(0.975 0.006 70); --surface-1: oklch(0.945 0.008 70); --surface-2: oklch(0.91 0.010 65);
-      --line: oklch(0.84 0.012 60); --text-1: oklch(0.22 0.012 20); --text-2: oklch(0.42 0.014 20);
-      --text-3: oklch(0.48 0.014 20); --error: oklch(0.50 0.16 20);
+      --bg: oklch(0.975 0.012 75); --surface-1: oklch(0.945 0.014 72); --surface-2: oklch(0.91 0.010 65);
+      --line: oklch(0.84 0.018 62); --text-1: oklch(0.22 0.025 20); --text-2: oklch(0.42 0.03 20);
+      --text-3: oklch(0.48 0.03 20); --error: oklch(0.50 0.16 20);
     }
   }
   * { box-sizing: border-box; }
@@ -86,13 +86,13 @@
   </div>
   <table style="margin-top:1.5rem">
     <tr><th>Jeton</th><th>Sombre</th><th>Clair</th></tr>
-    <tr><td><code>--bg</code></td><td>#120B0B</td><td>#F9F6F2</td></tr>
-    <tr><td><code>--surface-1</code></td><td>#1E1616</td><td>#F0ECE7</td></tr>
-    <tr><td><code>--surface-2</code></td><td>#2A2222</td><td>#E6E0DB</td></tr>
-    <tr><td><code>--line</code></td><td>#3E3635</td><td>#D1C9C3</td></tr>
-    <tr><td><code>--text-1</code></td><td>#F3EDE9 · 16,8:1</td><td>#201818 · 16,2:1</td></tr>
-    <tr><td><code>--text-2</code></td><td>#BEB5B1 · 9,7:1</td><td>#554A4A · 7,9:1</td></tr>
-    <tr><td><code>--text-3</code></td><td>#9A908C · 6,3:1</td><td>≈ #655A5A · ≥ 5,9:1</td></tr>
+    <tr><td><code>--bg</code></td><td>#150A0A</td><td>#FCF6EE</td></tr>
+    <tr><td><code>--surface-1</code></td><td>#201515</td><td>#F3ECE3</td></tr>
+    <tr><td><code>--surface-2</code></td><td>#2C2120</td><td>#E9E0D6</td></tr>
+    <tr><td><code>--line</code></td><td>#403534</td><td>#D3C8BF</td></tr>
+    <tr><td><code>--text-1</code></td><td>#F5EDE3 · 16,8:1</td><td>#251616 · 16,2:1</td></tr>
+    <tr><td><code>--text-2</code></td><td>#C1B5A9 · 9,7:1</td><td>#5D4746 · 7,9:1</td></tr>
+    <tr><td><code>--text-3</code></td><td>#9D9083 · 6,3:1</td><td>≈ #6E5757 · ≥ 5,9:1</td></tr>
     <tr><td><code>--error</code></td><td>#F28788 · 8,0:1</td><td>#AC2F3B · 6,1:1</td></tr>
   </table>
   <p class="caption">Contrastes calculés sur <code>--bg</code>.</p>
