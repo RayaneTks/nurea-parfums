@@ -25,18 +25,19 @@ const HEIGHT = 24;
  * posée sur `<html>` montre la variante noire — sans JavaScript, la page reste
  * sombre et garde un logo lisible.
  */
-const IVORY = "/branding/logos/nurea-wordmark-ivory.webp";
-const BLACK = "/branding/logos/nurea-wordmark-black.webp";
+/** Logotype aux couleurs de marque : doré en thème sombre, bordeaux en thème clair (gérant, 21/10/2026). */
+const GOLD = "/branding/logos/nurea-wordmark-gold.webp";
+const WINE = "/branding/logos/nurea-wordmark-bordeaux.webp";
 
 /**
  * `priority` : chaque variante est annoncée pour le seul thème du système, sans priorité haute.
- * Préchargé d'office, l'ivoire partait aussi en thème clair et disputait le débit au visuel du
+ * Préchargé d'office, le doré partait aussi en thème clair et disputait le débit au visuel du
  * premier bandeau de l'accueil (l'élément LCP). Les deux images restent paresseuses : React
  * n'en précharge aucune de lui-même.
  */
 export const BrandLogo: FC<BrandLogoProps> = ({ className, priority = false }) => {
   if (priority) {
-    for (const [src, media] of [[IVORY, "(prefers-color-scheme: dark)"], [BLACK, "(prefers-color-scheme: light)"]] as const) {
+    for (const [src, media] of [[GOLD, "(prefers-color-scheme: dark)"], [WINE, "(prefers-color-scheme: light)"]] as const) {
       const { props } = getImageProps({ src, alt: "", width: WIDTH, height: HEIGHT });
       preload(props.src, { as: "image", imageSrcSet: props.srcSet, media });
     }
@@ -44,14 +45,14 @@ export const BrandLogo: FC<BrandLogoProps> = ({ className, priority = false }) =
   return (
   <>
     <Image
-      src={IVORY}
+      src={GOLD}
       alt={SITE_NAME}
       width={WIDTH}
       height={HEIGHT}
       className={cn("block w-auto [.light_&]:hidden", className)}
     />
     <Image
-      src={BLACK}
+      src={WINE}
       alt={SITE_NAME}
       width={WIDTH}
       height={HEIGHT}
