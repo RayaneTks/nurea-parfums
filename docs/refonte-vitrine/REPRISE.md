@@ -2,7 +2,7 @@
 
 Prompt de reprise après `/clear` : `PROMPT-REPRISE.md`.
 
-Mis à jour le 21/10/2026 au soir (T19 codée, `65e7ff9` ; prochain : T20). Ce fichier dit **où on en est** ; le détail chiffré est dans
+Mis à jour le 21/10/2026 au soir (T20 faite, `8532241` ; prochain : T21). Ce fichier dit **où on en est** ; le détail chiffré est dans
 `04-PLAN-EXECUTION.md` § B (DA) et § B.10 (accueil), les règles dans `CLAUDE.md`, `DESIGN.md`,
 `01-INVARIANTS.md`. Ne rien décider ici qui n'y soit pas écrit.
 
@@ -26,13 +26,14 @@ Aucun prix, aucune contenance affichés.
 | Styles de l'accueil | `app/globals.css` : `.hero*`, `.affiche`, `.bandeau*`, `.affiche-nom`, `.enter` |
 | Photos de la hero | `public/branding/hero/flacon-{portrait,paysage}-{sombre,clair}[-640/-1280].webp`, déclinaisons dans `src/lib/images/loader.ts` |
 | Tests utiles | `e2e/parcours/accueil-snapchat.spec.ts`, `tests/architecture/vitrine-tokens.test.ts`, `anti-slop.test.ts` |
-| Outils de mesure | `scripts/refonte-vitrine/` : `bascule.mjs` (position d'une image avant/après bascule de thème), `alignement.mjs` (décalage du sujet entre variantes claire/sombre), `lcp.mjs`, `captures-accueil.mjs`, `pw-accueil.config.ts` (branche `refonte/vitrine`) |
+| Outils de mesure | `scripts/refonte-vitrine/` : `bascule.mjs` (position d'une image avant/après bascule de thème), `alignement.mjs` (décalage du sujet entre variantes claire/sombre), `lcp.mjs`, `captures-accueil.mjs` (branche `refonte/vitrine`) ; e2e vitrine : `playwright.vitrine.config.ts` + `e2e/vitrine/` |
 
 Mesurer : build `NUREA_SKIP_MIGRATE_DEPLOY=1 DATABASE_URL=postgresql://x DIRECT_URL=postgresql://x node
 node_modules/next/dist/bin/next build --webpack` (Turbopack refuse la jonction `node_modules` du worktree),
 puis `next start -p 3004` — **vérifier d'abord qu'aucun vieux serveur n'écoute sur 3004** (`netstat -ano`) :
-il servirait une CSS disparue. e2e accueil (serveur de dev sur 3000) : `node node_modules/@playwright/test/cli.js
-test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.spec.ts`.
+il servirait une CSS disparue. e2e vitrine (iPhone, Android, bureau ; serveur sans base lancé par Playwright sur
+3104) : `npm run test:e2e:vitrine` — sur un build, préférer `E2E_SERVER=start npm run test:e2e:vitrine` (le
+serveur de dev sous charge rend les gestes instables). Le build pour cela : même commande que ci-dessus.
 
 ## État des sections
 
@@ -51,7 +52,8 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 | Vignettes de partage (T17) | **validé** (gérant, 21/10, « ok c bien » ; `dcbb5a9`) | site : photo réelle du flacon Nuréa de la hero + logo complet + « Catalogue de parfums, commande sur Snapchat » + domaine ; fiche parfum : visuel sombre entier sur son ambiance, marque puis nom, mention des flacons ; JPEG 50–75 Ko (WhatsApp ignore les aperçus de plus de ~300 Ko) ; `/parfums` avait perdu son og:image, rétablie ; rendu : `app/(shop)/_og/vignettes.tsx`, essai sans base : `scripts/refonte-vitrine/og-essai.tsx` |
 | Mouvement (T18) | **validé** (gérant, 21/10 : aperçu, ouverture/fermeture, glissé « good » ; `7482aac`) ; **chevrons de parfum voisin** dans la fiche, à sa demande (`f90953e`), **validés** (« c ok ») | l'existant suivait déjà § B.7 (feuilles au ressort, appui, survol sous pointeur fin) ; ajouté : cascade de 40 ms titre → actions dans la hero, suggestions en fondu seul en mouvement réduit, courbe de la fiche lue dans le jeton ; `ScrollReveal` supprimé (code mort, aucune entrée au défilement : automatisme refusé) ; règles tenues par `tests/architecture/vitrine-mouvement.test.ts` (dérogation `mouvement-ok:`) |
 | Audit (T19) | **fait** (21/10, `65e7ff9`) ; rien de visible à valider au-dessus de 280 px | Lighthouse mobile 99 / 100 / 92 (barre Vercel des aperçus) / 100 ; LCP ≤ 2,16 s, INP ≤ 184 ms, CLS 0 ; axe 0 violation ; zoom 200 % tenu (hero en colonne et barre non collante sous 280 px) ; détail : `annexes/audit-final.md` |
-| Filets e2e, mise en ligne | **à faire** | T20 → T23 (`04-PLAN-EXECUTION.md`) |
+| Filets e2e (T20) | **fait** (21/10, `8532241`) ; rien de visible à valider | parcours vitrine dans `e2e/vitrine/`, config sans base `playwright.vitrine.config.ts`, iPhone + Android + bureau, en fin de `npm run test:e2e` ; sur build 3 × 69 verts, en dev 67 + 2 repris. Corrigés : WebKit poussé en https sur localhost par la CSP (`upgrade-insecure-requests`, retirée en test seulement, `e2e/vitrine/test.ts`) ; boucles « recliquer » qui refermaient les feuilles ; libellé « 1 référence » dans `marque-doublon` |
+| Mise en ligne | **à faire** | T21 → T23 (`04-PLAN-EXECUTION.md`) |
 
 ## Règles à ne pas remettre en cause sans justification
 
@@ -74,7 +76,7 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 - **Firefox** : jamais `transform: scale` pour agrandir une image sous un flou — Firefox la peint entière à la taille agrandie (bascule de thème gelée 200 ms, défilement lourd). Agrandir par la mise en page, dans un cadre rogné (`.bandeau-fond-cadre`). Mesurer dans le vrai Firefox (installé, piloté par WebDriver BiDi, profil vierge).
 - **Performance** : rien ne doit concurrencer l'image LCP de la hero (les 24 miniatures de marques le
   faisaient : 3,7 s) ; mesurer sur build, pas en dev.
-- Mobile d'abord ; vérifier sur captures réelles à 320, 390, 430 et 1280, clair et sombre ; e2e accueil vert.
+- Mobile d'abord ; vérifier sur captures réelles à 320, 390, 430 et 1280, clair et sombre ; `npm run test:e2e:vitrine` vert.
 
 ## Essais écartés à l'accueil (ne pas reproposer)
 
@@ -97,10 +99,11 @@ miniatures (répétaient les produits).
 | e2e `catalog-filters` « le tri par marque… réordonne la grille » échoue sur téléphone (Pixel 7) | **corrigé** 21/10 (`65e7ff9`) : bug du test (`innerText` vide hors écran), le tri était juste |
 | e2e « dérouler et fermer » instable | **expliqué** : serveur de dev sous charge ; 10/10 sur build. Lancer les e2e sur un build (`next start`) |
 | Avertissement du mode dev : `images.qualities` ne déclare pas 80 (visuels du catalogue) | **corrigé** 21/10 (`65e7ff9`) : props `quality` mortes retirées (le chargeur les ignore) |
+| `npm run test:e2e` complet en local : serveur de dev saturé à 6 navigateurs (40 échecs de gestion, tap sans navigation) | **contourné** : `--workers=2 --retries=1` comme la CI → parcours 91 + 2 repris, réglages 3/3, vitrine verte. Reste **PC-12 « première utilisation »** (gestion) : le toast « masqué » expire pendant que le serveur de dev compile la fiche ; page juste. Signalé au chantier gestion, non touché |
 | Titre et description Google de l'accueil (« grandes marques… à Marseille… au meilleur prix ») | **décidé** (gérant, 21/10) : « Nuréa Parfums — Catalogue de parfums, commande sur Snapchat » + description sans comparaison (`81bd363`, branche ; en ligne à T23). Descriptions de `/parfums`, des pages marque et des fiches (« au meilleur prix à Marseille ») **gardées** (gérant, 21/10) |
 
 ## Prochaines priorités
 
-1. **T20 — Filets e2e** (`04-PLAN-EXECUTION.md` § T20), puis T21 → T23. T19 fait (`annexes/audit-final.md`).
+1. **T21 — Retrait des échafaudages** (`04-PLAN-EXECUTION.md` § T21), puis T22 (PC 4 : aperçu depuis Snapchat, captures avant/après) et T23. T20 fait.
 3. En attente côté gérant, sans bloquer : avis juridique (accroche, présentation face aux marques, titre et description
    Google, prix visibles dans les stories Snapchat incrustées) ; 29 paires de visuels clair/sombre décalées (session visuels).

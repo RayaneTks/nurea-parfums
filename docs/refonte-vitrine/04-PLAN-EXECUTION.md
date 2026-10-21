@@ -413,7 +413,14 @@ Modèle : Opus 5.5 ; effort `medium` sauf mention. `PC` = point de contrôle gé
 - Fichiers : corrections ponctuelles ; `docs/refonte-vitrine/annexes/audit-final.md` (nouveau).
 - Acceptation : build de production local (`NUREA_SKIP_MIGRATE_DEPLOY=1` + URLs factices, catalogue de démo) ; Lighthouse mobile ≥ 90 / 100 / 95 ; LCP ≤ 2,5 s, INP ≤ 200 ms, CLS ≤ 0,1 ; 0 violation AA (axe via Playwright) ; zoom 200 % tenu à 390 px ; anti-slop ≤ 3 dérogations.
 
-**T20 — Filets e2e** · S · Opus medium
+**T20 — Filets e2e** · S · Opus medium · fait le 21/10/2026 (`8532241`)
+- Réalisé : les parcours de la vitrine vivent dans `e2e/vitrine/` (accueil-snapchat, catalog-filters,
+  perfume-sheet, recherche-suggestions, selection) avec leur config `playwright.vitrine.config.ts` : serveur
+  **sans base** (catalogue de démo, variables de base posées vides contre tout `.env`), cache de données purgé
+  au démarrage, trois appareils (iPhone WebKit, Android, bureau), branchée en fin de `npm run test:e2e`
+  (`npm run test:e2e:vitrine`). Les « 2 taps » étaient déjà éprouvés (`accueil-snapchat`, `perfume-sheet`) :
+  pas de `fiche-snapchat.spec.ts` en double. `e2e/parcours/recherche.spec.ts` est la recherche de la gestion,
+  hors refonte.
 - Fichiers : `e2e/catalog-filters.spec.ts`, `e2e/parcours/recherche.spec.ts`, nouveau `e2e/parcours/fiche-snapchat.spec.ts` (2 taps), `e2e/fixtures/vitrine-extremes.json` conservé.
 - Acceptation : `npm run test:e2e` vert localement.
 
@@ -426,6 +433,7 @@ Modèle : Opus 5.5 ; effort `medium` sauf mention. `PC` = point de contrôle gé
 - Branche poussée, aperçu ouvert **depuis Snapchat** sur le téléphone du gérant (verre, polices, feuille) ; `node scripts/refonte-vitrine/capture.mjs <url-aperçu> .tmp/refonte-vitrine/apres` ; comparaison avec `avant/`.
 
 **T23 — Mise en ligne et docs** · S · Opus medium
+- Ajouter `npm run test:e2e:vitrine` au tableau des commandes de `CLAUDE.md` (et `DEVELOPER.md`) à la fusion.
 - Fusion sur `main`, CI verte (test d'affichage ~30 min), `00-LISEZ-MOI.md` (état : terminé), `CLAUDE.md` relu, `graphify update .`.
 
 ---
