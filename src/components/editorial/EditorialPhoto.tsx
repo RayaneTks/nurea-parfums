@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
  * Les photos éditoriales de la vitrine (`public/branding/editorial/`), chacune en deux lumières, même
  * cadrage au pixel près : la bascule de thème ne change que la lumière. Images générées pour Nuréa
  * (21/10/2026, aucun être vivant, le flacon Nuréa copié sur la photo réelle) ; les écrans des
- * téléphones sont des captures réelles du catalogue et du profil Snapchat, incrustées — les stories,
- * qui portent des prix, y sont floutées. Sources et méthode : `docs/refonte-vitrine/annexes/photos-editoriales.md`.
+ * téléphones (écran vert à la génération) portent des captures réelles incrustées : le catalogue, et
+ * le profil Snapchat tel que l'appli l'affiche, stories nettes (choix du gérant, 21/10, malgré leurs prix). Sources et méthode : `docs/refonte-vitrine/annexes/photos-editoriales.md`.
  */
 export type EditorialPhotoName = "atelier" | "choisir" | "ecrire" | "recevoir";
 
