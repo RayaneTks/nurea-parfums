@@ -14,10 +14,10 @@ document. `02-PLAYBOOK.md` et `03-DA.md` seulement sur un point précis (ils son
 
 | Sujet | Décision | Source |
 |---|---|---|
-| Direction | **« Nuancier nocturne »** : structure, matière, mouvement « Apple » ; la seule couleur vive est celle du parfum regardé | gérant, `03-DA.md` § 7 |
+| Direction | **« Nuancier nocturne »** : structure, matière, mouvement « Apple » ; la couleur vive est celle du parfum regardé ; la marque signe en doré (sombre) / bordeaux (clair) | gérant, `03-DA.md` § 7 et décision du 21/10 |
 | Thèmes | **Clair et sombre**, `prefers-color-scheme` par défaut, bascule manuelle conservée | gérant |
 | Héritage v3 | **Rien.** Aucun jeton, classe, composant, police, règle d'aspect repris. `app/globals.css`, `src/design/brand.ts`, `src/design/fonts.ts`, `src/components/**` sont **réécrits**, pas retouchés | gérant |
-| Actifs de marque | Logos et monogrammes de `public/branding/` conservés, proportions intactes : **ivoire sur sombre, noir sur clair**. Variantes cuivre et bordeaux inutilisées | gérant (« tu as nos logos ») |
+| Actifs de marque | Logos et monogrammes de `public/branding/` conservés, proportions intactes : **doré sur sombre, bordeaux sur clair** (21/10/2026 ; avant : ivoire / noir) | gérant (« tu as nos logos » ; couleurs de marque le 21/10) |
 | Vocabulaire | Marque · Parfum · Ligne · Contenance · Catalogue. Jamais Maison, Galerie, Sillage. Boutons verbe + objet (« Commander sur Snapchat », « Écrire à Nuréa ») | Fable |
 | Fonctions neuves | **« Ma sélection »** retenue. **Aucune contenance (ml) affichée nulle part** : ni sélecteur, ni « 10 · 50 · 80 ml » en carte, ni dans un texte, ni dans le message Snapchat. Le site reste un catalogue de ce qui est disponible ; le volume se discute sur Snapchat | gérant, PC 1 (20/10) |
 | Polices | **C1 : Fraunces + Figtree** | gérant, PC 1 (20/10) |
@@ -32,8 +32,9 @@ document. `02-PLAYBOOK.md` et `03-DA.md` seulement sur un point précis (ils son
 
 ### B.1 Concept
 
-**Une chambre neutre et calme ; la seule couleur est celle du flacon qu'on regarde.** L'interface
-ne possède aucun accent de marque : l'accent *est* la teinte dominante du visuel, calculée, bornée,
+**Une chambre neutre et calme, signée aux couleurs de Nuréa ; la couleur vive est celle du flacon qu'on
+regarde.** Amendé le 21/10 : la marque a son accent (`--accent`, doré en sombre, bordeaux en clair, § B.2) ;
+l'ambiance reste la teinte dominante du visuel, calculée, bornée,
 posée sur la fiche et sur la carte pressée. Tout le reste est un neutre teinté, chaud, en deux
 thèmes symétriques.
 
@@ -48,13 +49,13 @@ manifeste, `themeColor`).
 
 | Jeton | OKLCH | Hex | Rôle | Contraste |
 |---|---|---|---|---|
-| `--bg` | `oklch(0.16 0.012 20)` | `#120B0B` | fond de page | — |
-| `--surface-1` | `oklch(0.21 0.012 20)` | `#1E1616` | carte, champ, barre (opaque) | — |
-| `--surface-2` | `oklch(0.26 0.012 20)` | `#2A2222` | carte pressée, puce active, popover | — |
-| `--line` | `oklch(0.34 0.012 20)` | `#3E3635` | filet 1 px | 1,65:1 sur bg (décoratif) |
-| `--text-1` | `oklch(0.95 0.008 60)` | `#F3EDE9` | titres, noms, boutons | 16,8:1 bg · 13,4:1 surface-2 |
-| `--text-2` | `oklch(0.78 0.012 50)` | `#BEB5B1` | texte courant, marque | 9,7:1 bg · 7,7:1 surface-2 |
-| `--text-3` | `oklch(0.66 0.014 40)` | `#9A908C` | légendes, placeholder | 6,3:1 bg · 5,0:1 surface-2 |
+| `--bg` | `oklch(0.16 0.02 20)` | `#150A0A` | fond de page | — |
+| `--surface-1` | `oklch(0.21 0.019 20)` | `#201515` | carte, champ, barre (opaque) | — |
+| `--surface-2` | `oklch(0.26 0.018 20)` | `#2C2120` | carte pressée, puce active, popover | — |
+| `--line` | `oklch(0.34 0.016 22)` | `#403534` | filet 1 px | 1,65:1 sur bg (décoratif) |
+| `--text-1` | `oklch(0.95 0.016 75)` | `#F5EDE3` | titres, noms, boutons | 16,8:1 bg · 13,4:1 surface-2 |
+| `--text-2` | `oklch(0.78 0.022 70)` | `#C1B5A9` | texte courant, marque | 9,7:1 bg · 7,7:1 surface-2 |
+| `--text-3` | `oklch(0.66 0.024 65)` | `#9D9083` | légendes, placeholder | 6,3:1 bg · 5,0:1 surface-2 |
 | `--error` | `oklch(0.74 0.13 20)` | `#F28788` | erreur de formulaire seulement | 8,0:1 bg |
 | `--focus` | = `--text-1` | | anneau de focus 2 px, décalé 2 px | ≥ 3:1 partout |
 
@@ -62,18 +63,24 @@ manifeste, `themeColor`).
 
 | Jeton | OKLCH | Hex | Rôle | Contraste |
 |---|---|---|---|---|
-| `--bg` | `oklch(0.975 0.006 70)` | `#F9F6F2` | fond de page | — |
-| `--surface-1` | `oklch(0.945 0.008 70)` | `#F0ECE7` | carte, champ, barre | — |
-| `--surface-2` | `oklch(0.91 0.010 65)` | `#E6E0DB` | pressé, actif, popover | — |
-| `--line` | `oklch(0.84 0.012 60)` | `#D1C9C3` | filet 1 px | 1,52:1 bg |
-| `--text-1` | `oklch(0.22 0.012 20)` | `#201818` | titres, noms, boutons | 16,2:1 bg · 13,3:1 surface-2 |
-| `--text-2` | `oklch(0.42 0.014 20)` | `#554A4A` | texte courant | 7,9:1 bg · 6,5:1 surface-2 |
-| `--text-3` | `oklch(0.48 0.014 20)` | ≈ `#655A5A` | légendes, placeholder | ≥ 5,9:1 bg · ≥ 4,9:1 surface-2 |
+| `--bg` | `oklch(0.975 0.012 75)` | `#FCF6EE` | fond de page | — |
+| `--surface-1` | `oklch(0.945 0.014 72)` | `#F3ECE3` | carte, champ, barre | — |
+| `--surface-2` | `oklch(0.91 0.010 65)` | `#E9E0D6` | pressé, actif, popover | — |
+| `--line` | `oklch(0.84 0.018 62)` | `#D3C8BF` | filet 1 px | 1,52:1 bg |
+| `--text-1` | `oklch(0.22 0.025 20)` | `#251616` | titres, noms, boutons | 16,2:1 bg · 13,3:1 surface-2 |
+| `--text-2` | `oklch(0.42 0.03 20)` | `#5D4746` | texte courant | 8,0:1 bg · 6,6:1 surface-2 |
+| `--text-3` | `oklch(0.48 0.03 20)` | ≈ `#6E5757` | légendes, placeholder | ≥ 5,9:1 bg · ≥ 4,9:1 surface-2 |
 | `--error` | `oklch(0.50 0.16 20)` | `#AC2F3B` | erreur | 6,1:1 bg |
 | `--focus` | = `--text-1` | | | |
 
 Interdits (tenus par `anti-slop.test.ts`) : `#000`, `#fff`, violet/indigo, texte en dégradé.
-Aucune autre couleur n'existe dans la vitrine. Le bordeaux et le cuivre du logo **ne sont pas des
+**Couleur de marque Nuréa (décision du gérant, 21/10/2026)** : les deux couleurs du monogramme — **doré `#C4956A` en thème sombre, bordeaux `#8B3A3A` en thème clair** — sont le jeton `--accent` (`--on-accent` pour le texte posé dessus ; 7,3:1 et 7,1:1 sur le fond, ≥ 5,8:1 sur toutes les surfaces). Elles portent l'identité de la maison : logotype, monogramme, moments de marque de l'accueil. Garde-fous : jamais en fond de toute la page, jamais en dégradé ni en bordure décorative, jamais à la place de l'ambiance (qui reste la couleur de chaque parfum) ; l'usage détaillé dans l'accueil est le prochain chantier.
+
+**Le couple Nuréa** (21/10/2026) : chaque thème est un couple du monogramme, et les deux se répondent. **Sombre** : une nuit teintée bordeaux (fonds, teinte 20) sous des encres ivoire-champagne (textes, teinte 65 → 75) et le doré. **Clair** : un papier ivoire (fonds, teinte 62 → 75) sous une encre noir-bordeaux (textes, teinte 20) et le bordeaux. Le fond d'un thème est de la famille d'encre de l'autre. Les luminances n'ont pas bougé : les contrastes sont ceux d'avant.
+
+**Où vit l'accent** — ce qui agit et ce qui est choisi, rien d'autre : le bouton principal (`solid`, survol `--accent-hover`), l'anneau clavier (`--focus`), un filtre ou une densité actifs (filet et texte accent sur `--accent-wash`), une case cochée, la pastille de la sélection, la page en cours dans la barre, le lien d'évitement, la sélection de texte, le souligné des liens au survol. Les titres, le texte courant, les cartes et les fonds restent neutres. Détail et jetons : `DESIGN.md` § Couleurs.
+
+Ancienne règle (20/10, remplacée) : aucune autre couleur n'existe dans la vitrine ; le bordeaux et le cuivre du logo **ne sont pas des
 jetons**.
 
 ### B.3 Couleur d'ambiance (algorithme, bornes, repli)
@@ -132,7 +139,7 @@ Réglages (`globals.css`, règles de rôle, pas de taille arbitraire) :
 | `display` | `clamp(3rem, 2rem + 4vw, 5rem)` | 400 | −0,02 em | 1,05 | H1 accueil, La parfumerie |
 | `title` | `clamp(1.75rem, 1.25rem + 2vw, 2.5rem)` | 500 | −0,015 em | 1,15 | H1 des pages, nom en fiche |
 | `subtitle` | `1.3125rem` | 500 | −0,005 em | 1,3 | H2, nom en carte |
-| `body` | `1rem` (16 px) | 400 | 0 | 1,6 (sombre : 1,65) | texte, marque en carte (`--text-2`) |
+| `body` | `1rem` (16 px) | 400 | 0 | 1,6 (les deux thèmes : une dimension ne dépend jamais du thème) | texte, marque en carte (`--text-2`) |
 | `caption` | `0.75rem` | 500 | +0,02 em | 1,4 | contenance, compteur, mention légale |
 
 Rapports : caption→body 1,33 ; body→subtitle 1,31 ; body→title 1,75 → 2,5 ; body→display 3 → 5.
@@ -232,6 +239,43 @@ souligné au survol. **Un seul bouton primaire par écran.** Cibles ≥ 44 px (z
   l'icône cœur de la barre, feuille listant les parfums, un bouton « Commander ces N parfums sur
   Snapchat » qui compose un seul message.
 
+### B.10 Accueil (état au 21/10/2026)
+
+Statut des sections, essais écartés, règles et priorités : **`REPRISE.md`**. Ici, la composition en vigueur
+(code : branche `refonte/vitrine`, `Hero.tsx`, `FeaturedSection.tsx`, `BrandShelf.tsx`, styles `.hero*`,
+`.bandeau*` de `app/globals.css`). Ordre : hero, « À l'affiche », Marques, catalogue (intouché).
+
+**Hero.** La photographie du flacon Nuréa (`public/branding/hero/flacon-*`, deux lumières, portrait < 768 px,
+paysage au-delà ; brief `annexes/brief-photo-hero.md`) est le fond de toute la hero ; le sol se fond dans la
+page par un masque bas ; rien n'est assombri. Téléphone : hauteur = format de la photo (`125vw`) ; grille à
+deux rangées, la première haute de 29 % (le bouchon commence à 41 % de la photo du 21/10) — sous 375 px, où le titre
+passe sur trois lignes, la photo descend de `--space-8` (haut fondu) et la rangée vaut `--space-8` + 21,5 % : le H1 (`title`) s'y cale
+en bas, les entrées suivent à 24 px sur une ligne — `Button` plein « Voir le catalogue » (`#collection`),
+Snapchat en bouton rond 44 px (celui du cœur), icône seule et intitulé en `aria-label` ; dès 768 px, lien avec
+texte, titre et entrées à gauche, hauteur `clamp(26rem, 50vh, 32rem)` puis `clamp(32rem, 80vh, 48rem)`. H1 =
+« Nuréa, votre parfum / sans le prix des grandes marques. » — accroche du gérant (21/10) ouverte par le nom (`a7d0923`) en `--accent` (`ad32bcd`), coupure forcée après « parfum » ; avis juridique
+attendu ; sans la ville. Chaque photo préchargée pour son thème et sa
+largeur. Une seule entrée animée (`.enter`).
+
+**À l'affiche** (référence du gérant, principe validé le 21/10). Deux bandeaux photographiques horizontaux
+en miroir (`.bandeau`, `.bandeau-miroir`) : premier parfum mis en avant flacon à gauche, second flacon à
+droite. Grille : le visuel **entier** (2:3, jamais recadré) sur toute la hauteur d'un côté, fondu par son bord
+(masque 60 → 100 %) dans la même photo agrandie ×3 depuis son coin haut droit (ciel, lumière) et floutée
+(24 px, 56 px dès 1024) ; voile `--bg` 62 % → 18 % côté texte ; marque (`body`), nom (`title`, sans césure ;
+`subtitle` si le bandeau ≤ 20 rem), « Voir la fiche ». Tout le bandeau ouvre la fiche (bouton étendu, appui
+`--press`) ; le nom est le lien vers la page indexable. `--r-lg` + `clip-path` arrondi (le flou débordait
+des angles). 4:3 sur téléphone, 16:7 à 768, 16:9 sur 62 rem en quinconce dès 1024.
+
+**Marques.** Index typographique : les 12 marques les plus fournies, nom en `subtitle` suivi du nombre de
+parfums en `caption` (liens ≥ 44 px), « Toutes les marques » → `/parfums`.
+
+**Mesures** (build webpack, profil T9, Pixel 7) : LCP ≈ 1,55 s sombre / 1,06 s clair (photo de la hero), CLS 0 ;
+bascule clair/sombre 0 px pour un visuel identique ; e2e accueil 8/8.
+
+Amendements de § B en vigueur : ambiance (§ B.3.8) aussi permise en passe-partout et fonds de section de
+l'accueil, jamais toute la page ni la barre ; interlignage `body` commun aux deux thèmes (§ B.4) ; la hero
+porte des entrées (bouton) et du texte posé sur la photo, dans sa zone vide, sans assombrissement.
+
 ---
 
 ## C. Cartographie des fichiers (par tâche)
@@ -240,14 +284,14 @@ souligné au survol. **Un seul bouton primaire par écran.** Cibles ≥ 44 px (z
 |---|---|---|
 | Coque | `app/(shop)/layout.tsx`, `app/layout.tsx` (ne pas toucher : root minimal), `app/not-found.tsx`, `src/components/layout/{Navbar,Footer,BrandLogo}.tsx`, `src/components/providers/ThemeProvider.tsx` | réécrits (T5) |
 | Jetons, polices | `app/globals.css` (744 l.), `src/design/brand.ts`, `src/design/fonts.ts`, `tailwind.config.ts` | réécrits (T3, T4) |
-| Catalogue | `src/components/home/{CatalogSection,CatalogToolbar,CatalogEmptyState,CatalogFilterDrawer}.tsx`, `useCatalogFilters.ts`, `useExtendedSearch.ts`, `src/components/features/{PerfumeCard,PerfumeCardSkeleton,PerfumeImage,PerfumeDialog,PerfumeLinkCard,FeaturedSection,Hero,SnapchatOrderButton,OrderChannels}.tsx`, `src/components/ui/{Button,Field,Icons,ScrollReveal,ChannelSoon}.tsx` | réécrits (T8–T13) |
+| Catalogue | `src/components/home/{CatalogSection,CatalogToolbar,CatalogEmptyState,CatalogFilterDrawer}.tsx`, `useCatalogFilters.ts`, `useExtendedSearch.ts`, `src/components/features/{PerfumeCard,PerfumeCardSkeleton,PerfumeImage,PerfumeDialog,PerfumeLinkCard,FeaturedSection,Hero,SnapchatOrderButton,OrderChannels}.tsx`, `src/components/ui/{Button,Field,Icons,ChannelSoon}.tsx` | réécrits (T8–T13) |
 | Pages | `app/(shop)/page.tsx`, `parfums/page.tsx`, `parfums/[marque]/page.tsx`, `parfums/[marque]/[parfum]/page.tsx`, `marque/page.tsx`, `contact/page.tsx`, `legal/page.tsx` ; `src/components/editorial/*`, `src/components/features/ContactForm.tsx` | réécrits (T14–T17) |
 | Images OG | `app/(shop)/opengraph-image.tsx`, `twitter-image.tsx`, `contact/`, `legal/`, `marque/` ; `app/(shop)/_og/` (police + logotype) | réécrits (T18) |
 | Données (lecture seule sauf T7) | `src/lib/catalog/{getCatalogPerfumes,perfumePresentation,seoCatalogue,discoveryOrder}.ts`, `src/lib/catalogue-service.ts`, `src/lib/data.ts`, `src/lib/search/*`, `src/lib/seo/paths.ts`, `src/lib/mentions.ts`, `src/lib/images/{loader,thumbnails}.ts`, `src/lib/motion/physics.ts`, `src/hooks/useSheetMotion.ts` | **inchangés**, sauf ajout des champs d'ambiance (T7) |
 | Ambiance (T7) | `prisma/schema.prisma` + migration, `scripts/refonte-vitrine/ambiance.mjs` (nouveau), `src/lib/catalog/getCatalogPerfumes.ts` et `src/lib/data.ts` (deux champs), `demo-catalogue.json` (régénéré) | ajout |
 | Filets | `tests/architecture/anti-slop.test.ts` (inchangé), `css-registers.test.ts`, `e2e/catalog-filters.spec.ts` (sélecteurs à refaire), `e2e/layout-invariants.spec.ts` (gestion, inchangé) | T21 |
 | Docs | `DESIGN.md`, `.impeccable.md`, `PRODUCT.md`, `docs/charte-graphique.html`, `CLAUDE.md` § Règles Vitrine, `docs/refonte-vitrine/00-LISEZ-MOI.md` | T2, puis T23 |
-| Planche | `public/planche/index.html` + `public/planche/fonts/` (**branche `refonte/planche` seulement, jamais sur `main`**) | T1 |
+| Planche | `public/planche/index.html` + `public/planche/fonts/` (**branche `refonte/planche` seulement, jamais sur `main`**) ; `accueil.html` (refusée), `accueil-v2.html` (A et B) | T1, T15 |
 
 ---
 
@@ -311,6 +355,20 @@ Modèle : Opus 5.5 ; effort `medium` sauf mention. `PC` = point de contrôle gé
 - Fichiers : `useExtendedSearch.ts`, `CatalogEmptyState.tsx`, `Navbar.tsx` (champ), `src/components/features/PerfumeLinkCard.tsx`.
 - Acceptation : requête d'un parfum du répertoire absent du catalogue → carte « Vous cherchez *X* de *Y* ? Écrivez-nous » avec lien Contact pré-rempli ; `aria-live="polite"` ; jamais la chaîne « aucun résultat » (`grep -ri "aucun résultat" src/components` vide) ; e2e `recherche` vert.
 
+**T10 bis — Suggestions sous le champ** · M · fait le 21/10/2026 (`61cb116`, demande du gérant)
+- Fichiers : `src/components/layout/SearchBox.tsx` (champ + panneau, sorti de `Navbar.tsx`), `searchEvents.ts`
+  (événements de la barre), `src/lib/search/suggestions.ts` (réponse de l'API → rangées, `contactHref`
+  partagé avec `CatalogEmptyState`), `useExtendedSearch.ts` (options `minLength`/`debounceMs`, mémoire des
+  réponses de la visite), `perfumeSearchTypes.ts` (`brandSlug`, `line` exposés), `app/globals.css`
+  (`.suggestions`), `e2e/recherche-suggestions.spec.ts`.
+- Comportement : dès 2 caractères, 300 ms après la frappe, `/api/perfume-search` ; jusqu'à cinq parfums
+  (visuel, marque, nom) puis « Voir les N parfums » ; sinon la chaîne de la grille vide en une rangée
+  (« Vous cherchez *X* de *Y* ? Écrivez-nous »). Sur l'accueil, une rangée ouvre la feuille (`requestSheet`)
+  et la grille reste filtrée ; ailleurs, la page du parfum ; « Voir les N » → grille filtrée (`/?q=`).
+- Acceptation (vérifiée) : combobox WAI-ARIA (flèches, Entrée, Échap, `aria-activedescendant`, nom lu
+  « Marque — Nom ») ; 5 parcours × 2 appareils verts ; 8 tests unitaires ; LCP accueil inchangé (2 108 ms) ;
+  aucune dépendance ajoutée, composants du design system inchangés.
+
 **T11 — Filtres avec compteur** · M · Opus medium
 - Fichiers : `CatalogFilterDrawer.tsx` (feuille Vaul ou `useSheetMotion`, opaque), puces, URL.
 - Acceptation : bouton « Voir N parfums » mis à jour avant validation ; `e2e/catalog-filters.spec.ts` réécrit et vert.
@@ -331,30 +389,38 @@ Modèle : Opus 5.5 ; effort `medium` sauf mention. `PC` = point de contrôle gé
 
 ### Phase 4 — pages éditoriales et aperçus
 
-**T15 — Accueil : composition** · M · Opus medium
-- Fichiers : `Hero.tsx`, `FeaturedSection.tsx`, `app/(shop)/page.tsx`.
-- Spécification : **une vraie page d'accueil** (demande du gérant au PC 1) : section d'ouverture (hero) qui porte le H1 « Nuréa Parfums, Marseille », puis sections (les 2 parfums mis en avant, la recherche, le catalogue). Interdit : le gabarit « grande phrase + deux boutons + photo assombrie ». La composition se dessine d'abord sur une **planche d'accueil** (HTML autonome sur la branche `refonte/planche`, même méthode que T1, vrais visuels) montrée au gérant **avant** le code ; une question de goût sur cette composition → session Fable.
-- Acceptation : H1 unique portant « Nuréa Parfums » et « Marseille » ; aucune modale ni bannière à l'arrivée ; depuis l'accueil, message Snapchat en **4 taps**.
+**T15 — Accueil : composition** · M · **faite par Fable le 21/10** (composition « Chambre », § B.10)
+- Fichiers : `Hero.tsx` (hero de marque : surtitre, accroche, faits, deux entrées, visuel de la chambre en deux lumières), `FeaturedSection.tsx` (« À l'affiche », compact), `openPerfume.ts` (ouverture de la fiche par événement, partagé avec le catalogue), `BrandShelf.tsx` (rayon des marques en images, `topBrands` testé), `app/(shop)/page.tsx`, `app/globals.css` (`.hero*`, `.affiche*`, `.rail`, `.enter`, `.enter-visuel`), `src/lib/images/loader.ts` (déclinaisons 640 de la hero), `public/branding/hero/chambre-{nuit,jour}[-640].webp` (fabrication : `annexes/hero-chambre.md`). Supprimés : `Masthead.tsx`, `BrandIndex.tsx`.
+- Historique : planche v1 refusée le 20/10, planche v2 → A choisie, A codée (`3492c18`) refusée le 21/10 ; troisième passage codé directement par Fable, trois essais écartés dans la session (« La une », « Le comptoir », « Vitrine ») avant le brief définitif du gérant (vraie hero de marque).
+- Acceptation (vérifiée le 21/10) : H1 unique portant « Nuréa Parfums » et « Marseille » ; aucune modale à l'arrivée ; Snapchat en **2 taps** depuis « À l'affiche », **1 tap** depuis la hero (e2e `accueil-snapchat` 8/8) ; premier écran à 390 × 844 conforme au tableau de § B.10 ; `scrollWidth === innerWidth` à 390, 768, 1280 ; deux thèmes (deux lumières) ; **LCP 1 320 / 1 576 ms** (≤ 2,5 s) ; `typecheck`, `lint`, `test` (996) verts.
+- Le PC sur la page codée tranche (aperçu Vercel de la branche, téléphone). « Non » d'exécution → l'exécutant corrige ; « non » de goût → Fable.
 
 **T16 — La parfumerie, Contact, Légal, 404** · M · Opus medium
 - Fichiers : `marque/page.tsx`, `contact/page.tsx`, `legal/page.tsx` (contenu juridique inchangé), `app/not-found.tsx`, `ContactForm.tsx` (étiquettes visibles, erreurs sous champ, premier champ en erreur focalisé, leurre et guard inchangés), `src/components/editorial/*` (réécrits ou supprimés ; `Seal`, `Monogram` : monogramme cerclé seulement sur photo).
 - Acceptation : formulaire envoie via `src/actions/contact.ts` inchangé ; `MENTION_FLACONS` sur La parfumerie et Contact ; 404 renvoie à la recherche.
 
 **T17 — Images OG** · S · Opus medium
-- Fichiers : les 5 `opengraph-image.tsx`, `twitter-image.tsx`, `app/(shop)/_og/`.
-- Acceptation : chaque route répond 200 en `image/png`, 1200 × 630, police de titre, logotype ivoire sur `--bg` sombre ; fiche parfum : visuel + ambiance.
+- Fichiers : les `opengraph-image.tsx` (site, `marque`, `contact`, `legal`, `parfums`, fiche parfum), `twitter-image.tsx`, `app/(shop)/_og/` (`vignettes.tsx` : les deux rendus).
+- Acceptation : chaque route répond 200 en **`image/jpeg`** (amendé le 21/10 : le PNG de `next/og` pèse 600 à 800 Ko avec une photo, WhatsApp n'affiche plus l'aperçu au-delà d'environ 300 Ko ; JPEG 50 à 75 Ko), 1200 × 630, police de titre, logotype ivoire et doré sur fond sombre. Site : la photo réelle du flacon Nuréa de la hero, logo complet, « Catalogue de parfums, commande sur Snapchat » et le domaine (plus de « Marseille » ni de « grandes marques »). Fiche parfum : visuel sombre **entier** (2:3, jamais recadré) sur sa couleur d'ambiance, marque puis nom, `MENTION_FLACONS` ; fiche introuvable → vignette du site. Essai sans base : `scripts/refonte-vitrine/og-essai.tsx`.
 
 ### Phase 5 — mouvement et qualité
 
 **T18 — Mouvement** · M · Opus medium
-- Fichiers : `globals.css` (jetons déjà posés), `ScrollReveal.tsx` (entrée unique, cascade plafonnée), transitions de feuille, appui.
+- Fichiers : `globals.css` (jetons déjà posés), transitions de feuille, appui. `ScrollReveal.tsx` supprimé à T18 (code mort ; pas d'entrée au défilement) ; garde-fou : `tests/architecture/vitrine-mouvement.test.ts`.
 - Acceptation : trois passes (normal, ralenti ×4 dans les DevTools, `prefers-reduced-motion`) notées dans le commit ; aucune animation sur `width/height/top` (`grep` sur `transition:` et `@keyframes`) ; test au doigt sur téléphone (le gérant ou l'exécutant via aperçu).
 
 **T19 — Audit et Core Web Vitals** · M · Opus medium
 - Fichiers : corrections ponctuelles ; `docs/refonte-vitrine/annexes/audit-final.md` (nouveau).
 - Acceptation : build de production local (`NUREA_SKIP_MIGRATE_DEPLOY=1` + URLs factices, catalogue de démo) ; Lighthouse mobile ≥ 90 / 100 / 95 ; LCP ≤ 2,5 s, INP ≤ 200 ms, CLS ≤ 0,1 ; 0 violation AA (axe via Playwright) ; zoom 200 % tenu à 390 px ; anti-slop ≤ 3 dérogations.
 
-**T20 — Filets e2e** · S · Opus medium
+**T20 — Filets e2e** · S · Opus medium · fait le 21/10/2026 (`8532241`)
+- Réalisé : les parcours de la vitrine vivent dans `e2e/vitrine/` (accueil-snapchat, catalog-filters,
+  perfume-sheet, recherche-suggestions, selection) avec leur config `playwright.vitrine.config.ts` : serveur
+  **sans base** (catalogue de démo, variables de base posées vides contre tout `.env`), cache de données purgé
+  au démarrage, trois appareils (iPhone WebKit, Android, bureau), branchée en fin de `npm run test:e2e`
+  (`npm run test:e2e:vitrine`). Les « 2 taps » étaient déjà éprouvés (`accueil-snapchat`, `perfume-sheet`) :
+  pas de `fiche-snapchat.spec.ts` en double. `e2e/parcours/recherche.spec.ts` est la recherche de la gestion,
+  hors refonte.
 - Fichiers : `e2e/catalog-filters.spec.ts`, `e2e/parcours/recherche.spec.ts`, nouveau `e2e/parcours/fiche-snapchat.spec.ts` (2 taps), `e2e/fixtures/vitrine-extremes.json` conservé.
 - Acceptation : `npm run test:e2e` vert localement.
 
@@ -367,6 +433,7 @@ Modèle : Opus 5.5 ; effort `medium` sauf mention. `PC` = point de contrôle gé
 - Branche poussée, aperçu ouvert **depuis Snapchat** sur le téléphone du gérant (verre, polices, feuille) ; `node scripts/refonte-vitrine/capture.mjs <url-aperçu> .tmp/refonte-vitrine/apres` ; comparaison avec `avant/`.
 
 **T23 — Mise en ligne et docs** · S · Opus medium
+- Ajouter `npm run test:e2e:vitrine` au tableau des commandes de `CLAUDE.md` (et `DEVELOPER.md`) à la fusion.
 - Fusion sur `main`, CI verte (test d'affichage ~30 min), `00-LISEZ-MOI.md` (état : terminé), `CLAUDE.md` relu, `graphify update .`.
 
 ---
