@@ -14,10 +14,10 @@ document. `02-PLAYBOOK.md` et `03-DA.md` seulement sur un point précis (ils son
 
 | Sujet | Décision | Source |
 |---|---|---|
-| Direction | **« Nuancier nocturne »** : structure, matière, mouvement « Apple » ; la seule couleur vive est celle du parfum regardé | gérant, `03-DA.md` § 7 |
+| Direction | **« Nuancier nocturne »** : structure, matière, mouvement « Apple » ; la couleur vive est celle du parfum regardé ; la marque signe en doré (sombre) / bordeaux (clair) | gérant, `03-DA.md` § 7 et décision du 21/10 |
 | Thèmes | **Clair et sombre**, `prefers-color-scheme` par défaut, bascule manuelle conservée | gérant |
 | Héritage v3 | **Rien.** Aucun jeton, classe, composant, police, règle d'aspect repris. `app/globals.css`, `src/design/brand.ts`, `src/design/fonts.ts`, `src/components/**` sont **réécrits**, pas retouchés | gérant |
-| Actifs de marque | Logos et monogrammes de `public/branding/` conservés, proportions intactes : **ivoire sur sombre, noir sur clair**. Variantes cuivre et bordeaux inutilisées | gérant (« tu as nos logos ») |
+| Actifs de marque | Logos et monogrammes de `public/branding/` conservés, proportions intactes : **doré sur sombre, bordeaux sur clair** (21/10/2026 ; avant : ivoire / noir) | gérant (« tu as nos logos » ; couleurs de marque le 21/10) |
 | Vocabulaire | Marque · Parfum · Ligne · Contenance · Catalogue. Jamais Maison, Galerie, Sillage. Boutons verbe + objet (« Commander sur Snapchat », « Écrire à Nuréa ») | Fable |
 | Fonctions neuves | **« Ma sélection »** retenue. **Aucune contenance (ml) affichée nulle part** : ni sélecteur, ni « 10 · 50 · 80 ml » en carte, ni dans un texte, ni dans le message Snapchat. Le site reste un catalogue de ce qui est disponible ; le volume se discute sur Snapchat | gérant, PC 1 (20/10) |
 | Polices | **C1 : Fraunces + Figtree** | gérant, PC 1 (20/10) |
@@ -32,8 +32,9 @@ document. `02-PLAYBOOK.md` et `03-DA.md` seulement sur un point précis (ils son
 
 ### B.1 Concept
 
-**Une chambre neutre et calme ; la seule couleur est celle du flacon qu'on regarde.** L'interface
-ne possède aucun accent de marque : l'accent *est* la teinte dominante du visuel, calculée, bornée,
+**Une chambre neutre et calme, signée aux couleurs de Nuréa ; la couleur vive est celle du flacon qu'on
+regarde.** Amendé le 21/10 : la marque a son accent (`--accent`, doré en sombre, bordeaux en clair, § B.2) ;
+l'ambiance reste la teinte dominante du visuel, calculée, bornée,
 posée sur la fiche et sur la carte pressée. Tout le reste est un neutre teinté, chaud, en deux
 thèmes symétriques.
 
@@ -73,7 +74,9 @@ manifeste, `themeColor`).
 | `--focus` | = `--text-1` | | | |
 
 Interdits (tenus par `anti-slop.test.ts`) : `#000`, `#fff`, violet/indigo, texte en dégradé.
-Aucune autre couleur n'existe dans la vitrine. Le bordeaux et le cuivre du logo **ne sont pas des
+**Couleur de marque Nuréa (décision du gérant, 21/10/2026)** : les deux couleurs du monogramme — **doré `#C4956A` en thème sombre, bordeaux `#8B3A3A` en thème clair** — sont le jeton `--accent` (`--on-accent` pour le texte posé dessus ; 7,3:1 et 7,1:1 sur le fond, ≥ 5,8:1 sur toutes les surfaces). Elles portent l'identité de la maison : logotype, monogramme, moments de marque de l'accueil. Garde-fous : jamais en fond de toute la page, jamais en dégradé ni en bordure décorative, jamais à la place de l'ambiance (qui reste la couleur de chaque parfum) ; l'usage détaillé dans l'accueil est le prochain chantier.
+
+Ancienne règle (20/10, remplacée) : aucune autre couleur n'existe dans la vitrine ; le bordeaux et le cuivre du logo **ne sont pas des
 jetons**.
 
 ### B.3 Couleur d'ambiance (algorithme, bornes, repli)

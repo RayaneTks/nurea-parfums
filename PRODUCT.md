@@ -24,11 +24,11 @@ Le parfum est remis dans un **flacon Nuréa personnalisé**, à l'étiquette de 
 
 ## Brand Personality
 
-- **Calme et précise** : une chambre neutre, chaude, en clair comme en sombre ; la seule couleur est celle du flacon regardé (couleur d'ambiance, voir `DESIGN.md`)
+- **Calme et précise** : une chambre neutre, chaude, en clair comme en sombre ; la couleur vive est celle du flacon regardé (couleur d'ambiance), la marque signe en doré (sombre) et bordeaux (clair) — voir `DESIGN.md`
 - **Intime et personnel** : sélection curatée, pas marketplace impersonnelle
 - **Français, sobre** : copy directe, pas de marketing agressif
 - **Tangible** : les flacons et marques sont les héros visuels ; l'écran répond au doigt comme un objet
-- **Signée** : logo et monogramme (ivoire sur sombre, noir sur clair) ; le flacon Nuréa se dit, il ne se montre pas
+- **Signée** : logo et monogramme aux couleurs de marque (doré sur sombre, bordeaux sur clair) ; le flacon Nuréa se montre en photographie réelle dans la hero de l'accueil (21/10/2026), ailleurs il se dit
 
 ## Vocabulaire
 

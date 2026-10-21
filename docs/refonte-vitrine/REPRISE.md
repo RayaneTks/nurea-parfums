@@ -38,6 +38,7 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 | Section | État | Ce qui est en place |
 |---|---|---|
 | DA « Nuancier nocturne », Fraunces + Figtree, deux thèmes | **validé** (PC 1, 20/10) | jetons `globals.css` + `brand.ts` |
+| Couleur de marque : doré (sombre) / bordeaux (clair) | **décidé** (gérant, 21/10) ; en place : jetons `--accent`/`--on-accent`, logotype de la barre ; **usage dans l'accueil à concevoir** | `globals.css`, `brand.ts`, `BrandLogo.tsx` |
 | Composants (boutons, cartes, champs, filtres, feuille, Ma sélection) | **validé** (PC 2–3) | `src/components/ui`, `PerfumeCard`, `PerfumeSheet`… — **ne pas les redessiner** |
 | Catalogue (grille, filtres, recherche, fiche, Snapchat 2 taps) | **validé** | `CatalogSection` et ses pièces |
 | Hero | **en cours** — base jugée bonne par le gérant, pas encore validée | photo du flacon Nuréa en fond ; titre puis « Voir le catalogue » + Snapchat en bouton rond 44 px sur une ligne, au-dessus et à gauche du flacon ; accroche « Le parfum que vous aimez, dans un flacon Nuréa. » (formulation du gérant, **non verrouillée**, avis juridique attendu) |
@@ -47,6 +48,7 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 
 ## Règles à ne pas remettre en cause sans justification
 
+- **Couleur de marque Nuréa (décision du gérant, 21/10/2026)** : les deux couleurs du monogramme — **doré `#C4956A` en thème sombre, bordeaux `#8B3A3A` en thème clair** — sont le jeton `--accent` (`--on-accent` pour le texte posé dessus ; 7,3:1 et 7,1:1 sur le fond, ≥ 5,8:1 sur toutes les surfaces). Elles portent l'identité de la maison : logotype, monogramme, moments de marque de l'accueil. Garde-fous : jamais en fond de toute la page, jamais en dégradé ni en bordure décorative, jamais à la place de l'ambiance (qui reste la couleur de chaque parfum) ; l'usage détaillé dans l'accueil est le prochain chantier.
 - **Composants du design system figés** : la liberté créative porte sur la composition de l'accueil
   (hero, hiérarchie, mise en scène), jamais sur boutons, cartes, arrondis, champs, filtres, états.
 - **Anti-automatismes** (refus explicites du gérant) : micro-label en capitales au-dessus d'un titre,
@@ -87,7 +89,8 @@ miniatures (répétaient les produits).
 
 ## Prochaines priorités
 
-1. **Renforcer l'identité Nuréa sur la page d'accueil** (demande du gérant), sans toucher aux composants ni
-   aux sections validées, sans relancer une refonte : composition, hiérarchie, présence de la marque.
+1. **Renforcer l'identité Nuréa sur la page d'accueil** (demande du gérant), notamment la hero, avec la
+   couleur de marque (doré en sombre, bordeaux en clair) et le monogramme — sans toucher aux composants ni aux
+   sections validées, sans relancer une refonte. Décider où l'accent apparaît et le faire valider sur captures.
 2. Ressources attendues du gérant : avis juridique (accroche, présentation face aux marques), photos de la
    hero refaites, puis T16 → T23.
