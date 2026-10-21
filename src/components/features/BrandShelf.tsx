@@ -49,7 +49,7 @@ export function topBrands<P extends ShelfPerfume>(perfumes: readonly P[], size =
 /**
  * Rayon des marques de l'accueil (04-PLAN-EXECUTION.md § B.10) : une parfumerie se parcourt par
  * marque, et une marque se reconnaît à un flacon, pas à une ligne d'annuaire. Un rayon horizontal
- * de visuels 2:3 (vignette 640), nom en `subtitle`, compteur en `caption` ; tout le bloc mène à la
+ * de visuels 2:3 (vignette 640, rayon de la carte), nom en `subtitle`, compteur en `caption` ; tout le bloc mène à la
  * page de la marque. Téléphone et tablette : on fait glisser le rayon ; dès 1024 px, les huit
  * tiennent sur une ligne.
  */
@@ -68,7 +68,7 @@ export const BrandShelf: FC<{ brands: BrandShelfEntry[] }> = ({ brands }) =>
         {brands.map((brand) => (
           <li key={brand.slug}>
             <Link href={brandPath(brand.slug)} className="group press block">
-              <div className="relative aspect-[2/3] overflow-hidden rounded-sm bg-surface-2">
+              <div className="relative aspect-[2/3] overflow-hidden rounded-md bg-surface-2">
                 <PerfumeImage perfume={brand.perfume} sizes="(min-width: 1024px) 160px, 144px" />
               </div>
               <p className="t-subtitle mt-2 [overflow-wrap:anywhere] group-active:text-fg-2 group-mouse-hover:underline underline-offset-[6px] decoration-1">
