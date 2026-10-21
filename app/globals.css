@@ -62,7 +62,6 @@
     --on-primary: var(--bg);
     --shadow-float: 0 12px 32px -8px oklch(0 0 0 / 0.35);
     --glass-edge: oklch(1 0 0 / 0.06);
-    --leading-body: 1.65;
   }
 
   /* ─── Sémantiques : clair ───────────────────────────────────────────── */
@@ -80,7 +79,6 @@
     --on-primary: var(--bg);
     --shadow-float: 0 12px 32px -8px oklch(0.2 0.01 20 / 0.18);
     --glass-edge: transparent;
-    --leading-body: 1.6;
   }
 
   /* ─── Dérivés, échelles, mouvement (communs aux deux thèmes) ───────────
@@ -101,6 +99,11 @@
     --space-16: 4rem;
     --space-24: 6rem;
     --space-section: clamp(3rem, 2rem + 4vw, 6rem);
+
+    /* Interlignage du texte courant : le même dans les deux thèmes. Un thème ne change que des couleurs,
+       jamais une dimension — 1,65 en sombre contre 1,6 en clair décalait verticalement tout ce qui suit
+       un paragraphe à chaque bascule (0,8 px sous la première rangée de cartes, davantage plus bas). */
+    --leading-body: 1.6;
     --gutter: 1rem;
     --content-max: 80rem; /* 1280 px */
 
@@ -449,13 +452,13 @@
     position: relative;
   }
 
+  /* Les deux entrées sur une ligne : « Voir le catalogue » puis Snapchat, bouton rond 44 px sur
+     téléphone (le bouton rond du cœur « Ma sélection »), lien avec son texte dès 768 px. */
   .hero-entrees {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     align-self: start;
-    gap: var(--space-1);
-    max-width: 11.5rem;
+    gap: var(--space-3);
     margin-top: var(--space-6);
   }
 
@@ -478,10 +481,7 @@
     }
 
     .hero-entrees {
-      flex-direction: row;
-      align-items: center;
       gap: var(--space-6);
-      max-width: none;
       margin-top: 0;
     }
 
@@ -506,68 +506,62 @@
   }
 
   /* ─── À l'affiche (`FeaturedSection`) ───────────────────────────────────
-     Diptyque asymétrique : le premier parfum sur 7 colonnes de 12, le second sur
-     5, décalé vers le bas (comme une double page). Dès 768 px, le même diptyque,
-     contenu dans 44 rem. */
+     Deux compositions horizontales de même poids : la photo entière (2:3,
+     jamais recadrée — un cadre fixe coupait le bouchon de l'un ou la base de
+     l'autre, les flacons ne sont pas tous au même endroit) à gauche, bord à
+     bord dans l'objet ; à droite, sur la couleur du flacon, la marque et le nom
+     calés en bas. Empilées sur téléphone, côte à côte dès 768 px. */
   .affiche {
     display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: var(--space-3);
-    align-items: start;
+    gap: var(--space-4);
   }
 
-  .affiche-a {
-    grid-column: 1 / span 7;
+  .affiche-compo {
+    container-type: inline-size;
+    display: grid;
+    grid-template-columns: 52% minmax(0, 1fr);
+    overflow: hidden;
+    border-radius: var(--r-lg);
   }
 
-  .affiche-b {
-    grid-column: 8 / span 5;
-    margin-top: clamp(4.5rem, 24vw, 8rem);
+  /* Composition étroite (téléphone de 320 px) : le nom passe au pas `subtitle` plutôt que de se
+     couper au milieu d'un mot — comme le nom dans les cartes du catalogue. */
+  @container (max-width: 20rem) {
+    .affiche-nom {
+      font-size: 1.3125rem;
+      line-height: 1.3;
+    }
   }
 
-  .affiche-seul {
-    grid-column: 2 / span 10;
+  .affiche-photo {
+    aspect-ratio: 2 / 3;
+    transition: opacity var(--dur-1) var(--ease-out);
+  }
+
+  .affiche-photo:active {
+    opacity: 0.9;
+  }
+
+  .affiche-legende {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: var(--space-1);
+    padding: var(--space-4);
   }
 
   @media (min-width: 768px) {
     .affiche {
-      max-width: 44rem;
-      column-gap: var(--space-6);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-6);
     }
-  }
 
-  /* ─── Marques (`BrandShelf`) ────────────────────────────────────────────
-     Téléphone : une rangée qu'on fait glisser, calée sur la gouttière, barre
-     de défilement masquée. Dès 768 px : 4 colonnes. */
-  .marques {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 10.5rem;
-    gap: var(--space-3);
-    padding-inline: var(--gutter);
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity;
-    scroll-padding-inline: var(--gutter);
-    scrollbar-width: none;
-  }
+    .affiche-compo {
+      grid-template-columns: 48% minmax(0, 1fr);
+    }
 
-  .marques::-webkit-scrollbar {
-    display: none;
-  }
-
-  .marques > li {
-    scroll-snap-align: start;
-  }
-
-  @media (min-width: 768px) {
-    .marques {
-      grid-auto-flow: row;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      width: 100%;
-      max-width: calc(var(--content-max) + 2 * var(--gutter));
-      margin-inline: auto;
-      overflow: visible;
+    .affiche-legende {
+      padding: var(--space-6);
     }
   }
 

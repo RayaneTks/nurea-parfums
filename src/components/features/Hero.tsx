@@ -31,9 +31,9 @@ function sources(lumiere: Lumiere) {
  *
  * La photographie du flacon Nuréa est le fond de toute la hero ; le texte se pose sur son mur, dans
  * la zone vide prévue à la prise de vue, et le sol se fond dans la page par le bas (masque). Rien
- * n'est assombri. Téléphone : la hero a le format de la photo portrait (4:5) ; le titre occupe le mur
- * au-dessus du bouchon, les entrées l'espace à gauche du flacon, à hauteur de son corps — le texte
- * entoure l'objet. Dès 768 px : la photo paysage, le titre et les entrées à gauche, le flacon à droite.
+ * n'est assombri. Téléphone : la hero a le format de la photo portrait (4:5) ; le titre et les entrées
+ * forment un seul bloc au-dessus et à gauche du flacon (le bas du titre au-dessus du bouchon), les
+ * entrées sur une ligne. Dès 768 px : la photo paysage, le titre et les entrées à gauche.
  *
  * Composants inchangés : `Button` plein, lien tertiaire. Le H1, unique, est l'accroche ; il nomme
  * Nuréa, pas la ville (gérant, 21/10 : les clients viennent de Snapchat, envois partout en France). **Accroche provisoire** : le gérant ne l'a pas validée, et toute formulation qui
@@ -78,9 +78,20 @@ export const Hero: FC = () => {
         <a href="#collection" className={buttonClass("solid")}>
           Voir le catalogue
         </a>
-        <a href={CONTACT.snapchat} target="_blank" rel="noopener noreferrer" className={buttonClass("link", "items-start gap-2")}>
-          <SnapchatIcon className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-          Commander sur Snapchat
+        {/* Téléphone : le bouton rond du cœur « Ma sélection », icône seule (le fantôme se reconnaît, l'intitulé
+            est lu par `aria-label`) ; dès 768 px, le lien tertiaire avec son texte. */}
+        <a
+          href={CONTACT.snapchat}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Commander sur Snapchat"
+          className={buttonClass(
+            "link",
+            "gap-2 max-md:press max-md:h-11 max-md:w-11 max-md:justify-center max-md:rounded-full max-md:bg-[color-mix(in_oklch,var(--surface-1)_80%,transparent)] max-md:transition-[background-color,transform] max-md:duration-dur-1"
+          )}
+        >
+          <SnapchatIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+          <span className="max-md:sr-only">Commander sur Snapchat</span>
         </a>
       </div>
     </section>

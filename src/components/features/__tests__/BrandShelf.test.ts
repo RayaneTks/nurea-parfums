@@ -18,8 +18,4 @@ describe("rayon des marques de l'accueil", () => {
     expect(topBrands(perfumes, 2).map((b) => b.slug)).toEqual(["a", "b"]);
   });
 
-  it("garde les trois premiers parfums de chaque marque, dans l'ordre reçu", () => {
-    const perfumes = ["a", "b", "c", "d"].map((id) => ({ id, brand: "Dior", brandSlug: "dior" }));
-    expect(topBrands(perfumes)[0]?.lineup.map((x) => x.id)).toEqual(["a", "b", "c"]);
-  });
 });

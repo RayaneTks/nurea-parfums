@@ -8,7 +8,7 @@ import { read } from "./support/sources";
  * Un thème ne redéfinit que le sémantique : chaque jeton qui change d'un thème à l'autre doit exister
  * dans les DEUX blocs (`:root, .dark` et `.light`) — un oubli ferait hériter le clair d'une valeur
  * sombre, illisible. Les dérivés (verre, survol du primaire) sont déclarés une fois sur `:root` et se
- * recalculent avec le thème actif.
+ * recalculent avec le thème actif. Aucune dimension ne dépend du thème (voir `LAYOUT`).
  */
 
 const CSS = "app/globals.css";
@@ -27,8 +27,15 @@ const THEMED = [
   "--on-primary",
   "--shadow-float",
   "--glass-edge",
-  "--leading-body",
 ] as const;
+
+/**
+ * Jetons de dimension (interlignage, espacements, rayons, tailles) : **jamais** dans un bloc de thème.
+ * Un thème ne change que des couleurs ; une dimension qui varie déplace toute la page à la bascule
+ * (l'interlignage du texte courant, 1,65 en sombre et 1,6 en clair, décalait chaque visuel situé sous un
+ * paragraphe — même quand l'image était le même fichier dans les deux thèmes).
+ */
+const LAYOUT = /^--(leading|space|r-|gutter|content|text-size|size)/;
 
 /** Dérivés communs, calculés depuis les jetons du thème actif. */
 const SHARED = ["--glass", "--glass-solid", "--primary-hover"] as const;
@@ -52,6 +59,12 @@ describe("jetons de la vitrine", () => {
   it.each(THEMED)("%s est défini dans les deux thèmes", (token) => {
     expect(dark.has(token), `${token} manque au thème sombre`).toBe(true);
     expect(light.has(token), `${token} manque au thème clair`).toBe(true);
+  });
+
+  it("aucun thème ne déclare une dimension : la bascule ne déplace rien", () => {
+    const layout = [...dark, ...light].filter((token) => token !== undefined && LAYOUT.test(token));
+    expect(layout, "jeton de dimension déclaré dans un thème").toEqual([]);
+    expect(declared(source).has("--leading-body"), "--leading-body déclaré une fois, hors thème").toBe(true);
   });
 
   it("aucun thème ne déclare un jeton que l'autre ignore", () => {
