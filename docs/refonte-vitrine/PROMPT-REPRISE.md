@@ -1,6 +1,6 @@
 # Prompt de reprise — refonte de la vitrine Nuréa (après /clear)
 
-À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (T17 et Marques validées ; cap sur T18).
+À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (T18 codée, attente test au doigt ; cap sur T19).
 
 ---
 
@@ -45,8 +45,8 @@ chaque rendu finit par « Ce que tu dois faire ».
 
 ## 4. Ta mission
 
-**T16, le menu, T17 (vignettes de partage) et l'index des Marques sont validés** (21/10) : ne pas y revenir. Ta mission : **T18 — Mouvement**
-(`04-PLAN-EXECUTION.md` § T18), puis T19 → T23, un point de contrôle gérant sur captures à chaque étape visuelle.
+**T16, le menu, T17 (vignettes de partage) et l'index des Marques sont validés** (21/10) : ne pas y revenir. **T18 (mouvement) est codée** (`7482aac`), en attente du test au doigt du gérant. Ta mission : **T19 — Audit**
+(`04-PLAN-EXECUTION.md` § T19), puis T20 → T23, un point de contrôle gérant sur captures à chaque étape visuelle.
 
 Images : le gérant autorise la génération **sans aucun être vivant** (ni visage, ni main) ; flacon Nuréa copié sur la
 photo réelle ; un écran de téléphone se génère **en vert chroma** puis reçoit une **capture réelle** (méthode et outils :

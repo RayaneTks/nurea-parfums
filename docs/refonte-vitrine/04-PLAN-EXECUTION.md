@@ -284,7 +284,7 @@ porte des entrées (bouton) et du texte posé sur la photo, dans sa zone vide, s
 |---|---|---|
 | Coque | `app/(shop)/layout.tsx`, `app/layout.tsx` (ne pas toucher : root minimal), `app/not-found.tsx`, `src/components/layout/{Navbar,Footer,BrandLogo}.tsx`, `src/components/providers/ThemeProvider.tsx` | réécrits (T5) |
 | Jetons, polices | `app/globals.css` (744 l.), `src/design/brand.ts`, `src/design/fonts.ts`, `tailwind.config.ts` | réécrits (T3, T4) |
-| Catalogue | `src/components/home/{CatalogSection,CatalogToolbar,CatalogEmptyState,CatalogFilterDrawer}.tsx`, `useCatalogFilters.ts`, `useExtendedSearch.ts`, `src/components/features/{PerfumeCard,PerfumeCardSkeleton,PerfumeImage,PerfumeDialog,PerfumeLinkCard,FeaturedSection,Hero,SnapchatOrderButton,OrderChannels}.tsx`, `src/components/ui/{Button,Field,Icons,ScrollReveal,ChannelSoon}.tsx` | réécrits (T8–T13) |
+| Catalogue | `src/components/home/{CatalogSection,CatalogToolbar,CatalogEmptyState,CatalogFilterDrawer}.tsx`, `useCatalogFilters.ts`, `useExtendedSearch.ts`, `src/components/features/{PerfumeCard,PerfumeCardSkeleton,PerfumeImage,PerfumeDialog,PerfumeLinkCard,FeaturedSection,Hero,SnapchatOrderButton,OrderChannels}.tsx`, `src/components/ui/{Button,Field,Icons,ChannelSoon}.tsx` | réécrits (T8–T13) |
 | Pages | `app/(shop)/page.tsx`, `parfums/page.tsx`, `parfums/[marque]/page.tsx`, `parfums/[marque]/[parfum]/page.tsx`, `marque/page.tsx`, `contact/page.tsx`, `legal/page.tsx` ; `src/components/editorial/*`, `src/components/features/ContactForm.tsx` | réécrits (T14–T17) |
 | Images OG | `app/(shop)/opengraph-image.tsx`, `twitter-image.tsx`, `contact/`, `legal/`, `marque/` ; `app/(shop)/_og/` (police + logotype) | réécrits (T18) |
 | Données (lecture seule sauf T7) | `src/lib/catalog/{getCatalogPerfumes,perfumePresentation,seoCatalogue,discoveryOrder}.ts`, `src/lib/catalogue-service.ts`, `src/lib/data.ts`, `src/lib/search/*`, `src/lib/seo/paths.ts`, `src/lib/mentions.ts`, `src/lib/images/{loader,thumbnails}.ts`, `src/lib/motion/physics.ts`, `src/hooks/useSheetMotion.ts` | **inchangés**, sauf ajout des champs d'ambiance (T7) |
@@ -406,7 +406,7 @@ Modèle : Opus 5.5 ; effort `medium` sauf mention. `PC` = point de contrôle gé
 ### Phase 5 — mouvement et qualité
 
 **T18 — Mouvement** · M · Opus medium
-- Fichiers : `globals.css` (jetons déjà posés), `ScrollReveal.tsx` (entrée unique, cascade plafonnée), transitions de feuille, appui.
+- Fichiers : `globals.css` (jetons déjà posés), transitions de feuille, appui. `ScrollReveal.tsx` supprimé à T18 (code mort ; pas d'entrée au défilement) ; garde-fou : `tests/architecture/vitrine-mouvement.test.ts`.
 - Acceptation : trois passes (normal, ralenti ×4 dans les DevTools, `prefers-reduced-motion`) notées dans le commit ; aucune animation sur `width/height/top` (`grep` sur `transition:` et `@keyframes`) ; test au doigt sur téléphone (le gérant ou l'exécutant via aperçu).
 
 **T19 — Audit et Core Web Vitals** · M · Opus medium
