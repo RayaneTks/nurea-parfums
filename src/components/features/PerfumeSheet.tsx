@@ -43,8 +43,10 @@ const SWIPE_RATIO = 0.25;
 const SWIPE_VELOCITY = 300;
 
 const reduced = () => window.matchMedia(REDUCED_QUERY).matches;
-const cssMs = (name: string) =>
-  Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) || 0;
+const cssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const cssMs = (name: string) => Number.parseFloat(cssVar(name)) || 0;
+/** Courbe par défaut (§ B.7) ; un jeton vide ferait lever `animate()`. */
+const easeOut = () => cssVar("--ease-out") || "ease";
 
 /**
  * La fiche d'un parfum, en feuille depuis le bas, ouverte depuis la grille de l'accueil.
@@ -116,7 +118,7 @@ const SheetContent: FC<PerfumeSheetProps> = ({ perfume, sequence = [], onNavigat
         { transform: from, opacity: 0 },
         { transform: "none", opacity: 1 },
       ],
-      { duration: cssMs(reduced() ? "--dur-1" : "--dur-2"), easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
+      { duration: cssMs(reduced() ? "--dur-1" : "--dur-2"), easing: easeOut() }
     );
   }, [perfume.id]);
 
@@ -136,7 +138,7 @@ const SheetContent: FC<PerfumeSheetProps> = ({ perfume, sequence = [], onNavigat
       if (from === 0 || reduced()) return;
       body.animate([{ transform: `translateX(${from}px)` }, { transform: "none" }], {
         duration: cssMs("--dur-2"),
-        easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+        easing: easeOut(),
       });
     };
 
