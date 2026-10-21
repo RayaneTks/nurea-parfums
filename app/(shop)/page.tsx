@@ -12,7 +12,7 @@ import { pageOg, SITE_NAME } from "@/lib/site";
 /** Données via `getCachedCatalogue` (tag `public-catalogue`) — pas de HTML figé au build. */
 export const dynamic = "force-dynamic";
 
-/** Au-delà, la mise en avant éditoriale repousse le catalogue trop bas. */
+/** Au-delà, les vitrines repoussent le catalogue trop bas. */
 const MAX_FEATURED = 2;
 
 /**
@@ -48,19 +48,24 @@ export const metadata: Metadata = {
   openGraph: pageOg("/"),
 };
 
+/**
+ * Ce qui précède le catalogue (04-PLAN-EXECUTION.md § B.10, composition « Vitrine ») : la
+ * manchette, puis chaque parfum mis en avant posé sur un champ de sa couleur, puis le rayon des
+ * marques. La recherche, les filtres et les nouveautés sont dans la barre haute et le catalogue.
+ */
 export default async function HomePage() {
   const { perfumes, browseBrands } = await getCachedCatalogue();
   const featured = perfumes.filter((p) => p.isFeatured).slice(0, MAX_FEATURED);
   // Nouvel ordre à chaque visite, marques variées en tête — tiré ici, côté serveur (`discoveryOrder`).
   const catalogue = discoveryOrder(perfumes);
-  // Compteurs de la phrase de la maison et rayon des marques : comptés ici, sur le catalogue publié, rien d'autre.
+  // Compteurs de la manchette : comptés ici, sur le catalogue publié, rien d'autre.
   const brandCount = new Set(perfumes.map((p) => p.brandSlug ?? p.brand)).size;
 
   return (
     <>
-      <Masthead />
+      <Masthead perfumeCount={perfumes.length} brandCount={brandCount} />
 
-      <FeaturedSection perfumes={featured} perfumeCount={perfumes.length} brandCount={brandCount} />
+      <FeaturedSection perfumes={featured} />
 
       <BrandShelf brands={topBrands(perfumes)} />
 

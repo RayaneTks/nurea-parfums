@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { PerfumeCard } from "@/components/features/PerfumeCard";
 import { PerfumeSheet } from "@/components/features/PerfumeSheet";
-import { OPEN_PERFUME_EVENT, takePendingPerfume } from "@/components/features/FeaturedSection";
+import { OPEN_PERFUME_EVENT, takePendingPerfume } from "@/components/features/openPerfume";
 import { buttonClass } from "@/components/ui/Button";
 import { OPEN_CATALOG_FILTERS_EVENT, OPEN_SELECTION_EVENT, QUERY_SYNC_EVENT, SEARCH_EVENT } from "@/components/layout/Navbar";
 import { SelectionSheet } from "@/components/features/SelectionSheet";
