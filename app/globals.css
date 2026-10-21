@@ -21,33 +21,35 @@
 
 @layer base {
   /* ─── Primitifs ─────────────────────────────────────────────────────────
-     Neutres chauds teintés (teinte 20 → 70). Aucune autre couleur n'existe. */
+     Le couple Nuréa (21/10/2026) : en sombre, une nuit teintée bordeaux sous des encres ivoire et le
+     doré ; en clair, un papier ivoire sous une encre noir-bordeaux et le bordeaux. Le fond d'un thème
+     est de la famille d'encre de l'autre. Teintes : 20 (bordeaux) et 62 → 75 (ivoire, doré). */
   :root {
     /* Nuit — fonds du thème sombre */
-    --n-night-16: oklch(0.16 0.012 20); /* #120B0B */
-    --n-night-21: oklch(0.21 0.012 20); /* #1E1616 */
-    --n-night-26: oklch(0.26 0.012 20); /* #2A2222 */
-    --n-night-34: oklch(0.34 0.012 20); /* #3E3635 */
+    --n-night-16: oklch(0.16 0.02 20); /* #150A0A */
+    --n-night-21: oklch(0.21 0.019 20); /* #201515 */
+    --n-night-26: oklch(0.26 0.018 20); /* #2C2120 */
+    --n-night-34: oklch(0.34 0.016 22); /* #403534 */
     /* Brume — textes du thème sombre */
-    --n-mist-95: oklch(0.95 0.008 60); /* #F3EDE9 */
-    --n-mist-78: oklch(0.78 0.012 50); /* #BEB5B1 */
-    --n-mist-66: oklch(0.66 0.014 40); /* #9A908C */
+    --n-mist-95: oklch(0.95 0.016 75); /* #F5EDE3 */
+    --n-mist-78: oklch(0.78 0.022 70); /* #C1B5A9 */
+    --n-mist-66: oklch(0.66 0.024 65); /* #9D9083 */
     /* Jour — fonds du thème clair */
-    --n-day-975: oklch(0.975 0.006 70); /* #F9F6F2 */
-    --n-day-945: oklch(0.945 0.008 70); /* #F0ECE7 */
-    --n-day-91: oklch(0.91 0.01 65); /* #E6E0DB */
-    --n-day-84: oklch(0.84 0.012 60); /* #D1C9C3 */
+    --n-day-975: oklch(0.975 0.012 75); /* #FCF6EE */
+    --n-day-945: oklch(0.945 0.014 72); /* #F3ECE3 */
+    --n-day-91: oklch(0.91 0.016 68); /* #E9E0D6 */
+    --n-day-84: oklch(0.84 0.018 62); /* #D3C8BF */
     /* Encre — textes du thème clair */
-    --n-ink-22: oklch(0.22 0.012 20); /* #201818 */
-    --n-ink-42: oklch(0.42 0.014 20); /* #554A4A */
-    --n-ink-48: oklch(0.48 0.014 20); /* ≈ #655A5A */
+    --n-ink-22: oklch(0.22 0.025 20); /* #251616 */
+    --n-ink-42: oklch(0.42 0.03 20); /* #5D4746 */
+    --n-ink-48: oklch(0.48 0.03 20); /* #6E5757 */
     /* Erreur — formulaires seulement */
     --n-red-74: oklch(0.74 0.13 20); /* #F28788 */
     --n-red-50: oklch(0.5 0.16 20); /* #AC2F3B */
     /* Marque — les deux couleurs du monogramme Nuréa (décision du gérant, 21/10/2026) :
        le doré en thème sombre, le bordeaux en thème clair. */
-    --n-gold-70: oklch(0.704 0.081 63.4); /* #C4956A — 7,3:1 sur #120B0B */
-    --n-wine-46: oklch(0.458 0.111 22.5); /* #8B3A3A — 7,1:1 sur #F9F6F2 */
+    --n-gold-70: oklch(0.704 0.081 63.4); /* #C4956A — 7,3:1 sur #150A0A */
+    --n-wine-46: oklch(0.458 0.111 22.5); /* #8B3A3A — 7,1:1 sur #FCF6EE */
   }
 
   /* ─── Sémantiques : sombre ──────────────────────────────────────────── */
@@ -62,7 +64,7 @@
     --text-2: var(--n-mist-78); /* 9,7:1 bg · 7,7:1 surface-2 */
     --text-3: var(--n-mist-66); /* 6,3:1 bg · 5,0:1 surface-2 */
     --error: var(--n-red-74); /* 8,0:1 bg */
-    --focus: var(--text-1);
+    --focus: var(--accent); /* anneau clavier aux couleurs de marque : 7,3:1 bg · 5,8:1 surface-2 */
     --on-primary: var(--bg);
     --accent: var(--n-gold-70); /* couleur de marque : 7,3:1 bg · 5,8:1 surface-2 */
     --on-accent: var(--n-night-16); /* texte sur l'accent : 7,3:1 */
@@ -78,10 +80,10 @@
     --surface-2: var(--n-day-91);
     --line: var(--n-day-84); /* 1,52:1 — décoratif */
     --text-1: var(--n-ink-22); /* 16,2:1 bg · 13,3:1 surface-2 */
-    --text-2: var(--n-ink-42); /* 7,9:1 bg · 6,5:1 surface-2 */
-    --text-3: var(--n-ink-48); /* ≥ 5,9:1 bg · ≥ 4,9:1 surface-2 */
+    --text-2: var(--n-ink-42); /* 8,0:1 bg · 6,6:1 surface-2 */
+    --text-3: var(--n-ink-48); /* 6,2:1 bg · 5,1:1 surface-2 */
     --error: var(--n-red-50); /* 6,1:1 bg */
-    --focus: var(--text-1);
+    --focus: var(--accent); /* anneau clavier aux couleurs de marque : 7,1:1 bg · 5,8:1 surface-2 */
     --on-primary: var(--bg);
     --accent: var(--n-wine-46); /* couleur de marque : 7,1:1 bg · 5,8:1 surface-2 */
     --on-accent: var(--n-day-975); /* texte sur l'accent : 7,1:1 */
@@ -95,6 +97,10 @@
     --glass: color-mix(in oklch, var(--surface-1) 72%, transparent);
     --glass-solid: color-mix(in oklch, var(--surface-1) 96%, transparent);
     --primary-hover: color-mix(in oklch, var(--text-1) 90%, var(--bg));
+    /* Survol de l'accent : vers le texte du thème — plus clair en sombre, plus profond en clair. */
+    --accent-hover: color-mix(in oklch, var(--accent) 84%, var(--text-1));
+    /* Fond d'un état choisi (filtre actif) : l'accent à peine posé, le texte reste lisible dessus. */
+    --accent-wash: color-mix(in oklch, var(--accent) 14%, transparent);
 
     /* Espacement — base 4 px */
     --space-1: 0.25rem;
@@ -208,7 +214,7 @@
   }
 
   ::selection {
-    background-color: var(--surface-2);
+    background-color: color-mix(in oklch, var(--accent) 32%, var(--bg));
     color: var(--text-1);
   }
 }

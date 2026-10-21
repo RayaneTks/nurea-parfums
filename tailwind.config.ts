@@ -24,6 +24,8 @@ export default {
         line: "var(--line)",
         "fg-1": "var(--text-1)",
         accent: "var(--accent)",
+        "accent-hover": "var(--accent-hover)",
+        "accent-wash": "var(--accent-wash)",
         "on-accent": "var(--on-accent)",
         "fg-2": "var(--text-2)",
         "fg-3": "var(--text-3)",
