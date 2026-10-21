@@ -30,8 +30,8 @@ demande**.
 L'**ancienne charte (v3) est abandonnée**. Tout travail visuel sur la vitrine (`app/(shop)`,
 `src/components`, `app/globals.css`) suit **`docs/refonte-vitrine/`** : lire `00-LISEZ-MOI.md`, puis
 les invariants (01), le playbook (02) et la direction artistique (03). Ordre imposé : **document
-amont → planche montrée au gérant → code**. Tant que la phase 0 (choix de la DA) n'est pas faite, ne
-pas étendre l'ancien style (aucun nouveau composant dans l'ancienne charte).
+amont → planche montrée au gérant → code**. La refonte est **en ligne depuis le 22/10/2026** (T23) ;
+toute évolution visuelle part de `DESIGN.md` et de `docs/refonte-vitrine/REPRISE.md`.
 
 Le brief : une expérience premium, éditoriale, distincte des interfaces génériques et pensée
 d'abord pour le mobile ; examiner les parcours et les données réels, ne jamais inventer de faits
@@ -77,6 +77,7 @@ de zéro — le dossier pilote de la refonte est `docs/refonte/` (`00-README.md`
 | Tout sauf navigateur | `npm run verify` |
 | Invariants d'affichage | `npm run test:layout` |
 | Parcours de bout en bout | `npm run test:e2e` (dont `test:e2e:premiere`, PC-12 sur base vide) |
+| Parcours de la vitrine (sans base, iPhone + Android + bureau) | `npm run test:e2e:vitrine` (sur un build : `E2E_SERVER=start`) |
 | Reprise des données | `npm run migration:reprise` (`--dry-run` par défaut), `migration:reference`, `migration:verify`, `migration:sql` |
 | Retour arrière de la bascule | `npm run migration:instantane` (lecture seule), puis `npm run migration:rollback -- --instantane <dossier>` |
 | Répétition de bascule | `npm run repetition:refresh` (locale), `npm run repetition:preprod` (distante) |
@@ -293,8 +294,8 @@ Stratégie, attentes et suivi : `docs/SEO.md`. Gestes hors code : `docs/seo/INST
 ## Règles Vitrine
 
 **La référence est `DESIGN.md`** (DA « Nuancier nocturne », refonte décidée le 20/10/2026, chiffrée
-dans `docs/refonte-vitrine/04-PLAN-EXECUTION.md` § B). La refonte est en cours : tant qu'elle n'est
-pas en ligne, le code de production montre encore l'ancien rendu ; on ne l'étend pas. Les règles de
+dans `docs/refonte-vitrine/04-PLAN-EXECUTION.md` § B). La refonte est en ligne depuis le
+22/10/2026 ; l'ancien rendu n'existe plus. Les règles de
 **métier, de droit et de référencement** : `docs/refonte-vitrine/01-INVARIANTS.md`.
 
 Ce qui ne se discute pas :
