@@ -3,7 +3,7 @@
 import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "../../e2e",
-  testMatch: ["parcours/accueil-snapchat.spec.ts", "perfume-sheet.spec.ts", "selection.spec.ts", "catalog-filters.spec.ts"],
+  testMatch: ["parcours/accueil-snapchat.spec.ts", "perfume-sheet.spec.ts", "selection.spec.ts", "catalog-filters.spec.ts", "recherche-suggestions.spec.ts"],
   reporter: "line",
   use: { baseURL: "http://localhost:3000" },
   projects: [
