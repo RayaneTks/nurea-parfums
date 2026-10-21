@@ -128,6 +128,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 21/10 | refonte | **Logo complet dans la barre** (demande du gérant) : monogramme NP + nom, doré/ivoire en sombre, bordeaux/noir en clair, 40 px de haut, aussi au pied de page et sur la 404 (`a141675`, `refonte/vitrine`). |
 | 21/10 | refonte | **Couple Nuréa sur toute la vitrine** : fonds et encres retintés (sombre = nuit bordeaux + encres ivoire + doré ; clair = papier ivoire + encre bordeaux + bordeaux), contrastes inchangés ; accent sur bouton principal, focus, filtres actifs, cases, pastille, page en cours (`0133fc6`, `refonte/vitrine`). La gestion n'est pas touchée. |
 | 21/10 | refonte | **Couleur de marque Nuréa** (décision du gérant) : doré `#C4956A` en thème sombre, bordeaux `#8B3A3A` en thème clair — jetons `--accent`/`--on-accent`, logotype de la barre à ces couleurs (`c33c2fe`, `refonte/vitrine`) ; `DESIGN.md`, 03, 04, `PRODUCT.md`, `REPRISE.md`, `PROMPT-REPRISE.md` à jour. Usage dans l'accueil : prochaine session. |
 | 21/10 | refonte | **« À l'affiche » validé par le gérant** (« globalement ok »). Mémoire finalisée : `REPRISE.md` à jour, prompt de reprise `docs/refonte-vitrine/PROMPT-REPRISE.md`. Prochaine priorité : renforcer l'identité Nuréa sur l'accueil. |

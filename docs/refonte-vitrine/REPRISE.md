@@ -38,7 +38,7 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 | Section | État | Ce qui est en place |
 |---|---|---|
 | DA « Nuancier nocturne », Fraunces + Figtree, deux thèmes | **validé** (PC 1, 20/10) | jetons `globals.css` + `brand.ts` |
-| Couleur de marque : doré (sombre) / bordeaux (clair) | **décidé** (gérant, 21/10) ; en place : **couple Nuréa** sur toute la vitrine (fonds, encres, accent ; `0133fc6`), logotype de la barre, accent sur ce qui agit et ce qui est choisi (`DESIGN.md` § Couleurs) ; **présence de la marque dans la hero à concevoir** | `globals.css`, `brand.ts`, `BrandLogo.tsx` |
+| Couleur de marque : doré (sombre) / bordeaux (clair) | **décidé** (gérant, 21/10) ; en place : **couple Nuréa** sur toute la vitrine (fonds, encres, accent ; `0133fc6`), logo complet monogramme + nom dans la barre et le pied de page (`a141675`), accent sur ce qui agit et ce qui est choisi (`DESIGN.md` § Couleurs) ; **présence de la marque dans la hero à concevoir** | `globals.css`, `brand.ts`, `BrandLogo.tsx` |
 | Composants (boutons, cartes, champs, filtres, feuille, Ma sélection) | **validé** (PC 2–3) | `src/components/ui`, `PerfumeCard`, `PerfumeSheet`… — **ne pas les redessiner** |
 | Catalogue (grille, filtres, recherche, fiche, Snapchat 2 taps) | **validé** | `CatalogSection` et ses pièces |
 | Hero | **en cours** — base jugée bonne par le gérant, pas encore validée | photo du flacon Nuréa en fond ; titre puis « Voir le catalogue » + Snapchat en bouton rond 44 px sur une ligne, au-dessus et à gauche du flacon ; accroche « Le parfum que vous aimez, dans un flacon Nuréa. » (formulation du gérant, **non verrouillée**, avis juridique attendu) |
