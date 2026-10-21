@@ -47,23 +47,25 @@ export function topBrands<P extends ShelfPerfume>(perfumes: readonly P[], size =
  * « Marques » (04-PLAN-EXECUTION.md § B.10) : entrer par la marque, pas par le produit. Une tuile par
  * marque — son nom en `subtitle`, son nombre de parfums en `caption`, et dessous sa petite ligne de
  * flacons (trois miniatures 2:3 côte à côte) : on reconnaît la marque à sa collection, aucun produit
- * n'est mis en vedette. Toute la tuile mène à la page de la marque.
+ * n'est mis en vedette. Toute la tuile mène à la page de la marque ; « Toutes les marques » mène à
+ * l'index A→Z (`/parfums`).
  *
- * Langage des composants : tuile = carte (`--surface-1`, `--r-lg`, appui `--press`), miniatures au
- * rayon des petits éléments (`--r-sm`). 2 colonnes sur téléphone, 4 dès 768 px.
+ * Compacte : sur téléphone, **une seule rangée** qu'on fait glisser (2,2 tuiles visibles, calée sur la
+ * gouttière), pour ne pas repousser le catalogue ; dès 768 px, 4 colonnes. Langage des composants :
+ * tuile = carte (`--surface-1`, `--r-lg`, appui `--press`), miniatures `--r-sm`.
  */
 export const BrandShelf: FC<{ brands: BrandShelfEntry[] }> = ({ brands }) =>
   brands.length === 0 ? null : (
-    <section aria-labelledby="marques-titre" className="page-x mt-[var(--space-section)]">
-      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+    <section aria-labelledby="marques-titre" className="mt-[var(--space-section)]">
+      <div className="page-x mb-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
         <h2 id="marques-titre" className="t-title">
           Marques
         </h2>
         <Link href={CATALOGUE_PATH} className="press inline-flex min-h-11 items-center text-fg-2 underline-offset-4 decoration-1 mouse-hover:underline">
-          Toutes, de A à Z
+          Toutes les marques
         </Link>
       </div>
-      <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <ul className="marques">
         {brands.map((brand) => (
           <li key={brand.slug}>
             <Link

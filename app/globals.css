@@ -412,13 +412,21 @@
      Téléphone : la hero a le format 4:5 de la photo ; le titre sur le mur au-
      dessus du bouchon, les entrées à gauche du flacon, à hauteur de son corps.
      Dès 768 px : photo paysage, titre et entrées à gauche, centrés. */
+  /* Téléphone : la hero a le format exact de la photo (4:5). Le titre et les actions forment un seul
+     bloc : le bas du titre s'arrête au-dessus du bouchon (29 % de la hauteur — le bouchon commence à
+     30 % dans la photo, à toute largeur d'écran), les actions suivent, à gauche des épaules du flacon.
+     Le haut du mur et le sol à gauche du flacon restent libres. */
   .hero {
+    --hero-h: calc(100vw * 1.25);
     position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: calc(100vw * 1.25);
-    padding: var(--space-6) var(--gutter) var(--space-12);
+    display: grid;
+    grid-template-rows: calc(var(--hero-h) * 0.29) auto;
+    height: var(--hero-h);
+    padding-inline: var(--gutter);
+  }
+
+  .hero-titre {
+    align-self: end;
   }
 
   .hero-photo {
@@ -445,20 +453,27 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--space-2);
+    align-self: start;
+    gap: var(--space-1);
     max-width: 11.5rem;
+    margin-top: var(--space-6);
   }
 
   @media (min-width: 768px) {
     .hero {
+      display: flex;
+      flex-direction: column;
       justify-content: center;
       gap: var(--space-6);
+      height: auto;
       min-height: clamp(26rem, 50vh, 32rem);
       padding-block: var(--space-16);
       padding-inline: max(var(--gutter), (100% - var(--content-max)) / 2 + var(--gutter));
     }
 
+    /* En flex-colonne, `align-self: end` (bas de rangée sur téléphone) pousserait le titre à droite. */
     .hero-titre {
+      align-self: auto;
       max-width: 26rem;
     }
 
@@ -467,6 +482,7 @@
       align-items: center;
       gap: var(--space-6);
       max-width: none;
+      margin-top: 0;
     }
 
     .hero-photo {
@@ -490,52 +506,68 @@
   }
 
   /* ─── À l'affiche (`FeaturedSection`) ───────────────────────────────────
-     Un panneau par parfum, à sa couleur : visuel 2:3 à gauche, texte calé en
-     bas à droite. Téléphone : un seul à la fois (les puces choisissent), les
-     autres dans la même case, invisibles — aucune hauteur ne bouge. Dès
-     768 px : côte à côte, tous visibles. */
+     Diptyque asymétrique : le premier parfum sur 7 colonnes de 12, le second sur
+     5, décalé vers le bas (comme une double page). Dès 768 px, le même diptyque,
+     contenu dans 44 rem. */
   .affiche {
     display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--space-3);
+    align-items: start;
   }
 
-  .affiche-panneau {
-    grid-area: 1 / 1;
-    display: grid;
-    grid-template-columns: 9.5rem minmax(0, 1fr);
-    column-gap: var(--space-4);
-    align-items: end;
-    transition:
-      opacity var(--dur-2) var(--ease-out),
-      visibility var(--dur-2);
+  .affiche-a {
+    grid-column: 1 / span 7;
   }
 
-  .affiche-panneau:not([data-actif]) {
-    opacity: 0;
-    visibility: hidden;
+  .affiche-b {
+    grid-column: 8 / span 5;
+    margin-top: clamp(4.5rem, 24vw, 8rem);
   }
 
-  /* Image paresseuse d'un panneau masqué : pas chargée tant qu'on ne l'affiche pas (elle prenait le
-     débit de la photo de la hero, élément LCP). Dès 768 px, tous les panneaux sont visibles. */
-  @media (max-width: 767px) {
-    .affiche-panneau:not([data-actif]) img {
-      display: none;
-    }
+  .affiche-seul {
+    grid-column: 2 / span 10;
   }
 
   @media (min-width: 768px) {
     .affiche {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--space-6);
+      max-width: 44rem;
+      column-gap: var(--space-6);
     }
+  }
 
-    .affiche-panneau {
-      grid-area: auto;
-      grid-template-columns: 11rem minmax(0, 1fr);
-    }
+  /* ─── Marques (`BrandShelf`) ────────────────────────────────────────────
+     Téléphone : une rangée qu'on fait glisser, calée sur la gouttière, barre
+     de défilement masquée. Dès 768 px : 4 colonnes. */
+  .marques {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 10.5rem;
+    gap: var(--space-3);
+    padding-inline: var(--gutter);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
 
-    .affiche-panneau:not([data-actif]) {
-      opacity: 1;
-      visibility: visible;
+  .marques::-webkit-scrollbar {
+    display: none;
+  }
+
+  .marques > li {
+    scroll-snap-align: start;
+  }
+
+  @media (min-width: 768px) {
+    .marques {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      width: 100%;
+      max-width: calc(var(--content-max) + 2 * var(--gutter));
+      margin-inline: auto;
+      overflow: visible;
     }
   }
 
