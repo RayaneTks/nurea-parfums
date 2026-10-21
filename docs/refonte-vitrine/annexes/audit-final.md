@@ -87,7 +87,8 @@ Proposition A (sans aucune comparaison — publiable dès l'accord du gérant) :
 
 Proposition B (reprend l'accroche du H1 — attend l'avis juridique, comme le H1) :
 
-- titre (≈55 car.) : « Nuréa — Votre parfum, sans le prix des grandes marques »
+- titre (62 car.) : « Nuréa Parfums — Votre parfum, sans le prix des grandes marques » — le nom complet,
+  « Nuréa Parfums », jamais « Nuréa » seul dans le titre Google (gérant, 21/10) ; à la limite de coupure de Google
 - description : celle de A.
 
 « Marseille » reste dans la description seulement comme fait (remise en main propre), utile à la recherche
