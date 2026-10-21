@@ -44,6 +44,10 @@
     /* Erreur — formulaires seulement */
     --n-red-74: oklch(0.74 0.13 20); /* #F28788 */
     --n-red-50: oklch(0.5 0.16 20); /* #AC2F3B */
+    /* Marque — les deux couleurs du monogramme Nuréa (décision du gérant, 21/10/2026) :
+       le doré en thème sombre, le bordeaux en thème clair. */
+    --n-gold-70: oklch(0.704 0.081 63.4); /* #C4956A — 7,3:1 sur #120B0B */
+    --n-wine-46: oklch(0.458 0.111 22.5); /* #8B3A3A — 7,1:1 sur #F9F6F2 */
   }
 
   /* ─── Sémantiques : sombre ──────────────────────────────────────────── */
@@ -60,6 +64,8 @@
     --error: var(--n-red-74); /* 8,0:1 bg */
     --focus: var(--text-1);
     --on-primary: var(--bg);
+    --accent: var(--n-gold-70); /* couleur de marque : 7,3:1 bg · 5,8:1 surface-2 */
+    --on-accent: var(--n-night-16); /* texte sur l'accent : 7,3:1 */
     --shadow-float: 0 12px 32px -8px oklch(0 0 0 / 0.35);
     --glass-edge: oklch(1 0 0 / 0.06);
   }
@@ -77,6 +83,8 @@
     --error: var(--n-red-50); /* 6,1:1 bg */
     --focus: var(--text-1);
     --on-primary: var(--bg);
+    --accent: var(--n-wine-46); /* couleur de marque : 7,1:1 bg · 5,8:1 surface-2 */
+    --on-accent: var(--n-day-975); /* texte sur l'accent : 7,1:1 */
     --shadow-float: 0 12px 32px -8px oklch(0.2 0.01 20 / 0.18);
     --glass-edge: transparent;
   }

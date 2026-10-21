@@ -19,9 +19,14 @@ type ThemeTokens = {
   readonly text2: string;
   readonly text3: string;
   readonly error: string;
+  /** Couleur de marque (monogramme) : doré en sombre, bordeaux en clair. */
+  readonly accent: string;
 };
 
-/** Les jetons sémantiques des deux thèmes. Aucune autre couleur n'existe dans la vitrine. */
+/**
+ * Les jetons sémantiques des deux thèmes. Aucune autre couleur n'existe dans la vitrine, hormis l'ambiance
+ * de chaque parfum (calculée). `accent` : la couleur de marque Nuréa — doré en sombre, bordeaux en clair.
+ */
 export const VITRINE_THEMES: { readonly dark: ThemeTokens; readonly light: ThemeTokens } = {
   dark: {
     bg: "#120B0B",
@@ -32,6 +37,7 @@ export const VITRINE_THEMES: { readonly dark: ThemeTokens; readonly light: Theme
     text2: "#BEB5B1",
     text3: "#9A908C",
     error: "#F28788",
+    accent: "#C4956A",
   },
   light: {
     bg: "#F9F6F2",
@@ -42,6 +48,7 @@ export const VITRINE_THEMES: { readonly dark: ThemeTokens; readonly light: Theme
     text2: "#554A4A",
     text3: "#655A5A",
     error: "#AC2F3B",
+    accent: "#8B3A3A",
   },
 };
 

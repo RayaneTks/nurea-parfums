@@ -25,6 +25,8 @@ const THEMED = [
   "--error",
   "--focus",
   "--on-primary",
+  "--accent",
+  "--on-accent",
   "--shadow-float",
   "--glass-edge",
 ] as const;

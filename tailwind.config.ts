@@ -23,6 +23,8 @@ export default {
         "surface-2": "var(--surface-2)",
         line: "var(--line)",
         "fg-1": "var(--text-1)",
+        accent: "var(--accent)",
+        "on-accent": "var(--on-accent)",
         "fg-2": "var(--text-2)",
         "fg-3": "var(--text-3)",
         error: "var(--error)",

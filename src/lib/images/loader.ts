@@ -23,6 +23,9 @@ const LOCAL_VARIANTS: Readonly<Record<string, readonly Variant[]>> = {
   "/branding/logos/nurea-wordmark-black.webp": [
     { width: 640, src: "/branding/logos/nurea-wordmark-black-640.webp" },
   ],
+  // Logotype de la vitrine aux couleurs de marque (doré en sombre, bordeaux en clair).
+  "/branding/logos/nurea-wordmark-gold.webp": [{ width: 640, src: "/branding/logos/nurea-wordmark-gold-640.webp" }],
+  "/branding/logos/nurea-wordmark-bordeaux.webp": [{ width: 640, src: "/branding/logos/nurea-wordmark-bordeaux-640.webp" }],
   // Photo de la hero (flacon Nuréa) : portrait 1122 px avec sa déclinaison 640, paysage 1672 px avec sa 1280.
   "/branding/hero/flacon-portrait-sombre.webp": [{ width: 640, src: "/branding/hero/flacon-portrait-sombre-640.webp" }],
   "/branding/hero/flacon-portrait-clair.webp": [{ width: 640, src: "/branding/hero/flacon-portrait-clair-640.webp" }],
