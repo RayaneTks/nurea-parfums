@@ -5,7 +5,6 @@ import type { Perfume } from "@/lib/data";
 import { ambientStyle } from "@/lib/catalog/ambient";
 import { brandLineLabel } from "@/lib/catalog/perfumePresentation";
 import { perfumePath, slugify } from "@/lib/seo/paths";
-import { cn } from "@/lib/utils";
 import { openSheetFromLink, requestSheet } from "./openPerfume";
 import { PerfumeImage } from "./PerfumeImage";
 
@@ -15,15 +14,15 @@ interface FeaturedSectionProps {
 }
 
 /**
- * « À l'affiche » (04-PLAN-EXECUTION.md § B.10) : les deux vedettes de l'accueil, visibles ensemble dès
- * le téléphone, en diptyque asymétrique — le premier parfum sur 7 colonnes de 12, le second sur 5,
- * décalé vers le bas, comme une double page. Chaque visuel 2:3 (`--r-md`) est posé dans un passe-partout
- * à la couleur de son flacon (ambiance, § B.3.8 ; `--r-lg`, marge 8 px, repli `--surface-1`) ; dessous,
- * la marque puis le nom (`title` pour le premier, `subtitle` pour le second). Aucune interaction à faire
- * pour voir le second. Un seul parfum mis en avant : il occupe 10 colonnes.
+ * « À l'affiche » (04-PLAN-EXECUTION.md § B.10) : les deux vedettes de l'accueil, visibles ensemble, de
+ * même poids, chacune en **composition horizontale** — sa photographie entière (2:3, jamais recadrée :
+ * fidèle et reconnaissable quel que soit le parfum mis en avant) à gauche, bord à bord dans l'objet ; à
+ * droite, sur la couleur du flacon (ambiance, § B.3.8 ; repli `--surface-1`), la marque et le nom en
+ * `title`, calés en bas. Un seul objet arrondi (`--r-lg`). Empilées sur téléphone, côte à côte dès 768 px.
  *
- * Visuel et nom ouvrent la fiche en feuille, même touchés avant que le catalogue soit prêt ; le nom est
- * un vrai lien vers la page indexable du parfum.
+ * Ce qui la distingue du catalogue : le format horizontal, la photo sans passe-partout ni cœur, le nom à
+ * l'échelle `title` sur la couleur du parfum. Toute la photo ouvre la fiche en feuille, même touchée avant
+ * que le catalogue soit prêt ; le nom est un vrai lien vers la page indexable.
  */
 export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
   const shown = perfumes.slice(0, 2);
@@ -35,31 +34,23 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
         À l&apos;affiche
       </h2>
       <div className="affiche">
-        {shown.map((perfume, index) => {
+        {shown.map((perfume) => {
           const brandLine = brandLineLabel(perfume.brand, perfume.line);
           const href = perfumePath(perfume.brandSlug ?? slugify(perfume.brand), perfume.name, perfume.id);
           const titleId = `une-${perfume.id}`;
-          const first = index === 0;
           return (
-            <article
-              key={perfume.id}
-              aria-labelledby={titleId}
-              className={cn(shown.length === 1 ? "affiche-seul" : first ? "affiche-a" : "affiche-b")}
-            >
+            <article key={perfume.id} aria-labelledby={titleId} style={ambientStyle(perfume)} className="amb affiche-compo bg-ambient">
               <button
                 type="button"
                 onClick={() => requestSheet(perfume.id)}
                 aria-label={`Voir la fiche : ${perfume.name}, ${brandLine}`}
-                style={ambientStyle(perfume)}
-                className="amb press block w-full rounded-lg bg-ambient p-2"
+                className="affiche-photo relative block w-full overflow-hidden bg-surface-2"
               >
-                <span className="relative block aspect-[2/3] overflow-hidden rounded-md bg-surface-2">
-                  <PerfumeImage perfume={perfume} sizes={first ? "(min-width: 768px) 360px, 213px" : "(min-width: 768px) 260px, 160px"} />
-                </span>
+                <PerfumeImage perfume={perfume} sizes="(min-width: 768px) 25vw, 213px" />
               </button>
-              <div className="mt-3 flex min-w-0 flex-col gap-0.5 px-1">
+              <div className="affiche-legende">
                 <p className="t-body">{brandLine}</p>
-                <h3 id={titleId} className={cn(first ? "t-title" : "t-subtitle", "hyphens-auto [overflow-wrap:anywhere]")}>
+                <h3 id={titleId} className="affiche-nom t-title hyphens-auto [overflow-wrap:anywhere]">
                   <a href={href} onClick={openSheetFromLink(perfume.id)} className="underline-offset-[6px] decoration-1 mouse-hover:underline">
                     {perfume.name}
                   </a>
