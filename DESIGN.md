@@ -172,6 +172,13 @@ L'écran répond au doigt comme un objet. Moteur pur et testé :
 - On anime `transform`, `opacity`, `clip-path`, `background-color` ; jamais `width`, `height`,
   `top`. Jamais `transition: all`. Survol seulement sous `@media (hover: hover) and (pointer: fine)`.
 - **Mouvement réduit** : plus aucun déplacement ; fondus gardés à `--dur-1`.
+- **Ancres** : un lien vers un endroit de la page (« Voir le catalogue ») fait **glisser** la page
+  (`SmoothAnchors`, défilement natif doux), jamais un saut ; saut immédiat en mouvement réduit.
+- **Givre** (bouton des parfums de saison, demande du gérant, 22/10/2026) : seule exception décorative
+  du mouvement. Quand le bouton paraît, une gelée `--frost` (voile, cristaux en masque) se propage
+  depuis le flocon par `clip-path` à `--dur-4`, un reflet la traverse une fois, puis tout reste ; le
+  flocon tourne d'un sixième de tour (deux au survol souris). `--frost` : glace claire en sombre,
+  acier glacé en clair ; nulle part ailleurs.
 
 ## États (bouton primaire ; les autres composants suivent les mêmes règles)
 
@@ -192,6 +199,10 @@ une étiquette visible et son erreur dessous.
 
 ## Composants signature
 
+- **Parfums du moment** (accueil, entre « À l'affiche » et Marques) : titre de saison (`title`), la
+  sélection de `saison.ts` en cartes du catalogue, deux rangées repliées (4 / 6 / 8 cartes), puis le
+  bouton secondaire givré « Voir les *N* parfums » ↔ « Afficher moins » ; les cartes dévoilées entrent
+  en fondu, en cascade.
 - **Carte parfum** : visuel 2:3, puis la marque (`body`, `--text-2`, « Marque · Ligne »), puis le
   nom (`subtitle`, `--text-1`). Cœur « Ma sélection » 44 px en haut à droite du visuel. Pressée :
   fond d'ambiance. **Jamais de prix, jamais de contenance.**

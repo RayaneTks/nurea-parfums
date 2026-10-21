@@ -50,6 +50,9 @@
        le doré en thème sombre, le bordeaux en thème clair. */
     --n-gold-70: oklch(0.704 0.081 63.4); /* #C4956A — 7,3:1 sur #150A0A */
     --n-wine-46: oklch(0.458 0.111 22.5); /* #8B3A3A — 7,1:1 sur #FCF6EE */
+    /* Givre — le bouton des parfums de saison seulement (demande du gérant, 22/10/2026) */
+    --n-ice-86: oklch(0.86 0.05 230); /* #B0D8EC — 12,9:1 sur #150A0A */
+    --n-ice-50: oklch(0.5 0.08 235); /* #2E6A8A — 5,5:1 sur #FCF6EE */
   }
 
   /* ─── Sémantiques : sombre ──────────────────────────────────────────── */
@@ -70,6 +73,8 @@
     --on-accent: var(--n-night-16); /* texte sur l'accent : 7,3:1 */
     --shadow-float: 0 12px 32px -8px oklch(0 0 0 / 0.35);
     --glass-edge: oklch(1 0 0 / 0.06);
+    --frost: var(--n-ice-86); /* givre du bouton de saison */
+    --frost-cristaux: color-mix(in oklch, var(--n-ice-86) 70%, transparent);
   }
 
   /* ─── Sémantiques : clair ───────────────────────────────────────────── */
@@ -89,6 +94,8 @@
     --on-accent: var(--n-day-975); /* texte sur l'accent : 7,1:1 */
     --shadow-float: 0 12px 32px -8px oklch(0.2 0.01 20 / 0.18);
     --glass-edge: transparent;
+    --frost: var(--n-ice-50); /* givre du bouton de saison */
+    --frost-cristaux: color-mix(in oklch, var(--n-ice-50) 38%, transparent);
   }
 
   /* ─── Dérivés, échelles, mouvement (communs aux deux thèmes) ───────────
@@ -728,6 +735,134 @@
 
     .bandeau-miroir .bandeau-texte {
       padding-inline: var(--space-12) var(--space-8);
+    }
+  }
+
+  /* ─── Parfums du moment (`SeasonSection`) ───────────────────────────────
+     Repliée, la grille montre deux rangées : 4 cartes (2 col.), 6 (3 col.), 8 (4 col.).
+     Les cartes dévoilées entrent en fondu, en cascade courte. */
+  .saison[data-ouvert="false"] > li:nth-child(n + 5) {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .saison[data-ouvert="false"] > li:nth-child(n + 5) {
+      display: flex;
+    }
+
+    .saison[data-ouvert="false"] > li:nth-child(n + 7) {
+      display: none;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .saison[data-ouvert="false"] > li:nth-child(n + 7) {
+      display: flex;
+    }
+
+    .saison[data-ouvert="false"] > li:nth-child(n + 9) {
+      display: none;
+    }
+  }
+
+  .saison[data-ouvert="true"] > li:nth-child(n + 5) {
+    animation: enter var(--dur-4) var(--ease-out) backwards;
+  }
+
+  .saison[data-ouvert="true"] > li:nth-child(4n + 2) {
+    animation-delay: var(--stagger);
+  }
+
+  .saison[data-ouvert="true"] > li:nth-child(4n + 3) {
+    animation-delay: calc(var(--stagger) * 2);
+  }
+
+  .saison[data-ouvert="true"] > li:nth-child(4n) {
+    animation-delay: calc(var(--stagger) * 3);
+  }
+
+  /* ─── Bouton givré (demande du gérant, 22/10/2026) ───────────────────────
+     Deux couches derrière l'intitulé : un voile `--frost`, puis des cristaux
+     (motif SVG en masque, peint en `--frost`). Toutes deux se propagent depuis
+     le flocon par `clip-path` quand le bouton paraît (`data-gel`), et restent.
+     Le filet prend la couleur du givre ; au survol (souris), le flocon tourne
+     d'un sixième de tour. Rien ne bouge en mouvement réduit (`--dur-4` 0). */
+  .givre {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    transition:
+      transform var(--dur-1) var(--ease-out),
+      border-color var(--dur-4) var(--ease-out),
+      background-color var(--dur-2) var(--ease-out);
+  }
+
+  .givre::before,
+  .givre::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    clip-path: circle(0 at 2rem 50%);
+    transition: clip-path var(--dur-4) var(--ease-out);
+  }
+
+  .givre::before {
+    background-color: color-mix(in oklch, var(--frost) 16%, transparent);
+    /* L'éclat : un reflet `--frost` qui traverse le bouton une fois, quand il gèle. */
+    background-image: linear-gradient(
+      105deg,
+      transparent 35%,
+      color-mix(in oklch, var(--frost) 55%, transparent) 50%,
+      transparent 65%
+    );
+    background-size: 300% 100%;
+    background-position: 100% 0;
+    background-repeat: no-repeat;
+  }
+
+  .givre::after {
+    background-color: var(--frost-cristaux);
+    -webkit-mask: var(--givre-cristaux) 0 0 / 56px 28px repeat;
+    mask: var(--givre-cristaux) 0 0 / 56px 28px repeat;
+    --givre-cristaux: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 28' fill='none' stroke='%23000' stroke-width='.9' stroke-linecap='round'%3E%3Cpath d='M8 4v8M4.5 6l7 4M4.5 10l7-4M38 15v6M35.4 16.5l5.2 3M35.4 19.5l5.2-3M22 22l3 3M25 22l-3 3M48 4l2 2M50 4l-2 2M14 18h4M30 6h3'/%3E%3C/svg%3E");
+  }
+
+  .givre[data-gel]::before,
+  .givre[data-gel]::after {
+    clip-path: circle(160% at 2rem 50%);
+  }
+
+  .givre[data-gel] {
+    border-color: color-mix(in oklch, var(--frost) 70%, var(--line));
+  }
+
+  .givre[data-gel]::before {
+    animation: givre-eclat var(--dur-4) var(--ease-out) var(--dur-3) both;
+  }
+
+  @keyframes givre-eclat {
+    from {
+      background-position: 100% 0;
+    }
+    to {
+      background-position: 0 0;
+    }
+  }
+
+  .givre-flocon {
+    color: var(--frost);
+    transition: transform var(--dur-4) var(--ease-out);
+  }
+
+  .givre[data-gel] .givre-flocon {
+    transform: rotate(60deg);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .givre:hover .givre-flocon {
+      transform: rotate(120deg);
     }
   }
 

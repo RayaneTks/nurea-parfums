@@ -154,8 +154,11 @@ une feuille de style l'embarquerait dans les deux registres. Il lit l'en-tête
   jamais par une page.
 - `src/components/home/` — CatalogSection et ses pièces : `CatalogToolbar`,
   `CatalogEmptyState`, `CatalogFilterDrawer`, `useCatalogFilters`, `useExtendedSearch`.
-- `src/components/features/` — Hero, FeaturedSection, PerfumeCard, PerfumeSheet (fiche en feuille, `?parfum=<id>`),
-  PerfumeImage, ContactForm.
+- `src/components/features/` — Hero, FeaturedSection, SeasonSection (parfums du moment), PerfumeCard,
+  PerfumeSheet (fiche en feuille, `?parfum=<id>`), PerfumeImage, ContactForm.
+- `src/lib/catalog/saison.ts` — **la sélection de saison de l'accueil**, choisie à la main (identifiants
+  de parfums publiés, mois couverts). Hors des mois listés, pas de section ; une sélection est un choix,
+  jamais une note ni une famille olfactive affichée. Pour la changer : éditer ce fichier.
 - `src/components/editorial/` — briques des pages éditoriales (La parfumerie, Contact,
   Légal, 404) : `BottleMosaic`, `Chapters`, `OrderSteps`, `BrandIndex`, `Seal`,
   `FaqAccordion`, `Monogram`. Voir `DESIGN.md` § Pages éditoriales.

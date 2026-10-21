@@ -4,6 +4,7 @@ import "../globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { RootJsonLd } from "@/components/seo/JsonLd";
 import { ContentGuard } from "@/components/security/ContentGuard";
+import { SmoothAnchors } from "@/components/layout/SmoothAnchors";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import {
@@ -119,6 +120,7 @@ export default function ShopLayout({ children }: { children: ReactNode }) {
       </a>
       <RootJsonLd />
       <ContentGuard />
+      <SmoothAnchors />
       <ThemeProvider>
         <Navbar />
         <main id="main-content" className="flex-1">
