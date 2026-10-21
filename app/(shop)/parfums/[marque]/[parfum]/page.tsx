@@ -37,8 +37,8 @@ export async function generateMetadata({ params }: PerfumePageProps): Promise<Me
     title: `${perfume.line ? `${full} (${perfume.line})` : full} à Marseille`,
     description: `${perfume.name} de ${brand.name}${perfume.line ? `, gamme ${perfume.line},` : ""} chez ${SITE_NAME}, parfumerie à Marseille : au meilleur prix, remise en main propre à Marseille ou envoi en France. Prix et disponibilité sur Snapchat.`,
     alternates: { canonical: path },
-    // Le visuel du flacon, pas la vignette générique : c'est ce lien qu'on partage en story.
-    openGraph: { ...pageOg(path), images: [{ url: perfume.image, alt: `${brand.name} — ${perfume.name}` }] },
+    // L'image vient d'`opengraph-image.tsx` (visuel entier sur son ambiance) : c'est ce lien qu'on partage en story.
+    openGraph: pageOg(path),
   };
 }
 

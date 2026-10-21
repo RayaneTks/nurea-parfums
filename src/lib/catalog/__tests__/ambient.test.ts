@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ambientStyle, averageAmbient, deriveAmbient } from "../ambient";
+import { ambientStyle, averageAmbient, deriveAmbient, deriveAmbientHex } from "../ambient";
 
 type Derived = { oklch: string } | null;
 // Spécificateur élargi en `string` : TypeScript n'a pas de déclaration pour un `.mjs`, Vitest le charge.
@@ -67,5 +67,16 @@ describe("averageAmbient", () => {
     expect(averageAmbient([])).toBeNull();
     expect(averageAmbient([{ ambientHue: null, ambientChroma: null }])).toBeNull();
     expect(averageAmbient([{ ambientHue: 0, ambientChroma: 0.1 }, { ambientHue: 180, ambientChroma: 0.1 }])).toBeNull();
+  });
+});
+
+describe("deriveAmbientHex", () => {
+  it("donne le même fond que deriveAmbient, en hex (vignettes de partage)", () => {
+    expect(deriveAmbientHex("dark", 12, 0.152)).toMatch(/^#[0-9A-F]{6}$/);
+    for (const [hue, chroma] of [[12, 0.152], [334, 0.05], [90, 0.2]] as const) {
+      for (const theme of ["dark", "light"] as const) {
+        expect(deriveAmbientHex(theme, hue, chroma) === null).toBe(deriveAmbient(theme, hue, chroma) === null);
+      }
+    }
   });
 });

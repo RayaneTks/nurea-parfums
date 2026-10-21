@@ -46,17 +46,26 @@ const THEMES: Record<Theme, { L: number; k: number; cMin: number; cMax: number; 
   light: { L: 0.93, k: 0.35, cMin: 0.02, cMax: 0.05, step: +0.01, text1: oklchToRgb(0.22, 0.012, 20), text3: oklchToRgb(0.48, 0.014, 20) },
 };
 
-/** Fond d'ambiance d'un thème en `oklch()`, ou `null` si aucun pas ne tient le contraste (repli). */
-export function deriveAmbient(theme: Theme, hue: number, chroma: number): string | null {
+function pickAmbient(theme: Theme, hue: number, chroma: number): { L: number; C: number; rgb: Rgb } | null {
   const t = THEMES[theme];
   const C = Math.min(t.cMax, Math.max(t.cMin, chroma * t.k));
   for (let i = 0, L = t.L; i <= 5; i++, L += t.step) {
     const rgb = oklchToRgb(L, C, hue);
-    if (contrast(t.text1, rgb) >= 7 && contrast(t.text3, rgb) >= 4.5) {
-      return `oklch(${L.toFixed(2)} ${C.toFixed(3)} ${Math.round(hue)})`;
-    }
+    if (contrast(t.text1, rgb) >= 7 && contrast(t.text3, rgb) >= 4.5) return { L, C, rgb };
   }
   return null;
+}
+
+/** Fond d'ambiance d'un thème en `oklch()`, ou `null` si aucun pas ne tient le contraste (repli). */
+export function deriveAmbient(theme: Theme, hue: number, chroma: number): string | null {
+  const found = pickAmbient(theme, hue, chroma);
+  return found && `oklch(${found.L.toFixed(2)} ${found.C.toFixed(3)} ${Math.round(hue)})`;
+}
+
+/** Le même fond en hex, pour ce qui ne lit pas `oklch()` (`next/og`). */
+export function deriveAmbientHex(theme: Theme, hue: number, chroma: number): string | null {
+  const found = pickAmbient(theme, hue, chroma);
+  return found && `#${found.rgb.map((v) => v.toString(16).padStart(2, "0")).join("").toUpperCase()}`;
 }
 
 /**
