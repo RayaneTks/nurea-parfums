@@ -234,33 +234,31 @@ souligné au survol. **Un seul bouton primaire par écran.** Cibles ≥ 44 px (z
 
 ### B.10 Accueil : composition « Chambre » (Fable, 21/10/2026, troisième passage)
 
-> **Composition « Flacon », 21/10, après le retour du gérant sur mobile (`f93e624`).**
-> **Hero.** La photo du flacon Nuréa (`public/branding/hero/flacon-*`, déclinaisons dans `loader.ts`) est le
-> fond de toute la hero ; le sol se fond dans la page par le bas (masque 48 px, 64 dès 768), rien n'est
-> assombri. **Téléphone** : la hero a le format 4:5 de la photo (`min-height: 125vw`, 488 px à 390) ; le H1
-> (`title`, accroche provisoire « Le parfum que vous aimez, dans un flacon Nuréa. ») se pose sur le mur
-> au-dessus du bouchon (137→201 à 390), les entrées — `Button` plein « Voir le catalogue », lien
-> « Commander sur Snapchat » sur deux lignes — dans l'espace à gauche du flacon, à hauteur de son corps
-> (444→553, ≤ 11,5 rem) : le texte entoure l'objet. Aucune ligne secondaire. « À l'affiche » commence à 649 :
-> titre et puces dans le premier écran. **≥ 768 px** : photo paysage, titre (≤ 26 rem ; 30 dès 1024) puis
-> entrées en ligne, à gauche, centrés ; hauteurs `clamp(26rem, 50vh, 32rem)` puis `clamp(32rem, 80vh,
-> 48rem)`, réglées pour garder le flacon à droite du texte.
-> **À l'affiche.** Un panneau par parfum, à sa couleur (`bg-ambient`, `--r-lg`, p-2) : visuel 2:3 `--r-md`
-> (9,5 rem ; 11 dès 768) à gauche, et calés en bas à droite la marque (`body`), le nom (`title`, lien vers la
-> page indexable) et le `Button` secondaire « Voir la fiche ». **Téléphone** : un seul panneau à la fois ; les
-> puces du catalogue (`CHIP`), au nom de chaque parfum, le choisissent ; les panneaux partagent une case
-> (aucune hauteur ne bouge), l'inactif est masqué (`visibility`) et son image ne se charge qu'à son
-> affichage ; fondu `--dur-2`. **≥ 768 px** : côte à côte, sans puces.
-> **Marques.** Une tuile par marque (langage carte : `--surface-1`, `--r-lg`, appui `--press`) — nom en
-> `subtitle`, « *n* parfums » en `caption`, et sa petite ligne de trois flacons (miniatures 2:3 `--r-sm`,
-> premiers parfums dans l'ordre de découverte) ; 2 colonnes, 4 dès 768. Les miniatures ne partent
-> qu'après le chargement de la page (`BrandLineup`) : chargées d'emblée, elles prenaient le débit de la
-> photo de la hero. Une couleur moyenne par marque a été essayée et écartée : 7 marques sur 8 tombaient
-> dans l'ambre (42°–55°), des tuiles toutes brunes.
-> **Mesures** (build webpack, profil T9, Pixel 7) : LCP **1 488 ms sombre / 1 076 ms clair** (photo de la
-> hero), CLS 0 ; e2e accueil 8/8 ; 320 / 390 / 768 / 1280, deux thèmes, aucun débordement.
-> **Bascule clair/sombre** : des images bougent parce que **les fichiers** sont décalés, pas le CSS — 29
-> paires de visuels de parfums et les photos de la hero : `annexes/alignement-clair-sombre.md`.
+> **Composition « Flacon », 21/10, troisième retour du gérant sur mobile (`35ecbc6`).**
+> **Hero.** La photo du flacon Nuréa (`public/branding/hero/flacon-*`) est le fond de toute la hero ; le sol
+> se fond dans la page par le bas (masque), rien n'est assombri. **Téléphone** : hauteur = format de la
+> photo (`125vw`) ; grille à deux rangées, la première haute de **29 %** — le bouchon commence à 30 % dans la
+> photo, à toute largeur — : le titre (`title`, accroche provisoire « Le parfum que vous aimez, dans un
+> flacon Nuréa. ») est calé en bas de cette rangée, juste au-dessus du bouchon ; les actions (`Button` plein
+> « Voir le catalogue », lien « Commander sur Snapchat », ≤ 11,5 rem) suivent à 24 px, à gauche des épaules
+> du flacon. **Un seul bloc** titre + actions, le flacon en diagonale ; haut du mur et sol libres. À 390 :
+> titre 190→254, actions 278→383, hero 113→601. **≥ 768 px** : photo paysage, titre (≤ 26 rem ; 30 dès 1024)
+> puis actions en ligne, à gauche, centrés verticalement.
+> **À l'affiche.** Les deux vedettes visibles ensemble, sans interaction : **diptyque asymétrique** sur 12
+> colonnes — le premier parfum sur 7 (nom en `title`), le second sur 5, décalé vers le bas de
+> `clamp(4.5rem, 24vw, 8rem)` (nom en `subtitle`), comme une double page. Chaque visuel 2:3 `--r-md` dans un
+> passe-partout `--r-lg` (marge 8 px) à la couleur de son flacon ; marque puis nom dessous. Un seul parfum :
+> 10 colonnes. ≥ 768 px : même diptyque, contenu dans 44 rem.
+> **Marques.** Tuiles en langage carte — nom (`subtitle`), « *n* parfums », la petite ligne de trois flacons
+> de la marque (chargés après la page, `BrandLineup`). **Téléphone : une seule rangée qu'on fait glisser**
+> (10,5 rem par tuile, 2,2 visibles, calée sur la gouttière) ; 4 colonnes dès 768. « Toutes les marques » →
+> `/parfums` (index A→Z existant).
+> **Parcours à 390** : hero 113→601, « À l'affiche » 649→≈ 1 090, Marques 1 139→1 380, **catalogue à 1 428**.
+> **Mesures** (build webpack, profil T9, Pixel 7) : LCP **1 616 ms sombre / 1 072 ms clair**, CLS 0 ; e2e
+> accueil 8/8 ; 320 / 390 / 430 / 768 / 1280, clair et sombre, aucun débordement.
+> Écartés le 21/10 : onglets pour « À l'affiche » (le second parfum caché), tuiles de marque à la couleur
+> moyenne (toutes ambrées), huit grandes tuiles empilées (catalogue repoussé à 2 765 px).
+> **Bascule clair/sombre** : décalages venus des fichiers, `annexes/alignement-clair-sombre.md`.
 
 
 **Historique.** Planche v1 (`cee4774`, 20/10) : « beaucoup trop cheap ». Planche v2 (`cf5e272`, 21/10) :

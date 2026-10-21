@@ -191,15 +191,14 @@ une étiquette visible et son erreur dessous.
   sur le cœur de la barre, feuille qui liste les parfums et un bouton « Commander ces N parfums sur
   Snapchat » qui compose un seul message. Aucun compte, aucune écriture serveur.
 - **Accueil** : composition **« Flacon »** (21/10/2026, `04-PLAN-EXECUTION.md` § B.10). **Hero** : la
-  photographie du flacon Nuréa est le fond de toute la hero, en deux lumières (sombre / clair) et deux
-  cadrages (portrait sur téléphone, paysage dès 768 px) ; le sol se fond dans la page, rien n'est assombri.
-  Sur téléphone, le titre (l'accroche, en `title`) se pose sur le mur au-dessus du flacon et les entrées
-  (`Button` plein « Voir le catalogue », lien « Commander sur Snapchat ») dans l'espace à sa gauche : le
-  texte entoure l'objet. **À l'affiche** : un panneau à la couleur du flacon (visuel, marque, nom,
-  « Voir la fiche ») ; sur téléphone, les puces du catalogue choisissent le parfum ; côte à côte dès
-  768 px. **Marques** : tuiles en langage carte, nom, nombre de parfums et la petite ligne de trois flacons
-  de la marque ; aucune vedette. Puis le catalogue. Composants et arrondis du design system inchangés ;
-  aucun surtitre, compteur décoratif ni texte qui défile ; une seule entrée animée.
+  photographie du flacon Nuréa est le fond de toute la hero, en deux lumières et deux cadrages ; rien
+  n'est assombri. Sur téléphone, le titre (l'accroche, en `title`) et les actions (`Button` plein « Voir le
+  catalogue », lien « Commander sur Snapchat ») forment un seul bloc, au-dessus et à gauche du flacon.
+  **À l'affiche** : les deux vedettes ensemble, en diptyque asymétrique (7 et 5 colonnes, le second
+  décalé vers le bas), chaque visuel dans un passe-partout à la couleur de son flacon. **Marques** : une
+  rangée de tuiles qu'on fait glisser (nom, nombre de parfums, trois flacons de la marque), 4 colonnes dès
+  768 px, et « Toutes les marques ». Puis le catalogue. Composants et arrondis du design system
+  inchangés ; aucun onglet, surtitre, compteur décoratif ni texte qui défile ; une seule entrée animée.
 
 ## Fiche produit
 
