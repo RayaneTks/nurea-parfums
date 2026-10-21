@@ -199,7 +199,7 @@ une étiquette visible et son erreur dessous.
   marque : la hero appartient à Nuréa, pas aux parfums à l'affiche (`public/branding/hero/`,
   `docs/refonte-vitrine/annexes/hero-chambre.md`). Téléphone : le texte, puis le visuel 3:2 ancré en
   bas ; bureau : texte à gauche, visuel 4:5 à droite. Puis **« À l'affiche »** (les deux parfums mis en
-  avant, compacts, côte à côte, légende sur leur couleur), le **rayon des marques** (les 8 plus fournies,
+  avant, compacts, côte à côte, en cartes du catalogue), le **rayon des marques** (les 8 plus fournies,
   chacune montrée par un de ses flacons), le catalogue, le pied de page. Mouvement : entrée à l'arrivée,
   une fois, en cascade ; rien d'autre. Jamais de photo assombrie ni de texte sur photo, un seul bouton
   plein par écran, aucune fonction dupliquée (recherche, filtres, nouveautés restent dans la barre et le
