@@ -74,7 +74,7 @@ export const Hero: FC = () => {
           Nurae), et « Nuréa, votre parfum » dit que le parfum est le nôtre, pas celui d'une marque vendu moins cher.
           Avis juridique attendu : elle compare le prix aux grandes marques. */}
       <h1 id="accueil-titre" className="hero-titre t-title enter">
-        Nuréa, votre parfum <br />
+        <span className="text-accent">Nuréa</span>, votre parfum <br />
         sans le prix des grandes&nbsp;marques.
       </h1>
       <div className="hero-entrees enter">
