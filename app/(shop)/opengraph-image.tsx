@@ -1,146 +1,17 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
-import { ImageResponse } from "next/og";
-import { VITRINE_THEMES } from "@/design/brand";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { OG_ALT_SITE, OG_CONTENT_TYPE, OG_SIZE, vignetteSite } from "./_og/vignettes";
 
 /**
- * Node plutôt qu'edge : la vignette embarque le logotype et une police, soit
- * ~250 Ko d'octets. L'image est mise en cache par Vercel et par les robots des
- * messageries — elle n'est calculée qu'une fois, la latence d'un démarrage à
- * froid n'a aucune importance ici, et on gagne de la marge sur le poids.
+ * Vignette de partage du site (T17) — rendu et choix dans `_og/vignettes.tsx`.
+ *
+ * Node plutôt qu'edge : la vignette lit sur disque le logotype, la photo et la police. Elle est
+ * mise en cache par Vercel et par les robots des messageries : la latence d'un démarrage à froid
+ * ne compte pas.
  */
 export const runtime = "nodejs";
+export const alt = OG_ALT_SITE;
+export const size = OG_SIZE;
+export const contentType = OG_CONTENT_TYPE;
 
-export const alt = `${SITE_NAME} — catalogue de parfums de grandes marques, Marseille`;
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
-
-const domain = SITE_URL.replace(/^https?:\/\//, "");
-
-/**
- * Vignette de partage — ce que voient iMessage, WhatsApp et Snapchat.
- *
- * La version précédente composait le nom en Georgia sur fond noir, sans le
- * moindre élément de marque. Le résultat était juste : du texte. Or cette
- * image est souvent le PREMIER contact avec la maison — le lien se partage en
- * message privé bien avant qu'on visite le site — et une vignette sans logo
- * fait douter du sérieux de la boutique.
- *
- * Deux décisions portent le reste :
- *
- *   LE LOGOTYPE PLUTÔT QUE DU TEXTE. Le monogramme et le mot « NURÉA » sont
- *   dessinés, pas composés : les reconstituer avec une police approchante
- *   donnait un faux. On embarque donc l'image réelle, réduite à 1520 px de
- *   large (59 Ko) — deux fois sa taille d'affichage, pour rester net sur les
- *   écrans à haute densité.
- *
- *   LA POLICE DE TITRE POUR LE RESTE. Fraunces (instance statique 500) porte les deux
- *   lignes de texte. Sans elle, `next/og` compose en Noto Sans, une neutre
- *   correcte mais étrangère à la marque — le détail se voit quand la vignette
- *   arrive à côté du logotype, qui lui est juste.
- *
- * Composition : cadre au filet 1 px, logotype centré, filet court, ligne de
- * positionnement, domaine. Angles vifs et aucune ombre, comme partout
- * ailleurs — voir DESIGN.md § 02.
- */
-export default async function OpenGraphImage() {
-  /*
-   * Lecture disque plutot que `fetch(new URL(..., import.meta.url))`.
-   *
-   * Ce second motif circule beaucoup, mais il ne marche pas ici : le bundler
-   * reecrit l'URL en chemin statique relatif — « /_next/static/media/… » — que
-   * `fetch` refuse faute d'origine, et la route rend un 500. La lecture par
-   * `process.cwd()` est le motif documente par Next pour les ressources
-   * locales d'une image OG, et Next la suit pour embarquer les fichiers dans
-   * la fonction deployee.
-   */
-  const dossier = join(process.cwd(), "app", "(shop)", "_og");
-  const [logotype, titre] = await Promise.all([
-    readFile(join(dossier, "logotype.png")),
-    readFile(join(dossier, "Fraunces-Medium.ttf")),
-  ]);
-
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          display: "flex",
-          height: "100%",
-          width: "100%",
-          padding: 40,
-          background: VITRINE_THEMES.dark.bg,
-          fontFamily: "Fraunces",
-        }}
-      >
-        {/* Cadre au filet 1 px — la charte sépare au filet, jamais à l'ombre. */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            flex: 1,
-            border: `1px solid ${VITRINE_THEMES.dark.line}`,
-          }}
-        >
-          {/* `next/og` ne rend que des balises HTML : `next/image` n'y existe pas. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={Uint8Array.from(logotype).buffer as unknown as string}
-            alt=""
-            width={720}
-            height={153}
-            style={{ objectFit: "contain" }}
-          />
-
-          <div
-            style={{
-              height: 1,
-              width: 108,
-              marginTop: 54,
-              background: VITRINE_THEMES.dark.line,
-            }}
-          />
-
-          <div
-            style={{
-              marginTop: 34,
-              fontSize: 23,
-              letterSpacing: "0.26em",
-              textTransform: "uppercase",
-              color: VITRINE_THEMES.dark.text3,
-            }}
-          >
-            Sélection de grandes marques
-          </div>
-
-          <div
-            style={{
-              marginTop: 18,
-              fontSize: 27,
-              letterSpacing: "0.04em",
-              color: VITRINE_THEMES.dark.text2,
-            }}
-          >
-            {/* Une seule chaine : deux noeuds enfants obligeraient a poser un
-                display:flex sur ce div, que le moteur exige des qu'il y en a
-                plus d'un. */}
-            {`${domain} · Marseille`}
-          </div>
-        </div>
-      </div>
-    ),
-    {
-      ...size,
-      fonts: [
-        {
-          name: "Fraunces",
-          data: Uint8Array.from(titre).buffer,
-          weight: 500,
-          style: "normal",
-        },
-      ],
-    },
-  );
+export default function OpenGraphImage() {
+  return vignetteSite();
 }
