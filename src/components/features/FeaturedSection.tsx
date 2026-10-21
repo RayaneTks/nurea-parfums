@@ -1,11 +1,10 @@
 "use client";
 
-import type { CSSProperties, FC } from "react";
+import type { FC } from "react";
 import type { Perfume } from "@/lib/data";
 import { ambientStyle } from "@/lib/catalog/ambient";
 import { brandLineLabel } from "@/lib/catalog/perfumePresentation";
 import { perfumePath, slugify } from "@/lib/seo/paths";
-import { cn } from "@/lib/utils";
 import { openSheetFromLink, requestSheet } from "./openPerfume";
 import { PerfumeImage } from "./PerfumeImage";
 
@@ -15,56 +14,47 @@ interface FeaturedSectionProps {
 }
 
 /**
- * Les vitrines de l'accueil (04-PLAN-EXECUTION.md § B.10, composition « Vitrine ») : chaque parfum
- * mis en avant est un **objet posé sur un champ de sa couleur**. Le champ — l'ambiance du parfum
- * (§ B.3.8 ; repli `--surface-1`), bord à bord — commence sous le haut du visuel, que l'on voit
- * donc déborder : deux rectangles qui se recouvrent, le visuel décalé vers la droite, pas une
- * affiche collée. Sur le champ, la marque en `body`, puis le nom du parfum en `display` : c'est
- * lui, le grand format typographique de la page. La seconde vitrine est en miroir.
- *
- * Visuel et nom ouvrent la fiche en feuille, même touchés avant que le catalogue soit prêt (la
- * demande attend). Le nom est un vrai lien vers la page indexable du parfum : sans JavaScript, ou
- * par un clic modifié (nouvel onglet), il y mène. Le premier visuel est l'élément LCP de la page,
- * préchargé pour le thème du système.
+ * « À l'affiche » (04-PLAN-EXECUTION.md § B.10, composition « Chambre ») : les parfums que la
+ * gestion met en avant, après la hero, en format compact et éditorial — les deux côte à côte dès le
+ * téléphone, chacun : son visuel 2:3, puis sa légende (marque, nom) sur un bandeau à la couleur de
+ * son flacon (ambiance, § B.3.8 ; repli `--surface-1`). Visuel et nom ouvrent la fiche en feuille,
+ * même touchés avant que le catalogue soit prêt (la demande attend) ; le nom est un vrai lien vers
+ * la page indexable du parfum.
  */
-export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => (
-  <>
-    {perfumes.slice(0, 2).map((perfume, index) => {
-      const brandLine = brandLineLabel(perfume.brand, perfume.line);
-      const href = perfumePath(perfume.brandSlug ?? slugify(perfume.brand), perfume.name, perfume.id);
-      const titleId = `une-${perfume.id}`;
-      return (
-        <section
-          key={perfume.id}
-          aria-labelledby={titleId}
-          style={ambientStyle(perfume)}
-          className={cn("amb vitrine", index % 2 === 1 && "vitrine-miroir")}
-        >
-          <div className="vitrine-champ enter" aria-hidden="true" />
-          <div className="vitrine-cadre">
-            <button
-              type="button"
-              onClick={() => requestSheet(perfume.id)}
-              aria-label={`Voir la fiche : ${perfume.name}, ${brandLine}`}
-              className="vitrine-visuel enter-visuel relative block overflow-hidden bg-surface-2"
-              style={{ "--enter-delay": "60ms" } as CSSProperties}
-            >
-              {/* Téléphone : « 213px » et non la largeur réelle, voulu. Un écran dense (×2,6 à ×3)
-                  demanderait l'original 1 024 px (105 Ko) ; 213 × 3 = 639 lui fait prendre la vignette
-                  640 (44 Ko), affichée sur 282 px — l'élément LCP de la page. */}
-              <PerfumeImage perfume={perfume} sizes="(min-width: 1024px) 320px, (min-width: 768px) 213px, 213px" preloadByTheme={index === 0} />
-            </button>
-            <div className="vitrine-legende enter" style={{ "--enter-delay": "140ms" } as CSSProperties}>
-              <p className="t-body">{brandLine}</p>
-              <h2 id={titleId} className="t-display hyphens-auto [overflow-wrap:anywhere]">
-                <a href={href} onClick={openSheetFromLink(perfume.id)} className="underline-offset-[8px] decoration-1 mouse-hover:underline">
-                  {perfume.name}
-                </a>
-              </h2>
-            </div>
-          </div>
-        </section>
-      );
-    })}
-  </>
-);
+export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) =>
+  perfumes.length === 0 ? null : (
+    <section aria-labelledby="affiche-titre" className="page-x mt-[var(--space-section)]">
+      <h2 id="affiche-titre" className="t-title mb-4">
+        À l&apos;affiche
+      </h2>
+      <ul className="affiche">
+        {perfumes.slice(0, 2).map((perfume) => {
+          const brandLine = brandLineLabel(perfume.brand, perfume.line);
+          const href = perfumePath(perfume.brandSlug ?? slugify(perfume.brand), perfume.name, perfume.id);
+          const titleId = `une-${perfume.id}`;
+          return (
+            <li key={perfume.id}>
+              <article aria-labelledby={titleId} style={ambientStyle(perfume)} className="amb overflow-hidden rounded-md">
+                <button
+                  type="button"
+                  onClick={() => requestSheet(perfume.id)}
+                  aria-label={`Voir la fiche : ${perfume.name}, ${brandLine}`}
+                  className="affiche-visuel relative block w-full bg-surface-2"
+                >
+                  <PerfumeImage perfume={perfume} sizes="(min-width: 1024px) 400px, 213px" />
+                </button>
+                <div className="affiche-legende bg-ambient">
+                  <p className="t-caption">{brandLine}</p>
+                  <h3 id={titleId} className="t-subtitle hyphens-auto [overflow-wrap:anywhere]">
+                    <a href={href} onClick={openSheetFromLink(perfume.id)} className="underline-offset-[6px] decoration-1 mouse-hover:underline">
+                      {perfume.name}
+                    </a>
+                  </h3>
+                </div>
+              </article>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );

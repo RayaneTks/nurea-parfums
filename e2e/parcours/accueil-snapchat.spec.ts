@@ -2,10 +2,11 @@ import { test, expect, type Page } from "@playwright/test";
 import { countTaps } from "../helpers/tap";
 
 /**
- * Accueil de la vitrine (04-PLAN-EXECUTION § T15, composition A) : depuis l'arrivée, message
- * Snapchat prêt en 4 taps au plus — attendu : 2, le visuel du premier parfum mis en avant, puis
- * « Commander sur Snapchat » dans la fiche. Vérifie aussi le H1 unique et l'absence de modale à
- * l'arrivée. Catalogue de démonstration (aucune base) : deux parfums y sont mis en avant.
+ * Accueil de la vitrine (04-PLAN-EXECUTION § B.10, composition « Chambre ») : depuis l'arrivée,
+ * message Snapchat prêt en 4 taps au plus — attendu : 2, le visuel du premier parfum à l'affiche
+ * (un défilement, pas un tap), puis « Commander sur Snapchat » dans la fiche. Vérifie aussi le H1
+ * unique, les deux entrées de la hero et l'absence de modale à l'arrivée. Catalogue de démonstration
+ * (aucune base) : deux parfums y sont mis en avant.
  */
 
 const sheet = (page: Page) => page.getByRole("dialog").filter({ has: page.locator("h2") });
@@ -32,14 +33,20 @@ test.describe("Accueil : Snapchat depuis l'arrivée", () => {
     await expect(h1).toContainText("Nuréa Parfums");
     await expect(h1).toContainText("Marseille");
     await expect(page.getByRole("dialog")).toHaveCount(0);
+    /* Les deux entrées de la hero, visibles dès l'arrivée : le catalogue, et Snapchat pour qui sait déjà. */
+    await expect(page.getByRole("link", { name: "Voir le catalogue" })).toBeInViewport();
+    const write = page.getByRole("link", { name: "Commander sur Snapchat" }).first();
+    await expect(write).toBeInViewport();
+    await expect(write).toHaveAttribute("href", /snapchat\.com/);
   });
 
   test("message prêt en deux taps : le visuel mis en avant, puis Snapchat", async ({ page }) => {
     await home(page);
     const taps = countTaps(page);
     const visual = page.getByRole("button", { name: /^Voir la fiche : / }).first();
+    await visual.scrollIntoViewIfNeeded();
     await expect(visual).toBeInViewport();
-    const featured = (await page.locator("section[aria-labelledby^='une-'] h2").first().innerText()).trim();
+    const featured = (await page.locator("article[aria-labelledby^='une-'] h3").first().innerText()).trim();
 
     /* Un seul tap, même pendant l'hydratation : la demande attend que le catalogue soit prêt. */
     await taps.tap(visual, "visuel mis en avant");
@@ -63,7 +70,7 @@ test.describe("Accueil : Snapchat depuis l'arrivée", () => {
   test("un tap avant que la page soit prête ouvre quand même la fiche", async ({ page }) => {
     await home(page, "commit");
     const visual = page.getByRole("button", { name: /^Voir la fiche : / }).first();
-    /* Le bandeau est branché (React l'a hydraté) ; le catalogue, plus bas, peut ne pas l'être encore. */
+    /* L'affiche est branchée (React l'a hydrée) ; le catalogue, plus bas, peut ne pas l'être encore. */
     await expect
       .poll(() => visual.evaluate((el) => Object.keys(el).some((key) => key.startsWith("__reactProps"))), { timeout: 20_000 })
       .toBe(true);
@@ -74,7 +81,7 @@ test.describe("Accueil : Snapchat depuis l'arrivée", () => {
 
   test("le nom mis en avant ouvre la même fiche, sans quitter l'accueil", async ({ page }) => {
     await home(page);
-    const name = page.locator("section[aria-labelledby^='une-'] h2 a").first();
+    const name = page.locator("article[aria-labelledby^='une-'] h3 a").first();
     await expect(name).toHaveAttribute("href", /^\/parfums\/[^/]+\/[^/]+-\d+$/);
     await name.click();
     await expect(sheet(page)).toBeVisible({ timeout: 10_000 });
