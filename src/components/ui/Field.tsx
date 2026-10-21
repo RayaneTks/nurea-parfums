@@ -1,7 +1,15 @@
-"use client";
 
 import type { FC } from "react";
 import { cn } from "@/lib/utils";
+
+/**
+ * L'habit d'un champ de saisie de la vitrine : celui du champ de recherche de la barre haute
+ * (`SearchBox`), validé — `--surface-1`, filet `--line`, `--r-md`, 48 px. L'erreur passe le filet à
+ * `--error` par `aria-invalid` : l'état vu et l'état annoncé ne peuvent pas diverger. Exporté pour
+ * les champs qui ne passent pas par `Field` (la recherche de la page 404, sans JavaScript).
+ */
+export const FIELD_CLASS =
+  "min-h-12 w-full rounded-md border border-line bg-surface-1 px-3 text-fg-1 transition-colors duration-dur-2 ease-soft placeholder:text-fg-3 aria-[invalid=true]:border-error";
 
 interface FieldProps {
   id: string;
@@ -19,12 +27,8 @@ interface FieldProps {
 }
 
 /**
- * Champ de formulaire de la vitrine — libellé, contrôle, message d'erreur.
- *
- * Le style vit dans `.nurea-field` (`app/globals.css`) : filet 1 px, angles 0,
- * 48 px de haut, focus au filet cuivre. L'erreur bascule la bordure sur la
- * couleur d'alerte via `aria-invalid`, si bien que l'état visuel et l'état
- * annoncé aux lecteurs d'écran ne peuvent pas diverger.
+ * Champ de formulaire de la vitrine — libellé visible au-dessus, contrôle, erreur dessous, reliée au
+ * contrôle par `aria-describedby`.
  */
 export const Field: FC<FieldProps> = ({
   id,
@@ -51,7 +55,7 @@ export const Field: FC<FieldProps> = ({
 
   return (
     <div className={className}>
-      <label htmlFor={id} className="nurea-caption mb-2 block text-nurea-muted">
+      <label htmlFor={id} className="t-body mb-2 block font-medium text-fg-2">
         {label}
       </label>
 
@@ -60,19 +64,14 @@ export const Field: FC<FieldProps> = ({
           {...shared}
           rows={rows}
           onChange={(event) => onChange(event.target.value)}
-          className={cn("nurea-field resize-y", "min-h-[8rem]")}
+          className={cn(FIELD_CLASS, "min-h-32 resize-y py-3 leading-[var(--leading-body)]")}
         />
       ) : (
-        <input
-          {...shared}
-          type={type}
-          onChange={(event) => onChange(event.target.value)}
-          className="nurea-field"
-        />
+        <input {...shared} type={type} onChange={(event) => onChange(event.target.value)} className={FIELD_CLASS} />
       )}
 
       {error ? (
-        <p id={errorId} role="alert" className="nurea-caption mt-2 text-nurea-alert">
+        <p id={errorId} className="t-caption mt-2 text-error">
           {error}
         </p>
       ) : null}

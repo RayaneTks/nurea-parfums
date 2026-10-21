@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Monogram } from "@/components/editorial/Monogram";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buttonClass } from "@/components/ui/Button";
-import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { MENTION_PHOTOS } from "@/lib/mentions";
 import { pageOg, SITE_NAME } from "@/lib/site";
 
@@ -41,62 +40,61 @@ const ETABLI = [
 /** Les documents annoncés par le pied de page. */
 const A_VENIR = ["Mentions légales", "Politique de confidentialité", "CGV / CGU", "Livraison & retours"] as const;
 
+/**
+ * Mise en page (refonte 2026-10) : titre, statut et sorties ; ce qui est établi, en trois filets ;
+ * les documents à venir, en liste. Le texte juridique n'a pas changé d'un mot.
+ */
 export default function LegalPage() {
   return (
-    <>
-      <section className="nurea-page border-b border-nurea-border pb-18 pt-32 md:pt-40">
-        <div className="flex items-end justify-between gap-10">
-          <ScrollReveal className="flex flex-col items-start">
-            <p className="nurea-label">Informations légales</p>
-            <h1 className="nurea-title mt-4 text-nurea-text">En préparation</h1>
-            <p className="nurea-lead nurea-prose mt-6">
-              Nos conditions sont en cours de rédaction. Une question d&apos;ici là : écrivez-nous.
-            </p>
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
-              <Link href="/contact" className={buttonClass("outline")}>
-                Nous écrire
-              </Link>
-              <Link href="/" className={buttonClass("link")}>
-                Retour au catalogue
-              </Link>
-            </div>
-          </ScrollReveal>
-          <Monogram className="hidden w-40 shrink-0 text-nurea-border-strong md:block" />
+    <div className="page-x pb-[var(--space-section)] pt-2">
+      <section className="flex flex-col items-start gap-4">
+        <Breadcrumbs
+          items={[
+            { name: "Accueil", path: "/" },
+            { name: "Informations légales", path: "/legal" },
+          ]}
+        />
+        <h1 className="t-title enter">Informations légales</h1>
+        <p className="t-body t-measure enter">
+          En préparation. Nos conditions sont en cours de rédaction. Une question d&apos;ici là : écrivez-nous.
+        </p>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-6">
+          <Link href="/contact" className={buttonClass("outline")}>
+            Nous écrire
+          </Link>
+          <Link href="/" className={buttonClass("link")}>
+            Retour au catalogue
+          </Link>
         </div>
       </section>
 
-      <section className="nurea-page border-b border-nurea-border py-18">
-        <ScrollReveal>
-          <p className="nurea-label">Déjà établi</p>
-        </ScrollReveal>
-        <dl className="nurea-filets mt-10 md:grid-cols-3">
-          {ETABLI.map(({ title, text }, index) => (
-            <div key={title} className="py-8 md:px-10 md:py-10 md:first:pl-0 md:last:pr-0">
-              <ScrollReveal delay={index * 80}>
-                <dt className="nurea-name text-nurea-text">{title}</dt>
-                <dd className="nurea-body mt-4">{text}</dd>
-              </ScrollReveal>
+      <section aria-labelledby="etabli" className="mt-[var(--space-section)]">
+        <h2 id="etabli" className="t-title mb-6">
+          Déjà établi
+        </h2>
+        <dl className="grid gap-6 md:grid-cols-3">
+          {ETABLI.map(({ title, text }) => (
+            <div key={title} className="border-t border-line pt-4">
+              <dt className="t-subtitle">{title}</dt>
+              <dd className="t-body mt-1">{text}</dd>
             </div>
           ))}
         </dl>
       </section>
 
-      <section className="nurea-page py-18">
-        <ScrollReveal>
-          <p className="nurea-label">À venir</p>
-        </ScrollReveal>
-        <ul className="mt-10 border-t border-nurea-border">
+      <section aria-labelledby="a-venir" className="mt-[var(--space-section)]">
+        <h2 id="a-venir" className="t-title mb-6">
+          À venir
+        </h2>
+        <ul className="border-t border-line">
           {A_VENIR.map((document) => (
-            <li
-              key={document}
-              className="flex items-baseline justify-between gap-6 border-b border-nurea-border py-6"
-            >
-              <span className="nurea-name text-nurea-text">{document}</span>
-              <span className="nurea-caption shrink-0">En préparation</span>
+            <li key={document} className="flex min-h-11 items-baseline justify-between gap-6 border-b border-line py-3">
+              <span className="t-body text-fg-1">{document}</span>
+              <span className="t-caption shrink-0">En préparation</span>
             </li>
           ))}
         </ul>
       </section>
-    </>
+    </div>
   );
 }

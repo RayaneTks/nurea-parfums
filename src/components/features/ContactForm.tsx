@@ -17,6 +17,9 @@ interface ContactFormState {
 
 type FieldErrors = Partial<Record<keyof ContactFormState, string>>;
 
+/** L'ordre des champs à l'écran : celui dans lequel on cherche le premier en erreur. */
+const FIELD_ORDER = ["name", "email", "subject", "message"] as const;
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 
 interface ContactFormProps {
@@ -57,8 +60,8 @@ function validate(state: ContactFormState): FieldErrors {
  * est désormais composée côté serveur (`app/(shop)/contact/page.tsx`) et seul
  * ce qui a besoin d'état reste client : la saisie, l'envoi, l'accusé.
  *
- * Charte § 05 : un seul aplat plein par écran, et il revient à Snapchat, canal
- * principal. L'envoi reste au filet, ce qui dit aussi le délai de réponse réel
+ * Un seul bouton plein par écran, et il revient à Snapchat, canal principal :
+ * l'envoi est secondaire (`outline`), ce qui dit aussi le délai de réponse réel
  * des deux voies.
  */
 export const ContactForm: FC<ContactFormProps> = ({ parfum = "", marque = "" }) => {
@@ -83,7 +86,12 @@ export const ContactForm: FC<ContactFormProps> = ({ parfum = "", marque = "" }) 
 
     const nextErrors = validate(form);
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+    // Le premier champ en erreur prend le focus : son message, relié, est lu avec lui.
+    const firstError = FIELD_ORDER.find((key) => nextErrors[key]);
+    if (firstError) {
+      document.getElementById(firstError)?.focus();
+      return;
+    }
 
     setSubmitting(true);
     const payload = new FormData();
@@ -124,12 +132,12 @@ export const ContactForm: FC<ContactFormProps> = ({ parfum = "", marque = "" }) 
 
   if (sentVia) {
     return (
-      <div role="status" className="border border-nurea-border-strong p-6 md:p-10">
-        <p className="nurea-name text-nurea-text">Merci pour votre message</p>
-        <p className="nurea-body mt-4">
+      <div role="status" className="rounded-lg border border-line bg-surface-1 p-6">
+        <p className="t-subtitle">Merci pour votre message</p>
+        <p className="t-body mt-2">
           {sentVia === "resend"
             ? "Nous vous répondons dans les plus brefs délais."
-            : "Votre messagerie vient de s'ouvrir. Si ce n'est pas le cas, écrivez-nous directement à l'adresse indiquée plus haut."}
+            : "Votre messagerie vient de s'ouvrir. Si ce n'est pas le cas, écrivez-nous directement à l'adresse indiquée sur cette page."}
         </p>
       </div>
     );
@@ -194,7 +202,7 @@ export const ContactForm: FC<ContactFormProps> = ({ parfum = "", marque = "" }) 
       />
 
       {serverError ? (
-        <p role="alert" className="nurea-caption text-nurea-alert">
+        <p role="alert" className="t-body text-error">
           {serverError}
         </p>
       ) : null}

@@ -1,219 +1,119 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
-import { MarqueFaqJsonLd } from "@/components/seo/MarqueFaqJsonLd";
-import { ScrollReveal } from "@/components/ui/ScrollReveal";
-import { buttonClass } from "@/components/ui/Button";
-import { BottleMosaic } from "@/components/editorial/BottleMosaic";
-import { BrandIndex } from "@/components/editorial/BrandIndex";
-import { Chapters, type Chapter } from "@/components/editorial/Chapters";
 import { FaqAccordion } from "@/components/editorial/FaqAccordion";
-import { Monogram } from "@/components/editorial/Monogram";
 import { OrderSteps } from "@/components/editorial/OrderSteps";
-import { Seal } from "@/components/editorial/Seal";
-import { getCachedCatalogue, getSeoCatalogue } from "@/lib/catalogue-service";
-import { choisirFlacons } from "@/lib/catalog/choisirFlacons";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { MarqueFaqJsonLd } from "@/components/seo/MarqueFaqJsonLd";
+import { buttonClass } from "@/components/ui/Button";
 import { MARQUE_FAQ } from "@/lib/marqueFaq";
+import { MENTION_FLACONS } from "@/lib/mentions";
 import { pageOg, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Qui sommes-nous — parfumerie à Marseille",
-  description: `${SITE_NAME}, parfumerie à Marseille : les plus grands parfums, choisis un par un, au meilleur prix. Homme et femme, remis dans nos flacons Nuréa.`,
-  keywords: ["Nuréa Parfums", "parfumerie marseille", "parfum pas cher", "grandes marques"],
+  description: `${SITE_NAME}, parfumerie à Marseille : chaque parfum vous est remis dans un flacon Nuréa personnalisé. Commande sur Snapchat, remise en main propre ou envoi partout en France.`,
+  keywords: ["Nuréa Parfums", "parfumerie marseille", "nurea parfum"],
   alternates: { canonical: "/marque" },
   openGraph: pageOg("/marque"),
 };
 
-/** Comme l'accueil : les flacons et l'index des marques suivent le catalogue, jamais un HTML figé au build. */
-export const dynamic = "force-dynamic";
-
 const DOMAINE = SITE_URL.replace(/^https?:\/\//, "");
 
-const ENGAGEMENTS: readonly Chapter[] = [
-  {
-    title: "Les plus grandes marques",
-    text: "Les parfums qu'on nous demande, pour homme et pour femme, choisis un à un.",
-  },
-  {
-    title: "Le juste prix",
-    text: "Des tarifs travaillés sur tout le catalogue, sans rogner sur la qualité.",
-  },
-  {
-    title: "Le conseil d'abord",
-    text: "La commande passe par un échange direct : on répond, puis on conclut.",
-  },
-];
+/** La photo du flacon Nuréa (celle de la hero, cadrage portrait) : la seule image vraie de la marque. */
+const PHOTO = { width: 1118, height: 1402, sombre: "/branding/hero/flacon-portrait-sombre.webp", clair: "/branding/hero/flacon-portrait-clair.webp" };
+const PHOTO_ALT = "Un flacon Nuréa, l'étiquette au monogramme, près de petits flacons et de verrerie.";
+const PHOTO_SIZES = "(min-width: 768px) 40vw, 100vw";
 
 /**
- * La parfumerie — la page qui dit qui nous sommes.
+ * La parfumerie — qui est Nuréa, comment on commande, comment la reconnaître.
  *
- * Elle était un texte continu : trois paragraphes, deux autres, cinq réponses
- * dépliées. Elle se lit désormais comme un carnet en chapitres, chacun porté
- * par une image ou un signe plutôt que par un paragraphe :
+ *   ouverture  — le titre, une phrase, la photo du flacon Nuréa ;
+ *   commander  — trois temps ;
+ *   photos     — ce que montrent les photos du catalogue (`MENTION_FLACONS`) — loin de la photo du
+ *                flacon Nuréa, dont elle passerait sinon pour la légende ;
+ *   site       — l'adresse et l'orthographe, contre les homonymes ;
+ *   questions  — repliées ;
+ *   clôture    — le seul bouton plein : le catalogue.
  *
- *   ouverture   — trois flacons du catalogue, le titre, une phrase ;
- *   engagements — 01 · 02 · 03, une phrase chacun ;
- *   flacons     — ce que le client reçoit : son parfum, dans un flacon Nuréa ;
- *   marques     — l'index du catalogue, chaque nom mène à ses parfums ;
- *   sceau       — l'aplat bordeaux de la charte, qui authentifie le site ;
- *   commander   — trois temps sur une ligne ;
- *   questions   — repliées, on ouvre celle qui nous concerne.
- *
- * Un seul bouton plein, tout en bas (charte § 05).
+ * Rien n'y est inventé : chaque phrase est un fait du gérant. Aucune contenance, aucun prix.
  */
-export default async function MarquePage() {
-  const { perfumes, browseBrands } = await getCachedCatalogue();
-  // Quelles marques ont une page. Une panne ne doit pas faire tomber /marque : on retombe sur
-  // les liens filtrés de l'accueil, qui marchent toujours.
-  const pagedSlugs = await getSeoCatalogue()
-    .then((brands) => new Set(brands.map((b) => b.slug)))
-    .catch(() => new Set<string>());
-  const flacons = choisirFlacons(perfumes, 3);
-
+export default function MarquePage() {
   return (
-    <>
-      <BreadcrumbJsonLd
+    <div className="page-x pb-[var(--space-section)] pt-2">
+      <MarqueFaqJsonLd />
+
+      <Breadcrumbs
         items={[
           { name: "Accueil", path: "/" },
           { name: "La parfumerie", path: "/marque" },
         ]}
       />
-      <MarqueFaqJsonLd />
+      <section className="mt-2 grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] md:items-center md:gap-16">
+        <div className="flex flex-col gap-4">
+          <h1 className="t-title enter">La parfumerie</h1>
+          <p className="t-body t-measure enter">
+            {SITE_NAME} vous remet chaque parfum du catalogue dans un flacon Nuréa. On commande sur Snapchat ; la
+            remise se fait en main propre à Marseille, ou par envoi partout en France.
+          </p>
+        </div>
 
-      {/* ─── Ouverture ───────────────────────────────────────────────────── */}
-      <section className="nurea-page border-b border-nurea-border pb-18 pt-32 md:pt-40">
-        <div className="grid items-end gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-18">
-          <ScrollReveal className="md:pb-10">
-            <p className="nurea-label">La parfumerie</p>
-            <h1 className="nurea-title mt-4 max-w-[14ch] text-nurea-text">
-              Les grands parfums, choisis un par un.
-            </h1>
-            <p className="nurea-lead nurea-prose mt-6">
-              Une parfumerie marseillaise, un catalogue tenu à la main, des prix justes.
-            </p>
-            <p className="nurea-label mt-10 text-nurea-subtle">
-              {perfumes.length} références · {browseBrands.length} marques · Marseille
-            </p>
-          </ScrollReveal>
-
-          {/* Téléphone : la mosaïque sort de la marge de page et tient tout l'écran. */}
-          <BottleMosaic perfumes={flacons} priority className="max-md:-mx-6" />
+        {/* Bascule de lumière en CSS, jamais `useTheme` ; la variante masquée reste paresseuse. */}
+        <div className="overflow-hidden rounded-lg bg-surface-1">
+          <Image src={PHOTO.sombre} alt={PHOTO_ALT} width={PHOTO.width} height={PHOTO.height} sizes={PHOTO_SIZES} quality={82} className="h-auto w-full [.light_&]:hidden" />
+          <Image src={PHOTO.clair} alt={PHOTO_ALT} width={PHOTO.width} height={PHOTO.height} sizes={PHOTO_SIZES} quality={82} className="hidden h-auto w-full [.light_&]:block" />
         </div>
       </section>
 
-      {/* ─── Engagements ─────────────────────────────────────────────────── */}
-      <section aria-labelledby="engagements" className="nurea-page border-b border-nurea-border">
-        <h2 id="engagements" className="sr-only">
-          Nos engagements
+      <section aria-labelledby="commander-titre" className="mt-[var(--space-section)]">
+        <h2 id="commander-titre" className="t-title mb-6">
+          Commander
         </h2>
-        <Chapters chapters={ENGAGEMENTS} />
+        <OrderSteps />
       </section>
 
-      {/* ─── Nos flacons ─────────────────────────────────────────────────────
-          Texte seul, sans visuel du flacon : c'est le choix de la marque. La mention dit ce que
-          l'on reçoit en le présentant comme un service (le format choisi), pas comme une réserve. */}
-      <section className="nurea-page border-b border-nurea-border py-18">
-        <div className="grid gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-18">
-          <ScrollReveal>
-            <p className="nurea-label">Nos flacons</p>
-            <h2 className="nurea-section-title mt-4 text-nurea-text">Le parfum, au format qui vous va.</h2>
-          </ScrollReveal>
-          <ScrollReveal>
-            <p className="nurea-lead nurea-prose">
-              Votre parfum vous est remis dans un flacon Nuréa personnalisé, en 10, 50 ou 80 ml.
-            </p>
-            <p className="nurea-caption nurea-prose mt-6">
-              Les photographies du catalogue présentent les flacons d&apos;origine des marques, pour que vous
-              reconnaissiez chaque référence d&apos;un coup d&apos;œil.
-            </p>
-          </ScrollReveal>
-        </div>
+      <section aria-labelledby="photos-titre" className="mt-[var(--space-section)] flex flex-col gap-2">
+        <h2 id="photos-titre" className="t-subtitle">
+          Les photos du catalogue
+        </h2>
+        <p className="t-body t-measure">{MENTION_FLACONS}</p>
       </section>
 
-      {/* ─── Les marques ─────────────────────────────────────────────────── */}
-      {browseBrands.length > 0 && (
-        <section className="nurea-page border-b border-nurea-border py-18">
-          <ScrollReveal>
-            <p className="nurea-label">Les marques</p>
-            <h2 className="nurea-section-title mt-4 text-nurea-text">
-              {browseBrands.length} marques au catalogue
-            </h2>
-            <p className="nurea-caption mt-4">Touchez un nom pour voir ses parfums.</p>
-          </ScrollReveal>
-          <div className="mt-10">
-            <BrandIndex brands={browseBrands} pagedSlugs={pagedSlugs} />
+      <section aria-labelledby="site-titre" className="mt-[var(--space-section)]">
+        <h2 id="site-titre" className="t-title mb-6">
+          Le site officiel
+        </h2>
+        <dl className="grid gap-6 md:grid-cols-2">
+          <div className="border-t border-line pt-4">
+            <dt className="t-caption">L&apos;adresse</dt>
+            <dd className="t-subtitle mt-1">{DOMAINE}</dd>
+            <dd className="t-body mt-1">Toute autre adresse n&apos;est pas la nôtre.</dd>
           </div>
-        </section>
-      )}
-
-      {/* ─── Le sceau ────────────────────────────────────────────────────── */}
-      <section className="nurea-page border-b border-nurea-border py-18">
-        <div className="grid items-center gap-10 md:grid-cols-[auto_minmax(0,1fr)] md:gap-18">
-          <ScrollReveal className="mx-auto w-56 md:w-60">
-            <Seal />
-          </ScrollReveal>
-
-          <ScrollReveal>
-            <p className="nurea-label">Site officiel</p>
-            <h2 className="nurea-section-title mt-4 text-nurea-text">Un seul site. Un seul nom.</h2>
-
-            <dl className="nurea-filets mt-10 sm:grid-cols-2">
-              <div className="py-6 sm:pr-6">
-                <dt className="nurea-caption">L&apos;adresse</dt>
-                <dd className="nurea-lead mt-2">{DOMAINE}</dd>
-                <dd className="nurea-caption mt-2">Toute autre adresse n&apos;est pas la nôtre.</dd>
-              </div>
-              <div className="py-6 sm:pl-6">
-                <dt className="nurea-caption">L&apos;orthographe</dt>
-                <dd className="nurea-lead mt-2">Nuréa, avec un é.</dd>
-                <dd className="nurea-caption mt-2">Parfums, avec un s.</dd>
-              </div>
-            </dl>
-
-            <p className="nurea-caption nurea-prose mt-6">
-              « Nurae Parfum », marque britannique au nom voisin, n&apos;a aucun lien avec nous.
-            </p>
-          </ScrollReveal>
-        </div>
+          <div className="border-t border-line pt-4">
+            <dt className="t-caption">L&apos;orthographe</dt>
+            <dd className="t-subtitle mt-1">Nuréa, avec un é</dd>
+            <dd className="t-body mt-1">
+              Parfums, avec un s. « Nurae Parfum », marque britannique au nom voisin, n&apos;a aucun lien avec nous.
+            </dd>
+          </div>
+        </dl>
       </section>
 
-      {/* ─── Commander ───────────────────────────────────────────────────── */}
-      <section className="nurea-page border-b border-nurea-border py-18">
-        <ScrollReveal>
-          <p className="nurea-label">Commander</p>
-          <h2 className="nurea-section-title mt-4 text-nurea-text">En trois temps</h2>
-        </ScrollReveal>
-        <OrderSteps className="mt-10" />
+      <section aria-labelledby="questions-titre" className="mt-[var(--space-section)]">
+        <h2 id="questions-titre" className="t-title mb-6">
+          Questions fréquentes
+        </h2>
+        <FaqAccordion entries={MARQUE_FAQ} />
       </section>
 
-      {/* ─── Questions ───────────────────────────────────────────────────── */}
-      <section className="nurea-page border-b border-nurea-border py-18">
-        <div className="grid gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-18">
-          <ScrollReveal>
-            <p className="nurea-label">Questions</p>
-            <h2 className="nurea-section-title mt-4 text-nurea-text">Questions fréquentes</h2>
-          </ScrollReveal>
-          <FaqAccordion entries={MARQUE_FAQ} />
-        </div>
+      <section className="mt-[var(--space-section)] flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+        <Link href="/#collection" className={buttonClass("solid", "w-full sm:w-auto")}>
+          Voir le catalogue
+        </Link>
+        <Link href="/contact" className={buttonClass("link")}>
+          Nous écrire
+        </Link>
       </section>
-
-      {/* ─── Clôture ─────────────────────────────────────────────────────── */}
-      <section className="nurea-page py-18">
-        <div className="flex items-center justify-between gap-10">
-          <ScrollReveal className="flex flex-col items-start">
-            <h2 className="nurea-section-title text-nurea-text">Trouvez votre prochain parfum</h2>
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <Link href="/" className={buttonClass("solid")}>
-                Voir le catalogue
-              </Link>
-              <Link href="/contact" className={buttonClass("outline")}>
-                Nous écrire
-              </Link>
-            </div>
-          </ScrollReveal>
-          <Monogram className="hidden w-40 shrink-0 text-nurea-border-strong md:block" />
-        </div>
-      </section>
-    </>
+    </div>
   );
 }
