@@ -284,7 +284,8 @@ Stratégie, attentes et suivi : `docs/SEO.md`. Gestes hors code : `docs/seo/INST
   une page neuve pour un doublon de l'accueil). Pas de hreflang : le site n'a qu'une langue.
 - **Sitemap** (`app/sitemap.ts`) : `lastModified` seulement quand il est vrai (`updatedAt`).
 - **Pas de balisage `Product`** tant qu'aucun prix n'est public : Google le compterait en erreur.
-- Le titre (H1) de l'accueil porte « Nuréa Parfums » : ne pas le réduire à une accroche. Plus de
+- Le titre (H1) de l'accueil est l'accroche et nomme « Nuréa » (gérant, 21/10/2026) ; « Nuréa Parfums »
+  reste dans le titre de la page. Plus de
   « Marseille » dans la copy de l'accueil (gérant, 21/10/2026 : les clients arrivent par Snapchat, les
   envois couvrent toute la France). Le titre et la description de la page attendent l'avis juridique
   (`docs/refonte-vitrine/01-INVARIANTS.md` § 1) et seront revus avec lui.
