@@ -196,9 +196,9 @@ une étiquette visible et son erreur dessous.
 - **Accueil** : composition **« Flacon »** (21/10/2026, `04-PLAN-EXECUTION.md` § B.10). **Hero** : la
   photographie du flacon Nuréa en fond, en deux lumières et deux cadrages ; sur téléphone, le titre puis
   les deux entrées sur une ligne (`Button` plein « Voir le catalogue », Snapchat en bouton rond 44 px),
-  au-dessus et à gauche du flacon. **À l'affiche** : deux compositions horizontales de même poids — la
-  photo entière (jamais recadrée) à gauche, la marque et le nom en `title` sur la couleur du flacon à
-  droite ; empilées sur téléphone, côte à côte dès 768 px. **Marques** : un index typographique (12 noms
+  au-dessus et à gauche du flacon. **À l'affiche** : deux bandeaux photographiques horizontaux en miroir —
+  le visuel entier d'un côté, fondu dans la même photo floutée qui porte la marque et le nom en `title` ;
+  en quinconce sur bureau. **Marques** : un index typographique (12 noms
   et leur nombre de parfums, « Toutes les marques »), sans images. Puis le catalogue. Composants et
   arrondis du design system inchangés ; aucun onglet, surtitre, compteur décoratif ni texte qui défile.
 
