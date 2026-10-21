@@ -8,6 +8,7 @@ import {
   type ExternalPerfumeHint,
 } from "@/lib/data";
 import { formatExternalSuggestionDisplay } from "@/lib/search/formatExternalSuggestionDisplay";
+import { contactHref } from "@/lib/search/suggestions";
 import type { ExtendedSearchState } from "./useExtendedSearch";
 
 interface CatalogEmptyStateProps {
@@ -190,13 +191,6 @@ interface EmptyShellProps {
   /** Contact pré-rempli (`?parfum=…&marque=…`), sinon la page Contact nue. */
   contactHref?: string;
   testId?: string;
-}
-
-function contactHref(params: { parfum?: string; marque?: string }): string {
-  const search = new URLSearchParams();
-  if (params.parfum) search.set("parfum", params.parfum);
-  if (params.marque) search.set("marque", params.marque);
-  return `/contact?${search.toString()}`;
 }
 
 /* Grille vide = l'action utile de l'écran : le lien de contact y est le bouton plein. */

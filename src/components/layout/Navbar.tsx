@@ -2,29 +2,17 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Heart, Search } from "lucide-react";
-import { useEffect, useRef, useState, useSyncExternalStore, type FC } from "react";
+import { Heart } from "lucide-react";
+import { useSyncExternalStore, type FC } from "react";
 import { BrandLogo } from "./BrandLogo";
+import { SearchBox } from "./SearchBox";
+import { OPEN_SELECTION_EVENT } from "./searchEvents";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { parseSelection, readSelectionRaw, subscribeSelection } from "@/lib/selection";
 import { cn } from "@/lib/utils";
 
-/** Événement écouté par `CatalogSection` pour ouvrir les filtres (bouton retiré de la barre en T5, filtres refaits en T11). */
-export const OPEN_CATALOG_FILTERS_EVENT = "nurea:open-catalog-filters";
-
-/**
- * Recherche en direct sur l'accueil : la barre diffuse la saisie (`detail` = requête, vide sous
- * 2 caractères), le catalogue filtre ; en retour, le catalogue diffuse sa requête quand elle change
- * sans la barre (puce retirée, « Tout effacer »). Hors accueil, le champ envoie `/?q=`.
- */
-export const SEARCH_EVENT = "nurea:search";
-export const QUERY_SYNC_EVENT = "nurea:query";
-
-/** En deçà, une requête est trop vague pour filtrer (04-PLAN-EXECUTION § B : résultats dès 2 caractères). */
-const MIN_LIVE_QUERY = 2;
-
-/** Diffusé par le cœur de la barre sur l'accueil ; la feuille « Ma sélection » y vit (avec le catalogue). */
-export const OPEN_SELECTION_EVENT = "nurea:open-selection";
+/* Les événements de la barre vivent dans `searchEvents.ts` ; ré-exportés ici pour le catalogue. */
+export { OPEN_CATALOG_FILTERS_EVENT, OPEN_SELECTION_EVENT, QUERY_SYNC_EVENT, SEARCH_EVENT } from "./searchEvents";
 
 const NAV_LINKS = [
   { href: "/", label: "Catalogue" },
@@ -50,37 +38,14 @@ const ICON_BUTTON =
  * permanente, Ma sélection, thème. Collante plutôt que fixe : elle tient sa
  * place dans le flux, aucune page n'a à compenser sa hauteur.
  *
- * Sur téléphone, le champ passe sous le logo, pleine largeur ; dès 768 px il
- * rejoint la ligne. Sur l'accueil, la grille suit la frappe (`SEARCH_EVENT`) ;
- * ailleurs, le champ envoie `/?q=`.
+ * Sur téléphone, le champ (`SearchBox`, avec ses suggestions) passe sous le logo,
+ * pleine largeur ; dès 768 px il rejoint la ligne. Sur l'accueil, la grille suit la
+ * frappe (`SEARCH_EVENT`) ; ailleurs, le champ envoie `/?q=`.
  */
 export const Navbar: FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const count = useSyncExternalStore(subscribeSelection, readSelectionCount, () => 0);
-  const onHome = pathname === "/";
-  const [query, setQuery] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  /* Arrivée sur l'accueil avec `?q=` : le champ montre ce que la grille filtre. */
-  useEffect(() => {
-    if (onHome) setQuery(new URLSearchParams(window.location.search).get("q") ?? "");
-  }, [onHome]);
-
-  /* Le catalogue a changé la requête sans nous : on suit, sauf pendant la frappe. */
-  useEffect(() => {
-    const sync = (event: Event) => {
-      if (document.activeElement === inputRef.current) return;
-      setQuery((event as CustomEvent<string>).detail);
-    };
-    window.addEventListener(QUERY_SYNC_EVENT, sync);
-    return () => window.removeEventListener(QUERY_SYNC_EVENT, sync);
-  }, []);
-
-  const broadcast = (value: string) => {
-    const live = value.trim().length >= MIN_LIVE_QUERY ? value : "";
-    window.dispatchEvent(new CustomEvent(SEARCH_EVENT, { detail: live }));
-  };
 
   return (
     <header className="glass sticky top-0 z-sticky border-b border-line pt-[env(safe-area-inset-top,0px)]">
@@ -115,43 +80,7 @@ export const Navbar: FC = () => {
           </ul>
         </nav>
 
-        <form
-          action="/"
-          method="get"
-          role="search"
-          onSubmit={(event) => {
-            if (!onHome) return;
-            /* Déjà filtrée en direct : « Rechercher » referme seulement le clavier. */
-            event.preventDefault();
-            broadcast(query);
-            inputRef.current?.blur();
-          }}
-          className="order-last mb-3 basis-full md:order-none md:mb-0 md:ml-auto md:max-w-sm md:flex-1 md:basis-auto"
-        >
-          <label className="relative block">
-            <span className="sr-only">Rechercher un parfum ou une marque</span>
-            <Search
-              size={18}
-              strokeWidth={1.5}
-              aria-hidden
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-3"
-            />
-            <input
-              type="search"
-              name="q"
-              ref={inputRef}
-              value={query}
-              onChange={(event) => {
-                setQuery(event.target.value);
-                if (onHome) broadcast(event.target.value);
-              }}
-              enterKeyHint="search"
-              autoComplete="off"
-              placeholder="Parfum, marque…"
-              className="h-11 w-full rounded-md border border-line bg-surface-1 pl-10 pr-3 text-fg-1 transition-colors duration-dur-2 ease-soft placeholder:text-fg-3 [&::-webkit-search-cancel-button]:appearance-none"
-            />
-          </label>
-        </form>
+        <SearchBox />
 
         <div className="flex items-center">
           <button

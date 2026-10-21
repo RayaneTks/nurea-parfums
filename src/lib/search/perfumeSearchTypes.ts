@@ -17,6 +17,10 @@ interface PerfumeSearchCatalogItem {
   id: number;
   name: string;
   brand: string;
+  /** Slug stable de la marque (adresse `/parfums/<slug>`) ; absent sur un catalogue sans base. */
+  brandSlug?: string;
+  /** Gamme de la marque (« Private Blend »), affichée avec elle. */
+  line?: string;
   category: string;
   image: string;
   imageLight?: string;

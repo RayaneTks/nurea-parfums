@@ -708,4 +708,19 @@
     animation: enter var(--dur-4) var(--ease-out) var(--enter-delay, 0ms) backwards;
   }
 
+  /* ─── Suggestions de recherche (`SearchBox`) ─────────────────────────────
+     Panneau sous le champ de la barre haute : entrée courte (opacité et
+     4 px, `--dur-2`), ombre flottante, jamais de rebond. */
+  @keyframes suggestions-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+
+  .suggestions {
+    animation: suggestions-in var(--dur-2) var(--ease-out) backwards;
+    box-shadow: var(--shadow-float);
+  }
+
 }

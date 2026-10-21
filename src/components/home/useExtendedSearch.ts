@@ -27,30 +27,52 @@ function parseResponse(payload: unknown): PerfumeSearchResponse | null {
     : null;
 }
 
-/** En deçà, la requête est trop ambiguë pour justifier un appel réseau. */
-const MIN_QUERY_LENGTH = 3;
-const DEBOUNCE_MS = 350;
+/**
+ * Réponses déjà reçues pendant la visite, par requête : effacer une lettre, ou retaper la même
+ * chose, ne repart pas sur le réseau (la grille vide et les suggestions de la barre partagent ce
+ * cache). Borné : les plus anciennes partent.
+ */
+const MEMO_MAX = 50;
+const memo = new Map<string, PerfumeSearchResponse>();
+
+function remember(query: string, response: PerfumeSearchResponse) {
+  memo.delete(query);
+  memo.set(query, response);
+  if (memo.size > MEMO_MAX) memo.delete(memo.keys().next().value as string);
+}
+
+export interface ExtendedSearchOptions {
+  /** En deçà, la requête est trop ambiguë pour justifier un appel réseau. */
+  minLength?: number;
+  debounceMs?: number;
+}
 
 /**
  * Recherche élargie — interroge `/api/perfume-search` quand le catalogue local
- * ne renvoie rien.
+ * ne renvoie rien (grille vide, à 3 caractères), ou pour proposer des fiches sous le champ
+ * (`SearchBox`, dès 2 caractères).
  *
- * Elle ne part qu'après le catalogue local, jamais en parallèle : une référence
- * déjà en ligne ne doit pas déclencher d'appel réseau. Toute requête devenue
- * caduque est annulée, si bien qu'une réponse lente ne peut pas écraser
+ * Toute requête devenue caduque est annulée, si bien qu'une réponse lente ne peut pas écraser
  * l'affichage d'une frappe plus récente.
  */
 export function useExtendedSearch(
   query: string,
-  enabled: boolean
+  enabled: boolean,
+  { minLength = 3, debounceMs = 350 }: ExtendedSearchOptions = {}
 ): ExtendedSearchState {
   const [state, setState] = useState<ExtendedSearchState>(IDLE);
   const trimmed = query.trim();
-  const shouldSearch = enabled && trimmed.length >= MIN_QUERY_LENGTH;
+  const shouldSearch = enabled && trimmed.length >= minLength;
 
   useEffect(() => {
     if (!shouldSearch) {
       setState(IDLE);
+      return;
+    }
+
+    const known = memo.get(trimmed);
+    if (known) {
+      setState({ status: "done", response: known });
       return;
     }
 
@@ -65,19 +87,20 @@ export function useExtendedSearch(
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const parsed = parseResponse(await response.json());
         if (!parsed) throw new Error("Réponse hors contrat");
+        remember(trimmed, parsed);
         setState({ status: "done", response: parsed });
       } catch {
         /* Une requête annulée est un remplacement, pas une panne. */
         if (controller.signal.aborted) return;
         setState({ status: "error" });
       }
-    }, DEBOUNCE_MS);
+    }, debounceMs);
 
     return () => {
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [trimmed, shouldSearch]);
+  }, [trimmed, shouldSearch, debounceMs]);
 
   return state;
 }
