@@ -11,6 +11,7 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 
 | # | Document | Contenu |
 |---|---|---|
+| — | **[`REPRISE.md`](REPRISE.md)** | **À lire en premier** : état réel, validé / en cours / à corriger / à explorer, décisions figées, essais écartés, priorités |
 | 01 | [`01-INVARIANTS.md`](01-INVARIANTS.md) | Ce qui ne change pas : métier, mentions légales, référencement, technique, filets de tests |
 | 02 | [`02-PLAYBOOK.md`](02-PLAYBOOK.md) | Le savoir-faire à appliquer (typo, couleur, espace, mouvement, interaction, images, rédaction), la méthode en 7 phases et leurs portes de qualité |
 | 03 | [`03-DA.md`](03-DA.md) | Constat de l'existant, trois directions, recommandation, fonctions signature, risques, critères d'acceptation, **décisions prises (§ 7)** |
