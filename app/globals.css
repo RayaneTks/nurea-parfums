@@ -581,15 +581,22 @@
     position: absolute;
     inset: -12%;
     z-index: -2;
+    overflow: hidden;
     filter: blur(24px) saturate(1.1);
   }
 
   /* Le fond montre l'arrière-plan calme de la photo — son coin haut droit (ciel, lumière), loin du
      flacon et des objets du premier plan —, agrandi ×3 : la transition reprend les couleurs du décor
-     et aucun fantôme flou du flacon ni des fruits ne passe derrière le texte. */
-  .bandeau-fond img {
-    transform: scale(3);
-    transform-origin: 100% 0%;
+     et aucun fantôme flou du flacon ni des fruits ne passe derrière le texte. Agrandi par la mise en
+     page (cadre triple calé en haut à droite, rogné), jamais par `transform: scale` : Firefox
+     peignait alors la photo entière à trois fois sa taille (200 ms gelées à la bascule de thème,
+     défilement lourd ; 53 ms ainsi). */
+  .bandeau-fond-cadre {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300%;
+    height: 300%;
   }
 
   .bandeau-voile {

@@ -46,7 +46,9 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
             <article key={perfume.id} aria-labelledby={titleId} className={cn("bandeau", index % 2 === 1 && "bandeau-miroir")}>
               {/* L'univers du parfum : la même photo, agrandie et floutée, derrière toute la scène. */}
               <div className="bandeau-fond" aria-hidden="true">
-                <PerfumeImage perfume={perfume} sizes="213px" />
+                <div className="bandeau-fond-cadre">
+                  <PerfumeImage perfume={perfume} sizes="213px" />
+                </div>
               </div>
               <div className="bandeau-voile" aria-hidden="true" />
 
