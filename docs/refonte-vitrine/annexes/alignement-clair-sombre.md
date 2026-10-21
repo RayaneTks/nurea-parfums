@@ -8,6 +8,17 @@ pas au même endroit dans les deux fichiers** : le contrat des visuels (`docs/EQ
 seule la lumière change ») n'est pas tenu. Aucun réglage CSS ne corrige proprement un fichier décalé : il
 faut refaire la variante (même cadrage que la sombre).
 
+## Mise à jour (21/10, `fdc9409`) — visuels identiques dans les deux thèmes
+
+Le gérant a constaté le déplacement aussi sur **Tobacco Vanille**, qui n'a pas de variante claire : un seul
+fichier, une seule `<img>`, aucun remplacement. Cause : **l'interlignage du texte courant changeait avec le
+thème** (1,65 en sombre, 1,6 en clair) ; chaque paragraphe changeait de hauteur et poussait tout ce qui le
+suit. Mesuré sans animation (`.tmp/refonte-vitrine/t15/bascule.mjs`, même page, même parfum) : -0,8 px
+(390) et -1,2 px (1280) sous la première rangée, -7,2 px pour une carte à 5 350 px. Corrigé à la source
+(`--leading-body` déclaré une fois, hors thème) : **0 px**, jusqu'à 18 800 px de profondeur. Un test
+d'architecture refuse désormais toute dimension dans un bloc de thème. Les paires ci-dessous gardent, en
+plus, leur décalage de fichier : il reste à refaire.
+
 ## Méthode
 
 `.tmp/refonte-vitrine/t15/alignement.mjs` (worktree `refonte-vitrine`) : contours (Sobel) des deux
