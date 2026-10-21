@@ -1,4 +1,6 @@
-import { test, expect, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { test, expect } from "./test";
+import { waitForHydration } from "../helpers/hydration";
 
 /**
  * « Ma sélection » (04-PLAN-EXECUTION § T13) : les cœurs des cartes gardent des parfums sur
@@ -26,18 +28,17 @@ async function home(page: Page, path = "/") {
 async function keep(page: Page, n: number) {
   for (let i = 0; i < n; i++) {
     const heart = page.getByRole("button", { name: /^Ajouter .+ à ma sélection$/ }).first();
-    await expect(async () => {
-      await heart.click();
-      await expect(navHeart(page)).toHaveAccessibleName(`Ma sélection, ${i + 1} parfum${i ? "s" : ""}`, { timeout: 1_000 });
-    }).toPass();
+    /* Un cœur est une bascule : un second clic retirerait le parfum. */
+    await waitForHydration(heart);
+    await heart.click();
+    await expect(navHeart(page)).toHaveAccessibleName(`Ma sélection, ${i + 1} parfum${i ? "s" : ""}`);
   }
 }
 
 async function openSelection(page: Page) {
-  await expect(async () => {
-    await navHeart(page).click();
-    await expect(selectionSheet(page)).toBeVisible({ timeout: 1_000 });
-  }).toPass();
+  await waitForHydration(navHeart(page));
+  await navHeart(page).click();
+  await expect(selectionSheet(page)).toBeVisible();
 }
 
 test.describe("Ma sélection", () => {
@@ -85,6 +86,8 @@ test.describe("Ma sélection", () => {
     await selectionSheet(page).getByRole("button", { name: /voir la fiche$/ }).first().click();
     const perfume = page.locator("[data-perfume-sheet]");
     await expect(perfume).toBeVisible();
+    /* Échap va à la couche qui tient le focus : attendre qu'il soit entré dans la fiche. */
+    await expect.poll(() => perfume.evaluate((el) => el.contains(document.activeElement))).toBe(true);
     await page.keyboard.press("Escape");
     await expect(perfume).toBeHidden();
     await expect(selectionSheet(page)).toBeVisible();
@@ -95,10 +98,9 @@ test.describe("Ma sélection", () => {
 
   test("depuis une autre page, le cœur de la barre ouvre la sélection sur l'accueil", async ({ page }) => {
     await home(page, "/contact");
-    await expect(async () => {
-      await navHeart(page).click();
-      await expect(page).toHaveURL(/\/\?selection=1/, { timeout: 2_000 });
-    }).toPass();
+    await waitForHydration(navHeart(page));
+    await navHeart(page).click();
+    await expect(page).toHaveURL(/\/\?selection=1/);
     await expect(selectionSheet(page)).toBeVisible();
   });
 });

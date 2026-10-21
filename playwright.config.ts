@@ -33,6 +33,9 @@ const GLOBAL_SETTING_SPECS = /parcours[\\/]reglages\.spec\.ts$/;
  */
 const PREMIERE_SPEC = /parcours[\\/]premiere-utilisation\.spec\.ts$/;
 
+/** La vitrine publique a sa config, sans base : `playwright.vitrine.config.ts` (`npm run test:e2e:vitrine`). */
+const VITRINE_SPECS = /[\\/]vitrine[\\/]/;
+
 /** Variables de l'app lancée pour les tests : base e2e, secret de test, aucun service réel. */
 const serverEnv: Record<string, string> = {
   DATABASE_URL: E2E_DATABASE_URL,
@@ -70,7 +73,7 @@ export default defineConfig({
     video: "retain-on-failure",
   },
   projects: [
-    { name: "Mobile", use: { ...devices["iPhone 13"] }, testIgnore: [GLOBAL_SETTING_SPECS, PREMIERE_SPEC] },
+    { name: "Mobile", use: { ...devices["iPhone 13"] }, testIgnore: [GLOBAL_SETTING_SPECS, PREMIERE_SPEC, VITRINE_SPECS] },
     /**
      * Les parcours qui changent un réglage GLOBAL (la ligne `Setting` unique : poche proposée, taux par
      * défaut, 06 E08) ne peuvent pas courir en même temps qu'un parcours qui lit cette poche — la moitié
@@ -84,7 +87,7 @@ export default defineConfig({
       testMatch: GLOBAL_SETTING_SPECS,
       fullyParallel: false,
     },
-    { name: "Desktop", use: { ...devices["Desktop Chrome"] }, testIgnore: [GLOBAL_SETTING_SPECS, PREMIERE_SPEC] },
+    { name: "Desktop", use: { ...devices["Desktop Chrome"] }, testIgnore: [GLOBAL_SETTING_SPECS, PREMIERE_SPEC, VITRINE_SPECS] },
     /**
      * PC-12 : base vide, donc harnais séparé et commande séparée. `fullyParallel: false` — le parcours
      * remplit la base au fil de ses étapes, chacune dépend de la précédente.
