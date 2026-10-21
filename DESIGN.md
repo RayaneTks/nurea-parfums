@@ -190,19 +190,20 @@ une étiquette visible et son erreur dessous.
 - **Ma sélection** : liste gardée sur l'appareil (`localStorage`, `nurea:selection:v1`), compteur
   sur le cœur de la barre, feuille qui liste les parfums et un bouton « Commander ces N parfums sur
   Snapchat » qui compose un seul message. Aucun compte, aucune écriture serveur.
-- **Accueil** : composition **« La une »** (Fable, 21/10/2026, `04-PLAN-EXECUTION.md` § B.10), après
-  trois refus. Une une de journal : la **manchette** (H1 « Nuréa Parfums, Marseille » en `title`, rien
-  d'autre), puis chaque parfum mis en avant en **scène** — son visuel 2:3 **bord à bord, sans cadre**,
-  et sa **légende** (marque en `body`, nom en `subtitle`) sur un bandeau à *son* ambiance, la couleur
-  du flacon rendue visible —, la **phrase de la maison** entre les deux scènes (`title`, chiffres
-  comptés sur le catalogue), le **rayon des marques** (les 8 plus fournies, chacune montrée par un de
-  ses flacons, glissé sur téléphone, 8 colonnes dès 1024 px), le catalogue, le pied de page. Tablette :
-  les scènes côte à côte, la phrase dessous ; bureau : la phrase en colonne de légende à gauche du
-  diptyque. Mouvement : entrée à l'arrivée, une fois (manchette, légende, phrase en cascade ; l'image
-  recule de 1,03 à 1), rien d'autre. Jamais le gabarit « grande phrase + deux boutons + photo
-  assombrie », jamais de texte sur une photo, aucun bouton dans l'ouverture. Le visuel de la première
-  scène est l'élément LCP : vignette 640, préchargé pour le thème du système ; nom et visuel ouvrent
-  la fiche en feuille.
+- **Accueil** : composition **« Vitrine »** (Fable, 21/10/2026, `04-PLAN-EXECUTION.md` § B.10), après
+  trois refus. Avant le catalogue : la **manchette** (H1 « Nuréa Parfums, Marseille » en `title`, les
+  deux compteurs en `caption`, rien d'autre), puis chaque parfum mis en avant en **vitrine** — un
+  objet posé sur un **champ de sa couleur** : le champ (ambiance, bord à bord) commence sous le haut
+  du visuel 2:3, qui déborde, décalé vers la droite ; sur le champ, la marque en `body` puis le **nom
+  en `display`** (le grand format typographique de la page est au produit) ; la seconde vitrine en
+  miroir —, puis le **rayon des marques** (les 8 plus fournies, chacune montrée par un de ses
+  flacons, glissé sur téléphone, 8 colonnes dès 1024 px), le catalogue, le pied de page. Bureau : la
+  légende à gauche, centrée sur la hauteur du visuel. Mouvement : entrée à l'arrivée, une fois (champ,
+  visuel, légende en cascade : l'objet se pose sur son champ), rien d'autre. Jamais le gabarit
+  « grande phrase + deux boutons + photo assombrie », jamais de texte sur une photo, aucun bouton
+  avant le catalogue, aucune fonction dupliquée (recherche, filtres, nouveautés restent dans la barre
+  et le catalogue). Le visuel de la première vitrine est l'élément LCP : vignette 640, préchargé pour
+  le thème du système ; nom et visuel ouvrent la fiche en feuille.
 
 ## Fiche produit
 

@@ -1,7 +1,7 @@
-# Suite de T15 — l'accueil « La une » est codé ; ce qui reste à l'exécutant
+# Suite de T15 — l'accueil « Vitrine » est codé ; ce qui reste à l'exécutant
 
-État au 21/10/2026 : l'accueil a été **codé par Fable** (composition « La une », `04-PLAN-EXECUTION.md`
-§ B.10, commit `140b8e5` sur `refonte/vitrine`). Il attend le point de contrôle du gérant sur
+État au 21/10/2026 : l'accueil a été **codé par Fable** (composition « Vitrine », `04-PLAN-EXECUTION.md`
+§ B.10, commit `53d7829` sur `refonte/vitrine`). Il attend le point de contrôle du gérant sur
 l'aperçu Vercel de la branche, sur son téléphone. Ce fichier remplace l'ancien prompt T15 (composition A,
 refusée).
 
@@ -15,11 +15,12 @@ refusée).
   serveur de dev sur 3000), LCP par `.tmp/refonte-vitrine/t15/lcp.mjs` sur un build webpack servi par
   `next start -p 3004` — **vérifier d'abord qu'aucun vieux serveur n'écoute sur 3004** (`netstat -ano`).
 - **« Non » de goût** : s'arrêter, noter la remarque dans `00-LISEZ-MOI.md` § État ; session Fable
-  (effort high). Cette fois, demander d'abord au gérant les ressources de § B.10 (a)–(c) (scènes 9:16,
-  vidéo facultative, faits sur la maison) : la composition les attend.
+  (effort high), avec la remarque exacte du gérant : trois compositions ont déjà été refusées, puis deux
+  essais dans la session Fable du 21/10 (§ B.10, historique) — lire ce qui a été refusé avant de dessiner.
 
 ## Ce que l'exécutant ne fait pas
 
-Modifier § B.10, la composition, les rôles de texte de l'accueil, ou remettre un cadre, un bouton ou
-un texte sur la scène. Toucher la gestion (`app/admin`, `src/features`, `src/ui`, `src/app-shell`,
+Modifier § B.10, la composition, les rôles de texte de l'accueil ; remettre un cadre, un bouton ou un
+texte sur le visuel ; ajouter avant le catalogue une fonction qui existe déjà ailleurs (recherche,
+filtres, nouveautés, comment commander). Toucher la gestion (`app/admin`, `src/features`, `src/ui`, `src/app-shell`,
 `src/server`).

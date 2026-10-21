@@ -232,63 +232,65 @@ souligné au survol. **Un seul bouton primaire par écran.** Cibles ≥ 44 px (z
   l'icône cœur de la barre, feuille listant les parfums, un bouton « Commander ces N parfums sur
   Snapchat » qui compose un seul message.
 
-### B.10 Accueil : composition « La une » (Fable, 21/10/2026, troisième passage)
+### B.10 Accueil : composition « Vitrine » (Fable, 21/10/2026, troisième passage)
 
 **Historique.** Planche v1 (`cee4774`, 20/10) : « beaucoup trop cheap ». Planche v2 (`cf5e272`, 21/10) :
 A « Couverture » choisie avec la réserve « très simple, bof », B « Nuancier » « trop chargée ». A codée
-(`3492c18`) : « ultra cheap pour un site de parfum catalogue ». Le gérant n'a pas voulu donner de site
-modèle (« ne pas orienter artificiellement ») ; il cite l'immersion de Louis Vuitton, le minimalisme de
-Byredo, l'éditorial d'Aesop, et demande une direction originale, codée directement, sans choix A/B.
+(`3492c18`) : « ultra cheap pour un site de parfum catalogue ». Troisième passage, codé directement à la
+demande du gérant (pas de site modèle, pas de planche, pas de choix A/B), en trois temps dans la même
+session : « La une » (le visuel bord à bord, refusé : « je ne te demande pas de transformer mes affiches
+en page d'accueil »), « Le comptoir » (comment commander, rayon des nouveautés, refusé : « ne reconstruis
+pas les fonctionnalités, c'est du webdesign »), puis **« Vitrine »**, retenue ici.
 
 **Diagnostic de l'accueil codé** (captures `.tmp/refonte-vitrine/t15/accueil__*`) : (1) un H1 de 48 px
-seul sur un aplat, puis deux grands aplats de couleur avec un petit nom isolé — sur bureau, surtout, de
-la couleur vide ; (2) le visuel, seul atout du site, est **encadré** (carte arrondie dans la gouttière)
-comme une vignette de grille, jamais mis en scène ; (3) l'index des marques est un annuaire : aucune
-marque n'y est montrée ; (4) aucun mouvement ; (5) rien ne dit « parfumerie » : pas de rythme éditorial,
-pas de voix de la maison, un titre qui crie à la place d'une signature.
+seul sur un aplat, puis deux grands aplats de couleur avec un petit nom isolé ; (2) le visuel, seul
+atout du site, **encadré** dans une carte arrondie, comme une vignette de grille ; (3) un index des
+marques en annuaire ; (4) aucun mouvement ; (5) rien ne signe une parfumerie : ni composition, ni
+échelle, ni matière. Et l'écueil symétrique, vu sur « La une » : une affiche posée à 100 % de large n'est
+pas une page d'accueil, c'est l'affiche.
 
-**Principe.** La page d'accueil est **une une de journal** : une manchette discrète (le H1), une grande
-image **bord à bord, sans cadre** (la scène du parfum mis en avant), sa légende sur un bandeau à la
-couleur de son flacon — l'ambiance de § B.3 devient visible, c'est le « nuancier » du concept —, une
-phrase de la maison, puis la seconde scène, le rayon des marques en images, le catalogue. L'image
-domine, le texte signe. Les interdits de l'ancien § B.10 **levés** : une image dans le premier écran,
-bord à bord ; **tenus** : aucun bouton dans l'ouverture, aucun texte posé sur une photo, aucune photo
-assombrie, un seul bouton plein par écran (celui de la fiche), données vraies seulement.
+**Principe.** Ce qui précède le catalogue est une **vitrine** : chaque parfum à l'affiche est un **objet
+posé sur un champ de sa couleur**. Le champ — l'ambiance du parfum (§ B.3), bord à bord — commence
+*sous* le haut du visuel, que l'on voit déborder : deux rectangles qui se recouvrent, le visuel décalé
+vers la droite, du vide à gauche qui est la composition elle-même. Sur le champ, la marque, puis le
+**nom du parfum en `display`** : le grand format typographique de la page est au produit, pas à un
+slogan. La seconde vitrine est en miroir. Au-dessus, une manchette discrète (le H1) ; dessous, le rayon
+des marques en images, puis le catalogue. L'image domine, la couleur compose, le texte signe.
+Interdits tenus : aucun bouton avant le catalogue (le seul bouton plein reste celui de la fiche), aucun
+texte posé sur une photo, aucune photo assombrie, aucune donnée hors nom / marque / ligne / visuels /
+ambiance / compteurs. La recherche, les filtres et les nouveautés restent où ils sont (barre haute,
+catalogue) : l'accueil ne les duplique pas.
 
 | Élément | Valeur |
 |---|---|
 | Barre haute | inchangée : 113 px à 390 (56 + 44 + 12 + filet), 64 px dès 768 |
-| **Manchette** | `<section>` dans la gouttière, `padding-block` 12 (16 dès 768). H1 unique en **`title`** (28 px à 390, 40 px dès 1 000) : « Nuréa Parfums, » insécable dès 360 px, « Marseille » en `--text-2`. Rien d'autre : ni phrase, ni compteur, ni bouton |
-| **Scène** (× 2, un par parfum mis en avant, `aria-labelledby="une-<id>"`) | visuel 2:3 **bord à bord** (390 × 585 à 390), aucun rayon, aucun cadre, bouton « Voir la fiche : … » ; **légende** dessous, bandeau `bg-ambient` (`--amb` / `--amb-light`, repli `--surface-1`), `padding` 12 × gouttière : marque en `body` `--text-2` (« Marque · Ligne »), nom en `subtitle` H2, lien vers la page indexable, ouvre la feuille. Le visuel plein écran ne rétrécit pas à l'appui (on verrait le fond) : il cède en clarté (`opacity` 0,9, `--dur-1`) |
-| **Phrase de la maison** | `<p>` en `title`, mesure ≤ 65 ch, dans la gouttière : « Nuréa Parfums réunit à Marseille *N* parfums de *M* marques. On choisit au catalogue, on commande sur Snapchat — remis en main propre ou envoyé. » *N*, *M* comptés sur le catalogue publié (0 → la phrase est omise). Ordre téléphone : scène 1 → phrase → scène 2 (`row-gap` 48) |
-| **Rayon des marques** | `--space-section` sous la scène 2. Titre « Marques » en `title` + lien tertiaire « Toutes, de A à Z » (`/parfums`) sur la même ligne. Rayon horizontal (`.rayon`) : les 8 marques les plus fournies, chacune représentée par **un de ses parfums** (mis en avant, sinon un qui a sa variante claire, sinon le premier) : visuel 2:3 (vignette 640, `--r-sm`) de 144 px, nom en `subtitle`, « *n* parfums » en `caption` ; tout le bloc mène à `/parfums/<slug>`. Glissé calé sur la gouttière (`scroll-snap` proximity), barre de défilement masquée ; `content-visibility: auto` par tuile (hors écran, ses vignettes ne partent pas). Dès 1024 px : 8 colonnes, plus de glissé |
+| **Manchette** | `<section>` dans la gouttière, `padding-block` 24 (32 dès 768). H1 unique en **`title`** (28 px à 390, 40 px dès 1 000) : « Nuréa Parfums, » insécable dès 360 px, « Marseille » en `--text-2` ; dessous, `caption` « *N* parfums · *M* marques » (comptés sur le catalogue publié ; 0 → rien). Ni phrase, ni bouton |
+| **Vitrine** (× 2, `section[aria-labelledby="une-<id>"]`, classe `.vitrine`, la seconde `.vitrine-miroir`) | **champ** `.vitrine-champ` : absolu, bord à bord, de `--vitrine-deborde` (64 px à 390, 80 dès 768, 96 dès 1024) sous le haut de la vitrine jusqu'à son bas, fond `--ambient` (`--amb` / `--amb-light`, repli `--surface-1`). **Visuel** `.vitrine-visuel` : 2:3, **72 %** de la largeur du cadre à 390 (258 × 387), 56 % dès 768, aligné à droite (à gauche en miroir), angles droits, bouton « Voir la fiche : … », appui = clarté 0,9 (`--dur-1`). **Légende** `.vitrine-legende` sur le champ, `padding-block` 24 / 32 : marque en `body` `--text-2` (« Marque · Ligne »), nom en **`display`** H2 (48 px à 390, 80 px dès 1 000), lien vers la page indexable, ouvre la feuille ; en miroir, alignée à droite. Entre deux vitrines : 32 px (48 dès 1024) |
+| **Rayon des marques** | `--space-section` sous la seconde vitrine. Titre « Marques » en `title` + lien tertiaire « Toutes, de A à Z » (`/parfums`) sur la même ligne. Rayon horizontal (`.rail`) : les 8 marques les plus fournies, chacune représentée par **un de ses parfums** (mis en avant, sinon un qui a sa variante claire, sinon le premier) : visuel 2:3 (vignette 640, `--r-sm`) de 144 px, nom en `subtitle`, « *n* parfums » en `caption` ; tout le bloc mène à `/parfums/<slug>`. Glissé calé sur la gouttière (`scroll-snap` proximity), barre de défilement masquée ; `content-visibility: auto` par tuile (hors écran, ses vignettes ne partent pas). Dès 1024 px : 8 colonnes, plus de glissé |
 | Catalogue | tel que validé ; `--space-section` au-dessus |
-| Titres de section | `title`, jamais `subtitle` |
-| Mouvement | **à l'arrivée, une fois** (jetons § B.7, `--dur-4`, `--ease-out`, `backwards`) : manchette, légende (+ 80 ms) et phrase (+ 160 ms) entrent par `opacity` 0 → 1 et `scale` 0,95 → 1 (`.enter`) ; l'image de une **recule** de 1,03 → 1 dans son cadre depuis `opacity` 0,4 (`.settle` — ni depuis 0, Chrome ne compterait son LCP qu'à la fin du fondu, ni depuis plus petit, on verrait ses bords). Appui `.press` sur le rayon et les liens ; survol (pointeur fin) = nom souligné ; bascule de thème en cercle inchangée ; glissé natif du rayon. Mouvement réduit : `--dur-4` 0 → tout est posé d'emblée. Rien d'autre (T18 n'ajoute pas d'entrée au défilement sur l'accueil) |
+| Titres de section | `title`, jamais `subtitle` ; le `display` n'est qu'au nom du parfum à l'affiche |
+| Mouvement | **à l'arrivée, une fois** (jetons § B.7, `--dur-4`, `--ease-out`, `backwards`) : manchette et champ à 0 ms, visuel à + 60 ms, légende à + 140 ms — on voit l'objet se poser sur son champ. Texte et champ : `opacity` 0 → 1, `scale` 0,95 → 1 (`.enter`) ; visuel : `opacity` 0,4 → 1, `scale` 0,97 → 1 (`.enter-visuel` — pas depuis 0, Chrome ne compterait son LCP qu'à la fin du fondu). Appui `.press` sur le rayon et les liens ; survol (pointeur fin) = nom souligné ; bascule de thème en cercle inchangée ; glissé natif du rayon. Mouvement réduit : `--dur-4` 0 → tout est posé d'emblée. Rien d'autre |
 | Taps | visuel ou nom → fiche (1), « Commander sur Snapchat » (2) : **2 taps**, 4 exigés |
 
 | | 390 | 768 | 1024+ |
 |---|---|---|---|
-| Grille `.une` | `"s1" "phrase" "s2"`, bord à bord | `"s1 s2" "phrase phrase"`, dans la gouttière, `column-gap` 24, deux scènes de 348 × 522 | `"phrase s1 s2"`, `minmax(0,1fr) auto auto`, `column-gap` 32 ; scènes à **`clamp(28rem, 70vh, 42rem)`** de haut (373 × 560 à 1280 × 800), légende de la largeur du visuel ; la phrase devient une colonne de légende : `max-width` 28 rem, au pas du rôle `subtitle` (21 px), centrée verticalement |
-| Premier écran (× 844 ou × 800, barre comprise, mesuré) | barre 0→113, H1 125→157, **scène 169→754 (entière)**, légende 754→836 (marque 766→793, nom 797→824) : l'image et sa légende tiennent au-dessus de la ligne de flottaison, la phrase commence à 884 | manchette, les deux scènes côte à côte et leurs légendes (jusqu'à ~ 820) | manchette 64→143, phrase, diptyque 143→784 : tout tient dans 800 |
-| LCP (build webpack, profil T9, Pixel 7, 3 passes) | le visuel de la scène 1 : `preloadByTheme`, `sizes="(min-width: 768px) 320px, 213px"` → **vignette 640** (44 Ko) partout (213 × 3 = 639 ; 320 × 2 = 640), affichée sur 390 px (densité 1,64 sur un écran ×3). Mesuré le 21/10 : **1 760 ms sombre / 1 956 ms clair**, CLS 0 (1 872 / 2 000 avant). Piège de mesure : un vieux `next start` sur 3004 (session précédente) servait une CSS disparue → page sans style, chiffres faux ; vérifier `netstat` avant de lancer le serveur de mesure | | |
+| Vitrine | visuel 258 × 387 à droite, champ dès 64 px sous son haut, légende dessous | visuel 56 % (403 × 605), champ dès 80 px | cadre en grille `minmax(0,1fr) auto` (`column-gap` 64) : légende à gauche, **centrée sur la hauteur du visuel** ; visuel à droite, `clamp(28rem, 70vh, 40rem)` de haut (373 × 560 à 1280 × 800), champ dès 96 px sous son haut ; miroir : visuel à gauche, légende à droite, alignée à gauche |
+| Premier écran (× 844 ou × 800, barre comprise, mesuré) | barre 0→113, H1 137→169, compteur 177→194, **visuel 242→629**, champ 306→769, marque 653→678, **nom 686→737** : la vitrine entière, nom compris, tient au-dessus de la ligne de flottaison ; le visuel de la seconde affleure à 801 | manchette, visuel 1 et son champ, légende (jusqu'à ~ 940) | manchette 64→200, visuel 224→784, champ 320→784, nom centré vers 500 : la vitrine tient dans 800 |
+| LCP (build webpack, profil T9, Pixel 7, 3 passes) | le visuel de la première vitrine : `preloadByTheme`, `sizes="(min-width: 1024px) 320px, 213px"` → **vignette 640** (44 Ko) partout (213 × 3 = 639 ; 320 × 2 = 640), affichée sur 258 px (densité 2,5 sur un écran ×3). Mesuré le 21/10 : **1 944 ms sombre / 2 148 ms clair**, CLS 0 — temps de peinture de la vraie vignette ; l'entrée LCP que Chrome rapporte (1 000 / 920 ms) compte le flou de remplacement, de même taille (1 872 / 2 000 avant). Piège de mesure : un vieux `next start` sur 3004 (session précédente) servait une CSS disparue → page sans style, chiffres faux ; vérifier `netstat` avant de lancer le serveur de mesure | | |
 
-**Ce que la composition n'a pas, et ce qui l'élèverait (ressources à faire réaliser).**
-(a) Une **scène de couverture 9:16** par parfum mis en avant (1080 × 1920, sombre et clair, le flacon
-dans les 60 % du bas, les 30 % du haut en fond calme et continu) : l'écran entier devient la scène et
-la manchette peut se composer *dans* son ciel — une vraie couverture, sans recadrage. Demande une
-colonne `coverImage`/`coverImageLight` (migration, après T23 : contrat `EQUIPE.md` § 4.3) et un
-contrôle de contraste du tiers haut par `ambiance.mjs`. (b) Facultatif : un **plan vidéo de 6 s, muet,
-en boucle** de la même scène (pétales, lumière) en 9:16, affiche fixe en repli — l'ouverture devient
-vivante ; coût ≤ 1,5 Mo, chargé après le LCP. (c) **Trois faits vrais** sur la maison (année, quartier,
-comment on choisit) pour une phrase de la maison qui dise plus que des chiffres. Sans ces trois
-ressources, la composition ci-dessus est complète et tient le budget.
+**Ce qui élèverait encore la vitrine (ressources à faire réaliser, à la main du gérant).**
+(a) Des **visuels détourés** (le flacon seul, fond transparent, 2:3, sombre et clair) pour les parfums
+mis en avant : l'objet se poserait *directement* sur le champ de sa couleur, sans le rectangle de sa
+scène — une vitrine, littéralement. Demande un champ `imageCutout`/`imageCutoutLight` (migration, après
+T23 : contrat `EQUIPE.md` § 4.3) et un passage par le writer d'images. (b) **Trois faits vrais** sur la
+maison (année, quartier, comment on choisit) si une phrase de la maison doit un jour accompagner la
+manchette. Sans ces ressources, la composition ci-dessus est complète et tient le budget.
 
-Amendement de § B.3.8 : l'ambiance peut aussi être le **fond de la légende d'une scène de l'accueil**
-(un bandeau de la largeur du visuel, jamais plus) et, comme déjà, l'en-tête de la page marque ; toujours
-**jamais** le fond de toute la page ni la barre. Amendement de § B.4 : le H1 de l'accueil est en `title`
-(manchette), `display` reste au H1 de La parfumerie. Amendement de § B.7 : une image bord à bord entre
-par `opacity` 0,4 → 1 et `scale` 1,03 → 1 dans un cadre qui rogne.
+Amendement de § B.3.8 : l'ambiance peut aussi être le **champ d'une vitrine de l'accueil** (un bandeau
+bord à bord de la hauteur de la vitrine, jamais plus) et, comme déjà, l'en-tête de la page marque ;
+toujours **jamais** le fond de toute la page ni la barre. Amendement de § B.4 : le H1 de l'accueil est en
+`title` (manchette) ; `display` va au nom du parfum à l'affiche, et reste au H1 de La parfumerie.
+Amendement de § B.7 : un visuel entre par `opacity` 0,4 → 1 et `scale` 0,97 → 1.
 
 **Archives** : A « Couverture » et B « Nuancier » restent visibles sur `accueil-v2.html`
 (`refonte/planche`) ; aucun code n'en est tiré.
@@ -392,11 +394,11 @@ Modèle : Opus 5.5 ; effort `medium` sauf mention. `PC` = point de contrôle gé
 
 ### Phase 4 — pages éditoriales et aperçus
 
-**T15 — Accueil : composition** · M · **faite par Fable le 21/10** (composition « La une », § B.10)
-- Fichiers : `Masthead.tsx` (manchette : le H1), `FeaturedSection.tsx` (les deux scènes et la phrase de la maison, grille `.une`), `BrandShelf.tsx` (rayon des marques en images, `topBrands` testé), `app/(shop)/page.tsx`, `app/globals.css` (`.une`, `.scene*`, `.rayon`, `.enter`, `.settle`). Supprimés : `Hero.tsx`, `BrandIndex.tsx`.
-- Historique : planche v1 refusée le 20/10 (« beaucoup trop cheap »), planche v2 → A choisie (« très simple, bof »), A codée (`3492c18`) refusée le 21/10 (« ultra cheap ») ; troisième passage codé directement par Fable à la demande du gérant (pas de planche, pas de choix A/B).
-- Acceptation (vérifiée le 21/10) : H1 unique « Nuréa Parfums, Marseille » ; aucune modale à l'arrivée ; Snapchat en **2 taps** (e2e `accueil-snapchat` 8/8) ; premier écran à 390 × 844 conforme au tableau de § B.10 ; `scrollWidth === innerWidth` à 390, 768, 1280 ; deux thèmes ; **LCP 1 760 / 1 956 ms** (≤ 2,5 s) ; `typecheck`, `lint`, `test` (996) verts.
-- Le PC sur la page codée tranche (aperçu Vercel de la branche, téléphone). « Non » d'exécution → l'exécutant corrige ; « non » de goût → Fable, avec les ressources de § B.10 (a)–(c) en main cette fois.
+**T15 — Accueil : composition** · M · **faite par Fable le 21/10** (composition « Vitrine », § B.10)
+- Fichiers : `Masthead.tsx` (manchette : le H1 et les compteurs), `FeaturedSection.tsx` (les deux vitrines), `openPerfume.ts` (ouverture de la fiche par événement, partagé avec le catalogue), `BrandShelf.tsx` (rayon des marques en images, `topBrands` testé), `app/(shop)/page.tsx`, `app/globals.css` (`.vitrine*`, `.rail`, `.enter`, `.enter-visuel`). Supprimés : `Hero.tsx`, `BrandIndex.tsx`.
+- Historique : planche v1 refusée le 20/10 (« beaucoup trop cheap »), planche v2 → A choisie (« très simple, bof »), A codée (`3492c18`) refusée le 21/10 (« ultra cheap ») ; troisième passage codé directement par Fable (deux essais refusés dans la session, « La une » et « Le comptoir », puis « Vitrine »).
+- Acceptation (vérifiée le 21/10) : H1 unique « Nuréa Parfums, Marseille » ; aucune modale à l'arrivée ; Snapchat en **2 taps** (e2e `accueil-snapchat` 8/8) ; premier écran à 390 × 844 conforme au tableau de § B.10 ; `scrollWidth === innerWidth` à 390, 768, 1280 ; deux thèmes ; **LCP 1 944 / 2 148 ms** (≤ 2,5 s) ; `typecheck`, `lint`, `test` (996) verts.
+- Le PC sur la page codée tranche (aperçu Vercel de la branche, téléphone). « Non » d'exécution → l'exécutant corrige ; « non » de goût → Fable.
 
 **T16 — La parfumerie, Contact, Légal, 404** · M · Opus medium
 - Fichiers : `marque/page.tsx`, `contact/page.tsx`, `legal/page.tsx` (contenu juridique inchangé), `app/not-found.tsx`, `ContactForm.tsx` (étiquettes visibles, erreurs sous champ, premier champ en erreur focalisé, leurre et guard inchangés), `src/components/editorial/*` (réécrits ou supprimés ; `Seal`, `Monogram` : monogramme cerclé seulement sur photo).
