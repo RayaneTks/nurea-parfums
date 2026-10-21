@@ -2,7 +2,7 @@
 
 Prompt de reprise après `/clear` : `PROMPT-REPRISE.md`.
 
-Mis à jour le 21/10/2026 (photos de la hero remplacées). Ce fichier dit **où on en est** ; le détail chiffré est dans
+Mis à jour le 21/10/2026 (hero et suggestions de recherche validées ; prochain : T16). Ce fichier dit **où on en est** ; le détail chiffré est dans
 `04-PLAN-EXECUTION.md` § B (DA) et § B.10 (accueil), les règles dans `CLAUDE.md`, `DESIGN.md`,
 `01-INVARIANTS.md`. Ne rien décider ici qui n'y soit pas écrit.
 
@@ -42,7 +42,7 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 | Couleur de marque : doré (sombre) / bordeaux (clair) | **décidé** (gérant, 21/10) ; en place : **couple Nuréa** sur toute la vitrine (fonds, encres, accent ; `0133fc6`), logo complet monogramme + nom dans la barre et le pied de page (`a141675`), accent sur ce qui agit et ce qui est choisi (`DESIGN.md` § Couleurs)  ; dans la hero, **l'étiquette du flacon** porte le monogramme dans la couleur du thème (photos du 21/10, `cd64c4d`) ; le mot **« Nuréa » du titre en accent** (`606ff14`, exception notée dans `DESIGN.md` § Couleurs) ; pas de second monogramme décoratif (doublon de l'étiquette et de la barre) ; **à valider par le gérant sur captures** | `globals.css`, `brand.ts`, `BrandLogo.tsx` |
 | Composants (boutons, cartes, champs, filtres, feuille, Ma sélection) | **validé** (PC 2–3) | `src/components/ui`, `PerfumeCard`, `PerfumeSheet`… — **ne pas les redessiner** |
 | Catalogue (grille, filtres, recherche, fiche, Snapchat 2 taps) | **validé** | `CatalogSection` et ses pièces |
-| Suggestions sous le champ de recherche (demande du gérant, 21/10) | **codé** (`61cb116`), **à juger par le gérant** sur l'aperçu | jusqu'à 5 parfums avec visuel, « Voir les N parfums », sinon « Vous cherchez X ? Écrivez-nous » ; une rangée ouvre la fiche ; clavier complet (§ T10 bis) |
+| Suggestions sous le champ de recherche (demande du gérant, 21/10) | **validé** (gérant, 21/10, `61cb116`) | jusqu'à 5 parfums avec visuel, « Voir les N parfums », sinon « Vous cherchez X ? Écrivez-nous » ; une rangée ouvre la fiche ; clavier complet (§ T10 bis) |
 | Hero | **validé** (gérant, 21/10, « ok » après les photos à l'étiquette et « Nuréa » en accent) | photo du flacon Nuréa en fond (photos du gérant du 21/10 : flacon rempli, étiquette au monogramme, clair/sombre alignés à 0 px ; verrerie et petits flacons autour, que le brief excluait — choix du gérant) ; sous 375 px la photo descend de `--space-8` pour que Snapchat ne touche pas le bouchon ; titre puis « Voir le catalogue » + Snapchat en bouton rond 44 px sur une ligne, au-dessus et à gauche du flacon ; accroche « Le parfum que vous aimez, dans un flacon Nuréa. » (formulation du gérant, **non verrouillée**, avis juridique attendu) |
 | À l'affiche | **validé** (21/10, « globalement ok » après finitions) | deux bandeaux horizontaux en miroir (Symphony flacon à gauche, Afternoon Swim flacon à droite) ; visuel entier fondu dans sa propre photo floutée (coin haut droit ×3) ; nom intégré sur un voile `--bg` ; tout le bandeau ouvre la fiche ; 4:3 mobile, 16:9 sur 62 rem en quinconce sur bureau |
 | Marques | **en cours**, pas encore jugé | index typographique : 12 marques, nom + nombre, « Toutes les marques » → `/parfums` |
@@ -94,8 +94,8 @@ miniatures (répétaient les produits).
 
 ## Prochaines priorités
 
-1. **Renforcer l'identité Nuréa sur la page d'accueil** (demande du gérant), notamment la hero, avec la
-   couleur de marque (doré en sombre, bordeaux en clair) et le monogramme — sans toucher aux composants ni aux
-   sections validées, sans relancer une refonte. **Fait le 21/10** (photos à l'étiquette NP, `cd64c4d` ; « Nuréa » du titre en accent, `606ff14`) ;
-   attend le jugement du gérant sur captures avant d'ajouter quoi que ce soit.
-2. Avis juridique attendu (accroche, présentation face aux marques), puis T16 → T23.
+1. **T16 — La parfumerie, Contact, Légal, 404** (`04-PLAN-EXECUTION.md`) : réécrire ces pages dans la DA
+   validée (composants figés, mobile d'abord), `MENTION_FLACONS` sur La parfumerie et Contact, formulaire
+   par `src/actions/contact.ts` inchangé, 404 qui renvoie à la recherche. Point de contrôle gérant sur captures.
+2. Puis T17 → T23. Avis juridique toujours attendu (accroche, présentation face aux marques) — ne pas bloquer.
+3. Marques (index typographique de l'accueil) : pas encore jugé par le gérant ; à lui montrer avec T16.

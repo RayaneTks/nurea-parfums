@@ -1,6 +1,6 @@
 # Prompt de reprise — refonte de la vitrine Nuréa (après /clear)
 
-À coller tel quel dans une session neuve (Opus, effort high). Écrit le 21/10/2026.
+À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (hero, suggestions validées ; cap sur T16).
 
 ---
 
@@ -30,8 +30,10 @@ chaque rendu finit par « Ce que tu dois faire ».
 
 - DA « Nuancier nocturne », Fraunces + Figtree, clair + sombre ; **composants du design system figés**
   (boutons, cartes, arrondis, champs, filtres, fiche, Ma sélection) ; catalogue validé.
-- Accueil : hero (photo du flacon Nuréa, titre, « Voir le catalogue » + Snapchat en bouton rond),
-  **« À l'affiche » validé le 21/10** (deux bandeaux horizontaux en miroir), Marques en index typographique.
+- Accueil : **hero validée le 21/10** (photos du flacon Nuréa à l'étiquette NP, « Nuréa » du titre en accent,
+  « Voir le catalogue » + Snapchat en bouton rond), **« À l'affiche » validé le 21/10** (deux bandeaux
+  horizontaux en miroir), Marques en index typographique (pas encore jugé).
+- **Suggestions sous le champ de recherche validées le 21/10** (`SearchBox`, T10 bis) : ne pas y revenir.
 - Copy : jamais « le même parfum » (le parfum Nuréa n'est pas celui de la marque) ; plus de « Marseille » ;
   l'accroche « Le parfum que vous aimez, dans un flacon Nuréa. » reste provisoire (avis juridique attendu).
 - **Couleur de marque** (21/10) : doré `#C4956A` en sombre, bordeaux `#8B3A3A` en clair, jeton `--accent` ;
@@ -43,11 +45,13 @@ chaque rendu finit par « Ce que tu dois faire ».
 
 ## 4. Ta mission
 
-Priorité donnée par le gérant : **renforcer l'identité Nuréa sur la page d'accueil**, notamment la hero,
-avec la couleur de marque (doré / bordeaux) et le monogramme — sans refonte et sans toucher aux composants ni
-aux sections validées. Commence par un court audit (ce qui dit « Nuréa » aujourd'hui,
-ce qui manque), propose **une** direction argumentée, puis exécute. Ensuite : T16 → T23
-(`04-PLAN-EXECUTION.md`), un point de contrôle gérant à chaque étape visuelle.
+**T16 — La parfumerie, Contact, Légal, 404** (`04-PLAN-EXECUTION.md` § T16) : réécrire ces pages dans la DA
+validée. Commence par lire les pages actuelles (`app/(shop)/marque`, `contact`, `legal`, `app/not-found.tsx`,
+`src/components/editorial/*`, `ContactForm.tsx`) et leurs données réelles ; propose **une** composition par page,
+en quelques lignes, puis exécute — contenu juridique inchangé, formulaire par `src/actions/contact.ts` inchangé,
+`MENTION_FLACONS` sur La parfumerie et Contact, 404 qui renvoie à la recherche, aucune contenance ni prix,
+rien d'inventé. Point de contrôle gérant sur captures (320 / 390 / 430 / 1280, clair et sombre) avant T17.
+Ensuite : T17 → T23, un point de contrôle à chaque étape visuelle.
 
 ## 5. Méthode
 
