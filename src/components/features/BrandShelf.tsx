@@ -64,7 +64,7 @@ export const BrandShelf: FC<{ brands: BrandShelfEntry[] }> = ({ brands }) =>
           Toutes, de A à Z
         </Link>
       </div>
-      <ul className="rayon">
+      <ul className="rail">
         {brands.map((brand) => (
           <li key={brand.slug}>
             <Link href={brandPath(brand.slug)} className="group press block">
