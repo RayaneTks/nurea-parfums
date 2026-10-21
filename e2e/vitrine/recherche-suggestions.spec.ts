@@ -1,4 +1,5 @@
-import { test, expect, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { test, expect } from "./test";
 
 /**
  * Suggestions sous le champ de la barre haute (`SearchBox`) : dès deux caractères, des parfums du

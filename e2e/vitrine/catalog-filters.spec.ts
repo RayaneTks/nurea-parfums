@@ -1,4 +1,6 @@
-import { test, expect, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { test, expect } from "./test";
+import { waitForHydration } from "../helpers/hydration";
 
 /**
  * Filtres du catalogue (04-PLAN-EXECUTION § B, T11) : la feuille « Marques » annonce le nombre de
@@ -17,10 +19,10 @@ async function openBrands(page: Page) {
   await page.goto("/", { waitUntil: "networkidle" });
   const trigger = page.locator("#collection").getByRole("button", { name: /^Marques( · \d+)?$/ });
   const sheet = page.getByRole("dialog", { name: "Filtrer par marque" });
-  await expect(async () => {
-    await trigger.click();
-    await expect(sheet).toBeVisible({ timeout: 1_000 });
-  }).toPass();
+  /* Un seul clic, une fois React branché : recliquer pendant l'ouverture refermerait la feuille. */
+  await waitForHydration(trigger);
+  await trigger.click();
+  await expect(sheet).toBeVisible();
   return sheet;
 }
 

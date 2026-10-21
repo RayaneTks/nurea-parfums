@@ -1,5 +1,7 @@
-import { test, expect, type Page } from "@playwright/test";
-import { countTaps } from "./helpers/tap";
+import type { Page } from "@playwright/test";
+import { test, expect } from "./test";
+import { waitForHydration } from "../helpers/hydration";
+import { countTaps } from "../helpers/tap";
 
 /**
  * Fiche en feuille (04-PLAN-EXECUTION § T12) : message prêt en deux taps depuis la grille, fermeture
@@ -26,10 +28,9 @@ async function home(page: Page) {
 
 /** Ouvre la première carte ; rendu serveur : on attend l'interactivité, pas la seule visibilité. */
 async function openFirst(page: Page) {
-  await expect(async () => {
-    await cards(page).first().click();
-    await expect(sheet(page)).toBeVisible({ timeout: 1_000 });
-  }).toPass();
+  await waitForHydration(cards(page).first());
+  await cards(page).first().click();
+  await expect(sheet(page)).toBeVisible();
 }
 
 /** Glissé au doigt réel (Chromium, événements tactiles), `steps` points sur `ms` millisecondes. */
@@ -49,12 +50,11 @@ test.describe("Fiche en feuille", () => {
     await home(page);
     const taps = countTaps(page);
     const card = cards(page).first();
-    await expect(card).toBeVisible();
+    await waitForHydration(card);
 
-    await expect(async () => {
-      await taps.tap(card, "carte");
-      await expect(sheet(page)).toBeVisible({ timeout: 1_000 });
-    }).toPass();
+    /* Un seul tap compté : le recommencer fausserait le budget. */
+    await taps.tap(card, "carte");
+    await expect(sheet(page)).toBeVisible();
     const name = (await sheet(page).locator("h2").innerText()).trim();
 
     /* Par son adresse : son nom change le temps du succès (« Nom copié »). */
@@ -74,7 +74,11 @@ test.describe("Fiche en feuille", () => {
 
   test("Échap ferme, le focus revient à la carte, l'adresse suit", async ({ page }) => {
     await home(page);
-    await openFirst(page);
+    /* Au clavier, comme qui revient au focus : Safari ne donne pas le focus à un bouton cliqué. */
+    await waitForHydration(cards(page).first());
+    await cards(page).first().focus();
+    await page.keyboard.press("Enter");
+    await expect(sheet(page)).toBeVisible();
     await expect(page).toHaveURL(/[?&]parfum=\d+/);
     await page.keyboard.press("Escape");
     await expect(sheet(page)).toBeHidden();
@@ -119,7 +123,8 @@ test.describe("Fiche en feuille", () => {
 });
 
 test.describe("Fiche en feuille — gestes (téléphone)", () => {
-  test.skip(({ isMobile }) => !isMobile, "gestes tactiles");
+  /* Glissés dictés par le protocole de Chromium : téléphones Chromium seulement. */
+  test.skip(({ isMobile, browserName }) => !isMobile || browserName !== "chromium", "gestes tactiles (Chromium)");
 
   test("un glissé rapide vers le bas ferme", async ({ page }) => {
     await home(page);
@@ -134,11 +139,12 @@ test.describe("Fiche en feuille — gestes (téléphone)", () => {
   test("dérouler et fermer ne se mêlent pas : le visuel fait défiler, jamais la feuille", async ({ page }) => {
     await home(page);
     await openFirst(page);
-    await page.waitForTimeout(600);
     const scroller = sheet(page).locator("> div").first();
     const scrollTop = () => scroller.evaluate((el) => el.scrollTop);
     const shift = () =>
       sheet(page).evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m42);
+    /* La feuille a fini de monter (une durée fixe ne tient pas sous charge). */
+    await expect.poll(async () => Math.abs(await shift())).toBeLessThan(1);
     expect(await scroller.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
     const visual = sheet(page).locator("img").filter({ visible: true }).first();
     const box = (await visual.boundingBox())!;

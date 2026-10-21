@@ -77,5 +77,5 @@ test("« louis vuitton » sélectionne Louis Vuitton existante avec une notice i
   // 5. Une seule marque « Louis Vuitton », qui porte le parfum.
   await openShell(page, routes.catalogue({ tab: "marques", q: "vuitton" }));
   await expect(page.getByRole("heading", { level: 2, name: "1 marque" })).toBeVisible();
-  await expect(page.getByText("Sélection · 1 parfum", { exact: true })).toBeVisible();
+  await expect(page.getByText("1 référence", { exact: true })).toBeVisible();
 });
