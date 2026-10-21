@@ -35,8 +35,8 @@ function sources(lumiere: Lumiere) {
  * forment un seul bloc au-dessus et à gauche du flacon (le bas du titre au-dessus du bouchon), les
  * entrées sur une ligne. Dès 768 px : la photo paysage, le titre et les entrées à gauche.
  *
- * Composants inchangés : `Button` plein, lien tertiaire. Le H1, unique, est l'accroche : « Sentez bon, sans payer le
- * prix fort. » (choix du gérant, 21/10), sans la ville (les clients viennent de Snapchat, envois partout en France).
+ * Composants inchangés : `Button` plein, lien tertiaire. Le H1, unique, est l'accroche : « Votre parfum, sans le prix des
+ * grandes marques. » (choix du gérant, 21/10), sans la ville (les clients viennent de Snapchat, envois partout en France).
  * Elle évoque le prix face aux marques : l'avis juridique attendu la couvre aussi (01-INVARIANTS § 1).
  *
  * Chaque lumière est annoncée pour son seul thème et chaque cadrage pour sa seule largeur ; les deux
@@ -70,9 +70,9 @@ export const Hero: FC = () => {
         </picture>
       </div>
 
-      {/* Accroche choisie par le gérant le 21/10 ; avis juridique attendu (elle évoque le prix). */}
+      {/* Accroche choisie par le gérant le 21/10 ; avis juridique attendu (elle compare le prix aux grandes marques). */}
       <h1 id="accueil-titre" className="hero-titre t-title enter">
-        Sentez bon, sans payer le prix fort.
+        Votre parfum, sans le prix des grandes marques.
       </h1>
       <div className="hero-entrees enter">
         <a href="#collection" className={buttonClass("solid")}>
