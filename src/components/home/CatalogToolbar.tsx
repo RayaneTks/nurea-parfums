@@ -22,7 +22,7 @@ const DENSITIES: ReadonlyArray<{ value: Density; label: string; Icon: LucideIcon
 /* Puce (DESIGN.md : `--r-sm`) ; active = `--surface-2`. 44 px de haut, la cible tactile. */
 /** Puce du catalogue (filtres) ; réutilisée telle quelle par « À l'affiche » de l'accueil. */
 export const CHIP =
-  "press inline-flex h-11 shrink-0 items-center gap-2 rounded-sm border border-line px-4 text-fg-2 transition-[background-color,color,transform] duration-dur-2 ease-soft mouse-hover:text-fg-1 aria-pressed:border-surface-2 aria-pressed:bg-surface-2 aria-pressed:text-fg-1 aria-selected:border-surface-2 aria-selected:bg-surface-2 aria-selected:text-fg-1";
+  "press inline-flex h-11 shrink-0 items-center gap-2 rounded-sm border border-line px-4 text-fg-2 transition-[background-color,color,transform] duration-dur-2 ease-soft mouse-hover:text-fg-1 aria-pressed:border-accent aria-pressed:bg-accent-wash aria-pressed:text-accent aria-selected:border-accent aria-selected:bg-accent-wash aria-selected:text-accent";
 
 interface CatalogToolbarProps {
   category: Category;
@@ -104,7 +104,7 @@ export const CatalogToolbar: FC<CatalogToolbarProps> = ({
               aria-label={label}
               aria-pressed={density === value}
               onClick={() => onDensityChange(value)}
-              className="press flex h-11 w-11 items-center justify-center rounded-md text-fg-3 transition-[background-color,color,transform] duration-dur-2 ease-soft mouse-hover:text-fg-1 aria-pressed:bg-surface-2 aria-pressed:text-fg-1"
+              className="press flex h-11 w-11 items-center justify-center rounded-md text-fg-3 transition-[background-color,color,transform] duration-dur-2 ease-soft mouse-hover:text-fg-1 aria-pressed:bg-accent-wash aria-pressed:text-accent"
             >
               <Icon size={18} strokeWidth={1.5} aria-hidden />
             </button>

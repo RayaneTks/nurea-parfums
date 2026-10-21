@@ -195,7 +195,7 @@ export const CatalogFilterDrawer: FC<CatalogFilterDrawerProps> = ({
                           aria-hidden
                           className={cn(
                             "flex h-5 w-5 shrink-0 items-center justify-center rounded-sm border transition-colors duration-dur-1 ease-soft peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:[outline-color:var(--focus)]",
-                            checked ? "border-fg-1 bg-fg-1 text-bg" : "border-fg-3"
+                            checked ? "border-accent bg-accent text-on-accent" : "border-fg-3"
                           )}
                         >
                           {checked && <Check size={14} strokeWidth={2.5} />}

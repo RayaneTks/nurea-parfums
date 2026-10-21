@@ -48,7 +48,7 @@ export const BrandShelf: FC<{ brands: BrandShelfEntry[] }> = ({ brands }) =>
         <h2 id="marques-titre" className="t-title">
           Marques
         </h2>
-        <Link href={CATALOGUE_PATH} className="press inline-flex min-h-11 items-center text-fg-2 underline-offset-4 decoration-1 mouse-hover:underline">
+        <Link href={CATALOGUE_PATH} className="press inline-flex min-h-11 items-center text-fg-2 underline-offset-4 decoration-accent decoration-1 mouse-hover:underline">
           Toutes les marques
         </Link>
       </div>
@@ -62,7 +62,7 @@ export const BrandShelf: FC<{ brands: BrandShelfEntry[] }> = ({ brands }) =>
                 aria-label={`${brand.name}, ${count}`}
                 className="group press inline-flex min-h-11 items-baseline gap-1.5 py-1"
               >
-                <span className="t-subtitle underline-offset-[6px] decoration-1 group-mouse-hover:underline">{brand.name}</span>
+                <span className="t-subtitle underline-offset-[6px] decoration-accent decoration-1 group-mouse-hover:underline">{brand.name}</span>
                 <span className="t-caption" aria-hidden="true">
                   {brand.count}
                 </span>

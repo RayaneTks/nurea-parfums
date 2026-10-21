@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils";
  * Boutons de la vitrine — DESIGN.md § États, 04-PLAN-EXECUTION § B.8.
  *
  * Trois variantes, pas une de plus :
- *   · `solid`   — primaire. **Un seul par écran.**
+ *   · `solid`   — primaire, à la couleur de marque (doré en sombre, bordeaux en clair). **Un seul par écran.**
  *   · `outline` — secondaire : `--surface-1`, filet `--line`.
- *   · `link`    — tertiaire : texte seul, souligné au survol.
+ *   · `link`    — tertiaire : texte seul, souligné à la couleur de marque au survol.
  *
  * Les huit états : repos, survol (pointeur fin, couleur seule), focus clavier (anneau global
  * `:focus-visible`), appui (`--press`) viennent des classes ; désactivé, chargement, erreur et
@@ -23,9 +23,9 @@ const BOX =
   "press inline-flex min-h-12 items-center justify-center gap-2 rounded-md px-6 font-medium transition-[background-color,color,transform] duration-dur-2 ease-soft active:duration-dur-1";
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  solid: `${BOX} bg-fg-1 text-bg mouse-hover:bg-[var(--primary-hover)]`,
+  solid: `${BOX} bg-accent text-on-accent mouse-hover:bg-accent-hover`,
   outline: `${BOX} border border-line bg-surface-1 text-fg-1 mouse-hover:bg-surface-2`,
-  link: "inline-flex min-h-11 items-center text-fg-1 underline-offset-4 mouse-hover:underline",
+  link: "inline-flex min-h-11 items-center text-fg-1 decoration-accent decoration-1 underline-offset-4 mouse-hover:underline",
 };
 
 /* Désactivé : l'appui et le survol s'éteignent, la cible reste au clavier. */

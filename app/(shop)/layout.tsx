@@ -113,7 +113,7 @@ export default function ShopLayout({ children }: { children: ReactNode }) {
     <div id={VITRINE_ROOT_ID} className={`${brandFontClassName} flex min-h-svh flex-col bg-bg`}>
       <a
         href="#main-content"
-        className="sr-only rounded-md bg-fg-1 px-4 py-3 font-medium text-bg focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-toast"
+        className="sr-only rounded-md bg-accent px-4 py-3 font-medium text-on-accent focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-toast"
       >
         Aller au contenu principal
       </a>

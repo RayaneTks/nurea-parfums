@@ -104,7 +104,7 @@ export const Navbar: FC = () => {
                     aria-current={current ? "page" : undefined}
                     className={cn(
                       "flex h-11 items-center px-3 transition-colors duration-dur-2 ease-soft",
-                      current ? "text-fg-1" : "text-fg-3 mouse-hover:text-fg-1"
+                      current ? "text-fg-1 underline decoration-accent decoration-2 underline-offset-8" : "text-fg-3 mouse-hover:text-fg-1"
                     )}
                   >
                     {label}
@@ -172,7 +172,7 @@ export const Navbar: FC = () => {
             {count > 0 && (
               <span
                 aria-hidden
-                className="t-caption absolute right-0.5 top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-fg-1 px-1 text-bg"
+                className="t-caption absolute right-0.5 top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-on-accent"
               >
                 {count}
               </span>

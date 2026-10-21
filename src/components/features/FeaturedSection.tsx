@@ -57,11 +57,11 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
               <div className="bandeau-texte">
                 <p className="t-body">{brandLine}</p>
                 <h3 id={titleId} className="affiche-nom t-title hyphens-manual [overflow-wrap:anywhere]">
-                  <a href={href} onClick={openSheetFromLink(perfume.id)} className="relative z-[2] underline-offset-[6px] decoration-1 mouse-hover:underline">
+                  <a href={href} onClick={openSheetFromLink(perfume.id)} className="relative z-[2] underline-offset-[6px] decoration-accent decoration-1 mouse-hover:underline">
                     {perfume.name}
                   </a>
                 </h3>
-                <span className="t-body mt-3 text-fg-1 underline decoration-1 underline-offset-4" aria-hidden="true">
+                <span className="t-body mt-3 text-fg-1 underline decoration-accent decoration-1 underline-offset-4" aria-hidden="true">
                   Voir la fiche
                 </span>
               </div>
