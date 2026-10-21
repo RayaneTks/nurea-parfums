@@ -476,6 +476,22 @@
     margin-top: var(--space-6);
   }
 
+  /* Sous 375 px, le titre passe sur trois lignes : le bloc ne tient plus au-dessus du bouchon. La photo
+     descend de --space-8 (son haut se fond dans la page, comme son sol), sans recadrage ni agrandissement,
+     et le bloc remonte d'autant : les entrées s'arrêtent au-dessus du bouchon (41 % de la photo). */
+  @media (max-width: 374px) {
+    .hero {
+      grid-template-rows: calc(var(--space-8) + var(--hero-h) * 0.215) auto;
+      height: calc(var(--hero-h) + var(--space-8));
+    }
+
+    .hero-photo {
+      top: var(--space-8);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--space-8), #000 calc(100% - var(--space-12)), transparent 100%);
+      mask-image: linear-gradient(to bottom, transparent 0, #000 var(--space-8), #000 calc(100% - var(--space-12)), transparent 100%);
+    }
+  }
+
   @media (min-width: 768px) {
     .hero {
       display: flex;

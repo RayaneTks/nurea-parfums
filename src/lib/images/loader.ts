@@ -34,7 +34,7 @@ const LOCAL_VARIANTS: Readonly<Record<string, readonly Variant[]>> = {
     { width: 640, src: "/branding/logos/nurea-logo-horizontal-light-640.webp" },
     { width: 1024, src: "/branding/logos/nurea-logo-horizontal-light-1024.webp" },
   ],
-  // Photo de la hero (flacon Nuréa) : portrait 1122 px avec sa déclinaison 640, paysage 1672 px avec sa 1280.
+  // Photo de la hero (flacon Nuréa) : portrait 1118 px avec sa déclinaison 640, paysage 1668 px avec sa 1280.
   "/branding/hero/flacon-portrait-sombre.webp": [{ width: 640, src: "/branding/hero/flacon-portrait-sombre-640.webp" }],
   "/branding/hero/flacon-portrait-clair.webp": [{ width: 640, src: "/branding/hero/flacon-portrait-clair-640.webp" }],
   "/branding/hero/flacon-paysage-sombre.webp": [{ width: 1280, src: "/branding/hero/flacon-paysage-sombre-1280.webp" }],

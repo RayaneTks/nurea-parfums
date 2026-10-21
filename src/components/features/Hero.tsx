@@ -6,16 +6,16 @@ import { SnapchatIcon } from "@/components/ui/Icons";
 import { CONTACT } from "@/lib/data";
 
 /**
- * La photographie de la hero : le flacon Nuréa, seul, contre un mur uni, en deux lumières et deux
- * cadrages (brief : `docs/refonte-vitrine/annexes/brief-photo-hero.md`). Portrait 4:5 sous 768 px,
+ * La photographie de la hero : le flacon Nuréa (étiquette au monogramme), en deux lumières et deux
+ * cadrages (photos du gérant du 21/10 ; brief : `docs/refonte-vitrine/annexes/brief-photo-hero.md`). Portrait 4:5 sous 768 px,
  * paysage 16:9 au-delà. Déclinaisons (640, 1280) déclarées dans `src/lib/images/loader.ts`.
  */
 const PHOTO = {
-  portrait: { width: 1122, height: 1402, sombre: "/branding/hero/flacon-portrait-sombre.webp", clair: "/branding/hero/flacon-portrait-clair.webp" },
-  paysage: { width: 1672, height: 941, sombre: "/branding/hero/flacon-paysage-sombre.webp", clair: "/branding/hero/flacon-paysage-clair.webp" },
+  portrait: { width: 1118, height: 1402, sombre: "/branding/hero/flacon-portrait-sombre.webp", clair: "/branding/hero/flacon-portrait-clair.webp" },
+  paysage: { width: 1668, height: 941, sombre: "/branding/hero/flacon-paysage-sombre.webp", clair: "/branding/hero/flacon-paysage-clair.webp" },
 } as const;
 
-const ALT = "Un flacon Nuréa posé contre un mur, dans la lumière d'une fenêtre.";
+const ALT = "Un flacon Nuréa près de petits flacons et de verrerie, dans la lumière d'une fenêtre.";
 const LARGE = "(min-width: 768px)";
 
 type Lumiere = "sombre" | "clair";
