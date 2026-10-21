@@ -1,6 +1,6 @@
 # Prompt de reprise — refonte de la vitrine Nuréa (après /clear)
 
-À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (T18, titre et chevrons validés ; cap sur T19).
+À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (T19 faite ; cap sur T20).
 
 ---
 
@@ -45,11 +45,7 @@ chaque rendu finit par « Ce que tu dois faire ».
 
 ## 4. Ta mission
 
-**T16, le menu, T17 (vignettes de partage) et l'index des Marques sont validés** (21/10) : ne pas y revenir. **T18 (mouvement), le titre de l'accueil et les chevrons de parfum voisin dans la fiche sont validés** (21/10). Ta mission : **T19 — Audit et Core Web Vitals**
-(`04-PLAN-EXECUTION.md` § T19 : Lighthouse mobile, LCP/INP/CLS, axe sans violation AA, zoom 200 %, anti-slop ; `annexes/audit-final.md`), puis T20 → T23,
-un point de contrôle gérant sur captures à chaque étape visuelle. À traiter dans T19 : titre et description Google de l'accueil (encore « grandes marques… à Marseille… au
-meilleur prix », trompeur : nous ne vendons pas les parfums des marques) — proposer, sans publier avant l'avis juridique ; avertissement `images.qualities` du
-mode dev ; e2e « tri par marque » rouge (connu) et « dérouler et fermer » instable sous charge (vert seul).
+**T16, le menu, T17 (vignettes de partage), l'index des Marques, T18 (mouvement), le titre de l'accueil et les chevrons de parfum voisin sont validés** (21/10) : ne pas y revenir. **T19 (audit) est faite** (`65e7ff9`, `annexes/audit-final.md`) : Lighthouse 99 / 100 / 92 / 100, LCP ≤ 2,16 s, INP ≤ 184 ms, CLS 0, axe 0 violation, zoom 200 % tenu. Ta mission : **T20 — Filets e2e** (`04-PLAN-EXECUTION.md` § T20 : `npm run test:e2e` vert localement ; lancer les e2e sur un build, pas sur le serveur de dev), puis T21 → T23, un point de contrôle gérant sur captures à chaque étape visuelle. En attente du gérant, sans bloquer : choix entre les titres Google A et B (`annexes/audit-final.md` § Titre ; B attend aussi l'avis juridique) — ne rien publier sans sa réponse.
 
 Images : le gérant autorise la génération **sans aucun être vivant** (ni visage, ni main) ; flacon Nuréa copié sur la
 photo réelle ; un écran de téléphone se génère **en vert chroma** puis reçoit une **capture réelle** (méthode et outils :
@@ -71,6 +67,6 @@ chaque image vérifiée avant usage. Le contenu Snapchat du gérant reste net (s
 
 ## 6. En attente côté gérant (ne pas bloquer dessus)
 
-Avis juridique (accroche, présentation face aux marques, titre et description Google) ; jugement de la hero
+Avis juridique (accroche, présentation face aux marques, titre et description Google — propositions A/B dans `annexes/audit-final.md`) ; jugement de la hero
 avec les nouvelles photos (reçues et en place le 21/10) ; 29 paires de visuels clair/sombre décalées
 (session visuels, `annexes/alignement-clair-sombre.md`).
