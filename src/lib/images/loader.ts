@@ -23,6 +23,9 @@ const LOCAL_VARIANTS: Readonly<Record<string, readonly Variant[]>> = {
   "/branding/logos/nurea-wordmark-black.webp": [
     { width: 640, src: "/branding/logos/nurea-wordmark-black-640.webp" },
   ],
+  // Visuel de la hero (4:5, 1024 × 1280) : la déclinaison 640 × 800 sert jusqu'à 640 px demandés.
+  "/branding/hero/chambre-nuit.webp": [{ width: 640, src: "/branding/hero/chambre-nuit-640.webp" }],
+  "/branding/hero/chambre-jour.webp": [{ width: 640, src: "/branding/hero/chambre-jour-640.webp" }],
 };
 
 export default function nureaImageLoader({ src, width }: { src: string; width: number; quality?: number }): string {

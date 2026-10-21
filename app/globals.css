@@ -406,114 +406,121 @@
     transform: var(--press);
   }
 
-  /* ─── Accueil : « Vitrine » (04-PLAN-EXECUTION.md § B.10) ───────────────
-     Chaque parfum mis en avant est un objet posé sur un champ de sa couleur :
-     le champ (ambiance, bord à bord) commence sous le haut du visuel, qui
-     déborde ; la marque puis le nom en `display` sur le champ. La seconde
-     vitrine est en miroir. */
-  .vitrine {
-    position: relative;
-    margin-top: var(--space-6);
+  /* ─── Accueil : hero « Chambre » (04-PLAN-EXECUTION.md § B.10) ──────────
+     La première section du site de la marque : surtitre, accroche, faits,
+     deux entrées, et le visuel de la chambre. Téléphone : le texte, puis le
+     visuel bord à bord. Bureau : texte à gauche, visuel à droite, centrés. */
+  .hero {
+    display: grid;
+    row-gap: var(--space-8);
+    padding-top: var(--space-8);
   }
 
-  .vitrine + .vitrine {
-    margin-top: var(--space-8);
-  }
-
-  /* Le champ : sous le haut du visuel (--vitrine-deborde), jusqu'au bas de la légende. */
-  .vitrine-champ {
-    position: absolute;
-    inset: var(--vitrine-deborde, 4rem) 0 0 0;
-    background-color: var(--ambient);
-  }
-
-  .vitrine-cadre {
-    position: relative;
+  .hero-texte {
     width: 100%;
     max-width: calc(var(--content-max) + 2 * var(--gutter));
     margin-inline: auto;
     padding-inline: var(--gutter);
   }
 
-  .vitrine-visuel {
-    width: 72%;
-    aspect-ratio: 2 / 3;
-    margin-left: auto;
-    transition: opacity var(--dur-1) var(--ease-out);
-  }
-
-  .vitrine-miroir .vitrine-visuel {
-    margin-left: 0;
-    margin-right: auto;
-  }
-
-  /* L'appui sur un visuel de cette taille ne le rétrécit pas : il cède en clarté. */
-  .vitrine-visuel:active {
-    opacity: 0.9;
-  }
-
-  .vitrine-legende {
+  .hero-entrees {
     display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    padding-block: var(--space-6) var(--space-8);
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-6);
+    margin-top: var(--space-6);
   }
 
-  .vitrine-miroir .vitrine-legende {
-    align-items: flex-end;
-    text-align: right;
+  /* Téléphone : un cadre 3:2 ancré en bas de la scène (les matières, le socle), pour que le
+     visuel tienne sous le texte dans le premier écran ; dès 768 px, la scène 4:5 entière. */
+  .hero-visuel {
+    aspect-ratio: 3 / 2;
+    width: 100%;
+  }
+
+  .hero-visuel img {
+    object-position: 50% 100%;
   }
 
   @media (min-width: 768px) {
-    .vitrine {
-      --vitrine-deborde: 5rem;
+    .hero {
+      padding-top: var(--space-12);
     }
 
-    .vitrine-visuel {
-      width: 56%;
+    .hero-visuel {
+      aspect-ratio: 4 / 5;
+      width: calc(100% - 2 * var(--gutter));
+      max-width: 40rem;
+      margin-inline: auto;
     }
   }
 
-  /* Bureau : légende et visuel côte à côte ; le visuel se règle sur la hauteur de l'écran. */
   @media (min-width: 1024px) {
-    .vitrine {
-      --vitrine-deborde: 6rem;
-    }
-
-    .vitrine + .vitrine {
-      margin-top: var(--space-12);
-    }
-
-    .vitrine-cadre {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
+    .hero {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
       column-gap: var(--space-16);
-      /* La légende se centre sur la hauteur du visuel : pas d'aplat vide au-dessus du nom. */
       align-items: center;
+      width: 100%;
+      max-width: calc(var(--content-max) + 2 * var(--gutter));
+      margin-inline: auto;
+      padding-inline: var(--gutter);
+      padding-block: var(--space-12) var(--space-8);
     }
 
-    .vitrine-visuel {
-      width: auto;
-      height: clamp(28rem, 70vh, 40rem);
-      margin: 0;
-      grid-column: 2;
-      grid-row: 1;
+    .hero-texte {
+      padding-inline: 0;
     }
 
-    .vitrine-miroir .vitrine-visuel {
-      grid-column: 1;
+    .hero-visuel {
+      width: 100%;
+      max-width: none;
+      height: clamp(30rem, 76vh, 44rem);
+      aspect-ratio: auto;
     }
+  }
 
-    .vitrine-legende {
-      grid-column: 1;
-      grid-row: 1;
-      padding-block: 0;
+  /* ─── À l'affiche (`FeaturedSection`) ───────────────────────────────────
+     Les deux parfums mis en avant côte à côte, chacun un objet arrondi :
+     visuel 2:3 puis légende sur sa couleur. */
+  .affiche {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+
+  @media (min-width: 768px) {
+    .affiche {
+      gap: var(--space-6);
     }
+  }
 
-    .vitrine-miroir .vitrine-legende {
-      grid-column: 2;
-      align-items: flex-start;
-      text-align: left;
+  /* Bureau : compact — deux objets de 22 rem au plus, pas une seconde grille. */
+  @media (min-width: 1024px) {
+    .affiche {
+      grid-template-columns: repeat(2, minmax(0, 22rem));
+    }
+  }
+
+  .affiche-visuel {
+    aspect-ratio: 2 / 3;
+    transition: opacity var(--dur-1) var(--ease-out);
+  }
+
+  /* L'appui ne rétrécit pas un visuel de cette taille : il cède en clarté. */
+  .affiche-visuel:active {
+    opacity: 0.9;
+  }
+
+  .affiche-legende {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-3) var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    .affiche-legende {
+      padding: var(--space-4) var(--space-4) var(--space-6);
     }
   }
 

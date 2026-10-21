@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Masthead } from "@/components/features/Masthead";
+import { Hero } from "@/components/features/Hero";
 import { FeaturedSection } from "@/components/features/FeaturedSection";
 import { BrandShelf, topBrands } from "@/components/features/BrandShelf";
 import { CatalogSection } from "@/components/home/CatalogSection";
@@ -12,7 +12,7 @@ import { pageOg, SITE_NAME } from "@/lib/site";
 /** Données via `getCachedCatalogue` (tag `public-catalogue`) — pas de HTML figé au build. */
 export const dynamic = "force-dynamic";
 
-/** Au-delà, les vitrines repoussent le catalogue trop bas. */
+/** Au-delà, « À l'affiche » devient une seconde grille. */
 const MAX_FEATURED = 2;
 
 /**
@@ -49,21 +49,21 @@ export const metadata: Metadata = {
 };
 
 /**
- * Ce qui précède le catalogue (04-PLAN-EXECUTION.md § B.10, composition « Vitrine ») : la
- * manchette, puis chaque parfum mis en avant posé sur un champ de sa couleur, puis le rayon des
- * marques. La recherche, les filtres et les nouveautés sont dans la barre haute et le catalogue.
+ * L'accueil (04-PLAN-EXECUTION.md § B.10, composition « Chambre ») : la hero de la marque — qui est
+ * Nuréa, ce qu'elle propose, par où entrer —, puis les parfums à l'affiche en compact, le rayon des
+ * marques, et le catalogue avec sa recherche et ses filtres, intouchés.
  */
 export default async function HomePage() {
   const { perfumes, browseBrands } = await getCachedCatalogue();
   const featured = perfumes.filter((p) => p.isFeatured).slice(0, MAX_FEATURED);
   // Nouvel ordre à chaque visite, marques variées en tête — tiré ici, côté serveur (`discoveryOrder`).
   const catalogue = discoveryOrder(perfumes);
-  // Compteurs de la manchette : comptés ici, sur le catalogue publié, rien d'autre.
+  // Compteurs de la hero : comptés ici, sur le catalogue publié, rien d'autre.
   const brandCount = new Set(perfumes.map((p) => p.brandSlug ?? p.brand)).size;
 
   return (
     <>
-      <Masthead perfumeCount={perfumes.length} brandCount={brandCount} />
+      <Hero perfumeCount={perfumes.length} brandCount={brandCount} />
 
       <FeaturedSection perfumes={featured} />
 
