@@ -190,16 +190,19 @@ une étiquette visible et son erreur dessous.
 - **Ma sélection** : liste gardée sur l'appareil (`localStorage`, `nurea:selection:v1`), compteur
   sur le cœur de la barre, feuille qui liste les parfums et un bouton « Commander ces N parfums sur
   Snapchat » qui compose un seul message. Aucun compte, aucune écriture serveur.
-- **Accueil** : composition **A « Couverture »**, choisie par le gérant le 21/10/2026
-  (`04-PLAN-EXECUTION.md` § B.10, planche `accueil-v2.html` sur `refonte/planche`). Ordre : ouverture (H1
-  « Nuréa Parfums, Marseille » en `display`, ligne de faits « *N* parfums · *M* marques · Commande sur
-  Snapchat »), puis **l'image dans le premier écran** : chaque parfum mis en avant sur un **bandeau bord
-  à bord à *son* ambiance** (marque en `body`, nom en `title`, visuel 2:3 dans la gouttière ; dès 768 px
-  texte et visuel côte à côte, le second bandeau en miroir), puis l'**index des marques** (lignes au
-  filet, nom en `subtitle`, compteur, jamais des puces), puis le catalogue, puis le pied de page. Jamais
-  le gabarit « grande phrase + deux boutons + photo assombrie », jamais de texte sur une photo, aucun
-  bouton dans l'ouverture. Le visuel du premier bandeau est l'élément LCP : vignette 640 sur
-  téléphone, préchargé pour le thème du système ; le nom et le visuel ouvrent la fiche en feuille.
+- **Accueil** : composition **« La une »** (Fable, 21/10/2026, `04-PLAN-EXECUTION.md` § B.10), après
+  trois refus. Une une de journal : la **manchette** (H1 « Nuréa Parfums, Marseille » en `title`, rien
+  d'autre), puis chaque parfum mis en avant en **scène** — son visuel 2:3 **bord à bord, sans cadre**,
+  et sa **légende** (marque en `body`, nom en `subtitle`) sur un bandeau à *son* ambiance, la couleur
+  du flacon rendue visible —, la **phrase de la maison** entre les deux scènes (`title`, chiffres
+  comptés sur le catalogue), le **rayon des marques** (les 8 plus fournies, chacune montrée par un de
+  ses flacons, glissé sur téléphone, 8 colonnes dès 1024 px), le catalogue, le pied de page. Tablette :
+  les scènes côte à côte, la phrase dessous ; bureau : la phrase en colonne de légende à gauche du
+  diptyque. Mouvement : entrée à l'arrivée, une fois (manchette, légende, phrase en cascade ; l'image
+  recule de 1,03 à 1), rien d'autre. Jamais le gabarit « grande phrase + deux boutons + photo
+  assombrie », jamais de texte sur une photo, aucun bouton dans l'ouverture. Le visuel de la première
+  scène est l'élément LCP : vignette 640, préchargé pour le thème du système ; nom et visuel ouvrent
+  la fiche en feuille.
 
 ## Fiche produit
 
