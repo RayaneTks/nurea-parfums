@@ -11,6 +11,7 @@ Périmètre : la vitrine seulement (`app/(shop)`, `src/components`, `app/globals
 
 | # | Document | Contenu |
 |---|---|---|
+| — | **[`PROMPT-REPRISE.md`](PROMPT-REPRISE.md)** | Prompt à coller dans une session neuve après `/clear` |
 | — | **[`REPRISE.md`](REPRISE.md)** | **À lire en premier** : état réel, validé / en cours / à corriger / à explorer, décisions figées, essais écartés, priorités |
 | 01 | [`01-INVARIANTS.md`](01-INVARIANTS.md) | Ce qui ne change pas : métier, mentions légales, référencement, technique, filets de tests |
 | 02 | [`02-PLAYBOOK.md`](02-PLAYBOOK.md) | Le savoir-faire à appliquer (typo, couleur, espace, mouvement, interaction, images, rédaction), la méthode en 7 phases et leurs portes de qualité |
@@ -133,8 +134,7 @@ refusables au point de contrôle 1.
 
 ### Remarques de T15 (21/10)
 
-- **Ouvrir la fiche depuis un bandeau** : `FeaturedSection` émet `OPEN_PERFUME_EVENT` ; `CatalogSection`
-  l'annule et pose `?parfum=<id>`. Un tap fait avant que le catalogue soit hydraté est gardé
+- **Ouvrir la fiche depuis l'accueil** : `openPerfume.ts` émet `OPEN_PERFUME_EVENT` ; `CatalogSection` l'annule et pose `?parfum=<id>`. Un tap fait avant que le catalogue soit hydraté est gardé
   (`takePendingPerfume`) et rejoué à son montage. Le nom est un vrai lien vers la page indexable
   (sans JavaScript, nouvel onglet).
 - **LCP** (5,8 s au premier essai → 1,8 / 2,0 s) : écart technique à § B.10 sur `sizes`, « 213px » sur
