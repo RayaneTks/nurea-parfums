@@ -97,8 +97,11 @@ Jamais d'autre graisse, jamais une troisième famille, jamais de monospace.
 | `display` | `clamp(3rem, 2rem + 4vw, 5rem)` | 400 | −0,02 em | 1,05 | H1 de l'accueil, La parfumerie |
 | `title` | `clamp(1.75rem, 1.25rem + 2vw, 2.5rem)` | 500 | −0,015 em | 1,15 | H1 des pages, nom en fiche |
 | `subtitle` | `1.3125rem` | 500 | −0,005 em | 1,3 | H2, nom en carte |
-| `body` | `1rem` | 400 | 0 | 1,6 (sombre : 1,65) | texte, marque en carte (`--text-2`) |
+| `body` | `1rem` | 400 | 0 | 1,6 | texte, marque en carte (`--text-2`) |
 | `caption` | `0.75rem` | 500 | +0,02 em | 1,4 | compteur, mention légale |
+
+Un thème ne change **que des couleurs** : aucune dimension (interlignage, espacement, rayon) ne dépend
+du thème, sinon la bascule déplace la page (tenu par `tests/architecture/vitrine-tokens.test.ts`).
 
 Une règle par rôle ; **aucune taille en dur** (une taille arbitraire signale un rôle manquant).
 `text-wrap: balance` sur `display`/`title`, `pretty` sur `body` ; `tabular-nums` sur ce qui
@@ -191,14 +194,13 @@ une étiquette visible et son erreur dessous.
   sur le cœur de la barre, feuille qui liste les parfums et un bouton « Commander ces N parfums sur
   Snapchat » qui compose un seul message. Aucun compte, aucune écriture serveur.
 - **Accueil** : composition **« Flacon »** (21/10/2026, `04-PLAN-EXECUTION.md` § B.10). **Hero** : la
-  photographie du flacon Nuréa est le fond de toute la hero, en deux lumières et deux cadrages ; rien
-  n'est assombri. Sur téléphone, le titre (l'accroche, en `title`) et les actions (`Button` plein « Voir le
-  catalogue », lien « Commander sur Snapchat ») forment un seul bloc, au-dessus et à gauche du flacon.
-  **À l'affiche** : les deux vedettes ensemble, en diptyque asymétrique (7 et 5 colonnes, le second
-  décalé vers le bas), chaque visuel dans un passe-partout à la couleur de son flacon. **Marques** : une
-  rangée de tuiles qu'on fait glisser (nom, nombre de parfums, trois flacons de la marque), 4 colonnes dès
-  768 px, et « Toutes les marques ». Puis le catalogue. Composants et arrondis du design system
-  inchangés ; aucun onglet, surtitre, compteur décoratif ni texte qui défile ; une seule entrée animée.
+  photographie du flacon Nuréa en fond, en deux lumières et deux cadrages ; sur téléphone, le titre puis
+  les deux entrées sur une ligne (`Button` plein « Voir le catalogue », Snapchat en bouton rond 44 px),
+  au-dessus et à gauche du flacon. **À l'affiche** : deux compositions horizontales de même poids — la
+  photo entière (jamais recadrée) à gauche, la marque et le nom en `title` sur la couleur du flacon à
+  droite ; empilées sur téléphone, côte à côte dès 768 px. **Marques** : un index typographique (12 noms
+  et leur nombre de parfums, « Toutes les marques »), sans images. Puis le catalogue. Composants et
+  arrondis du design system inchangés ; aucun onglet, surtitre, compteur décoratif ni texte qui défile.
 
 ## Fiche produit
 

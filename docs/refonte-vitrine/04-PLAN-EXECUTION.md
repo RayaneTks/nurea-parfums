@@ -132,7 +132,7 @@ Réglages (`globals.css`, règles de rôle, pas de taille arbitraire) :
 | `display` | `clamp(3rem, 2rem + 4vw, 5rem)` | 400 | −0,02 em | 1,05 | H1 accueil, La parfumerie |
 | `title` | `clamp(1.75rem, 1.25rem + 2vw, 2.5rem)` | 500 | −0,015 em | 1,15 | H1 des pages, nom en fiche |
 | `subtitle` | `1.3125rem` | 500 | −0,005 em | 1,3 | H2, nom en carte |
-| `body` | `1rem` (16 px) | 400 | 0 | 1,6 (sombre : 1,65) | texte, marque en carte (`--text-2`) |
+| `body` | `1rem` (16 px) | 400 | 0 | 1,6 (les deux thèmes : une dimension ne dépend jamais du thème) | texte, marque en carte (`--text-2`) |
 | `caption` | `0.75rem` | 500 | +0,02 em | 1,4 | contenance, compteur, mention légale |
 
 Rapports : caption→body 1,33 ; body→subtitle 1,31 ; body→title 1,75 → 2,5 ; body→display 3 → 5.
@@ -234,31 +234,37 @@ souligné au survol. **Un seul bouton primaire par écran.** Cibles ≥ 44 px (z
 
 ### B.10 Accueil : composition « Chambre » (Fable, 21/10/2026, troisième passage)
 
-> **Composition « Flacon », 21/10, troisième retour du gérant sur mobile (`35ecbc6`).**
-> **Hero.** La photo du flacon Nuréa (`public/branding/hero/flacon-*`) est le fond de toute la hero ; le sol
-> se fond dans la page par le bas (masque), rien n'est assombri. **Téléphone** : hauteur = format de la
-> photo (`125vw`) ; grille à deux rangées, la première haute de **29 %** — le bouchon commence à 30 % dans la
-> photo, à toute largeur — : le titre (`title`, accroche provisoire « Le parfum que vous aimez, dans un
-> flacon Nuréa. ») est calé en bas de cette rangée, juste au-dessus du bouchon ; les actions (`Button` plein
-> « Voir le catalogue », lien « Commander sur Snapchat », ≤ 11,5 rem) suivent à 24 px, à gauche des épaules
-> du flacon. **Un seul bloc** titre + actions, le flacon en diagonale ; haut du mur et sol libres. À 390 :
-> titre 190→254, actions 278→383, hero 113→601. **≥ 768 px** : photo paysage, titre (≤ 26 rem ; 30 dès 1024)
-> puis actions en ligne, à gauche, centrés verticalement.
-> **À l'affiche.** Les deux vedettes visibles ensemble, sans interaction : **diptyque asymétrique** sur 12
-> colonnes — le premier parfum sur 7 (nom en `title`), le second sur 5, décalé vers le bas de
-> `clamp(4.5rem, 24vw, 8rem)` (nom en `subtitle`), comme une double page. Chaque visuel 2:3 `--r-md` dans un
-> passe-partout `--r-lg` (marge 8 px) à la couleur de son flacon ; marque puis nom dessous. Un seul parfum :
-> 10 colonnes. ≥ 768 px : même diptyque, contenu dans 44 rem.
-> **Marques.** Tuiles en langage carte — nom (`subtitle`), « *n* parfums », la petite ligne de trois flacons
-> de la marque (chargés après la page, `BrandLineup`). **Téléphone : une seule rangée qu'on fait glisser**
-> (10,5 rem par tuile, 2,2 visibles, calée sur la gouttière) ; 4 colonnes dès 768. « Toutes les marques » →
-> `/parfums` (index A→Z existant).
-> **Parcours à 390** : hero 113→601, « À l'affiche » 649→≈ 1 090, Marques 1 139→1 380, **catalogue à 1 428**.
-> **Mesures** (build webpack, profil T9, Pixel 7) : LCP **1 616 ms sombre / 1 072 ms clair**, CLS 0 ; e2e
-> accueil 8/8 ; 320 / 390 / 430 / 768 / 1280, clair et sombre, aucun débordement.
-> Écartés le 21/10 : onglets pour « À l'affiche » (le second parfum caché), tuiles de marque à la couleur
-> moyenne (toutes ambrées), huit grandes tuiles empilées (catalogue repoussé à 2 765 px).
-> **Bascule clair/sombre** : décalages venus des fichiers, `annexes/alignement-clair-sombre.md`.
+> **Composition « Flacon », finalisation (21/10, `fdc9409`).**
+> **Hero.** Photo du flacon Nuréa en fond de toute la hero (le sol se fond dans la page, rien n'est
+> assombri). Téléphone : hauteur = format de la photo (`125vw`) ; la première rangée de la grille fait
+> 29 % de la hauteur (le bouchon commence à 30 % dans la photo, à toute largeur) : le titre (`title`,
+> « Le parfum que vous aimez, dans un flacon Nuréa. », validé par le gérant) s'y cale en bas ; les deux
+> entrées suivent à 24 px, **sur une ligne** : `Button` plein « Voir le catalogue », puis Snapchat en
+> **bouton rond 44 px** (celui du cœur « Ma sélection »), icône seule, intitulé en `aria-label` ; dès
+> 768 px, le lien avec son texte. ≥ 768 px : photo paysage, titre et entrées à gauche.
+> **À l'affiche.** Deux **compositions horizontales de même poids** (`.affiche-compo`, `--r-lg`) : la photo
+> **entière** (2:3, jamais recadrée) à gauche sur 52 % (48 % dès 768), bord à bord dans l'objet ; à droite,
+> sur la couleur du flacon, la marque (`body`) et le nom (`title`, lien vers la page indexable) calés en
+> bas. Empilées sur téléphone — les deux tiennent dans un écran (2 × 279 px à 390) —, côte à côte dès
+> 768 px. Composition étroite (≤ 20 rem, téléphone de 320) : le nom passe au pas `subtitle` (container
+> query, comme le nom des cartes) au lieu de se couper au milieu d'un mot. Écartés le 21/10 : recadrage
+> paysage 4:3 puis carré (coupaient le bouchon de Symphony ou la base d'Afternoon Swim — les flacons ne
+> sont pas au même endroit d'un visuel à l'autre, aucun cadre fixe ne convient), diptyque asymétrique
+> (hiérarchisait deux vedettes égales), onglets.
+> **Marques.** **Index typographique** : les 12 marques les plus fournies, à la suite, nom en `subtitle`
+> suivi du nombre de parfums en `caption` (lien ≥ 44 px, `aria-label` « Marque, *n* parfums ») ; « Toutes
+> les marques » → `/parfums`. 264 px à 390. Écartés : tuiles avec miniatures (répétaient les produits
+> d'« À l'affiche » et du catalogue), tuiles à la couleur moyenne (toutes ambrées).
+> **Parcours à 390** : hero 113→601, « À l'affiche » 649→≈ 1 260, Marques ≈ 1 310→1 590, **catalogue à
+> 1 687**. **Mesures** (build webpack, profil T9, Pixel 7) : LCP **≈ 1 550 ms sombre / 1 064 ms clair**,
+> CLS 0 ; e2e accueil 8/8 ; 320 / 390 / 430 / 1280, clair et sombre, aucun débordement.
+> **Bascule clair/sombre — cause trouvée et corrigée** : l'interlignage du texte courant valait 1,65 en
+> sombre et 1,6 en clair ; chaque paragraphe changeait de hauteur et poussait tout ce qui suit, même un
+> visuel identique dans les deux thèmes (Tobacco Vanille : -0,8 px à 390, -1,2 px à 1280 ; une carte à
+> 5 350 px : -7,2 px). `--leading-body: 1.6` est désormais déclaré une fois, hors thème (0 px partout) ;
+> `tests/architecture/vitrine-tokens.test.ts` refuse tout jeton de dimension dans un bloc de thème. Reste
+> à part le décalage **des fichiers** pour les paires dont les deux variantes diffèrent :
+> `annexes/alignement-clair-sombre.md`.
 
 
 **Historique.** Planche v1 (`cee4774`, 20/10) : « beaucoup trop cheap ». Planche v2 (`cf5e272`, 21/10) :
