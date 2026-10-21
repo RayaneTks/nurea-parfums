@@ -42,7 +42,7 @@ export const Footer: FC = () => (
     <div className="page-x grid gap-12 py-12 md:grid-cols-2 lg:grid-cols-4">
       <div className="flex flex-col gap-4">
         <Link href="/" aria-label={`${SITE_NAME} — accueil`} className="flex h-11 w-fit items-center">
-          <BrandLogo className="h-6" />
+          <BrandLogo className="h-10" />
         </Link>
         <p className="t-body t-measure">
           Une sélection tenue à la main, pour homme et pour femme, sans intermédiaire entre vous et

@@ -90,7 +90,7 @@ export const Navbar: FC = () => {
           aria-label="Nuréa Parfums — accueil"
           className="mr-auto flex h-14 shrink-0 items-center md:mr-0 md:h-auto"
         >
-          <BrandLogo priority className="h-6" />
+          <BrandLogo priority className="h-10" />
         </Link>
 
         <nav aria-label="Navigation principale" className="hidden lg:block">

@@ -21,7 +21,7 @@ export default function NotFound() {
         className={`${brandFontClassName} page-x flex min-h-svh flex-col items-center justify-center gap-6 bg-bg py-12 text-center`}
       >
         <Link href="/" aria-label="Nuréa Parfums — accueil" className="flex h-11 items-center">
-          <BrandLogo className="h-6" />
+          <BrandLogo className="h-10" />
         </Link>
 
         <div className="flex flex-col items-center gap-3">

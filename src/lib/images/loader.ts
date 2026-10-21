@@ -24,8 +24,16 @@ const LOCAL_VARIANTS: Readonly<Record<string, readonly Variant[]>> = {
     { width: 640, src: "/branding/logos/nurea-wordmark-black-640.webp" },
   ],
   // Logotype de la vitrine aux couleurs de marque (doré en sombre, bordeaux en clair).
-  "/branding/logos/nurea-wordmark-gold.webp": [{ width: 640, src: "/branding/logos/nurea-wordmark-gold-640.webp" }],
   "/branding/logos/nurea-wordmark-bordeaux.webp": [{ width: 640, src: "/branding/logos/nurea-wordmark-bordeaux-640.webp" }],
+  // Logo complet de la vitrine (monogramme + nom), ~188 px affichés : 256 (1x) et 384 (2x) → `-640`.
+  "/branding/logos/nurea-logo-horizontal-dark.webp": [
+    { width: 640, src: "/branding/logos/nurea-logo-horizontal-dark-640.webp" },
+    { width: 1024, src: "/branding/logos/nurea-logo-horizontal-dark-1024.webp" },
+  ],
+  "/branding/logos/nurea-logo-horizontal-light.webp": [
+    { width: 640, src: "/branding/logos/nurea-logo-horizontal-light-640.webp" },
+    { width: 1024, src: "/branding/logos/nurea-logo-horizontal-light-1024.webp" },
+  ],
   // Photo de la hero (flacon Nuréa) : portrait 1122 px avec sa déclinaison 640, paysage 1672 px avec sa 1280.
   "/branding/hero/flacon-portrait-sombre.webp": [{ width: 640, src: "/branding/hero/flacon-portrait-sombre-640.webp" }],
   "/branding/hero/flacon-portrait-clair.webp": [{ width: 640, src: "/branding/hero/flacon-portrait-clair-640.webp" }],
