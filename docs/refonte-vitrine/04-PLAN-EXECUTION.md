@@ -234,6 +234,17 @@ souligné au survol. **Un seul bouton primaire par écran.** Cibles ≥ 44 px (z
 
 ### B.10 Accueil : composition « Chambre » (Fable, 21/10/2026, troisième passage)
 
+> **Suite décidée le 21/10 (gérant), en attente de deux préalables.** La hero sera composée autour
+> d'une **photographie réelle du flacon Nuréa** (brief : `annexes/brief-photo-hero.md`) : mur de la photo
+> fondu dans `--bg` de chaque thème, texte et entrées posés dans la zone vide du mur, rien d'assombri ;
+> composants inchangés (`Button`, cartes). Préalables : (1) **la photo** ; (2) **l'accroche**, non
+> verrouillée — le parfum Nuréa n'étant pas celui de la marque (01-INVARIANTS § 1), toute formulation
+> qui le rapproche d'un parfum de marque attend un avis juridique (C. conso. L122-2). D'ici là,
+> « Chambre » ci-dessous reste en place sur la branche, avec « À l'affiche » dans le langage de
+> `PerfumeCard`. Une proposition intermédiaire (« L'étiquette », étiquette défilante) a été écartée le
+> 21/10 : elle sortait du design system et cumulait des automatismes de composition.
+
+
 **Historique.** Planche v1 (`cee4774`, 20/10) : « beaucoup trop cheap ». Planche v2 (`cf5e272`, 21/10) :
 A « Couverture » choisie avec la réserve « très simple, bof », B « Nuancier » « trop chargée ». A codée
 (`3492c18`) : « ultra cheap pour un site de parfum catalogue ». Troisième passage, codé directement à la
