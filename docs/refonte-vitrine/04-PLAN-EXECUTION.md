@@ -242,15 +242,16 @@ souligné au survol. **Un seul bouton primaire par écran.** Cibles ≥ 44 px (z
 > entrées suivent à 24 px, **sur une ligne** : `Button` plein « Voir le catalogue », puis Snapchat en
 > **bouton rond 44 px** (celui du cœur « Ma sélection »), icône seule, intitulé en `aria-label` ; dès
 > 768 px, le lien avec son texte. ≥ 768 px : photo paysage, titre et entrées à gauche.
-> **À l'affiche.** Deux **compositions horizontales de même poids** (`.affiche-compo`, `--r-lg`) : la photo
-> **entière** (2:3, jamais recadrée) à gauche sur 52 % (48 % dès 768), bord à bord dans l'objet ; à droite,
-> sur la couleur du flacon, la marque (`body`) et le nom (`title`, lien vers la page indexable) calés en
-> bas. Empilées sur téléphone — les deux tiennent dans un écran (2 × 279 px à 390) —, côte à côte dès
-> 768 px. Composition étroite (≤ 20 rem, téléphone de 320) : le nom passe au pas `subtitle` (container
-> query, comme le nom des cartes) au lieu de se couper au milieu d'un mot. Écartés le 21/10 : recadrage
-> paysage 4:3 puis carré (coupaient le bouchon de Symphony ou la base d'Afternoon Swim — les flacons ne
-> sont pas au même endroit d'un visuel à l'autre, aucun cadre fixe ne convient), diptyque asymétrique
-> (hiérarchisait deux vedettes égales), onglets.
+> **À l'affiche (direction imposée par le gérant le 21/10, `c62d3a6`).** Deux **bandeaux photographiques
+> horizontaux en miroir**, Symphony puis Afternoon Swim : flacon à gauche et texte à droite, puis l'inverse.
+> Chaque bandeau est une seule scène : le visuel **entier** (2:3, jamais recadré) occupe toute la hauteur
+> d'un côté et se fond par son bord (masque, de 60 à 100 % de sa largeur) dans la **même photo agrandie ×2
+> et floutée** (24 px, 56 px dès 1024) qui remplit le bandeau — agrandie depuis le bord côté texte, le
+> flacon flouté passe sous le visuel net. Marque (`body`), nom (`title`, sans césure ; `subtitle` dans un
+> bandeau ≤ 20 rem) et « Voir la fiche » se posent sur un voile à la couleur de `--bg` (62 % → 18 %) : le
+> contraste suit le thème. Tout le bandeau ouvre la fiche (bouton étendu, appui `--press`) ; le nom reste
+> le lien vers la page indexable. `--r-lg` ; 4:3 sur téléphone, 16:7 à 768, **16:9 sur 62 rem en quinconce
+> dès 1024** (premier à gauche, second à droite). Plus de carte, d'aplat de couleur, ni d'onglet.
 > **Marques.** **Index typographique** : les 12 marques les plus fournies, à la suite, nom en `subtitle`
 > suivi du nombre de parfums en `caption` (lien ≥ 44 px, `aria-label` « Marque, *n* parfums ») ; « Toutes
 > les marques » → `/parfums`. 264 px à 390. Écartés : tuiles avec miniatures (répétaient les produits
