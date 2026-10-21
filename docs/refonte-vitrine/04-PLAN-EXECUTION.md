@@ -253,8 +253,8 @@ passe sur trois lignes, la photo descend de `--space-8` (haut fondu) et la rang�
 en bas, les entrées suivent à 24 px sur une ligne — `Button` plein « Voir le catalogue » (`#collection`),
 Snapchat en bouton rond 44 px (celui du cœur), icône seule et intitulé en `aria-label` ; dès 768 px, lien avec
 texte, titre et entrées à gauche, hauteur `clamp(26rem, 50vh, 32rem)` puis `clamp(32rem, 80vh, 48rem)`. H1 =
-accroche « Le parfum que vous aimez, dans un flacon Nuréa. » (formulation du gérant ; non verrouillée,
-avis juridique attendu ; nomme « Nuréa », sans la ville). Chaque photo préchargée pour son thème et sa
+accroche « Sentez bon, sans payer le prix fort. » (choix du gérant, 21/10 ; avis juridique
+attendu ; sans la ville). Chaque photo préchargée pour son thème et sa
 largeur. Une seule entrée animée (`.enter`).
 
 **À l'affiche** (référence du gérant, principe validé le 21/10). Deux bandeaux photographiques horizontaux
