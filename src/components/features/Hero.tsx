@@ -70,9 +70,12 @@ export const Hero: FC = () => {
         </picture>
       </div>
 
-      {/* Accroche choisie par le gérant le 21/10 ; avis juridique attendu (elle compare le prix aux grandes marques). */}
+      {/* Accroche du gérant (21/10), précédée du nom : le H1 porte « Nuréa » pour Google (et contre la confusion avec
+          Nurae), et « Nuréa, votre parfum » dit que le parfum est le nôtre, pas celui d'une marque vendu moins cher.
+          Avis juridique attendu : elle compare le prix aux grandes marques. */}
       <h1 id="accueil-titre" className="hero-titre t-title enter">
-        Votre parfum, sans le prix des grandes marques.
+        Nuréa, votre parfum <br />
+        sans le prix des grandes&nbsp;marques.
       </h1>
       <div className="hero-entrees enter">
         <a href="#collection" className={buttonClass("solid")}>
