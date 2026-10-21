@@ -234,15 +234,28 @@ souligné au survol. **Un seul bouton primaire par écran.** Cibles ≥ 44 px (z
 
 ### B.10 Accueil : composition « Chambre » (Fable, 21/10/2026, troisième passage)
 
-> **Suite décidée le 21/10 (gérant), en attente de deux préalables.** La hero sera composée autour
-> d'une **photographie réelle du flacon Nuréa** (brief : `annexes/brief-photo-hero.md`) : mur de la photo
-> fondu dans `--bg` de chaque thème, texte et entrées posés dans la zone vide du mur, rien d'assombri ;
-> composants inchangés (`Button`, cartes). Préalables : (1) **la photo** ; (2) **l'accroche**, non
-> verrouillée — le parfum Nuréa n'étant pas celui de la marque (01-INVARIANTS § 1), toute formulation
-> qui le rapproche d'un parfum de marque attend un avis juridique (C. conso. L122-2). D'ici là,
-> « Chambre » ci-dessous reste en place sur la branche, avec « À l'affiche » dans le langage de
-> `PerfumeCard`. Une proposition intermédiaire (« L'étiquette », étiquette défilante) a été écartée le
-> 21/10 : elle sortait du design system et cumulait des automatismes de composition.
+> **Composition « Flacon », codée le 21/10 (`45d449d`)** — remplace « Chambre » ci-dessous pour la hero ;
+> « À l'affiche » (langage `PerfumeCard`) et le rayon des marques restent. La **photographie du flacon
+> Nuréa** (4 fichiers du gérant, `public/branding/hero/flacon-{portrait,paysage}-{sombre,clair}.webp`,
+> déclinaisons 640 / 1280 dans `loader.ts`) occupe la hero ; son mur se fond dans `--bg` par le haut et
+> par le bas (masque, la page apparaît au travers, rien n'est assombri) et le texte se pose dans la zone
+> vide du mur. **Téléphone** : texte en haut (padding 24), photo portrait 4:5 pleine largeur remontée de
+> `--recouvrement` (8 rem) sous le texte, ancrée en bas à droite ; fondu haut sur 8 rem, bas sur 3 rem.
+> **≥ 768 px** : photo paysage 16:9 en fond (`object-position` droite), texte à gauche centré
+> verticalement (≤ 26 rem, H1 ≤ 36 rem dès 1024) ; hauteur `clamp(26rem, 50vh, 32rem)` puis
+> `clamp(32rem, 80vh, 48rem)` dès 1024 — réglée pour que le recadrage garde le flacon à droite du texte.
+> Fondu haut 3 rem, bas 4 rem. Texte au-dessus de la photo (`z-index`, l'ordre de peinture du flex suit
+> `order`). **Copy provisoire** (non validée, avis juridique attendu, 01-INVARIANTS § 1) : H1 `title`
+> « Vos parfums préférés, dans notre flacon. » + en `--text-2` « Nuréa Parfums, envoi partout en
+> France. » ; `body` « Choisissez au catalogue, commandez sur Snapchat. » ; `Button` plein « Voir le
+> catalogue » (`#collection`) et lien tertiaire « Commander sur Snapchat ». Aucun surtitre, aucun
+> compteur, aucun défilement ; une seule entrée animée (`.enter` sur le bloc de texte). Chaque photo est
+> préchargée pour son thème et sa largeur, les deux restent paresseuses (comme `PerfumeImage`).
+> LCP (build webpack, profil T9, Pixel 7) : **1 532 ms sombre / 1 064 ms clair**.
+> **Écarts des photos reçues au brief** (`annexes/brief-photo-hero.md`) : flacon sans étiquette, vide ;
+> tube plongeur présent sur les portraits, absent des paysages ; définition 1122 × 1402 et 1672 × 941
+> (brief : 2400 × 3000 et 3200 × 1800) ; mur clair `#EADFD3` (page `#F9F6F2`), compensé par le fondu.
+> Une nouvelle prise se remplace fichier pour fichier, aux mêmes chemins.
 
 
 **Historique.** Planche v1 (`cee4774`, 20/10) : « beaucoup trop cheap ». Planche v2 (`cf5e272`, 21/10) :

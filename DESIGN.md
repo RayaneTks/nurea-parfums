@@ -190,21 +190,15 @@ une étiquette visible et son erreur dessous.
 - **Ma sélection** : liste gardée sur l'appareil (`localStorage`, `nurea:selection:v1`), compteur
   sur le cœur de la barre, feuille qui liste les parfums et un bouton « Commander ces N parfums sur
   Snapchat » qui compose un seul message. Aucun compte, aucune écriture serveur.
-- **Accueil** : composition **« Chambre »** (Fable, 21/10/2026, `04-PLAN-EXECUTION.md` § B.10), après
-  trois refus. La première section est la **hero de la marque** : surtitre « Nuréa Parfums — Marseille »
-  et accroche « Les grands parfums, dans un flacon Nuréa. » (tous deux dans le H1, `caption` puis
-  `display`), une phrase de faits (`body`, compteurs du catalogue publié), deux entrées (bouton plein
-  « Voir le catalogue », lien « Commander sur Snapchat »), et **le visuel de la chambre** — une nature
-  morte de matières à parfum sous une lumière rasante, en deux lumières (nuit / jour), sans flacon ni
-  marque : la hero appartient à Nuréa, pas aux parfums à l'affiche (`public/branding/hero/`,
-  `docs/refonte-vitrine/annexes/hero-chambre.md`). Téléphone : le texte, puis le visuel 3:2 ancré en
-  bas ; bureau : texte à gauche, visuel 4:5 à droite. Puis **« À l'affiche »** (les deux parfums mis en
-  avant, compacts, côte à côte, en cartes du catalogue), le **rayon des marques** (les 8 plus fournies,
-  chacune montrée par un de ses flacons), le catalogue, le pied de page. Mouvement : entrée à l'arrivée,
-  une fois, en cascade ; rien d'autre. Jamais de photo assombrie ni de texte sur photo, un seul bouton
-  plein par écran, aucune fonction dupliquée (recherche, filtres, nouveautés restent dans la barre et le
-  catalogue). Le visuel de la hero est l'élément LCP : déclinaison 640, préchargée pour le thème du
-  système.
+- **Accueil** : composition **« Flacon »** (21/10/2026, `04-PLAN-EXECUTION.md` § B.10). La hero est la
+  **photographie du flacon Nuréa**, seul contre un mur uni, en deux lumières (sombre / clair) et deux
+  cadrages (portrait sur téléphone, paysage dès 768 px). Le mur de la photo se fond dans le fond de la
+  page par le haut et le bas : le texte et les entrées se posent sur le même mur que le flacon, dans sa
+  zone vide ; rien n'est assombri. H1 en `title` (« Nuréa Parfums » dans le H1, plus la ville), une
+  phrase, le `Button` plein « Voir le catalogue » et le lien « Commander sur Snapchat » — composants
+  standards. Copy provisoire, en attente de l'avis juridique. Puis **« À l'affiche »** (les deux parfums
+  mis en avant, en cartes du catalogue), le **rayon des marques**, le catalogue. Aucun surtitre, aucun
+  compteur, aucun texte qui défile ; une seule entrée animée. Élément LCP : la photo.
 
 ## Fiche produit
 
