@@ -2,7 +2,7 @@
 
 Prompt de reprise après `/clear` : `PROMPT-REPRISE.md`.
 
-Mis à jour le 21/10/2026 au soir (T17 et Marques validées ; prochain : T18). Ce fichier dit **où on en est** ; le détail chiffré est dans
+Mis à jour le 21/10/2026 au soir (T18 codée, attente test au doigt ; prochain : T19). Ce fichier dit **où on en est** ; le détail chiffré est dans
 `04-PLAN-EXECUTION.md` § B (DA) et § B.10 (accueil), les règles dans `CLAUDE.md`, `DESIGN.md`,
 `01-INVARIANTS.md`. Ne rien décider ici qui n'y soit pas écrit.
 
@@ -49,7 +49,8 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 | La parfumerie, Contact, Légal, 404 (T16) | **validé** (gérant, 21/10, « ok good » ; `2ae7205`, `79410b9`, téléphones refaits `d362aa5`) | pages réécrites dans la DA ; photos éditoriales générées sans être vivant (demande du gérant) : atelier + une photo par temps de commande, écrans réels du catalogue et du profil Snapchat incrustés (`annexes/photos-editoriales.md`) ; 404 avec recherche ; « 10, 50 ou 80 ml » retiré ; FAQ : « nous vendons les grandes marques… au meilleur prix » retiré (faux) ; LCP /marque 2,4 / 2,1 s, /contact 0,85 s |
 | Menu sur téléphone et tablette (signalé par le gérant : on ne pouvait naviguer que par le pied de page) | **validé** (gérant, 21/10, « ça va, c'est pas mal » ; `29ed262`) | bouton Menu à droite de la barre sous 1024 px, feuille par le bas (DESIGN.md § Navigation) |
 | Vignettes de partage (T17) | **validé** (gérant, 21/10, « ok c bien » ; `dcbb5a9`) | site : photo réelle du flacon Nuréa de la hero + logo complet + « Catalogue de parfums, commande sur Snapchat » + domaine ; fiche parfum : visuel sombre entier sur son ambiance, marque puis nom, mention des flacons ; JPEG 50–75 Ko (WhatsApp ignore les aperçus de plus de ~300 Ko) ; `/parfums` avait perdu son og:image, rétablie ; rendu : `app/(shop)/_og/vignettes.tsx`, essai sans base : `scripts/refonte-vitrine/og-essai.tsx` |
-| Mouvement, audit, mise en ligne | **à faire** | T18 → T23 (`04-PLAN-EXECUTION.md`) |
+| Mouvement (T18) | **codé** (`7482aac`) ; **attente test au doigt du gérant** sur l'aperçu | l'existant suivait déjà § B.7 (feuilles au ressort, appui, survol sous pointeur fin) ; ajouté : cascade de 40 ms titre → actions dans la hero, suggestions en fondu seul en mouvement réduit, courbe de la fiche lue dans le jeton ; `ScrollReveal` supprimé (code mort, aucune entrée au défilement : automatisme refusé) ; règles tenues par `tests/architecture/vitrine-mouvement.test.ts` (dérogation `mouvement-ok:`) |
+| Audit, mise en ligne | **à faire** | T19 → T23 (`04-PLAN-EXECUTION.md`) |
 
 ## Règles à ne pas remettre en cause sans justification
 
@@ -93,10 +94,12 @@ miniatures (répétaient les produits).
 | Photos de la hero : sans étiquette, flacon vide, décalées entre clair et sombre (4,25 px / 10,10 px), définition sous le brief | **corrigé** 21/10 (`cd64c4d`) : photos du gérant, liseré vert de 3 px rogné à droite, 0 px de décalage ; plus lourdes → WebP 74, LCP 2 112 / 1 292 ms (1 532 / 1 064 avant, budget 2 500) |
 | Firefox (PC) : site lent, animation de bascule de thème absente | **corrigé** 21/10 (`7b1d3cb`) : fond flou d'« À l'affiche » agrandi par `transform: scale(3)` ; première bascule 200 → 50 ms, animation fluide ; rendu identique. Edge n'était pas touché |
 | e2e `catalog-filters` « le tri par marque… réordonne la grille » échoue sur téléphone (Pixel 7) | **à corriger** : déjà présent avant `cd64c4d` (même échec sur l'aperçu Vercel) ; hors hero |
+| e2e `accueil-snapchat` « un H1 qui porte la marque » échoue depuis l'accroche du 21/10 (`306fe06`) : le H1 ne dit plus « Nuréa » ; `CLAUDE.md` § Référencement exige « Nuréa Parfums » dans le H1 de l'accueil | **à trancher** (T19) : référencement contre accroche choisie par le gérant ; ne pas masquer de texte pour Google |
+| Avertissement du mode dev : `images.qualities` ne déclare pas 80 (visuels du catalogue) | **à voir** (T19) : sans effet en production tant que le chargeur sert les fichiers prêts ; à confirmer |
 | Titre et description Google de l'accueil (« grandes marques… à Marseille… au meilleur prix ») | **à revoir** avec l'avis juridique |
 
 ## Prochaines priorités
 
-1. **T18 — Mouvement** (`04-PLAN-EXECUTION.md` § T18), puis T19 → T23, un point de contrôle gérant à chaque étape visuelle.
+1. **T18** : test au doigt du gérant sur l'aperçu (ouvrir et fermer une fiche, glisser d'un parfum à l'autre, ouvrir le menu). Puis **T19 — Audit** (`04-PLAN-EXECUTION.md` § T19), T20 → T23.
 3. En attente côté gérant, sans bloquer : avis juridique (accroche, présentation face aux marques, titre et description
    Google, prix visibles dans les stories Snapchat incrustées) ; 29 paires de visuels clair/sombre décalées (session visuels).
