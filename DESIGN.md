@@ -190,15 +190,16 @@ une étiquette visible et son erreur dessous.
 - **Ma sélection** : liste gardée sur l'appareil (`localStorage`, `nurea:selection:v1`), compteur
   sur le cœur de la barre, feuille qui liste les parfums et un bouton « Commander ces N parfums sur
   Snapchat » qui compose un seul message. Aucun compte, aucune écriture serveur.
-- **Accueil** : composition **« Flacon »** (21/10/2026, `04-PLAN-EXECUTION.md` § B.10). La hero est la
-  **photographie du flacon Nuréa**, seul contre un mur uni, en deux lumières (sombre / clair) et deux
-  cadrages (portrait sur téléphone, paysage dès 768 px). Le mur de la photo se fond dans le fond de la
-  page par le haut et le bas : le texte et les entrées se posent sur le même mur que le flacon, dans sa
-  zone vide ; rien n'est assombri. H1 en `title` (« Nuréa Parfums » dans le H1, plus la ville), une
-  phrase, le `Button` plein « Voir le catalogue » et le lien « Commander sur Snapchat » — composants
-  standards. Copy provisoire, en attente de l'avis juridique. Puis **« À l'affiche »** (les deux parfums
-  mis en avant, en cartes du catalogue), le **rayon des marques**, le catalogue. Aucun surtitre, aucun
-  compteur, aucun texte qui défile ; une seule entrée animée. Élément LCP : la photo.
+- **Accueil** : composition **« Flacon »** (21/10/2026, `04-PLAN-EXECUTION.md` § B.10). **Hero** : la
+  photographie du flacon Nuréa est le fond de toute la hero, en deux lumières (sombre / clair) et deux
+  cadrages (portrait sur téléphone, paysage dès 768 px) ; le sol se fond dans la page, rien n'est assombri.
+  Sur téléphone, le titre (l'accroche, en `title`) se pose sur le mur au-dessus du flacon et les entrées
+  (`Button` plein « Voir le catalogue », lien « Commander sur Snapchat ») dans l'espace à sa gauche : le
+  texte entoure l'objet. **À l'affiche** : un panneau à la couleur du flacon (visuel, marque, nom,
+  « Voir la fiche ») ; sur téléphone, les puces du catalogue choisissent le parfum ; côte à côte dès
+  768 px. **Marques** : tuiles en langage carte, nom, nombre de parfums et la petite ligne de trois flacons
+  de la marque ; aucune vedette. Puis le catalogue. Composants et arrondis du design system inchangés ;
+  aucun surtitre, compteur décoratif ni texte qui défile ; une seule entrée animée.
 
 ## Fiche produit
 
