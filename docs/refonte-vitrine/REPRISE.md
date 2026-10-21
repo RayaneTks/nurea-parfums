@@ -1,5 +1,7 @@
 # Reprise — état de la refonte de la vitrine (à lire en premier)
 
+Prompt de reprise après `/clear` : `PROMPT-REPRISE.md`.
+
 Mis à jour le 21/10/2026. Ce fichier dit **où on en est** ; le détail chiffré est dans
 `04-PLAN-EXECUTION.md` § B (DA) et § B.10 (accueil), les règles dans `CLAUDE.md`, `DESIGN.md`,
 `01-INVARIANTS.md`. Ne rien décider ici qui n'y soit pas écrit.
@@ -39,7 +41,7 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 | Composants (boutons, cartes, champs, filtres, feuille, Ma sélection) | **validé** (PC 2–3) | `src/components/ui`, `PerfumeCard`, `PerfumeSheet`… — **ne pas les redessiner** |
 | Catalogue (grille, filtres, recherche, fiche, Snapchat 2 taps) | **validé** | `CatalogSection` et ses pièces |
 | Hero | **en cours** — base jugée bonne par le gérant, pas encore validée | photo du flacon Nuréa en fond ; titre puis « Voir le catalogue » + Snapchat en bouton rond 44 px sur une ligne, au-dessus et à gauche du flacon ; accroche « Le parfum que vous aimez, dans un flacon Nuréa. » (formulation du gérant, **non verrouillée**, avis juridique attendu) |
-| À l'affiche | **principe validé** (21/10) ; finitions livrées le 21/10, **validation attendue** | deux bandeaux horizontaux en miroir (Symphony flacon à gauche, Afternoon Swim flacon à droite) ; visuel entier fondu dans sa propre photo floutée (coin haut droit ×3) ; nom intégré sur un voile `--bg` ; tout le bandeau ouvre la fiche ; 4:3 mobile, 16:9 sur 62 rem en quinconce sur bureau |
+| À l'affiche | **validé** (21/10, « globalement ok » après finitions) | deux bandeaux horizontaux en miroir (Symphony flacon à gauche, Afternoon Swim flacon à droite) ; visuel entier fondu dans sa propre photo floutée (coin haut droit ×3) ; nom intégré sur un voile `--bg` ; tout le bandeau ouvre la fiche ; 4:3 mobile, 16:9 sur 62 rem en quinconce sur bureau |
 | Marques | **en cours**, pas encore jugé | index typographique : 12 marques, nom + nombre, « Toutes les marques » → `/parfums` |
 | La parfumerie, Contact, Légal, 404, OG, mouvement, audit, mise en ligne | **à faire** | T16 → T23 (`04-PLAN-EXECUTION.md`) |
 
@@ -85,8 +87,7 @@ miniatures (répétaient les produits).
 
 ## Prochaines priorités
 
-1. Validation par le gérant des finitions d'« À l'affiche ».
-2. **Renforcer l'identité Nuréa sur la page d'accueil** (demande du gérant), sans toucher aux composants ni
-   relancer une refonte : composition, hiérarchie, présence de la marque.
-3. Ressources attendues du gérant : avis juridique (accroche, présentation face aux marques), photos de la
+1. **Renforcer l'identité Nuréa sur la page d'accueil** (demande du gérant), sans toucher aux composants ni
+   aux sections validées, sans relancer une refonte : composition, hiérarchie, présence de la marque.
+2. Ressources attendues du gérant : avis juridique (accroche, présentation face aux marques), photos de la
    hero refaites, puis T16 → T23.
