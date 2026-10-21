@@ -30,7 +30,7 @@ test.describe("Accueil : Snapchat depuis l'arrivée", () => {
     await home(page);
     const h1 = page.locator("h1");
     await expect(h1).toHaveCount(1);
-    await expect(h1).toContainText("Nuréa Parfums");
+    await expect(h1).toContainText("Nuréa");
     await expect(page.getByRole("dialog")).toHaveCount(0);
     /* Les deux entrées de la hero, visibles dès l'arrivée : le catalogue, et Snapchat pour qui sait déjà. */
     await expect(page.getByRole("link", { name: "Voir le catalogue" })).toBeInViewport();

@@ -1,12 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { topBrands } from "../BrandShelf";
 
-const p = (brand: string, brandSlug?: string, extra: { isFeatured?: boolean; imageLight?: string; name?: string } = {}) => ({
-  brand,
-  brandSlug,
-  name: extra.name ?? brand,
-  ...extra,
-});
+const p = (brand: string, brandSlug?: string) => ({ brand, brandSlug });
 
 describe("rayon des marques de l'accueil", () => {
   it("range par nombre de parfums publiés, puis par nom", () => {
@@ -23,16 +18,8 @@ describe("rayon des marques de l'accueil", () => {
     expect(topBrands(perfumes, 2).map((b) => b.slug)).toEqual(["a", "b"]);
   });
 
-  it("représente la marque par son parfum mis en avant, sinon par un parfum qui a sa variante claire", () => {
-    const perfumes = [
-      p("Dior", "dior", { name: "Sombre seul" }),
-      p("Dior", "dior", { name: "Avec clair", imageLight: "light.webp" }),
-      p("Dior", "dior", { name: "Mis en avant", isFeatured: true }),
-      p("Chanel", "chanel", { name: "Premier" }),
-      p("Chanel", "chanel", { name: "Second" }),
-    ];
-    const [dior, chanel] = topBrands(perfumes);
-    expect(dior?.perfume.name).toBe("Mis en avant");
-    expect(chanel?.perfume.name).toBe("Premier");
+  it("garde les trois premiers parfums de chaque marque, dans l'ordre reçu", () => {
+    const perfumes = ["a", "b", "c", "d"].map((id) => ({ id, brand: "Dior", brandSlug: "dior" }));
+    expect(topBrands(perfumes)[0]?.lineup.map((x) => x.id)).toEqual(["a", "b", "c"]);
   });
 });

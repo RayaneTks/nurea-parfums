@@ -407,36 +407,25 @@
   }
 
   /* ─── Accueil : hero « Flacon » (04-PLAN-EXECUTION.md § B.10) ────────────
-     La photo du flacon Nuréa ; son mur, de la couleur de la page, s'y fond
-     par le haut et par le bas (masque, pas un dégradé de couleur : la page
-     apparaît au travers). Le texte se pose sur ce mur, dans la zone vide.
-     Téléphone : texte, puis photo portrait remontée sous le texte de
-     --recouvrement. Dès 768 px : photo paysage en fond, texte à gauche. */
+     La photo du flacon Nuréa est le fond de la hero ; le sol se fond dans la
+     page par le bas (masque : la page apparaît au travers, rien n'est assombri).
+     Téléphone : la hero a le format 4:5 de la photo ; le titre sur le mur au-
+     dessus du bouchon, les entrées à gauche du flacon, à hauteur de son corps.
+     Dès 768 px : photo paysage, titre et entrées à gauche, centrés. */
   .hero {
-    --recouvrement: 8rem;
     position: relative;
     display: flex;
     flex-direction: column;
-  }
-
-  /* Au-dessus de la photo : en flex, l'ordre de peinture suit `order`, pas le code source. */
-  .hero-texte {
-    position: relative;
-    z-index: 1;
-    order: -1;
-    width: 100%;
-    max-width: calc(var(--content-max) + 2 * var(--gutter));
-    margin-inline: auto;
-    padding: var(--space-6) var(--gutter) 0;
+    justify-content: space-between;
+    min-height: calc(100vw * 1.25);
+    padding: var(--space-6) var(--gutter) var(--space-12);
   }
 
   .hero-photo {
-    position: relative;
-    aspect-ratio: 4 / 5;
-    width: 100%;
-    margin-top: calc(-1 * var(--recouvrement));
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--recouvrement), #000 calc(100% - var(--space-12)), transparent 100%);
-    mask-image: linear-gradient(to bottom, transparent 0, #000 var(--recouvrement), #000 calc(100% - var(--space-12)), transparent 100%);
+    position: absolute;
+    inset: 0;
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--space-12)), transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--space-12)), transparent 100%);
   }
 
   .hero-photo-img {
@@ -446,30 +435,43 @@
     object-position: 100% 100%;
   }
 
-  /* Hauteur réglée pour que la photo paysage, recadrée par la droite, garde le flacon à droite du
-     texte : au-delà, le recadrage le pousserait sous les mots. */
+  /* Au-dessus de la photo (positionnés, après elle dans le code). */
+  .hero-titre,
+  .hero-entrees {
+    position: relative;
+  }
+
+  .hero-entrees {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+    max-width: 11.5rem;
+  }
+
   @media (min-width: 768px) {
     .hero {
       justify-content: center;
+      gap: var(--space-6);
       min-height: clamp(26rem, 50vh, 32rem);
-    }
-
-    .hero-texte {
-      order: 0;
       padding-block: var(--space-16);
+      padding-inline: max(var(--gutter), (100% - var(--content-max)) / 2 + var(--gutter));
     }
 
-    .hero-texte > * {
+    .hero-titre {
       max-width: 26rem;
     }
 
+    .hero-entrees {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--space-6);
+      max-width: none;
+    }
+
     .hero-photo {
-      position: absolute;
-      inset: 0;
-      aspect-ratio: auto;
-      margin: 0;
-      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--space-12), #000 calc(100% - var(--space-16)), transparent 100%);
-      mask-image: linear-gradient(to bottom, transparent 0, #000 var(--space-12), #000 calc(100% - var(--space-16)), transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--space-16)), transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 calc(100% - var(--space-16)), transparent 100%);
     }
 
     .hero-photo-img {
@@ -482,77 +484,58 @@
       min-height: clamp(32rem, 80vh, 48rem);
     }
 
-    .hero-texte > * {
+    .hero-titre {
       max-width: 30rem;
-    }
-
-    .hero-texte > h1 {
-      max-width: 36rem;
     }
   }
 
   /* ─── À l'affiche (`FeaturedSection`) ───────────────────────────────────
-     Les deux parfums mis en avant côte à côte, chacun une carte du catalogue
-     (`.card` : rayon, survol et appui à l'ambiance), ici seulement la grille. */
+     Un panneau par parfum, à sa couleur : visuel 2:3 à gauche, texte calé en
+     bas à droite. Téléphone : un seul à la fois (les puces choisissent), les
+     autres dans la même case, invisibles — aucune hauteur ne bouge. Dès
+     768 px : côte à côte, tous visibles. */
   .affiche {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-3);
+  }
+
+  .affiche-panneau {
+    grid-area: 1 / 1;
+    display: grid;
+    grid-template-columns: 9.5rem minmax(0, 1fr);
+    column-gap: var(--space-4);
+    align-items: end;
+    transition:
+      opacity var(--dur-2) var(--ease-out),
+      visibility var(--dur-2);
+  }
+
+  .affiche-panneau:not([data-actif]) {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  /* Image paresseuse d'un panneau masqué : pas chargée tant qu'on ne l'affiche pas (elle prenait le
+     débit de la photo de la hero, élément LCP). Dès 768 px, tous les panneaux sont visibles. */
+  @media (max-width: 767px) {
+    .affiche-panneau:not([data-actif]) img {
+      display: none;
+    }
   }
 
   @media (min-width: 768px) {
     .affiche {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: var(--space-6);
     }
-  }
 
-  /* Bureau : compact — deux objets de 22 rem au plus, pas une seconde grille. */
-  @media (min-width: 1024px) {
-    .affiche {
-      grid-template-columns: repeat(2, minmax(0, 22rem));
+    .affiche-panneau {
+      grid-area: auto;
+      grid-template-columns: 11rem minmax(0, 1fr);
     }
-  }
 
-  .affiche-visuel {
-    aspect-ratio: 2 / 3;
-  }
-
-  /* ─── Rayon des marques (`BrandShelf`) ──────────────────────────────
-     Un rayon qu'on fait glisser, calé sur la gouttière ; hors écran, une
-     tuile n'est pas dessinée et sa vignette ne part pas (hauteur réservée :
-     visuel 2:3 + deux lignes). Dès 1024 px, huit tuiles par ligne. */
-  .rail {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 9rem;
-    gap: var(--space-3);
-    padding-inline: var(--gutter);
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity;
-    scroll-padding-inline: var(--gutter);
-    scrollbar-width: none;
-  }
-
-  .rail::-webkit-scrollbar {
-    display: none;
-  }
-
-  .rail > li {
-    scroll-snap-align: start;
-    content-visibility: auto;
-    contain-intrinsic-size: auto 9rem auto 18.5rem;
-  }
-
-  @media (min-width: 1024px) {
-    .rail {
-      grid-auto-flow: row;
-      grid-template-columns: repeat(8, minmax(0, 1fr));
-      gap: var(--space-4);
-      width: 100%;
-      max-width: calc(var(--content-max) + 2 * var(--gutter));
-      margin-inline: auto;
-      overflow: visible;
+    .affiche-panneau:not([data-actif]) {
+      opacity: 1;
+      visibility: visible;
     }
   }
 
