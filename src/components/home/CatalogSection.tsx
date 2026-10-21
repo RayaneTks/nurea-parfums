@@ -323,7 +323,7 @@ export const CatalogSection = ({
       )}
 
       <section id="collection" aria-labelledby="catalogue-titre" className="page-x mt-[var(--space-section)] flex scroll-mt-32 flex-col gap-6 pb-16 md:scroll-mt-20">
-        <header className="flex items-baseline justify-between gap-4">
+        <header className="flex flex-wrap items-baseline justify-between gap-x-4">
           <h2 id="catalogue-titre" className="t-title">Catalogue</h2>
           <p className="t-caption">
             {catalogPerfumes.length} parfum{catalogPerfumes.length > 1 ? "s" : ""}

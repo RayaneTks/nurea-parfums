@@ -494,6 +494,41 @@
     }
   }
 
+  /* « grandes marques. » sur une ligne : pas de mot orphelin en fin de titre. */
+  .hero-insecable {
+    white-space: nowrap;
+  }
+
+  /* Sous 280 px — un téléphone zoomé à 200 % et plus (WCAG 1.4.10) : le titre ne tient plus au-dessus
+     du bouchon. Le bloc passe en colonne, la photo entière sous les actions, rien ne déborde. */
+  @media (max-width: 279px) {
+    .hero {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+      height: auto;
+      padding-top: var(--space-6);
+    }
+
+    .hero-photo {
+      position: relative;
+      inset: auto;
+      order: 1;
+      aspect-ratio: 4 / 5;
+      margin-inline: calc(var(--gutter) * -1);
+    }
+
+    .hero-entrees {
+      flex-wrap: wrap;
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .hero-insecable {
+      white-space: normal;
+    }
+  }
+
   @media (min-width: 768px) {
     .hero {
       display: flex;

@@ -207,28 +207,26 @@ export const SearchBox: FC = () => {
           </p>
           <ul id={listId} role="listbox" aria-label="Suggestions" aria-busy={search.status === "loading"}>
             {rows.map((row, index) => (
-              <li
-                key={row.key}
-                id={optionId(index)}
-                role="option"
-                aria-selected={index === active}
-                /* Nom lu : « Marque — Nom », sans la légende du visuel (qui, lue avant, noyait le nom). */
-                aria-label={row.kind === "perfume" ? `${brandLineLabel(row.suggestion.brand, row.suggestion.line)} — ${row.suggestion.name}` : undefined}
-                onMouseEnter={() => setActive(index)}
-                className={cn(
-                  "rounded-md transition-colors duration-dur-1 ease-soft",
-                  index === active && "bg-surface-2"
-                )}
-              >
+              /* L'option EST le lien (rôle permis sur `a[href]`) : pas d'élément interactif dans un autre. */
+              <li key={row.key} role="presentation">
                 <a
                   href={row.href}
                   tabIndex={-1}
+                  id={optionId(index)}
+                  role="option"
+                  aria-selected={index === active}
+                  /* Nom lu : « Marque — Nom », sans la légende du visuel (qui, lue avant, noyait le nom). */
+                  aria-label={row.kind === "perfume" ? `${brandLineLabel(row.suggestion.brand, row.suggestion.line)} — ${row.suggestion.name}` : undefined}
+                  onMouseEnter={() => setActive(index)}
                   onClick={(event) => {
                     if (!plainClick(event)) return;
                     event.preventDefault();
                     activate(row);
                   }}
-                  className="flex min-h-11 items-center gap-3 px-2 py-1.5"
+                  className={cn(
+                    "flex min-h-11 items-center gap-3 rounded-md px-2 py-1.5 transition-colors duration-dur-1 ease-soft",
+                    index === active && "bg-surface-2"
+                  )}
                 >
                   {row.kind === "perfume" ? (
                     <>

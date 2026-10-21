@@ -73,8 +73,9 @@ test.describe("Catalogue — filtres par marque", () => {
     await page.getByLabel("Trier le catalogue").selectOption("brand");
     await expect.poll(() => new URL(page.url()).searchParams.get("sort")).toBe("brand");
 
-    /* La marque est la première ligne de la carte. */
-    const brands = await page.locator("#collection article .card-brand").allInnerTexts();
+    /* La marque est la première ligne de la carte. `textContent` : hors écran, les cartes ne sont pas
+       peintes (`content-visibility`) et `innerText` y rend une chaîne vide. */
+    const brands = await page.locator("#collection article .card-brand").allTextContents();
     const sorted = [...brands].sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
     expect(brands).toEqual(sorted);
   });

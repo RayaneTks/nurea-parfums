@@ -46,7 +46,7 @@ test.describe("Recherche — suggestions", () => {
   test("hors accueil, la suggestion est un lien vers la page du parfum", async ({ page }) => {
     await page.goto("/contact", { waitUntil: "networkidle" });
     await type(page, "aventus");
-    const link = list(page).getByRole("option", { name: /Aventus/ }).getByRole("link");
+    const link = list(page).getByRole("option", { name: /Aventus/ }); // l'option est le lien
     await expect(link).toHaveAttribute("href", /^\/parfums\/creed\/aventus-\d+$/);
     await expect(list(page).getByRole("option", { name: /^Voir le parfum$/ })).toBeVisible();
   });
@@ -60,7 +60,7 @@ test.describe("Recherche — suggestions", () => {
     expect(await perfumes.count()).toBeLessThanOrEqual(5);
     const all = list(page).getByRole("option", { name: /^Voir les \d+ parfums$/ });
     await expect(all).toHaveCount(1);
-    await expect(all.getByRole("link")).toHaveAttribute("href", "/?q=dior");
+    await expect(all).toHaveAttribute("href", "/?q=dior");
   });
 
   test("rien de reconnu : jamais le vide, l'invitation à écrire", async ({ page }) => {
@@ -68,7 +68,7 @@ test.describe("Recherche — suggestions", () => {
     await type(page, "zzqqxx");
     const ask = list(page).getByRole("option", { name: /Écrivez-nous/ });
     await expect(ask).toBeVisible();
-    await expect(ask.getByRole("link")).toHaveAttribute("href", "/contact?parfum=zzqqxx");
+    await expect(ask).toHaveAttribute("href", "/contact?parfum=zzqqxx");
     await box(page).press("Escape");
     await expect(list(page)).toBeHidden();
   });

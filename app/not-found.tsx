@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { BrandLogo } from "@/components/layout/BrandLogo";
@@ -19,6 +20,9 @@ import "./globals.css";
  * La recherche est un formulaire GET vers `/?q=…#collection`, que le catalogue lit dans l'URL
  * (`useCatalogFilters`) : elle marche sans JavaScript.
  */
+// Sans titre, l'onglet et le lecteur d'écran n'annoncent que l'adresse (axe : `document-title`).
+export const metadata: Metadata = { title: "Page introuvable — Nuréa Parfums" };
+
 export default function NotFound() {
   return (
     <ThemeProvider>

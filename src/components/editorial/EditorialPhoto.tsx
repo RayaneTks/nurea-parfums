@@ -45,7 +45,6 @@ export const EditorialPhoto: FC<{
         width: 1024,
         height: 1536,
         sizes,
-        quality: 78,
       });
       preload(props.src, {
         as: "image",
@@ -66,7 +65,6 @@ export const EditorialPhoto: FC<{
           width={1024}
           height={1536}
           sizes={sizes}
-          quality={78}
           className={cn(
             "h-full w-full object-cover",
             lumiere === "sombre"
