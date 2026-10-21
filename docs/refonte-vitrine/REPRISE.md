@@ -64,6 +64,7 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
   endroit d'un visuel à l'autre : un cadre coupe le bouchon de l'un ou la base de l'autre) ; jamais déformer ;
   bascule clair/sombre en CSS, jamais `useTheme`. Si un visuel manque : **demander la ressource au gérant**
   plutôt que compenser par du décoratif ; ne jamais générer un faux flacon Nuréa.
+- **Firefox** : jamais `transform: scale` pour agrandir une image sous un flou — Firefox la peint entière à la taille agrandie (bascule de thème gelée 200 ms, défilement lourd). Agrandir par la mise en page, dans un cadre rogné (`.bandeau-fond-cadre`). Mesurer dans le vrai Firefox (installé, piloté par WebDriver BiDi, profil vierge).
 - **Performance** : rien ne doit concurrencer l'image LCP de la hero (les 24 miniatures de marques le
   faisaient : 3,7 s) ; mesurer sur build, pas en dev.
 - Mobile d'abord ; vérifier sur captures réelles à 320, 390, 430 et 1280, clair et sombre ; e2e accueil vert.
@@ -85,6 +86,7 @@ miniatures (répétaient les produits).
 | Images qui bougent à la bascule de thème (même fichier) | **corrigé** 21/10 : interlignage commun (1,65/1,6 avant) ; 0 px mesuré |
 | Variantes claire/sombre décalées dans les fichiers (29 paires sur 103, liste : `annexes/alignement-clair-sombre.md`) | **à corriger** par la session visuels (refaire au même cadrage) ; production (233 fiches) pas encore mesurée |
 | Photos de la hero : sans étiquette, flacon vide, décalées entre clair et sombre (4,25 px / 10,10 px), définition sous le brief | **corrigé** 21/10 (`cd64c4d`) : photos du gérant, liseré vert de 3 px rogné à droite, 0 px de décalage ; plus lourdes → WebP 74, LCP 2 112 / 1 292 ms (1 532 / 1 064 avant, budget 2 500) |
+| Firefox (PC) : site lent, animation de bascule de thème absente | **corrigé** 21/10 (`7b1d3cb`) : fond flou d'« À l'affiche » agrandi par `transform: scale(3)` ; première bascule 200 → 50 ms, animation fluide ; rendu identique. Edge n'était pas touché |
 | e2e `catalog-filters` « le tri par marque… réordonne la grille » échoue sur téléphone (Pixel 7) | **à corriger** : déjà présent avant `cd64c4d` (même échec sur l'aperçu Vercel) ; hors hero |
 | Titre et description Google de l'accueil (« grandes marques… à Marseille… au meilleur prix ») | **à revoir** avec l'avis juridique |
 

@@ -128,6 +128,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 21/10 | refonte | **Lenteur Firefox corrigée** (`7b1d3cb`, `refonte/vitrine`) : fond flou des bandeaux « À l'affiche » agrandi par la mise en page au lieu de `transform: scale(3)` ; bascule de thème de nouveau animée dans Firefox, rendu identique. **Attente test du gérant sur Firefox.** |
 | 21/10 | refonte | **Hero validée** par le gérant (« ok »). Signalé ensuite : animation absente et site très lent sur PC — en cours. |
 | 21/10 | refonte | **« Nuréa » du titre de la hero en couleur de marque** (`606ff14`, `refonte/vitrine`) ; exception écrite dans `DESIGN.md` § Couleurs. **Attente PC du gérant.** |
 | 21/10 | refonte | **Nouvelles photos de la hero en place** (`cd64c4d`, `refonte/vitrine`) : flacon rempli, étiquette NP doré (sombre) / bordeaux (clair), clair/sombre alignés à 0 px ; liseré vert rogné ; LCP 2 112 / 1 292 ms ; Snapchat dégagé du bouchon sous 375 px. Pas de second monogramme dans la hero. **Attente PC du gérant.** e2e tri par marque (téléphone) rouge, antérieur. |
