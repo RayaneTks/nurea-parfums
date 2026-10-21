@@ -39,6 +39,15 @@ const LOCAL_VARIANTS: Readonly<Record<string, readonly Variant[]>> = {
   "/branding/hero/flacon-portrait-clair.webp": [{ width: 640, src: "/branding/hero/flacon-portrait-clair-640.webp" }],
   "/branding/hero/flacon-paysage-sombre.webp": [{ width: 1280, src: "/branding/hero/flacon-paysage-sombre-1280.webp" }],
   "/branding/hero/flacon-paysage-clair.webp": [{ width: 1280, src: "/branding/hero/flacon-paysage-clair-1280.webp" }],
+  // Photos éditoriales (La parfumerie, Contact) : 1024 px avec leur déclinaison 640, deux lumières.
+  "/branding/editorial/atelier-sombre.webp": [{ width: 640, src: "/branding/editorial/atelier-sombre-640.webp" }],
+  "/branding/editorial/atelier-clair.webp": [{ width: 640, src: "/branding/editorial/atelier-clair-640.webp" }],
+  "/branding/editorial/choisir-sombre.webp": [{ width: 640, src: "/branding/editorial/choisir-sombre-640.webp" }],
+  "/branding/editorial/choisir-clair.webp": [{ width: 640, src: "/branding/editorial/choisir-clair-640.webp" }],
+  "/branding/editorial/ecrire-sombre.webp": [{ width: 640, src: "/branding/editorial/ecrire-sombre-640.webp" }],
+  "/branding/editorial/ecrire-clair.webp": [{ width: 640, src: "/branding/editorial/ecrire-clair-640.webp" }],
+  "/branding/editorial/recevoir-sombre.webp": [{ width: 640, src: "/branding/editorial/recevoir-sombre-640.webp" }],
+  "/branding/editorial/recevoir-clair.webp": [{ width: 640, src: "/branding/editorial/recevoir-clair-640.webp" }],
 };
 
 export default function nureaImageLoader({ src, width }: { src: string; width: number; quality?: number }): string {

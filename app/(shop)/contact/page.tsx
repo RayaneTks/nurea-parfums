@@ -121,7 +121,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
             <h2 id="deroule" className="t-title mb-6">
               Comment ça se passe
             </h2>
-            <OrderSteps className="md:grid-cols-1 xl:grid-cols-3" />
+            <OrderSteps />
           </section>
         </div>
 
