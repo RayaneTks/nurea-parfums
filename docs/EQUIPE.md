@@ -131,6 +131,7 @@ Sa chaîne marche et produit : on n'en change pas le fond. On corrige ce qui la 
 
 | Date | Chantier | Événement |
 |---|---|---|
+| 21/10 | visuels | Fournée 13 (livraison `nurea-visuels-2026-10-21-corrections`, 38 fiches dont les marques Dior et Hugo Boss) : tous relus contre les vrais flacons, tous OK, appliqués ; 28 parfums passés en ligne. Page : 0 à refaire, 283 validés, 270 à créer. 307 Gold Supreme Bouquet : flacon = photo officielle YSL détourée. Clés : `public-catalogue-v24`, `seo-catalogue-v20`, `unlisted-perfumes-v14`. |
 | 21/10 | refonte | **T17 codée** (`dcbb5a9`, `refonte/vitrine`) : vignettes de partage — site = photo réelle du flacon Nuréa + logo complet, sans « Marseille » ni « grandes marques » ; fiche = visuel entier sur son ambiance + mention des flacons ; JPEG 50–75 Ko (WhatsApp) ; og:image rétablie sur `/parfums`. Index des Marques montré. **Attente PC du gérant.** |
 | 21/10 | refonte | **T16 validée** (« ok good ») avec les téléphones refaits, menu validé. Prompt de reprise réorienté sur T17. |
 | 21/10 | refonte | **Menu validé** par le gérant. **Téléphones des photos refaits** (`d362aa5`) après son « pas pro » : écran vert à la génération, vraie capture de l'appli Snapchat qu'il a fournie, **stories nettes à sa demande** malgré leurs prix (exception voulue, notée dans `annexes/photos-editoriales.md`, risque comparatif signalé). **Attente PC.** |
