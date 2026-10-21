@@ -1,7 +1,7 @@
-# Suite de T15 — l'accueil « Chambre » est codé ; ce qui reste à l'exécutant
+# Suite de T15 — l'accueil « Flacon » est codé ; ce qui reste à l'exécutant
 
-État au 21/10/2026 : l'accueil a été **codé par Fable** (composition « Chambre », `04-PLAN-EXECUTION.md`
-§ B.10, commit `2978930` sur `refonte/vitrine`). Il attend le point de contrôle du gérant sur
+État au 21/10/2026 : l'accueil a été **codé par Fable** (composition « Flacon », `04-PLAN-EXECUTION.md`
+§ B.10, commit `45d449d` sur `refonte/vitrine`). Il attend le point de contrôle du gérant sur
 l'aperçu Vercel de la branche, sur son téléphone. Ce fichier remplace l'ancien prompt T15 (composition A,
 refusée).
 

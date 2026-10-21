@@ -41,7 +41,8 @@ Tout ce qui est écrit ici est vérifiable : chaque ligne renvoie à son fichier
 - Chaque page déclare sa **canonique** ; le layout n'en pose aucune. Pas de hreflang.
 - `app/sitemap.ts` : `lastModified` seulement quand il est vrai. ~180 URL aujourd'hui.
 - **Pas de balisage `Product`** tant qu'aucun prix n'est public. JSON-LD : toujours `jsonLdHtml()`.
-- Le H1 de l'accueil porte « Nuréa Parfums » et « Marseille ».
+- Le H1 de l'accueil porte « Nuréa Parfums ». « Marseille » n'y est plus exigé et ne s'écrit plus dans la
+  copy de l'accueil (gérant, 21/10/2026 : acquisition par Snapchat, envois partout en France).
 - Aperçu social : `opengraph-image.tsx` de chaque page (à reprendre dans la nouvelle DA).
 
 ## 4. Technique
