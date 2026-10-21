@@ -49,7 +49,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * L'accueil (04-PLAN-EXECUTION.md § B.10, composition « Chambre ») : la hero de la marque — qui est
+ * L'accueil (04-PLAN-EXECUTION.md § B.10, composition « Flacon ») : la hero de la marque — qui est
  * Nuréa, ce qu'elle propose, par où entrer —, puis les parfums à l'affiche en compact, le rayon des
  * marques, et le catalogue avec sa recherche et ses filtres, intouchés.
  */
@@ -58,12 +58,10 @@ export default async function HomePage() {
   const featured = perfumes.filter((p) => p.isFeatured).slice(0, MAX_FEATURED);
   // Nouvel ordre à chaque visite, marques variées en tête — tiré ici, côté serveur (`discoveryOrder`).
   const catalogue = discoveryOrder(perfumes);
-  // Compteurs de la hero : comptés ici, sur le catalogue publié, rien d'autre.
-  const brandCount = new Set(perfumes.map((p) => p.brandSlug ?? p.brand)).size;
 
   return (
     <>
-      <Hero perfumeCount={perfumes.length} brandCount={brandCount} />
+      <Hero />
 
       <FeaturedSection perfumes={featured} />
 

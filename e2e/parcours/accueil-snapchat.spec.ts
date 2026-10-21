@@ -5,7 +5,7 @@ import { countTaps } from "../helpers/tap";
  * Accueil de la vitrine (04-PLAN-EXECUTION § B.10, composition « Chambre ») : depuis l'arrivée,
  * message Snapchat prêt en 4 taps au plus — attendu : 2, le visuel du premier parfum à l'affiche
  * (un défilement, pas un tap), puis « Commander sur Snapchat » dans la fiche. Vérifie aussi le H1
- * unique, les deux entrées de la hero et l'absence de modale à l'arrivée. Catalogue de démonstration
+ * unique (la marque), les deux entrées de la hero et l'absence de modale à l'arrivée. Catalogue de démonstration
  * (aucune base) : deux parfums y sont mis en avant.
  */
 
@@ -26,12 +26,11 @@ async function home(page: Page, waitUntil: "networkidle" | "commit" = "networkid
 }
 
 test.describe("Accueil : Snapchat depuis l'arrivée", () => {
-  test("un H1 qui porte la marque et la ville, aucune modale à l'arrivée", async ({ page }) => {
+  test("un H1 qui porte la marque, aucune modale à l'arrivée", async ({ page }) => {
     await home(page);
     const h1 = page.locator("h1");
     await expect(h1).toHaveCount(1);
     await expect(h1).toContainText("Nuréa Parfums");
-    await expect(h1).toContainText("Marseille");
     await expect(page.getByRole("dialog")).toHaveCount(0);
     /* Les deux entrées de la hero, visibles dès l'arrivée : le catalogue, et Snapchat pour qui sait déjà. */
     await expect(page.getByRole("link", { name: "Voir le catalogue" })).toBeInViewport();
