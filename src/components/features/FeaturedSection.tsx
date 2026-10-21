@@ -61,7 +61,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
                     {perfume.name}
                   </a>
                 </h3>
-                <span className="t-body mt-2 text-fg-1 underline decoration-1 underline-offset-4" aria-hidden="true">
+                <span className="t-body mt-3 text-fg-1 underline decoration-1 underline-offset-4" aria-hidden="true">
                   Voir la fiche
                 </span>
               </div>

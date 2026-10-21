@@ -527,6 +527,8 @@
     aspect-ratio: 4 / 3;
     overflow: hidden;
     border-radius: var(--r-lg);
+    /* Découpe explicite : `overflow` seul laisse le calque flouté déborder des angles arrondis. */
+    clip-path: inset(0 round var(--r-lg));
     background-color: var(--surface-2);
     transition: transform var(--dur-1) var(--ease-out);
   }
@@ -552,15 +554,12 @@
     filter: blur(24px) saturate(1.1);
   }
 
-  /* Le fond montre le décor, pas le flacon : agrandi ×2 depuis le bord côté texte, le flacon flouté
-     (au centre de la photo) passe sous le visuel net — sinon son fantôme marque la jonction. */
+  /* Le fond montre l'arrière-plan calme de la photo — son coin haut droit (ciel, lumière), loin du
+     flacon et des objets du premier plan —, agrandi ×3 : la transition reprend les couleurs du décor
+     et aucun fantôme flou du flacon ni des fruits ne passe derrière le texte. */
   .bandeau-fond img {
-    transform: scale(2);
-    transform-origin: 100% 70%;
-  }
-
-  .bandeau-miroir .bandeau-fond img {
-    transform-origin: 0% 70%;
+    transform: scale(3);
+    transform-origin: 100% 0%;
   }
 
   .bandeau-voile {
