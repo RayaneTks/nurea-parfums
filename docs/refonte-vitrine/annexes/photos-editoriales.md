@@ -18,16 +18,22 @@ flacon étant copié sur la photo réelle (référence jointe à chaque généra
    réelle du flacon (`public/branding/hero/flacon-portrait-sombre.webp`) en référence.
 2. Version **claire** générée à partir de la sombre (« même scène, même cadrage au pixel près ») + la photo claire du
    flacon. Vérifié sur planche : objets au même endroit.
-3. Écrans réels, capturés en téléphone (Playwright, 390 × 844 ; 340 × 736 pour Snapchat) :
-   - **catalogue** : build de production, section `#collection` ; sombre puis clair **dans la même page** (bouton de
-     thème) — l'ordre du catalogue change à chaque visite, deux visites auraient montré d'autres parfums ;
-   - **Snapchat** : `snapchat.com/add/nureaparfums` (fenêtre « ouvrir l'appli » fermée). Les stories portent des
-     **prix** (« jusqu'à 100 € », « 255 € → 75 € ») et des flacons de marques : **floutées** (39 → 69 % de la hauteur) —
-     aucun prix sur la vitrine.
-4. Incrustation en perspective (`scripts/refonte-vitrine/incruste-ecran.py`, coins par `coins-ecran.py` ou relevés
-   sur zoom) — **mêmes coins dans les deux lumières** : choisir `[[93,828],[394,728],[882,1135],[510,1271]]`, écrire
-   `[[319,700],[524,700],[421,1216],[187,1193]]` (images 1024 × 1536).
-5. WebP 78 (1024) et 76 (640), déclinaisons dans `src/lib/images/loader.ts`.
+3. **Écran vert** (refait le 21/10 après le refus du gérant : « pas pro ») : les scènes choisir et écrire sont
+   régénérées à l'identique avec l'écran du téléphone en vert chroma `#00FF00` (sombre, puis clair à partir de la
+   sombre). Le détourage donne la forme exacte de l'écran (coins arrondis, encoche qui passe devant).
+4. Écrans réels :
+   - **catalogue** : build de production, téléphone 390 × 844, section `#collection` ; sombre puis clair **dans la même
+     page** (bouton de thème) — l'ordre du catalogue change à chaque visite. Barre d'état iOS ajoutée au-dessus
+     (`scripts/refonte-vitrine/barre-etat.py`), sinon l'encoche mange l'en-tête du site ;
+   - **Snapchat** : la **capture de l'appli** fournie par le gérant (profil sombre, photo du flacon). **Stories nettes,
+     décision du gérant** (« c'est notre contenu ») : elles montrent des prix (« Prix magasin 255 € → Prix Nuréa
+     (50 ml) 75 € » à côté d'un flacon Louis Vuitton, « jusqu'à 100 € ») — **exception voulue** à « jamais de prix ni de
+     contenance sur la vitrine », signalée au gérant avec le risque de publicité comparative (avis juridique attendu).
+5. Incrustation (`scripts/refonte-vitrine/incruste-ecran.py photo_verte ecran sortie sombre|clair`) : masque doux sur
+   la « verdeur », coins par droites ajustées sur les bords (hors coins arrondis), haut = bord court près de l'encoche,
+   capture en perspective agrandie de 1 %, écran émissif (×0,9 en sombre), flou de profondeur 0,7, grain, reflet de
+   vitre en bande diagonale venue de la fenêtre + voile ambiant, ombre intérieure sous le cadre, liseré vert retiré.
+6. WebP 80 (1024) et 78 (640), déclinaisons dans `src/lib/images/loader.ts`.
 
 **Piège** : plusieurs sessions génèrent en parallèle dans `~/.codex/generated_images` ; le script prenait « l'image la
 plus récente » et a mélangé les scènes (et ramené l'Azzaro d'une autre session). Corrigé : il lit d'abord le chemin
