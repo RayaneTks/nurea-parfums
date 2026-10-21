@@ -20,7 +20,8 @@ const DENSITIES: ReadonlyArray<{ value: Density; label: string; Icon: LucideIcon
 ];
 
 /* Puce (DESIGN.md : `--r-sm`) ; active = `--surface-2`. 44 px de haut, la cible tactile. */
-const CHIP =
+/** Puce du catalogue (filtres) ; réutilisée telle quelle par « À l'affiche » de l'accueil. */
+export const CHIP =
   "press inline-flex h-11 shrink-0 items-center gap-2 rounded-sm border border-line px-4 text-fg-2 transition-[background-color,color,transform] duration-dur-2 ease-soft mouse-hover:text-fg-1 aria-pressed:border-surface-2 aria-pressed:bg-surface-2 aria-pressed:text-fg-1 aria-selected:border-surface-2 aria-selected:bg-surface-2 aria-selected:text-fg-1";
 
 interface CatalogToolbarProps {

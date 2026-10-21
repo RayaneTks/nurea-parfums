@@ -29,14 +29,14 @@ function sources(lumiere: Lumiere) {
 /**
  * La hero de l'accueil (04-PLAN-EXECUTION.md § B.10, composition « Flacon »).
  *
- * La photographie du flacon Nuréa occupe la hero ; son mur, de la couleur du fond de la page, se fond
- * dedans par le haut et par le bas (masque), si bien que le texte et les entrées se posent sur le
- * même mur que le flacon, dans la zone vide prévue à la prise de vue. Rien n'est assombri.
- * Téléphone : le texte en haut, la photo portrait dessous, dont le haut (le mur) passe sous le
- * texte ; dès 768 px, la photo paysage en fond, le texte à gauche, le flacon à droite.
+ * La photographie du flacon Nuréa est le fond de toute la hero ; le texte se pose sur son mur, dans
+ * la zone vide prévue à la prise de vue, et le sol se fond dans la page par le bas (masque). Rien
+ * n'est assombri. Téléphone : la hero a le format de la photo portrait (4:5) ; le titre occupe le mur
+ * au-dessus du bouchon, les entrées l'espace à gauche du flacon, à hauteur de son corps — le texte
+ * entoure l'objet. Dès 768 px : la photo paysage, le titre et les entrées à gauche, le flacon à droite.
  *
- * Composants inchangés : `Button` plein, lien tertiaire. Le H1, unique, porte la marque ; plus la ville
- * (gérant, 21/10 : les clients viennent de Snapchat, les envois couvrent toute la France). **Accroche provisoire** : le gérant ne l'a pas validée, et toute formulation qui
+ * Composants inchangés : `Button` plein, lien tertiaire. Le H1, unique, est l'accroche ; il nomme
+ * Nuréa, pas la ville (gérant, 21/10 : les clients viennent de Snapchat, envois partout en France). **Accroche provisoire** : le gérant ne l'a pas validée, et toute formulation qui
  * rapproche le produit d'un parfum de marque attend un avis juridique (01-INVARIANTS § 1).
  *
  * Chaque lumière est annoncée pour son seul thème et chaque cadrage pour sa seule largeur ; les deux
@@ -70,21 +70,18 @@ export const Hero: FC = () => {
         </picture>
       </div>
 
-      <div className="hero-texte enter">
-        <h1 id="accueil-titre" className="t-title">
-          Vos parfums préférés, dans notre flacon.
-          <span className="block text-fg-2">Nuréa Parfums, envoi partout en France.</span>
-        </h1>
-        <p className="t-body t-measure mt-4">Choisissez au catalogue, commandez sur Snapchat.</p>
-        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2">
-          <a href="#collection" className={buttonClass("solid")}>
-            Voir le catalogue
-          </a>
-          <a href={CONTACT.snapchat} target="_blank" rel="noopener noreferrer" className={buttonClass("link", "gap-2")}>
-            <SnapchatIcon className="h-5 w-5" aria-hidden="true" />
-            Commander sur Snapchat
-          </a>
-        </div>
+      {/* Accroche provisoire (une des formulations du gérant, non validée ; avis juridique attendu). */}
+      <h1 id="accueil-titre" className="hero-titre t-title enter">
+        Le parfum que vous aimez, dans un flacon Nuréa.
+      </h1>
+      <div className="hero-entrees enter">
+        <a href="#collection" className={buttonClass("solid")}>
+          Voir le catalogue
+        </a>
+        <a href={CONTACT.snapchat} target="_blank" rel="noopener noreferrer" className={buttonClass("link", "items-start gap-2")}>
+          <SnapchatIcon className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+          Commander sur Snapchat
+        </a>
       </div>
     </section>
   );
