@@ -2,7 +2,7 @@
 
 Prompt de reprise après `/clear` : `PROMPT-REPRISE.md`.
 
-Mis à jour le 21/10/2026 au soir (T18, titre de l'accueil et chevrons validés ; prochain : T19). Ce fichier dit **où on en est** ; le détail chiffré est dans
+Mis à jour le 21/10/2026 au soir (T19 codée, `65e7ff9` ; prochain : T20). Ce fichier dit **où on en est** ; le détail chiffré est dans
 `04-PLAN-EXECUTION.md` § B (DA) et § B.10 (accueil), les règles dans `CLAUDE.md`, `DESIGN.md`,
 `01-INVARIANTS.md`. Ne rien décider ici qui n'y soit pas écrit.
 
@@ -50,7 +50,8 @@ test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.s
 | Menu sur téléphone et tablette (signalé par le gérant : on ne pouvait naviguer que par le pied de page) | **validé** (gérant, 21/10, « ça va, c'est pas mal » ; `29ed262`) | bouton Menu à droite de la barre sous 1024 px, feuille par le bas (DESIGN.md § Navigation) |
 | Vignettes de partage (T17) | **validé** (gérant, 21/10, « ok c bien » ; `dcbb5a9`) | site : photo réelle du flacon Nuréa de la hero + logo complet + « Catalogue de parfums, commande sur Snapchat » + domaine ; fiche parfum : visuel sombre entier sur son ambiance, marque puis nom, mention des flacons ; JPEG 50–75 Ko (WhatsApp ignore les aperçus de plus de ~300 Ko) ; `/parfums` avait perdu son og:image, rétablie ; rendu : `app/(shop)/_og/vignettes.tsx`, essai sans base : `scripts/refonte-vitrine/og-essai.tsx` |
 | Mouvement (T18) | **validé** (gérant, 21/10 : aperçu, ouverture/fermeture, glissé « good » ; `7482aac`) ; **chevrons de parfum voisin** dans la fiche, à sa demande (`f90953e`), **validés** (« c ok ») | l'existant suivait déjà § B.7 (feuilles au ressort, appui, survol sous pointeur fin) ; ajouté : cascade de 40 ms titre → actions dans la hero, suggestions en fondu seul en mouvement réduit, courbe de la fiche lue dans le jeton ; `ScrollReveal` supprimé (code mort, aucune entrée au défilement : automatisme refusé) ; règles tenues par `tests/architecture/vitrine-mouvement.test.ts` (dérogation `mouvement-ok:`) |
-| Audit, mise en ligne | **à faire** | T19 → T23 (`04-PLAN-EXECUTION.md`) |
+| Audit (T19) | **fait** (21/10, `65e7ff9`) ; rien de visible à valider au-dessus de 280 px | Lighthouse mobile 99 / 100 / 92 (barre Vercel des aperçus) / 100 ; LCP ≤ 2,16 s, INP ≤ 184 ms, CLS 0 ; axe 0 violation ; zoom 200 % tenu (hero en colonne et barre non collante sous 280 px) ; détail : `annexes/audit-final.md` |
+| Filets e2e, mise en ligne | **à faire** | T20 → T23 (`04-PLAN-EXECUTION.md`) |
 
 ## Règles à ne pas remettre en cause sans justification
 
@@ -93,12 +94,13 @@ miniatures (répétaient les produits).
 | Variantes claire/sombre décalées dans les fichiers (29 paires sur 103, liste : `annexes/alignement-clair-sombre.md`) | **à corriger** par la session visuels (refaire au même cadrage) ; production (233 fiches) pas encore mesurée |
 | Photos de la hero : sans étiquette, flacon vide, décalées entre clair et sombre (4,25 px / 10,10 px), définition sous le brief | **corrigé** 21/10 (`cd64c4d`) : photos du gérant, liseré vert de 3 px rogné à droite, 0 px de décalage ; plus lourdes → WebP 74, LCP 2 112 / 1 292 ms (1 532 / 1 064 avant, budget 2 500) |
 | Firefox (PC) : site lent, animation de bascule de thème absente | **corrigé** 21/10 (`7b1d3cb`) : fond flou d'« À l'affiche » agrandi par `transform: scale(3)` ; première bascule 200 → 50 ms, animation fluide ; rendu identique. Edge n'était pas touché |
-| e2e `catalog-filters` « le tri par marque… réordonne la grille » échoue sur téléphone (Pixel 7) | **à corriger** : déjà présent avant `cd64c4d` (même échec sur l'aperçu Vercel) ; hors hero |
-| Avertissement du mode dev : `images.qualities` ne déclare pas 80 (visuels du catalogue) | **à voir** (T19) : sans effet en production tant que le chargeur sert les fichiers prêts ; à confirmer |
-| Titre et description Google de l'accueil (« grandes marques… à Marseille… au meilleur prix ») | **à revoir** avec l'avis juridique |
+| e2e `catalog-filters` « le tri par marque… réordonne la grille » échoue sur téléphone (Pixel 7) | **corrigé** 21/10 (`65e7ff9`) : bug du test (`innerText` vide hors écran), le tri était juste |
+| e2e « dérouler et fermer » instable | **expliqué** : serveur de dev sous charge ; 10/10 sur build. Lancer les e2e sur un build (`next start`) |
+| Avertissement du mode dev : `images.qualities` ne déclare pas 80 (visuels du catalogue) | **corrigé** 21/10 (`65e7ff9`) : props `quality` mortes retirées (le chargeur les ignore) |
+| Titre et description Google de l'accueil (« grandes marques… à Marseille… au meilleur prix ») | **proposé** (`annexes/audit-final.md` § Titre) : A sans comparaison, B avec l'accroche ; rien publié avant l'accord du gérant et l'avis juridique |
 
 ## Prochaines priorités
 
-1. **T19 — Audit** (`04-PLAN-EXECUTION.md` § T19), T20 → T23.
+1. **T20 — Filets e2e** (`04-PLAN-EXECUTION.md` § T20), puis T21 → T23. T19 fait (`annexes/audit-final.md`).
 3. En attente côté gérant, sans bloquer : avis juridique (accroche, présentation face aux marques, titre et description
    Google, prix visibles dans les stories Snapchat incrustées) ; 29 paires de visuels clair/sombre décalées (session visuels).
