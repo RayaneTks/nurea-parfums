@@ -1,6 +1,6 @@
 # Prompt de reprise — refonte de la vitrine Nuréa (après /clear)
 
-À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (T19 faite ; cap sur T20).
+À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (T20 faite ; cap sur T21).
 
 ---
 
@@ -24,7 +24,7 @@ chaque rendu finit par « Ce que tu dois faire ».
   fichier par fichier ; pousser.
 - Aperçu : https://nureaparfums-git-refonte-vitrine-rayanetks-7861s-projects.vercel.app/
 - Mesures et tests : `scripts/refonte-vitrine/` (`bascule.mjs`, `alignement.mjs`, `lcp.mjs`,
-  `captures-accueil.mjs`, `pw-accueil.config.ts`) ; commandes exactes dans REPRISE.md.
+  `captures-accueil.mjs`) ; e2e vitrine : `npm run test:e2e:vitrine` ; commandes exactes dans REPRISE.md.
 
 ## 3. Ce qui est acquis — ne pas rouvrir
 
@@ -45,7 +45,7 @@ chaque rendu finit par « Ce que tu dois faire ».
 
 ## 4. Ta mission
 
-**T16, le menu, T17 (vignettes de partage), l'index des Marques, T18 (mouvement), le titre de l'accueil et les chevrons de parfum voisin sont validés** (21/10) : ne pas y revenir. **T19 (audit) est faite** (`65e7ff9`, `annexes/audit-final.md`) : Lighthouse 99 / 100 / 92 / 100, LCP ≤ 2,16 s, INP ≤ 184 ms, CLS 0, axe 0 violation, zoom 200 % tenu. Ta mission : **T20 — Filets e2e** (`04-PLAN-EXECUTION.md` § T20 : `npm run test:e2e` vert localement ; lancer les e2e sur un build, pas sur le serveur de dev), puis T21 → T23, un point de contrôle gérant sur captures à chaque étape visuelle. Titre Google de l'accueil choisi par le gérant (`81bd363`). Les descriptions de `/parfums`, des pages marque et des fiches (« au meilleur prix à Marseille ») **restent telles quelles** (gérant, 21/10 : « on s'en fout des comparaisons ») : ne pas les reproposer.
+**T16, le menu, T17 (vignettes de partage), l'index des Marques, T18 (mouvement), le titre de l'accueil et les chevrons de parfum voisin sont validés** (21/10) : ne pas y revenir. **T19 (audit) est faite** (`65e7ff9`, `annexes/audit-final.md`) : Lighthouse 99 / 100 / 92 / 100, LCP ≤ 2,16 s, INP ≤ 184 ms, CLS 0, axe 0 violation, zoom 200 % tenu. **T20 (filets e2e) est faite** (`8532241` : `e2e/vitrine/`, `playwright.vitrine.config.ts`, iPhone + Android + bureau, en fin de `npm run test:e2e`). Ta mission : **T21 — Retrait des échafaudages** (`04-PLAN-EXECUTION.md` § T21 ; la page d'essai s'appelle `app/(shop)/essai-extremes/`), puis T22 (PC 4 : aperçu ouvert depuis Snapchat, captures avant/après) et T23 (fusion ; ajouter `test:e2e:vitrine` à `CLAUDE.md`). Titre Google de l'accueil choisi par le gérant (`81bd363`). Les descriptions de `/parfums`, des pages marque et des fiches (« au meilleur prix à Marseille ») **restent telles quelles** (gérant, 21/10 : « on s'en fout des comparaisons ») : ne pas les reproposer.
 
 Images : le gérant autorise la génération **sans aucun être vivant** (ni visage, ni main) ; flacon Nuréa copié sur la
 photo réelle ; un écran de téléphone se génère **en vert chroma** puis reçoit une **capture réelle** (méthode et outils :
@@ -57,7 +57,7 @@ chaque image vérifiée avant usage. Le contenu Snapchat du gérant reste net (s
 
 - Mobile d'abord. Vérifier sur **captures réelles** (320 / 390 / 430 / 1280, clair et sombre) avant de
   présenter ; les envoyer au gérant.
-- Avant tout rendu : `npm run typecheck`, `npm run lint`, `npm test`, e2e accueil ; LCP sur build si la
+- Avant tout rendu : `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:e2e:vitrine` (sur build : `E2E_SERVER=start`) ; LCP sur build si la
   page change (build webpack, `next start -p 3004` après avoir vérifié qu'aucun vieux serveur n'écoute).
 - Aucun automatisme de composition (micro-labels, points décoratifs, titres surdimensionnés, cartes qui
   débordent, onglets ou carrousels par facilité, dégradés décoratifs, slogans).
