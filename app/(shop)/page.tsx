@@ -7,7 +7,7 @@ import { CatalogSection } from "@/components/home/CatalogSection";
 import { CatalogSkeleton } from "@/components/features/PerfumeCardSkeleton";
 import { getCachedCatalogue } from "@/lib/catalogue-service";
 import { discoveryOrder } from "@/lib/catalog/discoveryOrder";
-import { pageOg, SITE_NAME } from "@/lib/site";
+import { pageOg, DEFAULT_DESCRIPTION, SITE_NAME } from "@/lib/site";
 
 /** Données via `getCachedCatalogue` (tag `public-catalogue`) — pas de HTML figé au build. */
 export const dynamic = "force-dynamic";
@@ -25,15 +25,16 @@ const MAX_FEATURED = 2;
  * recherche, sur la page la plus visitée du site et celle qui s'affiche quand
  * on partage le lien.
  *
- * Formulation : la marque d'abord, parce que le trafic vient du bouche-à-oreille
- * et de Snapchat — on cherche « nuréa parfums » avant de chercher « parfum pas
- * cher ». Puis les deux mots de la recherche locale, « parfum » et « Marseille ».
- * 54 caractères : au-delà de 60, Google coupe. « Au meilleur prix » est passé
- * dans la description, où il a la place.
+ * Formulation (gérant, 21/10/2026 : proposition 1 de `annexes/audit-final.md`) : le nom complet
+ * d'abord — on cherche « nuréa parfums » après une story Snapchat —, puis ce qu'est le site et comment
+ * commander. Aucune comparaison avec les marques : Nuréa ne vend pas leurs parfums, et toute phrase qui
+ * l'en rapproche attend l'avis juridique. Plus de « Marseille » dans le titre (envois dans toute la
+ * France) ; la ville reste dans la description comme fait (remise en main propre). 58 caractères :
+ * au-delà de 60, Google coupe.
  */
-const TITRE_ACCUEIL = `${SITE_NAME} — Parfums de grandes marques à Marseille`;
+const TITRE_ACCUEIL = `${SITE_NAME} — Catalogue de parfums, commande sur Snapchat`;
 
-const DESCRIPTION_ACCUEIL = `${SITE_NAME}, parfumerie à Marseille : les plus grandes marques de parfum pour homme et femme, au meilleur prix. Commande sur Snapchat, remise en main propre ou envoi.`;
+const DESCRIPTION_ACCUEIL = DEFAULT_DESCRIPTION;
 
 export const metadata: Metadata = {
   /*

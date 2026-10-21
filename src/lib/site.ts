@@ -19,7 +19,7 @@ export const SITE_SHORT_NAME = "Nuréa";
 export const SITE_TAGLINE = "Parfumerie d'Exception";
 
 export const DEFAULT_DESCRIPTION =
-  "Nuréa Parfums, parfumerie à Marseille : vos parfums préférés des plus grandes marques, au meilleur prix, pour homme et femme. Commande directe sur Snapchat, remise en main propre ou envoi.";
+  "Nuréa Parfums : notre catalogue de parfums pour homme et femme, chacun dans son flacon Nuréa. Commande sur Snapchat, remise en main propre à Marseille ou envoi partout en France.";
 
 /**
  * Noms alternatifs pour schema.org et cohérence SEO.
