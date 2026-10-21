@@ -232,104 +232,41 @@ souligné au survol. **Un seul bouton primaire par écran.** Cibles ≥ 44 px (z
   l'icône cœur de la barre, feuille listant les parfums, un bouton « Commander ces N parfums sur
   Snapchat » qui compose un seul message.
 
-### B.10 Accueil : composition « Chambre » (Fable, 21/10/2026, troisième passage)
+### B.10 Accueil (état au 21/10/2026)
 
-> **Composition « Flacon », finalisation (21/10, `fdc9409`).**
-> **Hero.** Photo du flacon Nuréa en fond de toute la hero (le sol se fond dans la page, rien n'est
-> assombri). Téléphone : hauteur = format de la photo (`125vw`) ; la première rangée de la grille fait
-> 29 % de la hauteur (le bouchon commence à 30 % dans la photo, à toute largeur) : le titre (`title`,
-> « Le parfum que vous aimez, dans un flacon Nuréa. », validé par le gérant) s'y cale en bas ; les deux
-> entrées suivent à 24 px, **sur une ligne** : `Button` plein « Voir le catalogue », puis Snapchat en
-> **bouton rond 44 px** (celui du cœur « Ma sélection »), icône seule, intitulé en `aria-label` ; dès
-> 768 px, le lien avec son texte. ≥ 768 px : photo paysage, titre et entrées à gauche.
-> **À l'affiche (direction imposée par le gérant le 21/10, `c62d3a6`).** Deux **bandeaux photographiques
-> horizontaux en miroir**, Symphony puis Afternoon Swim : flacon à gauche et texte à droite, puis l'inverse.
-> Chaque bandeau est une seule scène : le visuel **entier** (2:3, jamais recadré) occupe toute la hauteur
-> d'un côté et se fond par son bord (masque, de 60 à 100 % de sa largeur) dans la **même photo agrandie ×2
-> et floutée** (24 px, 56 px dès 1024) qui remplit le bandeau — agrandie depuis le bord côté texte, le
-> flacon flouté passe sous le visuel net. Marque (`body`), nom (`title`, sans césure ; `subtitle` dans un
-> bandeau ≤ 20 rem) et « Voir la fiche » se posent sur un voile à la couleur de `--bg` (62 % → 18 %) : le
-> contraste suit le thème. Tout le bandeau ouvre la fiche (bouton étendu, appui `--press`) ; le nom reste
-> le lien vers la page indexable. `--r-lg` ; 4:3 sur téléphone, 16:7 à 768, **16:9 sur 62 rem en quinconce
-> dès 1024** (premier à gauche, second à droite). Plus de carte, d'aplat de couleur, ni d'onglet.
-> **Marques.** **Index typographique** : les 12 marques les plus fournies, à la suite, nom en `subtitle`
-> suivi du nombre de parfums en `caption` (lien ≥ 44 px, `aria-label` « Marque, *n* parfums ») ; « Toutes
-> les marques » → `/parfums`. 264 px à 390. Écartés : tuiles avec miniatures (répétaient les produits
-> d'« À l'affiche » et du catalogue), tuiles à la couleur moyenne (toutes ambrées).
-> **Parcours à 390** : hero 113→601, « À l'affiche » 649→≈ 1 260, Marques ≈ 1 310→1 590, **catalogue à
-> 1 687**. **Mesures** (build webpack, profil T9, Pixel 7) : LCP **≈ 1 550 ms sombre / 1 064 ms clair**,
-> CLS 0 ; e2e accueil 8/8 ; 320 / 390 / 430 / 1280, clair et sombre, aucun débordement.
-> **Bascule clair/sombre — cause trouvée et corrigée** : l'interlignage du texte courant valait 1,65 en
-> sombre et 1,6 en clair ; chaque paragraphe changeait de hauteur et poussait tout ce qui suit, même un
-> visuel identique dans les deux thèmes (Tobacco Vanille : -0,8 px à 390, -1,2 px à 1280 ; une carte à
-> 5 350 px : -7,2 px). `--leading-body: 1.6` est désormais déclaré une fois, hors thème (0 px partout) ;
-> `tests/architecture/vitrine-tokens.test.ts` refuse tout jeton de dimension dans un bloc de thème. Reste
-> à part le décalage **des fichiers** pour les paires dont les deux variantes diffèrent :
-> `annexes/alignement-clair-sombre.md`.
+Statut des sections, essais écartés, règles et priorités : **`REPRISE.md`**. Ici, la composition en vigueur
+(code : branche `refonte/vitrine`, `Hero.tsx`, `FeaturedSection.tsx`, `BrandShelf.tsx`, styles `.hero*`,
+`.bandeau*` de `app/globals.css`). Ordre : hero, « À l'affiche », Marques, catalogue (intouché).
 
+**Hero.** La photographie du flacon Nuréa (`public/branding/hero/flacon-*`, deux lumières, portrait < 768 px,
+paysage au-delà ; brief `annexes/brief-photo-hero.md`) est le fond de toute la hero ; le sol se fond dans la
+page par un masque bas ; rien n'est assombri. Téléphone : hauteur = format de la photo (`125vw`) ; grille à
+deux rangées, la première haute de 29 % (le bouchon commence à 30 % de la photo) : le H1 (`title`) s'y cale
+en bas, les entrées suivent à 24 px sur une ligne — `Button` plein « Voir le catalogue » (`#collection`),
+Snapchat en bouton rond 44 px (celui du cœur), icône seule et intitulé en `aria-label` ; dès 768 px, lien avec
+texte, titre et entrées à gauche, hauteur `clamp(26rem, 50vh, 32rem)` puis `clamp(32rem, 80vh, 48rem)`. H1 =
+accroche « Le parfum que vous aimez, dans un flacon Nuréa. » (formulation du gérant ; non verrouillée,
+avis juridique attendu ; nomme « Nuréa », sans la ville). Chaque photo préchargée pour son thème et sa
+largeur. Une seule entrée animée (`.enter`).
 
-**Historique.** Planche v1 (`cee4774`, 20/10) : « beaucoup trop cheap ». Planche v2 (`cf5e272`, 21/10) :
-A « Couverture » choisie avec la réserve « très simple, bof », B « Nuancier » « trop chargée ». A codée
-(`3492c18`) : « ultra cheap pour un site de parfum catalogue ». Troisième passage, codé directement à la
-demande du gérant (pas de site modèle, pas de planche, pas de choix A/B), en quatre temps dans la même
-session : « La une » (visuel bord à bord : « je ne te demande pas de transformer mes affiches en page
-d'accueil »), « Le comptoir » (comment commander + nouveautés : « ne reconstruis pas les fonctionnalités »),
-« Vitrine » (chaque parfum à l'affiche posé sur un champ de sa couleur : « ce ne sont pas la hero
-section »), puis le brief définitif : **une vraie hero de marque** — composition, accroche, mise en scène,
-appels à l'action, identité propre, indépendante des parfums à l'affiche ; les parfums à l'affiche en
-section compacte dessous ; visuels à créer si besoin. D'où **« Chambre »**, retenue ici.
+**À l'affiche** (référence du gérant, principe validé le 21/10). Deux bandeaux photographiques horizontaux
+en miroir (`.bandeau`, `.bandeau-miroir`) : premier parfum mis en avant flacon à gauche, second flacon à
+droite. Grille : le visuel **entier** (2:3, jamais recadré) sur toute la hauteur d'un côté, fondu par son bord
+(masque 60 → 100 %) dans la même photo agrandie ×3 depuis son coin haut droit (ciel, lumière) et floutée
+(24 px, 56 px dès 1024) ; voile `--bg` 62 % → 18 % côté texte ; marque (`body`), nom (`title`, sans césure ;
+`subtitle` si le bandeau ≤ 20 rem), « Voir la fiche ». Tout le bandeau ouvre la fiche (bouton étendu, appui
+`--press`) ; le nom est le lien vers la page indexable. `--r-lg` + `clip-path` arrondi (le flou débordait
+des angles). 4:3 sur téléphone, 16:7 à 768, 16:9 sur 62 rem en quinconce dès 1024.
 
-**Diagnostic des refus** : (1) un titre seul sur un aplat n'est pas une hero ; (2) une affiche de parfum
-à 100 % de large non plus — c'est l'affiche ; (3) la page ne doit pas réinventer ce qui existe (recherche,
-filtres, nouveautés) ; (4) l'identité de l'accueil ne peut pas dépendre de deux visuels de marques
-tierces qui changent ; (5) sans mise en scène propre, rien ne dit « parfumerie ».
+**Marques.** Index typographique : les 12 marques les plus fournies, nom en `subtitle` suivi du nombre de
+parfums en `caption` (liens ≥ 44 px), « Toutes les marques » → `/parfums`.
 
-**Principe.** La première section est la **hero de Nuréa** : surtitre, accroche en `display`, une phrase
-de faits, deux entrées, et **un visuel qui appartient à la maison** — la *chambre* de la DA (§ B.1) rendue
-visible : une nature morte de matières à parfum (jasmin, résine d'ambre, santal, bergamote) sur un socle
-de pierre, sous une lumière rasante, en deux lumières (nuit pour le thème sombre, jour pour le clair).
-Aucun flacon, aucune marque : la hero ne dépend pas des parfums à l'affiche. Puis **« À l'affiche »**
-(les deux parfums mis en avant, compacts, côte à côte, légende sur leur couleur), le rayon des marques,
-le catalogue intouché. Interdits tenus : aucune photo assombrie, aucun texte sur photo, un seul bouton
-plein par écran, données vraies seulement. **Levé** (brief du gérant du 21/10) : l'interdit d'une entrée
-(bouton) dans l'ouverture — une hero de marque a ses appels à l'action.
+**Mesures** (build webpack, profil T9, Pixel 7) : LCP ≈ 1,55 s sombre / 1,06 s clair (photo de la hero), CLS 0 ;
+bascule clair/sombre 0 px pour un visuel identique ; e2e accueil 8/8.
 
-| Élément | Valeur |
-|---|---|
-| Barre haute | inchangée : 113 px à 390 (56 + 44 + 12 + filet), 64 px dès 768 |
-| **Hero** `section.hero` | grille : texte puis visuel, `row-gap` 32, `padding-top` 32 (48 dès 768) ; dès 1024 px, deux colonnes `6fr 5fr`, `column-gap` 64, centrées verticalement, `padding-block` 48 / 32, dans la gouttière |
-| Surtitre | dans le H1 : `caption` « Nuréa Parfums — Marseille » (référencement : marque et ville dans le H1, `01-INVARIANTS.md`) |
-| Accroche | dans le H1 : `display` (48 px à 390, 80 px dès 1 000), « Les grands parfums, dans un flacon Nuréa. » — le positionnement : les grandes marques, remises dans le flacon de la maison (fait : `PRODUCT.md`) |
-| Faits | `body` `--text-2`, mesure ≤ 65 ch, 20 px sous l'accroche : « *N* parfums de *M* marques, à choisir au catalogue et à commander sur Snapchat. Remise en main propre à Marseille, ou envoi. » (*N*, *M* comptés sur le catalogue publié ; faits publiés par Contact et le pied de page) |
-| Entrées | 24 px sous les faits, sur une ligne (retour à la ligne à 320) : **bouton plein « Voir le catalogue »** (`#collection`), lien « Commander sur Snapchat » avec l'icône (`CONTACT.snapchat`, nouvel onglet). Le seul bouton plein de la page |
-| Visuel | `.hero-visuel` : **3:2 bord à bord, ancré en bas** (`object-position: 50% 100%`) à 390 — les matières et le socle, pas le mur ; **4:5** entier dès 768 (centré, ≤ 40 rem) ; dès 1024, colonne droite, hauteur `clamp(30rem, 76vh, 44rem)`. Deux fichiers : `public/branding/hero/chambre-nuit.webp` (sombre, variante de référence, sans JavaScript) et `chambre-jour.webp` (clair), bascule en CSS, chacun préchargé pour le seul thème du système ; déclinaison 640 × 800 (`loader.ts`), `sizes="(min-width: 1024px) 560px, 213px"`. Fabrication et prompts : `annexes/hero-chambre.md` |
-| **À l'affiche** `.affiche` | `--space-section` sous la hero ; titre « À l'affiche » en `title` ; les deux parfums mis en avant côte à côte dès 390 (`gap` 12, 24 dès 768 ; ≤ 22 rem chacun dès 1024), **dans le langage exact de `PerfumeCard`** : `.card` `--r-lg` p-2, visuel 2:3 `--r-md` (bouton `card-open` « Voir la fiche : … »), marque en `body`, nom en `subtitle` H3 (lien vers la page indexable, ouvre la feuille), fond à l'ambiance au survol et à l'appui. Rayon des marques : visuels `--r-md`. **Règle (gérant, 21/10)** : la DA de l'accueil peut changer, jamais le langage des composants (boutons, cartes, arrondis, champs, filtres, états) sans validation |
-| Rayon des marques | inchangé (`.rail`, 8 marques en images, `content-visibility`) ; `--space-section` au-dessus |
-| Catalogue | tel que validé ; `--space-section` au-dessus |
-| Mouvement | **à l'arrivée, une fois** (jetons § B.7, `--dur-4`, `--ease-out`, `backwards`) : surtitre 0 ms, accroche + 60, faits + 120, entrées + 180 (`.enter` : `opacity` 0 → 1, `scale` 0,95 → 1) ; visuel + 60 (`.enter-visuel` : `opacity` 0,4 → 1, `scale` 0,97 → 1 — pas depuis 0, Chrome ne compterait son LCP qu'à la fin du fondu). Appui `.press`, survol = soulignement, bascule de thème en cercle, glissé natif du rayon. Mouvement réduit : `--dur-4` 0. Rien d'autre |
-| Taps | « À l'affiche » : visuel ou nom → fiche (1), « Commander sur Snapchat » (2) : **2 taps** (un défilement avant, pas un tap) ; depuis la hero, Snapchat en **1 tap** |
-
-| | 390 | 768 | 1024+ |
-|---|---|---|---|
-| Premier écran (× 844 ou × 800, barre comprise, mesuré) | barre 0→113, surtitre 145→162, **accroche 174→325** (3 lignes), faits 345→422, entrées 446→546, **visuel 578→838** : la hero entière, visuel compris, tient au-dessus de la ligne de flottaison ; « À l'affiche » commence à 886 | surtitre, accroche, faits, entrées, puis le visuel 4:5 (haut visible) | texte à gauche (accroche 80 px sur trois lignes), visuel 517 × 608 à droite : la hero tient dans 800 |
-| LCP (build webpack, profil T9, Pixel 7, 3 passes) | le visuel de la hero : déclinaison 640 × 800 (37 Ko nuit, 44 Ko jour) affichée sur 390 × 260 (rognée). Mesuré le 21/10 : **1 320 ms sombre / 1 576 ms clair** (entrée LCP de Chrome ; elle peut compter le flou de remplacement de même taille — relever aussi la peinture de la vraie image, `.tmp/refonte-vitrine/t15/lcp-diag.mjs`). Piège : un vieux `next start` sur 3004 fausse tout ; `netstat` avant de mesurer | | |
-
-**Ressource qui élèverait la hero (à la main du gérant, non bloquante).** Une **photographie réelle** sur
-le même principe : socle de pierre, mur enduit, lumière rasante, matières à parfum — ou **le flacon Nuréa**
-si le gérant décide de le montrer (ce qui lève « le flacon Nuréa se dit, il ne se montre pas » de
-`PRODUCT.md` : décision à écrire là d'abord). Cadrage : portrait 4:5 (≥ 1600 × 2000), sujet dans le tiers
-bas droit, les deux tiers supérieurs gauche calmes ; deux lumières (nuit sombre et chaude, jour ivoire),
-aucun texte. Mêmes chemins, même rognage 3:2 par le bas sur téléphone : rien d'autre ne change.
-
-Amendement de § B.3.8 : l'ambiance peut aussi être le **fond de la légende d'un parfum à l'affiche**
-(un bandeau de la largeur du visuel) et, comme déjà, l'en-tête de la page marque ; toujours **jamais** le
-fond de toute la page ni la barre. Amendement de § B.4 : le H1 de l'accueil contient le surtitre en
-`caption` et l'accroche en `display`. Amendement de § B.7 : un visuel entre par `opacity` 0,4 → 1 et
-`scale` 0,97 → 1. Amendement de § B.1 : la chambre neutre de la DA a désormais une image — la hero —,
-sans flacon.
-
-**Archives** : A « Couverture » et B « Nuancier » restent visibles sur `accueil-v2.html`
-(`refonte/planche`) ; aucun code n'en est tiré.
+Amendements de § B en vigueur : ambiance (§ B.3.8) aussi permise en passe-partout et fonds de section de
+l'accueil, jamais toute la page ni la barre ; interlignage `body` commun aux deux thèmes (§ B.4) ; la hero
+porte des entrées (bouton) et du texte posé sur la photo, dans sa zone vide, sans assombrissement.
 
 ---
 

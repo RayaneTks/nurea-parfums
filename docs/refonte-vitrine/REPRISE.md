@@ -1,0 +1,92 @@
+# Reprise — état de la refonte de la vitrine (à lire en premier)
+
+Mis à jour le 21/10/2026. Ce fichier dit **où on en est** ; le détail chiffré est dans
+`04-PLAN-EXECUTION.md` § B (DA) et § B.10 (accueil), les règles dans `CLAUDE.md`, `DESIGN.md`,
+`01-INVARIANTS.md`. Ne rien décider ici qui n'y soit pas écrit.
+
+## Nuréa en deux lignes
+
+Parfumerie qui vend **son propre parfum**, inspiré des parfums que les clients aiment, **dans un flacon
+Nuréa** — **pas** le parfum de la marque transvasé (gérant, 21/10). Clients venus de **Snapchat** ; le site
+sert de catalogue (mis en story) et de vitrine pro ; commande sur Snapchat, envoi partout en France.
+Aucun prix, aucune contenance affichés.
+
+## Où est le code
+
+| Quoi | Où |
+|---|---|
+| Refonte (code) | branche `refonte/vitrine`, worktree `.claude/worktrees/refonte-vitrine` — **jamais fusionnée avant T23** |
+| Docs de la refonte | `main` (`docs/refonte-vitrine/`, `DESIGN.md`, `CLAUDE.md`) — écrire par un worktree temporaire sur `origin/main` |
+| Aperçu | https://nureaparfums-git-refonte-vitrine-rayanetks-7861s-projects.vercel.app/ (catalogue de démo, sans base) |
+| Accueil | `app/(shop)/page.tsx` → `Hero.tsx`, `FeaturedSection.tsx` (« À l'affiche »), `BrandShelf.tsx` (Marques), `CatalogSection` (catalogue, intouché) — `src/components/features/` |
+| Ouvrir une fiche depuis l'accueil | `openPerfume.ts` (événement + rejeu avant hydratation), écouté par `CatalogSection` |
+| Styles de l'accueil | `app/globals.css` : `.hero*`, `.affiche`, `.bandeau*`, `.affiche-nom`, `.enter` |
+| Photos de la hero | `public/branding/hero/flacon-{portrait,paysage}-{sombre,clair}[-640/-1280].webp`, déclinaisons dans `src/lib/images/loader.ts` |
+| Tests utiles | `e2e/parcours/accueil-snapchat.spec.ts`, `tests/architecture/vitrine-tokens.test.ts`, `anti-slop.test.ts` |
+| Outils de mesure | `scripts/refonte-vitrine/` : `bascule.mjs` (position d'une image avant/après bascule de thème), `alignement.mjs` (décalage du sujet entre variantes claire/sombre), `lcp.mjs`, `captures-accueil.mjs`, `pw-accueil.config.ts` (branche `refonte/vitrine`) |
+
+Mesurer : build `NUREA_SKIP_MIGRATE_DEPLOY=1 DATABASE_URL=postgresql://x DIRECT_URL=postgresql://x node
+node_modules/next/dist/bin/next build --webpack` (Turbopack refuse la jonction `node_modules` du worktree),
+puis `next start -p 3004` — **vérifier d'abord qu'aucun vieux serveur n'écoute sur 3004** (`netstat -ano`) :
+il servirait une CSS disparue. e2e accueil (serveur de dev sur 3000) : `node node_modules/@playwright/test/cli.js
+test -c scripts/refonte-vitrine/pw-accueil.config.ts parcours/accueil-snapchat.spec.ts`.
+
+## État des sections
+
+| Section | État | Ce qui est en place |
+|---|---|---|
+| DA « Nuancier nocturne », Fraunces + Figtree, deux thèmes | **validé** (PC 1, 20/10) | jetons `globals.css` + `brand.ts` |
+| Composants (boutons, cartes, champs, filtres, feuille, Ma sélection) | **validé** (PC 2–3) | `src/components/ui`, `PerfumeCard`, `PerfumeSheet`… — **ne pas les redessiner** |
+| Catalogue (grille, filtres, recherche, fiche, Snapchat 2 taps) | **validé** | `CatalogSection` et ses pièces |
+| Hero | **en cours** — base jugée bonne par le gérant, pas encore validée | photo du flacon Nuréa en fond ; titre puis « Voir le catalogue » + Snapchat en bouton rond 44 px sur une ligne, au-dessus et à gauche du flacon ; accroche « Le parfum que vous aimez, dans un flacon Nuréa. » (formulation du gérant, **non verrouillée**, avis juridique attendu) |
+| À l'affiche | **principe validé** (21/10) ; finitions livrées le 21/10, **validation attendue** | deux bandeaux horizontaux en miroir (Symphony flacon à gauche, Afternoon Swim flacon à droite) ; visuel entier fondu dans sa propre photo floutée (coin haut droit ×3) ; nom intégré sur un voile `--bg` ; tout le bandeau ouvre la fiche ; 4:3 mobile, 16:9 sur 62 rem en quinconce sur bureau |
+| Marques | **en cours**, pas encore jugé | index typographique : 12 marques, nom + nombre, « Toutes les marques » → `/parfums` |
+| La parfumerie, Contact, Légal, 404, OG, mouvement, audit, mise en ligne | **à faire** | T16 → T23 (`04-PLAN-EXECUTION.md`) |
+
+## Règles à ne pas remettre en cause sans justification
+
+- **Composants du design system figés** : la liberté créative porte sur la composition de l'accueil
+  (hero, hiérarchie, mise en scène), jamais sur boutons, cartes, arrondis, champs, filtres, états.
+- **Anti-automatismes** (refus explicites du gérant) : micro-label en capitales au-dessus d'un titre,
+  mention « Marque · Ville », points décoratifs, numérotations, titres surdimensionnés, cartes qui débordent
+  d'une section, texte qui défile, onglets ou carrousels par facilité, dégradés décoratifs, bordures dorées,
+  slogans « poétiques ». Test : un élément qui irait tel quel sur cinquante sites générés n'apporte rien.
+- **Copy** : jamais « le même parfum », « identique », « équivalent » ; toute accroche qui rapproche Nuréa
+  d'une marque attend un avis juridique (C. conso. L122-2). **Plus de « Marseille »** dans la copy de
+  l'accueil. Pas de texte marketing inutile.
+- **Thèmes** : un thème ne change **que des couleurs** ; aucune dimension (interlignage, espacement, rayon)
+  dans un bloc de thème — sinon la bascule déplace la page (tenu par `vitrine-tokens.test.ts`).
+- **Visuels** : jamais recadrer un visuel 2:3 de parfum dans un cadre fixe (les flacons ne sont pas au même
+  endroit d'un visuel à l'autre : un cadre coupe le bouchon de l'un ou la base de l'autre) ; jamais déformer ;
+  bascule clair/sombre en CSS, jamais `useTheme`. Si un visuel manque : **demander la ressource au gérant**
+  plutôt que compenser par du décoratif ; ne jamais générer un faux flacon Nuréa.
+- **Performance** : rien ne doit concurrencer l'image LCP de la hero (les 24 miniatures de marques le
+  faisaient : 3,7 s) ; mesurer sur build, pas en dev.
+- Mobile d'abord ; vérifier sur captures réelles à 320, 390, 430 et 1280, clair et sombre ; e2e accueil vert.
+
+## Essais écartés à l'accueil (ne pas reproposer)
+
+Hero : titre seul sur un aplat (planche v1, composition A codée) ; affiche d'un parfum bord à bord (« La
+une ») ; « comment commander » + rayon des nouveautés (fonctions dupliquées) ; parfums à l'affiche comme hero
+(« Vitrine ») ; nature morte générée sans flacon, en deux blocs (« Chambre ») ; étiquette défilante, bouton
+à angles droits (« L'étiquette », hors DS). À l'affiche : grandes cartes du catalogue ; onglets ; diptyque
+asymétrique ; recadrage 4:3 ou carré ; photo + bande de couleur unie ; affiches verticales empilées. Marques :
+lignes d'annuaire ; rayon de flacons ; tuiles à la couleur moyenne (toutes ambrées) ; tuiles avec
+miniatures (répétaient les produits).
+
+## Problèmes connus et corrections
+
+| Problème | État |
+|---|---|
+| Images qui bougent à la bascule de thème (même fichier) | **corrigé** 21/10 : interlignage commun (1,65/1,6 avant) ; 0 px mesuré |
+| Variantes claire/sombre décalées dans les fichiers (29 paires sur 103, liste : `annexes/alignement-clair-sombre.md`) | **à corriger** par la session visuels (refaire au même cadrage) ; production (233 fiches) pas encore mesurée |
+| Photos de la hero : sans étiquette, flacon vide, décalées entre clair et sombre (4,25 px / 10,10 px), définition sous le brief | **à refaire** par le gérant (brief : `annexes/brief-photo-hero.md`) ; remplacement fichier pour fichier |
+| Titre et description Google de l'accueil (« grandes marques… à Marseille… au meilleur prix ») | **à revoir** avec l'avis juridique |
+
+## Prochaines priorités
+
+1. Validation par le gérant des finitions d'« À l'affiche ».
+2. **Renforcer l'identité Nuréa sur la page d'accueil** (demande du gérant), sans toucher aux composants ni
+   relancer une refonte : composition, hiérarchie, présence de la marque.
+3. Ressources attendues du gérant : avis juridique (accroche, présentation face aux marques), photos de la
+   hero refaites, puis T16 → T23.
