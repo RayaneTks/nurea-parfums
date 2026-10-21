@@ -355,6 +355,20 @@ Modèle : Opus 5.5 ; effort `medium` sauf mention. `PC` = point de contrôle gé
 - Fichiers : `useExtendedSearch.ts`, `CatalogEmptyState.tsx`, `Navbar.tsx` (champ), `src/components/features/PerfumeLinkCard.tsx`.
 - Acceptation : requête d'un parfum du répertoire absent du catalogue → carte « Vous cherchez *X* de *Y* ? Écrivez-nous » avec lien Contact pré-rempli ; `aria-live="polite"` ; jamais la chaîne « aucun résultat » (`grep -ri "aucun résultat" src/components` vide) ; e2e `recherche` vert.
 
+**T10 bis — Suggestions sous le champ** · M · fait le 21/10/2026 (`61cb116`, demande du gérant)
+- Fichiers : `src/components/layout/SearchBox.tsx` (champ + panneau, sorti de `Navbar.tsx`), `searchEvents.ts`
+  (événements de la barre), `src/lib/search/suggestions.ts` (réponse de l'API → rangées, `contactHref`
+  partagé avec `CatalogEmptyState`), `useExtendedSearch.ts` (options `minLength`/`debounceMs`, mémoire des
+  réponses de la visite), `perfumeSearchTypes.ts` (`brandSlug`, `line` exposés), `app/globals.css`
+  (`.suggestions`), `e2e/recherche-suggestions.spec.ts`.
+- Comportement : dès 2 caractères, 300 ms après la frappe, `/api/perfume-search` ; jusqu'à cinq parfums
+  (visuel, marque, nom) puis « Voir les N parfums » ; sinon la chaîne de la grille vide en une rangée
+  (« Vous cherchez *X* de *Y* ? Écrivez-nous »). Sur l'accueil, une rangée ouvre la feuille (`requestSheet`)
+  et la grille reste filtrée ; ailleurs, la page du parfum ; « Voir les N » → grille filtrée (`/?q=`).
+- Acceptation (vérifiée) : combobox WAI-ARIA (flèches, Entrée, Échap, `aria-activedescendant`, nom lu
+  « Marque — Nom ») ; 5 parcours × 2 appareils verts ; 8 tests unitaires ; LCP accueil inchangé (2 108 ms) ;
+  aucune dépendance ajoutée, composants du design system inchangés.
+
 **T11 — Filtres avec compteur** · M · Opus medium
 - Fichiers : `CatalogFilterDrawer.tsx` (feuille Vaul ou `useSheetMotion`, opaque), puces, URL.
 - Acceptation : bouton « Voir N parfums » mis à jour avant validation ; `e2e/catalog-filters.spec.ts` réécrit et vert.
