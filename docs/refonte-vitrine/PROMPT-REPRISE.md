@@ -1,6 +1,6 @@
 # Prompt de reprise — refonte de la vitrine Nuréa (après /clear)
 
-À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (T18 codée, attente test au doigt ; cap sur T19).
+À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 21/10/2026 au soir (T18, titre et chevrons validés ; cap sur T19).
 
 ---
 
@@ -35,7 +35,7 @@ chaque rendu finit par « Ce que tu dois faire ».
   horizontaux en miroir), Marques en index typographique (validé le 21/10).
 - **Suggestions sous le champ de recherche validées le 21/10** (`SearchBox`, T10 bis) : ne pas y revenir.
 - Copy : jamais « le même parfum » (le parfum Nuréa n'est pas celui de la marque) ; plus de « Marseille » ;
-  H1 « Nuréa, votre parfum / sans le prix des grandes marques. » (accroche du gérant du 21/10, ouverte par le nom pour Google ; avis juridique attendu).
+  H1 « Nuréa, votre parfum / sans le prix des grandes marques. » (accroche du gérant du 21/10, ouverte par le nom pour Google, « Nuréa » en `--accent` ; **validé** ; avis juridique attendu).
 - **Couleur de marque** (21/10) : doré `#C4956A` en sombre, bordeaux `#8B3A3A` en clair, jeton `--accent` ;
   barre et pied de page montrent le logo complet (monogramme + nom) ; fonds et encres forment le couple (nuit bordeaux + ivoire en sombre,
   ivoire + encre bordeaux en clair) ; l'accent marque ce qui agit et ce qui est choisi, jamais un décor.
@@ -45,8 +45,11 @@ chaque rendu finit par « Ce que tu dois faire ».
 
 ## 4. Ta mission
 
-**T16, le menu, T17 (vignettes de partage) et l'index des Marques sont validés** (21/10) : ne pas y revenir. **T18 (mouvement) est validée** ; chevrons de parfum voisin dans la fiche (`f90953e`) en attente d'avis. Ta mission : **T19 — Audit**
-(`04-PLAN-EXECUTION.md` § T19), puis T20 → T23, un point de contrôle gérant sur captures à chaque étape visuelle.
+**T16, le menu, T17 (vignettes de partage) et l'index des Marques sont validés** (21/10) : ne pas y revenir. **T18 (mouvement), le titre de l'accueil et les chevrons de parfum voisin dans la fiche sont validés** (21/10). Ta mission : **T19 — Audit et Core Web Vitals**
+(`04-PLAN-EXECUTION.md` § T19 : Lighthouse mobile, LCP/INP/CLS, axe sans violation AA, zoom 200 %, anti-slop ; `annexes/audit-final.md`), puis T20 → T23,
+un point de contrôle gérant sur captures à chaque étape visuelle. À traiter dans T19 : titre et description Google de l'accueil (encore « grandes marques… à Marseille… au
+meilleur prix », trompeur : nous ne vendons pas les parfums des marques) — proposer, sans publier avant l'avis juridique ; avertissement `images.qualities` du
+mode dev ; e2e « tri par marque » rouge (connu) et « dérouler et fermer » instable sous charge (vert seul).
 
 Images : le gérant autorise la génération **sans aucun être vivant** (ni visage, ni main) ; flacon Nuréa copié sur la
 photo réelle ; un écran de téléphone se génère **en vert chroma** puis reçoit une **capture réelle** (méthode et outils :
