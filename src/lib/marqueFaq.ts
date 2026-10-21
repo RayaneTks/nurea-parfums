@@ -14,6 +14,11 @@ const domain = SITE_URL.replace(/^https?:\/\//, "");
  * `FAQPage`. Les moteurs exigent que les questions déclarées soient visibles à
  * l'écran — les deux listes avaient divergé, la donnée structurée annonçait
  * quatre réponses dont deux n'existaient nulle part sur la page.
+ *
+ * Le 21/10/2026, retirés : « nous vendons les grandes marques… au meilleur prix » et la question
+ * « Où acheter un parfum de grande marque à Marseille ? ». Le parfum Nuréa n'est pas celui de la
+ * marque (gérant) : ces réponses disaient le contraire. Toute présentation face aux marques attend
+ * l'avis juridique (`docs/refonte-vitrine/REPRISE.md`).
  */
 export const MARQUE_FAQ: readonly FaqEntry[] = [
   {
@@ -26,12 +31,7 @@ export const MARQUE_FAQ: readonly FaqEntry[] = [
   },
   {
     question: `Où se trouve ${SITE_NAME} ?`,
-    answer:
-      "Nous sommes à Marseille. La remise se fait en main propre sur place, ou par envoi pour le reste de la France. C'est aussi ce qui nous distingue des marques étrangères au nom voisin : nous vendons les grandes marques que vous connaissez, au meilleur prix, et vous pouvez nous rencontrer.",
-  },
-  {
-    question: "Où acheter un parfum de grande marque à Marseille ?",
-    answer: `Chez ${SITE_NAME}. Nous vendons les parfums des plus grandes marques, grandes maisons comme parfumerie de niche, au meilleur prix, avec remise en main propre à Marseille ou envoi dans le reste de la France. Le catalogue est en ligne, marque par marque, sur ${domain}/parfums.`,
+    answer: "Nous sommes à Marseille. La remise se fait en main propre sur place, ou par envoi partout en France.",
   },
   {
     question: "Le catalogue contient-il tout votre stock ?",
