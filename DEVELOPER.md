@@ -32,6 +32,7 @@ embarqué.
 | Tout sauf navigateur | `npm run verify` |
 | Invariants d'affichage de la gestion | `npm run test:layout` |
 | Parcours de bout en bout | `npm run test:e2e` |
+| Parcours de la vitrine (sans base, iPhone + Android + bureau) | `npm run test:e2e:vitrine` (sur un build : `E2E_SERVER=start`) |
 
 **Base de test locale** : PostgreSQL embarqué sur `localhost:54329` (`nurea` / `nurea`). Elle
 tombe à chaque fin de session ; la relancer par `node C:\Users\User\nurea-pg\start.mjs`
