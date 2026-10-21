@@ -30,12 +30,12 @@ chaque rendu finit par « Ce que tu dois faire ».
 
 - DA « Nuancier nocturne », Fraunces + Figtree, clair + sombre ; **composants du design system figés**
   (boutons, cartes, arrondis, champs, filtres, fiche, Ma sélection) ; catalogue validé.
-- Accueil : **hero validée le 21/10** (photos du flacon Nuréa à l'étiquette NP, « Nuréa » du titre en accent,
+- Accueil : **hero validée le 21/10** (photos du flacon Nuréa à l'étiquette NP,
   « Voir le catalogue » + Snapchat en bouton rond), **« À l'affiche » validé le 21/10** (deux bandeaux
   horizontaux en miroir), Marques en index typographique (validé le 21/10).
 - **Suggestions sous le champ de recherche validées le 21/10** (`SearchBox`, T10 bis) : ne pas y revenir.
 - Copy : jamais « le même parfum » (le parfum Nuréa n'est pas celui de la marque) ; plus de « Marseille » ;
-  l'accroche « Le parfum que vous aimez, dans un flacon Nuréa. » reste provisoire (avis juridique attendu).
+  accroche « Sentez bon, sans payer le prix fort. » (choix du gérant, 21/10 ; avis juridique attendu).
 - **Couleur de marque** (21/10) : doré `#C4956A` en sombre, bordeaux `#8B3A3A` en clair, jeton `--accent` ;
   barre et pied de page montrent le logo complet (monogramme + nom) ; fonds et encres forment le couple (nuit bordeaux + ivoire en sombre,
   ivoire + encre bordeaux en clair) ; l'accent marque ce qui agit et ce qui est choisi, jamais un décor.
