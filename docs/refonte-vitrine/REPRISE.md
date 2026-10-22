@@ -2,7 +2,7 @@
 
 Prompt de reprise après `/clear` : `PROMPT-REPRISE.md`.
 
-Mis à jour le 22/10/2026 : **refonte en ligne** (T23, `363f2f6`), puis parfums du moment et ancres qui glissent (`5acea45`, validés par le gérant). Ce fichier dit **où on en est** ; le détail chiffré est dans
+Mis à jour le 22/10/2026 au soir : **refonte en ligne** et retouches du jour en ligne (voir « Ajouts du 22/10 »).
 `04-PLAN-EXECUTION.md` § B (DA) et § B.10 (accueil), les règles dans `CLAUDE.md`, `DESIGN.md`,
 `01-INVARIANTS.md`. Ne rien décider ici qui n'y soit pas écrit.
 
@@ -103,6 +103,23 @@ miniatures (répétaient les produits).
 | Avertissement du mode dev : `images.qualities` ne déclare pas 80 (visuels du catalogue) | **corrigé** 21/10 (`65e7ff9`) : props `quality` mortes retirées (le chargeur les ignore) |
 | `npm run test:e2e` complet en local : serveur de dev saturé à 6 navigateurs (40 échecs de gestion, tap sans navigation) | **contourné** : `--workers=2 --retries=1` comme la CI → parcours 91 + 2 repris, réglages 3/3, vitrine verte. Reste **PC-12 « première utilisation »** (gestion) : le toast « masqué » expire pendant que le serveur de dev compile la fiche ; page juste. Signalé au chantier gestion, non touché |
 | Titre et description Google de l'accueil (« grandes marques… à Marseille… au meilleur prix ») | **décidé** (gérant, 21/10) : « Nuréa Parfums — Catalogue de parfums, commande sur Snapchat » + description sans comparaison (`81bd363`, branche ; en ligne à T23). Descriptions de `/parfums`, des pages marque et des fiches (« au meilleur prix à Marseille ») **gardées** (gérant, 21/10) |
+
+## Ajouts du 22/10/2026 (en ligne, validés par le gérant)
+
+| Quoi | Commit | Notes |
+|---|---|---|
+| Parfums du moment | `5acea45` → `47148b1` | `src/lib/catalog/saison.ts` (20 classiques, oct.→fév. ; **prévoir printemps/été avant mars**), bande d'hiver en dégradé, « jours froids » en `--frost`, flocons dessinés, bouton givré |
+| Correctif recherche téléphone | `b77a273` | taper filtre seulement ; le catalogue vient en vue à « Rechercher » / « Voir les N », clavier replié |
+| À l'affiche | `f2d89b0` + `a659d35` | fond = photo très floutée (dégradé abstrait) ; prolongement du bord ; photo jamais floutée ; bureau en quinconce (côte à côte refusé) |
+| Recherche, repères du marché | `e6a549d` | croix d'effacement, champ vide = recherches récentes + 6 marques, page assombrie derrière le panneau (Baymard / Algolia) |
+| Glissé des ancres | `f2d89b0` | calculé image par image (WebKit sautait) |
+
+**Piège** : le build local (webpack) tolère des CSS que le build Vercel (Turbopack + Lightning CSS) refuse.
+`tests/architecture/css-production.test.ts` rejoue l'étape Tailwind ; après un push, vérifier l'état **READY**
+du déploiement, pas seulement la page (un déploiement en erreur laisse l'ancienne version en ligne).
+
+Suite possible : sélections printemps/été ; revue complète des micro-interactions ; tolérance aux fautes de
+frappe de la recherche ; avis juridique (accroche, titre Google) toujours attendu.
 
 ## Prochaines priorités
 
