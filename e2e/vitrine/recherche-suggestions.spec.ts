@@ -73,4 +73,21 @@ test.describe("Recherche — suggestions", () => {
     await box(page).press("Escape");
     await expect(list(page)).toBeHidden();
   });
+
+  /* Bug du 22/10 en production : sur téléphone, chaque lettre faisait défiler vers le catalogue, et le
+     navigateur remontait la page vers le champ de la barre collée — aller-retour à chaque frappe. */
+  test("taper ne fait pas bouger la page ; valider amène le catalogue en vue", async ({ page }) => {
+    await page.goto("/", { waitUntil: "networkidle" });
+    await type(page, "di");
+    const avant = await page.evaluate(() => scrollY);
+    for (const lettre of "or") {
+      await box(page).press(lettre);
+      await page.waitForTimeout(250);
+      expect(await page.evaluate(() => scrollY)).toBe(avant);
+    }
+    await expect(page.locator("#collection")).not.toBeInViewport();
+    await box(page).press("Enter");
+    await expect(page.locator("#collection")).toBeInViewport();
+    await expect(page.locator("#collection").getByRole("button", { name: /voir comment commander$/ }).first()).toBeVisible();
+  });
 });

@@ -13,7 +13,7 @@ import { parseSelection, readSelectionRaw, subscribeSelection } from "@/lib/sele
 import { cn } from "@/lib/utils";
 
 /* Les événements de la barre vivent dans `searchEvents.ts` ; ré-exportés ici pour le catalogue. */
-export { OPEN_CATALOG_FILTERS_EVENT, OPEN_SELECTION_EVENT, QUERY_SYNC_EVENT, SEARCH_EVENT } from "./searchEvents";
+export { OPEN_CATALOG_FILTERS_EVENT, OPEN_SELECTION_EVENT, QUERY_SYNC_EVENT, SEARCH_EVENT, SHOW_RESULTS_EVENT } from "./searchEvents";
 
 const NAV_LINKS = [
   { href: "/", label: "Catalogue" },
