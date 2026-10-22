@@ -44,9 +44,15 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
           const titleId = `une-${perfume.id}`;
           return (
             <article key={perfume.id} aria-labelledby={titleId} className={cn("bandeau", index % 2 === 1 && "bandeau-miroir")}>
-              {/* L'univers du parfum : la même photo, agrandie et floutée, derrière toute la scène. */}
+              {/* L'univers du parfum, en deux couches : un dégradé abstrait fait des couleurs de toute la photo
+                  (très floutée), puis, contre la photo, le prolongement de son bord qui s'y fond. */}
               <div className="bandeau-fond" aria-hidden="true">
                 <div className="bandeau-fond-cadre">
+                  <PerfumeImage perfume={perfume} sizes="213px" />
+                </div>
+              </div>
+              <div className="bandeau-prolonge" aria-hidden="true">
+                <div className="bandeau-prolonge-cadre">
                   <PerfumeImage perfume={perfume} sizes="213px" />
                 </div>
               </div>
@@ -57,7 +63,7 @@ export const FeaturedSection: FC<FeaturedSectionProps> = ({ perfumes }) => {
               </div>
 
               <div className="bandeau-texte">
-                <p className="t-body">{brandLine}</p>
+                <p className="t-body text-fg-1">{brandLine}</p>
                 <h3 id={titleId} className="affiche-nom t-title hyphens-manual [overflow-wrap:anywhere]">
                   <a href={href} onClick={openSheetFromLink(perfume.id)} className="relative z-[2] underline-offset-[6px] decoration-accent decoration-1 mouse-hover:underline">
                     {perfume.name}

@@ -44,17 +44,21 @@ test("« Voir le catalogue » fait glisser la page jusqu'au catalogue", async ({
   await page.goto("/", { waitUntil: "networkidle" });
   // L'écouteur des ancres naît avec la page : on attend qu'un composant client ait repris la main.
   await waitForHydration(page.getByRole("button", { name: /voir comment commander$/ }).first());
-  await page.getByRole("link", { name: "Voir le catalogue" }).click();
-  await expect(page).toHaveURL(/#collection$/);
-  // Un saut poserait la page d'un coup ; un glissé passe par des positions intermédiaires.
-  const positions = await page.evaluate(async () => {
-    const ys: number[] = [];
-    for (let i = 0; i < 6; i++) {
-      ys.push(Math.round(scrollY));
-      await new Promise((r) => setTimeout(r, 50));
-    }
-    return ys;
+  // Un saut pose la page d'un coup ; un glissé passe par des positions intermédiaires, strictement entre
+  // le départ et l'arrivée. On les relève à intervalle fixe dès le clic (les évènements de défilement sont
+  // regroupés par WebKit quand la machine est chargée : les compter ne prouvait rien).
+  const intermediaires = await page.evaluate(async () => {
+    const releves: number[] = [];
+    const depart = scrollY;
+    const minuteur = setInterval(() => releves.push(scrollY), 16);
+    [...document.querySelectorAll("a")].find((a) => a.textContent?.trim() === "Voir le catalogue")!.click();
+    await new Promise((r) => setTimeout(r, 1500));
+    clearInterval(minuteur);
+    const arrivee = scrollY;
+    return new Set(releves.filter((y) => y > depart + 1 && y < arrivee - 1).map(Math.round)).size;
   });
+  await expect(page).toHaveURL(/#collection$/);
   await expect.poll(() => page.evaluate(() => Math.round(document.getElementById("collection")!.getBoundingClientRect().top))).toBeLessThan(200);
-  expect(new Set(positions).size).toBeGreaterThan(1);
+  // Un saut n'en a aucune. (Machine chargée : WebKit peut ne peindre que 2 ou 3 images du glissé.)
+  expect(intermediaires).toBeGreaterThan(0);
 });
