@@ -2,7 +2,7 @@
 
 Prompt de reprise après `/clear` : `PROMPT-REPRISE.md`.
 
-Mis à jour le 22/10/2026 (T21 faite, `363ed27` ; prochain : T22, PC 4). Ce fichier dit **où on en est** ; le détail chiffré est dans
+Mis à jour le 22/10/2026 : **refonte en ligne** (T23, `363f2f6`), puis parfums du moment et ancres qui glissent (`5acea45`, validés par le gérant). Ce fichier dit **où on en est** ; le détail chiffré est dans
 `04-PLAN-EXECUTION.md` § B (DA) et § B.10 (accueil), les règles dans `CLAUDE.md`, `DESIGN.md`,
 `01-INVARIANTS.md`. Ne rien décider ici qui n'y soit pas écrit.
 
@@ -54,7 +54,8 @@ serveur de dev sous charge rend les gestes instables). Le build pour cela : mêm
 | Audit (T19) | **fait** (21/10, `65e7ff9`) ; rien de visible à valider au-dessus de 280 px | Lighthouse mobile 99 / 100 / 92 (barre Vercel des aperçus) / 100 ; LCP ≤ 2,16 s, INP ≤ 184 ms, CLS 0 ; axe 0 violation ; zoom 200 % tenu (hero en colonne et barre non collante sous 280 px) ; détail : `annexes/audit-final.md` |
 | Filets e2e (T20) | **fait** (21/10, `8532241`) ; rien de visible à valider | parcours vitrine dans `e2e/vitrine/`, config sans base `playwright.vitrine.config.ts`, iPhone + Android + bureau, en fin de `npm run test:e2e` ; sur build 3 × 69 verts, en dev 67 + 2 repris. Corrigés : WebKit poussé en https sur localhost par la CSP (`upgrade-insecure-requests`, retirée en test seulement, `e2e/vitrine/test.ts`) ; boucles « recliquer » qui refermaient les feuilles ; libellé « 1 référence » dans `marque-doublon` |
 | Retrait des échafaudages (T21) | **fait** (22/10, `363ed27`) ; rien de visible | page `essai-extremes` et `e2e/fixtures/vitrine-extremes.json` supprimées ; `public/planche/` absent de la branche ; `robots.ts` sans adresse discrète ; eslint ignore `playwright-report-vitrine/` (oubli de T20). `npm run verify` vert (1010 + 506), e2e vitrine sur build 69/69 |
-| Mise en ligne | **à faire** | T22 (PC 4) → T23 (`04-PLAN-EXECUTION.md`) ; captures « après » : `.tmp/refonte-vitrine/apres` (hors dépôt) |
+| Mise en ligne | **faite** (22/10) | PC 4 passé (« c good »), `main` = `refonte/vitrine` ; production vérifiée (fiches, marques, iPhone + Android) ; captures `.tmp/refonte-vitrine/{avant,apres,production}` |
+| Parfums du moment (demande du gérant, 22/10) | **validé et en ligne** (`5acea45`) | « Pour les jours froids » entre « À l'affiche » et Marques : 20 classiques d'automne-hiver choisis dans `src/lib/catalog/saison.ts` (octobre → février ; hors saison, pas de section) ; 2 rangées repliées, bouton givré (`--frost`) ; cartes chargées après la page (LCP 2,41 → 1,95 s). « Voir le catalogue » glisse (`SmoothAnchors`). À prévoir : listes printemps / été |
 
 ## Règles à ne pas remettre en cause sans justification
 
@@ -105,6 +106,6 @@ miniatures (répétaient les produits).
 
 ## Prochaines priorités
 
-1. **T22 — PC 4** : le gérant ouvre l'aperçu **depuis Snapchat** sur son téléphone (verre, polices, feuille) et répond « on met en ligne ? » ; captures avant/après faites (`.tmp/refonte-vitrine/{avant,apres}`). Puis **T23** (fusion ; ajouter `test:e2e:vitrine` à `CLAUDE.md` et `DEVELOPER.md`). T21 fait.
+1. **Refonte terminée et en ligne.** Suite possible : revue des micro-interactions demandée par le gérant (22/10 : seuls appui des cartes et fiche revus), sélections de printemps et d'été (`saison.ts`). Rappel : l'aperçu Vercel n'a pas de base — marques et fiches y font 404.
 3. En attente côté gérant, sans bloquer : avis juridique (accroche, présentation face aux marques, titre et description
    Google, prix visibles dans les stories Snapchat incrustées) ; 29 paires de visuels clair/sombre décalées (session visuels).
