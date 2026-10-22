@@ -7,7 +7,7 @@ import { PerfumeCard } from "@/components/features/PerfumeCard";
 import { PerfumeSheet } from "@/components/features/PerfumeSheet";
 import { OPEN_PERFUME_EVENT, takePendingPerfume } from "@/components/features/openPerfume";
 import { buttonClass } from "@/components/ui/Button";
-import { OPEN_CATALOG_FILTERS_EVENT, OPEN_SELECTION_EVENT, QUERY_SYNC_EVENT, SEARCH_EVENT } from "@/components/layout/Navbar";
+import { OPEN_CATALOG_FILTERS_EVENT, OPEN_SELECTION_EVENT, QUERY_SYNC_EVENT, SEARCH_EVENT, SHOW_RESULTS_EVENT } from "@/components/layout/Navbar";
 import { SelectionSheet } from "@/components/features/SelectionSheet";
 import {
   compareSearchRelevance,
@@ -75,6 +75,28 @@ function revealCatalog() {
   anchor.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
 }
 
+/**
+ * Lance `run` quand le clavier virtuel est replié : tout de suite s'il ne l'est pas, sinon au
+ * redimensionnement du `visualViewport` (avec un plafond, si le navigateur ne le signale pas).
+ */
+function afterKeyboard(run: () => void) {
+  const viewport = window.visualViewport;
+  const open = viewport ? window.innerHeight - viewport.height > 120 : false;
+  if (!viewport || !open) {
+    requestAnimationFrame(run);
+    return;
+  }
+  let done = false;
+  const go = () => {
+    if (done) return;
+    done = true;
+    viewport.removeEventListener("resize", go);
+    requestAnimationFrame(run);
+  };
+  viewport.addEventListener("resize", go);
+  window.setTimeout(go, 450);
+}
+
 export const CatalogSection = ({
   catalogPerfumes,
   browseBrands,
@@ -98,16 +120,22 @@ export const CatalogSection = ({
     return () => window.removeEventListener(OPEN_SELECTION_EVENT, open);
   }, [update]);
 
-  /* La barre haute tape, la grille suit ; au premier caractère, le catalogue vient en vue. */
+  /* La barre haute tape, la grille suit — sans bouger la page : pendant la frappe, les suggestions sous le
+     champ sont les résultats. Défiler à chaque lettre, champ actif dans la barre collée et clavier ouvert,
+     faisait remonter la page en haut à chaque frappe sur téléphone, puis redescendre (22/10). */
   useEffect(() => {
-    const search = (event: Event) => {
-      const query = (event as CustomEvent<string>).detail;
-      update({ query });
-      if (query) revealCatalog();
-    };
+    const search = (event: Event) => update({ query: (event as CustomEvent<string>).detail });
     window.addEventListener(SEARCH_EVENT, search);
     return () => window.removeEventListener(SEARCH_EVENT, search);
   }, [update]);
+
+  /* Recherche validée (« Rechercher », « Voir les N parfums ») : le catalogue vient en vue, une fois le
+     clavier refermé — défiler pendant qu'il se replie, la page bouge encore sous le geste. */
+  useEffect(() => {
+    const show = () => afterKeyboard(revealCatalog);
+    window.addEventListener(SHOW_RESULTS_EVENT, show);
+    return () => window.removeEventListener(SHOW_RESULTS_EVENT, show);
+  }, []);
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent(QUERY_SYNC_EVENT, { detail: filters.query }));

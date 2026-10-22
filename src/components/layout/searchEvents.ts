@@ -14,6 +14,14 @@ export const OPEN_CATALOG_FILTERS_EVENT = "nurea:open-catalog-filters";
 export const SEARCH_EVENT = "nurea:search";
 export const QUERY_SYNC_EVENT = "nurea:query";
 
+/**
+ * La recherche est **validée** (touche « Rechercher » du clavier, rangée « Voir les N parfums ») : le
+ * catalogue vient alors en vue. Taper seul ne fait que filtrer (`SEARCH_EVENT`) — défiler à chaque lettre,
+ * champ actif et clavier ouvert, faisait remonter la page en haut à chaque frappe sur téléphone (le
+ * navigateur ramène en vue le champ de la barre collée), puis redescendre : la page « glitchait » (22/10).
+ */
+export const SHOW_RESULTS_EVENT = "nurea:show-results";
+
 /** En deçà, une requête est trop vague pour filtrer ou suggérer (04-PLAN-EXECUTION § B : dès 2 caractères). */
 export const MIN_LIVE_QUERY = 2;
 

@@ -9,7 +9,7 @@ import { useExtendedSearch } from "@/components/home/useExtendedSearch";
 import { brandLineLabel } from "@/lib/catalog/perfumePresentation";
 import { suggestionsForQuery, suggestionsFromResponse, type SearchSuggestions } from "@/lib/search/suggestions";
 import { cn } from "@/lib/utils";
-import { MIN_LIVE_QUERY, QUERY_SYNC_EVENT, SEARCH_EVENT } from "./searchEvents";
+import { MIN_LIVE_QUERY, QUERY_SYNC_EVENT, SEARCH_EVENT, SHOW_RESULTS_EVENT } from "./searchEvents";
 
 /** Une rangée du panneau : un parfum, « Voir les N parfums », ou l'invitation à écrire. */
 type Row =
@@ -94,6 +94,12 @@ export const SearchBox: FC = () => {
     window.dispatchEvent(new CustomEvent(SEARCH_EVENT, { detail: value.trim().length >= MIN_LIVE_QUERY ? value : "" }));
   };
 
+  /** Recherche validée : le catalogue viendra en vue, une fois le clavier refermé. */
+  const showResults = () => {
+    if (!onHome || query.trim().length < MIN_LIVE_QUERY) return;
+    window.dispatchEvent(new CustomEvent(SHOW_RESULTS_EVENT));
+  };
+
   const close = () => {
     setOpen(false);
     setActive(-1);
@@ -109,6 +115,7 @@ export const SearchBox: FC = () => {
     }
     if (row.kind === "all" && onHome) {
       broadcast(query);
+      showResults();
       return;
     }
     router.push(row.href);
@@ -158,6 +165,7 @@ export const SearchBox: FC = () => {
         broadcast(query);
         close();
         inputRef.current?.blur();
+        showResults();
       }}
       className="relative order-last mb-3 basis-full md:order-none md:mb-0 md:ml-auto md:max-w-sm md:flex-1 md:basis-auto"
     >
