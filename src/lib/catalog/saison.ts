@@ -22,7 +22,8 @@ export interface Saison {
 
 export const SAISONS: readonly Saison[] = [
   {
-    titre: "Pour les jours froids",
+    // Sobre, sans phrase dessous (gérant, 22/10/2026 : « notre sélection… »).
+    titre: "Notre sélection pour les jours froids",
     mois: [10, 11, 12, 1, 2],
     // Classiques chauds de l'automne et de l'hiver (vanille, ambre, épices, cuir, oud), femme et homme alternés.
     ids: [
@@ -71,5 +72,7 @@ export function selectionDuMoment<P extends { id: number }>(
     const perfume = byId.get(id);
     return perfume ? [perfume] : [];
   });
-  return found.length >= MIN_SELECTION ? { titre: saison.titre, perfumes: found } : null;
+  return found.length >= MIN_SELECTION
+    ? { titre: saison.titre, perfumes: found }
+    : null;
 }
