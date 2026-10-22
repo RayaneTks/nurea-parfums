@@ -90,4 +90,29 @@ test.describe("Recherche — suggestions", () => {
     await expect(page.locator("#collection")).toBeInViewport();
     await expect(page.locator("#collection").getByRole("button", { name: /voir comment commander$/ }).first()).toBeVisible();
   });
+
+  /* Repères des sites de parfumerie (22/10) : rien de vide au toucher, une croix pour effacer, la page en retrait. */
+  test("champ vide : marques et recherches récentes ; la croix efface ; le voile referme", async ({ page }) => {
+    await page.goto("/", { waitUntil: "networkidle" });
+    await expect(async () => {
+      await box(page).click();
+      await expect(list(page)).toBeVisible({ timeout: 3_000 });
+    }).toPass();
+    await expect(list(page).getByRole("option", { name: /, \d+ parfums?$/ }).first()).toBeVisible();
+
+    await box(page).fill("dior");
+    await box(page).press("Enter");
+    await box(page).click();
+    await box(page).fill("");
+    await expect(list(page).getByRole("option", { name: "Recherche récente : dior" })).toBeVisible();
+
+    await box(page).fill("dio");
+    await page.getByRole("button", { name: "Effacer la recherche" }).click();
+    await expect(box(page)).toHaveValue("");
+    await expect(box(page)).toBeFocused();
+    await expect(list(page).getByRole("option", { name: "Recherche récente : dior" })).toBeVisible();
+
+    await page.locator(".recherche-voile").click({ position: { x: 10, y: 600 } });
+    await expect(list(page)).toBeHidden();
+  });
 });

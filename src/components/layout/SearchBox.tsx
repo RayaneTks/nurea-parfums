@@ -1,8 +1,11 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type FC, type KeyboardEvent, type MouseEvent } from "react";
+import { createPortal } from "react-dom";
+import type { BrandShelfEntry } from "@/components/features/BrandShelf";
+import { brandPath } from "@/lib/seo/paths";
 import { PerfumeImage } from "@/components/features/PerfumeImage";
 import { requestSheet } from "@/components/features/openPerfume";
 import { useExtendedSearch } from "@/components/home/useExtendedSearch";
@@ -15,7 +18,34 @@ import { MIN_LIVE_QUERY, QUERY_SYNC_EVENT, SEARCH_EVENT, SHOW_RESULTS_EVENT } fr
 type Row =
   | { kind: "perfume"; key: string; href: string; suggestion: SearchSuggestions["perfumes"][number] }
   | { kind: "all"; key: string; href: string; total: number }
-  | { kind: "ask"; key: string; href: string; ask: NonNullable<SearchSuggestions["ask"]> };
+  | { kind: "ask"; key: string; href: string; ask: NonNullable<SearchSuggestions["ask"]> }
+  /* Champ vide : une recherche récente (rejouée dans le champ), une marque (sa page). */
+  | { kind: "recent"; key: string; href: string; text: string }
+  | { kind: "brand"; key: string; href: string; brand: BrandShelfEntry };
+
+/** Recherches récentes : sur l'appareil seulement (commodité), quatre au plus, la plus récente d'abord. */
+const RECENTES_KEY = "nurea:recherches-recentes";
+const RECENTES_MAX = 4;
+
+function lireRecentes(): string[] {
+  try {
+    const raw = JSON.parse(window.localStorage.getItem(RECENTES_KEY) ?? "[]");
+    return Array.isArray(raw) ? raw.filter((x): x is string => typeof x === "string").slice(0, RECENTES_MAX) : [];
+  } catch {
+    return [];
+  }
+}
+
+function noterRecente(text: string) {
+  const t = text.trim();
+  if (t.length < MIN_LIVE_QUERY) return;
+  try {
+    const next = [t, ...lireRecentes().filter((x) => x.toLowerCase() !== t.toLowerCase())].slice(0, RECENTES_MAX);
+    window.localStorage.setItem(RECENTES_KEY, JSON.stringify(next));
+  } catch {
+    /* Stockage refusé (navigation privée) : on s'en passe. */
+  }
+}
 
 const DEBOUNCE_MS = 300;
 
@@ -33,11 +63,16 @@ function plainClick(event: MouseEvent): boolean {
  * grille filtrée, contact) ; sur l'accueil, un clic simple ouvre la feuille sans recharger
  * (`requestSheet`) et la grille reste filtrée derrière (`SEARCH_EVENT`).
  *
+ * Champ vide, au toucher : les recherches récentes de l'appareil et les marques les plus fournies du
+ * catalogue — comme sur les sites de parfumerie que les clients connaissent (Baymard : ne jamais ouvrir
+ * sur du vide). Une croix efface le champ sans le quitter ; derrière le panneau, la page s'assombrit
+ * (les suggestions ne luttent pas avec la page) et un toucher dessus referme.
+ *
  * Clavier (motif « combobox » WAI-ARIA) : flèches pour parcourir, Entrée ouvre la rangée active —
  * sans rangée active, Entrée vaut « Rechercher » —, Échap referme ; le lecteur d'écran est tenu au
  * courant par `aria-activedescendant` et une annonce discrète.
  */
-export const SearchBox: FC = () => {
+export const SearchBox: FC<{ marques?: BrandShelfEntry[] }> = ({ marques = [] }) => {
   const pathname = usePathname();
   const router = useRouter();
   const onHome = pathname === "/";
@@ -48,6 +83,11 @@ export const SearchBox: FC = () => {
   const listId = useId();
 
   const live = query.trim().length >= MIN_LIVE_QUERY;
+  const [recentes, setRecentes] = useState<string[]>([]);
+  /* Relue à chaque ouverture : une recherche faite sur une autre page y figure. */
+  useEffect(() => {
+    if (open) setRecentes(lireRecentes());
+  }, [open]);
   const search = useExtendedSearch(query, open && live, { minLength: MIN_LIVE_QUERY, debounceMs: DEBOUNCE_MS });
 
   /* Pendant qu'une réponse arrive, les rangées de la précédente restent : rien ne clignote. */
@@ -61,14 +101,20 @@ export const SearchBox: FC = () => {
   }, [search]);
 
   const rows = useMemo<Row[]>(() => {
+    if (!live) {
+      return [
+        ...recentes.map((text): Row => ({ kind: "recent", key: `r-${text}`, href: `/?q=${encodeURIComponent(text)}`, text })),
+        ...marques.map((brand): Row => ({ kind: "brand", key: `b-${brand.slug}`, href: brandPath(brand.slug), brand })),
+      ];
+    }
     if (!shown) return [];
     const list: Row[] = shown.perfumes.map((suggestion) => ({ kind: "perfume", key: `p-${suggestion.id}`, href: suggestion.href, suggestion }));
     if (shown.total > 0) list.push({ kind: "all", key: "all", href: `/?q=${encodeURIComponent(query.trim())}`, total: shown.total });
     if (shown.ask) list.push({ kind: "ask", key: "ask", href: shown.ask.href, ask: shown.ask });
     return list;
-  }, [shown, query]);
+  }, [shown, query, live, recentes, marques]);
 
-  const expanded = open && live && rows.length > 0;
+  const expanded = open && rows.length > 0 && (live ? shown !== null : true);
 
   /* Arrivée sur l'accueil avec `?q=` : le champ montre ce que la grille filtre. Changer de page referme. */
   useEffect(() => {
@@ -107,6 +153,15 @@ export const SearchBox: FC = () => {
 
   /** Ouvre la rangée : la feuille sur l'accueil, sinon la page visée. */
   const activate = (row: Row) => {
+    if (row.kind === "recent") {
+      /* Rejouée dans le champ : les suggestions de cette recherche s'affichent, le clavier reste. */
+      setQuery(row.text);
+      broadcast(row.text);
+      setActive(-1);
+      inputRef.current?.focus();
+      return;
+    }
+    if (row.kind === "perfume" || row.kind === "all") noterRecente(query);
     close();
     inputRef.current?.blur();
     if (row.kind === "perfume" && onHome) {
@@ -159,10 +214,12 @@ export const SearchBox: FC = () => {
       method="get"
       role="search"
       onSubmit={(event) => {
+        noterRecente(query);
         if (!onHome) return;
         /* Déjà filtrée en direct : « Rechercher » referme seulement le clavier et les suggestions. */
         event.preventDefault();
         broadcast(query);
+        noterRecente(query);
         close();
         inputRef.current?.blur();
         showResults();
@@ -198,18 +255,53 @@ export const SearchBox: FC = () => {
           enterKeyHint="search"
           autoComplete="off"
           placeholder="Parfum, marque…"
-          className="h-11 w-full rounded-md border border-line bg-surface-1 pl-10 pr-3 text-fg-1 transition-colors duration-dur-2 ease-soft placeholder:text-fg-3 [&::-webkit-search-cancel-button]:appearance-none"
+          className="h-11 w-full rounded-md border border-line bg-surface-1 pl-10 pr-11 text-fg-1 transition-colors duration-dur-2 ease-soft placeholder:text-fg-3 [&::-webkit-search-cancel-button]:appearance-none"
         />
+        {/* La croix efface sans quitter le champ (le clavier reste) ; le panneau repasse au champ vide. */}
+        {query ? (
+          <button
+            type="button"
+            aria-label="Effacer la recherche"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => {
+              setQuery("");
+              broadcast("");
+              setActive(-1);
+              setOpen(true);
+              inputRef.current?.focus();
+            }}
+            className="press absolute right-0 top-0 flex h-11 w-11 items-center justify-center rounded-md text-fg-3 transition-colors duration-dur-1 ease-soft mouse-hover:text-fg-1"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        ) : null}
       </label>
 
+      {/* Derrière le panneau, la page s'assombrit ; un toucher referme. Rendu dans `body` : la barre en
+          verre (backdrop-filter) piégerait un `fixed` posé dedans. Sous la barre, au-dessus de la page. */}
+      {expanded && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              aria-hidden="true"
+              onMouseDown={(event) => {
+                event.preventDefault();
+                close();
+                inputRef.current?.blur();
+              }}
+              className="recherche-voile fixed inset-0"
+            />,
+            document.body
+          )
+        : null}
+
       {/* Le panneau garde le focus dans le champ : appuyer dedans ne le ferme pas (`onBlur`). */}
-      {expanded && shown ? (
+      {expanded ? (
         <div
           onMouseDown={(event) => event.preventDefault()}
           className="suggestions absolute inset-x-0 top-[calc(100%+var(--space-2))] z-10 max-h-[min(26rem,60dvh)] overflow-y-auto rounded-lg border border-line bg-surface-1 p-1"
         >
           <p className="sr-only" aria-live="polite">
-            {shown.total > 0
+            {!live || !shown ? "" : shown.total > 0
               ? `${shown.total} parfum${shown.total > 1 ? "s" : ""} trouvé${shown.total > 1 ? "s" : ""}`
               : "Aucun parfum du catalogue ne correspond : écrivez-nous."}
           </p>
@@ -217,6 +309,11 @@ export const SearchBox: FC = () => {
             {rows.map((row, index) => (
               /* L'option EST le lien (rôle permis sur `a[href]`) : pas d'élément interactif dans un autre. */
               <li key={row.key} role="presentation">
+                {(row.kind === "recent" || row.kind === "brand") && (index === 0 || rows[index - 1]!.kind !== row.kind) ? (
+                  <p aria-hidden="true" className="t-caption px-2 pb-1 pt-2 text-fg-3">
+                    {row.kind === "recent" ? "Recherches récentes" : "Marques"}
+                  </p>
+                ) : null}
                 <a
                   href={row.href}
                   tabIndex={-1}
@@ -224,7 +321,15 @@ export const SearchBox: FC = () => {
                   role="option"
                   aria-selected={index === active}
                   /* Nom lu : « Marque — Nom », sans la légende du visuel (qui, lue avant, noyait le nom). */
-                  aria-label={row.kind === "perfume" ? `${brandLineLabel(row.suggestion.brand, row.suggestion.line)} — ${row.suggestion.name}` : undefined}
+                  aria-label={
+                    row.kind === "perfume"
+                      ? `${brandLineLabel(row.suggestion.brand, row.suggestion.line)} — ${row.suggestion.name}`
+                      : row.kind === "recent"
+                        ? `Recherche récente : ${row.text}`
+                        : row.kind === "brand"
+                          ? `${row.brand.name}, ${row.brand.count} parfum${row.brand.count > 1 ? "s" : ""}`
+                          : undefined
+                  }
                   onMouseEnter={() => setActive(index)}
                   onClick={(event) => {
                     if (!plainClick(event)) return;
@@ -246,6 +351,16 @@ export const SearchBox: FC = () => {
                         <span className="t-body truncate text-fg-1">{row.suggestion.name}</span>
                       </span>
                     </>
+                  ) : row.kind === "recent" ? (
+                    <span className="t-body flex min-w-0 items-center gap-3 text-fg-1">
+                      <Search className="h-4 w-4 shrink-0 text-fg-3" aria-hidden="true" />
+                      <span className="truncate">{row.text}</span>
+                    </span>
+                  ) : row.kind === "brand" ? (
+                    <span className="flex min-w-0 items-baseline gap-1.5">
+                      <span className="t-body truncate text-fg-1">{row.brand.name}</span>
+                      <span className="t-caption text-fg-3">{row.brand.count}</span>
+                    </span>
                   ) : row.kind === "all" ? (
                     <span className="t-body text-fg-1">
                       Voir {row.total > 1 ? `les ${row.total} parfums` : "le parfum"}

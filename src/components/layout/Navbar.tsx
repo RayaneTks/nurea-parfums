@@ -7,6 +7,7 @@ import { useCallback, useState, useSyncExternalStore, type FC } from "react";
 import { BrandLogo } from "./BrandLogo";
 import { MobileMenu } from "./MobileMenu";
 import { SearchBox } from "./SearchBox";
+import type { BrandShelfEntry } from "@/components/features/BrandShelf";
 import { OPEN_SELECTION_EVENT } from "./searchEvents";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { parseSelection, readSelectionRaw, subscribeSelection } from "@/lib/selection";
@@ -43,7 +44,7 @@ const ICON_BUTTON =
  * pleine largeur ; dès 768 px il rejoint la ligne. Sur l'accueil, la grille suit la
  * frappe (`SEARCH_EVENT`) ; ailleurs, le champ envoie `/?q=`.
  */
-export const Navbar: FC = () => {
+export const Navbar: FC<{ marques?: BrandShelfEntry[] }> = ({ marques = [] }) => {
   const pathname = usePathname();
   const router = useRouter();
   const count = useSyncExternalStore(subscribeSelection, readSelectionCount, () => 0);
@@ -87,7 +88,7 @@ export const Navbar: FC = () => {
             </ul>
           </nav>
 
-          <SearchBox />
+          <SearchBox marques={marques} />
 
           <div className="flex items-center">
             <button

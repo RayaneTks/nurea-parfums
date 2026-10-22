@@ -7,6 +7,8 @@ import { ContentGuard } from "@/components/security/ContentGuard";
 import { SmoothAnchors } from "@/components/layout/SmoothAnchors";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { topBrands, type BrandShelfEntry } from "@/components/features/BrandShelf";
+import { getCachedCatalogue } from "@/lib/catalogue-service";
 import {
   DEFAULT_DESCRIPTION,
   pageOg,
@@ -109,7 +111,20 @@ export const metadata: Metadata = {
  * La barre haute, le pied de page et l'unique `<main id="main-content">` vivent ici,
  * pas dans chaque page : les pages ne rendent que leur contenu (DESIGN.md § Coque).
  */
-export default function ShopLayout({ children }: { children: ReactNode }) {
+/** Marques proposées au toucher du champ de recherche vide : les plus fournies, comme la section Marques. */
+const MARQUES_RECHERCHE = 6;
+
+async function marquesPourRecherche(): Promise<BrandShelfEntry[]> {
+  try {
+    return topBrands((await getCachedCatalogue()).perfumes, MARQUES_RECHERCHE);
+  } catch {
+    // Sans catalogue, le champ vide ne propose que les recherches récentes : la barre ne tombe jamais.
+    return [];
+  }
+}
+
+export default async function ShopLayout({ children }: { children: ReactNode }) {
+  const marques = await marquesPourRecherche();
   return (
     <div id={VITRINE_ROOT_ID} className={`${brandFontClassName} flex min-h-svh flex-col bg-bg`}>
       <a
@@ -122,7 +137,7 @@ export default function ShopLayout({ children }: { children: ReactNode }) {
       <ContentGuard />
       <SmoothAnchors />
       <ThemeProvider>
-        <Navbar />
+        <Navbar marques={marques} />
         <main id="main-content" className="flex-1">
           {children}
         </main>
