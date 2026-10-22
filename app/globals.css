@@ -1079,6 +1079,14 @@
     box-shadow: var(--shadow-float);
   }
 
+  /* Voile derrière les suggestions (`SearchBox`) : la page recule, les suggestions ressortent (Baymard :
+     assombrir la page pendant la saisie). Sous la barre collée, au-dessus du contenu ; fondu court. */
+  .recherche-voile {
+    z-index: calc(var(--z-sticky) - 1);
+    background-color: color-mix(in oklch, var(--bg) 55%, transparent);
+    animation: fade-in var(--dur-2) var(--ease-out) backwards;
+  }
+
   /* Mouvement réduit : plus de montée, le fondu seul (§ B.7). */
   @keyframes fade-in {
     from {
