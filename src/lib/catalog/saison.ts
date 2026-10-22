@@ -14,6 +14,8 @@
 export interface Saison {
   /** Titre de la section. */
   titre: string;
+  /** Fin du titre peinte en `--frost`, comme « Nuréa » en `--accent` dans la hero (doit y figurer). */
+  motCle: string;
   /** Mois couverts, 1 = janvier (heure de Paris). */
   mois: readonly number[];
   /** Identifiants des parfums, dans l'ordre d'affichage. */
@@ -24,6 +26,7 @@ export const SAISONS: readonly Saison[] = [
   {
     // Sobre, sans phrase dessous (gérant, 22/10/2026 : « notre sélection… »).
     titre: "Notre sélection pour les jours froids",
+    motCle: "jours froids",
     mois: [10, 11, 12, 1, 2],
     // Classiques chauds de l'automne et de l'hiver (vanille, ambre, épices, cuir, oud), femme et homme alternés.
     ids: [
@@ -64,7 +67,7 @@ export function selectionDuMoment<P extends { id: number }>(
   perfumes: readonly P[],
   mois: number = moisParis(),
   saisons: readonly Saison[] = SAISONS
-): { titre: string; perfumes: P[] } | null {
+): { titre: string; motCle: string; perfumes: P[] } | null {
   const saison = saisons.find((s) => s.mois.includes(mois));
   if (!saison) return null;
   const byId = new Map(perfumes.map((p) => [p.id, p]));
@@ -73,6 +76,6 @@ export function selectionDuMoment<P extends { id: number }>(
     return perfume ? [perfume] : [];
   });
   return found.length >= MIN_SELECTION
-    ? { titre: saison.titre, perfumes: found }
+    ? { titre: saison.titre, motCle: saison.motCle, perfumes: found }
     : null;
 }

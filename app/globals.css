@@ -54,6 +54,7 @@
     --n-ice-86: oklch(0.86 0.05 230); /* #B0D8EC — 12,9:1 sur #150A0A */
     --n-ice-50: oklch(0.5 0.08 235); /* #2E6A8A — 5,5:1 sur #FCF6EE */
     --n-ice-935: oklch(0.935 0.022 245); /* #DEEBF8 — fond de la bande d'hiver en clair */
+    --n-ice-25: oklch(0.25 0.045 245); /* #0D2436 — fond de la bande d'hiver en sombre */
   }
 
   /* ─── Sémantiques : sombre ──────────────────────────────────────────── */
@@ -76,7 +77,7 @@
     --glass-edge: oklch(1 0 0 / 0.06);
     --frost: var(--n-ice-86); /* givre du bouton de saison */
     --frost-cristaux: color-mix(in oklch, var(--n-ice-86) 70%, transparent);
-    --saison-fond: color-mix(in oklch, var(--n-ice-86) 14%, var(--n-night-16)); /* nuit glacée */
+    --saison-fond: var(--n-ice-25); /* nuit glacée */
   }
 
   /* ─── Sémantiques : clair ───────────────────────────────────────────── */
@@ -785,17 +786,25 @@
   }
 
   /* ─── La bande d'hiver (demande du gérant, 22/10/2026 : « que toute la section retienne l'attention »)
-     Pleine largeur, la page change de papier (`--saison-fond`), bordée de deux filets de givre. Quand
-     elle paraît (`data-vue`), le givre pousse depuis le coin haut gauche et le coin bas droit (grain en
-     masque, fondu vers l'intérieur, propagé par `clip-path`). Mouvement réduit : givre posé d'emblée.
-     Écartés à l'audit du 22/10 : neige qui tombe, flocon devant le titre, mot coloré, motif répété. */
+     Pleine largeur, la page passe en dégradé à la couleur d'hiver (`--saison-fond`) puis en revient.
+     Quand elle paraît (`data-vue`), des flocons poussent depuis le coin haut gauche et le coin bas droit
+     (motif en masque, fondu vers l'intérieur, propagé par `clip-path`), et restent, immobiles.
+     Mouvement réduit : posés d'emblée. Écartés le 22/10 : neige qui tombe, flocon devant le titre,
+     grille d'astérisques identiques, bloc à bords nets. */
   .saison-bande {
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    padding-block: var(--space-12);
-    background-color: var(--saison-fond);
-    border-block: 1px solid color-mix(in oklch, var(--frost) 35%, transparent);
+    /* Dégradé, pas un bloc : la bande sort du fond de la page et y retourne (gérant, 22/10 : « la div
+       en bleu »), sans filet ni bord. Les fondus haut et bas tiennent lieu d'espace entre sections. */
+    padding-block: calc(var(--space-section) + var(--space-6));
+    background-image: linear-gradient(
+      to bottom,
+      var(--bg),
+      var(--saison-fond) var(--space-section),
+      var(--saison-fond) calc(100% - var(--space-section)),
+      var(--bg)
+    );
   }
 
   .saison-bande::before,
@@ -803,8 +812,8 @@
     content: "";
     position: absolute;
     z-index: -1;
-    width: min(32rem, 85%);
-    height: 18rem;
+    width: min(40rem, 100%);
+    height: 28rem;
     pointer-events: none;
     background-color: var(--frost-cristaux);
     transition: clip-path var(--dur-4) var(--ease-out);
@@ -813,8 +822,8 @@
   .saison-bande::before {
     top: 0;
     left: 0;
-    -webkit-mask: var(--givre-grain) 0 0 / 220px 220px repeat, radial-gradient(ellipse at 0 0, black, transparent 65%);
-    mask: var(--givre-grain) 0 0 / 220px 220px repeat, radial-gradient(ellipse at 0 0, black, transparent 65%);
+    -webkit-mask: var(--givre-flocons) 0 0 / 420px 300px repeat, radial-gradient(ellipse at 0 0, black, transparent 68%);
+    mask: var(--givre-flocons) 0 0 / 420px 300px repeat, radial-gradient(ellipse at 0 0, black, transparent 68%);
     /* Après le raccourci `mask`, qui la remettrait à « add » : motif ∩ fondu, sinon le fondu peint un aplat. */
     -webkit-mask-composite: source-in;
     mask-composite: intersect;
@@ -824,8 +833,8 @@
   .saison-bande::after {
     right: 0;
     bottom: 0;
-    -webkit-mask: var(--givre-grain) 0 0 / 220px 220px repeat, radial-gradient(ellipse at 100% 100%, black, transparent 65%);
-    mask: var(--givre-grain) 0 0 / 220px 220px repeat, radial-gradient(ellipse at 100% 100%, black, transparent 65%);
+    -webkit-mask: var(--givre-flocons) 0 0 / 420px 300px repeat, radial-gradient(ellipse at 100% 100%, black, transparent 68%);
+    mask: var(--givre-flocons) 0 0 / 420px 300px repeat, radial-gradient(ellipse at 100% 100%, black, transparent 68%);
     /* Après le raccourci `mask`, qui la remettrait à « add » : motif ∩ fondu, sinon le fondu peint un aplat. */
     -webkit-mask-composite: source-in;
     mask-composite: intersect;
@@ -841,16 +850,17 @@
   }
 
   /* ─── Bouton givré (demande du gérant, 22/10/2026) ───────────────────────
-     Deux couches derrière l'intitulé : un voile `--frost`, puis le grain de
-     givre de la bande (masque, peint en `--frost`). Toutes deux se propagent depuis
+     Deux couches derrière l'intitulé : un voile `--frost`, puis les flocons
+     de la bande à demi-taille (masque, peints en `--frost`). Toutes deux se propagent depuis
      le flocon par `clip-path` quand le bouton paraît (`data-gel`), et restent.
      Le filet prend la couleur du givre ; au survol (souris), le flocon tourne
      d'un sixième de tour. Rien ne bouge en mouvement réduit (`--dur-4` 0). */
   .givre,
   .saison-bande {
-    /* Givre : un grain de bruit fractal (feTurbulence), irrégulier comme une vitre gelée — pas un
-       motif de flocons répétés, qui se lit comme un papier peint. Raccord sans couture (stitchTiles). */
-    --givre-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3.2 0 0 0 -1.55'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    /* Givre : de vrais flocons à six branches et leurs barbes, quatorze par tuile de 420 × 300, de
+       tailles, d'inclinaisons et d'intensités différentes, placés à la main (pas une grille) ; vus
+       à travers un fondu, jamais en entier. Source : scratch du 22/10, recopiée ici. */
+    --givre-flocons: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='300' fill='none' stroke='%23000' stroke-linecap='round'%3E%3Cpath d='M34.0 40.0L46.9 41.8M41.5 41.0L44.9 38.7M41.5 41.0L44.1 44.2M34.0 40.0L38.9 52.1M36.8 47.0L40.6 48.8M36.8 47.0L35.4 50.9M34.0 40.0L26.0 50.2M29.4 45.9L29.6 50.1M29.4 45.9L25.3 46.7M34.0 40.0L21.1 38.2M26.5 39.0L23.1 41.3M26.5 39.0L23.9 35.8M34.0 40.0L29.1 27.9M31.2 33.0L27.4 31.2M31.2 33.0L32.6 29.1M34.0 40.0L42.0 29.8M38.6 34.1L38.4 29.9M38.6 34.1L42.7 33.3' stroke-opacity='1' stroke-width='1.18'/%3E%3Cpath d='M118.0 22.0L123.6 24.1M121.3 23.2L123.1 22.5M121.3 23.2L122.2 24.9M118.0 22.0L119.0 27.9M118.6 25.4L120.1 26.6M118.6 25.4L117.6 27.1M118.0 22.0L113.4 25.9M115.3 24.2L115.1 26.1M115.3 24.2L113.4 24.2M118.0 22.0L112.4 19.9M114.7 20.8L112.9 21.5M114.7 20.8L113.8 19.1M118.0 22.0L117.0 16.1M117.4 18.6L115.9 17.4M117.4 18.6L118.4 16.9M118.0 22.0L122.6 18.1M120.7 19.8L120.9 17.9M120.7 19.8L122.6 19.8' stroke-opacity='0.55' stroke-width='0.70'/%3E%3Cpath d='M190.0 74.0L199.8 71.9M195.7 72.8L197.6 70.2M195.7 72.8L198.4 74.4M190.0 74.0L196.7 81.4M193.9 78.3L197.1 78.6M193.9 78.3L193.9 81.5M190.0 74.0L186.9 83.5M188.2 79.5L189.5 82.4M188.2 79.5L185.4 81.1M190.0 74.0L180.2 76.1M184.3 75.2L182.4 77.8M184.3 75.2L181.6 73.6M190.0 74.0L183.3 66.6M186.1 69.7L182.9 69.4M186.1 69.7L186.1 66.5M190.0 74.0L193.1 64.5M191.8 68.5L190.5 65.6M191.8 68.5L194.6 66.9' stroke-opacity='0.8' stroke-width='0.91'/%3E%3Cpath d='M276.0 30.0L282.1 33.5M279.5 32.0L281.7 31.6M279.5 32.0L280.2 34.2M276.0 30.0L276.0 37.0M276.0 34.1L277.5 35.7M276.0 34.1L274.5 35.7M276.0 30.0L269.9 33.5M272.5 32.0L271.8 34.2M272.5 32.0L270.3 31.6M276.0 30.0L269.9 26.5M272.5 28.0L270.3 28.4M272.5 28.0L271.8 25.8M276.0 30.0L276.0 23.0M276.0 25.9L274.5 24.3M276.0 25.9L277.5 24.3M276.0 30.0L282.1 26.5M279.5 28.0L280.2 25.8M279.5 28.0L281.7 28.4' stroke-opacity='0.6' stroke-width='0.70'/%3E%3Cpath d='M352.0 88.0L367.0 89.0M360.7 88.6L364.5 85.7M360.7 88.6L364.0 92.1M352.0 88.0L358.6 101.5M355.8 95.8L360.3 97.6M355.8 95.8L354.5 100.4M352.0 88.0L343.6 100.4M347.1 95.2L347.8 100.0M347.1 95.2L342.5 96.4M352.0 88.0L337.0 87.0M343.3 87.4L339.5 90.3M343.3 87.4L340.0 83.9M352.0 88.0L345.4 74.5M348.2 80.2L343.7 78.4M348.2 80.2L349.5 75.6M352.0 88.0L360.4 75.6M356.9 80.8L356.2 76.0M356.9 80.8L361.5 79.6' stroke-opacity='0.95' stroke-width='1.36'/%3E%3Cpath d='M64.0 142.0L71.3 138.6M68.2 140.0L69.2 137.7M68.2 140.0L70.7 140.8M64.0 142.0L70.6 146.6M67.8 144.7L70.3 144.3M67.8 144.7L68.4 147.2M64.0 142.0L63.3 150.0M63.6 146.6L65.1 148.7M63.6 146.6L61.7 148.4M64.0 142.0L56.7 145.4M59.8 144.0L58.8 146.3M59.8 144.0L57.3 143.2M64.0 142.0L57.4 137.4M60.2 139.3L57.7 139.7M60.2 139.3L59.6 136.8M64.0 142.0L64.7 134.0M64.4 137.4L62.9 135.3M64.4 137.4L66.3 135.6' stroke-opacity='0.7' stroke-width='0.73'/%3E%3Cpath d='M150.0 178.0L165.5 181.9M159.0 180.2L163.5 177.8M159.0 180.2L161.9 184.5M150.0 178.0L154.4 193.4M152.6 186.9L156.9 189.6M152.6 186.9L150.3 191.5M150.0 178.0L138.9 189.5M143.6 184.7L143.4 189.8M143.6 184.7L138.4 185.0M150.0 178.0L134.5 174.1M141.0 175.8L136.5 178.2M141.0 175.8L138.1 171.5M150.0 178.0L145.6 162.6M147.4 169.1L143.1 166.4M147.4 169.1L149.7 164.5M150.0 178.0L161.1 166.5M156.4 171.3L156.6 166.2M156.4 171.3L161.6 171.0' stroke-opacity='1' stroke-width='1.45'/%3E%3Cpath d='M242.0 150.0L248.0 150.0M245.5 150.0L246.9 148.7M245.5 150.0L246.9 151.3M242.0 150.0L245.0 155.2M243.7 153.0L245.6 153.6M243.7 153.0L243.3 154.9M242.0 150.0L239.0 155.2M240.3 153.0L240.7 154.9M240.3 153.0L238.4 153.6M242.0 150.0L236.0 150.0M238.5 150.0L237.1 151.3M238.5 150.0L237.1 148.7M242.0 150.0L239.0 144.8M240.3 147.0L238.4 146.4M240.3 147.0L240.7 145.1M242.0 150.0L245.0 144.8M243.7 147.0L243.3 145.1M243.7 147.0L245.6 146.4' stroke-opacity='0.5' stroke-width='0.70'/%3E%3Cpath d='M318.0 206.0L328.5 202.6M324.1 204.0L325.8 201.0M324.1 204.0L327.3 205.5M318.0 206.0L326.2 213.4M322.7 210.3L326.3 210.3M322.7 210.3L323.1 213.8M318.0 206.0L315.7 216.8M316.7 212.2L318.4 215.3M316.7 212.2L313.8 214.3M318.0 206.0L307.5 209.4M311.9 208.0L310.2 211.0M311.9 208.0L308.7 206.5M318.0 206.0L309.8 198.6M313.3 201.7L309.7 201.7M313.3 201.7L312.9 198.2M318.0 206.0L320.3 195.2M319.3 199.8L317.6 196.7M319.3 199.8L322.2 197.7' stroke-opacity='0.85' stroke-width='1.00'/%3E%3Cpath d='M398.0 168.0L402.6 169.9M400.7 169.1L402.2 168.5M400.7 169.1L401.4 170.5M398.0 168.0L398.7 173.0M398.4 170.9L399.6 171.9M398.4 170.9L397.5 172.2M398.0 168.0L394.1 171.1M395.7 169.8L395.4 171.4M395.7 169.8L394.1 169.7M398.0 168.0L393.4 166.1M395.3 166.9L393.8 167.5M395.3 166.9L394.6 165.5M398.0 168.0L397.3 163.0M397.6 165.1L396.4 164.1M397.6 165.1L398.5 163.8M398.0 168.0L401.9 164.9M400.3 166.2L400.6 164.6M400.3 166.2L401.9 166.3' stroke-opacity='0.45' stroke-width='0.70'/%3E%3Cpath d='M40.0 250.0L48.6 252.8M45.0 251.6L47.6 250.4M45.0 251.6L46.4 254.1M40.0 250.0L41.9 258.8M41.1 255.1L43.4 256.8M41.1 255.1L39.6 257.6M40.0 250.0L33.3 256.0M36.1 253.5L35.8 256.4M36.1 253.5L33.2 253.5M40.0 250.0L31.4 247.2M35.0 248.4L32.4 249.6M35.0 248.4L33.6 245.9M40.0 250.0L38.1 241.2M38.9 244.9L36.6 243.2M38.9 244.9L40.4 242.4M40.0 250.0L46.7 244.0M43.9 246.5L44.2 243.6M43.9 246.5L46.8 246.5' stroke-opacity='0.75' stroke-width='0.82'/%3E%3Cpath d='M214.0 262.0L220.9 261.0M218.0 261.4L219.5 259.7M218.0 261.4L219.9 262.7M214.0 262.0L218.3 267.5M216.5 265.2L218.7 265.6M216.5 265.2L216.3 267.4M214.0 262.0L211.4 268.5M212.5 265.8L213.2 267.9M212.5 265.8L210.5 266.7M214.0 262.0L207.1 263.0M210.0 262.6L208.5 264.3M210.0 262.6L208.1 261.3M214.0 262.0L209.7 256.5M211.5 258.8L209.3 258.4M211.5 258.8L211.7 256.6M214.0 262.0L216.6 255.5M215.5 258.2L214.8 256.1M215.5 258.2L217.5 257.3' stroke-opacity='0.6' stroke-width='0.70'/%3E%3Cpath d='M372.0 276.0L377.9 277.0M375.4 276.6L377.1 275.6M375.4 276.6L376.6 278.1M372.0 276.0L374.1 281.6M373.2 279.3L374.9 280.2M373.2 279.3L372.5 281.1M372.0 276.0L368.1 280.6M369.8 278.7L369.8 280.6M369.8 278.7L367.9 278.9M372.0 276.0L366.1 275.0M368.6 275.4L366.9 276.4M368.6 275.4L367.4 273.9M372.0 276.0L369.9 270.4M370.8 272.7L369.1 271.8M370.8 272.7L371.5 270.9M372.0 276.0L375.9 271.4M374.2 273.3L374.2 271.4M374.2 273.3L376.1 273.1' stroke-opacity='0.5' stroke-width='0.70'/%3E%3Cpath d='M110.0 286.0L114.3 283.5M112.5 284.6L113.0 283.0M112.5 284.6L114.1 284.9M110.0 286.0L114.3 288.5M112.5 287.4L114.1 287.1M112.5 287.4L113.0 289.0M110.0 286.0L110.0 291.0M110.0 288.9L111.1 290.1M110.0 288.9L108.9 290.1M110.0 286.0L105.7 288.5M107.5 287.4L107.0 289.0M107.5 287.4L105.9 287.1M110.0 286.0L105.7 283.5M107.5 284.6L105.9 284.9M107.5 284.6L107.0 283.0M110.0 286.0L110.0 281.0M110.0 283.1L108.9 281.9M110.0 283.1L111.1 281.9' stroke-opacity='0.45' stroke-width='0.70'/%3E%3C/svg%3E");
   }
 
   .givre {
@@ -890,8 +900,8 @@
 
   .givre::after {
     background-color: var(--frost-cristaux);
-    -webkit-mask: var(--givre-grain) 0 0 / 220px 220px repeat;
-    mask: var(--givre-grain) 0 0 / 220px 220px repeat;
+    -webkit-mask: var(--givre-flocons) 12px 4px / 210px 150px repeat;
+    mask: var(--givre-flocons) 12px 4px / 210px 150px repeat;
   }
 
   .givre[data-gel]::before,
