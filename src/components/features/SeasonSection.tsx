@@ -20,10 +20,11 @@ const Flocon: FC<{ className?: string }> = ({ className }) => (
  * cartes du catalogue — mêmes cartes, même fiche au toucher (`requestSheet`), aucun composant neuf.
  *
  * **La section entière est un moment** (gérant, 22/10 : « il faut que ça retienne l'attention ») : une
- * bande pleine largeur qui change de papier (`--saison-fond`, filets `--frost`), comme un cahier de
- * saison dans un magazine, et du givre — un grain irrégulier, pas un motif répété — qui pousse depuis
- * deux coins quand elle paraît. Le titre reste un titre : ni icône, ni mot coloré, ni neige qui tombe
- * (écartés à l'audit anti-automatismes du 22/10). Règles : `.saison-bande` dans `globals.css`.
+ * bande pleine largeur en dégradé, qui sort du fond de la page vers la couleur d'hiver (`--saison-fond`)
+ * et y retourne, sans bord ; des flocons dessinés (pas une grille) qui poussent depuis deux coins quand
+ * elle paraît, puis restent immobiles ; « jours froids » en `--frost`, comme « Nuréa » en `--accent`
+ * dans la hero. Écartés le 22/10 : neige qui tombe, flocon devant le titre, bloc à bords nets, phrase
+ * de remplissage. Règles : `.saison-bande` dans `globals.css`.
  *
  * Repliée, la grille montre deux rangées (4 cartes sur téléphone, 6 sur tablette, 8 sur ordinateur ;
  * `.saison` dans `globals.css`) ; le bouton déroule le reste. Le bouton porte le **givre** demandé par
@@ -36,7 +37,7 @@ const Flocon: FC<{ className?: string }> = ({ className }) => (
  * cela, leurs images partaient avec la photo de la hero. Avec : LCP 1,97 s (4G lente, CPU ×4,
  * catalogue de démonstration, `scripts/refonte-vitrine/lcp.mjs`, 22/10/2026 ; budget 2,5 s).
  */
-export const SeasonSection: FC<{ titre: string; perfumes: Perfume[] }> = ({ titre, perfumes }) => {
+export const SeasonSection: FC<{ titre: string; motCle: string; perfumes: Perfume[] }> = ({ titre, motCle, perfumes }) => {
   const [ouvert, setOuvert] = useState(false);
   const [gel, setGel] = useState(false);
   const [pret, setPret] = useState(false);
@@ -103,6 +104,9 @@ export const SeasonSection: FC<{ titre: string; perfumes: Perfume[] }> = ({ titr
     return () => observer.disconnect();
   }, [bandeVue]);
 
+  // La fin du titre en givre ; si le mot manque au titre (faute de saisie), le titre reste entier.
+  const at = titre.indexOf(motCle);
+
   const basculer = () => {
     setOuvert((v) => !v);
     // Replier depuis le bas de la liste : revenir au titre, sinon on se retrouve loin sous la section.
@@ -113,11 +117,19 @@ export const SeasonSection: FC<{ titre: string; perfumes: Perfume[] }> = ({ titr
     <section
       ref={section}
       aria-labelledby={titreId}
-      className="saison-bande page-x mt-[var(--space-section)] scroll-mt-32 md:scroll-mt-20"
+      className="saison-bande page-x scroll-mt-32 md:scroll-mt-20"
       data-vue={bandeVue || undefined}
     >
       <h2 id={titreId} className="t-title mb-6">
-        {titre}
+        {at < 0 ? (
+          titre
+        ) : (
+          <>
+            {titre.slice(0, at)}
+            <span className="text-frost">{motCle}</span>
+            {titre.slice(at + motCle.length)}
+          </>
+        )}
       </h2>
       <ul id={grilleId} className="saison grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4" data-ouvert={ouvert}>
         {perfumes.map((perfume) => (

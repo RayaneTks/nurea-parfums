@@ -175,8 +175,8 @@ L'écran répond au doigt comme un objet. Moteur pur et testé :
 - **Ancres** : un lien vers un endroit de la page (« Voir le catalogue ») fait **glisser** la page
   (`SmoothAnchors`, défilement natif doux), jamais un saut ; saut immédiat en mouvement réduit.
 - **Givre** (parfums de saison, demandes du gérant du 22/10/2026) : seule exception décorative du
-  mouvement. Le givre est un **grain irrégulier** (bruit fractal en masque, peint en `--frost`), jamais un
-  motif de flocons répété. Quand la bande ou le bouton paraît, il pousse par `clip-path` à `--dur-4` puis
+  mouvement. Le givre, ce sont des **flocons dessinés** (motif de 14 flocons
+  variés placés à la main, en masque, peint en `--frost`), jamais une grille d'icônes identiques. Quand la bande ou le bouton paraît, il pousse par `clip-path` à `--dur-4` puis
   reste ; sur le bouton un reflet le traverse une fois et le flocon tourne d'un sixième de tour (deux au
   survol souris). `--frost` : glace claire en sombre, acier glacé en clair ; nulle part ailleurs.
 
@@ -199,13 +199,15 @@ une étiquette visible et son erreur dessous.
 
 ## Composants signature
 
-- **Parfums du moment** (accueil, entre « À l'affiche » et Marques) : une **bande pleine largeur** qui
-  change de papier (`--saison-fond` : nuit glacée en sombre, glace pâle en clair), bordée de deux filets
-  `--frost`, givre aux coins haut gauche et bas droit. Un seul titre sobre (« Notre sélection pour les
-  jours froids »), sans phrase dessous ; la sélection de `saison.ts` en cartes du catalogue, deux rangées
-  repliées (4 / 6 / 8), puis le bouton secondaire givré « Voir les *N* parfums » ↔ « Afficher moins ».
-  **Écartés à l'audit** (22/10) : neige qui tombe, flocon devant le titre, mot du titre en couleur,
-  motif d'astérisques, phrase « *N* parfums choisis pour… ».
+- **Parfums du moment** (accueil, entre « À l'affiche » et Marques) : une **bande pleine largeur en
+  dégradé** — le fond de la page glisse vers `--saison-fond` (bleu nuit `#0D2436` en sombre, glace
+  `#DEEBF8` en clair) puis y revient, sans bord ni filet. Titre « Notre sélection pour les **jours
+  froids** », la fin en `--frost` (même geste que « Nuréa » en `--accent` dans la hero). Flocons dessinés
+  (six branches et barbes, tailles et inclinaisons variées, placés à la main) aux coins haut gauche et
+  bas droit, fondus vers l'intérieur, immobiles. La sélection de `saison.ts` en cartes du catalogue,
+  deux rangées repliées (4 / 6 / 8), puis le bouton givré « Voir les *N* parfums » ↔ « Afficher moins ».
+  **Écartés** (gérant et audit, 22/10) : neige qui tombe, flocon devant le titre, grille d'astérisques
+  identiques, bloc à bords nets, phrase « *N* parfums choisis pour… ».
 - **Carte parfum** : visuel 2:3, puis la marque (`body`, `--text-2`, « Marque · Ligne »), puis le
   nom (`subtitle`, `--text-1`). Cœur « Ma sélection » 44 px en haut à droite du visuel. Pressée :
   fond d'ambiance. **Jamais de prix, jamais de contenance.**
