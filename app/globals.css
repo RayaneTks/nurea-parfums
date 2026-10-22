@@ -53,6 +53,7 @@
     /* Givre — le bouton des parfums de saison seulement (demande du gérant, 22/10/2026) */
     --n-ice-86: oklch(0.86 0.05 230); /* #B0D8EC — 12,9:1 sur #150A0A */
     --n-ice-50: oklch(0.5 0.08 235); /* #2E6A8A — 5,5:1 sur #FCF6EE */
+    --n-ice-935: oklch(0.935 0.022 245); /* #DEEBF8 — fond de la bande d'hiver en clair */
   }
 
   /* ─── Sémantiques : sombre ──────────────────────────────────────────── */
@@ -75,6 +76,7 @@
     --glass-edge: oklch(1 0 0 / 0.06);
     --frost: var(--n-ice-86); /* givre du bouton de saison */
     --frost-cristaux: color-mix(in oklch, var(--n-ice-86) 70%, transparent);
+    --saison-fond: color-mix(in oklch, var(--n-ice-86) 14%, var(--n-night-16)); /* nuit glacée */
   }
 
   /* ─── Sémantiques : clair ───────────────────────────────────────────── */
@@ -96,6 +98,7 @@
     --glass-edge: transparent;
     --frost: var(--n-ice-50); /* givre du bouton de saison */
     --frost-cristaux: color-mix(in oklch, var(--n-ice-50) 38%, transparent);
+    --saison-fond: var(--n-ice-935); /* glace pâle */
   }
 
   /* ─── Dérivés, échelles, mouvement (communs aux deux thèmes) ───────────
@@ -781,12 +784,75 @@
     animation-delay: calc(var(--stagger) * 3);
   }
 
+  /* ─── La bande d'hiver (demande du gérant, 22/10/2026 : « que toute la section retienne l'attention »)
+     Pleine largeur, la page change de papier (`--saison-fond`), bordée de deux filets de givre. Quand
+     elle paraît (`data-vue`), le givre pousse depuis le coin haut gauche et le coin bas droit (grain en
+     masque, fondu vers l'intérieur, propagé par `clip-path`). Mouvement réduit : givre posé d'emblée.
+     Écartés à l'audit du 22/10 : neige qui tombe, flocon devant le titre, mot coloré, motif répété. */
+  .saison-bande {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding-block: var(--space-12);
+    background-color: var(--saison-fond);
+    border-block: 1px solid color-mix(in oklch, var(--frost) 35%, transparent);
+  }
+
+  .saison-bande::before,
+  .saison-bande::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    width: min(32rem, 85%);
+    height: 18rem;
+    pointer-events: none;
+    background-color: var(--frost-cristaux);
+    transition: clip-path var(--dur-4) var(--ease-out);
+  }
+
+  .saison-bande::before {
+    top: 0;
+    left: 0;
+    -webkit-mask: var(--givre-grain) 0 0 / 220px 220px repeat, radial-gradient(ellipse at 0 0, black, transparent 65%);
+    mask: var(--givre-grain) 0 0 / 220px 220px repeat, radial-gradient(ellipse at 0 0, black, transparent 65%);
+    /* Après le raccourci `mask`, qui la remettrait à « add » : motif ∩ fondu, sinon le fondu peint un aplat. */
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+    clip-path: circle(0 at 0 0);
+  }
+
+  .saison-bande::after {
+    right: 0;
+    bottom: 0;
+    -webkit-mask: var(--givre-grain) 0 0 / 220px 220px repeat, radial-gradient(ellipse at 100% 100%, black, transparent 65%);
+    mask: var(--givre-grain) 0 0 / 220px 220px repeat, radial-gradient(ellipse at 100% 100%, black, transparent 65%);
+    /* Après le raccourci `mask`, qui la remettrait à « add » : motif ∩ fondu, sinon le fondu peint un aplat. */
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+    clip-path: circle(0 at 100% 100%);
+  }
+
+  .saison-bande[data-vue]::before {
+    clip-path: circle(150% at 0 0);
+  }
+
+  .saison-bande[data-vue]::after {
+    clip-path: circle(150% at 100% 100%);
+  }
+
   /* ─── Bouton givré (demande du gérant, 22/10/2026) ───────────────────────
-     Deux couches derrière l'intitulé : un voile `--frost`, puis des cristaux
-     (motif SVG en masque, peint en `--frost`). Toutes deux se propagent depuis
+     Deux couches derrière l'intitulé : un voile `--frost`, puis le grain de
+     givre de la bande (masque, peint en `--frost`). Toutes deux se propagent depuis
      le flocon par `clip-path` quand le bouton paraît (`data-gel`), et restent.
      Le filet prend la couleur du givre ; au survol (souris), le flocon tourne
      d'un sixième de tour. Rien ne bouge en mouvement réduit (`--dur-4` 0). */
+  .givre,
+  .saison-bande {
+    /* Givre : un grain de bruit fractal (feTurbulence), irrégulier comme une vitre gelée — pas un
+       motif de flocons répétés, qui se lit comme un papier peint. Raccord sans couture (stitchTiles). */
+    --givre-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3.2 0 0 0 -1.55'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  }
+
   .givre {
     position: relative;
     isolation: isolate;
@@ -824,9 +890,8 @@
 
   .givre::after {
     background-color: var(--frost-cristaux);
-    -webkit-mask: var(--givre-cristaux) 0 0 / 56px 28px repeat;
-    mask: var(--givre-cristaux) 0 0 / 56px 28px repeat;
-    --givre-cristaux: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 28' fill='none' stroke='%23000' stroke-width='.9' stroke-linecap='round'%3E%3Cpath d='M8 4v8M4.5 6l7 4M4.5 10l7-4M38 15v6M35.4 16.5l5.2 3M35.4 19.5l5.2-3M22 22l3 3M25 22l-3 3M48 4l2 2M50 4l-2 2M14 18h4M30 6h3'/%3E%3C/svg%3E");
+    -webkit-mask: var(--givre-grain) 0 0 / 220px 220px repeat;
+    mask: var(--givre-grain) 0 0 / 220px 220px repeat;
   }
 
   .givre[data-gel]::before,

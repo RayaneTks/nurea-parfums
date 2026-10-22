@@ -70,7 +70,7 @@ export default async function HomePage() {
 
       <FeaturedSection perfumes={featured} />
 
-      {moment ? <SeasonSection titre={moment.titre} perfumes={moment.perfumes} /> : null}
+      {moment ? <SeasonSection {...moment} /> : null}
 
       <BrandShelf brands={topBrands(perfumes)} />
 

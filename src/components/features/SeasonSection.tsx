@@ -19,6 +19,12 @@ const Flocon: FC<{ className?: string }> = ({ className }) => (
  * « Parfums du moment » (demande du gérant, 22/10/2026) : la sélection de saison de `saison.ts`, en
  * cartes du catalogue — mêmes cartes, même fiche au toucher (`requestSheet`), aucun composant neuf.
  *
+ * **La section entière est un moment** (gérant, 22/10 : « il faut que ça retienne l'attention ») : une
+ * bande pleine largeur qui change de papier (`--saison-fond`, filets `--frost`), comme un cahier de
+ * saison dans un magazine, et du givre — un grain irrégulier, pas un motif répété — qui pousse depuis
+ * deux coins quand elle paraît. Le titre reste un titre : ni icône, ni mot coloré, ni neige qui tombe
+ * (écartés à l'audit anti-automatismes du 22/10). Règles : `.saison-bande` dans `globals.css`.
+ *
  * Repliée, la grille montre deux rangées (4 cartes sur téléphone, 6 sur tablette, 8 sur ordinateur ;
  * `.saison` dans `globals.css`) ; le bouton déroule le reste. Le bouton porte le **givre** demandé par
  * le gérant : à sa première apparition, une gelée se propage depuis le flocon (`clip-path`, `--dur-4`)
@@ -27,13 +33,14 @@ const Flocon: FC<{ className?: string }> = ({ className }) => (
  *
  * Les visuels attendent : tant que la page charge, la grille montre les squelettes du catalogue, et
  * les vraies cartes ne viennent qu'une fois la page chargée et la section à moins d'un écran. Sans
- * cela, leurs images partaient avec la photo de la hero et retardaient son affichage (LCP 2,09 →
- * 2,41 s sur 4G lente ; 1,95 s ainsi — mesuré le 22/10/2026 par `scripts/refonte-vitrine/lcp.mjs`).
+ * cela, leurs images partaient avec la photo de la hero. Avec : LCP 1,97 s (4G lente, CPU ×4,
+ * catalogue de démonstration, `scripts/refonte-vitrine/lcp.mjs`, 22/10/2026 ; budget 2,5 s).
  */
 export const SeasonSection: FC<{ titre: string; perfumes: Perfume[] }> = ({ titre, perfumes }) => {
   const [ouvert, setOuvert] = useState(false);
   const [gel, setGel] = useState(false);
   const [pret, setPret] = useState(false);
+  const [bandeVue, setBandeVue] = useState(false);
   const bouton = useRef<HTMLButtonElement>(null);
   const section = useRef<HTMLElement>(null);
   const titreId = useId();
@@ -79,6 +86,23 @@ export const SeasonSection: FC<{ titre: string; perfumes: Perfume[] }> = ({ titr
     };
   }, []);
 
+  /* La bande : le givre des coins pousse à sa première apparition, une fois. */
+  useEffect(() => {
+    const el = section.current;
+    if (!el || bandeVue) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setBandeVue(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [bandeVue]);
+
   const basculer = () => {
     setOuvert((v) => !v);
     // Replier depuis le bas de la liste : revenir au titre, sinon on se retrouve loin sous la section.
@@ -86,8 +110,13 @@ export const SeasonSection: FC<{ titre: string; perfumes: Perfume[] }> = ({ titr
   };
 
   return (
-    <section ref={section} aria-labelledby={titreId} className="page-x mt-[var(--space-section)] scroll-mt-32 md:scroll-mt-20">
-      <h2 id={titreId} className="t-title mb-4">
+    <section
+      ref={section}
+      aria-labelledby={titreId}
+      className="saison-bande page-x mt-[var(--space-section)] scroll-mt-32 md:scroll-mt-20"
+      data-vue={bandeVue || undefined}
+    >
+      <h2 id={titreId} className="t-title mb-6">
         {titre}
       </h2>
       <ul id={grilleId} className="saison grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4" data-ouvert={ouvert}>
