@@ -603,6 +603,8 @@
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
     aspect-ratio: 4 / 3;
+    /* Bord de la photo, en part de la largeur : 4:3 → la photo 2:3 occupe la moitié. */
+    --jonction: 50%;
     overflow: hidden;
     border-radius: var(--r-lg);
     /* Découpe explicite : `overflow` seul laisse le calque flouté déborder des angles arrondis. */
@@ -624,55 +626,147 @@
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  /* Agrandie au-delà des bords : le flou ne laisse pas de lisière claire. */
+  /* Le décor du parfum continue derrière le nom, en deux couches (demandes du gérant du 22/10 : pas de
+     vide, pas de démarcation, « que le flou reprenne les couleurs de l'image dans un dégradé un peu
+     abstrait ») :
+     - le fond : toute la photo, couvrant le bandeau, **extrêmement** floutée et ravivée — les formes
+       disparaissent, il reste des masses de couleur qui se mêlent (le principe des fonds de pochette
+       des applications de musique) ;
+     - le prolongement : la bande du bord de la photo côté jonction (son dixième, sans flacon), étirée
+       et floutée, opaque contre la photo puis fondue dans le fond — la couleur passe sans ligne ;
+     - la photo, nette, dont seul le dernier cinquième (jamais le flacon) s'efface en transparence.
+     Écartés le 22/10 : reflet en miroir (formes symétriques), bord étiré peu flouté (traînées), copie
+     floutée sur la lisière (colonne), flou progressif sur la moitié de la photo (mangeait le flacon),
+     côte à côte sur bureau. Jamais `transform: scale` pour agrandir sous un flou (Firefox). */
   .bandeau-fond {
     position: absolute;
-    inset: -12%;
-    z-index: -2;
+    inset: -20%;
+    z-index: -4;
     overflow: hidden;
-    filter: blur(24px) saturate(1.1);
+    filter: blur(56px) saturate(1.6);
   }
 
-  /* Le fond montre l'arrière-plan calme de la photo — son coin haut droit (ciel, lumière), loin du
-     flacon et des objets du premier plan —, agrandi ×3 : la transition reprend les couleurs du décor
-     et aucun fantôme flou du flacon ni des fruits ne passe derrière le texte. Agrandi par la mise en
-     page (cadre triple calé en haut à droite, rogné), jamais par `transform: scale` : Firefox
-     peignait alors la photo entière à trois fois sa taille (200 ms gelées à la bascule de thème,
-     défilement lourd ; 53 ms ainsi). */
   .bandeau-fond-cadre {
+    position: absolute;
+    inset: 0;
+  }
+
+  .light .bandeau-fond {
+    filter: blur(56px) saturate(1.5) brightness(1.18);
+  }
+
+  .light .bandeau-prolonge {
+    filter: blur(28px) saturate(1.3) brightness(1.3);
+  }
+
+  .bandeau-prolonge {
+    position: absolute;
+    inset: -8% 0;
+    z-index: -3;
+    overflow: hidden;
+    filter: blur(28px) saturate(1.4);
+    -webkit-mask-image: linear-gradient(to right, #000 var(--jonction), rgb(0 0 0 / 0.45) calc(var(--jonction) + 7%), transparent calc(var(--jonction) + 18%));
+    mask-image: linear-gradient(to right, #000 var(--jonction), rgb(0 0 0 / 0.45) calc(var(--jonction) + 7%), transparent calc(var(--jonction) + 18%));
+  }
+
+  .bandeau-miroir .bandeau-prolonge {
+    -webkit-mask-image: linear-gradient(to left, #000 var(--jonction), rgb(0 0 0 / 0.45) calc(var(--jonction) + 7%), transparent calc(var(--jonction) + 18%));
+    mask-image: linear-gradient(to left, #000 var(--jonction), rgb(0 0 0 / 0.45) calc(var(--jonction) + 7%), transparent calc(var(--jonction) + 18%));
+  }
+
+  .bandeau-prolonge-cadre {
     position: absolute;
     top: 0;
     right: 0;
-    width: 300%;
-    height: 300%;
+    bottom: 0;
+    width: 1000%;
   }
 
+  .bandeau-miroir .bandeau-prolonge-cadre {
+    right: auto;
+    left: 0;
+  }
+
+  /* Étirée par la mise en page (pas `transform`) : seul le dernier dixième de la photo entre dans le
+     cadre ; une bande plus large contenait plusieurs zones de couleur, qui faisaient des colonnes. */
+  .bandeau-prolonge-cadre img {
+    object-fit: fill;
+  }
+
+  /* Le voile du texte vit dans la colonne du texte : transparent contre la photo (sinon il assombrit le
+     reflet et pas la photo, et cette marche de lumière dessine une ligne), dense sous le nom. */
   .bandeau-voile {
-    position: absolute;
-    inset: 0;
+    position: relative;
     z-index: -1;
-    background-image: linear-gradient(to left, color-mix(in oklch, var(--bg) 62%, transparent), color-mix(in oklch, var(--bg) 18%, transparent) 70%);
+    grid-column: 2;
+    grid-row: 1;
+    background-image: linear-gradient(
+      to right,
+      transparent,
+      color-mix(in oklch, var(--bg) 46%, transparent) 14%,
+      color-mix(in oklch, var(--bg) 58%, transparent) 50%,
+      color-mix(in oklch, var(--bg) 50%, transparent)
+    );
   }
 
   .bandeau-miroir .bandeau-voile {
-    background-image: linear-gradient(to right, color-mix(in oklch, var(--bg) 62%, transparent), color-mix(in oklch, var(--bg) 18%, transparent) 70%);
+    grid-column: 1;
+    background-image: linear-gradient(
+      to left,
+      transparent,
+      color-mix(in oklch, var(--bg) 46%, transparent) 14%,
+      color-mix(in oklch, var(--bg) 58%, transparent) 50%,
+      color-mix(in oklch, var(--bg) 50%, transparent)
+    );
   }
 
+  /* Thème clair : le texte est foncé. Plutôt que de recouvrir le décor d'ivoire (couleurs perdues, bande
+     sombre contre la photo), on **éclaircit** ses couleurs en tons pastel (`.light .bandeau-fond`,
+     `.light .bandeau-prolonge`) et le voile monte doucement : 4,5:1 sous la marque, 3:1 sous le nom,
+     mesurés au pixel. */
+  .light .bandeau-voile {
+    background-image: linear-gradient(
+      to right,
+      transparent,
+      color-mix(in oklch, var(--bg) 30%, transparent) 14%,
+      color-mix(in oklch, var(--bg) 55%, transparent) 40%,
+      color-mix(in oklch, var(--bg) 62%, transparent)
+    );
+  }
+
+  .light .bandeau-miroir .bandeau-voile {
+    background-image: linear-gradient(
+      to left,
+      transparent,
+      color-mix(in oklch, var(--bg) 30%, transparent) 14%,
+      color-mix(in oklch, var(--bg) 55%, transparent) 40%,
+      color-mix(in oklch, var(--bg) 62%, transparent)
+    );
+  }
+
+  /* La photo du parfum reste **entièrement nette**, jusqu'à son bord (gérant, 22/10 : « le flou
+     déborde sur le visuel ») : toute la transition se fait à côté, dans le reflet. */
   .bandeau-visuel {
     position: relative;
+    grid-column: 1;
+    grid-row: 1;
     height: 100%;
     aspect-ratio: 2 / 3;
-    -webkit-mask-image: linear-gradient(to right, #000 60%, transparent);
-    mask-image: linear-gradient(to right, #000 60%, transparent);
+    /* Seul le dernier cinquième s'efface — en transparence, jamais en flou ; le flacon n'y est jamais.
+       Courbe douce (pas une rampe droite) : la photo se transvase dans le décor flouté, sans bord. */
+    -webkit-mask-image: linear-gradient(to right, #000 78%, rgb(0 0 0 / 0.75) 86%, rgb(0 0 0 / 0.3) 94%, transparent);
+    mask-image: linear-gradient(to right, #000 78%, rgb(0 0 0 / 0.75) 86%, rgb(0 0 0 / 0.3) 94%, transparent);
   }
 
   .bandeau-miroir .bandeau-visuel {
-    order: 2;
-    -webkit-mask-image: linear-gradient(to left, #000 60%, transparent);
-    mask-image: linear-gradient(to left, #000 60%, transparent);
+    grid-column: 2;
+    -webkit-mask-image: linear-gradient(to left, #000 78%, rgb(0 0 0 / 0.75) 86%, rgb(0 0 0 / 0.3) 94%, transparent);
+    mask-image: linear-gradient(to left, #000 78%, rgb(0 0 0 / 0.75) 86%, rgb(0 0 0 / 0.3) 94%, transparent);
   }
 
   .bandeau-texte {
+    grid-column: 2;
+    grid-row: 1;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -681,6 +775,7 @@
   }
 
   .bandeau-miroir .bandeau-texte {
+    grid-column: 1;
     padding-inline: var(--space-4) var(--space-2);
   }
 
@@ -711,20 +806,34 @@
 
     .bandeau {
       aspect-ratio: 16 / 7;
+      --jonction: 29.2%; /* 7/16 × 2/3 */
     }
   }
 
-  /* Bureau : deux bandeaux de 62 rem en 16:9, le premier calé à gauche, le second à droite — la photo
-     garde une vraie part du bandeau (37 %) au lieu de se perdre dans 1 280 px de flou. */
+  /* Bureau : deux bandeaux de 62 rem en 16:9, le premier calé à gauche, le second à droite (le côte à
+     côte a été essayé le 22/10 et refusé par le gérant). */
   @media (min-width: 1024px) {
     .bandeau {
       width: min(100%, 62rem);
       aspect-ratio: 16 / 9;
+      --jonction: 37.5%; /* 9/16 × 2/3 */
     }
 
-    /* À cette échelle (photo agrandie sur ~1 000 px), 24 px de flou laissaient des contours nets. */
+    /* À cette échelle, 30 px de flou laissaient des traînées de la bande étirée. */
     .bandeau-fond {
-      filter: blur(56px) saturate(1.1);
+      filter: blur(96px) saturate(1.6);
+    }
+
+    .bandeau-prolonge {
+      filter: blur(40px) saturate(1.4);
+    }
+
+    .light .bandeau-fond {
+      filter: blur(96px) saturate(1.5) brightness(1.18);
+    }
+
+    .light .bandeau-prolonge {
+      filter: blur(40px) saturate(1.3) brightness(1.3);
     }
 
     .bandeau-miroir {
