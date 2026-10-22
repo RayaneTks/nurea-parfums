@@ -643,7 +643,10 @@
     inset: -20%;
     z-index: -4;
     overflow: hidden;
-    filter: blur(56px) saturate(1.6);
+    /* Flou selon le format (`--fond-flou`), éclat selon le thème (`--fond-eclat`) : aucune règle `.light`
+       dans un bloc d'écran — Tailwind en fabriquait une copie « !important » au sélecteur vide (le mot
+       `!light` du code), que le build de production refusait (22/10). */
+    filter: blur(var(--fond-flou, 56px)) saturate(var(--fond-sat, 1.6)) brightness(var(--fond-eclat, 1));
   }
 
   .bandeau-fond-cadre {
@@ -651,12 +654,11 @@
     inset: 0;
   }
 
-  .light .bandeau-fond {
-    filter: blur(56px) saturate(1.5) brightness(1.18);
-  }
-
-  .light .bandeau-prolonge {
-    filter: blur(28px) saturate(1.3) brightness(1.3);
+  .light .bandeau {
+    --fond-sat: 1.5;
+    --fond-eclat: 1.18;
+    --prolonge-sat: 1.3;
+    --prolonge-eclat: 1.3;
   }
 
   .bandeau-prolonge {
@@ -664,7 +666,7 @@
     inset: -8% 0;
     z-index: -3;
     overflow: hidden;
-    filter: blur(28px) saturate(1.4);
+    filter: blur(var(--prolonge-flou, 28px)) saturate(var(--prolonge-sat, 1.4)) brightness(var(--prolonge-eclat, 1));
     -webkit-mask-image: linear-gradient(to right, #000 var(--jonction), rgb(0 0 0 / 0.45) calc(var(--jonction) + 7%), transparent calc(var(--jonction) + 18%));
     mask-image: linear-gradient(to right, #000 var(--jonction), rgb(0 0 0 / 0.45) calc(var(--jonction) + 7%), transparent calc(var(--jonction) + 18%));
   }
@@ -721,8 +723,8 @@
   }
 
   /* Thème clair : le texte est foncé. Plutôt que de recouvrir le décor d'ivoire (couleurs perdues, bande
-     sombre contre la photo), on **éclaircit** ses couleurs en tons pastel (`.light .bandeau-fond`,
-     `.light .bandeau-prolonge`) et le voile monte doucement : 4,5:1 sous la marque, 3:1 sous le nom,
+     sombre contre la photo), on **éclaircit** ses couleurs en tons pastel (`--fond-eclat`, `--prolonge-eclat`
+     sur `.light .bandeau`) et le voile monte doucement : 4,5:1 sous la marque, 3:1 sous le nom,
      mesurés au pixel. */
   .light .bandeau-voile {
     background-image: linear-gradient(
@@ -820,20 +822,9 @@
     }
 
     /* À cette échelle, 30 px de flou laissaient des traînées de la bande étirée. */
-    .bandeau-fond {
-      filter: blur(96px) saturate(1.6);
-    }
-
-    .bandeau-prolonge {
-      filter: blur(40px) saturate(1.4);
-    }
-
-    .light .bandeau-fond {
-      filter: blur(96px) saturate(1.5) brightness(1.18);
-    }
-
-    .light .bandeau-prolonge {
-      filter: blur(40px) saturate(1.3) brightness(1.3);
+    .bandeau {
+      --fond-flou: 96px;
+      --prolonge-flou: 40px;
     }
 
     .bandeau-miroir {
