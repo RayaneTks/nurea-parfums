@@ -242,7 +242,7 @@ TECHNICAL:
   let tab = ls.get("refonte-onglet") || "todo";
   if (!TABS.some((t) => t.f === tab)) tab = "todo";
   let q = "";
-  const inTab = (p, f) => f === "all" || status(p) === f;
+  const inTab = (p, f) => f === "all" || (f === "fait" ? ["fait", "ok"].includes(status(p)) : status(p) === f);
 
   function head() {
     $("seg").innerHTML = TABS.map((t) => `<button type="button" data-f="${t.f}" aria-pressed="${t.f === tab}">${t.label}<b>${DATA.filter((p) => inTab(p, t.f)).length}</b></button>`).join("");
