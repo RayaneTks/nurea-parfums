@@ -1,6 +1,6 @@
 # Prompt de reprise — refonte de la vitrine Nuréa (après /clear)
 
-À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 22/10/2026 (refonte EN LIGNE ; parfums du moment en ligne ; voir REPRISE.md § Prochaines priorités).
+À coller tel quel dans une session neuve (Opus 5.5, effort high). Mis à jour le 22/10/2026 au soir (refonte en ligne ; ajouts du jour en ligne — REPRISE.md § Ajouts du 22/10).
 
 ---
 
