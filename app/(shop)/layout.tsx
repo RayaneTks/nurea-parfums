@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { RootJsonLd } from "@/components/seo/JsonLd";
 import { ContentGuard } from "@/components/security/ContentGuard";
 import { SmoothAnchors } from "@/components/layout/SmoothAnchors";
+import { AvisPhotos } from "@/components/layout/AvisPhotos";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { topBrands, type BrandShelfEntry } from "@/components/features/BrandShelf";
@@ -142,6 +143,7 @@ export default async function ShopLayout({ children }: { children: ReactNode }) 
           {children}
         </main>
         <Footer />
+        <AvisPhotos />
       </ThemeProvider>
     </div>
   );
