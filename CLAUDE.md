@@ -174,14 +174,14 @@ Les couches, du bas vers le haut (règles d'import : `docs/refonte/04-ARCHITECTU
 - `src/domain/` — **pur**, sans I/O ni Prisma : `money.ts` (le seul calcul monétaire),
   `document-status.ts`, `document-balance.ts`, `fulfillment.ts`, `sale-line.ts`
   (`VOLUMES_ML`, `DEFAULT_VOLUME_ML`), `stock.ts`, `publication.ts`, `periods.ts`,
-  `phone.ts`, `ids.ts`, `errors.ts`.
+  `phone.ts`, `ids.ts`, `errors.ts`, `supplier-debt.ts` (Reste à payer du carnet fournisseur).
 - `src/contracts/` — schémas Zod partagés client/serveur, un fichier par domaine
   (`documents`, `payments`, `catalogue`, `customers`, `batches`, `treasury`,
-  `chiffres`, `compta`, `stats`, `settings`, `auth`, `search`), plus `result.ts`
+  `chiffres`, `compta`, `stats`, `settings`, `auth`, `search`, `supplier`), plus `result.ts`
   (`ActionResult`), `fields.ts`, `zod-fr.ts`.
 - `src/server/<domaine>/` — requêtes Prisma et server actions : `documents`,
   `payments`, `treasury`, `catalogue`, `customers`, `batches`, `settings`, `stats`,
-  `search`, `auth`, `export`, et **`chiffres/`** — une définition SQL par chiffre,
+  `search`, `auth`, `export`, `supplier` (carnet fournisseur), et **`chiffres/`** — une définition SQL par chiffre,
   avec son jumeau TypeScript et un test de parité au centime.
 - `src/server/core/` — `defineAction`, `defineQuery`, `defineReadRoute`, erreurs,
   journalisation, maintenance. `src/server/db/` — client, transactions, verrous.
@@ -231,6 +231,13 @@ La liste des routes de lecture et manifestes reste fermée :
 Toute écriture passe par une **server action** de `src/server/*/actions.ts`
 (plus `src/actions/contact.ts` côté vitrine) — vérifié par
 `tests/architecture/server-actions.test.ts` et `route-handlers.test.ts`.
+
+**Carnet fournisseur** (`docs/admin/dettes-fournisseur.md`, décidé le 24/10/2026) : dettes et
+versements au fournisseur, en dinars, un seul compte ; **Reste à payer** = Σ dettes − Σ versements,
+dérivé (`src/domain/supplier-debt.ts`). Tables `SupplierEntry` et `SupplierEntryItem`, seul écrivain
+`src/server/supplier/writer.ts` ; taux du carnet `Setting.supplierExchangeRate`, distinct du taux de
+vente. **Indépendant de l'argent** : aucun `CashMovement`, aucune poche, aucun chiffre ne le lit. Base
+et serveur posés ; l'écran E22 `/admin/fournisseur` reste à construire (phases 3 et 4).
 
 La base privée de recherche parfum est un staging interne : l'import JSON et la décision de validation
 passent par des server actions authentifiées. La route GET renvoie les fiches `VERIFIED` par défaut;

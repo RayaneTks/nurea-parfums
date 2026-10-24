@@ -754,8 +754,9 @@ Transposition exacte de 03 §4.2 (« une table n'a qu'un point d'INSERT/UPDATE d
 | `Perfume.stock` | `src/server/catalogue/stock.ts` (`setStock`, `applyDeliveredDeltas`) | `setPerfumeStockAction` ; writer `documents` (T1–T6, T4b) |
 | `PerfumeMedia` (visuels story) ; objets du bucket (visuels, logos, planches story) | `src/server/catalogue/media.ts` (lignes) ; `src/server/catalogue/storage.ts` (objets, après commit, seulement dans notre bucket) | `addPerfumeMediaAction`, `setPerfumeMediaLabelAction`, `reorderPerfumeMediaAction`, `removePerfumeMediaAction` ; `deletePerfumeAction` et `deleteBrandAction` (URL lues avant le DELETE, cascade en base, objets retirés après commit, §12) |
 | `Customer` | `src/server/customers/writer.ts` | actions `customers` ; `createDocumentAction` (création en ligne) |
-| `Setting` | `src/server/settings/writer.ts` (`updateSettings`, `rememberPocket`, `forgetPocket`) | `updateSettingsAction` ; writers `documents` (T1, T7, A-5) et `batches` (T9) pour la poche par défaut (N2) ; writer `treasury` (création « Proposer par défaut », archivage T15) |
+| `Setting` | `src/server/settings/writer.ts` (`updateSettings`, `rememberPocket`, `forgetPocket`, `setSupplierRate`) | `updateSettingsAction`, `setSupplierRateAction` ; writers `documents` (T1, T7, A-5) et `batches` (T9) pour la poche par défaut (N2) ; writer `treasury` (création « Proposer par défaut », archivage T15) |
 | `AdminUser` | `src/server/auth/writer.ts` | `loginAction` ; `scripts/create-admin.ts` |
+| `SupplierEntry`, `SupplierEntryItem` (carnet fournisseur, 24/10/2026) | `src/server/supplier/writer.ts` | actions `supplier` — jamais un autre writer : le carnet n'est composé avec aucun geste d'argent |
 
 Un writer **décide et valide** (plafonds, statuts, lot ouvert, réserves) puis écrit ; un autre module qui a besoin d'écrire sa table **appelle sa fonction** en lui passant `tx`. C'est la composition qui rend T1 atomique sans dupliquer une règle.
 

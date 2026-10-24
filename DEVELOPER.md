@@ -89,6 +89,14 @@ Détail : [`docs/catalog-database.md`](docs/catalog-database.md) et
 - Filtres du catalogue : choisir un onglet de catégorie remet à zéro les filtres de marque ; l'état
   vit dans l'URL (`cat`, `maison`, `brands`).
 
+## Carnet fournisseur
+
+- Voir [`docs/admin/dettes-fournisseur.md`](docs/admin/dettes-fournisseur.md) : règles, tables,
+  actions, écrans à venir.
+- Le carnet ne touche jamais l'argent de la gestion : ne pas le brancher sur `CashMovement`, une
+  poche ou `src/server/chiffres`. `tests/db/supplier.test.ts` vérifie qu'aucun mouvement n'est écrit.
+- Montants en dinars ; l'euro se calcule à l'affichage (`dzdToEur`) au taux du carnet, jamais figé.
+
 ## Base privée de recherche parfum
 
 - Voir [`docs/admin/recherche-parfums.md`](docs/admin/recherche-parfums.md) pour l'import JSON, la

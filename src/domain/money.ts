@@ -193,13 +193,19 @@ export const eur: {
   isNegative: (a) => raw(a).isNegative(),
 };
 
-/** Dinars : l'achat d'un lot se relit dans la monnaie où il a été payé (E06 « Achat des parfums »). */
+/**
+ * Dinars : l'achat d'un lot se relit dans la monnaie où il a été payé (E06 « Achat des parfums ») ; le
+ * carnet fournisseur y tient ses comptes (`sub` : son reste à payer, négatif quand c'est une avance).
+ */
 export const dzd: {
   zero: Dzd;
+  sub(a: Dzd, b: Dzd): Dzd;
   times(a: Dzd, quantity: number): Dzd; // quantité entière ≥ 0, sinon exception
   sum(values: readonly Dzd[]): Dzd;
+  compare(a: Dzd, b: Dzd): -1 | 0 | 1;
 } = {
   zero: wrap<Dzd>(new D(0)),
+  sub: (a, b) => wrap<Dzd>(raw(a).minus(raw(b))),
   times: (a, quantity) => {
     if (!Number.isSafeInteger(quantity) || quantity < 0) {
       throw new RangeError(`dzd.times: quantité entière ≥ 0 attendue, reçu ${quantity}`);
@@ -207,6 +213,7 @@ export const dzd: {
     return wrap<Dzd>(raw(a).times(quantity));
   },
   sum: (values) => wrap<Dzd>(values.reduce<Dec>((acc, v) => acc.plus(raw(v)), new D(0))),
+  compare: (a, b) => raw(a).comparedTo(raw(b)),
 };
 
 /** Deux taux égaux à la décimale près (277 et 277,0000) : même groupe d'achat. */
@@ -217,8 +224,9 @@ export function sameRate(a: Rate, b: Rate): boolean {
 // ── Règles métier ──────────────────────────────────────────────────────────────
 
 /**
- * LA conversion DZD → EUR : arrondi(cost ÷ rate, 2), demi vers le haut. Appelée à l'écriture
- * d'une ligne seulement ; le résultat est figé dans `SaleLine.unitCostEur` (03 §4.8).
+ * LA conversion DZD → EUR : arrondi(cost ÷ rate, 2), demi vers le haut. Pour une ligne de vente,
+ * appelée à l'écriture seulement ; le résultat est figé dans `SaleLine.unitCostEur` (03 §4.8). Le
+ * carnet fournisseur, lui, ne fige rien : il relit ses dinars au taux choisi sur l'écran.
  * Calcul en entiers (centimes × 10⁴ ÷ taux × 10⁴) : exact quelle que soit la période du quotient.
  */
 export function dzdToEur(cost: Dzd, rate: Rate): Eur {

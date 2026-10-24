@@ -211,4 +211,13 @@ describe("dinars d'achat (E06)", () => {
     expect(formatRate(rateFromDb("277.5000"))).toBe("277,5");
     expect(sameRate(rateFromDb("277.0000"), rateFromDb("277"))).toBe(true);
   });
+
+  it("dzd.sub peut passer sous zéro (avance du carnet fournisseur) ; dzd.compare exact", async () => {
+    const { dzd, dzdFromDb, formatDzd, toDb } = await import("../money");
+    const advance = dzd.sub(dzdFromDb("1000.00"), dzdFromDb("1500.50"));
+    expect(toDb(advance)).toBe("-500.50");
+    expect(formatDzd(advance)).toBe("\u2212500,50\u202FDA");
+    expect(dzd.compare(advance, dzd.zero)).toBe(-1);
+    expect(dzd.compare(dzdFromDb("10"), dzdFromDb("10.00"))).toBe(0);
+  });
 });

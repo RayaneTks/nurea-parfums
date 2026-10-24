@@ -88,7 +88,8 @@ La v2 (01 §4.8) créait six tables françaises alimentées par **copie** sur un
 | `BatchExpense` | Pièce d'une dépense de lot (libellé, notes). Son euro est son mouvement. |
 | `Pocket` | Poche de Trésorerie (espèces, banque, avance fournisseur, « Non attribué »). Solde jamais stocké. |
 | `CashMovement` | **L'euro** : tout argent qui entre, sort ou change de poche. Montant signé, date de valeur, poche, contre-passation éventuelle. Écriture seule. |
-| `Setting` | Réglages (singleton) : taux DZD par défaut, poche proposée par défaut. |
+| `Setting` | Réglages (singleton) : taux DZD par défaut, poche proposée par défaut, taux du carnet fournisseur. |
+| `SupplierEntry`, `SupplierEntryItem` | **Carnet fournisseur** (ajout du 24/10/2026, `docs/admin/dettes-fournisseur.md`) : dettes et versements en dinars, éléments cochés (document ou lot). Hors de tout chiffre : aucun lien vers `CashMovement` ni `Pocket`. |
 | `AdminUser` | Compte de connexion (mono-opérateur, sans rôle), compteur d'échecs persistant. |
 
 **Vue SQL (pas une table)** : `DocumentBalance` — total, coût, payé, dû de chaque document (§5.1).
@@ -112,6 +113,8 @@ La v2 (01 §4.8) créait six tables françaises alimentées par **copie** sur un
 | `Pocket` → `CashMovement` | 1 — 0..N | **Restrict** | L'argent n'est jamais détruit ; une poche utilisée s'archive (à solde nul). |
 | `CashMovement` → `CashMovement` (`reverses`) | 0..1 — 0..1 | Restrict | Un mouvement se contre-passe au plus une fois. |
 | `Setting` → `Pocket` (`defaultPocket`) | 0..N — 0..1 | SetNull | Poche proposée ; à défaut, « Non attribué ». |
+| `SupplierEntry` → `SupplierEntryItem` | 1 — 0..N | Cascade | Les éléments cochés n'ont pas de sens sans leur dette. |
+| `SaleDocument` / `Batch` → `SupplierEntryItem` | 0..1 — 0..N | **Cascade** | Le carnet ne bloque jamais un geste de la gestion : seul le lien « déjà noté » disparaît, la dette garde son montant. |
 | `AdminUser` | isolée | — | Plus de lien d'attribution (mono-opérateur). |
 
 ### 2.3 Cycle de vie d'un document
@@ -725,6 +728,7 @@ Emplacements indicatifs selon la convention du repo `src/server/<domaine>/` ; l'
 | `Customer` | module **clients** | créer (dont inline), modifier, supprimer |
 | `Setting` (taux, poche par défaut) | module **réglages** (appelé par les encaissements, les dépenses et les poches pour la poche proposée) | écran Réglages ; mémoire de poche (N2) : choisir « Non attribué » se mémorise `NULL`, un T1 à plusieurs paiements mémorise la poche du premier, archiver la poche par défaut la remet à `NULL`. Sans ligne `Setting` (base neuve), la lecture rend le taux 277 et la poche `NULL`, la première écriture fait un `upsert` de l'id 1 (04 §7.4) |
 | `AdminUser` | module **auth** | connexion, backoff |
+| `SupplierEntry`, `SupplierEntryItem` ; `Setting.supplierExchangeRate` par le module **réglages** | module **supplier** (`docs/admin/dettes-fournisseur.md`) | noter une dette ou un versement, corriger, supprimer ; changer le taux du carnet. N'écrit jamais d'argent |
 
 ### 4.3 Écritures multi-tables : transactions Prisma obligatoires
 
@@ -769,6 +773,7 @@ Les écritures d'une seule ligne (ajustement, paiement fournisseur, création ou
 | Client | Supprimer (refus si un document `PENDING` ou `CONFIRMED` lui est lié) | `SetNull` sur les documents ; leur snapshot de nom reprend d'abord le **dernier** nom de la fiche (renommée après le lien, elle resterait sinon affichée sous l'ancien), dans la même transaction. |
 | Parfum, marque | Supprimer (règle métier existante) | Lignes en `SetNull` avec snapshot ; tarifs et visuels story en cascade. URL lues **avant** le DELETE : `image` et `imageLight` du ou des parfums, logo et variante claire de la marque, planches story. Après le commit, un objet n'est retiré du bucket que si son URL est **dans notre bucket** et que **plus rien ne la référence** (`Perfume`, `Brand`, `SaleLine.imageUrl`, `PerfumeMedia`) : la vignette de l'historique et une fiche dupliquée qui partage l'image restent intactes (un échec de stockage ne rétablit rien : l'objet orphelin est journalisé). Remplacer une image sur une fiche ne supprime pas l'ancienne (`scripts/storage-orphans.ts`). Invalidation vitrine. |
 | Visuel story | Retirer (confirmation) | DELETE de la ligne `PerfumeMedia`, puis, après le commit, suppression de l'objet désigné par son URL (stockée par le serveur, jamais reçue du client), seulement si elle est dans notre bucket : un visuel repris avec l'URL d'un autre projet voit sa ligne retirée, jamais son objet. |
+| Ligne du carnet fournisseur | Supprimer (undo 5 s) ; ou corriger en place | DELETE, éléments cochés en cascade. C'est un carnet, pas une pièce : aucun argent n'est en jeu (`docs/admin/dettes-fournisseur.md`). |
 | **Toute lecture** | — | N'écrit jamais rien. La purge « éphémère » n'existe plus sous aucune forme. |
 
 ### 4.5 Liens durs : fin des liens souples relevés par l'audit
