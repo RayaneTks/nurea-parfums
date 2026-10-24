@@ -109,11 +109,7 @@ export function EntrySheet({ request, rate, onClose, nested = false }: EntryShee
       dismissible={!dirty && !pending}
       title={title}
       description={editing ? "Le sens (dette ou versement) ne change pas." : undefined}
-      footer={
-        <Button variant="primary" size="lg" fullWidth isLoading={pending} onClick={submit} data-supplier-cta>
-          {cta}
-        </Button>
-      }
+      size="auto"
     >
       <div className="flex flex-col gap-5" data-supplier-form={editing ? "edit" : kind}>
         <FormField
@@ -154,6 +150,10 @@ export function EntrySheet({ request, rate, onClose, nested = false }: EntryShee
             Ce {entryKindLabel(kind).toLowerCase()} est noté dans le carnet seulement : il ne sort rien de la Trésorerie.
           </p>
         ) : null}
+        {/* Sheet de saisie courte : le CTA dans le corps, après la saisie (règle de S20 ; un pied écrasait le montant à 320 px). */}
+        <Button variant="primary" size="lg" fullWidth isLoading={pending} onClick={submit} data-supplier-cta>
+          {cta}
+        </Button>
       </div>
     </Sheet>
   );
