@@ -68,9 +68,9 @@ d'argent n'est écrit), `tests/db/constraints.test.ts` (chaque CHECK), `src/doma
 
 ## Écrans (phases 3 et 4)
 
-**État au 24/10/2026** : phase 3 faite sur la branche du chantier (E22, S22, S23, S24, S26, rangée de
-l'Accueil ; cas d'affichage dans `e2e/routes.ts`, carnet vide éprouvé sur la base de PC-12). Phase 4
-(S25, le sélecteur) à faire. Rien sur `main` sans accord du gérant.
+**État au 24/10/2026** : phases 3 et 4 faites sur la branche `claude/project-thread-49b88r` (E22, S22
+à S26, rangée de l'Accueil ; cas d'affichage dans `e2e/routes.ts`, carnet vide et sélecteur vide éprouvés
+sur la base de PC-12). Rien sur `main` sans accord du gérant : la migration s'appliquera en production.
 
 Vocabulaire d'écran : **Reste à payer · Dette · Versement · Fournisseur**. Jamais « crédit », « débit »,
 « solde fournisseur ».
@@ -93,17 +93,27 @@ rangée de l'Accueil « Fournisseur · Reste à payer 48 300 DA », à côté de
 | S22 Ligne du carnet · `?ligne=<id>` | Détail, note, éléments cochés (client ou lot, coût noté), « Modifier », « Supprimer » avec « Annuler » 5 s (`UndoProvider`) |
 | S23 Dette à la main | Montant DA (≈ € en direct), nom, date (aujourd'hui), note |
 | S24 Versement | Montant DA pré-rempli avec le Reste à payer (paiement complet en un tap), date, note |
-| S25 Sélecteur · `?selection=1` (phase 4) | Documents non annulés (en attente compris) et lots ; recherche client, filtre lot ; cocher un lot coche ses documents ; bandeau fixe « 3 éléments · 92 700 DA · ≈ 334,65 € » ; déjà notés grisés avec le nom de leur dette, cochables quand même ; lignes sans coût signalées et comptées à part (« dont 2 lignes sans coût ») ; « Noter cette dette » → montant modifiable, nom pré-rempli « Dette du 24 oct. » |
+| S25 Sélecteur · `?selection=1` | Documents non annulés (en attente compris) et lots ; recherche (client, parfum, nom du lot — c'est elle qui filtre par lot) ; cocher un lot coche ses documents ; bandeau fixe « 3 éléments · 92 700 DA · ≈ 334,65 € » ; déjà notés grisés avec le nom de leur dette, cochables quand même ; lignes sans coût signalées et comptées à part (« dont 2 lignes sans coût ») ; « Noter cette dette » → montant modifiable, nom pré-rempli « Dette du 24 oct. » |
 | S26 Taux du carnet | Un champ taux ; enregistre par `setSupplierRateAction` |
 
-Phase 4 : le coût en DA d'un document ou d'un lot doit tomber **au centime** sur la relecture d'achat
-existante (`batchLinesSql`, tuile « Achat des parfums » de E06) : Σ `quantity` × `unitCostDzd`,
-lignes sans coût exclues et comptées.
+**Coût d'un élément (S25).** Σ `quantity` × `unitCostDzd` des lignes du document, lignes sans coût
+exclues et comptées ; un lot = Σ de ses documents non annulés. Une requête, `src/server/supplier/sql.ts`,
+lue par le sélecteur ET par `recordEntry` : **le serveur recalcule** le coût de chaque élément coché au
+moment d'écrire, l'écran n'envoie que des identifiants. Parité au centime avec la relecture d'achat de
+E06 (`purchaseDetail`) sur son périmètre, les documents engagés : `tests/db/supplier.test.ts`.
+Écart voulu : le sélecteur compte aussi les commandes **en attente** (c'est ce qu'on fait préparer au
+fournisseur) ; la tuile de E06 ne compte que les engagés.
+
+Un lot coché en entier part comme **un** lot (S22 le relit « Commande de mars ») ; un lot en partie
+coché part document par document. Un document « déjà noté » l'est directement ou par son lot ; il reste
+cochable (deux dettes pour une même commande, un réassort par exemple). Liste servie par la page,
+plafonnée à 1 000 documents (le reste se dit « N affichés sur M »), dessinée 50 par 50 (« Afficher plus »).
+Un document annulé entre l'ouverture et l'envoi : refus `NOT_FOUND`, rien d'écrit.
 
 ## Choix à reprendre si le besoin change
 
 - Pas de rattachement versement → dette, pas de « dette réglée » : un seul compte, par décision du
   gérant. Si un jour il veut suivre dette par dette, il faudra une table de lettrage.
-- Le coût d'un élément coché est celui que l'écran envoie. Phase 4 peut le recalculer côté serveur
-  avec la même requête que le sélecteur, sans changer le schéma.
+- Le montant de la dette reste celui que le gérant valide (pré-rempli par la somme, modifiable) : la
+  somme des éléments cochés n'est pas imposée, elle aide.
 - Carnet non paginé (`shortcut` dans `queries.ts`) : à paginer au-delà de quelques centaines de lignes.

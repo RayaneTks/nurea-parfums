@@ -82,7 +82,7 @@ page hors inventaire.
 | E21 Nouveau lot | `/admin/lots/nouveau` | Nom, date prévue, notes. |
 | E07 Statistiques | `/admin/statistiques?periode=&pages=` | Classement des parfums en unités, « Hors catalogue » signalé. |
 | E08 Réglages | `/admin/reglages` | Poche par défaut, taux DZD par défaut, ordre des poches (S21), version, déconnexion. |
-| E22 Fournisseur | `/admin/fournisseur?ligne=&selection=1` | **Livré sur la branche le 24/10/2026** (phase 3 : carnet, S22, S23, S24, S26, rangée de l'Accueil ; pas encore sur `main`). Le sélecteur S25 (`selection=1`) reste **à construire** (phase 4). Carnet des dettes et versements au fournisseur, en dinars ; Reste à payer ; taux modifiable. Hors compta et hors Trésorerie : `docs/admin/dettes-fournisseur.md`. |
+| E22 Fournisseur | `/admin/fournisseur?ligne=&selection=1` | **Livré sur la branche le 24/10/2026** (carnet, S22 à S26 dont le sélecteur S25 qui additionne le coût en DA des commandes, ventes et lots cochés, rangée de l'Accueil ; pas encore sur `main`). Carnet des dettes et versements au fournisseur, en dinars ; Reste à payer ; taux modifiable. Hors compta et hors Trésorerie : `docs/admin/dettes-fournisseur.md`. |
 | E10 Commandes | `/admin/commandes?vue=&filtre=&q=&pages=` | Segments À livrer / Livrées / Annulées ; recherche étendue. |
 | E11 Vendre | `/admin/vendre?mode=&client=&parfum=&depuis=` | Composeur : lignes, client, « Reçu maintenant », poche, carte de confirmation. |
 | E12 Clients | `/admin/clients?q=&pages=` | Liste sectionnée A–Z, badge du dû, « Afficher plus ». |
