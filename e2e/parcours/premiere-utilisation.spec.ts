@@ -3,6 +3,7 @@ import { routes } from "../../src/app-shell/routes";
 import { NEWS_SEEN_KEY } from "../../src/contracts/stats";
 import { withE2eDb } from "../helpers/db";
 import { waitForHydration } from "../helpers/hydration";
+import { collectHydrationViolations, collectLayoutViolations } from "../helpers/layoutInvariants";
 import { countTaps } from "../helpers/tap";
 import { openShell, tab } from "./support-j8";
 import { chrono, composer, confirmationCard, cta, euros, openSheet } from "./support-j9";
@@ -211,4 +212,21 @@ test("PC-12 : première vente en moins de cinq minutes, en suivant « Pour comme
     paiements: await db.payment.count(),
   }));
   expect(compte).toEqual({ poches: 2, marques: 1, parfums: 1, documents: 1, paiements: 1 });
+});
+
+/**
+ * E22 — le carnet fournisseur VIDE (docs/admin/dettes-fournisseur.md). Seule cette base n'a aucune ligne au
+ * carnet : le jeu partagé en porte (`fixtures/supplier.ts`). L'écran dit « Rien à payer », oriente vers la
+ * première dette, et respecte les invariants d'affichage. Il n'écrit rien : PC-12 ne lit pas le carnet.
+ */
+test("E22 : le carnet vide dit « Rien à payer » et oriente vers la première dette", async ({ page }) => {
+  test.setTimeout(2 * 60_000);
+  await openShell(page, routes.fournisseur());
+  await expect(page.locator('[data-supplier-header="settled"]')).toBeVisible({ timeout: 60_000 });
+  await expect(page.locator("[data-supplier-remaining]")).toHaveText("Rien à payer");
+  await expect(page.getByText("Le carnet est vide.", { exact: true })).toBeVisible();
+  await expect(page.locator("[data-supplier-ledger]")).toHaveCount(0);
+
+  const { violations } = await collectLayoutViolations(page);
+  expect([...(await collectHydrationViolations(page)), ...violations]).toEqual([]);
 });
