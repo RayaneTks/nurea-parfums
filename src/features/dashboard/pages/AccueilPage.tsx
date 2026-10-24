@@ -1,6 +1,7 @@
 import { Settings } from "lucide-react";
 import { Block } from "@/app-shell/Block";
 import { DocumentSheetSlot } from "@/features/documents";
+import { SupplierHomeRow } from "@/features/supplier";
 import { PageScaffold } from "@/ui/patterns/PageScaffold";
 import { SectionHeader } from "@/ui/patterns/SectionHeader";
 import { Card } from "@/ui/primitives/Card";
@@ -49,6 +50,11 @@ export function AccueilPage({ docId }: { docId?: string }) {
             <HomeTopPerfumesBlock links={links} />
           </Block>
         </HomeTopBlock>
+      </Block>
+
+      {/* Zone 9 bis — « Fournisseur » (E22) : le Reste à payer, lu par la même fonction que l'écran. */}
+      <Block fallback={null} errorMessage="Fournisseur indisponible.">
+        <SupplierHomeRow />
       </Block>
 
       {/* Zone 9 — la rangée « Réglages » (E08). Rendue quand l'écran existe (jalon J15) : un raccourci vers

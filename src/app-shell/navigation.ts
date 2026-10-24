@@ -36,7 +36,7 @@ export const ADMIN_TABS: readonly AdminTab[] = [
     label: "Accueil",
     icon: Home,
     match: (p) =>
-      p === "/admin" || under(p, "/admin/journee", "/admin/compta", "/admin/lots", "/admin/statistiques", "/admin/reglages"),
+      p === "/admin" || under(p, "/admin/journee", "/admin/compta", "/admin/lots", "/admin/statistiques", "/admin/reglages", "/admin/fournisseur"),
     filterParams: [],
   },
   {
@@ -118,6 +118,7 @@ const PARENTS: readonly ParentRule[] = [
   { pattern: "/admin/journee", href: "/admin", label: "Accueil" },
   { pattern: "/admin/statistiques", href: "/admin", label: "Accueil" },
   { pattern: "/admin/reglages", href: "/admin", label: "Accueil" },
+  { pattern: "/admin/fournisseur", href: "/admin", label: "Accueil" },
   { pattern: "/admin/encaisser", href: "/admin/clients", label: "Clients" },
   { pattern: "/admin/clients/nouveau", href: "/admin/clients", label: "Clients" },
   { pattern: "/admin/clients/:id/modifier", href: "/admin/clients/:id", label: "Fiche client" },

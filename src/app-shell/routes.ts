@@ -61,6 +61,7 @@ export const ROUTE_SPECS = {
     etat: "livree",
   }),
   reglages: spec({ screen: "E08", pattern: "/admin/reglages", params: ["doc"], shell: true, jalon: "J15", etat: "livree" }),
+  fournisseur: spec({ screen: "E22", pattern: "/admin/fournisseur", params: ["ligne"], shell: true, jalon: "J17", etat: "livree" }),
   commandes: spec({ screen: "E10", pattern: "/admin/commandes", params: ["vue", "filtre", "q", "pages"], shell: true, jalon: "J8", etat: "livree" }),
   vendre: spec({
     screen: "E11",
@@ -118,7 +119,7 @@ export type RouteName = keyof typeof ROUTE_SPECS;
  * Paramètres qui ouvrent une sheet (06 §1.3) : acceptés sur toute route du shell, ils ne comptent
  * jamais pour l'onglet, le retour ni la mémoire d'onglet.
  */
-export const SHEET_PARAMS = ["doc", "edition", "assigner"] as const;
+export const SHEET_PARAMS = ["doc", "edition", "assigner", "ligne"] as const;
 
 type QueryValue = string | number | boolean | null | undefined;
 
@@ -159,6 +160,8 @@ export const routes = {
   statistiques: (q?: { periode?: Periode; ref?: string; pages?: number }) =>
     build("/admin/statistiques", q ? { ...q, pages: q.pages && q.pages > 1 ? q.pages : undefined } : q),
   reglages: () => "/admin/reglages",
+  /** E22. `ligne` : la sheet d'une ligne du carnet (S22). */
+  fournisseur: (q?: { ligne?: string }) => build("/admin/fournisseur", q),
   commandes: (q?: {
     vue?: "a-livrer" | "livrees" | "annulees";
     filtre?: "retard" | "aujourdhui" | "demain" | "en-attente" | "confirmees";
