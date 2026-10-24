@@ -295,6 +295,19 @@ test.describe("Invariants d'affichage — gestion", () => {
           } else {
             const taps = typeof sheet.open.tap === "string" || sheet.open.tap instanceof RegExp ? [sheet.open.tap] : sheet.open.tap;
             for (const [index, name] of taps.entries()) {
+              if (typeof name === "object" && "check" in name) {
+                // Une case de la sheet ouverte (S25 : cocher un lot).
+                const box = page.getByRole("checkbox", { name: name.check, exact: true }).last();
+                await waitForHydration(box);
+                // Toute la rangée est la cible (05 §3.1 `Checkbox`) : elle recouvre la case. On touche à sa place,
+                // et la case doit en sortir cochée.
+                // Son nom change une fois cochée (« Décocher… ») : on relit l'élément, pas le nom.
+                const element = await box.elementHandle();
+                await box.tap({ force: true });
+                await expect.poll(() => element?.getAttribute("aria-checked")).toBe("true");
+                await page.waitForTimeout(300);
+                continue;
+              }
               if (typeof name === "object" && !(name instanceof RegExp)) {
                 // Saisie dans la sheet ouverte (« lattafa oud » dans S05) : la couche du dessus, portée en dernier.
                 await page.getByLabel(name.fill, { exact: true }).last().fill(name.text);

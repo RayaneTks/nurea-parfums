@@ -37,8 +37,11 @@ export type ScreenCase = {
   storage?: Record<string, string>;
 };
 
-/** Un geste d'ouverture : toucher un contrôle (nom accessible exact), ou saisir dans un champ (libellé exact). */
-type OpenStep = string | RegExp | { fill: string; text: string };
+/**
+ * Un geste d'ouverture : toucher un contrôle (nom accessible exact), saisir dans un champ (libellé exact), ou
+ * cocher une case (nom accessible exact).
+ */
+type OpenStep = string | RegExp | { fill: string; text: string } | { check: string };
 
 export type SheetCase = {
   /** Sheet ou dialogue de 06 (S17…). */
@@ -347,6 +350,16 @@ export const SCREENS: ScreenCase[] = [
     shell: true,
     waitFor: '[data-supplier-line="PAYMENT"]',
   },
+  {
+    // S25 est une sheet ADRESSABLE : elle s'éprouve par son URL, recherche clavier ouvert.
+    screen: "E22",
+    route: "fournisseur",
+    label: "S25 ouverte par ?selection=1, recherche clavier ouvert",
+    url: routes.fournisseur({ selection: true }),
+    shell: true,
+    waitFor: "[data-supplier-picker]",
+    keyboardFields: ["Rechercher une commande ou un lot"],
+  },
 ];
 
 export const SHEETS: SheetCase[] = [
@@ -614,10 +627,17 @@ export const SHEETS: SheetCase[] = [
   // J17 — Sheets du carnet fournisseur (E22) : clavier ouvert sur le montant, champ par champ.
   {
     sheet: "S23",
-    label: "Dette à la main",
-    url: routes.fournisseur(),
-    open: { tap: "Noter une dette", layer: "drawer" },
+    label: "Dette à la main, par le raccourci du sélecteur",
+    url: routes.fournisseur({ selection: true }),
+    open: { tap: "Saisir à la main", layer: "drawer" },
     keyboardFields: ["Montant en dinars", "Nom", "Note"],
+  },
+  {
+    sheet: "S25 → S23",
+    label: "Dette pré-remplie depuis un lot coché",
+    url: routes.fournisseur({ selection: true }),
+    open: { tap: [{ check: "Cocher le lot Commande de mars" }, "Noter cette dette"], layer: "drawer" },
+    keyboardFields: ["Montant en dinars", "Nom"],
   },
   {
     sheet: "S24",
