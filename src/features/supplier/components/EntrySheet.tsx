@@ -15,19 +15,23 @@ import { Button } from "@/ui/primitives/Button";
 import { Input } from "@/ui/primitives/Input";
 import { Sheet } from "@/ui/primitives/Sheet";
 import { Textarea } from "@/ui/primitives/Textarea";
+import type { PickedDebt } from "./PickerSheet";
+import { defaultDebtLabel, missingLabel } from "./picker-model";
 import { dzdInputText, entryKindLabel, eurReading } from "./supplier-model";
 
 /** Ce que la sheet fait : noter une dette (S23), un versement (S24), ou corriger une ligne (S22 → « Modifier »). */
 export type EntryRequest =
-  | { mode: "new"; kind: "DEBT" | "PAYMENT"; suggestedDzd?: string }
+  | { mode: "new"; kind: "DEBT" | "PAYMENT"; suggestedDzd?: string; picked?: PickedDebt }
   | { mode: "edit"; entry: SupplierEntrySummary };
 
 type EntrySheetProps = {
   request: EntryRequest;
   rate: Rate;
   onClose: () => void;
-  /** Ouverte depuis la sheet d'une ligne. */
+  /** Ouverte depuis la sheet d'une ligne ou depuis le sélecteur. */
   nested?: boolean;
+  /** Après l'écriture (défaut : `onClose`) — depuis le sélecteur, ferme aussi celui-ci. */
+  onSaved?: () => void;
 };
 
 function fieldError(error: ActionError | null, field: string): string | undefined {
@@ -40,14 +44,16 @@ function fieldError(error: ActionError | null, field: string): string | undefine
  * un geste), mais le gérant paie souvent une partie : le champ reste libre. Un identifiant par ouverture :
  * « Réessayer » n'écrit jamais deux fois (04 §3.6).
  */
-export function EntrySheet({ request, rate, onClose, nested = false }: EntrySheetProps) {
+export function EntrySheet({ request, rate, onClose, nested = false, onSaved = onClose }: EntrySheetProps) {
   const editing = request.mode === "edit" ? request.entry : null;
   const kind = editing ? editing.kind : request.mode === "new" ? request.kind : "DEBT";
+  const picked = request.mode === "new" ? request.picked : undefined;
   const today = parisDayKey();
+  const suggested = picked?.amountDzd ?? (request.mode === "new" ? request.suggestedDzd : undefined);
 
   const initial = {
-    amount: editing ? dzdInputText(editing.amountDzd) : request.mode === "new" && request.suggestedDzd ? dzdInputText(request.suggestedDzd) : "",
-    label: editing?.label ?? "",
+    amount: editing ? dzdInputText(editing.amountDzd) : suggested ? dzdInputText(suggested) : "",
+    label: editing?.label ?? (picked ? defaultDebtLabel() : ""),
     note: editing?.note ?? "",
     day: editing ? parisDayKey(new Date(editing.occurredAt)) : today,
   };
@@ -71,7 +77,7 @@ export function EntrySheet({ request, rate, onClose, nested = false }: EntryShee
 
   const record = useAction(recordSupplierEntryAction, {
     success: kind === "DEBT" ? "Dette notée" : "Versement noté",
-    onSuccess: onClose,
+    onSuccess: onSaved,
   });
   const update = useAction(updateSupplierEntryAction, { success: "Ligne corrigée", onSuccess: onClose });
   const pending = record.pending || update.pending;
@@ -88,7 +94,15 @@ export function EntrySheet({ request, rate, onClose, nested = false }: EntryShee
     if (editing) {
       void update.run({ id: editing.id, amountDzd: amount, label, note, occurredAt });
     } else {
-      void record.run({ id, kind, amountDzd: amount, label: label || undefined, note: note || undefined, occurredAt });
+      void record.run({
+        id,
+        kind,
+        amountDzd: amount,
+        label: label || undefined,
+        note: note || undefined,
+        occurredAt,
+        items: picked?.items,
+      });
     }
   };
 
@@ -108,10 +122,15 @@ export function EntrySheet({ request, rate, onClose, nested = false }: EntryShee
       nested={nested}
       dismissible={!dirty && !pending}
       title={title}
-      description={editing ? "Le sens (dette ou versement) ne change pas." : undefined}
+      description={editing ? "Le sens (dette ou versement) ne change pas." : picked ? pickedDescription(picked) : undefined}
       size="auto"
     >
-      <div className="flex flex-col gap-5" data-supplier-form={editing ? "edit" : kind}>
+      <div className="flex flex-col gap-5" data-supplier-form={editing ? "edit" : picked ? "picked" : kind}>
+        {fieldError(error, "items") ? (
+          <p className="admin-type-caption text-[var(--admin-danger)]" role="alert">
+            {fieldError(error, "items")}
+          </p>
+        ) : null}
         <FormField
           label="Montant en dinars"
           required
@@ -157,4 +176,11 @@ export function EntrySheet({ request, rate, onClose, nested = false }: EntryShee
       </div>
     </Sheet>
   );
+}
+
+/** « 3 éléments cochés, dont 2 lignes sans coût. Le montant se corrige. » */
+function pickedDescription(picked: PickedDebt): string {
+  const count = picked.items.length;
+  const missing = missingLabel(picked.missingLines);
+  return `${count} élément${count > 1 ? "s" : ""} coché${count > 1 ? "s" : ""}${missing ? `, ${missing}` : ""}. Le montant se corrige.`;
 }

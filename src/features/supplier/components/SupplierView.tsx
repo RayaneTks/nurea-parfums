@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useToast } from "@/app-shell/FeedbackProvider";
 import { useUndo } from "@/app-shell/UndoProvider";
 import { useUrlState } from "@/app-shell/hooks/useUrlState";
-import type { SupplierEntryDTO, SupplierLedgerDTO } from "@/contracts/supplier";
+import type { SupplierEntryDTO, SupplierLedgerDTO, SupplierPickerDTO } from "@/contracts/supplier";
 import { dzd, dzdFromDb, rateFromDb, type Rate } from "@/domain/money";
 import { deleteSupplierEntryAction } from "@/server/supplier/actions";
 import { DateLabel } from "@/ui/patterns/DateLabel";
@@ -15,6 +15,7 @@ import { ListRow } from "@/ui/primitives/ListRow";
 import { Text } from "@/ui/primitives/Text";
 import { EntrySheet, type EntryRequest } from "./EntrySheet";
 import { LineSheet } from "./LineSheet";
+import { PickerSheet } from "./PickerSheet";
 import { RateSheet } from "./RateSheet";
 import { balanceHeadline, entryAmountText, entryKindLabel, entryTitle, eurReading, rateLabel, remainingWithout } from "./supplier-model";
 
@@ -22,6 +23,8 @@ type SupplierViewProps = {
   ledger: SupplierLedgerDTO;
   /** La ligne de `?ligne=<id>`, servie par la page ; `null` : pas de sheet. */
   entry: SupplierEntryDTO | null;
+  /** Le sélecteur de `?selection=1` (S25), servi par la page ; `null` : pas de sheet. */
+  picker: SupplierPickerDTO | null;
 };
 
 /**
@@ -32,7 +35,7 @@ type SupplierViewProps = {
  * Aucune ligne n'est un mouvement d'argent : rien ici ne touche la Trésorerie ni la compta.
  * Une suppression se masque aussitôt (le Reste à payer suit) et s'écrit au bout des 5 s du filet « Annuler ».
  */
-export function SupplierView({ ledger, entry }: SupplierViewProps) {
+export function SupplierView({ ledger, entry, picker }: SupplierViewProps) {
   const url = useUrlState();
   const { showToast } = useToast();
   const { scheduleDelete } = useUndo();
@@ -57,6 +60,8 @@ export function SupplierView({ ledger, entry }: SupplierViewProps) {
     });
 
   const closeLine = () => url.set({ ligne: null });
+  const openPicker = () => url.set({ selection: true }, { history: "push" });
+  const closePicker = () => url.set({ selection: null });
 
   const remove = (target: SupplierEntryDTO) => {
     hide(target.id, true);
@@ -103,7 +108,7 @@ export function SupplierView({ ledger, entry }: SupplierViewProps) {
           Taux : {rateLabel(rate)} · Modifier
         </button>
         <div className="flex flex-col gap-2">
-          <Button variant="primary" size="lg" fullWidth onClick={() => setForm({ mode: "new", kind: "DEBT" })}>
+          <Button variant="primary" size="lg" fullWidth onClick={openPicker}>
             Noter une dette
           </Button>
           <Button variant="secondary" size="lg" fullWidth onClick={() => setForm({ mode: "new", kind: "PAYMENT", suggestedDzd: payAll })}>
@@ -117,7 +122,7 @@ export function SupplierView({ ledger, entry }: SupplierViewProps) {
           title="Le carnet est vide."
           description="Note ici ce que tu dois au fournisseur et ce que tu lui verses : le reste se calcule tout seul."
           action={
-            <Button variant="secondary" onClick={() => setForm({ mode: "new", kind: "DEBT" })}>
+            <Button variant="secondary" onClick={openPicker}>
               Noter une dette
             </Button>
           }
@@ -155,7 +160,29 @@ export function SupplierView({ ledger, entry }: SupplierViewProps) {
         </div>
       )}
 
-      {form ? <EntrySheet request={form} rate={rate} onClose={() => setForm(null)} nested={form.mode === "edit"} /> : null}
+      {picker ? (
+        <PickerSheet
+          data={picker}
+          rate={rate}
+          onClose={closePicker}
+          onPicked={(picked) => setForm({ mode: "new", kind: "DEBT", picked })}
+          onManual={() => setForm({ mode: "new", kind: "DEBT" })}
+        />
+      ) : null}
+
+      {form ? (
+        <EntrySheet
+          request={form}
+          rate={rate}
+          onClose={() => setForm(null)}
+          // Depuis le sélecteur : la dette écrite ferme les deux sheets ; « Fermer » ramène aux cases cochées.
+          onSaved={() => {
+            setForm(null);
+            if (picker) closePicker();
+          }}
+          nested={form.mode === "edit" || picker !== null}
+        />
+      ) : null}
 
       {entry && !hidden.has(entry.id) ? (
         <LineSheet

@@ -89,7 +89,7 @@ describe("2. une route, un onglet", () => {
       nouveauLot: routes.nouveauLot(),
       statistiques: routes.statistiques({ periode: "mois" }),
       reglages: routes.reglages(),
-      fournisseur: routes.fournisseur({ ligne: "se_1" }),
+      fournisseur: routes.fournisseur({ ligne: "se_1", selection: true }),
       commandes: routes.commandes({ filtre: "retard" }),
       vendre: routes.vendre({ mode: "commande" }),
       clients: routes.clients({ q: "fa" }),
