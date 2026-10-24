@@ -1,12 +1,13 @@
 import "server-only";
 import type { SettingsSummary, UpdateSettingsData } from "@/contracts/settings";
 import { DomainError } from "@/domain/errors";
-import { rateFromDb, toDb } from "@/domain/money";
+import { rateFromDb, sameRate, toDb } from "@/domain/money";
 import type { Tx } from "@/server/db/transaction";
 
 /**
- * Seul fichier qui écrit `Setting` (03 §4.2, 04 §4.3) : l'écran Réglages (N3) et la mémoire de la poche
- * choisie (N2), appelée par les encaissements (T1, T7) et les dépenses (T9). Une seule ligne (CHECK id = 1),
+ * Seul fichier qui écrit `Setting` (03 §4.2, 04 §4.3) : l'écran Réglages (N3), la mémoire de la poche
+ * choisie (N2), appelée par les encaissements (T1, T7) et les dépenses (T9), et le taux du carnet
+ * fournisseur (E22). Une seule ligne (CHECK id = 1),
  * créée à la première écriture : une base neuve n'a pas encore de réglages et lit les valeurs par défaut.
  *
  * « Préférence de saisie, jamais source d'un chiffre » (03 §4.6) : deux écrivains assumés, le dernier choix
@@ -34,11 +35,16 @@ export async function readSettings(tx: Tx): Promise<SettingsSummary> {
 
 async function writeSettings(
   tx: Tx,
-  data: { defaultExchangeRate?: string; defaultPocketId?: string | null },
+  data: { defaultExchangeRate?: string; defaultPocketId?: string | null; supplierExchangeRate?: string },
 ): Promise<void> {
   await tx.db.setting.upsert({
     where: { id: SETTING_ID },
-    create: { id: SETTING_ID, defaultExchangeRate: data.defaultExchangeRate ?? DEFAULT_EXCHANGE_RATE, defaultPocketId: data.defaultPocketId ?? null },
+    create: {
+      id: SETTING_ID,
+      defaultExchangeRate: data.defaultExchangeRate ?? DEFAULT_EXCHANGE_RATE,
+      defaultPocketId: data.defaultPocketId ?? null,
+      supplierExchangeRate: data.supplierExchangeRate ?? null,
+    },
     update: data,
     select: { id: true },
   });
@@ -89,4 +95,27 @@ export async function forgetPocket(tx: Tx, pocketId: string): Promise<void> {
   const current = await readSettings(tx);
   if (current.defaultPocketId !== pocketId) return;
   await writeSettings(tx, { defaultPocketId: null });
+}
+
+/**
+ * Taux de lecture du carnet fournisseur (E22) : le dernier choisi, à défaut le taux par défaut des Réglages.
+ * Préférence d'écran, jamais source d'un chiffre : il ne touche ni les lignes de vente ni le taux proposé.
+ */
+export async function readSupplierRate(tx: Tx): Promise<string> {
+  const row = await tx.db.setting.findUnique({
+    where: { id: SETTING_ID },
+    select: { supplierExchangeRate: true, defaultExchangeRate: true },
+  });
+  return toDb(rateFromDb(row?.supplierExchangeRate ?? row?.defaultExchangeRate ?? DEFAULT_EXCHANGE_RATE));
+}
+
+/**
+ * Mémorise le taux du carnet ; n'écrit que s'il change. Un taux choisi égal au taux par défaut est écrit
+ * quand même : le carnet ne doit plus bouger si les Réglages changent ensuite. `rate` sort du contrat.
+ */
+export async function setSupplierRate(tx: Tx, rate: string): Promise<string> {
+  const row = await tx.db.setting.findUnique({ where: { id: SETTING_ID }, select: { supplierExchangeRate: true } });
+  const stored = row?.supplierExchangeRate;
+  if (!stored || !sameRate(rateFromDb(stored), rateFromDb(rate))) await writeSettings(tx, { supplierExchangeRate: rate });
+  return readSupplierRate(tx);
 }

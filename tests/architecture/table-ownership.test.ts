@@ -28,6 +28,8 @@ const OWNERS: Record<string, readonly string[]> = {
   perfumePricing: ["src/server/catalogue/writer.ts"],
   perfumeMedia: ["src/server/catalogue/media.ts"],
   perfumeResearchRecord: ["src/server/perfume-research/writer.ts"],
+  supplierEntry: ["src/server/supplier/writer.ts"],
+  supplierEntryItem: ["src/server/supplier/writer.ts"],
   customer: ["src/server/customers/writer.ts"],
   setting: ["src/server/settings/writer.ts"],
   adminUser: ["src/server/auth/writer.ts"],

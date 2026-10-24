@@ -82,6 +82,7 @@ page hors inventaire.
 | E21 Nouveau lot | `/admin/lots/nouveau` | Nom, date prévue, notes. |
 | E07 Statistiques | `/admin/statistiques?periode=&pages=` | Classement des parfums en unités, « Hors catalogue » signalé. |
 | E08 Réglages | `/admin/reglages` | Poche par défaut, taux DZD par défaut, ordre des poches (S21), version, déconnexion. |
+| E22 Fournisseur | `/admin/fournisseur?ligne=&selection=1` | **À construire** (fondations en base et serveur posées le 24/10/2026). Carnet des dettes et versements au fournisseur, en dinars ; Reste à payer ; taux modifiable. Hors compta et hors Trésorerie : `docs/admin/dettes-fournisseur.md`. |
 | E10 Commandes | `/admin/commandes?vue=&filtre=&q=&pages=` | Segments À livrer / Livrées / Annulées ; recherche étendue. |
 | E11 Vendre | `/admin/vendre?mode=&client=&parfum=&depuis=` | Composeur : lignes, client, « Reçu maintenant », poche, carte de confirmation. |
 | E12 Clients | `/admin/clients?q=&pages=` | Liste sectionnée A–Z, badge du dû, « Afficher plus ». |
@@ -167,6 +168,11 @@ ici : deux listes divergent toujours.
 - **Poche par défaut** (Réglages) pré-sélectionnée partout : le cas courant coûte zéro tap.
   Le reliquat non réparti va dans la poche système « Non attribué », jamais renommable
   ni archivable.
+- **Carnet fournisseur** (`docs/admin/dettes-fournisseur.md`) : ce que le gérant doit au
+  fournisseur et ce qu'il lui a versé, en dinars, un seul compte. **Reste à payer** =
+  dettes − versements, dérivé, négatif = avance. Ce n'est pas un chiffre de la compta :
+  il n'écrit rien dans la Trésorerie ; le « Paiement fournisseur » de la Trésorerie reste
+  un geste séparé.
 - **Pas de rôle, pas de journal d'audit** : un seul opérateur (02 §7). Une garde de
   session unique, invisible.
 

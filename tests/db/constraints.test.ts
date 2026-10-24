@@ -23,6 +23,8 @@ const BRAND_ID = "brand-fixture";
 const PERFUME_ID = 1000;
 const DOCUMENT_ID = "doc-fixture";
 const POCKET_ID = "pocket-fixture";
+const BATCH_ID = "batch-fixture";
+const SUPPLIER_ENTRY_ID = "supplier-entry-fixture";
 
 beforeAll(async () => {
   db = await connectTestDatabase();
@@ -31,6 +33,8 @@ beforeAll(async () => {
   await insert(db, "Perfume", { id: PERFUME_ID, brandId: BRAND_ID, name: "Sauvage", image: "sauvage.webp", updatedAt: NOW });
   await insert(db, "SaleDocument", { id: DOCUMENT_ID, origin: "ORDER", status: "PENDING", updatedAt: NOW });
   await insert(db, "Pocket", { id: POCKET_ID, name: "Espèces", kind: "CASH", updatedAt: NOW });
+  await insert(db, "Batch", { id: BATCH_ID, name: "Lot d'octobre", updatedAt: NOW });
+  await insert(db, "SupplierEntry", { id: SUPPLIER_ENTRY_ID, kind: "DEBT", amountDzd: "92700.00", updatedAt: NOW });
 });
 
 afterAll(async () => {
@@ -174,6 +178,27 @@ const cases: readonly TableCase[] = [
     violations: [
       { constraint: "setting_singleton_ck", why: "seconde ligne de réglages", row: { id: 2 } },
       { constraint: "setting_rate_ck", why: "taux nul", row: { id: 1, defaultExchangeRate: "0" } },
+      { constraint: "setting_supplier_rate_ck", why: "taux du carnet nul", row: { id: 1, supplierExchangeRate: "0" } },
+    ],
+  },
+  {
+    table: "SupplierEntry",
+    valid: (id) => ({ id, kind: "PAYMENT", amountDzd: "60000.00", label: "Versé", note: "En main propre", updatedAt: NOW }),
+    violations: [
+      { constraint: "supplier_entry_amount_ck", why: "montant nul", row: { amountDzd: "0" } },
+      { constraint: "supplier_entry_amount_ck", why: "montant signé", row: { amountDzd: "-100.00" } },
+      { constraint: "supplier_entry_label_ck", why: "nom fait d'espaces", row: { label: "  " } },
+      { constraint: "supplier_entry_note_ck", why: "note vide", row: { note: "" } },
+    ],
+  },
+  {
+    table: "SupplierEntryItem",
+    // Même paire (ligne, document) à chaque cas : un CHECK est évalué avant l'index unique.
+    valid: (id) => ({ id, entryId: SUPPLIER_ENTRY_ID, documentId: DOCUMENT_ID, amountDzd: "0.00" }),
+    violations: [
+      { constraint: "supplier_item_target_ck", why: "ni document ni lot", row: { documentId: null } },
+      { constraint: "supplier_item_target_ck", why: "document et lot à la fois", row: { batchId: BATCH_ID } },
+      { constraint: "supplier_item_amount_ck", why: "coût négatif", row: { amountDzd: "-1.00" } },
     ],
   },
 ];

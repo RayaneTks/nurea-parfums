@@ -229,12 +229,12 @@ enum DocumentStatus {
 model SaleDocument {
   /// Identifiant texte fourni par le client à la création (UUID v4, 04 §3.6) : un double tap renvoie le même id
   /// (idempotence). `@default(cuid())` ne sert qu'aux créations serveur (reprise, scripts).
-  id                      String         @id @default(cuid())
+  id                      String              @id @default(cuid())
   origin                  DocumentOrigin
-  status                  DocumentStatus @default(PENDING)
+  status                  DocumentStatus      @default(PENDING)
   /// Fiche client liée ; SetNull : l'historique survit à la suppression de la fiche.
   customerId              String?
-  customer                Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customer                Customer?           @relation(fields: [customerId], references: [id], onDelete: SetNull)
   /// Snapshot du nom : copié de Customer.fullName au moment du lien, ou saisi pour un client de passage.
   /// Affichage : customer.fullName ?? customerName ?? libellé « client de passage » (06).
   customerName            String?
@@ -242,26 +242,27 @@ model SaleDocument {
   customerContact         String?
   /// Lot fournisseur ; Restrict. Rattachement refusé par le serveur si le lot est CLOSED.
   batchId                 String?
-  batch                   Batch?         @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  batch                   Batch?              @relation(fields: [batchId], references: [id], onDelete: Restrict)
   /// Date du document : prise de commande, ou moment de la vente directe.
-  orderedAt               DateTime       @default(now()) @db.Timestamptz(3)
+  orderedAt               DateTime            @default(now()) @db.Timestamptz(3)
   /// Livraison prévue. Base de « en retard » (§5.6). Sans heure fixée : 00:00 Europe/Paris du jour prévu.
-  expectedDeliveryAt      DateTime?      @db.Timestamptz(3)
+  expectedDeliveryAt      DateTime?           @db.Timestamptz(3)
   /// Vrai si une heure a été choisie : distingue « pas d'heure » de « 00:00 » à l'affichage (06 E10, E11).
   /// Sans effet sur « en retard ». Faux à la reprise (l'existant ne saisit qu'une date, 01 §3.1).
-  expectedDeliveryHasTime Boolean        @default(false)
+  expectedDeliveryHasTime Boolean             @default(false)
   /// Engagement : posé à l'entrée en CONFIRMED ou DELIVERED, effacé au retour en PENDING ou à l'annulation.
   /// Rattache le coût du document à une période (§5.4). CHECK : non nul ⇔ status ∈ (CONFIRMED, DELIVERED).
-  confirmedAt             DateTime?      @db.Timestamptz(3)
+  confirmedAt             DateTime?           @db.Timestamptz(3)
   /// Livraison réelle. CHECK : non nul ⇔ status = DELIVERED.
-  deliveredAt             DateTime?      @db.Timestamptz(3)
+  deliveredAt             DateTime?           @db.Timestamptz(3)
   /// Annulation. CHECK : non nul ⇔ status = CANCELLED.
-  cancelledAt             DateTime?      @db.Timestamptz(3)
+  cancelledAt             DateTime?           @db.Timestamptz(3)
   notes                   String?
-  createdAt               DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt               DateTime       @updatedAt @db.Timestamptz(3)
+  createdAt               DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt               DateTime            @updatedAt @db.Timestamptz(3)
   lines                   SaleLine[]
   payments                Payment[]
+  supplierItems           SupplierEntryItem[]
 
   @@index([status, expectedDeliveryAt])
   @@index([status, confirmedAt])
@@ -365,17 +366,18 @@ enum BatchStatus {
 }
 
 model Batch {
-  id         String         @id @default(cuid())
+  id            String              @id @default(cuid())
   /// Nom libre (« Commande de mars »).
-  name       String
+  name          String
   /// Arrivée prévue de l'envoi (information éditoriale).
-  expectedAt DateTime?      @db.Timestamptz(3)
-  status     BatchStatus    @default(OPEN)
-  notes      String?
-  createdAt  DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt  DateTime       @updatedAt @db.Timestamptz(3)
-  documents  SaleDocument[]
-  expenses   BatchExpense[]
+  expectedAt    DateTime?           @db.Timestamptz(3)
+  status        BatchStatus         @default(OPEN)
+  notes         String?
+  createdAt     DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime            @updatedAt @db.Timestamptz(3)
+  documents     SaleDocument[]
+  expenses      BatchExpense[]
+  supplierItems SupplierEntryItem[]
 
   @@index([status])
   @@index([createdAt])
@@ -476,18 +478,73 @@ model CashMovement {
   @@index([transferGroupId])
 }
 
+// ═════════════════════════════ Carnet fournisseur ════════════════════════════
+// Hors de tout chiffre : aucun CashMovement, aucune lecture par la compta ni la Trésorerie
+// (docs/admin/dettes-fournisseur.md). Tout en dinars ; l'euro se lit au taux de l'écran.
+
+/// Sens d'une ligne du carnet.
+enum SupplierEntryKind {
+  /// Ce que le gérant doit au fournisseur.
+  DEBT
+  /// Ce qu'il lui a versé. Jamais rattaché à une dette : un seul compte global.
+  PAYMENT
+}
+
+/// Ligne du carnet. Reste à payer = Σ DEBT − Σ PAYMENT, jamais stocké (négatif : avance).
+/// Modifiable et supprimable : c'est un carnet, pas une pièce comptable.
+model SupplierEntry {
+  /// UUID fourni par le formulaire : un double tap rend la même ligne (04 §3.6).
+  id         String              @id @default(cuid())
+  kind       SupplierEntryKind
+  /// Montant en dinars. CHECK > 0 : le sens est porté par `kind`.
+  amountDzd  Decimal             @db.Decimal(10, 2)
+  /// Nom libre (« Lot d'octobre », « Transport »).
+  label      String?
+  /// Date de la dette ou du versement (tri du carnet).
+  occurredAt DateTime            @default(now()) @db.Timestamptz(3)
+  note       String?
+  createdAt  DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime            @updatedAt @db.Timestamptz(3)
+  items      SupplierEntryItem[]
+
+  @@index([occurredAt])
+}
+
+/// Élément coché dans le sélecteur pour une dette : un document OU un lot (CHECK), avec le coût en DA
+/// affiché au moment de noter. Sert à marquer « déjà noté ». Cascade des deux côtés : supprimer un
+/// document ou un lot ne touche pas le carnet, seulement ce lien.
+model SupplierEntryItem {
+  id         String        @id @default(cuid())
+  entryId    String
+  entry      SupplierEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  documentId String?
+  document   SaleDocument? @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  batchId    String?
+  batch      Batch?        @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  /// Coût en DA au moment de noter (lignes sans coût comptées 0). CHECK >= 0.
+  amountDzd  Decimal       @db.Decimal(10, 2)
+
+  @@unique([entryId, documentId])
+  @@unique([entryId, batchId])
+  @@index([documentId])
+  @@index([batchId])
+}
+
 // ═════════════════════════════ Réglages & accès ══════════════════════════════
 
 /// Réglages de l'app : UNE ligne (CHECK id = 1). Préférences de saisie, jamais source d'un chiffre.
 model Setting {
-  id                  Int      @id @default(1)
+  id                   Int      @id @default(1)
   /// Taux DZD pour 1 € proposé sur une nouvelle ligne sans mémoire de prix (remplace les « 277 » en dur).
-  defaultExchangeRate Decimal  @default(277) @db.Decimal(10, 4)
+  defaultExchangeRate  Decimal  @default(277) @db.Decimal(10, 4)
   /// Poche proposée partout (vente, acompte, encaissement, dépense) ; mise à jour quand l'utilisateur
   /// en choisit une autre (N2), modifiable dans Réglages. NULL ⇒ « Non attribué ».
-  defaultPocketId     String?
-  defaultPocket       Pocket?  @relation(fields: [defaultPocketId], references: [id], onDelete: SetNull)
-  updatedAt           DateTime @updatedAt @db.Timestamptz(3)
+  defaultPocketId      String?
+  defaultPocket        Pocket?  @relation(fields: [defaultPocketId], references: [id], onDelete: SetNull)
+  /// Taux du carnet fournisseur (E22), mémorisé au dernier choix. NULL ⇒ `defaultExchangeRate`.
+  /// Séparé pour que changer le taux de lecture des dettes ne change pas le taux proposé à la vente.
+  supplierExchangeRate Decimal? @db.Decimal(10, 4)
+  updatedAt            DateTime @updatedAt @db.Timestamptz(3)
 }
 
 /// Compte de connexion, créé par CLI. Mono-opérateur : aucun rôle.
