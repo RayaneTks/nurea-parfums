@@ -4,6 +4,8 @@ import type {
   SupplierEntryDTO,
   SupplierEntryItemDTO,
   SupplierLedgerDTO,
+  SupplierNotedDTO,
+  SupplierPickerDTO,
 } from "@/contracts/supplier";
 import { isTextId } from "@/domain/ids";
 import { dzdFromDb, rateFromDb, toDb } from "@/domain/money";
@@ -11,6 +13,7 @@ import { supplierBalanceState, supplierRemaining } from "@/domain/supplier-debt"
 import { defineQuery } from "@/server/core/define-query";
 import { db } from "@/server/db/client";
 import { entrySummary } from "@/server/supplier/dto";
+import { pickerBatchesSql, pickerDocumentsSql, type PickerBatchRow, type PickerDocumentRow } from "@/server/supplier/sql";
 
 /**
  * Lectures du carnet fournisseur (E22, S22, rangée de l'Accueil). Hors cache : le carnet est petit, et
@@ -116,5 +119,44 @@ export const getSupplierEntry = defineQuery(async (id: string): Promise<Supplier
       }
       return item.batch ? [{ kind: "batch", id: item.id, batchId: item.batch.id, name: item.batch.name, amountDzd }] : [];
     }),
+  };
+});
+
+function notedOf(row: { notedEntryId: string | null; notedLabel: string | null; notedAt: Date | null }): SupplierNotedDTO | null {
+  return row.notedEntryId && row.notedAt
+    ? { entryId: row.notedEntryId, label: row.notedLabel, occurredAt: row.notedAt.toISOString() }
+    : null;
+}
+
+/** S25 — documents non annulés et lots, avec leur coût d'achat en DA et la dette qui les a déjà notés. */
+export const getSupplierPicker = defineQuery(async (): Promise<SupplierPickerDTO> => {
+  const [documents, batches] = await Promise.all([
+    db.$queryRaw<PickerDocumentRow[]>(pickerDocumentsSql()),
+    db.$queryRaw<PickerBatchRow[]>(pickerBatchesSql()),
+  ]);
+  return {
+    documents: documents.map((row) => ({
+      id: row.id,
+      origin: row.origin,
+      status: row.status,
+      orderedAt: row.orderedAt.toISOString(),
+      customerName: row.customerName,
+      batchId: row.batchId,
+      costDzd: toDb(dzdFromDb(row.costDzd)),
+      lineCount: row.lineCount,
+      missingLines: row.missingLines,
+      items: row.items,
+      noted: notedOf(row),
+    })),
+    batches: batches.map((row) => ({
+      id: row.id,
+      name: row.name,
+      status: row.status,
+      documentCount: row.documentCount,
+      costDzd: toDb(dzdFromDb(row.costDzd)),
+      missingLines: row.missingLines,
+      noted: notedOf(row),
+    })),
+    total: documents[0]?.totalCount ?? 0,
   };
 });

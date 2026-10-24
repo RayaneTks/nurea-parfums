@@ -10,6 +10,7 @@ import { valueDateOf } from "@/contracts/treasury";
 import { DomainError } from "@/domain/errors";
 import type { Tx } from "@/server/db/transaction";
 import { entrySummary } from "@/server/supplier/dto";
+import { batchCostsByIdSql, documentCostsByIdSql, type PickerBatchRow, type PickerDocumentRow } from "@/server/supplier/sql";
 
 /**
  * Seul fichier qui écrit `SupplierEntry` et `SupplierEntryItem` (04 §4.3 ; docs/admin/dettes-fournisseur.md).
@@ -20,7 +21,8 @@ import { entrySummary } from "@/server/supplier/dto";
  */
 
 export const SUPPLIER_ENTRY_NOT_FOUND = "Cette ligne du carnet n'existe plus. Recharge l'écran pour voir le carnet à jour.";
-const ITEM_TARGET_GONE = "Un élément coché n'existe plus (supprimé depuis un autre écran). Recharge la liste et recoche.";
+const ITEM_TARGET_GONE =
+  "Un élément coché n'existe plus ou a été annulé depuis un autre écran. Recharge la liste et recoche.";
 
 const SELECT = { id: true, kind: true, amountDzd: true, label: true, note: true, occurredAt: true } as const;
 
@@ -37,13 +39,18 @@ export async function recordEntry(tx: Tx, input: RecordSupplierEntryData): Promi
 
   const documentIds = input.items.flatMap((item) => (item.kind === "document" ? [item.documentId] : []));
   const batchIds = input.items.flatMap((item) => (item.kind === "batch" ? [item.batchId] : []));
+  // Le coût de chaque élément est RECALCULÉ ici, par la requête même du sélecteur : l'écran ne l'envoie pas.
   const [documents, batches] = await Promise.all([
-    documentIds.length ? tx.db.saleDocument.count({ where: { id: { in: documentIds } } }) : 0,
-    batchIds.length ? tx.db.batch.count({ where: { id: { in: batchIds } } }) : 0,
+    documentIds.length ? tx.db.$queryRaw<PickerDocumentRow[]>(documentCostsByIdSql(documentIds)) : [],
+    batchIds.length ? tx.db.$queryRaw<PickerBatchRow[]>(batchCostsByIdSql(batchIds)) : [],
   ]);
-  if (documents !== documentIds.length || batches !== batchIds.length) {
+  if (documents.length !== documentIds.length || batches.length !== batchIds.length) {
     throw new DomainError("NOT_FOUND", ITEM_TARGET_GONE, "items");
   }
+  const costOf = new Map<string, string>([
+    ...documents.map((row) => [`d:${row.id}`, row.costDzd] as const),
+    ...batches.map((row) => [`b:${row.id}`, row.costDzd] as const),
+  ]);
 
   const created = await tx.db.supplierEntry.create({
     data: {
@@ -60,8 +67,9 @@ export async function recordEntry(tx: Tx, input: RecordSupplierEntryData): Promi
     await tx.db.supplierEntryItem.createMany({
       data: input.items.map((item) => ({
         entryId: created.id,
-        amountDzd: item.amountDzd,
-        ...(item.kind === "document" ? { documentId: item.documentId } : { batchId: item.batchId }),
+        ...(item.kind === "document"
+          ? { documentId: item.documentId, amountDzd: costOf.get(`d:${item.documentId}`) ?? "0" }
+          : { batchId: item.batchId, amountDzd: costOf.get(`b:${item.batchId}`) ?? "0" }),
       })),
     });
   }

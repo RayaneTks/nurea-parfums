@@ -27,24 +27,19 @@ const amountDzd = z.string({ required_error: SUPPLIER_AMOUNT_MESSAGE }).transfor
   return toDb(parsed);
 });
 
-/** Coût en DA d'un élément coché, tel que le sélecteur l'affichait ; 0 quand aucune ligne n'avait de coût. */
-const itemAmountDzd = z.string().transform((text, ctx) => {
-  const parsed = parseDzdInput(text);
-  if (parsed === null) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Montant d'un élément coché illisible : recharge la liste." });
-    return z.NEVER;
-  }
-  return toDb(parsed);
-});
-
 /** Plafond d'éléments cochés par dette : au-delà, l'écran est périmé ou fabriqué. */
 export const SUPPLIER_ITEMS_MAX = 500;
 
-/** Un élément coché dans le sélecteur (phase 4) : un document ou un lot entier. */
+/**
+ * Un élément coché dans le sélecteur (S25) : un document ou un lot entier. Sans montant : le serveur
+ * recalcule le coût de chacun au moment d'écrire (`supplier/sql.ts`), il ne croit pas l'écran.
+ */
 const supplierItem = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("document"), documentId: entityId, amountDzd: itemAmountDzd }),
-  z.object({ kind: z.literal("batch"), batchId: entityId, amountDzd: itemAmountDzd }),
+  z.object({ kind: z.literal("document"), documentId: entityId }),
+  z.object({ kind: z.literal("batch"), batchId: entityId }),
 ]);
+
+export type SupplierItemInput = z.input<typeof supplierItem>;
 
 /**
  * Noter une dette (à la main ou depuis le sélecteur) ou un versement. L'identifiant vient du formulaire :
@@ -160,3 +155,44 @@ export type SupplierEntryDTO = SupplierEntrySummary & {
 };
 
 export type SupplierEntryDeletion = { id: string; deleted: boolean };
+
+/** La dette la plus récente qui a déjà coché un élément (directement, ou par son lot pour un document). */
+export type SupplierNotedDTO = { entryId: string; label: string | null; /** ISO 8601. */ occurredAt: string };
+
+/** S25 — un document non annulé (en attente compris), avec son coût d'achat en DA. */
+export type SupplierPickerDocumentDTO = {
+  id: string;
+  origin: "ORDER" | "DIRECT_SALE";
+  status: "PENDING" | "CONFIRMED" | "DELIVERED";
+  /** ISO 8601. */
+  orderedAt: string;
+  customerName: string | null;
+  batchId: string | null;
+  /** Σ quantité × coût en DA des lignes qui en ont un. */
+  costDzd: string;
+  lineCount: number;
+  /** Lignes sans coût en DA : exclues de la somme, comptées à part. */
+  missingLines: number;
+  /** Premiers noms de parfum, pour la légende et la recherche. */
+  items: string[];
+  noted: SupplierNotedDTO | null;
+};
+
+/** S25 — un lot qui porte au moins un document non annulé. */
+export type SupplierPickerBatchDTO = {
+  id: string;
+  name: string;
+  status: "OPEN" | "CLOSED";
+  documentCount: number;
+  costDzd: string;
+  missingLines: number;
+  noted: SupplierNotedDTO | null;
+};
+
+/** S25 — servi par le RSC de E22 sous `?selection=1` : la sheet ne lance aucune requête. */
+export type SupplierPickerDTO = {
+  documents: SupplierPickerDocumentDTO[];
+  batches: SupplierPickerBatchDTO[];
+  /** Documents existants ; au-delà de la limite, la liste est tronquée SANS le taire. */
+  total: number;
+};
