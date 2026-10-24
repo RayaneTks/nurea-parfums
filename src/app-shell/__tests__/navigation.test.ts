@@ -46,6 +46,7 @@ const INVENTORY: Row[] = [
   { screen: "E20", example: "/admin/clients/cus_1/modifier", tab: "clients", parent: "/admin/clients/cus_1" },
   { screen: "E20", example: "/admin/clients/nouveau", tab: "clients", parent: "/admin/clients" },
   { screen: "E21", example: "/admin/lots/nouveau", tab: "accueil", parent: "/admin/lots" },
+  { screen: "E22", example: "/admin/fournisseur", tab: "accueil", parent: "/admin" },
 ];
 
 const SHELL_ROUTES = INVENTORY.filter((row) => row.tab !== null);
@@ -88,6 +89,7 @@ describe("2. une route, un onglet", () => {
       nouveauLot: routes.nouveauLot(),
       statistiques: routes.statistiques({ periode: "mois" }),
       reglages: routes.reglages(),
+      fournisseur: routes.fournisseur({ ligne: "se_1" }),
       commandes: routes.commandes({ filtre: "retard" }),
       vendre: routes.vendre({ mode: "commande" }),
       clients: routes.clients({ q: "fa" }),
