@@ -68,6 +68,10 @@ d'argent n'est écrit), `tests/db/constraints.test.ts` (chaque CHECK), `src/doma
 
 ## Écrans (phases 3 et 4)
 
+**État au 24/10/2026** : phase 3 faite sur la branche du chantier (E22, S22, S23, S24, S26, rangée de
+l'Accueil ; cas d'affichage dans `e2e/routes.ts`, carnet vide éprouvé sur la base de PC-12). Phase 4
+(S25, le sélecteur) à faire. Rien sur `main` sans accord du gérant.
+
 Vocabulaire d'écran : **Reste à payer · Dette · Versement · Fournisseur**. Jamais « crédit », « débit »,
 « solde fournisseur ».
 
