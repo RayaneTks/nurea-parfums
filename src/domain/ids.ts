@@ -28,10 +28,20 @@ export type AdminUserId = Brand<string, "AdminUserId">;
 
 /**
  * UUID v4 d'une création idempotente. `globalThis.crypto` et non `node:crypto` : le même code
- * tourne dans le formulaire (iOS Safari ≥ 15.4, contexte sécurisé) et sur le serveur.
+ * tourne dans le formulaire (iOS Safari ≥ 15.4) et sur le serveur.
+ *
+ * `randomUUID` n'existe qu'en contexte sécurisé (https, localhost). Hors de lui — l'iPhone qui
+ * ouvre le serveur de développement par l'adresse du PC en http —, le même UUID v4 se fabrique
+ * avec `getRandomValues`, disponible partout ; sinon toute sheet de saisie tombait en erreur.
  */
 export function newId(): string {
-  return globalThis.crypto.randomUUID();
+  const { crypto } = globalThis;
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6]! & 0x0f) | 0x40;
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
 // cuid v1 de Prisma (`@default(cuid())`, créations serveur et reprise) ou UUID en minuscules
