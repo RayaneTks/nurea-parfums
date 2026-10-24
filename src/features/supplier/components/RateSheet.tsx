@@ -50,18 +50,7 @@ export function RateSheet({ rate, remainingDzd, onClose, onSaved }: RateSheetPro
       }}
       title="Taux du carnet"
       description="Dinars pour 1 €. Sert seulement à lire les montants en euros."
-      footer={
-        <Button
-          variant="primary"
-          size="lg"
-          fullWidth
-          isLoading={save.pending}
-          disabled={typed === null}
-          onClick={() => void save.run({ rate: text })}
-        >
-          {typed === null ? "Saisir le taux" : "Enregistrer le taux"}
-        </Button>
-      }
+      size="auto"
     >
       <div className="flex flex-col gap-5" data-supplier-rate-sheet>
         <FormField
@@ -85,6 +74,17 @@ export function RateSheet({ rate, remainingDzd, onClose, onSaved }: RateSheetPro
             />
           )}
         </FormField>
+        {/* Sheet de saisie courte : le CTA dans le corps (règle de S20). */}
+        <Button
+          variant="primary"
+          size="lg"
+          fullWidth
+          isLoading={save.pending}
+          disabled={typed === null}
+          onClick={() => void save.run({ rate: text })}
+        >
+          {typed === null ? "Saisir le taux" : "Enregistrer le taux"}
+        </Button>
       </div>
     </Sheet>
   );
