@@ -10,6 +10,7 @@ import { composerDraft, storedDraft } from "./fixtures/composer";
 import { BATCHES } from "./fixtures/batches";
 import { DOCS, PASSING } from "./fixtures/documents";
 import { SEED, seedEntityId, seedPerfumeId } from "./fixtures/seed";
+import { SUPPLIER } from "./fixtures/supplier";
 
 /**
  * Inventaire des écrans et des sheets LIVRÉS, consommé par `layout-invariants.spec.ts` (07 J4 ;
@@ -326,6 +327,26 @@ export const SCREENS: ScreenCase[] = [
 
   // J15 — Réglages (06 E08) : les cinq sections, clavier ouvert sur le taux (07 J15, `test:layout` E08).
   { screen: "E08", route: "reglages", label: "réglages", url: routes.reglages(), shell: true, keyboardFields: ["Taux DZD par défaut"] },
+
+  // J17 — Fournisseur (E22, docs/admin/dettes-fournisseur.md) : carnet plein, et S22 adressable par `?ligne=`.
+  // Le carnet vide s'éprouve sur la base vide de PC-12 (`parcours/premiere-utilisation.spec.ts`).
+  { screen: "E22", route: "fournisseur", label: "carnet plein, Reste à payer dû", url: routes.fournisseur(), shell: true },
+  {
+    screen: "E22",
+    route: "fournisseur",
+    label: "S22 ouverte par ?ligne= sur une dette qui a coché un lot",
+    url: routes.fournisseur({ ligne: SUPPLIER.debtWithItems.id }),
+    shell: true,
+    waitFor: '[data-supplier-line="DEBT"]',
+  },
+  {
+    screen: "E22",
+    route: "fournisseur",
+    label: "S22 ouverte par ?ligne= sur un versement",
+    url: routes.fournisseur({ ligne: SUPPLIER.payment.id }),
+    shell: true,
+    waitFor: '[data-supplier-line="PAYMENT"]',
+  },
 ];
 
 export const SHEETS: SheetCase[] = [
@@ -588,6 +609,36 @@ export const SHEETS: SheetCase[] = [
     url: routes.lots(),
     open: { tap: /^Choisir le lot de /, layer: "drawer" },
     keyboardFields: ["Chercher ou nommer un lot"],
+  },
+
+  // J17 — Sheets du carnet fournisseur (E22) : clavier ouvert sur le montant, champ par champ.
+  {
+    sheet: "S23",
+    label: "Dette à la main",
+    url: routes.fournisseur(),
+    open: { tap: "Noter une dette", layer: "drawer" },
+    keyboardFields: ["Montant en dinars", "Nom", "Note"],
+  },
+  {
+    sheet: "S24",
+    label: "Versement pré-rempli avec le Reste à payer",
+    url: routes.fournisseur(),
+    open: { tap: "Noter un versement", layer: "drawer" },
+    keyboardFields: ["Montant en dinars", "Nom", "Note"],
+  },
+  {
+    sheet: "S26",
+    label: "Taux du carnet",
+    url: routes.fournisseur(),
+    open: { tap: /^Taux du carnet : /, layer: "drawer" },
+    keyboardFields: ["Taux"],
+  },
+  {
+    sheet: "S22 → S23",
+    label: "Modifier une dette depuis sa ligne",
+    url: routes.fournisseur({ ligne: SUPPLIER.debtManual.id }),
+    open: { tap: "Modifier", layer: "drawer" },
+    keyboardFields: ["Montant en dinars"],
   },
 ];
 

@@ -1,5 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
 import { seedBatches } from "./batches";
+import { seedSupplier } from "./supplier";
 import { seedCompta } from "./compta";
 import { seedDocuments } from "./documents";
 
@@ -185,4 +186,6 @@ export async function seedE2e(db: PrismaClient): Promise<void> {
     perfumeId,
     brandOf,
   });
+  // Carnet fournisseur (E22, S22) : deux dettes, dont une qui a coché le lot de mars, et un versement.
+  await seedSupplier(db, { batchId: SEED.batch.id });
 }
