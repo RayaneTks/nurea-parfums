@@ -13,6 +13,18 @@ describe("newId", () => {
   it("ne se répète pas", () => {
     expect(new Set(Array.from({ length: 100 }, newId)).size).toBe(100);
   });
+
+  it("hors contexte sécurisé (iPhone sur le serveur de dev en http), rend quand même un UUID v4", () => {
+    const real = globalThis.crypto.randomUUID;
+    Object.defineProperty(globalThis.crypto, "randomUUID", { value: undefined, configurable: true });
+    try {
+      const ids = Array.from({ length: 100 }, newId);
+      for (const id of ids) expect(DocumentId.parse(id)).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+      expect(new Set(ids).size).toBe(100);
+    } finally {
+      Object.defineProperty(globalThis.crypto, "randomUUID", { value: real, configurable: true });
+    }
+  });
 });
 
 describe("identifiants texte", () => {
