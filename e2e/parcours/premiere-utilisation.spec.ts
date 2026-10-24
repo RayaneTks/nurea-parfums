@@ -223,7 +223,7 @@ test("E22 : le carnet vide dit « Rien à payer » et oriente vers la première 
   test.setTimeout(2 * 60_000);
   await openShell(page, routes.fournisseur());
   await expect(page.locator('[data-supplier-header="settled"]')).toBeVisible({ timeout: 60_000 });
-  await expect(page.locator("[data-supplier-remaining]")).toHaveText("Rien à payer");
+  await expect(page.locator('[data-supplier-header="settled"]')).toContainText("Rien à payer");
   await expect(page.getByText("Le carnet est vide.", { exact: true })).toBeVisible();
   await expect(page.locator("[data-supplier-ledger]")).toHaveCount(0);
 

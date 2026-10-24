@@ -78,14 +78,14 @@ export function SupplierView({ ledger, entry }: SupplierViewProps) {
 
   return (
     <>
-      <Card padding={4} className="flex flex-col gap-4" data-supplier-header={headline.state}>
-        <div className="flex flex-col gap-1">
+      <Card padding={4} className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1" data-supplier-header={headline.state}>
           {headline.caption ? (
             <Text variant="micro" tone="subtle" className="uppercase">
               {headline.caption}
             </Text>
           ) : null}
-          <Text variant="display" className="tnum" data-supplier-remaining>
+          <Text variant="display" className="tnum">
             {headline.amount}
           </Text>
           {headline.state !== "settled" ? (
@@ -123,34 +123,36 @@ export function SupplierView({ ledger, entry }: SupplierViewProps) {
           }
         />
       ) : (
-        <Card padding={0} data-supplier-ledger>
-          {entries.map((row) => {
-            const amount = dzdFromDb(row.amountDzd);
-            return (
-              <ListRow
-                key={row.id}
-                onClick={() => url.set({ ligne: row.id }, { history: "push" })}
-                primary={entryTitle(row)}
-                secondary={
-                  <>
-                    {entryKindLabel(row.kind)} · <DateLabel date={row.occurredAt} />
-                  </>
-                }
-                trailing={
-                  <span className="flex flex-col items-end">
-                    <Text as="span" variant="bodyEm" tone={row.kind === "PAYMENT" ? "success" : "default"} className="tnum">
-                      {entryAmountText(row.kind, row.amountDzd)}
-                    </Text>
-                    <Text as="span" variant="caption" tone="muted" className="tnum">
-                      {eurReading(amount, rate)}
-                    </Text>
-                  </span>
-                }
-                chevron
-              />
-            );
-          })}
-        </Card>
+        <div data-supplier-ledger>
+          <Card padding={0}>
+            {entries.map((row) => {
+              const amount = dzdFromDb(row.amountDzd);
+              return (
+                <ListRow
+                  key={row.id}
+                  onClick={() => url.set({ ligne: row.id }, { history: "push" })}
+                  primary={entryTitle(row)}
+                  secondary={
+                    <>
+                      {entryKindLabel(row.kind)} · <DateLabel date={row.occurredAt} />
+                    </>
+                  }
+                  trailing={
+                    <span className="flex flex-col items-end">
+                      <Text as="span" variant="bodyEm" tone={row.kind === "PAYMENT" ? "success" : "default"} className="tnum">
+                        {entryAmountText(row.kind, row.amountDzd)}
+                      </Text>
+                      <Text as="span" variant="caption" tone="muted" className="tnum">
+                        {eurReading(amount, rate)}
+                      </Text>
+                    </span>
+                  }
+                  chevron
+                />
+              );
+            })}
+          </Card>
+        </div>
       )}
 
       {form ? <EntrySheet request={form} rate={rate} onClose={() => setForm(null)} nested={form.mode === "edit"} /> : null}
