@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { routes } from "../../src/app-shell/routes";
 import { withE2eDb } from "../helpers/db";
 import { expectToast } from "./support-j8";
-import { openFresh, openSheet } from "./support-j9";
+import { openFresh } from "./support-j9";
 
 /**
  * Carnet fournisseur, « Marquer remboursée » (docs/admin/dettes-fournisseur.md, décidé le 25/10/2026) :
@@ -34,7 +34,8 @@ test("marquer une dette remboursée, puis annuler le remboursement", async ({ pa
   const movements = await withE2eDb((db) => db.cashMovement.count());
   await openFresh(page, routes.fournisseur({ ligne: DEBT_ID }));
 
-  const sheet = openSheet(page);
+  // La sheet par son nom : après le rafraîchissement qui suit l'écriture, vaul la remonte.
+  const sheet = page.getByRole("dialog", { name: LABEL });
   await expect(sheet.locator('[data-supplier-line="DEBT"]')).toBeVisible();
   await sheet.getByRole("button", { name: "Marquer remboursée", exact: true }).click();
   await expectToast(page, "Dette marquée remboursée");
@@ -53,7 +54,7 @@ test("marquer une dette remboursée, puis annuler le remboursement", async ({ pa
 
   // Annuler le remboursement : le versement part au bout du filet, la dette redevient à payer.
   await page.goto(routes.fournisseur({ ligne: DEBT_ID }));
-  await openSheet(page).getByRole("button", { name: "Annuler le remboursement", exact: true }).click();
+  await page.getByRole("dialog", { name: LABEL }).getByRole("button", { name: "Annuler le remboursement", exact: true }).click();
   await expectToast(page, "Remboursement annulé");
   await expect.poll(settlementOf, { timeout: 15_000 }).toBeNull();
 });

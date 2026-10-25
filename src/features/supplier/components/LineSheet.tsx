@@ -96,9 +96,12 @@ export function LineSheet({ entry, rate, onClose, onEdit, onDelete, onUnsettle }
         </div>
 
         {settledBy ? (
-          <Text variant="bodyEm" tone="success" data-supplier-settled>
-            Remboursée le <DateLabel date={settledBy.occurredAt} format="long" />
-          </Text>
+          // Le marqueur de test sur une balise DOM : une brique de `src/ui` perd les `data-*`.
+          <div data-supplier-settled>
+            <Text variant="bodyEm" tone="success">
+              Remboursée le <DateLabel date={settledBy.occurredAt} format="long" />
+            </Text>
+          </div>
         ) : null}
 
         {settles ? (
