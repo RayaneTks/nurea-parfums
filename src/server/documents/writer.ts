@@ -101,7 +101,7 @@ function closedBatch(name: string, origin: DocumentOrigin, gesture: "attach" | "
   return new DomainError("CONFLICT", `Le lot « ${name} » est clos : rouvre-le pour ${verb} cette ${noun(origin)}.`);
 }
 
-/** « Sauvage 100 ml — 2 déjà livrés : le livré passera à 1. » (06 S01). */
+/** « Sauvage 80 ml — 2 déjà livrés : le livré passera à 1. » (06 S01). */
 function belowDeliveredReserve(name: string, volumeMl: number, delivered: number, quantity: number): string {
   const already = delivered > 1 ? `${delivered} déjà livrés` : `${delivered} déjà livré`;
   return `${name} ${volumeMl} ml — ${already} : le livré passera à ${quantity}.`;

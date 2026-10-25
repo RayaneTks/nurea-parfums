@@ -1897,3 +1897,34 @@ Compléments et arbitrages à intégrer dans `04-ARCHITECTURE.md` (écrit en par
 ---
 
 *Fin du document 06. `04-ARCHITECTURE.md` intègre les compléments du §8.1 (route du journal, présentation en sheet, mémoire d'onglet, actions composées) ; `07-PLAN-EXECUTION.md` ordonne la construction écran par écran et reprend les objectifs chronométrés du §2 comme critères d'acceptation.*
+
+## Amendements reportés le 25/10/2026
+
+Repris de l'ancien `_amendements-en-attente.md` (septembre 2026), tels qu'écrits alors. Là où ils
+diffèrent du corps de ce document, **ils priment** ; le code fait foi en dernier ressort.
+
+### Depuis J11 écrans (catalogue) — 17/09/2026
+
+- **06 E16 actions secondaires** — « Dupliquer » est un bouton visible à côté de « Modifier » (pas de menu « ⋯ » : aucune brique de menu, et un tap de moins).
+- **06 E16 zone 4** — « Aucun tarif mémorisé » sans lien « Modifier » (second chemin vers le même écran, 05 §5.3).
+- **06 E16 zone 1** — visuel principal (sombre) + mention « Variante claire enregistrée » si une variante claire existe ; pas de bascule clair/sombre (admin light only).
+- **06 E15 zones 2–3** — l'en-tête épinglé porte titre, onglets et recherche ; les chips à compteur et « + Parfum » / « + Marque » sont en tête de liste sous « N parfums » ; catalogue vide ⇒ le bouton disparaît, l'état vide porte l'action.
+- **06 §1.2, paramètres E15** — ajouter `gamme=complete` (chip « Gammes complètes »).
+- **06 §1.5 (note J4)** — le retour traite un paramètre absent comme sa valeur par défaut (catalogue `tab=parfums`, commandes `vue=a-livrer`, compta `vue=ventes`/`periode=mois`, vendre `mode=vente`) ; « Catalogue » depuis une fiche parfum restaure `/admin/catalogue?q=…&stock=…` et son défilement (F-4.5-08).
+- **06 S20 ; 05 §3.1 `Sheet`** — règle : **une sheet de saisie courte met son bouton dans le corps, pas en pied** (avec un pied, 320 px clavier ouvert laissait 59 px de contenu). S01 et S02 (J8) échouent au même contrôle (24–72 px) : à corriger selon cette règle.
+- **06 S05 mode marques** — « Créer la marque « X » » ouvre une étape « Utiliser cette marque » (un tap de plus) ; la marque est créée avec le parfum. Notice de sheet : « {Marque} est déjà au catalogue : touche-la pour la choisir, aucune marque en double ne sera créée. » ; notice du formulaire : « Rattaché à Louis Vuitton, déjà au catalogue. »
+- **06 E17 zone 2** — notice « Louis Vuitton existe déjà. Ouvrir » ; en création, le bouton devient « Ouvrir Louis Vuitton ». L'interrupteur « Visible » est un champ du formulaire enregistré par « Enregistrer » (pas une écriture immédiate).
+- **06 E16 zone 7** — la visionneuse a aussi « Avant / Après » (ordre) et l'édition du libellé. Messages de dépôt : « 2 visuels ajoutés », « Aucun visuel ajouté · 1 refusé : format illisible ».
+- **06 E19 et S18** — la suppression ajoute « Tu pourras annuler pendant 5 secondes. » ; « Masquer plutôt » seulement si le parfum est visible ; « Abandonner la saisie ? » par interception des liens dans la feature (à terme : garde de navigation du shell, 04).
+- **06 E15 zone 5** — un 3ᵉ « En avant » est refusé sur l'appareil avec le message du domaine, avant tout appel serveur.
+- **06 E16 zone 5** — nom accessible de la rangée de stock : « Ajuster le stock ».
+
+### Depuis J8 (Commandes, fiche document) — 17/09/2026
+
+- **06 §1.2, E10** — paramètre `pages` (« Afficher plus », +50 par page) ; omis quand il vaut 1, plafonné à 40.
+- **06 S01** — la fiche garde son pied (CTA) ; pendant la frappe dans un champ de la fiche, pied et description s'effacent, et reviennent quand le champ perd le focus (en édition, fermer le clavier avant « Enregistrer les modifications »).
+- **06 « sheets `size: full`, CTA en pied »** — S02, S03, S04, S09 ont le CTA dans le corps, en `size: auto` (règle « sheet de saisie courte ») ; pour S02, le CTA vient après Montant, Poche et « Donné en espèces », avant « Plus d'options ».
+- **06 §1.5 règle 1** — « retaper l'onglet actif ferme la sheet » est impossible au doigt quand la fiche pleine hauteur recouvre la barre : la règle vaut pour les sheets qui laissent la barre visible.
+- **06 E10 état vide de départ** — une ligne calme (le bouton « Nouvelle commande » est déjà dans l'en-tête, 05 §5.3).
+- **06 S17** — un résultat client ouvre E13 filtré (`?q=`) s'il doit de l'argent, E14 dès J10 ; actions sur résultats : J15 ; S05 « hors catalogue » et « Refaire » : J9.
+- **06 S18** — annulation d'un paiement : « Elle reste confirmée/livrée : X resteront à encaisser. »

@@ -1415,3 +1415,47 @@ Chaque capacité de 01 §3 (**§3.11 compris** : écart du 17/09/2026, lignes NR
 ---
 
 *Fin du document 07. La série se poursuit par `08-RECETTE.md`, qui n'est pas un document de conception mais l'épreuve : les 141 capacités de 01 §3, où chacune vit et comment on sait qu'elle marche. L'exécution commence par J0 ; elle se termine quand les deux seuils de §6.1 sont franchis.*
+
+## Amendements reportés le 25/10/2026
+
+Repris de l'ancien `_amendements-en-attente.md` (septembre 2026), tels qu'écrits alors. Là où ils
+diffèrent du corps de ce document, **ils priment** ; le code fait foi en dernier ressort.
+
+### Depuis J7 (chiffres) — 17/09/2026
+
+- **07 J7 et J8** — la requête de première page des commandes n'existe pas encore : `perf.test.ts` mesure une forme représentative ; à J8, « perf.test.ts importe la requête de `documents/queries.ts` ».
+
+### Depuis J11 écrans (catalogue) — 17/09/2026
+
+- **Code** — `src/server/catalogue/writer.ts` (`unreferencedObjectUrls`) lit encore `PerfumeMedia` en SQL brut : passer au client Prisma.
+- **e2e vitrine** — `e2e/catalog-filters.spec.ts` attend encore le lien WhatsApp retiré par `f84b6ed` : mettre le test à jour (Snapchat seul canal).
+   **Sans objet** : ce test n'existe plus (vitrine refondue le 22/10/2026).
+
+### Depuis J8 (Commandes, fiche document) — 17/09/2026
+
+- **07 J8 / 06 E13** — E13 (À encaisser) est livré en J8.
+- **07 J7→J8** — `perf.test.ts` importe désormais la vraie requête `ordersListSql` (première page 1,81 ms sur ×10).
+
+### Depuis J14 (Accueil, Récap du jour, Statistiques) — 18/09/2026
+
+- **07 J13 (Lots)** — quand E05/E06 passent en « livrée », le bloc « Lots ouverts » de E01 apparaît tout seul
+   (`isNavigable`, amendement J14-4) : vérifier au passage que la rangée mène bien à E06 et que « Marge nette du
+   lot » se lit à 0 tap (critère PC-08 de J14, aujourd'hui non vérifiable).
+- **07 J15 (Réglages)** — même chose pour la rangée « Réglages » de E01 quand E08 arrive.
+- **07 J15** — J15 est allégé de trois éléments livrés à J14 (carte « Nouveautés », récap du jour, carte « Pour
+   commencer ») : sa charge restante est plus faible qu'annoncé.
+   **Note** : la carte « Nouveautés » a été retirée le 25/10/2026.
+
+### Polissage UX observé sur captures (J16)
+
+- **S01 fiche document** : « Modifier » est seul sur sa ligne sous « Articles · Livré 1/3 » ; l'aligner à droite du titre de section (même ligne).
+- **E16 fiche parfum** : le `StickyAction` « Vendre » laisse une bande vide entre lui et la barre d'onglets en fin de défilement ; il doit se poser juste au-dessus de la barre.
+- **En-têtes** : deux affordances de recherche coexistent sur E10 (loupe globale « Rechercher » + champ de filtre de liste) — vérifier au test utilisateur que la différence est évidente ; sinon libeller le champ de liste « Filtrer ».
+
+### Code (petits restes hors périmètre des agents)
+
+- Exemples « 100 ml » périmés : commentaire `src/server/documents/writer.ts` (~l.102), commentaire `src/ui/primitives/Stepper.tsx` (~l.13), attente du test `src/lib/__tests__/share.test.ts:24` (vérifier si c'est un texte vitrine légitime avant de changer).
+   **Fait le 25/10/2026** (80 ml) ; `share.test.ts` n'existe plus.
+- `src/contracts/catalogue.ts` : commentaire de `PerfumeSheet.activity` à préciser « unités ».
+- CI : ajouter le job `layout` à `.github/workflows/refonte.yml`.
+   **Fait** : job `test:layout` présent dans `.github/workflows/refonte.yml`.

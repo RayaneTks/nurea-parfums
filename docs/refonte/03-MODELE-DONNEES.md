@@ -1472,3 +1472,13 @@ Aligné sur 02 §4.8. « Déplacé » signifie que la donnée survit ailleurs, s
 ---
 
 *Fin du document 03. Le document suivant, `04-ARCHITECTURE.md`, place les modules d'écriture du §4.2, les transactions du §4.3 et les fonctions de calcul du §5 dans l'arborescence et les couches de l'application ; `07-PLAN-EXECUTION.md` ordonnance la bascule du §7.3 en jalons vérifiables.*
+
+## Amendements reportés le 25/10/2026
+
+Repris de l'ancien `_amendements-en-attente.md` (septembre 2026), tels qu'écrits alors. Là où ils
+diffèrent du corps de ce document, **ils priment** ; le code fait foi en dernier ressort.
+
+### Depuis J7 (chiffres) — 17/09/2026
+
+- **03 §5.5** — ordre des poches : `isSystem, sortOrder, name, id` (« Non attribué » en dernier).
+- **03 §5.8** — clé de regroupement des créances : `fiche:<customerId>`, sinon `nom:` + lower(btrim(nom saisi)) (ignore casse et espaces autour, pas les accents) ; `ageDays` et `isOld` calculés en SQL.

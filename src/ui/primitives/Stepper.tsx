@@ -10,7 +10,7 @@ type StepperProps = {
   min?: number;
   max?: number;
   step?: number;
-  /** « Quantité de Sauvage 100 ml ». */
+  /** « Quantité de Sauvage 80 ml ». */
   ariaLabel: string;
   /**
    * Remplace le « − » quand la valeur est au minimum (« Retirer » sur une ligne

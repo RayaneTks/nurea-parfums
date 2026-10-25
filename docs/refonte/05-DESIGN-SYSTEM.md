@@ -452,3 +452,27 @@ L'essentiel est **conservé** (palette, typo, grille, shell, tab bar, sheets vau
 ---
 
 *Fin du document 05. Le document suivant (`06-ECRANS-PARCOURS.md`) compose ces briques écran par écran : architecture d'information, navigation, états (vide/chargement/erreur) et gestes de chaque écran, en respectant les objectifs de vitesse de `02-VISION-PRODUIT.md` §2.*
+
+## Amendements reportés le 25/10/2026
+
+Repris de l'ancien `_amendements-en-attente.md` (septembre 2026), tels qu'écrits alors. Là où ils
+diffèrent du corps de ce document, **ils priment** ; le code fait foi en dernier ressort.
+
+### Depuis J11 écrans (catalogue) — 17/09/2026
+
+- **05 §3.1 Input** — clavier ouvert, un champ focalisé est centré dans la partie visible de l'écran (et non l'écran entier).
+- **05 §2.1** — nouveau jeton `--admin-viewer-backdrop: rgba(10, 8, 9, 0.94)`.
+
+### Depuis J8 (Commandes, fiche document) — 17/09/2026
+
+- **05 §3.1 `SearchField`** — intégrer au composant le recentrage du champ au focus (aujourd'hui fait par les écrans via `onFocus={scrollFieldIntoView}`).
+- **05 §4.2 `SwipeableRow`** — corrigé : le clic qui suit un glissement ne referme plus la rangée ouverte.
+
+### Depuis J14 (Accueil, Récap du jour, Statistiques) — 18/09/2026
+
+- **05 §3.2 `KpiTile`** — la tuile `value` (compteur) sert le pipeline de E01 (« En attente 2 ») : elle n'a pas
+   de variante « compteur seul sans montant » documentée, on emploie `value` avec un nombre. Rien à changer, à
+   noter dans l'inventaire.
+- **Règle de code à inscrire dans 05** — un attribut `data-*` posé sur une brique de `src/ui` est
+   **silencieusement perdu** (les props sont typées et fermées, et TypeScript ne contrôle pas un attribut JSX à
+   trait d'union) : tout marqueur de test se pose sur une balise DOM enveloppante. Deux heures perdues à J14.

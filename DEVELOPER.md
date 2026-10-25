@@ -92,7 +92,10 @@ Détail : [`docs/catalog-database.md`](docs/catalog-database.md) et
 ## Carnet fournisseur
 
 - Voir [`docs/admin/dettes-fournisseur.md`](docs/admin/dettes-fournisseur.md) : règles, tables,
-  actions, écrans à venir.
+  actions, écrans (en ligne depuis le 25/10/2026).
+- « Marquer remboursée » (`settleSupplierDebtAction`) : un versement lié à la dette par
+  `SupplierEntry.settlesEntryId` (migration `20261025090000_supplier_settlement`), même montant,
+  supprimé avec elle. Parcours : `e2e/parcours/fournisseur-rembourser.spec.ts` (projet des réglages).
 - Le carnet ne touche jamais l'argent de la gestion : ne pas le brancher sur `CashMovement`, une
   poche ou `src/server/chiffres`. `tests/db/supplier.test.ts` vérifie qu'aucun mouvement n'est écrit.
 - Montants en dinars ; l'euro se calcule à l'affichage (`dzdToEur`) au taux du carnet, jamais figé.

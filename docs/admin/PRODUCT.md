@@ -82,11 +82,11 @@ page hors inventaire.
 | E21 Nouveau lot | `/admin/lots/nouveau` | Nom, date prévue, notes. |
 | E07 Statistiques | `/admin/statistiques?periode=&pages=` | Classement des parfums en unités, « Hors catalogue » signalé. |
 | E08 Réglages | `/admin/reglages` | Poche par défaut, taux DZD par défaut, ordre des poches (S21), version, déconnexion. |
-| E22 Fournisseur | `/admin/fournisseur?ligne=&selection=1` | **Livré sur la branche le 24/10/2026** (carnet, S22 à S26 dont le sélecteur S25 qui additionne le coût en DA des commandes, ventes et lots cochés, rangée de l'Accueil ; pas encore sur `main`). Carnet des dettes et versements au fournisseur, en dinars ; Reste à payer ; taux modifiable. Hors compta et hors Trésorerie : `docs/admin/dettes-fournisseur.md`. |
+| E22 Fournisseur | `/admin/fournisseur?ligne=&selection=1` | **En ligne depuis le 25/10/2026** (carnet, S22 à S26 dont le sélecteur S25 qui additionne le coût en DA des commandes, ventes et lots cochés, rangée de l'Accueil). Carnet des dettes et versements au fournisseur, en dinars ; Reste à payer ; taux modifiable ; une dette se « Marque remboursée » d'un geste. Hors compta et hors Trésorerie : `docs/admin/dettes-fournisseur.md`. |
 | E10 Commandes | `/admin/commandes?vue=&filtre=&q=&pages=` | Segments À livrer / Livrées / Annulées ; recherche étendue. |
 | E11 Vendre | `/admin/vendre?mode=&client=&parfum=&depuis=` | Composeur : lignes, client, « Reçu maintenant », poche, carte de confirmation. |
 | E12 Clients | `/admin/clients?q=&pages=` | Liste sectionnée A–Z, badge du dû, « Afficher plus ». |
-| E13 À encaisser | `/admin/encaisser?anciennete=30&q=` | Créances groupées par client, plus anciennes d'abord, chip « Plus de 30 jours ». |
+| E13 À encaisser | `/admin/encaisser?anciennete=30&q=` | Créances groupées par client, plus anciennes d'abord, chip « Plus de 30 jours ». Un nom tapé sans fiche, homonyme d'un autre groupe, est dit « sans fiche client ». |
 | E14 Fiche client | `/admin/clients/[id]?pages=` | Dû, historique, Appeler / WhatsApp / Snap, relance. |
 | E20 Formulaire client | `/admin/clients/nouveau`, `/admin/clients/[id]/modifier` | Téléphone normalisé, doublon nommé avant l'envoi. |
 | E15 Catalogue | `/admin/catalogue?tab=&q=&stock=&visibilite=&gamme=complete` | Parfums / Marques / En avant ; le filtre Marques cible les marques avec visuel de collection. |
@@ -172,9 +172,16 @@ ici : deux listes divergent toujours.
   fournisseur et ce qu'il lui a versé, en dinars, un seul compte. **Reste à payer** =
   dettes − versements, dérivé, négatif = avance. Ce n'est pas un chiffre de la compta :
   il n'écrit rien dans la Trésorerie ; le « Paiement fournisseur » de la Trésorerie reste
-  un geste séparé.
-- **Pas de rôle, pas de journal d'audit** : un seul opérateur (02 §7). Une garde de
-  session unique, invisible.
+  un geste séparé. « Marquer remboursée » sur une dette note un versement du même montant,
+  lié à elle (25/10/2026).
+- **Pas de rôle, pas de journal d'audit** : un seul compte, partagé par le gérant et son
+  associé (gérant, 25/10/2026 : aucune fonction retirée ni masquée à l'un d'eux). Une garde
+  de session unique, invisible.
+- **Critère central depuis le 25/10/2026** : l'associé, pas du tout technique, doit tout
+  comprendre seul, sans mode d'emploi. On rend intuitif, on ne simplifie pas en retirant.
+  Mots de l'écran : « vente », « commande », « ventes et commandes » — jamais « document »
+  (`tests/architecture/vocabulaire.test.ts`). Catalogue : l'œil barré ne marque que ce qui
+  est masqué.
 
 ## Rattacher une vente passée au catalogue
 

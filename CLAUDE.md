@@ -236,8 +236,14 @@ Toute écriture passe par une **server action** de `src/server/*/actions.ts`
 versements au fournisseur, en dinars, un seul compte ; **Reste à payer** = Σ dettes − Σ versements,
 dérivé (`src/domain/supplier-debt.ts`). Tables `SupplierEntry` et `SupplierEntryItem`, seul écrivain
 `src/server/supplier/writer.ts` ; taux du carnet `Setting.supplierExchangeRate`, distinct du taux de
-vente. **Indépendant de l'argent** : aucun `CashMovement`, aucune poche, aucun chiffre ne le lit. Base
-et serveur posés ; l'écran E22 `/admin/fournisseur` reste à construire (phases 3 et 4).
+vente. **Indépendant de l'argent** : aucun `CashMovement`, aucune poche, aucun chiffre ne le lit. En ligne
+depuis le 25/10/2026 (E22 `/admin/fournisseur`). « Marquer remboursée » (25/10) : un versement du
+montant de la dette, lié à elle (`settlesEntryId`), supprimé avec elle.
+
+**Gestion : critère central (gérant, 25/10/2026)** — un seul compte partagé par le gérant et son
+associé, pas technique : tout doit se comprendre sans aide. Rendre intuitif, jamais retirer ni
+masquer une fonction. Plan et état : mémoire `audit-gestion-2026-10-25`. À l'écran, jamais
+« document » : « vente », « commande », « ventes et commandes » (test de vocabulaire).
 
 La base privée de recherche parfum est un staging interne : l'import JSON et la décision de validation
 passent par des server actions authentifiées. La route GET renvoie les fiches `VERIFIED` par défaut;

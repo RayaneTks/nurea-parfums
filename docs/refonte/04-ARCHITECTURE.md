@@ -1649,3 +1649,37 @@ Au jalon qui les rend vraies (07) : `CLAUDE.md` et `AGENTS.md` (domaines `src/fe
 ---
 
 *Fin du document 04. Le document suivant, `06-ECRANS-PARCOURS.md`, compose les écrans sur ce socle — pages, blocs, sheets et gestes — en respectant les adresses, la pile d'écriture et les règles d'état de ce document ; `07-PLAN-EXECUTION.md` construit d'abord le socle vérifié mécaniquement, puis les écrans, puis la bascule de 03 §7.*
+
+## Amendements reportés le 25/10/2026
+
+Repris de l'ancien `_amendements-en-attente.md` (septembre 2026), tels qu'écrits alors. Là où ils
+diffèrent du corps de ce document, **ils priment** ; le code fait foi en dernier ressort.
+
+### Depuis J7 (chiffres) — 17/09/2026
+
+- **04 §6.2, API** — arguments simples (pas d'objet), pour la clé de cache de §8.4 : `encaisse(periode = "all", batchId = null, customerId = null)`, `aEncaisser(batchId, customerId)`, `margeNette(periode, batchId)`, `documentBalance(...ids)`. La période voyage comme une clé texte (`src/contracts/chiffres.ts`) : `all`, `month`, `month@AAAA-MM-JJ`, `month-1`, `<instant ISO>/<instant ISO>` ; `periodFromParams({ periode, ref })` lit l'URL.
+- **04 §6.2 et §6.6 ; 06 E03 zone 3** — `encaisseParSemaine(8)` devient `encaisseSerie(periode)` : par jour pour une semaine (et un jour), par semaine pour un mois, par mois pour une année et pour Tout ; chaque point est coupé aux bornes de la période et la somme des points égale l'Encaissé ; Tout va du mois du premier paiement au mois courant ; un intervalle libre est refusé.
+- **04 §6.2, ajouts** — `encaisseParPoche(periode)` (E02) ; `coutACompleter(periode, batchId)` (compteur E01, filtre E03, S19) ; `documentsDeLaPeriode(periode)` (E03 zone 5, A-7) ; `margeNette` rend aussi `encaisse` et `unknownCostCount` (S19) ; `tresorerie(fraicheur: "cache" | "instant")` (« instant » pour les formulaires, 04 §10.4) ; `chiffresParLot(periode = "all")` rend `{ batchId, encaisse, aEncaisser, margeNette }` (sans compteur de documents, laissé à J13) ; `aEncaisserParClient()` ne couvre que les fiches liées.
+- **04 §6.3** — chiffres de `tableauDeBord()` en une requête ; alertes de stock lues en parallèle depuis `catalogue.stockAlerts()` sous leur propre cache ; le composite rend aussi `stock` et `month` (bornes du mois compté). ~~**À trancher en J14**~~ : **tranché à J14 et reporté dans 04 §6.3 et §6.6** — l'**Encaissé du jour** entre dans le composite (c'est un chiffre : amendement J14-2 de 07) ; les **comptes** du bloc « Aujourd'hui » (ventes, commandes prises, à livrer aujourd'hui/demain) n'y entrent pas et vivent dans `src/server/stats/accueilComptes()` (J14-3), qui emploie les mêmes expressions de bornes que les filtres `aujourdhui`/`demain` de la liste Commandes.
+- **04 §6.5** — « maintenant » = horloge du serveur passée au SQL, qui calcule les bornes en Europe/Paris ; la clé de cache du jour et les bornes SQL partagent une seule horloge.
+- **04 §6.2 ; 06 E01 zone 6** — compteurs « en attente / confirmées » = `origin = 'ORDER'` seulement (comme E10) ; `enRetard` ne filtre pas l'origine (03 §5.6).
+- **04 §17.3 ; 07 §2.5** — `--chiffres` fonctionne sans `--conditions=react-server` (le script neutralise `server-only`) ; `--rapport <rapport.json>` sort en 1 si C1, C3, C4 ou le non attribué diffèrent ; n'affiche que des agrégats.
+- **04 §15** — le volume de `perf.test` vaut 10 × le réel, plus 30 dépenses (la copie réelle n'en a aucune).
+- **04 §6.6** — la note « `activePockets` répète le SQL de solde (pour J7) » est résolue : `activePockets` lit `tresorerie("instant")`.
+
+### Depuis J11 écrans (catalogue) — 17/09/2026
+
+- **04 §12 ; 07 J11 `image-convert` ; CLAUDE.md « WebP obligatoire »** — iOS Safari ne sait pas encoder le WebP. **Décision (17/09/2026) : conversion WebP côté serveur** (`sharp`) : le téléphone envoie l'original sur un chemin temporaire signé par le serveur, une action serveur le convertit en WebP (logo : sans recadrage ; parfum : portrait ; story : plafonné à 1920 px sans recadrage), écrit le chemin définitif, puis supprime le temporaire. **À implémenter** (le repli PNG/JPEG actuel de `image-convert.ts` est provisoire).
+   **Fait** : conversion serveur en place (`src/server/catalogue/webp.ts`).
+- **04 §7.3 `storage-orphans`** — compte `SaleLine.imageUrl`, ignore les objets de moins de 24 h (`--min-age-hours`), refuse base et bucket de projets différents, exige `--confirm-storage-host` pour la production ; ajouter le script npm `"storage:orphans": "tsx scripts/storage-orphans.ts"`.
+- **04 §16.4** — le global-setup e2e purge le cache de données de Next ; les identifiants du jeu e2e ont la forme cuid ; stockage simulé par un faux serveur Supabase local (`e2e/support/fake-storage-server.ts`, loopback uniquement).
+
+### Depuis J8 (Commandes, fiche document) — 17/09/2026
+
+- **04 §2.1 / §6** — lectures ajoutées : `documentSheet`, `ordersList`, `recentlySold`, `openBatches`, `searchAdmin` ; domaine : `formatPhoneNational`, `phoneSearchDigits`.
+- **04 §16.4** — harnais e2e : préchauffage de `/api/admin/search` et `/api/admin/picker` ; cas de sheets par suite de taps ; `PLAYWRIGHT_PORT`, `E2E_STORAGE_PORT`, `E2E_DATABASE_URL` pour isoler deux suites en parallèle.
+
+### Code (petits restes hors périmètre des agents)
+
+- 04 §9 : `UNAVAILABLE` pour une panne du stockage (aujourd'hui `UNEXPECTED`).
+   **À vérifier** : `UNAVAILABLE` existe (`src/server/core/errors.ts`) pour les erreurs réessayables.
