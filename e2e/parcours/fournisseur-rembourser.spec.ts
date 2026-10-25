@@ -13,7 +13,7 @@ import { openFresh, openSheet } from "./support-j9";
  * (`playwright.config.ts`), sur une dette qu'il crée et efface lui-même.
  */
 
-const DEBT_ID = "ce2edetterembourser00000";
+const DEBT_ID = "ce2edetterembourser000000";
 const LABEL = "Dette à rembourser";
 
 const settlementOf = () =>

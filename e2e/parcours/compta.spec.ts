@@ -92,9 +92,9 @@ test("S19 : Encaissé − coûts − dépenses = Marge nette affichée ; le lien
   expect(await line("marge")).toBe(formatEur(eur.sub(eur.sub(encaisse, costs), expenses)));
   expect(await line("marge")).toBe(shown(canonical.margeNette.value));
 
-  // « n documents au coût à compléter, comptés 0 € » ouvre EXACTEMENT cet ensemble, période gardée.
+  // « n ventes ou commandes au coût à compléter, comptées 0 € » ouvre EXACTEMENT cet ensemble, période gardée.
   expect(canonical.coutACompleter.count).toBeGreaterThan(0);
-  await expect(sheet.locator("[data-unknown-cost]")).toContainText(`${canonical.coutACompleter.count} document`);
+  await expect(sheet.locator("[data-unknown-cost]")).toContainText(`${canonical.coutACompleter.count} vente`);
   await sheet.locator("[data-unknown-cost]").tap();
   await expect(page).toHaveURL(new RegExp(`filtre=cout-a-completer`));
   await expect(page).toHaveURL(new RegExp(`ref=${MONTH_REF}`));
