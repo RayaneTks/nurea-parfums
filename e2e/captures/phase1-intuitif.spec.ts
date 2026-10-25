@@ -43,6 +43,7 @@ test("captures de la phase 1", async ({ page }) => {
   );
   await shot(page, routes.fournisseur({ ligne: SUPPLIER.settlement.id }), "05-remboursement.png");
   await shot(page, routes.catalogue(), "06-catalogue.png");
+  await shot(page, routes.catalogue({ visibilite: "masques" }), "06b-catalogue-masques.png");
   await shot(page, routes.encaisser(), "07-a-encaisser.png");
   await shot(page, routes.client(fares), "08-fiche-client.png");
   await shot(page, routes.lot(SEED.batch.id), "09-lot.png");

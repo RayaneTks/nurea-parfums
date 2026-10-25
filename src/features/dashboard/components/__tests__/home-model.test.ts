@@ -65,7 +65,7 @@ describe("« À faire » : rien à faire ⇒ rien rendu (05 §5.3)", () => {
       ["retard", "3 commandes en retard"],
       ["non-attribue", `${euros("120.00", true)} non attribués`],
       ["a-relancer", "2 clients à relancer · plus de 30 j"],
-      ["cout-a-completer", "1 vente ou commande au coût à compléter"],
+      ["cout-a-completer", "1 coût d'achat à compléter"],
       ["rupture", "1 parfum en rupture"],
       ["stock-bas", "3 parfums en stock bas"],
     ]);

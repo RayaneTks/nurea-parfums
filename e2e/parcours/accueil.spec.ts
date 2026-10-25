@@ -77,7 +77,7 @@ test("E01 : chaque rangée de « À faire » ouvre exactement l'ensemble qu'elle
     return p.locator("[data-receivable-group]").count();
   });
 
-  // « n documents au coût à compléter » → Compta période « Tout » + filtre.
+  // « n coûts d'achat à compléter » → Compta période « Tout » + filtre.
   await openAndCount("cout-a-completer", async (p) => {
     await expect(p.getByRole("heading", { level: 1, name: "Compta" })).toBeVisible();
     await expect(p.locator("[data-period-documents]")).toBeVisible();

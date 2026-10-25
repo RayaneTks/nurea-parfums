@@ -57,7 +57,7 @@ export function alertRows(figures: DashboardFiguresDTO): AlertRow[] {
     add("a-relancer", `${plural(figures.clientsARelancer, "client")} à relancer · plus de ${OLD_RECEIVABLE_DAYS} j`, figures.clientsARelancer);
   }
   if (figures.coutACompleter > 0) {
-    add("cout-a-completer", `${plural(figures.coutACompleter, "vente ou commande", "ventes ou commandes")} au coût à compléter`, figures.coutACompleter);
+    add("cout-a-completer", `${plural(figures.coutACompleter, "coût d'achat", "coûts d'achat")} à compléter`, figures.coutACompleter);
   }
   if (figures.stock.out.count > 0) add("rupture", `${plural(figures.stock.out.count, "parfum")} en rupture`, figures.stock.out.count);
   if (figures.stock.low.count > 0) add("stock-bas", `${plural(figures.stock.low.count, "parfum")} en stock bas`, figures.stock.low.count);

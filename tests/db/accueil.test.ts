@@ -147,7 +147,7 @@ describe("E01 — chaque alerte ouvre exactement l'ensemble qu'elle compte (05 �
     expect(figures.clientsARelancer).toBe(groupes.size);
     expect(figures.clientsARelancer).toBe(2);
 
-    // « n documents au coût à compléter » → Compta « Tout » + filtre : exactement `coutACompleter("all")`.
+    // « n coûts d'achat à compléter » → Compta « Tout » + filtre : exactement `coutACompleter("all")`.
     const coutACompleter = await server.chiffres.coutACompleter("all");
     expect(figures.coutACompleter).toBe(coutACompleter.count);
     const filtres = await server.documentsQueries.comptaDocuments("all", "", "cout-a-completer");
