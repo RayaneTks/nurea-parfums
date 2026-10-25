@@ -1,6 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 import { routes } from "../../src/app-shell/routes";
-import { NEWS_SEEN_KEY } from "../../src/contracts/stats";
 import { waitForHydration } from "../helpers/hydration";
 
 /**
@@ -31,11 +30,6 @@ async function pretendIosSafari(page: Page): Promise<void> {
     Object.defineProperty(navigator, "userAgent", { get: () => ua });
     Object.defineProperty(navigator, "standalone", { get: () => false, configurable: true });
   }, IPHONE_UA);
-}
-
-/** La carte « Nouveautés » a sa propre mesure ; on la ferme pour voir celle qui nous intéresse. */
-async function newsSeen(page: Page): Promise<void> {
-  await page.addInitScript((key) => localStorage.setItem(key, "1"), NEWS_SEEN_KEY);
 }
 
 /** L'invite que Chrome émet quand l'app est installable ; le navigateur de test ne l'émet jamais seul. */
@@ -101,7 +95,6 @@ test.describe("service worker et page hors ligne", () => {
 test.describe("carte d'installation dans le flux de l'Accueil (06 E01 zone 2)", () => {
   test("Safari iOS : la consigne de partage, et rien d'autre", async ({ page }) => {
     await pretendIosSafari(page);
-    await newsSeen(page);
     await page.goto(routes.accueil());
     await waitForHydration(page.locator("[data-tabbar] a").first());
 
@@ -115,7 +108,6 @@ test.describe("carte d'installation dans le flux de l'Accueil (06 E01 zone 2)", 
   });
 
   test("ailleurs : le bouton « Installer », posé par beforeinstallprompt", async ({ page }) => {
-    await newsSeen(page);
     await page.goto(routes.accueil());
     await waitForHydration(page.locator("[data-tabbar] a").first());
     // Sans invite du navigateur et sans Safari iOS, aucune carte : on ne propose pas une installation
@@ -129,7 +121,6 @@ test.describe("carte d'installation dans le flux de l'Accueil (06 E01 zone 2)", 
 
   test("« Ne plus proposer » ferme la carte pour de bon sur cet appareil", async ({ page }) => {
     await pretendIosSafari(page);
-    await newsSeen(page);
     await page.goto(routes.accueil());
     await waitForHydration(page.locator("[data-tabbar] a").first());
     await expect(installCard(page)).toBeVisible();

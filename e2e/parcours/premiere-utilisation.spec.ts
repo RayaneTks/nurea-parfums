@@ -1,6 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 import { routes } from "../../src/app-shell/routes";
-import { NEWS_SEEN_KEY } from "../../src/contracts/stats";
 import { withE2eDb } from "../helpers/db";
 import { waitForHydration } from "../helpers/hydration";
 import { collectHydrationViolations, collectLayoutViolations } from "../helpers/layoutInvariants";
@@ -59,14 +58,6 @@ async function retourAccueil(page: Page): Promise<void> {
     await expect(page.getByRole("heading", { level: 1, name: "Accueil" })).toBeVisible({ timeout: 5_000 });
   }).toPass({ timeout: 60_000 });
 }
-
-/**
- * Le témoin de la carte « Nouveautés » : elle passe AVANT « Pour commencer » (06 E01 zone 2, une seule
- * carte à la fois). Sans ce témoin, le vide de départ ne s'affiche jamais.
- */
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript((key) => localStorage.setItem(key, "1"), NEWS_SEEN_KEY);
-});
 
 // Dans l'ordre du fichier, sans arrêt au premier échec : le test du carnet vide lit la base AVANT la vente de PC-12.
 test.describe.configure({ mode: "default" });

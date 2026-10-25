@@ -1,7 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { routes } from "../../src/app-shell/routes";
 import { DISCRET_COOKIE } from "../../src/contracts/discretion";
-import { NEWS_SEEN_KEY } from "../../src/contracts/stats";
 import { waitForHydration } from "../helpers/hydration";
 import { BASE_URL } from "../support/env";
 import { openShell } from "./support-j8";
@@ -29,10 +28,6 @@ async function flouCalcule(page: Page): Promise<string> {
     .first()
     .evaluate((el) => getComputedStyle(el).filter);
 }
-
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript((key) => localStorage.setItem(key, "1"), NEWS_SEEN_KEY);
-});
 
 test("sans le témoin, rien n'est brouillé", async ({ page }) => {
   await openShell(page, routes.accueil());

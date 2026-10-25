@@ -2,7 +2,6 @@ import { ROUTE_SPECS, routes, withSheet, type RouteName } from "../src/app-shell
 import { SESSION_HINT_COOKIE } from "../src/app-shell/session-hint";
 import { figurePeriodLabel } from "../src/contracts/compta";
 import { formatEur, parseEurInput } from "../src/domain/money";
-import { NEWS_SEEN_KEY } from "../src/contracts/stats";
 import { COMPTA_DOCS, COMPTA_MONTH, EMPTY_DAY, JOURNAL_MONTH } from "./fixtures/compta";
 
 import { composerDraft, storedDraft } from "./fixtures/composer";
@@ -101,9 +100,6 @@ const BANK = SEED.pockets[2].id;
 /** Nom accessible de la rangée « Marge nette · <mois> » (06 E03 zone 2 → S19). */
 export const margeNetteRow = (ref: string | null) => `Marge nette · ${figurePeriodLabel("mois", ref)} : voir le détail`;
 
-/** Témoin de la carte « Nouveautés » déjà fermée : l'Accueil se mesure sans elle (J14, 06 E01 zone 2). */
-const NEWS_SEEN: Record<string, string> = { [NEWS_SEEN_KEY]: "1" };
-
 /** Champs du formulaire parfum éprouvés un par un, clavier ouvert (07 J11 : « clavier ouvert sur chaque champ »). */
 const PERFUME_FIELDS = ["Nom du parfum", "Prix du 80 ml", "Coût du 80 ml en dinars", "Taux du 80 ml"];
 
@@ -160,16 +156,13 @@ export const SCREENS: ScreenCase[] = [
     cookies: [{ name: SESSION_HINT_COOKIE, value: "1", path: "/admin" }],
   },
   // J14 — Accueil définitif (06 E01), Récap du jour (E02) et Statistiques (E07).
-  // La carte « Nouveautés » est fermée pour ces cas (elle a sa propre mesure) : le stockage porte son témoin.
-  { screen: "E01", route: "accueil", label: "cas nominal, carte Nouveautés fermée", url: routes.accueil(), shell: true, storage: NEWS_SEEN },
-  { screen: "E01", route: "accueil", label: "carte « Nouveautés » au premier lancement", url: routes.accueil(), shell: true },
+  { screen: "E01", route: "accueil", label: "cas nominal", url: routes.accueil(), shell: true },
   {
     screen: "E01",
     route: "accueil",
     label: "fiche document ouverte au-dessus de l'Accueil",
     url: withSheet(routes.accueil(), { doc: DOCS.saleDue }),
     shell: true,
-    storage: NEWS_SEEN,
     waitFor: "[data-document-sheet]",
   },
   { screen: "E02", route: "journee", label: "récap d'aujourd'hui", url: routes.journee(), shell: true },
@@ -347,6 +340,22 @@ export const SCREENS: ScreenCase[] = [
     route: "fournisseur",
     label: "S22 ouverte par ?ligne= sur un versement",
     url: routes.fournisseur({ ligne: SUPPLIER.payment.id }),
+    shell: true,
+    waitFor: '[data-supplier-line="PAYMENT"]',
+  },
+  {
+    screen: "E22",
+    route: "fournisseur",
+    label: "S22 ouverte par ?ligne= sur une dette remboursée",
+    url: routes.fournisseur({ ligne: SUPPLIER.debtSettled.id }),
+    shell: true,
+    waitFor: "[data-supplier-settled]",
+  },
+  {
+    screen: "E22",
+    route: "fournisseur",
+    label: "S22 ouverte par ?ligne= sur un remboursement",
+    url: routes.fournisseur({ ligne: SUPPLIER.settlement.id }),
     shell: true,
     waitFor: '[data-supplier-line="PAYMENT"]',
   },

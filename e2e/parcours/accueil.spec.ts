@@ -1,7 +1,7 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { routes } from "../../src/app-shell/routes";
 import { figurePeriodLabel } from "../../src/contracts/compta";
-import { NEWS_SEEN_KEY, TOP_PERFUMES_HOME, TOP_PERFUMES_PAGE } from "../../src/contracts/stats";
+import { TOP_PERFUMES_HOME, TOP_PERFUMES_PAGE } from "../../src/contracts/stats";
 import { parisDayKey } from "../../src/domain/periods";
 import { COMPTA_MONTH, EMPTY_DAY } from "../fixtures/compta";
 import { chiffresCanoniques, shown } from "../helpers/chiffres";
@@ -25,11 +25,6 @@ import { openShell } from "./support-j8";
  * Les chiffres du mois en cours bougent pendant la suite (les parcours de J8 encaissent aujourd'hui) : les
  * confrontations au centime se font sur des mois où personne n'écrit (`e2e/fixtures/compta.ts`).
  */
-
-/** Le témoin de la carte « Nouveautés » : l'Accueil se mesure sans elle, sauf le test qui la vise. */
-async function newsSeen(page: Page): Promise<void> {
-  await page.addInitScript((key) => localStorage.setItem(key, "1"), NEWS_SEEN_KEY);
-}
 
 /** Le montant affiché par `Money` (sans le texte du lecteur d'écran). */
 async function money(scope: Locator): Promise<string> {
@@ -55,7 +50,6 @@ async function orderRows(page: Page): Promise<number> {
  * isolée par `tests/db/accueil.test.ts`, et ici sur les périodes passées (E02, E07) où personne n'écrit.
  */
 test("E01 : chaque rangée de « À faire » ouvre exactement l'ensemble qu'elle compte", async ({ page }) => {
-  await newsSeen(page);
   await openShell(page, routes.accueil());
   await expect(page.locator("[data-alerts]")).toBeVisible();
 
@@ -119,7 +113,6 @@ test("E01 : chaque rangée de « À faire » ouvre exactement l'ensemble qu'elle
  * (`tests/db/accueil.test.ts`) et, en e2e, sur les périodes passées (E02, E07).
  */
 test("E01 : un seul Encaissé, daté du mois, et le même nombre que sur la Compta", async ({ page }) => {
-  await newsSeen(page);
   await openShell(page, routes.accueil());
 
   const block = page.locator("[data-money-block]");
@@ -152,7 +145,6 @@ test("E01 : un seul Encaissé, daté du mois, et le même nombre que sur la Comp
 });
 
 test("PC-09 : le bilan du jour en 1 tap, la compta du mois en 1 tap", async ({ page }) => {
-  await newsSeen(page);
   await openShell(page, routes.accueil());
 
   // Le récap du jour se LIT à 0 tap sur l'Accueil, et se détaille en 1.
@@ -190,7 +182,6 @@ test("PC-09 : le bilan du jour en 1 tap, la compta du mois en 1 tap", async ({ p
  * atomicité) et `e2e/parcours/transfert.spec.ts` pour le geste complet dans S15.
  */
 test("PC-11 : depuis l'alerte, il ne reste qu'un geste pour ranger le non attribué (2 taps)", async ({ page }) => {
-  await newsSeen(page);
   await openShell(page, routes.accueil());
 
   const row = alertRow(page, "non-attribue");
@@ -215,7 +206,6 @@ test("PC-11 : depuis l'alerte, il ne reste qu'un geste pour ranger le non attrib
 });
 
 test("E01 : le bloc Argent n'a pas bougé entre son squelette et son contenu", async ({ page }) => {
-  await newsSeen(page);
   await page.goto(routes.accueil());
   await waitForHydration(page.locator("[data-tabbar] a").first());
 
@@ -238,29 +228,6 @@ test("E01 : le bloc Argent n'a pas bougé entre son squelette et son contenu", a
 
   // Trois tuiles, toujours : une dominante et deux secondaires (jamais 3 pour 2, bug 01 §4.6).
   expect(await block.locator("a").count()).toBe(3);
-});
-
-test("E01 : la carte « Nouveautés » explique les changements, puis se ferme définitivement", async ({ page }) => {
-  await openShell(page, routes.accueil());
-  const card = page.locator('[data-card="nouveautes"]');
-  await expect(card).toBeVisible();
-  // Les changements d'habitude tranchés (00-README « Décisions qui changent le quotidien »).
-  await expect(card).toContainText("Clients a le sien");
-  await expect(card).toContainText("Vente et commande");
-  await expect(card).toContainText("Reçu maintenant");
-  await expect(card).toContainText("non suivi");
-  await expect(card).toContainText("une seule définition");
-
-  const compris = card.getByRole("button", { name: "J'ai compris" });
-  await waitForHydration(compris);
-  await compris.tap();
-  await expect(card).toHaveCount(0);
-
-  // Elle ne revient pas, même après rechargement : la fermeture vit sur l'appareil.
-  await page.reload();
-  await waitForHydration(page.locator("[data-tabbar] a").first());
-  await expect(page.locator('[data-card="nouveautes"]')).toHaveCount(0);
-  expect(await page.evaluate((key) => localStorage.getItem(key), NEWS_SEEN_KEY)).toBe("1");
 });
 
 test("E02 : Encaissé du jour par poche = les chiffres canoniques ; le récap se partage", async ({ page }) => {
@@ -348,7 +315,6 @@ test("E07 : une période sans vente le dit, sans inventer de zéro", async ({ pa
 });
 
 test("E01 : « Top parfums » du mois mène au classement complet", async ({ page }) => {
-  await newsSeen(page);
   await openShell(page, routes.accueil());
   const top = page.locator("[data-top-perfumes]");
   if ((await top.count()) === 0) {

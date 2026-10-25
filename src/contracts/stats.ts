@@ -190,14 +190,6 @@ export type FirstRunDTO = {
   documents: number;
 };
 
-/**
- * Témoin de la carte « Nouveautés » (06 E01 zone 2) dans le stockage local de l'appareil : « J'ai compris »
- * la ferme DÉFINITIVEMENT, sur ce téléphone. Rien à écrire en base pour un accusé de lecture.
- *
- * La clé vit dans le contrat pour que les tests d'affichage posent le même témoin que l'écran.
- */
-export const NEWS_SEEN_KEY = "nurea-accueil-nouveautes-v1";
-
 /** Vrai quand rien n'existe encore : l'Accueil oriente au lieu d'afficher des zéros (05 §5.1). */
 export function isFirstRun(state: FirstRunDTO): boolean {
   return state.documents === 0 && state.perfumes === 0;

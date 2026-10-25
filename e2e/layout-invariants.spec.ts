@@ -1,5 +1,4 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
-import { NEWS_SEEN_KEY } from "../src/contracts/stats";
 import { ACCUEIL_SCENES, ACCUEIL_TEXTS, BANC_ACCUEIL } from "./fixtures/accueil-contrat";
 import { mountAccueil } from "./helpers/banc";
 import { waitForHydration } from "./helpers/hydration";
@@ -356,9 +355,6 @@ test.describe("Invariants d'affichage — gestion", () => {
        */
       for (const scene of ACCUEIL_SCENES) {
         test(`E01 — état « ${scene} » respecte les invariants`, async ({ page }, testInfo) => {
-          // La carte « Nouveautés » a la priorité sur celle de la scène (06 E01 zone 2 : UNE carte à la fois) :
-          // on la ferme, sinon aucune scène ne montre sa propre carte. Elle a son cas à elle, sur la vraie page.
-          await addStorage(page, { [NEWS_SEEN_KEY]: "1" });
           await open(page, routes.accueil(), true);
           await mountAccueil(page, testInfo, scene, BANC_ACCUEIL);
           await expect(page.locator(`[data-banc-accueil="${scene}"]`)).toBeVisible();

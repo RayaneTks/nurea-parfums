@@ -2,7 +2,6 @@ import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { routes } from "../../src/app-shell/routes";
-import { NEWS_SEEN_KEY } from "../../src/contracts/stats";
 import { waitForHydration } from "../helpers/hydration";
 
 /**
@@ -50,7 +49,6 @@ test("E01 — carte d'installation, Safari iOS", async ({ page }) => {
     // `navigator.standalone` : la propriété par laquelle la détection reconnaît le vrai Safari iOS.
     Object.defineProperty(navigator, "standalone", { get: () => false, configurable: true });
   }, IPHONE_UA);
-  await page.addInitScript((key) => localStorage.setItem(key, "1"), NEWS_SEEN_KEY);
   await page.goto(routes.accueil());
   await waitForHydration(page.locator("[data-tabbar] a").first());
   await hideDevTools(page);
@@ -60,7 +58,6 @@ test("E01 — carte d'installation, Safari iOS", async ({ page }) => {
 });
 
 test("E01 — carte d'installation, invite du navigateur", async ({ page }) => {
-  await page.addInitScript((key) => localStorage.setItem(key, "1"), NEWS_SEEN_KEY);
   await page.goto(routes.accueil());
   await waitForHydration(page.locator("[data-tabbar] a").first());
   await hideDevTools(page);

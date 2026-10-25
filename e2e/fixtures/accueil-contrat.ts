@@ -21,7 +21,6 @@ export type AccueilScene = (typeof ACCUEIL_SCENES)[number];
 /** Libellés attendus par les specs, écrits une fois. */
 export const ACCUEIL_TEXTS = {
   pourCommencer: "Pour commencer",
-  nouveautes: "Nouveautés",
   aFaire: "À faire",
   reglages: "Réglages",
 } as const;

@@ -1,7 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { routes } from "../../src/app-shell/routes";
 import { figurePeriodLabel } from "../../src/contracts/compta";
-import { NEWS_SEEN_KEY } from "../../src/contracts/stats";
 import { DOCS, PASSING } from "../fixtures/documents";
 import { documentBalance } from "../helpers/db";
 import { waitForHydration } from "../helpers/hydration";
@@ -81,7 +80,6 @@ test("après un encaissement : fiche, liste et À encaisser à jour, sans rechar
  * soient les autres parcours (ils tournent sur d'autres documents, et la mesure encadre le geste).
  */
 test("après un encaissement : « Encaissé · (mois) » de l'Accueil a augmenté du montant, sans rechargement", async ({ page }) => {
-  await page.addInitScript((key) => localStorage.setItem(key, "1"), NEWS_SEEN_KEY);
   await openShell(page, routes.accueil());
   // L'indicateur des outils de `next dev` se pose en bas à gauche, PAR-DESSUS l'onglet Accueil : il intercepte
   // le toucher. Il n'existe pas en production — on l'écarte, comme les captures de revue.
