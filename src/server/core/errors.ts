@@ -103,7 +103,7 @@ export function isIdempotentReplayConflict(e: unknown): boolean {
 }
 
 /** Référence courte, lisible au téléphone, retrouvable dans le journal. */
-export function newErrorReference(): string {
+function newErrorReference(): string {
   return globalThis.crypto.randomUUID().slice(0, 4).toUpperCase();
 }
 

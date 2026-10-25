@@ -63,7 +63,7 @@ Migration `20261024120000_supplier_ledger`, purement additive (deux tables neuve
 |---|---|
 | `src/contracts/supplier.ts` | Entrées (`recordSupplierEntryInput`, `updateSupplierEntryInput`, `deleteSupplierEntryInput`, `setSupplierRateInput`) et DTO de lecture |
 | `src/server/supplier/writer.ts` | **Seul** écrivain de `SupplierEntry` et `SupplierEntryItem` (`table-ownership`) |
-| `src/server/settings/writer.ts` | `setSupplierRate`, `readSupplierRate` : `Setting` garde un seul écrivain |
+| `src/server/settings/writer.ts` | `setSupplierRate` : `Setting` garde un seul écrivain |
 | `src/server/supplier/actions.ts` | `recordSupplierEntryAction`, `settleSupplierDebtAction`, `updateSupplierEntryAction`, `deleteSupplierEntryAction`, `setSupplierRateAction` |
 | `src/server/supplier/queries.ts` | `getSupplierBalance` (Accueil), `getSupplierLedger` (E22), `getSupplierEntry(id)` (S22) |
 

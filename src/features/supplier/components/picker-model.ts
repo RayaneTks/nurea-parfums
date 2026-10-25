@@ -17,7 +17,7 @@ import { formatDate } from "@/ui/patterns/date-format";
 
 export type Picked = ReadonlySet<string>;
 
-export const docsOfBatch = (documents: readonly SupplierPickerDocumentDTO[], batchId: string) =>
+const docsOfBatch = (documents: readonly SupplierPickerDocumentDTO[], batchId: string) =>
   documents.filter((doc) => doc.batchId === batchId);
 
 /** `all` : tous les documents du lot sont cochés ; `some` : une partie ; `none` : aucun. */

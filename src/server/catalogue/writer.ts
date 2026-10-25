@@ -141,7 +141,7 @@ export async function upsertPricing(tx: Tx, memory: PricingMemory): Promise<void
  * retiré ; coût ou taux vidé = effacé (contrairement à l'apprentissage, c'est une saisie explicite).
  * N'écrit que les volumes qui changent : un enregistrement sans modification ne touche pas la base.
  */
-export async function savePricingGrid(tx: Tx, perfumeId: number, grid: PricingGridData): Promise<PricingRow[]> {
+async function savePricingGrid(tx: Tx, perfumeId: number, grid: PricingGridData): Promise<PricingRow[]> {
   const existing = await tx.db.perfumePricing.findMany({ where: { perfumeId }, select: PRICING_SELECT });
   const kept = new Set<number>(grid.map((entry) => entry.volumeMl));
   const obsolete = existing.filter((row) => !kept.has(row.volumeMl)).map((row) => row.volumeMl);

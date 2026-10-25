@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Couleur d'ambiance des parfums — docs/refonte-vitrine/04-PLAN-EXECUTION.md § B.3.
  *

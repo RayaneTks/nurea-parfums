@@ -42,7 +42,7 @@ export function dueExceededMessage(due: Eur): string {
   return `Le montant dépasse le reste dû (${formatEur(due)}).`;
 }
 
-export function refundExceededMessage(refundable: Eur): string {
+function refundExceededMessage(refundable: Eur): string {
   return `Le montant dépasse ce qui peut être remboursé (${formatEur(refundable)}).`;
 }
 
@@ -145,7 +145,7 @@ export async function findPayments(tx: Tx, ids: readonly string[]): Promise<Stor
 }
 
 /** Le paiement porté par un mouvement (contre-passation d'un paiement). */
-export async function findPaymentByMovement(tx: Tx, movementId: string): Promise<StoredPayment | null> {
+async function findPaymentByMovement(tx: Tx, movementId: string): Promise<StoredPayment | null> {
   const row = await tx.db.payment.findUnique({ where: { movementId }, select: PAYMENT_SELECT });
   return row ? storedPayment(row) : null;
 }

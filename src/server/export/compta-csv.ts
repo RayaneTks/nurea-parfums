@@ -52,7 +52,7 @@ export type ComptaCsvRow = {
  * Les paiements de la période, dans l'ordre des dates de valeur : les lignes de l'Encaissé, avec leur pièce, leur
  * document (total lu dans `DocumentBalance`), leur client et leur poche. Jamais de somme ici.
  */
-export function comptaCsvSql(period: Period, now: Date): Prisma.Sql {
+function comptaCsvSql(period: Period, now: Date): Prisma.Sql {
   return Prisma.sql`
     SELECT e."occurredAt", d.origin::text AS origin, d."orderedAt",
            COALESCE(c."fullName", d."customerName") AS "customerName",
@@ -84,7 +84,7 @@ export function documentLabel(origin: ComptaCsvRow["origin"], orderedAt: Date, n
 }
 
 /** Nature d'un paiement, lexique de 06 §1.7 (une annulation se nomme par ce qu'elle annule). */
-export function paymentNature(row: Pick<ComptaCsvRow, "origin" | "paymentKind" | "isReversal">): string {
+function paymentNature(row: Pick<ComptaCsvRow, "origin" | "paymentKind" | "isReversal">): string {
   if (row.isReversal) return row.paymentKind === "REFUND" ? "Paiement annulé" : "Remboursement annulé";
   switch (row.paymentKind) {
     case "DEPOSIT":
@@ -101,18 +101,18 @@ export function paymentNature(row: Pick<ComptaCsvRow, "origin" | "paymentKind" |
 }
 
 /** « 1234,50 », « -40,00 » : montant exact, virgule décimale, sans séparateur de milliers. */
-export function csvAmount(text: string): string {
+function csvAmount(text: string): string {
   return toWire(eurFromDb(text)).replace(".", ",");
 }
 
 /** Un champ : entre guillemets s'il contient le séparateur, un guillemet ou un saut de ligne. */
-export function csvField(value: string | null): string {
+function csvField(value: string | null): string {
   const text = value ?? "";
   return /[";\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
 /** Le fichier : BOM, en-têtes, une ligne par paiement. */
-export function comptaCsvText(rows: readonly ComptaCsvRow[], now: Date = new Date()): string {
+function comptaCsvText(rows: readonly ComptaCsvRow[], now: Date = new Date()): string {
   const lines = rows.map((row) =>
     [
       csvDate(row.occurredAt),

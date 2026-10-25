@@ -160,7 +160,7 @@ export function encaisseSerieSql(period: Period, now: Date): Prisma.Sql {
  * document (vue `DocumentBalance`). Une commande `PENDING` n'est pas une créance. Colonnes d'écran : nom,
  * clé de regroupement (fiche liée, sinon nom saisi), âge en jours calendaires de Paris, ancienneté.
  */
-export function aEncaisserRowsSql(scope: { now: Date; batchId?: string | null; customerId?: string | null }): Prisma.Sql {
+function aEncaisserRowsSql(scope: { now: Date; batchId?: string | null; customerId?: string | null }): Prisma.Sql {
   return Prisma.sql`
     SELECT b."documentId", b.origin, b.status, b."customerId",
            COALESCE(c."fullName", d."customerName") AS "customerName",
@@ -227,7 +227,7 @@ export function coutsRowsSql(scope: { period: Period; now: Date; batchId?: strin
  * Lignes des dépenses de lot, en montants positifs, datées par leur mouvement. Une contre-passation rejoint sa
  * dépense par `reversesId`, à la même date : une dépense supprimée disparaît de sa période.
  */
-export function depensesRowsSql(scope: { period: Period; now: Date; batchId?: string | null }): Prisma.Sql {
+function depensesRowsSql(scope: { period: Period; now: Date; batchId?: string | null }): Prisma.Sql {
   const { from, to } = boundsSql(scope.period, scope.now);
   return Prisma.sql`
     SELECT m.id AS "movementId", -m.amount AS amount, m."occurredAt", e.id AS "expenseId", e."batchId"
@@ -302,7 +302,7 @@ export function chiffresParLotSql(period: Period, now: Date): Prisma.Sql {
 // ── Trésorerie (03 §5.5) ───────────────────────────────────────────────────────
 
 /** Lignes de la Trésorerie : chaque poche active et son solde (ouverture + mouvements signés). */
-export function tresorerieRowsSql(): Prisma.Sql {
+function tresorerieRowsSql(): Prisma.Sql {
   return Prisma.sql`
     SELECT p.id, p.name, p.kind, p."isSystem", p."sortOrder", p."openingBalance",
            (p."openingBalance" + COALESCE(SUM(m.amount), 0))::numeric(12,2) AS solde
@@ -326,7 +326,7 @@ export function tresorerieSql(): Prisma.Sql {
 // ── En retard (03 §5.6) ────────────────────────────────────────────────────────
 
 /** Document à livrer dont la livraison prévue précède 00:00 (Paris) du jour : ni livré ni annulé. */
-export function enRetardRowsSql(now: Date): Prisma.Sql {
+function enRetardRowsSql(now: Date): Prisma.Sql {
   return Prisma.sql`
     SELECT d.id AS "documentId", d."expectedDeliveryAt"
     FROM "SaleDocument" d

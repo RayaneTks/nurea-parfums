@@ -101,7 +101,7 @@ export async function forgetPocket(tx: Tx, pocketId: string): Promise<void> {
  * Taux de lecture du carnet fournisseur (E22) : le dernier choisi, à défaut le taux par défaut des Réglages.
  * Préférence d'écran, jamais source d'un chiffre : il ne touche ni les lignes de vente ni le taux proposé.
  */
-export async function readSupplierRate(tx: Tx): Promise<string> {
+async function readSupplierRate(tx: Tx): Promise<string> {
   const row = await tx.db.setting.findUnique({
     where: { id: SETTING_ID },
     select: { supplierExchangeRate: true, defaultExchangeRate: true },

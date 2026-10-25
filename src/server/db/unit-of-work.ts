@@ -23,8 +23,3 @@ export function runUnitOfWork<T>(written: Set<string>, work: () => Promise<T>): 
 export function recordWrite(model: string | undefined): void {
   if (model) storage.getStore()?.add(model);
 }
-
-/** Modèles déjà écrits dans l'unité de travail courante (diagnostic et tests). */
-export function writtenModels(): ReadonlySet<string> | undefined {
-  return storage.getStore();
-}

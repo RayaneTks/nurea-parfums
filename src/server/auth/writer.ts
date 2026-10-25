@@ -22,7 +22,7 @@ export type LoginAccount = {
  * Durée du verrou après `failures` échecs consécutifs : 1 min au 5ᵉ, doublée à chaque échec suivant
  * (2, 4, 8), plafonnée à 15 min. `null` sous le seuil.
  */
-export function lockMinutesAfter(failures: number): number | null {
+function lockMinutesAfter(failures: number): number | null {
   if (failures < LOCK_THRESHOLD) return null;
   return Math.min(2 ** (failures - LOCK_THRESHOLD), MAX_LOCK_MINUTES);
 }

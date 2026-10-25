@@ -56,7 +56,7 @@ const unique = <T>(values: readonly T[]): T[] => [...new Set(values)];
 // ── « Non attribué » ───────────────────────────────────────────────────────────
 
 /** La poche système, créée à la première demande si la base n'en a pas. */
-export async function unassignedPocketId(tx: Tx): Promise<string> {
+async function unassignedPocketId(tx: Tx): Promise<string> {
   const existing = await tx.db.pocket.findFirst({ where: { isSystem: true }, select: { id: true } });
   if (existing) return existing.id;
   const created = await tx.db.pocket.create({
@@ -95,7 +95,7 @@ async function readPocket(tx: Tx, id: string) {
   return pocket;
 }
 
-export async function pocketSummary(tx: Tx, id: string): Promise<PocketSummary> {
+async function pocketSummary(tx: Tx, id: string): Promise<PocketSummary> {
   const pocket = await readPocket(tx, id);
   const settings = await settingsWriter.readSettings(tx);
   return {

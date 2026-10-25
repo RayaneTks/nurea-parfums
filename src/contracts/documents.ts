@@ -202,7 +202,7 @@ export function customerNameRequirement(origin: DocumentOrigin, due: Eur): strin
 }
 
 /** Σ quantité × prix d'une saisie déjà normalisée ; null si une ligne est restée invalide. */
-export function linesTotal(lines: readonly { quantity: number; unitPriceEur: MoneyString }[]): Eur | null {
+function linesTotal(lines: readonly { quantity: number; unitPriceEur: MoneyString }[]): Eur | null {
   try {
     return eur.sum(lines.map((line) => eur.times(eurFromWire(line.unitPriceEur), line.quantity)));
   } catch {
@@ -217,7 +217,7 @@ export const SALE_NAME_REQUIRED_MESSAGE = "Indique le nom du client : chaque ven
 export const DIRECT_SALE_DELIVERY_MESSAGE = "Une vente directe est livrée sur-le-champ : retire la date de livraison prévue.";
 
 /** Σ des paiements de création ; null si l'un d'eux est resté invalide. */
-export function paymentsTotal(payments: readonly { amount: MoneyString }[]): Eur | null {
+function paymentsTotal(payments: readonly { amount: MoneyString }[]): Eur | null {
   try {
     return eur.sum(payments.map((payment) => eurFromWire(payment.amount)));
   } catch {

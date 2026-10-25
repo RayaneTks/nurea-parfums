@@ -237,7 +237,7 @@ export function ordersCountsSql(): Prisma.Sql {
  * (`documentsDeLaPeriodeSql` : un paiement ou un engagement dans la période) ou, sous le filtre « coût à
  * compléter », exactement les coûts comptés 0 € dans la Marge nette de la période (`coutACompleterSql`).
  */
-export function comptaScopeSql(query: { period: Period; now: Date; filter: ComptaFilter | null }): Prisma.Sql {
+function comptaScopeSql(query: { period: Period; now: Date; filter: ComptaFilter | null }): Prisma.Sql {
   return query.filter === "cout-a-completer"
     ? coutACompleterSql({ period: query.period, now: query.now })
     : documentsDeLaPeriodeSql(query.period, query.now);

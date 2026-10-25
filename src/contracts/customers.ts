@@ -46,7 +46,7 @@ const snapchatField = z
     return text;
   });
 
-export const customerFullName = z
+const customerFullName = z
   .string()
   .trim()
   .min(2, "Indique le nom du client (2 caractères au moins).")

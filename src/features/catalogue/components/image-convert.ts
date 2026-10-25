@@ -49,7 +49,7 @@ export type ImageCodec<D extends DecodedImage = DecodedImage> = {
 
 type BrowserImage = DecodedImage & { bitmap: ImageBitmap };
 
-export const browserCodec: ImageCodec<BrowserImage> = {
+const browserCodec: ImageCodec<BrowserImage> = {
   async decode(file) {
     const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
     return { bitmap, width: bitmap.width, height: bitmap.height, close: () => bitmap.close() };

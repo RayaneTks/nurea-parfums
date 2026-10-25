@@ -22,8 +22,6 @@ import type { PocketKind } from "./treasury";
 
 // ── Périodes ───────────────────────────────────────────────────────────────────
 
-export const PERIOD_UNITS = ["day", "week", "month", "year"] as const satisfies readonly PeriodUnit[];
-
 export type Period =
   | { kind: "all" }
   /** `ref` : jour de Paris « AAAA-MM-JJ » (null = aujourd'hui) ; `offset` : unités de décalage. */
