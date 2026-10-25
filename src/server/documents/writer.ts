@@ -89,10 +89,10 @@ import * as treasuryWriter from "@/server/treasury/writer";
 
 // ── Messages ───────────────────────────────────────────────────────────────────
 
-const DOCUMENT_NOT_FOUND = "Ce document n'existe plus. Il a peut-être été supprimé depuis un autre écran.";
-const LINE_NOT_FOUND = "Cette ligne n'existe plus. Recharge le document pour voir sa version à jour.";
+const DOCUMENT_NOT_FOUND = "Cette vente ou commande n'existe plus. Elle a peut-être été supprimée depuis un autre écran.";
+const LINE_NOT_FOUND = "Cette ligne n'existe plus. Recharge la fiche pour voir sa version à jour.";
 const PERFUME_NOT_FOUND = "Ce parfum n'existe plus dans le catalogue : choisis-en un autre.";
-const FOREIGN_LINE = "Une des lignes appartient à un autre document : recharge la page et réessaie.";
+const FOREIGN_LINE = "Une des lignes appartient à une autre vente ou commande : recharge la page et réessaie.";
 
 const noun = (origin: DocumentOrigin) => (origin === "DIRECT_SALE" ? "vente" : "commande");
 
@@ -1368,9 +1368,9 @@ export async function cancelDocument(tx: Tx, input: CancelDocumentData): Promise
 /** Fenêtre au-delà de laquelle le filet du toast (5 s) n'a plus de sens : on corrige depuis la fiche. */
 export const REVERT_WINDOW_MS = 10 * 60 * 1000;
 
-export const REVERT_REFUSED = "Ce geste ne peut plus être annulé d'ici : corrige-le depuis la fiche du document.";
-export const REVERT_TOO_LATE = "Trop tard pour annuler ce geste : corrige-le depuis la fiche du document.";
-export const REVERT_CHANGED = "Ce document a changé depuis ce geste : rien n'a été annulé. Corrige-le depuis sa fiche.";
+export const REVERT_REFUSED = "Ce geste ne peut plus être annulé d'ici : corrige-le depuis sa fiche.";
+export const REVERT_TOO_LATE = "Trop tard pour annuler ce geste : corrige-le depuis sa fiche.";
+export const REVERT_CHANGED = "La vente ou commande a changé depuis ce geste : rien n'a été annulé. Corrige-le depuis sa fiche.";
 
 export type RevertGesture = "status" | "payment" | "deliverAndCollect" | "collectAll";
 

@@ -422,7 +422,7 @@ export function cancelDescription(confirmation: Confirmation): string {
   const pockets = confirmation.payments.map((part) => part.pocketName);
   const where = pockets.length === 1 ? fromPocket(pockets[0] as string) : "de leurs poches";
   return [
-    "Le document reste consultable, marqué annulé.",
+    "Elle reste consultable, marquée annulée.",
     `Les ${paid} sont retirés ${where} aujourd'hui.`,
     confirmation.origin === "DIRECT_SALE" ? "Le stock est restitué." : null,
   ]

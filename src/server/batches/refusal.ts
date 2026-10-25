@@ -23,10 +23,10 @@ export type BatchDeletionCounts = {
 export function batchDeletionRefusal(counts: BatchDeletionCounts): string | null {
   const { documents, expenses, activeExpenses } = counts;
   if (documents > 0 && activeExpenses > 0) {
-    return `Impossible : ${plural(documents, "document", "documents")} et ${plural(activeExpenses, "dépense", "dépenses")} rattachés. Clôture-le plutôt.`;
+    return `Impossible : ${plural(documents, "vente ou commande", "ventes ou commandes")} et ${plural(activeExpenses, "dépense", "dépenses")} rattachés. Clôture-le plutôt.`;
   }
   if (documents > 0) {
-    return `Impossible : ${plural(documents, "document rattaché", "documents rattachés")}. Clôture-le plutôt.`;
+    return `Impossible : ${plural(documents, "vente ou commande rattachée", "ventes ou commandes rattachées")}. Clôture-le plutôt.`;
   }
   if (activeExpenses > 0) {
     return `Impossible : ${plural(activeExpenses, "dépense rattachée", "dépenses rattachées")}. Clôture-le plutôt.`;

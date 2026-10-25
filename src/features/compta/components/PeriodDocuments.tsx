@@ -77,7 +77,7 @@ export function PeriodDocuments({ data }: { data: ComptaDocumentsDTO }) {
   } else if (data.filtre) {
     body = (
       <EmptyState
-        title="Aucun document au coût à compléter sur cette période."
+        title="Aucune vente ni commande au coût à compléter sur cette période."
         action={
           <Button variant="secondary" onClick={() => setUrl({ filtre: null })}>
             Effacer le filtre
@@ -91,7 +91,7 @@ export function PeriodDocuments({ data }: { data: ComptaDocumentsDTO }) {
   }
 
   return (
-    <section className="flex flex-col gap-3" aria-label="Documents de la période" data-period-documents>
+    <section className="flex flex-col gap-3" aria-label="Ventes et commandes de la période" data-period-documents>
       {data.filtre ? (
         <div className="flex gap-2" role="group" aria-label="Filtres">
           <Chip active clearable onClick={() => setUrl({ filtre: null })} ariaLabel="Retirer le filtre Coût à compléter">
@@ -104,7 +104,7 @@ export function PeriodDocuments({ data }: { data: ComptaDocumentsDTO }) {
           value={query}
           onChange={setQuery}
           placeholder="Client, parfum, marque, lot…"
-          ariaLabel="Rechercher un document"
+          ariaLabel="Rechercher une vente ou une commande"
           onFocus={scrollFieldIntoView}
         />
       ) : null}

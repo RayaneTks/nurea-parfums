@@ -121,7 +121,7 @@ export function DayRecap({ recap, relances, previousHref, nextHref, sheetBase, n
 
           {/* 3 — Documents du jour : ventes, commandes prises, commandes livrées. */}
           {recap.documents.length > 0 ? (
-            <ListSection title="Documents du jour" count={recap.documents.length}>
+            <ListSection title="Ventes et commandes du jour" count={recap.documents.length}>
               {recap.documents.map((doc) => (
                 <div key={doc.documentId} data-day-document={doc.documentId}>
                   <ListRow

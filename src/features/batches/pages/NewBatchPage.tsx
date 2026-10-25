@@ -10,7 +10,7 @@ import { NewBatchForm } from "../components/NewBatchForm";
 export function NewBatchPage({ docId }: { docId?: string }) {
   return (
     <PageScaffold formScroll ariaLabel="Nouveau lot" docId={docId} sheet={<DocumentSheetSlot docId={docId} />}>
-      <SectionHeader title="Nouveau lot" description="Un envoi fournisseur : ses documents, ses dépenses, sa Marge nette." />
+      <SectionHeader title="Nouveau lot" description="Un envoi fournisseur : ses ventes et commandes, ses dépenses, sa Marge nette." />
       <NewBatchForm />
     </PageScaffold>
   );

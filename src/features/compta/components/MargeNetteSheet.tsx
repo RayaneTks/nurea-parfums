@@ -83,13 +83,13 @@ export function MargeNetteSheet({ open, onClose, title, figures, onShowUnknownCo
               data-unknown-cost
             >
               <span className="admin-type-body font-medium text-[var(--admin-warning)]">
-                {unknown} document{unknown > 1 ? "s" : ""} dont l&apos;achat n&apos;est pas renseigné, compté{unknown > 1 ? "s" : ""} 0 €
+                {unknown} vente{unknown > 1 ? "s" : ""} ou commande{unknown > 1 ? "s" : ""} dont l&apos;achat n&apos;est pas renseigné, comptée{unknown > 1 ? "s" : ""} 0 €
               </span>
               <ChevronRight size={18} aria-hidden className="shrink-0 text-[var(--admin-warning)]" />
             </button>
           ) : (
             <Text variant="body" tone="warning">
-              {unknown} document{unknown > 1 ? "s" : ""} dont l&apos;achat n&apos;est pas renseigné, compté{unknown > 1 ? "s" : ""} 0 €
+              {unknown} vente{unknown > 1 ? "s" : ""} ou commande{unknown > 1 ? "s" : ""} dont l&apos;achat n&apos;est pas renseigné, comptée{unknown > 1 ? "s" : ""} 0 €
             </Text>
           )
         ) : null}

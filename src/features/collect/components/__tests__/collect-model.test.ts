@@ -46,8 +46,8 @@ describe("E13 — groupes par client", () => {
     expect(receivableTitle(receivable({ origin: "ORDER", deliveredAt: null, status: "CONFIRMED", orderedAt: "2026-09-12T10:00:00.000Z" }), now)).toBe("Commande du 12 sept.");
     expect(receivableCaption(receivable({}))).toBe("payé 20,00 € sur 100,00 €");
     expect(ageLabel(42)).toBe("depuis 42 j");
-    expect(countsLabel(5, 3)).toBe("5 documents · 3 clients");
-    expect(countsLabel(1, 1)).toBe("1 document · 1 client");
+    expect(countsLabel(5, 3)).toBe("5 ventes ou commandes · 3 clients");
+    expect(countsLabel(1, 1)).toBe("1 vente ou commande · 1 client");
   });
 
   it("S09 : le nom tel qu'enregistré, une ligne par document, le total", () => {

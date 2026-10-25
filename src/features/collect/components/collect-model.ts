@@ -91,9 +91,9 @@ export function ageLabel(days: number): string {
   return `depuis ${days} j`;
 }
 
-/** « 5 documents · 3 clients ». */
+/** « 5 ventes ou commandes · 3 clients ». */
 export function countsLabel(documents: number, clients: number): string {
-  return `${documents} document${documents > 1 ? "s" : ""} · ${clients} client${clients > 1 ? "s" : ""}`;
+  return `${documents} vente${documents > 1 ? "s" : ""} ou commande${documents > 1 ? "s" : ""} · ${clients} client${clients > 1 ? "s" : ""}`;
 }
 
 /**

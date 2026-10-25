@@ -329,7 +329,7 @@ describe("E06 — fiche du lot", () => {
 
     const vente = await sale({ batchId: lot.id, price: "120" });
     const expenseId = await expense({ batchId: lot.id, label: "Douane", amount: "12" });
-    expect((await sheetOf(lot.id)).deletionRefusal).toBe("Impossible : 1 document et 1 dépense rattachés. Clôture-le plutôt.");
+    expect((await sheetOf(lot.id)).deletionRefusal).toBe("Impossible : 1 vente ou commande et 1 dépense rattachés. Clôture-le plutôt.");
 
     // Le document part : il reste la dépense.
     expectOk(await server.documents.assignDocumentsToBatchAction({ changes: [{ documentId: vente, from: lot.id, to: null }] }));

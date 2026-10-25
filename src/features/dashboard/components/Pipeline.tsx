@@ -72,7 +72,7 @@ export function OpenBatches({ batches, hrefOf, listHref, createHref, now = new D
             primary={batch.name}
             secondary={[
               batch.expectedAt ? `arrivée prévue ${formatDate(new Date(batch.expectedAt), "short", now)}` : null,
-              plural(batch.documentCount, "document"),
+              plural(batch.documentCount, "vente ou commande", "ventes ou commandes"),
             ]
               .filter(Boolean)
               .join(" · ")}

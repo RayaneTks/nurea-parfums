@@ -39,8 +39,8 @@ describe("E12 — liste", () => {
   it("compteurs au singulier et au pluriel", () => {
     expect(customersCountLabel(124)).toBe("124 clients");
     expect(customersCountLabel(1)).toBe("1 client");
-    expect(documentsCountLabel(5)).toBe("5 documents");
-    expect(documentsCountLabel(1)).toBe("1 document");
+    expect(documentsCountLabel(5)).toBe("5 ventes ou commandes");
+    expect(documentsCountLabel(1)).toBe("1 vente ou commande");
   });
 
   it("paramètres : saisie rognée, pages bornées de 1 à 40", () => {

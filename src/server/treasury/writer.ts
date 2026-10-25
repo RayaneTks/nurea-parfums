@@ -48,7 +48,7 @@ const SYSTEM_NOT_ARCHIVABLE = "La poche « Non attribué » ne s'archive pas : e
 const SYSTEM_NOT_DELETABLE = "La poche « Non attribué » ne se supprime pas.";
 /** Message de 04 §3.4 et §9.3. */
 export const POCKET_HAS_HISTORY = "Cette poche a un historique : archive-la une fois son solde à 0.";
-const PAYMENT_MOVEMENT = "Ce mouvement vient d'un paiement : annule le paiement depuis la fiche du document.";
+const PAYMENT_MOVEMENT = "Ce mouvement vient d'un paiement : annule le paiement depuis la fiche de la vente ou commande.";
 const EXPENSE_MOVEMENT = "Ce mouvement vient d'une dépense : supprime la dépense depuis la fiche du lot.";
 
 const unique = <T>(values: readonly T[]): T[] => [...new Set(values)];

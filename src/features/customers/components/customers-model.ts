@@ -30,9 +30,9 @@ export function customersCountLabel(count: number): string {
   return `${count} client${count > 1 ? "s" : ""}`;
 }
 
-/** « 5 documents », « 1 document ». */
+/** « 5 ventes ou commandes », « 1 vente ou commande ». */
 export function documentsCountLabel(count: number): string {
-  return `${count} document${count > 1 ? "s" : ""}`;
+  return `${count} vente${count > 1 ? "s" : ""} ou commande${count > 1 ? "s" : ""}`;
 }
 
 // ── E14 — Fiche ────────────────────────────────────────────────────────────────

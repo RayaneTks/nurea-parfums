@@ -83,8 +83,8 @@ export const collectAllInput = z
     ...paymentDetails,
     payments: z
       .array(z.object({ id: entityId, documentId: entityId, amount: positiveAmount }))
-      .min(1, "Aucun document à encaisser.")
-      .max(50, "Encaisse au plus 50 documents à la fois."),
+      .min(1, "Aucune vente ni commande à encaisser.")
+      .max(50, "Encaisse au plus 50 ventes ou commandes à la fois."),
   })
   .superRefine((input, ctx) => {
     const ids = new Set<string>();
@@ -95,7 +95,7 @@ export const collectAllInput = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["payments", index],
-          message: "Ce document apparaît deux fois : recharge la page et réessaie.",
+          message: "Une vente ou commande apparaît deux fois : recharge la page et réessaie.",
         });
       }
       ids.add(payment.id);

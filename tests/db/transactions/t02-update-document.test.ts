@@ -367,7 +367,7 @@ describe("T2 — gardes", () => {
       await server.documents.updateDocumentAction({ documentId: id, lines: [asInput(line!), asInput(foreign!)] }),
       "CONFLICT",
     );
-    expect(stolen.message).toBe("Une des lignes appartient à un autre document : recharge la page et réessaie.");
+    expect(stolen.message).toBe("Une des lignes appartient à une autre vente ou commande : recharge la page et réessaie.");
     const missingItem = expectError(
       await server.documents.updateDocumentAction({
         documentId: id,

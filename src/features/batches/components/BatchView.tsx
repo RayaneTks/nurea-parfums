@@ -112,7 +112,7 @@ export function BatchView({ data, pockets }: { data: BatchSheetDTO; pockets: rea
     setMenuOpen(false);
     const accepted = await confirm({
       title: `Supprimer « ${data.batch.name} » ?`,
-      description: "Ce lot n'a ni document ni dépense : rien d'autre ne disparaît avec lui.",
+      description: "Ce lot n'a ni vente, ni commande, ni dépense : rien d'autre ne disparaît avec lui.",
       confirmLabel: "Supprimer",
       tone: "danger",
     });
@@ -182,7 +182,7 @@ export function BatchView({ data, pockets }: { data: BatchSheetDTO; pockets: rea
 
       {/* Zone 3 — tout ce qui est rattaché. */}
       <ListSection
-        title="Documents"
+        title="Ventes et commandes"
         count={data.documentCount}
         action={
           open ? (
@@ -193,7 +193,7 @@ export function BatchView({ data, pockets }: { data: BatchSheetDTO; pockets: rea
         }
       >
         {data.documents.length === 0 ? (
-          <ListRow primary="Aucun document rattaché" secondary={open ? "« Rattacher » en ajoute." : "Ce lot est clos."} />
+          <ListRow primary="Aucune vente ni commande rattachée" secondary={open ? "« Rattacher » en ajoute." : "Ce lot est clos."} />
         ) : (
           data.documents.map((row) => (
             <ListRow

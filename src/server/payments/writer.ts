@@ -33,8 +33,8 @@ import * as treasuryWriter from "@/server/treasury/writer";
  *   ces pièces ; ce fichier n'importe jamais le writer `documents` (pas de cycle).
  */
 
-export const PAYMENT_NOT_FOUND = "Ce paiement n'existe plus. Recharge le document pour voir sa version à jour.";
-const DOCUMENT_NOT_FOUND = "Ce document n'existe plus. Il a peut-être été supprimé depuis un autre écran.";
+export const PAYMENT_NOT_FOUND = "Ce paiement n'existe plus. Recharge la fiche pour voir sa version à jour.";
+const DOCUMENT_NOT_FOUND = "Cette vente ou commande n'existe plus. Elle a peut-être été supprimée depuis un autre écran.";
 const PAYMENT_IS_REVERSAL = "Ce paiement annule déjà un autre paiement : il ne s'annule pas lui-même.";
 
 /** « Le montant dépasse le reste dû (35,00 €). » (04 §9.2). */

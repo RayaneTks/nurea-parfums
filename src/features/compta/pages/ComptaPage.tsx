@@ -90,7 +90,7 @@ export function ComptaPage({ params, docId }: { params: ComptaParams; docId?: st
               <SalesChartBlock periode={periodKey} title={chartTitle} />
             </Block>
           ) : null}
-          <Block fallback={<PeriodDocumentsSkeleton />} errorMessage="Documents indisponibles.">
+          <Block fallback={<PeriodDocumentsSkeleton />} errorMessage="Ventes et commandes indisponibles.">
             <PeriodDocumentsBlock periode={periodKey} q={params.q} filtre={params.filtre} />
           </Block>
         </>

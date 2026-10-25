@@ -75,7 +75,7 @@ export const documentRowLabel = (row: BatchDocumentRowDTO, now: Date = new Date(
   `${rowName(row)}, ${documentTitle(row.origin, row.orderedAt, now)}`;
 
 /**
- * E05 zone 1 — « arrivée prévue 3 oct. · 12 documents », ou « créé en septembre · 12 documents » quand
+ * E05 zone 1 — « arrivée prévue 3 oct. · 12 ventes ou commandes », ou « créé en septembre · 12 ventes ou commandes » quand
  * aucune arrivée n'est prévue. Le mois est écrit en entier, et daté dès qu'il n'est pas de cette
  * année : « créé en sept. » seul ne dit pas de quel septembre il s'agit (écart assumé avec 06 E05).
  */
@@ -85,7 +85,7 @@ export function batchLegend(batch: Pick<BatchRowDTO, "expectedAt" | "createdAt" 
     : `créé en ${monthLabel(new Date(batch.createdAt), now)}`;
   return batch.documentCount === 0
     ? when
-    : `${when} · ${batch.documentCount} document${batch.documentCount > 1 ? "s" : ""}`;
+    : `${when} · ${batch.documentCount} vente${batch.documentCount > 1 ? "s" : ""} ou commande${batch.documentCount > 1 ? "s" : ""}`;
 }
 
 /** E06 en-tête — « Ouvert · arrivée prévue 3 oct. », « Clos · créé en septembre ». */
@@ -162,11 +162,11 @@ export function assignToast(counts: { attached: number; detached: number; applie
   const asked = attached + detached;
   if (applied === 0) return "Aucun changement : tout était déjà à jour.";
   if (applied < asked) {
-    return `${applied} document${applied > 1 ? "s" : ""} enregistré${applied > 1 ? "s" : ""} · ${asked - applied} déjà à jour`;
+    return `${applied} vente${applied > 1 ? "s" : ""} ou commande${applied > 1 ? "s" : ""} enregistrée${applied > 1 ? "s" : ""} · ${asked - applied} déjà à jour`;
   }
   const done: string[] = [];
-  if (attached > 0) done.push(`${attached} document${attached > 1 ? "s" : ""} rattaché${attached > 1 ? "s" : ""}`);
-  if (detached > 0) done.push(`${detached} retiré${detached > 1 ? "s" : ""} du lot`);
+  if (attached > 0) done.push(`${attached} vente${attached > 1 ? "s" : ""} ou commande${attached > 1 ? "s" : ""} rattachée${attached > 1 ? "s" : ""}`);
+  if (detached > 0) done.push(`${detached} retirée${detached > 1 ? "s" : ""} du lot`);
   return done.join(" · ");
 }
 

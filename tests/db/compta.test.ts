@@ -202,7 +202,7 @@ describe("export CSV (07 J12)", () => {
     const { fileName, text } = await server.csv.comptaCsv("month", exportRangeOf({ periode: "mois", ref: null }));
     expect(fileName).toMatch(/^compta-\d{4}-\d{2}-01-au-\d{4}-\d{2}-\d{2}\.csv$/);
     const csv = parse(text);
-    expect(csv.columns).toEqual(["Date", "Document", "Client", "Nature", "Poche", "Moyen", "Encaissé (€)", "Total du document (€)"]);
+    expect(csv.columns).toEqual(["Date", "Vente ou commande", "Client", "Nature", "Poche", "Moyen", "Encaissé (€)", "Total (€)"]);
     expect(csv.header).not.toMatch(/(^|;)CA\b/);
     expect(text).not.toMatch(/\bCA\b/);
     expect(csv.rows).toHaveLength(3);

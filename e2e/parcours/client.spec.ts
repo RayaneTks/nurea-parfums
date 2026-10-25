@@ -198,7 +198,7 @@ test("suppression : refusée avec sa raison tant qu'une commande est en cours, p
   await remove.tap();
   const dialog = page.locator("[data-confirm-dialog]");
   await expect(dialog.getByRole("heading", { name: "Supprimer Rachid Mansour ?" })).toBeVisible();
-  await expect(dialog.getByText("Ses 2 documents sont conservés et restent affichés sous son nom. Tu pourras annuler pendant 5 secondes.")).toBeVisible();
+  await expect(dialog.getByText("Ses 2 ventes et commandes sont conservées et restent affichées sous son nom. Tu pourras annuler pendant 5 secondes.")).toBeVisible();
   await dialog.getByRole("button", { name: "Supprimer", exact: true }).tap();
 
   await expect(page).toHaveURL((url) => url.pathname === routes.clients());

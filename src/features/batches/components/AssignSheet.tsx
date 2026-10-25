@@ -105,7 +105,7 @@ export function AssignSheet({ data }: { data: AssignSheetDTO }) {
       onOpenChange={(next) => {
         if (!next) close();
       }}
-      title="Rattacher des documents"
+      title="Rattacher des ventes et commandes"
       description={typing ? undefined : data.batchName}
       toolbar={
         data.candidates.length > 0 ? (
@@ -113,7 +113,7 @@ export function AssignSheet({ data }: { data: AssignSheetDTO }) {
             value={query}
             onChange={setQuery}
             placeholder="Client, parfum, marque…"
-            ariaLabel="Rechercher un document"
+            ariaLabel="Rechercher une vente ou une commande"
             onFocus={() => setTyping(true)}
             onBlur={() => setTyping(false)}
           />
@@ -129,7 +129,7 @@ export function AssignSheet({ data }: { data: AssignSheetDTO }) {
     >
       <div className="flex flex-col gap-3" data-assign-sheet>
         {data.candidates.length === 0 ? (
-          <EmptyState done title="Aucun document à rattacher." />
+          <EmptyState done title="Aucune vente ni commande à rattacher." />
         ) : shown.length === 0 ? (
           <EmptyState
             title={`Rien ne correspond à « ${query} ».`}
@@ -140,7 +140,7 @@ export function AssignSheet({ data }: { data: AssignSheetDTO }) {
             }
           />
         ) : (
-          <ListSection title="Documents" count={shown.length} description={notice ?? undefined}>
+          <ListSection title="Ventes et commandes" count={shown.length} description={notice ?? undefined}>
             {shown.map((candidate) => {
               const checked = isChecked(candidate);
               const toggle = () => setToggled((current) => new Map(current).set(candidate.id, !checked));

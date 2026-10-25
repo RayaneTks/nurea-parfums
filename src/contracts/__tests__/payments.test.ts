@@ -63,7 +63,7 @@ describe("contrats des encaissements", () => {
       pocketId: null,
       payments: [{ id: ID, documentId: DOC, amount: "80.00" }],
     });
-    expect(errors(collectAllInput.safeParse({ payments: [] }))).toEqual({ payments: "Aucun document à encaisser." });
+    expect(errors(collectAllInput.safeParse({ payments: [] }))).toEqual({ payments: "Aucune vente ni commande à encaisser." });
     expect(
       errors(
         collectAllInput.safeParse({
@@ -73,6 +73,6 @@ describe("contrats des encaissements", () => {
           ],
         }),
       ),
-    ).toEqual({ "payments.1": "Ce document apparaît deux fois : recharge la page et réessaie." });
+    ).toEqual({ "payments.1": "Une vente ou commande apparaît deux fois : recharge la page et réessaie." });
   });
 });

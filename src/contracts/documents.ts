@@ -297,7 +297,7 @@ export const updateDocumentInput = z
     /** Absent : lignes inchangées. Présent : l'état cible COMPLET des lignes, dans l'ordre d'affichage. */
     lines: z
       .array(updateLineInput)
-      .min(1, "Garde au moins un article : pour tout retirer, annule ou supprime le document.")
+      .min(1, "Garde au moins un article : pour tout retirer, annule ou supprime la vente ou la commande.")
       .max(100, "Garde 100 articles au plus.")
       .optional(),
     confirm: confirmFlag,
@@ -468,7 +468,7 @@ export const assignDocumentsToBatchInput = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["changes", index, "documentId"],
-          message: "Ce document apparaît deux fois : recharge la page et réessaie.",
+          message: "Une vente ou commande apparaît deux fois : recharge la page et réessaie.",
         });
       }
       seen.add(change.documentId);

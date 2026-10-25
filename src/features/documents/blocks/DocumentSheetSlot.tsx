@@ -16,7 +16,7 @@ export function DocumentSheetSlot({ docId }: { docId?: string | null }) {
   if (!docId) return null;
   return (
     <DocumentSheetFrame key={docId}>
-      <Block fallback={<DocumentSheetSkeleton />} errorMessage="Document indisponible.">
+      <Block fallback={<DocumentSheetSkeleton />} errorMessage="Fiche indisponible.">
         <DocumentSheetBlock id={docId} />
       </Block>
     </DocumentSheetFrame>

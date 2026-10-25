@@ -258,7 +258,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             </ListSection>
           ) : null}
           {documents.total > 0 ? (
-            <ListSection title="Documents" count={documents.total}>
+            <ListSection title="Ventes et commandes" count={documents.total}>
               {documents.items.map(documentRow)}
             </ListSection>
           ) : null}

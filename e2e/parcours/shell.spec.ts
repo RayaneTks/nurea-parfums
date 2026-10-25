@@ -42,13 +42,13 @@ test("onglet actif, racine filtrée : un tap efface les filtres", async ({ page 
 
 test("onglet actif, fiche document ouverte : un tap ferme la sheet et garde l'écran", async ({ page }) => {
   await openShell(page, routes.document({ id: "doc-inexistant", origin: "ORDER" }));
-  // Depuis J8 la fiche s'ouvre vraiment (« Ce document n'existe plus ») ; pleine hauteur, au-dessus de la barre
+  // Depuis J8 la fiche s'ouvre vraiment (« Cette vente ou commande n'existe plus ») ; pleine hauteur, au-dessus de la barre
   // d'onglets (05 §2.7), elle reçoit le doigt : le clic est remis à l'onglet pour éprouver la règle du shell.
-  await expect(page.getByText("Ce document n'existe plus")).toBeVisible();
+  await expect(page.getByText("Cette vente ou commande n'existe plus")).toBeVisible();
   // La sheet modale retire le reste de l'écran de l'arbre d'accessibilité : l'onglet se désigne par son attribut.
   await page.locator('[data-tabbar] [data-tab="commandes"]').dispatchEvent("click");
   await expect.poll(() => pathAndQuery(page)).toBe(routes.commandes());
-  await expect(page.getByText("Ce document n'existe plus")).toBeHidden();
+  await expect(page.getByText("Cette vente ou commande n'existe plus")).toBeHidden();
 });
 
 test("recherche : s'ouvre au tap, focalise le champ, mène à « Nouvelle commande » sans changer d'écran à la main", async ({ page }) => {

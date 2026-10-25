@@ -30,7 +30,7 @@ export function SalesChartSkeleton() {
 /** En-tête de section (28 px) et rangées de 56 px. */
 export function PeriodDocumentsSkeleton() {
   return (
-    <div className="flex flex-col gap-3" aria-busy aria-label="Chargement des documents">
+    <div className="flex flex-col gap-3" aria-busy aria-label="Chargement des ventes et commandes">
       {[3, 2].map((count, index) => (
         <div key={index} className="flex flex-col gap-1">
           <span className="flex h-[29px] items-center px-1 pb-1">

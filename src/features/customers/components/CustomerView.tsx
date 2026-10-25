@@ -61,10 +61,10 @@ type CustomerViewProps = {
 function deletionDescription(count: number): string {
   const kept =
     count === 0
-      ? "Aucun document n'est lié à cette fiche."
+      ? "Aucune vente ni commande n'est liée à cette fiche."
       : count === 1
-        ? "Son document est conservé et reste affiché sous son nom."
-        : `Ses ${count} documents sont conservés et restent affichés sous son nom.`;
+        ? "Sa vente ou commande est conservée et reste affichée sous son nom."
+        : `Ses ${count} ventes et commandes sont conservées et restent affichées sous son nom.`;
   return `${kept} Tu pourras annuler pendant 5 secondes.`;
 }
 
@@ -172,7 +172,7 @@ export function CustomerView({ sheet, aEncaisser, receivables, pockets }: Custom
         <div ref={dueTile} className="col-span-2 min-w-0 rounded-[var(--admin-radius-lg)]" data-customer-due={aEncaisser}>
           <KpiTile label="À encaisser" amount={aEncaisser} tone={isPositive(aEncaisser) ? "warning" : "default"} className="h-full p-3" />
         </div>
-        <KpiTile label="Documents" value={sheet.documentCount} className="p-3" />
+        <KpiTile label="Ventes et commandes" value={sheet.documentCount} className="p-3" />
         <KpiTile
           label="Dernier achat"
           value={sheet.lastPurchaseAt ? <DateLabel date={sheet.lastPurchaseAt} format="short" /> : "—"}

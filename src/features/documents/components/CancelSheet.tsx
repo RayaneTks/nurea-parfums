@@ -126,7 +126,7 @@ export function CancelSheet({ open, onClose, mode, doc, pockets }: CancelSheetPr
       <div className="flex flex-col gap-5">
         {mode === "cancel" ? (
           <Text variant="body" tone="muted">
-            Le document reste consultable, marqué annulé. Les articles livrés reviennent en stock.
+            Elle reste consultable, marquée annulée. Les articles livrés reviennent en stock.
           </Text>
         ) : (
           <Text variant="body" tone="muted">

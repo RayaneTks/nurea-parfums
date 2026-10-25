@@ -178,7 +178,7 @@ describe("T4b — refus", () => {
     const counts = await moneyCounts(server.prisma);
 
     expect(expectError(await revert(deposit.undo), "CONFLICT").message).toBe(
-      "Ce document a changé depuis ce geste : rien n'a été annulé. Corrige-le depuis sa fiche.",
+      "La vente ou commande a changé depuis ce geste : rien n'a été annulé. Corrige-le depuis sa fiche.",
     );
     expect(await documentOf(id)).toEqual(before);
     expect(await moneyCounts(server.prisma)).toEqual(counts);
@@ -207,7 +207,7 @@ describe("T4b — refus", () => {
     const [body, mac] = (deposit.undo as string).split(".");
     const tampered = `${Buffer.from(Buffer.from(body!, "base64url").toString("utf8").replace('"PENDING"', '"DELIVERED"')).toString("base64url")}.${mac}`;
 
-    const refused = "Ce geste ne peut plus être annulé d'ici : corrige-le depuis la fiche du document.";
+    const refused = "Ce geste ne peut plus être annulé d'ici : corrige-le depuis sa fiche.";
     expect(expectError(await revert(tampered), "CONFLICT").message).toBe(refused);
     expect(expectError(await revert("n'importe quoi"), "CONFLICT").message).toBe(refused);
     expectError(await revert(null), "VALIDATION");
@@ -218,7 +218,7 @@ describe("T4b — refus", () => {
       issuedAt: new Date(Date.now() - server.documentsWriter.REVERT_WINDOW_MS - 1000).toISOString(),
     });
     expect(expectError(await revert(old), "CONFLICT").message).toBe(
-      "Trop tard pour annuler ce geste : corrige-le depuis la fiche du document.",
+      "Trop tard pour annuler ce geste : corrige-le depuis sa fiche.",
     );
     expect((await documentOf(id)).status).toBe("CONFIRMED");
   });

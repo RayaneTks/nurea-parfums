@@ -125,17 +125,17 @@ describe("lignes de document", () => {
 
 describe("lignes de lot", () => {
   it("l'arrivée prévue quand il y en a une, le mois de création sinon", () => {
-    expect(batchLegend(batch({ expectedAt: "2026-10-03T10:00:00.000Z" }), NOW)).toBe("arrivée prévue 3 oct. · 12 documents");
-    expect(batchLegend(batch(), NOW)).toBe("créé en septembre · 12 documents");
+    expect(batchLegend(batch({ expectedAt: "2026-10-03T10:00:00.000Z" }), NOW)).toBe("arrivée prévue 3 oct. · 12 ventes ou commandes");
+    expect(batchLegend(batch(), NOW)).toBe("créé en septembre · 12 ventes ou commandes");
   });
 
   it("le mois de création est daté dès qu'il n'est pas de cette année", () => {
-    expect(batchLegend(batch({ createdAt: "2025-09-02T10:00:00.000Z" }), NOW)).toBe("créé en septembre 2025 · 12 documents");
+    expect(batchLegend(batch({ createdAt: "2025-09-02T10:00:00.000Z" }), NOW)).toBe("créé en septembre 2025 · 12 ventes ou commandes");
   });
 
   it("un lot sans document ne compte pas de documents", () => {
     expect(batchLegend(batch({ documentCount: 0 }), NOW)).toBe("créé en septembre");
-    expect(batchLegend(batch({ documentCount: 1 }), NOW)).toBe("créé en septembre · 1 document");
+    expect(batchLegend(batch({ documentCount: 1 }), NOW)).toBe("créé en septembre · 1 vente ou commande");
   });
 
   it("l'en-tête de la fiche dit l'état puis la date", () => {
@@ -189,11 +189,11 @@ describe("S13 — rattachement en masse", () => {
   });
 
   it("le toast dit ce qui a été appliqué, jamais « mis à jour » quand rien ne l'a été", () => {
-    expect(assignToast({ attached: 3, detached: 0, applied: 3 })).toBe("3 documents rattachés");
-    expect(assignToast({ attached: 0, detached: 1, applied: 1 })).toBe("1 retiré du lot");
-    expect(assignToast({ attached: 2, detached: 1, applied: 3 })).toBe("2 documents rattachés · 1 retiré du lot");
+    expect(assignToast({ attached: 3, detached: 0, applied: 3 })).toBe("3 ventes ou commandes rattachées");
+    expect(assignToast({ attached: 0, detached: 1, applied: 1 })).toBe("1 retirée du lot");
+    expect(assignToast({ attached: 2, detached: 1, applied: 3 })).toBe("2 ventes ou commandes rattachées · 1 retirée du lot");
     expect(assignToast({ attached: 3, detached: 0, applied: 0 })).toBe("Aucun changement : tout était déjà à jour.");
-    expect(assignToast({ attached: 3, detached: 0, applied: 2 })).toBe("2 documents enregistrés · 1 déjà à jour");
+    expect(assignToast({ attached: 3, detached: 0, applied: 2 })).toBe("2 ventes ou commandes enregistrées · 1 déjà à jour");
   });
 });
 

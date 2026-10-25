@@ -213,7 +213,7 @@ describe("updateDocumentInput", () => {
       "lines.1.id": "Cette ligne apparaît deux fois : recharge la page et réessaie.",
     });
     expect(errors(updateDocumentInput.safeParse({ documentId: ID, lines: [] }))).toEqual({
-      lines: "Garde au moins un article : pour tout retirer, annule ou supprime le document.",
+      lines: "Garde au moins un article : pour tout retirer, annule ou supprime la vente ou la commande.",
     });
   });
 });
@@ -235,7 +235,7 @@ describe("gestes : pointage, statut, lot", () => {
     const change = { documentId: ID, from: null, to: LINE_ID };
     expect(assignDocumentsToBatchInput.safeParse({ changes: [change] }).success).toBe(true);
     expect(errors(assignDocumentsToBatchInput.safeParse({ changes: [change, { ...change, to: null }] }))).toEqual({
-      "changes.1.documentId": "Ce document apparaît deux fois : recharge la page et réessaie.",
+      "changes.1.documentId": "Une vente ou commande apparaît deux fois : recharge la page et réessaie.",
     });
     expect(errors(assignDocumentsToBatchInput.safeParse({ changes: [] }))).toEqual({ changes: "Aucun changement à enregistrer." });
   });

@@ -116,7 +116,7 @@ export function UnbatchedSection({ data, batches, onOpenDocument, q, pages }: Un
           value={query}
           onChange={setQuery}
           placeholder="Client, parfum, marque, notes…"
-          ariaLabel="Rechercher un document à rattacher"
+          ariaLabel="Rechercher une vente ou une commande à rattacher"
           onFocus={scrollFieldIntoView}
         />
       ) : null}

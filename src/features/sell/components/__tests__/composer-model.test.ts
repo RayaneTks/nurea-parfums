@@ -225,7 +225,7 @@ describe("carte de confirmation", () => {
     const draft = saleWithSauvage();
     const card = confirmationOf(draft, { id: draft.id, origin: "DIRECT_SALE", status: "DELIVERED", total: m("120.00"), paid: m("120.00"), due: m("0.00") }, ctx);
     expect(card.title).toBe(`Vente enregistrée · ${euros("120")} · Espèces`);
-    expect(cancelDescription(card)).toBe(`Le document reste consultable, marqué annulé. Les ${euros("120")} sont retirés d'Espèces aujourd'hui. Le stock est restitué.`);
+    expect(cancelDescription(card)).toBe(`Elle reste consultable, marquée annulée. Les ${euros("120")} sont retirés d'Espèces aujourd'hui. Le stock est restitué.`);
     expect(fromPocket("Banque")).toBe("de Banque");
   });
 

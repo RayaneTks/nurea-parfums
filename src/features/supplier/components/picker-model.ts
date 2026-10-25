@@ -120,9 +120,9 @@ export function documentCaption(doc: SupplierPickerDocumentDTO, batchName: strin
   return parts.join(" · ");
 }
 
-/** « 12 documents » et, s'il y a lieu, « 2 lignes sans coût ». */
+/** « 12 ventes ou commandes » et, s'il y a lieu, « 2 lignes sans coût ». */
 export function batchCaption(batch: SupplierPickerBatchDTO): string {
-  const parts = [plural(batch.documentCount, "document", "documents")];
+  const parts = [plural(batch.documentCount, "vente ou commande", "ventes ou commandes")];
   if (batch.status === "CLOSED") parts.push("Clos");
   if (batch.missingLines > 0) parts.push(plural(batch.missingLines, "ligne sans coût", "lignes sans coût"));
   return parts.join(" · ");

@@ -19,13 +19,13 @@ import { db } from "@/server/db/client";
 
 export const CSV_HEADERS = [
   "Date",
-  "Document",
+  "Vente ou commande",
   "Client",
   "Nature",
   "Poche",
   "Moyen",
   "Encaissé (€)",
-  "Total du document (€)",
+  "Total (€)",
 ] as const;
 
 const BOM = "﻿";

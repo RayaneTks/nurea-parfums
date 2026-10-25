@@ -145,7 +145,7 @@ describe("T12 — annuler un mouvement manuel", () => {
     await createDocument(server, { origin: "DIRECT_SALE", received: [{ amount: "120", pocketId: null }] });
     const movement = await server.prisma.cashMovement.findFirstOrThrow({ where: { kind: "PAYMENT" } });
     expect(expectError(await reverse(movement.id), "CONFLICT").message).toBe(
-      "Ce mouvement vient d'un paiement : annule le paiement depuis la fiche du document.",
+      "Ce mouvement vient d'un paiement : annule le paiement depuis la fiche de la vente ou commande.",
     );
     expectError(await reverse(newId()), "NOT_FOUND");
   });

@@ -134,7 +134,7 @@ export type ReceivableRow = {
 export function receivableDto(row: ReceivableRow): ReceivableDTO {
   // CHECK `doc_confirmed_at_ck` : un document engagé a toujours sa date d'engagement.
   if (row.confirmedAt === null || row.ageDays === null) {
-    throw new Error(`chiffres : document engagé ${row.documentId} sans date d'engagement (doc_confirmed_at_ck).`);
+    throw new Error(`chiffres : SaleDocument engagé ${row.documentId} sans date d'engagement (doc_confirmed_at_ck).`);
   }
   return {
     documentId: row.documentId,

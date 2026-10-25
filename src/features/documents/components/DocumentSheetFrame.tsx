@@ -40,7 +40,7 @@ type FrameValue = {
 
 const FrameContext = createContext<FrameValue | null>(null);
 
-const DEFAULT_CHROME: SheetChrome = { title: "Fiche document" };
+const DEFAULT_CHROME: SheetChrome = { title: "Vente ou commande" };
 
 /** Durée de sortie d'une sheet (05 §2.6, 260 ms) et une marge. */
 const CLOSE_DELAY_MS = 300;
@@ -145,7 +145,7 @@ function isTextEntry(target: EventTarget | null): target is HTMLElement {
 
 function useFrame(): FrameValue {
   const ctx = useContext(FrameContext);
-  if (!ctx) throw new Error("Fiche document : composant hors de DocumentSheetFrame.");
+  if (!ctx) throw new Error("useDocumentSheetChrome : composant hors de DocumentSheetFrame.");
   return ctx;
 }
 

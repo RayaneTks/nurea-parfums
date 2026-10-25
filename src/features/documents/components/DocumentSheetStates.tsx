@@ -14,7 +14,7 @@ import { useCloseDocumentSheet, useSheetChrome } from "./DocumentSheetFrame";
 export function DocumentSheetSkeleton() {
   useSheetChrome({
     title: (
-      <span className="flex h-[25px] items-center" aria-label="Chargement du document">
+      <span className="flex h-[25px] items-center" aria-label="Chargement de la fiche">
         <Skeleton width={160} height={18} />
       </span>
     ),
@@ -25,7 +25,7 @@ export function DocumentSheetSkeleton() {
     ),
   });
   return (
-    <div className="flex flex-col gap-5" aria-busy aria-label="Chargement du document">
+    <div className="flex flex-col gap-5" aria-busy aria-label="Chargement de la fiche">
       <Skeleton height={44} className="rounded-[var(--admin-radius-md)]" />
       <div className="grid grid-cols-3 gap-2">
         {[0, 1, 2].map((index) => (
@@ -50,10 +50,10 @@ export function DocumentSheetSkeleton() {
 
 export function DocumentMissing() {
   const close = useCloseDocumentSheet();
-  useSheetChrome({ title: "Document introuvable" });
+  useSheetChrome({ title: "Fiche introuvable" });
   return (
     <div className="flex flex-col items-center gap-4 px-2 py-8 text-center">
-      <Text variant="h3">Ce document n&apos;existe plus</Text>
+      <Text variant="h3">Cette vente ou commande n&apos;existe plus</Text>
       <Text variant="body" tone="muted">
         Il a peut-être été supprimé depuis un autre écran.
       </Text>

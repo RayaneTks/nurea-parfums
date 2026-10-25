@@ -131,7 +131,7 @@ test("export CSV : BOM, « ; », aucun en-tête « CA », et Σ « Encaissé (�
   const text = await readDownload(download);
   expect(text.startsWith("﻿")).toBe(true);
   const header = text.slice(1).split("\r\n")[0] ?? "";
-  expect(header).toBe("Date;Document;Client;Nature;Poche;Moyen;Encaissé (€);Total du document (€)");
+  expect(header).toBe("Date;Vente ou commande;Client;Nature;Poche;Moyen;Encaissé (€);Total (€)");
   expect(text).not.toMatch(/\bCA\b/);
   expect(sumEncaisse(text)).toBe(chiffresCanoniques(comptaPeriodKey({ periode: "mois", ref: MONTH_REF })).encaisse);
   // Le fichier se recoupe avec l'écran : sa somme est le chiffre affiché.

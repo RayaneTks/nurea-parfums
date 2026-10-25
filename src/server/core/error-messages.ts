@@ -71,16 +71,16 @@ export const RESTRICT_MESSAGES: Readonly<Record<string, string>> = {
   SaleDocument_batchId_fkey: "Ce lot porte encore des ventes ou des dépenses : clôture-le plutôt.",
   BatchExpense_batchId_fkey: "Ce lot porte encore des ventes ou des dépenses : clôture-le plutôt.",
   CashMovement_pocketId_fkey: "Cette poche a un historique : archive-la une fois son solde à 0.",
-  Payment_documentId_fkey: "Ce document a des paiements : annule-le plutôt.",
+  Payment_documentId_fkey: "Cette vente ou commande a des paiements : annule-la plutôt.",
 };
 
 export const RESTRICT_FALLBACK_MESSAGE = "Cet élément est encore lié à d'autres données : il ne peut pas être supprimé.";
 
 /** Entité disparue (`P2025`, ou clé étrangère vers une ligne absente), par modèle. */
 export const NOT_FOUND_MESSAGES: Readonly<Record<string, string>> = {
-  SaleDocument: "Ce document n'existe plus. Il a peut-être été supprimé depuis un autre écran.",
-  SaleLine: "Cette ligne n'existe plus. Recharge le document pour voir sa version à jour.",
-  Payment: "Ce paiement n'existe plus. Recharge le document pour voir sa version à jour.",
+  SaleDocument: "Cette vente ou commande n'existe plus. Elle a peut-être été supprimée depuis un autre écran.",
+  SaleLine: "Cette ligne n'existe plus. Recharge la fiche pour voir sa version à jour.",
+  Payment: "Ce paiement n'existe plus. Recharge la fiche pour voir sa version à jour.",
   Customer: "Cette fiche client n'existe plus. Elle a peut-être été supprimée depuis un autre écran.",
   Batch: "Ce lot n'existe plus. Il a peut-être été supprimé depuis un autre écran.",
   BatchExpense: "Cette dépense n'existe plus. Recharge le lot pour voir sa version à jour.",

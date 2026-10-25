@@ -241,11 +241,11 @@ describe("Lots — créer, modifier, clôturer, supprimer", () => {
     const mars = await seedBatch(server.prisma, { name: "Mars" });
     await createDocument("ORDER", mars.id);
     expect(expectError(await server.batches.deleteBatchAction({ id: mars.id }), "CONFLICT").message).toBe(
-      "Impossible : 1 document rattaché. Clôture-le plutôt.",
+      "Impossible : 1 vente ou commande rattachée. Clôture-le plutôt.",
     );
     await createDocument("DIRECT_SALE", mars.id);
     expect(expectError(await server.batches.deleteBatchAction({ id: mars.id }), "CONFLICT").message).toBe(
-      "Impossible : 2 documents rattachés. Clôture-le plutôt.",
+      "Impossible : 2 ventes ou commandes rattachées. Clôture-le plutôt.",
     );
     expect(await server.prisma.batch.count({ where: { id: mars.id } })).toBe(1);
   });
