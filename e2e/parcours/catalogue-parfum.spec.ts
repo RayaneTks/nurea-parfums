@@ -82,7 +82,8 @@ test("l'œil barré ne marque que les parfums masqués ; 1 tap rend visible, gar
   await openShell(page, routes.catalogue({ q: "yara" }));
   await expect(page.getByRole("link", { name: /^Yara, / })).toBeVisible();
   await expect(page.locator("[data-visibility-toggle]")).toHaveCount(0);
-  await page.getByRole("link", { name: /^Yara, / }).tap();
+  const fiche = await page.getByRole("link", { name: /^Yara, / }).getAttribute("href");
+  await openShell(page, fiche as string);
   const visibility = page.getByRole("switch", { name: /Visible sur la vitrine/ });
   await waitForHydration(visibility);
   await visibility.tap();
