@@ -12,7 +12,7 @@ import { dzdFromDb, rateFromDb, toDb } from "@/domain/money";
 import { supplierBalanceState, supplierRemaining } from "@/domain/supplier-debt";
 import { defineQuery } from "@/server/core/define-query";
 import { db } from "@/server/db/client";
-import { entrySummary } from "@/server/supplier/dto";
+import { ENTRY_SUMMARY_SELECT, entrySummary } from "@/server/supplier/dto";
 import { pickerBatchesSql, pickerDocumentsSql, type PickerBatchRow, type PickerDocumentRow } from "@/server/supplier/sql";
 
 /**
@@ -53,15 +53,7 @@ export const getSupplierLedger = defineQuery(async (): Promise<SupplierLedgerDTO
     supplierBalance(),
     db.supplierEntry.findMany({
       orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }, { id: "desc" }],
-      select: {
-        id: true,
-        kind: true,
-        amountDzd: true,
-        label: true,
-        note: true,
-        occurredAt: true,
-        _count: { select: { items: true } },
-      },
+      select: { ...ENTRY_SUMMARY_SELECT, _count: { select: { items: true } } },
     }),
   ]);
   return {
@@ -76,12 +68,8 @@ export const getSupplierEntry = defineQuery(async (id: string): Promise<Supplier
   const row = await db.supplierEntry.findUnique({
     where: { id },
     select: {
-      id: true,
-      kind: true,
-      amountDzd: true,
-      label: true,
-      note: true,
-      occurredAt: true,
+      ...ENTRY_SUMMARY_SELECT,
+      settles: { select: { id: true, label: true } },
       createdAt: true,
       items: {
         orderBy: { id: "asc" },
@@ -97,10 +85,11 @@ export const getSupplierEntry = defineQuery(async (id: string): Promise<Supplier
     },
   });
   if (!row) return null;
-  const { createdAt, items, ...entry } = row;
+  const { createdAt, items, settles, ...entry } = row;
   return {
     ...entrySummary(entry),
     createdAt: createdAt.toISOString(),
+    settles,
     items: items.flatMap((item): SupplierEntryItemDTO[] => {
       const amountDzd = toDb(dzdFromDb(item.amountDzd));
       if (item.document) {

@@ -18,6 +18,9 @@ export const SUPPLIER = {
   debtManual: { id: cuid("dettetransport"), label: "Transport", amount: "8500.00" },
   /** Versement partiel : le reste « pour la prochaine fois ». */
   payment: { id: cuid("versementespeces"), label: "En main propre", amount: "60000.00" },
+  /** Dette « Marquée remboursée » et son versement lié : le Reste à payer n'en bouge pas. */
+  debtSettled: { id: cuid("detteflacons"), label: "Flacons", amount: "15000.00" },
+  settlement: { id: cuid("remboursementflacons") },
 } as const;
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -51,6 +54,24 @@ export async function seedSupplier(db: PrismaClient, ctx: { batchId: string }): 
       amountDzd: SUPPLIER.payment.amount,
       label: SUPPLIER.payment.label,
       occurredAt: new Date(now - 3 * DAY),
+    },
+  });
+  await db.supplierEntry.create({
+    data: {
+      id: SUPPLIER.debtSettled.id,
+      kind: "DEBT",
+      amountDzd: SUPPLIER.debtSettled.amount,
+      label: SUPPLIER.debtSettled.label,
+      occurredAt: new Date(now - 30 * DAY),
+    },
+  });
+  await db.supplierEntry.create({
+    data: {
+      id: SUPPLIER.settlement.id,
+      kind: "PAYMENT",
+      amountDzd: SUPPLIER.debtSettled.amount,
+      settlesEntryId: SUPPLIER.debtSettled.id,
+      occurredAt: new Date(now - 25 * DAY),
     },
   });
 }

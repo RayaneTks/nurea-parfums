@@ -1,9 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { useShellSheet } from "@/app-shell/SheetRegistry";
+import { useAction } from "@/app-shell/hooks/useAction";
+import { useUrlState } from "@/app-shell/hooks/useUrlState";
 import { routes } from "@/app-shell/routes";
 import type { SupplierEntryDTO } from "@/contracts/supplier";
+import { newId } from "@/domain/ids";
 import { dzdFromDb, formatDzd, type Rate } from "@/domain/money";
+import { settleSupplierDebtAction } from "@/server/supplier/actions";
 import { DateLabel } from "@/ui/patterns/DateLabel";
 import { ListSection } from "@/ui/patterns/ListSection";
 import { Button } from "@/ui/primitives/Button";
@@ -18,16 +23,27 @@ type LineSheetProps = {
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  /** « Annuler le remboursement » : supprime le versement lié, avec le filet « Annuler » de l'écran. */
+  onUnsettle: (paymentId: string) => void;
 };
 
 /**
  * S22 — Une ligne du carnet (`?ligne=<id>`) : le détail, la note, ce qui avait été coché, puis « Modifier »
  * et « Supprimer » (filet « Annuler » de 5 s, posé par l'écran). L'euro est relu au taux du carnet, jamais
  * figé sur la ligne.
+ *
+ * Une dette se « marque remboursée » d'un geste : un versement du même montant, daté maintenant, lié à
+ * elle (le Reste à payer baisse d'autant ; rien ne sort de la Trésorerie). Remboursée, elle le dit et
+ * propose « Annuler le remboursement ».
  */
-export function LineSheet({ entry, rate, onClose, onEdit, onDelete }: LineSheetProps) {
+export function LineSheet({ entry, rate, onClose, onEdit, onDelete, onUnsettle }: LineSheetProps) {
   useShellSheet(true, onClose);
+  const url = useUrlState();
   const amount = dzdFromDb(entry.amountDzd);
+  const [paymentId] = useState(newId);
+  const settle = useAction(settleSupplierDebtAction, { success: "Dette marquée remboursée" });
+  const settledBy = entry.settledBy;
+  const settles = entry.kind === "PAYMENT" ? entry.settles : null;
 
   return (
     <Sheet
@@ -43,6 +59,23 @@ export function LineSheet({ entry, rate, onClose, onEdit, onDelete }: LineSheetP
       }
       footer={
         <div className="flex flex-col gap-2">
+          {entry.kind === "DEBT" && !settledBy ? (
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              isLoading={settle.pending}
+              onClick={() => void settle.run({ id: paymentId, debtId: entry.id })}
+              data-supplier-settle
+            >
+              Marquer remboursée
+            </Button>
+          ) : null}
+          {settledBy ? (
+            <Button variant="secondary" size="lg" fullWidth onClick={() => onUnsettle(settledBy.id)} data-supplier-unsettle>
+              Annuler le remboursement
+            </Button>
+          ) : null}
           <Button variant="secondary" size="lg" fullWidth onClick={onEdit}>
             Modifier
           </Button>
@@ -61,6 +94,23 @@ export function LineSheet({ entry, rate, onClose, onEdit, onDelete }: LineSheetP
             {eurReading(amount, rate)}
           </Text>
         </div>
+
+        {settledBy ? (
+          <Text variant="bodyEm" tone="success" data-supplier-settled>
+            Remboursée le <DateLabel date={settledBy.occurredAt} format="long" />
+          </Text>
+        ) : null}
+
+        {settles ? (
+          <ListSection title="Rembourse la dette">
+            <ListRow
+              onClick={() => url.set({ ligne: settles.id })}
+              primary={settles.label?.trim() || "Dette"}
+              secondary="Son montant suit celui de la dette."
+              chevron
+            />
+          </ListSection>
+        ) : null}
 
         {entry.note ? (
           <Text variant="body" className="whitespace-pre-wrap">

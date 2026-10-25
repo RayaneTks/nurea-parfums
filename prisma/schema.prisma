@@ -73,17 +73,17 @@ model Brand {
 
 model Perfume {
   /// Identifiant entier lu par la vitrine. Séquence Postgres (plus jamais max(id)+1).
-  id         Int               @id @default(autoincrement())
-  brandId    String
-  brand      Brand             @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  name       String
+  id            Int               @id @default(autoincrement())
+  brandId       String
+  brand         Brand             @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  name          String
   /// Gamme : ligne de la marque (« La Collection Privée », « Private Blend »), affichée avec elle.
   /// NULL = pas de gamme ; jamais une chaîne vide (CHECK perfume_line_ck).
-  line       String?
+  line          String?
   /// Visuel principal (thème sombre, WebP). Chaîne vide = sans visuel ⇒ CHECK : status = DRAFT.
-  image      String
+  image         String
   /// Variante du visuel pour le thème clair (optionnelle).
-  imageLight String?
+  imageLight    String?
   /// Couleur d'ambiance (refonte vitrine, 04-PLAN-EXECUTION § B.3) : teinte dominante du visuel
   /// sombre, 0–359, et chroma source médiane, 0–0,4. Les deux NULL = repli (surface neutre) ;
   /// jamais l'une sans l'autre (CHECK perfume_ambient_ck). Écrites par
@@ -91,17 +91,17 @@ model Perfume {
   ambientHue    Int?
   ambientChroma Decimal?          @db.Decimal(4, 3)
   /// Mise en avant vitrine : 2 au plus, et seulement un parfum PUBLISHED (règle serveur du module catalogue).
-  isFeatured Boolean           @default(false)
+  isFeatured    Boolean           @default(false)
   /// Unités en stock, tous volumes confondus. NULL = non suivi (jamais d'alerte) ; 0 = rupture. CHECK >= 0.
   /// Deux écritures seulement : réglage absolu (geste dédié) et delta des quantités livrées (§4.7).
-  stock      Int?
-  status     PublicationStatus @default(PUBLISHED)
-  createdAt  DateTime          @default(now()) @db.Timestamptz(3)
-  updatedAt  DateTime          @updatedAt @db.Timestamptz(3)
-  lines      SaleLine[]
-  pricings   PerfumePricing[]
+  stock         Int?
+  status        PublicationStatus @default(PUBLISHED)
+  createdAt     DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime          @updatedAt @db.Timestamptz(3)
+  lines         SaleLine[]
+  pricings      PerfumePricing[]
   /// Visuels story (galerie de la fiche parfum), distincts de image / imageLight.
-  media      PerfumeMedia[]
+  media         PerfumeMedia[]
 
   @@unique([brandId, name])
   @@index([status])
@@ -494,18 +494,23 @@ enum SupplierEntryKind {
 /// Modifiable et supprimable : c'est un carnet, pas une pièce comptable.
 model SupplierEntry {
   /// UUID fourni par le formulaire : un double tap rend la même ligne (04 §3.6).
-  id         String              @id @default(cuid())
-  kind       SupplierEntryKind
+  id             String              @id @default(cuid())
+  kind           SupplierEntryKind
   /// Montant en dinars. CHECK > 0 : le sens est porté par `kind`.
-  amountDzd  Decimal             @db.Decimal(10, 2)
+  amountDzd      Decimal             @db.Decimal(10, 2)
   /// Nom libre (« Lot d'octobre », « Transport »).
-  label      String?
+  label          String?
   /// Date de la dette ou du versement (tri du carnet).
-  occurredAt DateTime            @default(now()) @db.Timestamptz(3)
-  note       String?
-  createdAt  DateTime            @default(now()) @db.Timestamptz(3)
-  updatedAt  DateTime            @updatedAt @db.Timestamptz(3)
-  items      SupplierEntryItem[]
+  occurredAt     DateTime            @default(now()) @db.Timestamptz(3)
+  note           String?
+  createdAt      DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime            @updatedAt @db.Timestamptz(3)
+  items          SupplierEntryItem[]
+  /// Versement qui rembourse cette dette précise (« Marquer remboursée ») ; CHECK : seul un versement.
+  /// Supprimer la dette emporte son remboursement (cascade).
+  settlesEntryId String?             @unique
+  settles        SupplierEntry?      @relation("SupplierSettlement", fields: [settlesEntryId], references: [id], onDelete: Cascade)
+  settledBy      SupplierEntry?      @relation("SupplierSettlement")
 
   @@index([occurredAt])
 }

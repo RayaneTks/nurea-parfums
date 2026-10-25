@@ -23,8 +23,8 @@ import {
  * permettre) — une autre app sur le même port détournerait toute la suite en silence.
  */
 
-/** Parcours qui écrivent la ligne `Setting` unique (réglages de E08) : exécutés seuls, voir les projets. */
-const GLOBAL_SETTING_SPECS = /parcours[\\/]reglages\.spec\.ts$/;
+/** Parcours qui écrivent la ligne `Setting` unique (réglages de E08) ou le Reste à payer du carnet : exécutés seuls, voir les projets. */
+const GLOBAL_SETTING_SPECS = /parcours[\\/](reglages|fournisseur-rembourser)\.spec\.ts$/;
 
 /**
  * PC-12 « Première utilisation » : le seul parcours qui exige une base VIDE. Il a son harnais à lui

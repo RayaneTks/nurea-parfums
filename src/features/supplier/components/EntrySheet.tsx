@@ -122,7 +122,15 @@ export function EntrySheet({ request, rate, onClose, nested = false, onSaved = o
       nested={nested}
       dismissible={!dirty && !pending}
       title={title}
-      description={editing ? "Le sens (dette ou versement) ne change pas." : picked ? pickedDescription(picked) : undefined}
+      description={
+        editing?.settlesEntryId
+          ? "Ce versement rembourse une dette : son montant suit celui de la dette."
+          : editing
+            ? "Le sens (dette ou versement) ne change pas."
+            : picked
+              ? pickedDescription(picked)
+              : undefined
+      }
       size="auto"
     >
       <div className="flex flex-col gap-5" data-supplier-form={editing ? "edit" : picked ? "picked" : kind}>
@@ -144,6 +152,7 @@ export function EntrySheet({ request, rate, onClose, nested = false, onSaved = o
               inputMode="decimal"
               numeric
               value={amount}
+              readOnly={!!editing?.settlesEntryId}
               onChange={(event) => setAmount(event.target.value)}
               placeholder="92 700"
               trailingSlot={<span className="admin-type-body text-[var(--admin-text-muted)]">DA</span>}

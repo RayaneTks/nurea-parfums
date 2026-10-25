@@ -12,7 +12,9 @@ versé et ce qui reste. Il veut ce carnet **au propre dans Nuréa Gestion**, et 
 recalculer à la main : cocher des commandes, des ventes ou des lots et lire leur coût total en dinars.
 
 Le fournisseur se paie en dinars, sans règle fixe : en partie, le reste « pour la prochaine fois ».
-D'où **un seul compte global** avec le fournisseur : un versement n'est jamais rattaché à une dette.
+D'où **un seul compte global** avec le fournisseur : un versement n'est en général rattaché à aucune
+dette. **Exception (gérant, 25/10/2026)** : « Marquer remboursée » sur une dette note un versement du
+même montant, daté maintenant, **lié à elle** (voir § Marquer remboursée).
 
 ## Ce que le carnet n'est pas
 
@@ -38,6 +40,9 @@ D'où **un seul compte global** avec le fournisseur : un versement n'est jamais 
 | Un élément coché est un document **ou** un lot | `supplier_item_target_ck` |
 | Supprimer un document ou un lot n'est jamais bloqué par le carnet ; seul le lien disparaît, la dette garde son montant | FK `ON DELETE CASCADE` sur `SupplierEntryItem` |
 | Double tap = une seule ligne (identifiant fourni par le formulaire) | writer `recordEntry` |
+| Seul un **versement** rembourse une dette, une dette n'est remboursée **qu'une fois** | `supplier_entry_settles_ck`, index unique `settlesEntryId`, writer `settleDebt` |
+| Le montant d'un remboursement **suit celui de sa dette** ; il ne se corrige pas seul | writer `updateEntry` |
+| Supprimer une dette emporte son remboursement : le Reste à payer ne bouge pas | FK `settlesEntryId` `ON DELETE CASCADE` |
 
 ## Données
 
@@ -49,6 +54,8 @@ Migration `20261024120000_supplier_ledger`, purement additive (deux tables neuve
   sélecteur affichait au moment de noter, ≥ 0). Sert à marquer « déjà noté » et à relire, sur la
   ligne, ce qui avait été coché.
 - `Setting.supplierExchangeRate` — taux de lecture du carnet, DA pour 1 €.
+- `SupplierEntry.settlesEntryId` (migration `20261025090000_supplier_settlement`, additive) — sur un
+  versement, la dette qu'il rembourse ; NULL sinon.
 
 ## Serveur
 
@@ -57,7 +64,7 @@ Migration `20261024120000_supplier_ledger`, purement additive (deux tables neuve
 | `src/contracts/supplier.ts` | Entrées (`recordSupplierEntryInput`, `updateSupplierEntryInput`, `deleteSupplierEntryInput`, `setSupplierRateInput`) et DTO de lecture |
 | `src/server/supplier/writer.ts` | **Seul** écrivain de `SupplierEntry` et `SupplierEntryItem` (`table-ownership`) |
 | `src/server/settings/writer.ts` | `setSupplierRate`, `readSupplierRate` : `Setting` garde un seul écrivain |
-| `src/server/supplier/actions.ts` | `recordSupplierEntryAction`, `updateSupplierEntryAction`, `deleteSupplierEntryAction`, `setSupplierRateAction` |
+| `src/server/supplier/actions.ts` | `recordSupplierEntryAction`, `settleSupplierDebtAction`, `updateSupplierEntryAction`, `deleteSupplierEntryAction`, `setSupplierRateAction` |
 | `src/server/supplier/queries.ts` | `getSupplierBalance` (Accueil), `getSupplierLedger` (E22), `getSupplierEntry(id)` (S22) |
 
 L'en-tête de E22 et la rangée de l'Accueil lisent le Reste à payer par la **même** fonction : ils
@@ -110,10 +117,24 @@ cochable (deux dettes pour une même commande, un réassort par exemple). Liste 
 plafonnée à 1 000 documents (le reste se dit « N affichés sur M »), dessinée 50 par 50 (« Afficher plus »).
 Un document annulé entre l'ouverture et l'envoi : refus `NOT_FOUND`, rien d'écrit.
 
+## Marquer remboursée (décidé le 25/10/2026)
+
+Dans S22, une dette non remboursée porte le bouton primaire **« Marquer remboursée »**
+(`settleSupplierDebtAction`). Il note un **versement** du montant de la dette, daté maintenant,
+`settlesEntryId` = la dette. Le Reste à payer reste Σ dettes − Σ versements : il baisse d'autant.
+**Aucun `CashMovement`**, aucune poche : le gérant reflète lui-même le paiement en Trésorerie s'il le
+veut (`tests/db/supplier.test.ts` le prouve).
+
+- Le carnet affiche la dette « Dette remboursée » et le versement « Remboursement » (nom par défaut).
+- S22 d'une dette remboursée : « Remboursée le 25 octobre 2026 », puis **« Annuler le
+  remboursement »** (supprime le versement, filet « Annuler » 5 s).
+- S22 d'un remboursement : la dette remboursée, touchable ; son montant est en lecture seule.
+- Second geste (double tap, deux écrans) : le versement existant est rendu, jamais deux.
+
 ## Choix à reprendre si le besoin change
 
-- Pas de rattachement versement → dette, pas de « dette réglée » : un seul compte, par décision du
-  gérant. Si un jour il veut suivre dette par dette, il faudra une table de lettrage.
+- Remboursement **entier** seulement : un versement partiel reste un versement libre, sans lien. Si un
+  jour le gérant veut suivre dette par dette avec des acomptes, il faudra une table de lettrage.
 - Le montant de la dette reste celui que le gérant valide (pré-rempli par la somme, modifiable) : la
   somme des éléments cochés n'est pas imposée, elle aide.
 - Carnet non paginé (`shortcut` dans `queries.ts`) : à paginer au-delà de quelques centaines de lignes.

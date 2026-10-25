@@ -17,7 +17,7 @@ import { EntrySheet, type EntryRequest } from "./EntrySheet";
 import { LineSheet } from "./LineSheet";
 import { PickerSheet } from "./PickerSheet";
 import { RateSheet } from "./RateSheet";
-import { balanceHeadline, entryAmountText, entryKindLabel, entryTitle, eurReading, rateLabel, remainingWithout } from "./supplier-model";
+import { balanceHeadline, entryAmountText, entryCaption, entryKindLabel, entryTitle, eurReading, rateLabel, remainingWithout } from "./supplier-model";
 
 type SupplierViewProps = {
   ledger: SupplierLedgerDTO;
@@ -63,20 +63,27 @@ export function SupplierView({ ledger, entry, picker }: SupplierViewProps) {
   const openPicker = () => url.set({ selection: true }, { history: "push" });
   const closePicker = () => url.set({ selection: null });
 
-  const remove = (target: SupplierEntryDTO) => {
-    hide(target.id, true);
-    closeLine();
+  /** Masque puis supprime au bout du filet ; une dette remboursée emporte son remboursement (cascade). */
+  const schedule = (ids: readonly [string, ...string[]], message: string) => {
+    const mark = (on: boolean) => ids.forEach((id) => hide(id, on));
+    mark(true);
     scheduleDelete({
-      message: `${entryKindLabel(target.kind)} supprimé${target.kind === "DEBT" ? "e" : ""}`,
-      onUndo: () => hide(target.id, false),
+      message,
+      onUndo: () => mark(false),
       onCommit: async () => {
-        const result = await deleteSupplierEntryAction({ id: target.id });
+        const result = await deleteSupplierEntryAction({ id: ids[0] });
         if (!result.ok) {
-          hide(target.id, false);
+          mark(false);
           showToast({ type: "error", message: result.error.message });
         }
       },
     });
+  };
+
+  const remove = (target: SupplierEntryDTO) => {
+    closeLine();
+    const ids: [string, ...string[]] = target.settledBy ? [target.id, target.settledBy.id] : [target.id];
+    schedule(ids, `${entryKindLabel(target.kind)} supprimé${target.kind === "DEBT" ? "e" : ""}`);
   };
 
   const payAll = headline.state === "due" ? ledger.remainingDzd : undefined;
@@ -139,7 +146,7 @@ export function SupplierView({ ledger, entry, picker }: SupplierViewProps) {
                   primary={entryTitle(row)}
                   secondary={
                     <>
-                      {entryKindLabel(row.kind)} · <DateLabel date={row.occurredAt} />
+                      {entryCaption(row)} · <DateLabel date={row.occurredAt} />
                     </>
                   }
                   trailing={
@@ -191,6 +198,7 @@ export function SupplierView({ ledger, entry, picker }: SupplierViewProps) {
           onClose={closeLine}
           onEdit={() => setForm({ mode: "edit", entry })}
           onDelete={() => remove(entry)}
+          onUnsettle={(paymentId) => schedule([paymentId], "Remboursement annulé")}
         />
       ) : null}
 

@@ -189,6 +189,7 @@ const cases: readonly TableCase[] = [
       { constraint: "supplier_entry_amount_ck", why: "montant signé", row: { amountDzd: "-100.00" } },
       { constraint: "supplier_entry_label_ck", why: "nom fait d'espaces", row: { label: "  " } },
       { constraint: "supplier_entry_note_ck", why: "note vide", row: { note: "" } },
+      { constraint: "supplier_entry_settles_ck", why: "une dette qui en rembourse une autre", row: { kind: "DEBT", settlesEntryId: SUPPLIER_ENTRY_ID } },
     ],
   },
   {

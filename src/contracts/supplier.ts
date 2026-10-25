@@ -79,6 +79,12 @@ export const updateSupplierEntryInput = z.object({
   occurredAt: optionalDate.transform((date) => date ?? undefined),
 });
 
+/**
+ * « Marquer remboursée » (S22, décidé le 25/10/2026) : note un versement du montant de la dette, daté
+ * maintenant et rattaché à elle. `id` est celui du versement, fourni par l'écran (double tap = un seul).
+ */
+export const settleSupplierDebtInput = z.object({ id: entityId, debtId: entityId });
+
 /** Supprimer une ligne (le filet « Annuler » 5 s est côté écran, `UndoProvider`). */
 export const deleteSupplierEntryInput = z.object({ id: entityId });
 
@@ -99,6 +105,7 @@ export type RecordSupplierEntryData = z.output<typeof recordSupplierEntryInput>;
 export type UpdateSupplierEntryInput = z.input<typeof updateSupplierEntryInput>;
 export type UpdateSupplierEntryData = z.output<typeof updateSupplierEntryInput>;
 export type DeleteSupplierEntryInput = z.input<typeof deleteSupplierEntryInput>;
+export type SettleSupplierDebtInput = z.input<typeof settleSupplierDebtInput>;
 export type SetSupplierRateInput = z.input<typeof setSupplierRateInput>;
 
 // ── Lectures ───────────────────────────────────────────────────────────────────
@@ -113,6 +120,10 @@ export type SupplierEntrySummary = {
   note: string | null;
   /** ISO 8601. */
   occurredAt: string;
+  /** Versement : la dette qu'il rembourse (« Marquer remboursée »), sinon null. */
+  settlesEntryId: string | null;
+  /** Dette : le versement qui la rembourse, sinon null. */
+  settledBy: { id: string; /** ISO 8601. */ occurredAt: string } | null;
 };
 
 export type SupplierEntryRowDTO = SupplierEntrySummary & {
@@ -151,6 +162,8 @@ export type SupplierEntryItemDTO =
 export type SupplierEntryDTO = SupplierEntrySummary & {
   /** ISO 8601. */
   createdAt: string;
+  /** Versement de remboursement : la dette remboursée, pour la relire et y revenir. */
+  settles: { id: string; label: string | null } | null;
   items: SupplierEntryItemDTO[];
 };
 

@@ -52,9 +52,16 @@ export function entryKindLabel(kind: SupplierEntryKind): string {
   return kind === "DEBT" ? "Dette" : "Versement";
 }
 
-/** Le nom de la ligne ; à défaut, son sens (« Dette », « Versement »). */
-export function entryTitle(entry: Pick<SupplierEntrySummary, "kind" | "label">): string {
-  return entry.label?.trim() || entryKindLabel(entry.kind);
+/** Le nom de la ligne ; à défaut, son sens (« Dette », « Versement », « Remboursement »). */
+export function entryTitle(entry: Pick<SupplierEntrySummary, "kind" | "label"> & { settlesEntryId?: string | null }): string {
+  return entry.label?.trim() || (entry.settlesEntryId ? "Remboursement" : entryKindLabel(entry.kind));
+}
+
+/** Sous le nom, dans le carnet : « Dette », « Dette remboursée », « Versement » ou « Remboursement ». */
+export function entryCaption(entry: Pick<SupplierEntrySummary, "kind" | "settlesEntryId" | "settledBy">): string {
+  if (entry.settledBy) return "Dette remboursée";
+  if (entry.settlesEntryId) return "Remboursement";
+  return entryKindLabel(entry.kind);
 }
 
 /** Montant de base → texte de champ : « 92700.00 » devient « 92700 », « 92700.50 » devient « 92700,50 ». */

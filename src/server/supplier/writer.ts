@@ -2,14 +2,16 @@ import "server-only";
 import {
   SUPPLIER_FUTURE_DATE_MESSAGE,
   type RecordSupplierEntryData,
+  type SettleSupplierDebtInput,
   type SupplierEntryDeletion,
   type SupplierEntrySummary,
   type UpdateSupplierEntryData,
 } from "@/contracts/supplier";
 import { valueDateOf } from "@/contracts/treasury";
 import { DomainError } from "@/domain/errors";
+import { dzd, dzdFromDb } from "@/domain/money";
 import type { Tx } from "@/server/db/transaction";
-import { entrySummary } from "@/server/supplier/dto";
+import { ENTRY_SUMMARY_SELECT, entrySummary } from "@/server/supplier/dto";
 import { batchCostsByIdSql, documentCostsByIdSql, type PickerBatchRow, type PickerDocumentRow } from "@/server/supplier/sql";
 
 /**
@@ -18,13 +20,20 @@ import { batchCostsByIdSql, documentCostsByIdSql, type PickerBatchRow, type Pick
  * Un carnet, pas une pièce comptable : une ligne se corrige et se supprime. Aucune écriture ici ne touche
  * l'argent de la gestion (`CashMovement`, `Pocket`) ni un document ou un lot : les éléments cochés ne font
  * que les désigner. Le « Paiement fournisseur » de la Trésorerie reste un geste séparé, à la main.
+ *
+ * Un versement peut rembourser une dette précise (`settlesEntryId`, « Marquer remboursée ») : il porte
+ * toujours le montant de la dette, et disparaît avec elle (cascade).
  */
 
 export const SUPPLIER_ENTRY_NOT_FOUND = "Cette ligne du carnet n'existe plus. Recharge l'écran pour voir le carnet à jour.";
 const ITEM_TARGET_GONE =
   "Un élément coché n'existe plus ou a été annulé depuis un autre écran. Recharge la liste et recoche.";
 
-const SELECT = { id: true, kind: true, amountDzd: true, label: true, note: true, occurredAt: true } as const;
+const NOT_A_DEBT = "Seule une dette se marque remboursée.";
+const SETTLEMENT_AMOUNT_LOCKED =
+  "Ce versement rembourse une dette : son montant suit celui de la dette. Modifie la dette, ou annule le remboursement.";
+
+const SELECT = ENTRY_SUMMARY_SELECT;
 
 function occurredAtOf(chosen: Date | null | undefined, now: Date): Date {
   const date = valueDateOf(chosen, now);
@@ -76,10 +85,43 @@ export async function recordEntry(tx: Tx, input: RecordSupplierEntryData): Promi
   return entrySummary(created);
 }
 
-/** Corriger montant, nom, note ou date ; un appel sans changement rend la ligne telle quelle. */
+/**
+ * « Marquer remboursée » : un versement du montant de la dette, daté maintenant, rattaché à elle. Une dette
+ * déjà remboursée rend son versement existant (deux écrans, double tap) : jamais deux remboursements.
+ */
+export async function settleDebt(tx: Tx, input: SettleSupplierDebtInput): Promise<SupplierEntrySummary> {
+  const existing = await tx.db.supplierEntry.findUnique({ where: { id: input.id }, select: SELECT });
+  if (existing) return entrySummary(existing);
+
+  const debt = await tx.db.supplierEntry.findUnique({ where: { id: input.debtId }, select: SELECT });
+  if (!debt) throw new DomainError("NOT_FOUND", SUPPLIER_ENTRY_NOT_FOUND);
+  if (debt.kind !== "DEBT") throw new DomainError("VALIDATION", NOT_A_DEBT);
+  if (debt.settledBy) {
+    const payment = await tx.db.supplierEntry.findUniqueOrThrow({ where: { id: debt.settledBy.id }, select: SELECT });
+    return entrySummary(payment);
+  }
+  return entrySummary(
+    await tx.db.supplierEntry.create({
+      data: { id: input.id, kind: "PAYMENT", amountDzd: debt.amountDzd, settlesEntryId: debt.id, occurredAt: tx.now },
+      select: SELECT,
+    }),
+  );
+}
+
+/**
+ * Corriger montant, nom, note ou date ; un appel sans changement rend la ligne telle quelle. Le montant
+ * d'une dette remboursée entraîne celui de son remboursement ; celui du remboursement ne se touche pas seul.
+ */
 export async function updateEntry(tx: Tx, input: UpdateSupplierEntryData): Promise<SupplierEntrySummary> {
   const current = await tx.db.supplierEntry.findUnique({ where: { id: input.id }, select: SELECT });
   if (!current) throw new DomainError("NOT_FOUND", SUPPLIER_ENTRY_NOT_FOUND);
+  const amountChanges = input.amountDzd !== undefined && dzd.compare(dzdFromDb(current.amountDzd), dzdFromDb(input.amountDzd)) !== 0;
+  if (amountChanges && current.settlesEntryId) {
+    throw new DomainError("VALIDATION", SETTLEMENT_AMOUNT_LOCKED, "amountDzd");
+  }
+  if (amountChanges && current.settledBy) {
+    await tx.db.supplierEntry.update({ where: { id: current.settledBy.id }, data: { amountDzd: input.amountDzd } });
+  }
   const data = {
     ...(input.amountDzd !== undefined ? { amountDzd: input.amountDzd } : {}),
     ...(input.label !== undefined ? { label: input.label } : {}),

@@ -313,3 +313,67 @@ describe("taux du carnet", () => {
     expectError(await server.supplier.setSupplierRateAction({ rate: "0" }), "VALIDATION");
   });
 });
+
+describe("marquer une dette remboursée (25/10/2026)", () => {
+  it("note un versement du montant, lié à la dette, daté maintenant ; aucun mouvement d'argent", async () => {
+    const debtId = newId();
+    expectOk(
+      await server.supplier.recordSupplierEntryAction({
+        id: debtId,
+        kind: "DEBT",
+        amountDzd: "92700",
+        label: "Lot d'octobre",
+        occurredAt: new Date(Date.now() - 5 * DAY),
+      }),
+    );
+    expectOk(await server.supplier.recordSupplierEntryAction({ id: newId(), kind: "DEBT", amountDzd: "10000" }));
+
+    const paymentId = newId();
+    const before = Date.now();
+    const payment = expectOk(await server.supplier.settleSupplierDebtAction({ id: paymentId, debtId }));
+    expect(payment).toMatchObject({ id: paymentId, kind: "PAYMENT", amountDzd: "92700.00", settlesEntryId: debtId, label: null });
+    expect(new Date(payment.occurredAt).getTime()).toBeGreaterThanOrEqual(before - 1000);
+
+    // Double tap, puis un second geste depuis un autre écran : toujours le même versement.
+    expect(expectOk(await server.supplier.settleSupplierDebtAction({ id: paymentId, debtId }))).toEqual(payment);
+    expect(expectOk(await server.supplier.settleSupplierDebtAction({ id: newId(), debtId }))).toEqual(payment);
+
+    const ledger = await server.supplierQueries.getSupplierLedger();
+    expect(ledger.remainingDzd).toBe("10000.00");
+    const debt = ledger.entries.find((entry) => entry.id === debtId);
+    expect(debt?.settledBy?.id).toBe(paymentId);
+    expect((await server.supplierQueries.getSupplierEntry(paymentId))?.settles).toEqual({ id: debtId, label: "Lot d'octobre" });
+
+    expect(await server.prisma.cashMovement.count()).toBe(0);
+    expect(await server.prisma.pocket.count()).toBe(0);
+  });
+
+  it("le montant suit la dette ; supprimer la dette emporte le remboursement ; annuler le remboursement la rouvre", async () => {
+    const debtId = newId();
+    const paymentId = newId();
+    expectOk(await server.supplier.recordSupplierEntryAction({ id: debtId, kind: "DEBT", amountDzd: "5000" }));
+    expectOk(await server.supplier.settleSupplierDebtAction({ id: paymentId, debtId }));
+
+    expectOk(await server.supplier.updateSupplierEntryAction({ id: debtId, amountDzd: "6000" }));
+    expect((await server.prisma.supplierEntry.findUniqueOrThrow({ where: { id: paymentId } })).amountDzd.toString()).toBe("6000");
+    const locked = expectError(await server.supplier.updateSupplierEntryAction({ id: paymentId, amountDzd: "100" }), "VALIDATION");
+    expect(locked.fields).toHaveProperty("amountDzd");
+    expectOk(await server.supplier.updateSupplierEntryAction({ id: paymentId, amountDzd: "6000", note: "En main propre" }));
+
+    expectOk(await server.supplier.deleteSupplierEntryAction({ id: paymentId }));
+    expect((await server.supplierQueries.getSupplierEntry(debtId))?.settledBy).toBeNull();
+    expect((await server.supplierQueries.getSupplierBalance()).remainingDzd).toBe("6000.00");
+
+    expectOk(await server.supplier.settleSupplierDebtAction({ id: newId(), debtId }));
+    expectOk(await server.supplier.deleteSupplierEntryAction({ id: debtId }));
+    expect(await server.prisma.supplierEntry.count()).toBe(0);
+  });
+
+  it("refus : un versement ne se marque pas remboursé, une dette absente non plus", async () => {
+    const paymentId = newId();
+    expectOk(await server.supplier.recordSupplierEntryAction({ id: paymentId, kind: "PAYMENT", amountDzd: "1000" }));
+    expectError(await server.supplier.settleSupplierDebtAction({ id: newId(), debtId: paymentId }), "VALIDATION");
+    expectError(await server.supplier.settleSupplierDebtAction({ id: newId(), debtId: newId() }), "NOT_FOUND");
+    expect(await server.prisma.supplierEntry.count()).toBe(1);
+  });
+});

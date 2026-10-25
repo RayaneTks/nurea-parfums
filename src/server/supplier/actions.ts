@@ -4,6 +4,7 @@ import {
   deleteSupplierEntryInput,
   recordSupplierEntryInput,
   setSupplierRateInput,
+  settleSupplierDebtInput,
   updateSupplierEntryInput,
 } from "@/contracts/supplier";
 import { defineAction } from "@/server/core/define-action";
@@ -14,6 +15,11 @@ import * as supplierWriter from "@/server/supplier/writer";
 /** Noter une dette (à la main S23, depuis le sélecteur S25) ou un versement (S24). */
 export const recordSupplierEntryAction = defineAction("supplier.record", recordSupplierEntryInput, (input) =>
   inTransaction((tx) => supplierWriter.recordEntry(tx, input)),
+);
+
+/** « Marquer remboursée » une dette (S22) : un versement du même montant, daté maintenant, lié à elle. */
+export const settleSupplierDebtAction = defineAction("supplier.settle", settleSupplierDebtInput, (input) =>
+  inTransaction((tx) => supplierWriter.settleDebt(tx, input)),
 );
 
 /** Corriger une ligne du carnet (S22). */
