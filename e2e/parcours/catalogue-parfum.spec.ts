@@ -77,25 +77,30 @@ test("PC-07 : un parfum créé avec sa photo, depuis l'Accueil, en 9 taps au plu
   expect(elapsed).toBeLessThan(90_000);
 });
 
-test("visibilité basculée en 1 tap depuis la liste, et gardée au rechargement", async ({ page }) => {
+test("l'œil barré ne marque que les parfums masqués ; 1 tap rend visible, gardé au rechargement", async ({ page }) => {
+  // Masqué depuis sa fiche (l'interrupteur « Visible sur la vitrine ») : la liste ne porte pas d'œil sur un visible.
   await openShell(page, routes.catalogue({ q: "yara" }));
-  await waitForHydration(page.getByRole("button", { name: "Masquer Yara", exact: true }));
+  await expect(page.getByRole("link", { name: /^Yara, / })).toBeVisible();
+  await expect(page.locator("[data-visibility-toggle]")).toHaveCount(0);
+  await page.getByRole("link", { name: /^Yara, / }).tap();
+  const visibility = page.getByRole("switch", { name: /Visible sur la vitrine/ });
+  await waitForHydration(visibility);
+  await visibility.tap();
+  await expect(visibility).toHaveAttribute("aria-checked", "false");
+
+  await openShell(page, routes.catalogue({ q: "yara" }));
+  const eye = page.getByRole("button", { name: "Rendre Yara visible", exact: true });
+  await waitForHydration(eye);
   const taps = countTaps(page);
-  // L'œil bascule avant la réponse (optimiste) ; on attend l'écriture avant de recharger.
   const written = page.waitForResponse((response) => response.request().method() === "POST");
-  await taps.tap(page.getByRole("button", { name: "Masquer Yara", exact: true }), "œil de Yara");
-  await expect(page.getByRole("button", { name: "Rendre Yara visible", exact: true })).toHaveAttribute("aria-pressed", "false");
+  await taps.tap(eye, "œil de Yara");
+  await expect(page.locator("[data-admin-toast]").getByText("Yara est visible sur la vitrine")).toBeVisible();
   await written;
   taps.expectAtMost(1);
 
   await page.reload();
-  await waitForHydration(page.locator("[data-tabbar] a").first());
-  const eye = page.getByRole("button", { name: "Rendre Yara visible", exact: true });
-  await waitForHydration(eye);
-
-  // Et retour : visible à nouveau, toujours en 1 tap.
-  await eye.tap();
-  await expect(page.getByRole("button", { name: "Masquer Yara", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("link", { name: /^Yara, / })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Rendre Yara visible", exact: true })).toHaveCount(0);
 });
 
 test("sans visuel : enregistré masqué, publication refusée avec le message du domaine, œil restauré", async ({ page }) => {
@@ -127,7 +132,7 @@ test("sans visuel : enregistré masqué, publication refusée avec le message du
   await waitForHydration(eye);
   await eye.tap();
   await expect(page.locator("[data-admin-toast]").getByText(refusal)).toBeVisible();
-  await expect(page.getByRole("button", { name: "Rendre Égoïste visible", exact: true })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "Rendre Égoïste visible", exact: true })).toBeVisible();
 });
 
 test("original illisible par le serveur : refusé dans le champ avec sa raison, et « Réessayer »", async ({ page }) => {

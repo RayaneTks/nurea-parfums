@@ -16,6 +16,11 @@ export type ReceivableGroup = {
   /** Âge de la plus ancienne créance du groupe. */
   ageDays: number;
   isOld: boolean;
+  /**
+   * Nom tapé à la vente, sans fiche, alors qu'un autre groupe porte le même nom (souvent la fiche de la même
+   * personne) : l'écran le dit « sans fiche client » au lieu de montrer deux fois le même nom sans explication.
+   */
+  withoutRecord: boolean;
   items: ReceivableDTO[];
 };
 
@@ -35,6 +40,7 @@ export function groupReceivables(items: readonly ReceivableDTO[]): ReceivableGro
         total: toWire(eur.zero),
         ageDays: item.ageDays,
         isOld: item.isOld,
+        withoutRecord: false,
         items: [],
       };
       groups.set(item.customerKey, group);
@@ -44,7 +50,16 @@ export function groupReceivables(items: readonly ReceivableDTO[]): ReceivableGro
     if (item.ageDays > group.ageDays) group.ageDays = item.ageDays;
     group.isOld = group.isOld || item.isOld;
   }
-  return [...groups.values()];
+  const all = [...groups.values()];
+  const named = new Map<string, number>();
+  for (const group of all) named.set(foldText(group.name), (named.get(foldText(group.name)) ?? 0) + 1);
+  for (const group of all) group.withoutRecord = group.customerId === null && (named.get(foldText(group.name)) ?? 0) > 1;
+  return all;
+}
+
+/** Sous le nom du groupe : l'âge de la plus ancienne créance, et « sans fiche client » pour un homonyme sans fiche. */
+export function groupCaption(group: Pick<ReceivableGroup, "ageDays" | "withoutRecord">): string {
+  return group.withoutRecord ? `${ageLabel(group.ageDays)} · sans fiche client` : ageLabel(group.ageDays);
 }
 
 /** Filtre client de E13 : tous les mots dans le nom, sans accents. */

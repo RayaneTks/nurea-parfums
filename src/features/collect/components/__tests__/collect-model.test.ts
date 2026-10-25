@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ReceivableDTO } from "@/contracts/chiffres";
 import { eurFromWire, formatEur, type MoneyString } from "@/domain/money";
-import { ageLabel, countsLabel, filterGroups, groupReceivables, receivableCaption, receivableTitle, recapText, relanceText } from "../collect-model";
+import { ageLabel, countsLabel, filterGroups, groupCaption, groupReceivables, receivableCaption, receivableTitle, recapText, relanceText } from "../collect-model";
 
 const m = (value: string) => value as MoneyString;
 
@@ -37,6 +37,20 @@ describe("E13 — groupes par client", () => {
     ]);
     expect(filterGroups(groups, "elise").map((group) => group.key)).toEqual(["fiche:lina"]);
     expect(filterGroups(groups, "").length).toBe(2);
+  });
+
+  it("un nom tapé sans fiche, homonyme d'une fiche : « sans fiche client », jamais deux fois le même nom muet", () => {
+    const groups = groupReceivables([
+      receivable({ documentId: "a", customerKey: "nom:fares", customerId: null, customerName: "Farès", ageDays: 45 }),
+      receivable({ documentId: "b", customerKey: "fiche:fares", customerId: "fares", customerName: "Farès", ageDays: 12 }),
+      receivable({ documentId: "c", customerKey: "nom:nora", customerId: null, customerName: "Nora", ageDays: 3 }),
+    ]);
+    expect(groups.map((group) => [group.key, group.withoutRecord])).toEqual([
+      ["nom:fares", true],
+      ["fiche:fares", false],
+      ["nom:nora", false],
+    ]);
+    expect(groups.map((group) => groupCaption(group))).toEqual([`${ageLabel(45)} · sans fiche client`, ageLabel(12), ageLabel(3)]);
   });
 
   it("libellés de document, légende, âge, compteurs", () => {

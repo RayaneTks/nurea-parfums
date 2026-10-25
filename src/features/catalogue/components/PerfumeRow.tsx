@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, EyeOff } from "lucide-react";
+import { EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { AdminPerfumeRow } from "@/contracts/catalogue";
 import type { PublicationStatus } from "@/domain/publication";
@@ -16,24 +16,25 @@ import { CatalogueThumb } from "./CatalogueThumb";
 
 /**
  * Ligne de parfum (06 E15 zone 3) : vignette, nom (+ « Rupture » ou « Stock bas » si le stock est suivi),
- * légende marque (+ « · gamme », « · 2 visuels story »), et l'œil de visibilité — 1 tap, optimiste, restauré avec la
- * raison du refus en toast (message unique de `src/domain/publication.ts`, renvoyé par le serveur).
+ * légende marque (+ « · gamme », « · 2 visuels story »). Un parfum MASQUÉ porte l'œil barré : 1 tap le rend
+ * visible, optimiste, restauré avec la raison du refus en toast (message unique de `src/domain/publication.ts`,
+ * renvoyé par le serveur). Un parfum visible ne porte rien (25/10/2026 : un œil sur 100 % des lignes ne dit
+ * rien) ; on le masque depuis sa fiche.
  */
 export function PerfumeRow({ perfume }: { perfume: AdminPerfumeRow }) {
   const [optimistic, setOptimistic] = useState<PublicationStatus | null>(null);
   const status = optimistic ?? perfume.status;
   const visible = status === "PUBLISHED";
-  // Pas de toast de succès : l'œil qui change EST la confirmation ; seul un refus parle.
-  const { run, pending } = useAction(setPerfumeStatusAction);
+  // L'œil disparaît une fois le parfum visible : le toast confirme.
+  const { run, pending } = useAction(setPerfumeStatusAction, { success: `${perfume.name} est visible sur la vitrine` });
 
   // La vérité revient du serveur : dès que la prop change, elle fait foi.
   useEffect(() => setOptimistic(null), [perfume.status]);
 
-  const toggle = async () => {
+  const publish = async () => {
     if (pending) return;
-    const next: PublicationStatus = visible ? "DRAFT" : "PUBLISHED";
-    setOptimistic(next);
-    const result = await run({ id: perfume.id, status: next });
+    setOptimistic("PUBLISHED");
+    const result = await run({ id: perfume.id, status: "PUBLISHED" });
     if (!result.ok) setOptimistic(null);
   };
 
@@ -66,17 +67,18 @@ export function PerfumeRow({ perfume }: { perfume: AdminPerfumeRow }) {
         .filter(Boolean)
         .join(" · ")}
       trailing={
-        <Button
-          variant="ghost"
-          iconOnly
-          ariaLabel={visible ? `Masquer ${perfume.name}` : `Rendre ${perfume.name} visible`}
-          aria-pressed={visible}
-          data-visibility-toggle
-          onClick={() => void toggle()}
-          className={visible ? "text-[var(--admin-accent)]" : "text-[var(--admin-text-subtle)]"}
-        >
-          {visible ? <Eye size={20} /> : <EyeOff size={20} />}
-        </Button>
+        visible ? null : (
+          <Button
+            variant="ghost"
+            iconOnly
+            ariaLabel={`Rendre ${perfume.name} visible`}
+            data-visibility-toggle
+            onClick={() => void publish()}
+            className="text-[var(--admin-text-subtle)]"
+          >
+            <EyeOff size={20} />
+          </Button>
+        )
       }
     />
   );

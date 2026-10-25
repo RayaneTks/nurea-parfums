@@ -22,8 +22,8 @@ import { SwipeableRow } from "@/ui/primitives/SwipeableRow";
 import { Text } from "@/ui/primitives/Text";
 import { scrollFieldIntoView } from "@/ui/primitives/field-behavior";
 import {
-  ageLabel,
   countsLabel,
+  groupCaption,
   filterGroups,
   groupReceivables,
   receivableCaption,
@@ -210,7 +210,7 @@ function ReceivableGroupSection({
       amount={group.total}
       amountTone="warning"
       description={
-        <span className={group.isOld ? "font-medium text-[var(--admin-danger)]" : undefined}>{ageLabel(group.ageDays)}</span>
+        <span className={group.isOld ? "font-medium text-[var(--admin-danger)]" : undefined}>{groupCaption(group)}</span>
       }
       action={
         <>

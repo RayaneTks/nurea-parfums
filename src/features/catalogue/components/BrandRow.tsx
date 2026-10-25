@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, EyeOff } from "lucide-react";
+import { EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { AdminBrandRow } from "@/contracts/catalogue";
 import type { PublicationStatus } from "@/domain/publication";
@@ -17,8 +17,9 @@ export function brandCaption(brand: Pick<AdminBrandRow, "perfumeCount">): string
 }
 
 /**
- * Ligne de marque (06 E15 zone 4) : visuel aux proportions d'origine, nom, légende, œil de visibilité.
- * Masquer une marque qui a des parfums visibles demande confirmation (T14, texte du serveur).
+ * Ligne de marque (06 E15 zone 4) : visuel aux proportions d'origine, nom, légende. Une marque MASQUÉE porte
+ * l'œil barré : 1 tap la rend visible. Une marque visible ne porte rien ; on la masque depuis sa fiche
+ * (confirmation T14 quand elle a des parfums visibles).
  */
 export function BrandRow({ brand }: { brand: AdminBrandRow }) {
   const [optimistic, setOptimistic] = useState<PublicationStatus | null>(null);
@@ -28,11 +29,10 @@ export function BrandRow({ brand }: { brand: AdminBrandRow }) {
 
   useEffect(() => setOptimistic(null), [brand.status]);
 
-  const toggle = async () => {
+  const publish = async () => {
     if (pending) return;
-    const next: PublicationStatus = visible ? "DRAFT" : "PUBLISHED";
-    setOptimistic(next);
-    const written = await setVisibility(brand, next);
+    setOptimistic("PUBLISHED");
+    const written = await setVisibility(brand, "PUBLISHED");
     if (!written) setOptimistic(null);
   };
 
@@ -53,17 +53,18 @@ export function BrandRow({ brand }: { brand: AdminBrandRow }) {
       }
       secondary={brandCaption(brand)}
       trailing={
-        <Button
-          variant="ghost"
-          iconOnly
-          ariaLabel={visible ? `Masquer ${brand.name}` : `Rendre ${brand.name} visible`}
-          aria-pressed={visible}
-          data-visibility-toggle
-          onClick={() => void toggle()}
-          className={visible ? "text-[var(--admin-accent)]" : "text-[var(--admin-text-subtle)]"}
-        >
-          {visible ? <Eye size={20} /> : <EyeOff size={20} />}
-        </Button>
+        visible ? null : (
+          <Button
+            variant="ghost"
+            iconOnly
+            ariaLabel={`Rendre ${brand.name} visible`}
+            data-visibility-toggle
+            onClick={() => void publish()}
+            className="text-[var(--admin-text-subtle)]"
+          >
+            <EyeOff size={20} />
+          </Button>
+        )
       }
     />
   );
