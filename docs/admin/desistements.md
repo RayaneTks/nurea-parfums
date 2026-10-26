@@ -20,7 +20,7 @@ les passera lui-même avec les nouveaux gestes une fois en ligne, aucun script n
 
 | Question | Décision (26/10/2026) |
 |---|---|
-| L'acompte d'un désistement | **Gardé, point.** Ce n'est pas un avoir ni une dette envers le client. |
+| L'acompte d'un désistement | **Gardé par défaut.** Ce n'est pas un avoir ni une dette envers le client. La feuille de désistement demande quand même : on le garde, on rend tout, ou on rend une partie (gérant, 26/10, après la planche). |
 | À quoi sert de le voir | Quand le client revient, savoir qu'il avait laissé un acompte. Rien n'engage à le déduire. |
 | Le déduire quand même | Une **remise** au montant choisi sur la nouvelle vente ou commande, pas un transfert d'argent. |
 | Le flacon d'une commande confirmée désistée | Il a été commandé au fournisseur : il passe **en stock**. |
@@ -46,7 +46,7 @@ crée aucun flacon en stock.
 |---|---|
 | Une désistée est une annulée **avec un motif** : `CANCELLED` + `cancelReason = WITHDRAWN`. Elle sort de tous les chiffres comme toute annulée ; ses paiements restent dans l'Encaissé. | colonne `SaleDocument.cancelReason`, CHECK motif ⇒ statut `CANCELLED` |
 | Se désister n'est possible que sur une commande (`ORDER`) **En attente** ou **Confirmée**, jamais livrée, même en partie | writer `withdrawDocument`, `canTransition` |
-| Se désister ne propose **aucun** remboursement ; l'argent versé est l'acompte gardé | écran S03 version désistement, writer |
+| Se désister demande ce qu'on fait de l'acompte : **garder** (choix d'office), **rendre tout**, ou **rendre une partie** (montant ≤ payé net). Un remboursement est un `REFUND` ordinaire : il sort d'une poche, se voit en compta et sur la fiche client. Seul le reste est l'acompte gardé | feuille de désistement, writer `withdrawDocument` (mêmes plafonds que `cancelDocument`) |
 | Une confirmée désistée crée **un flacon en stock par unité** de chaque ligne non offerte du catalogue ; une En attente n'en crée aucun | writer `withdrawDocument` |
 | Un flacon en stock garde son parfum, sa contenance, son coût d'achat (DA, taux, €), son prix prévu et sa provenance (commande et ligne d'origine) | table `StockBottle` |
 | Un flacon est **disponible** tant qu'aucune ligne de vente ne le reprend ; une ligne reprend **au plus un** flacon par unité | `StockBottle.soldLineId` unique ; disponibilité dérivée, jamais un drapeau |
@@ -73,9 +73,15 @@ crée aucun flacon en stock.
 
 ## Écrans
 
+Les textes ci-dessous sont ceux de l'écran (planche validée le 26/10, revue du gérant : parler simplement,
+jamais le jargon de nos échanges). « Acompte gardé » est un mot de travail ; à l'écran : « Il avait laissé
+20,00 € d'acompte », « Acompte laissé ».
+
+
 - **Fiche commande (S01)** : sur une En attente ou Confirmée, geste **« Le client se désiste »** à côté
-  d'« Annuler ». Feuille : ce qui arrive (la commande passe Désistée, l'acompte reste acquis, N flacons
-  passent en stock), un seul bouton. Une désistée affiche son motif, ses flacons et, s'ils sont
+  d'« Annuler ». Feuille : « Faycal ne prend plus sa commande ? », puis « Il avait versé 20,00 € d'acompte » avec trois
+  choix (On le garde · On lui rend tout · On lui rend une partie + montant + poche), puis ce qui suit
+  (la commande reste dans sa fiche, son flacon rejoint le stock), un seul bouton « Valider le désistement ». Une désistée affiche son motif, ses flacons et, s'ils sont
   revendus, à qui.
 - **En stock** (sous Catalogue) : un rang par flacon : parfum, contenance, prix prévu, provenance,
   date. Toucher un rang : « Vendre ce flacon » ou « Retirer du stock ».
