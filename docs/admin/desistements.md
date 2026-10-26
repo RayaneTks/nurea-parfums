@@ -57,8 +57,9 @@ crée aucun flacon en stock.
 | Revendre un flacon reprend son coût d'achat sur la ligne : la marge de la revente est juste, le coût n'est jamais compté deux fois (la désistée est hors des chiffres) | writer `createDocument` |
 | Le lot d'une revente suit la règle habituelle de Vendre (lot ouvert le plus récent, ou choisi), jamais le lot d'origine | `resolveBatch` |
 | L'acompte gardé d'un client = Σ payé net de ses désistées, **dérivé**, jamais stocké | requête client, jumeau TS + test de parité |
-| Une remise est un montant ≥ 0, au plus le total des lignes, avec un motif ; elle baisse le total, donc l'À encaisser et la Marge nette | colonnes `SaleDocument.discountEur`, `discountNote`, vue `DocumentBalance`, CHECK |
-| Une remise peut citer la désistée qui la motive ; rien ne plafonne une remise à l'acompte gardé (le gérant décide) | `SaleDocument.discountSourceId`, FK `SET NULL` |
+| Une remise (amendé le 26/10/2026, phase 4) **baisse le prix de la ligne la plus chère** du ticket, jamais sous 0,01 €, et pose sur cette ligne la note « Remise de X € pour l'acompte laissé le … ». Pas de colonne ni de chiffre nouveaux : le total, l'À encaisser et la Marge nette suivent le prix, comme toute saisie. Une seule remise par ticket ; « Retirer la remise » rend prix et note d'avant | `withDiscount` / `withoutDiscount` (`composer-model.ts`), `LineDraft.discount` |
+| Rien ne plafonne une remise à l'acompte laissé (le gérant décide) ; le montant proposé est l'acompte | `KeptDepositReminder` |
+| « À relancer » (Accueil, récap du jour) compte **tous** les clients qui doivent de l'argent, plus seulement après 30 jours (gérant, 26/10/2026) ; le filtre « Plus de 30 jours » d'À encaisser reste | `tableauDeBordSql` (`a_relancer`), `DayRecapBlock` |
 | En compta, un paiement d'une désistée se lit « Acompte gardé · <client> · désistement », pas comme une vente | modèle de la compta, journal |
 
 ## Données (phase 2 et 4, migrations additives)
@@ -69,7 +70,7 @@ crée aucun flacon en stock.
   `exchangeRate`, `unitCostEur`, `plannedPriceEur`, `sourceDocumentId` (Restrict), `sourceLineId`
   (SetNull), `soldLineId` (unique, SetNull), `createdAt`.
 - `SaleLine.fromBottleId` n'existe pas : le lien est porté par `StockBottle.soldLineId`, un seul sens.
-- `SaleDocument.discountEur` Decimal(10,2) NULL, `discountNote`, `discountSourceId` — phase 4.
+- Aucune colonne pour la remise (choix de l'agent, phase 4) : la remise est un prix plus bas et une note de ligne.
 - `Perfume.stock` (compteur général) n'est **pas** touché : les flacons en stock sont une liste à part.
 
 ## Écrans
@@ -90,8 +91,8 @@ jamais le jargon de nos échanges). « Acompte gardé » est un mot de travail ;
   choisir un préremplit la ligne (parfum, contenance, prix prévu, coût).
 - **Fiche client** : ligne « Acompte gardé : 30 € · désistement du 12/10 » sous le nom, si non nul.
   Même ligne dans Vendre et dans une nouvelle commande dès que ce client est choisi.
-- **Remise** : dans le récapitulatif d'une vente ou commande, « Faire une remise » : montant, motif
-  prérempli quand le client a un acompte gardé.
+- **Remise** : dans Vendre, le rappel « Faycal avait laissé 20,00 € d'acompte sur une commande non prise »
+  propose « Lui faire une remise » : montant (proposé : l'acompte), puis « Retirer 20,00 € du prix ».
 - **Compta** : libellé « Acompte gardé » pour l'argent d'une désistée.
 
 ## État
@@ -108,6 +109,12 @@ jamais le jargon de nos échanges). « Acompte gardé » est un mot de travail ;
 - **Le stock n'est pas réservé aux désistements** (gérant, 26/10/2026 : « on n'est pas fermés au stock »). Un
   `StockBottle` peut n'avoir aucune commande d'origine : un geste « Mettre un flacon en stock » s'ajoutera le jour
   où Nuréa achète pour le stock, sans changer la table.
+
+- **Phase 4 faite le 26/10/2026** : acompte laissé sur la fiche client (`keptDeposits`, `customerSheet`) et dans
+  Vendre (fiche choisie ou nom identique à une fiche), remise sur ligne, « Désistée · acompte de X € gardé » dans
+  l'historique, « Acompte gardé · client · désistement » dans le journal et « Acompte gardé (désistement) » dans
+  l'export CSV, « Acompte gardé » dans les paiements de la fiche, « à relancer » élargi. Captures :
+  `e2e/captures/phase4-acompte.spec.ts`.
 
 ## Phases
 

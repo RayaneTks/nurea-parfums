@@ -5,6 +5,7 @@
 import type { BatchSummary } from "@/contracts/batches";
 import type { PickerPerfume } from "@/contracts/catalogue";
 import type { ComposerPrefillDTO, CreateDocumentInput, DocumentSummary, RecentlySoldDTO } from "@/contracts/documents";
+import type { KeptDepositDTO } from "@/contracts/customers";
 import type { StockBottleDTO } from "@/contracts/stock";
 import type { PocketSummary } from "@/contracts/treasury";
 import { isTextId, newId } from "@/domain/ids";
@@ -490,6 +491,56 @@ export function withBottle(draft: ComposerDraft, bottle: StockBottleDTO, lineId:
     bottleNote: bottle.sourceCustomer ? `Flacon en stock · de ${bottle.sourceCustomer}` : "Flacon en stock",
   };
   return { ...draft, lines: [...draft.lines, line] };
+}
+
+// ── Acompte laissé et remise (docs/admin/desistements.md) ──────────────────────
+
+/** Les acomptes laissés par le client du ticket : sa fiche choisie, ou le nom tapé qui est exactement celui d'une fiche. */
+export function keptDepositsOf(draft: ComposerDraft, deposits: readonly KeptDepositDTO[]): KeptDepositDTO[] {
+  const customer = draft.customer;
+  if (customer.kind === "linked") return deposits.filter((deposit) => deposit.customerId === customer.id);
+  const typed = customer.name.trim().toLocaleLowerCase("fr");
+  if (typed.length < 2) return [];
+  return deposits.filter((deposit) => deposit.fullName.trim().toLocaleLowerCase("fr") === typed);
+}
+
+/**
+ * « Lui faire une remise » : le montant choisi est retiré du prix de la ligne la plus chère (jamais sous 0,01 €), avec
+ * une note qui dit pourquoi. Une remise déjà posée est d'abord retirée : il n'y en a qu'une par ticket.
+ */
+export function withDiscount(draft: ComposerDraft, amount: Eur, note: string): ComposerDraft {
+  const clean = withoutDiscount(draft);
+  const priced = clean.lines
+    .filter((line) => !line.isGift)
+    .map((line) => ({ line, price: parseEurInput(line.price) }))
+    .filter((entry): entry is { line: LineDraft; price: Eur } => entry.price !== null && eur.compare(entry.price, eur.zero) > 0)
+    .sort((a, b) => eur.compare(b.price, a.price));
+  const target = priced[0];
+  if (!target || eur.compare(amount, eur.zero) <= 0) return clean;
+  const floor = eurFromWire("0.01" as MoneyString);
+  const max = eur.sub(target.price, floor);
+  const applied = eur.compare(amount, max) > 0 ? max : amount;
+  const next: LineDraft = {
+    ...target.line,
+    price: amountToInputText(eur.sub(target.price, applied)),
+    note,
+    discount: { amount: amountToInputText(applied), basePrice: target.line.price, baseNote: target.line.note },
+    awaitingPricing: undefined,
+  };
+  return { ...clean, lines: clean.lines.map((line) => (line.id === next.id ? next : line)) };
+}
+
+/** Retirer la remise : le prix et la note d'avant, à l'identique. */
+export function withoutDiscount(draft: ComposerDraft): ComposerDraft {
+  if (!draft.lines.some((line) => line.discount)) return draft;
+  return {
+    ...draft,
+    lines: draft.lines.map((line) => {
+      if (!line.discount) return line;
+      const { discount, ...rest } = line;
+      return { ...rest, price: discount.basePrice, note: discount.baseNote };
+    }),
+  };
 }
 
 export function withOffCatalogLine(draft: ComposerDraft, name: string, brandName: string | null, defaultRate: string, lineId: string = newId()): ComposerDraft {

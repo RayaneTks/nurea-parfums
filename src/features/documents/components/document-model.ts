@@ -158,13 +158,13 @@ export type PaymentRowView = {
 };
 
 /** Zone 5 de S01 : la contre-passation d'un paiement ne s'affiche pas, l'original se replie sous « … annulé ». */
-export function paymentRows(payments: readonly DocumentPaymentDTO[], origin: DocumentOrigin): PaymentRowView[] {
+export function paymentRows(payments: readonly DocumentPaymentDTO[], origin: DocumentOrigin, withdrawn = false): PaymentRowView[] {
   return payments
     .filter((payment) => payment.reversesPaymentId === null)
     .map((payment) => {
       const voided = payment.reversedByPaymentId !== null;
       const base =
-        payment.kind === "DEPOSIT" ? "Acompte" : payment.kind === "BALANCE" ? (origin === "ORDER" ? "Solde" : "Paiement") : "Remboursement";
+        payment.kind === "DEPOSIT" ? (withdrawn ? "Acompte gardé" : "Acompte") : payment.kind === "BALANCE" ? (origin === "ORDER" ? "Solde" : "Paiement") : "Remboursement";
       const label = voided ? (payment.kind === "REFUND" ? "Remboursement annulé" : "Paiement annulé") : base;
       return { payment, label, voided, actionable: !voided };
     });

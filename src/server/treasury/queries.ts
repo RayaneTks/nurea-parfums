@@ -53,6 +53,7 @@ type JournalRow = {
   paymentKind: "DEPOSIT" | "BALANCE" | "REFUND" | null;
   documentId: string | null;
   documentOrigin: "ORDER" | "DIRECT_SALE" | null;
+  withdrawn: boolean | null;
   customerName: string | null;
   expenseId: string | null;
   expenseLabel: string | null;
@@ -69,6 +70,7 @@ const JOURNAL_COLUMNS = Prisma.sql`
   m."occurredAt", m.label, m."reversesId", r.id AS "reversedById", m."transferGroupId",
   op.name AS "counterpartPocketName",
   pay.id AS "paymentId", pay.kind::text AS "paymentKind", pay."documentId", d.origin::text AS "documentOrigin",
+  (d."cancelReason" = 'WITHDRAWN') AS withdrawn,
   COALESCE(c."fullName", d."customerName") AS "customerName",
   e.id AS "expenseId", e.label AS "expenseLabel", e."batchId", b.name AS "batchName"`;
 
@@ -110,6 +112,7 @@ function journalEntry(row: JournalRow): JournalEntry {
             kind: row.paymentKind,
             documentId: row.documentId,
             documentOrigin: row.documentOrigin,
+            withdrawn: row.withdrawn === true,
             customerName: row.customerName,
           }
         : null,

@@ -11,6 +11,7 @@ import { useReadRoute } from "@/app-shell/hooks/useReadRoute";
 import type { BatchSummary } from "@/contracts/batches";
 import type { PickerCatalogue, PickerPerfume } from "@/contracts/catalogue";
 import type { RecentlySoldDTO } from "@/contracts/documents";
+import type { KeptDepositDTO } from "@/contracts/customers";
 import type { StockBottleDTO } from "@/contracts/stock";
 import type { SettingsSummary } from "@/contracts/settings";
 import type { PocketSummary } from "@/contracts/treasury";
@@ -38,12 +39,13 @@ import { Sheet } from "@/ui/primitives/Sheet";
 import { StickyAction } from "@/ui/primitives/StickyAction";
 import { Text } from "@/ui/primitives/Text";
 import { Textarea } from "@/ui/primitives/Textarea";
-import { applyParams, articlesLabel, chosenPocket, confirmationOf, createInput, ctaPlan, hasParams, isDraftEmpty, marginText, paymentsOf, pocketsLabel, quantitiesByPerfume, receivedOf, receivedText, resolveBatch, total as totalOf, withMode, withOffCatalogLine, withPerfume, withReceived, withBottle, type ComposerDraft, type ComposerParams, type Confirmation, type LineSources } from "./composer-model";
+import { applyParams, articlesLabel, chosenPocket, confirmationOf, createInput, ctaPlan, hasParams, isDraftEmpty, marginText, paymentsOf, pocketsLabel, quantitiesByPerfume, receivedOf, receivedText, resolveBatch, total as totalOf, withMode, withOffCatalogLine, withPerfume, withReceived, withBottle, withDiscount, withoutDiscount, keptDepositsOf, type ComposerDraft, type ComposerParams, type Confirmation, type LineSources } from "./composer-model";
 import { ConfirmationCard } from "./ConfirmationCard";
 import { CustomerNameField } from "./CustomerNameField";
 import { RecentProvider, type RecentContextValue } from "./RecentlySold";
 import { SplitSheet } from "./SplitSheet";
 import { StockStrip } from "./StockStrip";
+import { KeptDepositReminder } from "./KeptDepositReminder";
 import { useComposerDraft } from "./useComposerDraft";
 
 export type ComposerProps = {
@@ -62,6 +64,8 @@ export type ComposerProps = {
   bottles: readonly StockBottleDTO[];
   /** `?flacon=` : flacon à poser au ticket à l'ouverture (« Vendre ce flacon » de E23). */
   flacon: string | null;
+  /** Acomptes laissés sur des commandes désistées : rappelés quand ce client revient. */
+  deposits: readonly KeptDepositDTO[];
 };
 
 const MODES = [
@@ -79,7 +83,7 @@ type Given = { kind: "bill"; amount: number } | { kind: "other"; text: string } 
  * de document généré ici : un renvoi n'écrit jamais deux fois. Après l'écriture, on reste ici, vidé, avec la carte
  * de confirmation.
  */
-export function Composer({ pockets, batches, settings, pickerVersion, catalogueCount, params, recent, bottles, flacon }: ComposerProps) {
+export function Composer({ pockets, batches, settings, pickerVersion, catalogueCount, params, recent, bottles, flacon, deposits }: ComposerProps) {
   const router = useRouter();
   const { showToast } = useToast();
   const confirm = useConfirm();
@@ -111,6 +115,7 @@ export function Composer({ pockets, batches, settings, pickerVersion, catalogueC
   }, [sources]);
 
   const order = draft.mode === "commande";
+  const customerDeposits = useMemo(() => keptDepositsOf(draft, deposits), [draft, deposits]);
   const hasLines = draft.lines.length > 0;
   const perfumeOf = useCallback((id: number | null): PickerPerfume | undefined => (id === null ? undefined : picker.data?.perfumes.find((p) => p.id === id)), [picker.data]);
 
@@ -367,6 +372,17 @@ export function Composer({ pockets, batches, settings, pickerVersion, catalogueC
             error={fieldError("customer")}
             onType={(name) => update((d) => ({ ...d, customer: { kind: "passing", name, contact: "" } }))}
             onPick={(customer) => update((d) => ({ ...d, customer: { kind: "linked", ...customer } }))}
+          />
+        ) : null}
+
+        {/* Acompte laissé par ce client sur une commande désistée (docs/admin/desistements.md). */}
+        {showSecondary && customerDeposits.length > 0 ? (
+          <KeptDepositReminder
+            name={customerDeposits[0]?.fullName ?? ""}
+            deposits={customerDeposits}
+            lines={draft.lines}
+            onApply={(amount, note) => update((d) => withDiscount(d, amount, note))}
+            onRemove={() => update((d) => withoutDiscount(d))}
           />
         ) : null}
 

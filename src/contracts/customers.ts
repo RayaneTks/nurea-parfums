@@ -162,6 +162,23 @@ export type CustomerHistoryRowDTO = {
   total: MoneyString;
   /** Dû d'un document ENGAGÉ (confirmé ou livré) ; null sinon — jamais « À encaisser » sur une annulée (01 §4.10). */
   due: MoneyString | null;
+  /** `WITHDRAWN` : « Désistée » (docs/admin/desistements.md). */
+  cancelReason: "WITHDRAWN" | null;
+  /** Payé net : l'acompte gardé d'une désistée. */
+  paid: MoneyString;
+};
+
+/**
+ * Acompte laissé (docs/admin/desistements.md) : ce qu'un client a versé sur une commande dont il s'est désisté,
+ * net de tout remboursement. Gardé, jamais dû ; affiché pour décider d'une remise, rien de plus.
+ */
+export type KeptDepositDTO = {
+  documentId: string;
+  customerId: string;
+  fullName: string;
+  amount: MoneyString;
+  /** ISO 8601 : date de la commande désistée. */
+  orderedAt: string;
 };
 
 /** « Achète souvent » : un parfum du catalogue, nombre d'achats et contenance du dernier. */
@@ -192,6 +209,8 @@ export type CustomerSheetDTO = {
   frequent: FrequentPerfumeDTO[];
   /** Les 5 derniers documents non annulés : le récap partageable sans créance (S09). */
   recap: CustomerHistoryRowDTO[];
+  /** Acomptes laissés sur ses commandes désistées, les plus récents d'abord. */
+  keptDeposits: KeptDepositDTO[];
 };
 
 /** E20 : les fiches existantes, pour l'alerte d'homonyme et le numéro déjà pris AVANT d'enregistrer. */

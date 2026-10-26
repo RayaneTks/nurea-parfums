@@ -117,7 +117,26 @@ export type CustomerHistoryRow = {
   itemCount: number;
   total: string;
   due: string;
+  paid: string;
+  cancelReason: "WITHDRAWN" | null;
 };
+
+export type KeptDepositRow = { documentId: string; customerId: string; fullName: string; amount: string; orderedAt: Date };
+
+/**
+ * Acomptes laissés (docs/admin/desistements.md) : le payé net > 0 des commandes désistées, par fiche. `customerId`
+ * absent : toutes les fiches (le rappel de Vendre). Un client de passage n'a pas de fiche, donc pas de rappel.
+ */
+export function keptDepositsSql(customerId?: string): Prisma.Sql {
+  return Prisma.sql`
+    SELECT d.id AS "documentId", d."customerId", c."fullName", b.paid::text AS amount, d."orderedAt"
+    FROM "SaleDocument" d
+    JOIN "DocumentBalance" b ON b."documentId" = d.id
+    JOIN "Customer" c ON c.id = d."customerId"
+    WHERE d."cancelReason" = 'WITHDRAWN' AND b.paid > 0
+      ${customerId ? Prisma.sql`AND d."customerId" = ${customerId}` : Prisma.empty}
+    ORDER BY d."orderedAt" DESC, d.id DESC`;
+}
 
 /**
  * Historique d'une fiche (E14 zone 6) : TOUTES ses opérations — commandes et ventes, annulées comprises —, du plus
@@ -126,7 +145,7 @@ export type CustomerHistoryRow = {
 export function customerHistorySql(customerId: string, options: { limit: number; activeOnly?: boolean }): Prisma.Sql {
   return Prisma.sql`
     SELECT d.id, d.origin::text AS origin, d.status::text AS status, d."orderedAt",
-           b.total::text AS total, b.due::text AS due,
+           b.total::text AS total, b.due::text AS due, b.paid::text AS paid, d."cancelReason"::text AS "cancelReason",
            (SELECT COALESCE(SUM(l.quantity), 0)::int FROM "SaleLine" l WHERE l."documentId" = d.id) AS "itemCount"
     FROM "SaleDocument" d
     JOIN "DocumentBalance" b ON b."documentId" = d.id

@@ -50,6 +50,8 @@ export type LineDraft = {
   bottleId?: string;
   /** « En stock · de Faycal Amri » : d'où vient le flacon, sous le nom de la ligne. */
   bottleNote?: string;
+  /** Remise posée depuis le rappel d'acompte laissé (Vendre) : le prix d'avant, pour la retirer à l'identique. */
+  discount?: { amount: string; basePrice: string; baseNote: string };
   /**
    * Ligne posée avant l'arrivée du sélecteur (tuile récente, `?parfum=`) : sa mémoire de prix la complète dès
    * qu'elle est lue, tant que la ligne n'a pas été retouchée.

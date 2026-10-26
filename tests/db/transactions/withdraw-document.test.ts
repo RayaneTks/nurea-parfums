@@ -253,3 +253,30 @@ describe("revendre un flacon en stock (Vendre)", () => {
     expect((await stockQueries.availableBottles()).map((b) => b.id)).toEqual([bottle.id]);
   });
 });
+
+describe("acompte laissé (fiche client, Vendre)", () => {
+  it("le payé net d'une désistée liée à une fiche est son acompte laissé ; la fiche le liste et l'historique dit « Désistée »", async () => {
+    const faycal = await server.prisma.customer.create({ data: { fullName: "Faycal" } });
+    const cash = await seedPocket(server.prisma, { name: "Espèces" });
+    const id = await createDocument(server, {
+      origin: "ORDER",
+      customer: { kind: "linked", customerId: faycal.id },
+      received: [{ amount: "20", pocketId: cash.id }],
+    });
+    expectOk(await withdraw(id, [{ amount: "5", pocketId: cash.id }]));
+
+    const { keptDeposits, customerSheet } = await import("@/server/customers/queries");
+    expect(await keptDeposits()).toEqual([expect.objectContaining({ documentId: id, customerId: faycal.id, fullName: "Faycal", amount: "15.00" })]);
+    const sheet = await customerSheet(faycal.id);
+    expect(sheet?.keptDeposits.map((deposit) => deposit.amount)).toEqual(["15.00"]);
+    expect(sheet?.history.rows[0]).toMatchObject({ id, status: "CANCELLED", cancelReason: "WITHDRAWN", paid: "15.00", due: null });
+  });
+
+  it("une désistée sans rien de payé ne laisse aucun acompte", async () => {
+    const khali = await server.prisma.customer.create({ data: { fullName: "khali.khali" } });
+    const id = await createDocument(server, { origin: "ORDER", customer: { kind: "linked", customerId: khali.id } });
+    expectOk(await withdraw(id));
+    const { keptDeposits } = await import("@/server/customers/queries");
+    expect(await keptDeposits()).toEqual([]);
+  });
+});

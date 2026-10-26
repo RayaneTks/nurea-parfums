@@ -258,7 +258,7 @@ function DocumentView({ doc, pockets, batches, pickerVersion, onEdit }: Document
     );
   };
 
-  const rows = paymentRows(doc.payments, doc.origin);
+  const rows = paymentRows(doc.payments, doc.origin, isWithdrawn(doc));
   const delivered = deliveredSummary(doc.lines);
   const trackDelivery = doc.origin === "ORDER" && doc.status !== "CANCELLED";
   const withdrawn = isWithdrawn(doc);

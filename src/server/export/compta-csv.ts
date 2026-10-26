@@ -42,6 +42,8 @@ export type ComptaCsvRow = {
   paymentKind: "DEPOSIT" | "BALANCE" | "REFUND";
   /** Le mouvement contre-passe un paiement antérieur (annulation, 03 §4.4). */
   isReversal: boolean;
+  /** Commande désistée (docs/admin/desistements.md) : son acompte se lit « Acompte gardé ». */
+  withdrawn?: boolean;
   pocketName: string;
   method: string | null;
   amount: string;
@@ -56,7 +58,7 @@ function comptaCsvSql(period: Period, now: Date): Prisma.Sql {
   return Prisma.sql`
     SELECT e."occurredAt", d.origin::text AS origin, d."orderedAt",
            COALESCE(c."fullName", d."customerName") AS "customerName",
-           pay.kind::text AS "paymentKind", (m."reversesId" IS NOT NULL) AS "isReversal",
+           pay.kind::text AS "paymentKind", (m."reversesId" IS NOT NULL) AS "isReversal", (d."cancelReason" = 'WITHDRAWN') AS withdrawn,
            po.name AS "pocketName", pay.method,
            e.amount::numeric(12,2)::text AS amount, b.total::text AS total
     FROM (${encaisseRowsSql({ period, now })}) e
@@ -84,11 +86,11 @@ export function documentLabel(origin: ComptaCsvRow["origin"], orderedAt: Date, n
 }
 
 /** Nature d'un paiement, lexique de 06 §1.7 (une annulation se nomme par ce qu'elle annule). */
-function paymentNature(row: Pick<ComptaCsvRow, "origin" | "paymentKind" | "isReversal">): string {
+function paymentNature(row: Pick<ComptaCsvRow, "origin" | "paymentKind" | "isReversal" | "withdrawn">): string {
   if (row.isReversal) return row.paymentKind === "REFUND" ? "Paiement annulé" : "Remboursement annulé";
   switch (row.paymentKind) {
     case "DEPOSIT":
-      return "Acompte";
+      return row.withdrawn ? "Acompte gardé (désistement)" : "Acompte";
     case "BALANCE":
       return row.origin === "ORDER" ? "Solde" : "Paiement";
     case "REFUND":

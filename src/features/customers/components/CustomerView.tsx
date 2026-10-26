@@ -6,7 +6,7 @@ import { useState, type ReactNode } from "react";
 import { useToast } from "@/app-shell/FeedbackProvider";
 import { useAction } from "@/app-shell/hooks/useAction";
 import { useUrlState } from "@/app-shell/hooks/useUrlState";
-import { routes } from "@/app-shell/routes";
+import { routes, withSheet } from "@/app-shell/routes";
 import { useUndo } from "@/app-shell/UndoProvider";
 import type { ReceivableDTO } from "@/contracts/chiffres";
 import { customerDeletionBlock, type CustomerSheetDTO } from "@/contracts/customers";
@@ -44,6 +44,7 @@ import {
   hasContact,
   historyAmount,
   historyCaption,
+  keptDepositCaption,
   historyTitle,
   isPositive,
 } from "./customers-model";
@@ -179,6 +180,24 @@ export function CustomerView({ sheet, aEncaisser, receivables, pockets }: Custom
           className="p-3"
         />
       </div>
+
+      {/* Acompte laissé (docs/admin/desistements.md) : gardé, jamais dû ; dit ici pour décider d'une remise.
+          Le marqueur e2e vit sur une balise DOM : `Card` ne transmet pas les `data-*`. */}
+      {sheet.keptDeposits.length > 0 ? (
+        <div data-kept-deposits>
+          <Card padding={0}>
+            {sheet.keptDeposits.map((deposit) => (
+              <ListRow
+                key={deposit.documentId}
+                href={withSheet(routes.client(customer.id), { doc: deposit.documentId })}
+                primary="Acompte laissé"
+                secondary={keptDepositCaption(deposit.orderedAt)}
+                trailing={<Money value={deposit.amount} tone="warning" bold />}
+              />
+            ))}
+          </Card>
+        </div>
+      ) : null}
 
       {/* 4 — UN bouton de partage (arbitrage n°14) et la commande pré-remplie. */}
       {/* Chaque libellé entier : côte à côte s'ils tiennent, l'un sous l'autre sinon (320 px). */}

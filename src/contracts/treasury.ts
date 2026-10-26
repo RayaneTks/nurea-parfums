@@ -259,6 +259,8 @@ export type JournalEntry = MovementSummary & {
     kind: "DEPOSIT" | "BALANCE" | "REFUND";
     documentId: string;
     documentOrigin: "ORDER" | "DIRECT_SALE";
+    /** Commande désistée (docs/admin/desistements.md) : son acompte se lit « Acompte gardé ». */
+    withdrawn?: boolean;
     customerName: string | null;
   } | null;
   expense: { id: string; label: string; batchId: string; batchName: string } | null;

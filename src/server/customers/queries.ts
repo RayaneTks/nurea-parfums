@@ -11,6 +11,7 @@ import {
   type CustomerSummary,
   type CustomersListDTO,
   type FrequentPerfumeDTO,
+  type KeptDepositDTO,
 } from "@/contracts/customers";
 import { phoneDigitVariants, searchTerms } from "@/contracts/search";
 import { isEngaged } from "@/domain/document-status";
@@ -26,10 +27,12 @@ import {
   customerStatsSql,
   customersListSql,
   frequentPerfumesSql,
+  keptDepositsSql,
   type CustomerHistoryRow,
   type CustomerStatsRow,
   type CustomersListRow,
   type FrequentPerfumeRow,
+  type KeptDepositRow,
 } from "@/server/customers/sql";
 import { db } from "@/server/db/client";
 
@@ -110,8 +113,21 @@ function historyRow(row: CustomerHistoryRow): CustomerHistoryRowDTO {
     itemCount: row.itemCount,
     total: money(row.total),
     due: isEngaged(row.status) ? money(row.due) : null,
+    cancelReason: row.cancelReason,
+    paid: money(row.paid),
   };
 }
+
+function keptDeposit(row: KeptDepositRow): KeptDepositDTO {
+  return { documentId: row.documentId, customerId: row.customerId, fullName: row.fullName, amount: money(row.amount), orderedAt: row.orderedAt.toISOString() };
+}
+
+const cachedKeptDeposits = cached("customers.keptDeposits", "gestion", async (): Promise<KeptDepositDTO[]> =>
+  (await db.$queryRaw<KeptDepositRow[]>(keptDepositsSql())).map(keptDeposit),
+);
+
+/** Tous les acomptes laissés : le rappel de Vendre quand ce client revient (docs/admin/desistements.md). */
+export const keptDeposits = defineQuery(() => cachedKeptDeposits());
 
 function frequentRow(row: FrequentPerfumeRow): FrequentPerfumeDTO {
   return {
@@ -127,12 +143,13 @@ const cachedCustomerSheet = cached(
   "customers.sheet",
   "gestion",
   async (id: string, pages: number): Promise<CustomerSheetDTO | null> => {
-    const [customer, [stats], history, recap, frequent] = await Promise.all([
+    const [customer, [stats], history, recap, frequent, deposits] = await Promise.all([
       db.customer.findUnique({ where: { id }, select: { ...SUMMARY_SELECT, createdAt: true } }),
       db.$queryRaw<CustomerStatsRow[]>(customerStatsSql(id)),
       db.$queryRaw<CustomerHistoryRow[]>(customerHistorySql(id, { limit: pages * CUSTOMER_HISTORY_PAGE_SIZE })),
       db.$queryRaw<CustomerHistoryRow[]>(customerHistorySql(id, { limit: RECAP_LIMIT, activeOnly: true })),
       db.$queryRaw<FrequentPerfumeRow[]>(frequentPerfumesSql(id, FREQUENT_LIMIT)),
+      db.$queryRaw<KeptDepositRow[]>(keptDepositsSql(id)),
     ]);
     if (!customer) return null;
     const { createdAt, ...summary } = customer;
@@ -149,6 +166,7 @@ const cachedCustomerSheet = cached(
       history: { rows: history.map(historyRow), pages, hasMore: historyCount > history.length },
       frequent: frequent.map(frequentRow),
       recap: recap.map(historyRow),
+      keptDeposits: deposits.map(keptDeposit),
     };
   },
 );

@@ -2,7 +2,7 @@
  * Libellés et décisions d'écran des clients (06 E12, E14, E20), purs et testés.
  */
 import type { CustomerDirectoryEntry, CustomerHistoryRowDTO, CustomerListRowDTO, FrequentPerfumeDTO } from "@/contracts/customers";
-import { eur, eurFromWire, type MoneyString } from "@/domain/money";
+import { eur, eurFromWire, formatEur, type MoneyString } from "@/domain/money";
 import { formatPhone, normalizePhone } from "@/domain/phone";
 import { cleNom } from "@/lib/nommage";
 import { formatDate } from "@/ui/patterns/date-format";
@@ -59,10 +59,19 @@ export function historyTitle(row: Pick<CustomerHistoryRowDTO, "origin" | "ordere
 }
 
 /** Légende d'un document hors du cours normal (06 E14 zone 6) : « En attente », « Annulée » ; rien sinon. */
-export function historyCaption(row: Pick<CustomerHistoryRowDTO, "status">): string | undefined {
+export function historyCaption(row: Pick<CustomerHistoryRowDTO, "status"> & Partial<Pick<CustomerHistoryRowDTO, "cancelReason" | "paid">>): string | undefined {
   if (row.status === "PENDING") return "En attente";
+  if (row.status === "CANCELLED" && row.cancelReason === "WITHDRAWN") {
+    const kept = row.paid ? eurFromWire(row.paid) : eur.zero;
+    return eur.compare(kept, eur.zero) > 0 ? `Désistée · acompte de ${formatEur(kept)} gardé` : "Désistée";
+  }
   if (row.status === "CANCELLED") return "Annulée";
   return undefined;
+}
+
+/** « Versé sur la commande du 9 sept., non prise. » — la ligne d'un acompte laissé (fiche client). */
+export function keptDepositCaption(orderedAt: string, now: Date = new Date()): string {
+  return `Versé sur la commande du ${formatDate(new Date(orderedAt), "short", now)}, non prise.`;
 }
 
 /** À droite : « À encaisser » d'un document engagé à dû, sinon son « Total » (06 E14, §1.7). */

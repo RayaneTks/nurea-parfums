@@ -21,7 +21,10 @@ import {
   withMode,
   withOffCatalogLine,
   withPerfume,
+  keptDepositsOf,
   withBottle,
+  withDiscount,
+  withoutDiscount,
   withReceived,
   type ComposerDraft,
   type LineSources,
@@ -200,6 +203,31 @@ describe("flacon en stock (docs/admin/desistements.md)", () => {
     expect(draft.lines.map((line) => [line.quantity, line.bottleId ?? null])).toEqual([
       [1, bottle.id],
       [1, null],
+    ]);
+  });
+});
+
+describe("acompte laissé et remise (docs/admin/desistements.md)", () => {
+  const deposit = { documentId: "cdoc0000000000000000000001", customerId: "ccust000000000000000000001", fullName: "Faycal", amount: m("15.00"), orderedAt: "2026-09-09T17:49:46.341Z" };
+
+  it("le rappel suit la fiche choisie, ou le nom tapé identique à la fiche", () => {
+    const linked = { ...freshDraft(), customer: { kind: "linked" as const, id: deposit.customerId, fullName: "Faycal", contact: null } };
+    expect(keptDepositsOf(linked, [deposit])).toEqual([deposit]);
+    expect(keptDepositsOf({ ...freshDraft(), customer: { kind: "passing", name: " faycal ", contact: "" } }, [deposit])).toEqual([deposit]);
+    expect(keptDepositsOf({ ...freshDraft(), customer: { kind: "passing", name: "Fay", contact: "" } }, [deposit])).toEqual([]);
+  });
+
+  it("la remise baisse la ligne la plus chère et y note pourquoi ; la retirer rend prix et note d'avant", () => {
+    const two = withPerfume(withPerfume(freshDraft(), { id: 1, name: "Sauvage", brandName: "Dior", image: "" }, sources), { id: 2, name: "Libre", brandName: "YSL", image: "" }, sources);
+    const priced = { ...two, lines: two.lines.map((line, index) => ({ ...line, price: index === 0 ? "120" : "90", note: index === 0 ? "Coffret" : "" })) };
+    const discounted = withDiscount(priced, parseEurInput("15") as NonNullable<ReturnType<typeof parseEurInput>>, "Remise de 15,00 € pour l'acompte laissé");
+    expect(discounted.lines.map((line) => [line.price, line.note])).toEqual([
+      ["105", "Remise de 15,00 € pour l'acompte laissé"],
+      ["90", ""],
+    ]);
+    expect(withoutDiscount(discounted).lines.map((line) => [line.price, line.note])).toEqual([
+      ["120", "Coffret"],
+      ["90", ""],
     ]);
   });
 });

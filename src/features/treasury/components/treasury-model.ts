@@ -35,8 +35,12 @@ const magnitude = (amount: Eur) => (eur.isNegative(amount) ? eur.neg(amount) : a
  */
 export function movementLabel(entry: Pick<JournalEntry, "kind" | "amount" | "counterpartPocketName" | "payment" | "expense" | "label">): string {
   switch (entry.kind) {
-    case "PAYMENT":
-      return `Paiement · ${entry.payment?.customerName?.trim() ? entry.payment.customerName : PASSING_CUSTOMER}`;
+    case "PAYMENT": {
+      const who = entry.payment?.customerName?.trim() ? entry.payment.customerName : PASSING_CUSTOMER;
+      // L'acompte d'une commande désistée n'est pas une vente : il se dit tel qu'il est (docs/admin/desistements.md).
+      if (entry.payment?.withdrawn && entry.payment.kind === "DEPOSIT") return `Acompte gardé · ${who} · désistement`;
+      return `Paiement · ${who}`;
+    }
     case "EXPENSE":
       return `Dépense · ${entry.expense?.label ?? entry.label ?? "lot"}`;
     case "SUPPLIER":
