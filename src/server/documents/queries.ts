@@ -84,8 +84,23 @@ export const documentSheet = defineQuery(async (id: string): Promise<DocumentShe
         confirmedAt: true,
         deliveredAt: true,
         cancelledAt: true,
+        cancelReason: true,
         notes: true,
         customer: { select: { id: true, fullName: true, phoneE164: true, snapchat: true } },
+        stockBottles: {
+          orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+          select: {
+            id: true,
+            perfumeName: true,
+            volumeMl: true,
+            createdAt: true,
+            soldLine: {
+              select: {
+                document: { select: { orderedAt: true, customerName: true, customer: { select: { fullName: true } } } },
+              },
+            },
+          },
+        },
         batch: { select: { id: true, name: true, status: true } },
         lines: {
           orderBy: [{ position: "asc" }, { createdAt: "asc" }, { id: "asc" }],
@@ -183,6 +198,18 @@ export const documentSheet = defineQuery(async (id: string): Promise<DocumentShe
     confirmedAt: doc.confirmedAt?.toISOString() ?? null,
     deliveredAt: doc.deliveredAt?.toISOString() ?? null,
     cancelledAt: doc.cancelledAt?.toISOString() ?? null,
+    cancelReason: doc.cancelReason,
+    bottles: doc.stockBottles.map((bottle) => {
+      const sale = bottle.soldLine?.document ?? null;
+      return {
+        id: bottle.id,
+        perfumeName: bottle.perfumeName,
+        volumeMl: bottle.volumeMl,
+        createdAt: bottle.createdAt.toISOString(),
+        soldTo: sale ? (sale.customer?.fullName ?? sale.customerName ?? "un client de passage") : null,
+        soldAt: sale ? sale.orderedAt.toISOString() : null,
+      };
+    }),
     notes: doc.notes,
     lines,
     payments,

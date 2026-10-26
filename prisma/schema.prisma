@@ -102,6 +102,7 @@ model Perfume {
   pricings      PerfumePricing[]
   /// Visuels story (galerie de la fiche parfum), distincts de image / imageLight.
   media         PerfumeMedia[]
+  stockBottles  StockBottle[]
 
   @@unique([brandId, name])
   @@index([status])
@@ -226,6 +227,12 @@ enum DocumentStatus {
 
 /// LE document de vente : une commande ou une vente directe, du premier geste au dernier encaissement.
 /// Ne stocke AUCUN montant : total, coût, payé et dû se lisent dans la vue SQL DocumentBalance (§5.1).
+/// Motif d'une annulation (docs/admin/desistements.md). NULL = annulée ordinaire (erreur, rupture, retour).
+enum CancelReason {
+  /// Le client a renoncé à sa commande : « Désistée ». Son acompte est gardé, sauf remboursement choisi.
+  WITHDRAWN
+}
+
 model SaleDocument {
   /// Identifiant texte fourni par le client à la création (UUID v4, 04 §3.6) : un double tap renvoie le même id
   /// (idempotence). `@default(cuid())` ne sert qu'aux créations serveur (reprise, scripts).
@@ -257,12 +264,16 @@ model SaleDocument {
   deliveredAt             DateTime?           @db.Timestamptz(3)
   /// Annulation. CHECK : non nul ⇔ status = CANCELLED.
   cancelledAt             DateTime?           @db.Timestamptz(3)
+  /// Motif d'annulation. CHECK : non nul ⇒ status = CANCELLED et origin = ORDER (`doc_cancel_reason_ck`).
+  cancelReason            CancelReason?
   notes                   String?
   createdAt               DateTime            @default(now()) @db.Timestamptz(3)
   updatedAt               DateTime            @updatedAt @db.Timestamptz(3)
   lines                   SaleLine[]
   payments                Payment[]
   supplierItems           SupplierEntryItem[]
+  /// Flacons passés en stock au désistement de cette commande.
+  stockBottles            StockBottle[]
 
   @@index([status, expectedDeliveryAt])
   @@index([status, confirmedAt])
@@ -319,12 +330,51 @@ model SaleLine {
   createdAt         DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt         DateTime     @updatedAt @db.Timestamptz(3)
 
+  /// Flacons en stock nés de cette ligne (désistement).
+  bottlesFrom StockBottle[] @relation("BottleSource")
+  /// Flacon en stock repris par cette ligne (revente), au plus un.
+  bottleSold  StockBottle?  @relation("BottleSold")
+
   @@index([documentId])
   @@index([perfumeId])
 }
 
 /// Nature d'un paiement client. Le sens est porté par la nature : DEPOSIT et BALANCE entrent, REFUND sort.
 /// Fixée par le serveur selon l'état du document au moment de l'écriture — jamais demandée à l'utilisateur.
+/// Flacon en stock (docs/admin/desistements.md) : un par unité d'une commande confirmée désistée. Disponible tant
+/// que `soldLineId` est NULL ; jamais un drapeau. Distinct de `Perfume.stock` (compteur général, non suivi).
+/// Seul écrivain : `src/server/stock/writer.ts`.
+model StockBottle {
+  id               String        @id @default(cuid())
+  /// Parfum du catalogue ; SetNull : le flacon garde ses copies.
+  perfumeId        Int?
+  perfume          Perfume?      @relation(fields: [perfumeId], references: [id], onDelete: SetNull)
+  perfumeName      String
+  brandName        String?
+  imageUrl         String?
+  /// Contenance copiée de la ligne d'origine (peut être NULL sur une ligne reprise).
+  volumeMl         Int?
+  unitCostDzd      Decimal?      @db.Decimal(10, 2)
+  exchangeRate     Decimal?      @db.Decimal(10, 4)
+  /// Coût d'achat repris tel quel à la revente : la marge reste juste.
+  unitCostEur      Decimal?      @db.Decimal(10, 2)
+  /// Prix prévu : celui de la commande désistée.
+  plannedPriceEur  Decimal       @db.Decimal(10, 2)
+  sourceDocumentId String?
+  sourceDocument   SaleDocument? @relation(fields: [sourceDocumentId], references: [id], onDelete: SetNull)
+  sourceLineId     String?
+  sourceLine       SaleLine?     @relation("BottleSource", fields: [sourceLineId], references: [id], onDelete: SetNull)
+  /// Nom du client désisté, copié : la provenance survit à la suppression de la commande.
+  sourceCustomer   String?
+  /// Ligne de vente qui l'a repris ; NULL = disponible. SetNull : supprimer la vente le rend disponible.
+  soldLineId       String?       @unique
+  soldLine         SaleLine?     @relation("BottleSold", fields: [soldLineId], references: [id], onDelete: SetNull)
+  createdAt        DateTime      @default(now()) @db.Timestamptz(3)
+
+  @@index([sourceDocumentId])
+  @@index([perfumeId])
+}
+
 enum PaymentKind {
   /// Acompte : encaissé alors que le document n'est pas livré.
   DEPOSIT

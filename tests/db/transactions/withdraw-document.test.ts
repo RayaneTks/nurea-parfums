@@ -1,0 +1,184 @@
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  balanceOf,
+  catalogueLine,
+  createDocument,
+  expectInvariants,
+  loadMoneyServer,
+  paymentsOf,
+  seedPocket,
+  viewBalance,
+  type MoneyServer,
+} from "./support/argent";
+import { expectError, expectOk, freshStart, newId, seedPerfume } from "./support/harness";
+
+/**
+ * « Le client se désiste » (docs/admin/desistements.md) : annulation motivée d'une commande pas livrée ;
+ * acompte gardé sauf remboursement choisi ; flacons d'une confirmée passés en stock, un par unité ;
+ * réactivation qui les retire (refusée s'ils ont été revendus) ; « Retirer du stock ».
+ */
+
+const cookieJar = vi.hoisted(() => ({ current: undefined as unknown }));
+
+vi.mock("server-only", () => ({}));
+vi.mock("next/cache", () => ({
+  updateTag: () => undefined,
+  revalidateTag: () => undefined,
+  revalidatePath: () => undefined,
+  unstable_cache: (fn: () => unknown) => fn,
+}));
+vi.mock("next/headers", () => ({ cookies: async () => cookieJar.current }));
+
+let server: MoneyServer;
+let stock: typeof import("@/server/stock/actions");
+let stockQueries: typeof import("@/server/stock/queries");
+
+beforeAll(async () => {
+  server = await loadMoneyServer();
+  stock = await import("@/server/stock/actions");
+  stockQueries = await import("@/server/stock/queries");
+});
+
+afterAll(async () => {
+  await server?.prisma.$disconnect();
+});
+
+beforeEach(async () => {
+  cookieJar.current = await freshStart(server);
+});
+
+afterEach(async () => {
+  await expectInvariants(server.prisma);
+});
+
+const withdraw = (documentId: string, refunds: { amount: string; pocketId: string | null }[] = []) =>
+  server.documents.withdrawDocumentAction({
+    documentId,
+    refunds: refunds.map((refund) => ({ id: newId(), ...refund })),
+    confirm: false,
+  });
+
+const bottlesOf = (documentId: string) =>
+  server.prisma.stockBottle.findMany({ where: { sourceDocumentId: documentId }, orderBy: { id: "asc" } });
+
+describe("désistement d'une commande confirmée", () => {
+  it("acompte gardé : CANCELLED + WITHDRAWN, payé intact, un flacon par unité non offerte, coût et prix copiés", async () => {
+    const yara = await seedPerfume(server.prisma, { name: "Yara" });
+    const id = await createDocument(server, {
+      origin: "ORDER",
+      customer: { kind: "passing", name: "Faycal" },
+      lines: [
+        catalogueLine(yara.id, { quantity: 2, volumeMl: 80, unitPriceEur: "45", unitCostDzd: "2770", exchangeRate: "277" }),
+        catalogueLine(yara.id, { quantity: 1, volumeMl: 10, unitPriceEur: "0", isGift: true }),
+      ],
+      received: [{ amount: "20", pocketId: null }],
+    });
+    expect((await server.prisma.saleDocument.findUniqueOrThrow({ where: { id } })).status).toBe("CONFIRMED");
+
+    const data = expectOk(await withdraw(id));
+
+    expect(data).toMatchObject({ document: { status: "CANCELLED", paid: "20.00" }, refunds: [], bottles: 2 });
+    const doc = await server.prisma.saleDocument.findUniqueOrThrow({ where: { id } });
+    expect(doc.cancelReason).toBe("WITHDRAWN");
+    expect(doc.customerName).toBe("Faycal");
+    const bottles = await bottlesOf(id);
+    expect(bottles).toHaveLength(2);
+    expect(bottles[0]).toMatchObject({ perfumeId: yara.id, volumeMl: 80, sourceCustomer: "Faycal", soldLineId: null });
+    expect(bottles[0]!.plannedPriceEur.toString()).toBe("45");
+    expect(bottles[0]!.unitCostEur?.toString()).toBe("10");
+    expect((await viewBalance(server.prisma, id)).paid).toBe("20.00");
+  });
+
+  it("acompte rendu en partie : un REFUND ordinaire, le reste gardé", async () => {
+    const cash = await seedPocket(server.prisma, { name: "Espèces" });
+    const id = await createDocument(server, { origin: "ORDER", received: [{ amount: "30", pocketId: cash.id }] });
+    const data = expectOk(await withdraw(id, [{ amount: "10", pocketId: cash.id }]));
+    expect(data.document).toMatchObject({ status: "CANCELLED", paid: "20.00" });
+    expect(data.refunds).toEqual([expect.objectContaining({ kind: "REFUND", amount: "-10.00" })]);
+    expect(await balanceOf(server.prisma, cash.id)).toBe("20.00");
+    expect((await paymentsOf(server.prisma, id)).length).toBe(2);
+  });
+
+  it("commande En attente : désistée, aucun flacon en stock", async () => {
+    const id = await createDocument(server, { origin: "ORDER" });
+    expect((await server.prisma.saleDocument.findUniqueOrThrow({ where: { id } })).status).toBe("PENDING");
+    expect(expectOk(await withdraw(id)).bottles).toBe(0);
+    expect(await bottlesOf(id)).toEqual([]);
+  });
+});
+
+describe("refus", () => {
+  it("vente directe, commande livrée ou déjà annulée ⇒ CONFLICT, rien d'écrit", async () => {
+    const sale = await createDocument(server, { origin: "DIRECT_SALE", received: [{ amount: "120", pocketId: null }] });
+    expect(expectError(await withdraw(sale), "CONFLICT").message).toBe(
+      "Seule une commande peut être désistée : annule plutôt cette vente.",
+    );
+
+    const order = await createDocument(server, { origin: "ORDER", received: [{ amount: "20", pocketId: null }] });
+    const [line] = await server.prisma.saleLine.findMany({ where: { documentId: order } });
+    expectOk(await server.documents.setLineDeliveredAction({ documentId: order, lineId: line!.id, deliveredQuantity: 1 }));
+    expect(expectError(await withdraw(order), "CONFLICT").message).toBe(
+      "Cette commande est déjà livrée, en tout ou en partie : annule-la plutôt.",
+    );
+
+    const cancelled = await createDocument(server, { origin: "ORDER" });
+    expectOk(await server.documents.cancelDocumentAction({ documentId: cancelled, refunds: [], confirm: false }));
+    expectError(await withdraw(cancelled), "CONFLICT");
+    expect(await server.prisma.stockBottle.count()).toBe(0);
+  });
+});
+
+describe("réactivation et stock", () => {
+  it("réactiver une désistée retire ses flacons et efface le motif ; sans filet « Annuler »", async () => {
+    const id = await createDocument(server, { origin: "ORDER", received: [{ amount: "20", pocketId: null }] });
+    expectOk(await withdraw(id));
+    expect(await bottlesOf(id)).toHaveLength(1);
+
+    const data = expectOk(await server.documents.changeDocumentStatusAction({ documentId: id, to: "PENDING", confirm: true }));
+    expect(data.undo).toBeNull();
+    const doc = await server.prisma.saleDocument.findUniqueOrThrow({ where: { id } });
+    expect(doc).toMatchObject({ status: "PENDING", cancelReason: null });
+    expect(await bottlesOf(id)).toEqual([]);
+  });
+
+  it("un flacon revendu bloque la réactivation", async () => {
+    const id = await createDocument(server, { origin: "ORDER", received: [{ amount: "20", pocketId: null }] });
+    expectOk(await withdraw(id));
+    const sale = await createDocument(server, { origin: "DIRECT_SALE", received: [{ amount: "120", pocketId: null }] });
+    const [saleLine] = await server.prisma.saleLine.findMany({ where: { documentId: sale } });
+    const [bottle] = await bottlesOf(id);
+    // La revente arrive en phase 3 : on simule le lien posé par son writer.
+    await server.prisma.stockBottle.update({ where: { id: bottle!.id }, data: { soldLineId: saleLine!.id } });
+
+    expect(
+      expectError(await server.documents.changeDocumentStatusAction({ documentId: id, to: "PENDING", confirm: true }), "CONFLICT")
+        .message,
+    ).toBe("Un flacon de cette commande a déjà été revendu : elle ne peut plus être réactivée. Crée plutôt une nouvelle commande.");
+    expect((await server.prisma.saleDocument.findUniqueOrThrow({ where: { id } })).cancelReason).toBe("WITHDRAWN");
+    expect(await stockQueries.availableBottles()).toEqual([]);
+  });
+
+  it("liste En stock puis « Retirer du stock » ; un second retrait ne fait rien", async () => {
+    const id = await createDocument(server, {
+      origin: "ORDER",
+      customer: { kind: "passing", name: "François" },
+      received: [{ amount: "20", pocketId: null }],
+    });
+    expectOk(await withdraw(id));
+    const [listed] = await stockQueries.availableBottles();
+    expect(listed).toMatchObject({ sourceCustomer: "François", sourceDocumentId: id, plannedPriceEur: "120.00" });
+
+    expect(expectOk(await stock.removeStockBottleAction({ id: listed!.id }))).toEqual({ id: listed!.id, removed: true });
+    expect(expectOk(await stock.removeStockBottleAction({ id: listed!.id }))).toEqual({ id: listed!.id, removed: false });
+    expect(await stockQueries.availableBottles()).toEqual([]);
+  });
+
+  it("supprimer la commande d'origine garde le flacon et sa provenance copiée", async () => {
+    const id = await createDocument(server, { origin: "ORDER", customer: { kind: "passing", name: "khali.khali" } });
+    expectOk(await server.documents.changeDocumentStatusAction({ documentId: id, to: "CONFIRMED", confirm: true }));
+    expectOk(await withdraw(id));
+    expectOk(await server.documents.deleteDocumentAction({ documentId: id }));
+    const [bottle] = await stockQueries.availableBottles();
+    expect(bottle).toMatchObject({ sourceCustomer: "khali.khali", sourceDocumentId: null, sourceOrderedAt: null });
+  });
+});

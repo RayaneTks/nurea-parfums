@@ -10,6 +10,8 @@ import {
   type BatchAssignment,
   type CancelDocumentData,
   type CancellationResult,
+  type WithdrawalResult,
+  type WithdrawDocumentData,
   type ChangeDocumentStatusData,
   type CreateDocumentData,
   type CreateLineData,
@@ -37,6 +39,7 @@ import {
   initialStatus,
   isEngaged,
   timestampsAfter,
+  type CancelReason,
   type DocumentOrigin,
   type DocumentStatus,
 } from "@/domain/document-status";
@@ -69,6 +72,7 @@ import type { Tx } from "@/server/db/transaction";
 import { adminJwtSecret } from "@/server/env";
 import * as paymentsWriter from "@/server/payments/writer";
 import * as settingsWriter from "@/server/settings/writer";
+import * as stockWriter from "@/server/stock/writer";
 import * as treasuryWriter from "@/server/treasury/writer";
 
 /**
@@ -121,6 +125,7 @@ const DOCUMENT_SELECT = {
   confirmedAt: true,
   deliveredAt: true,
   cancelledAt: true,
+  cancelReason: true,
 } as const;
 
 const LINE_SELECT = {
@@ -877,7 +882,8 @@ export async function changeDocumentStatus(tx: Tx, input: ChangeDocumentStatusDa
   if (plan) await writeStatusChange(tx, doc, plan, input.confirm);
   return {
     ...(await documentState(tx, doc.id)),
-    undo: await revertToken(tx, "status", [{ id: doc.id, before, payments: [] }]),
+    // Réactiver une désistée a retiré ses flacons du stock : le filet ne saurait pas les rendre.
+    undo: doc.cancelReason ? null : await revertToken(tx, "status", [{ id: doc.id, before, payments: [] }]),
   };
 }
 
@@ -923,6 +929,8 @@ async function planStatusChange(
 }
 
 async function writeStatusChange(tx: Tx, doc: StoredDocument, plan: StatusPlan, confirm: boolean): Promise<void> {
+  // Réactiver une désistée : ses flacons disponibles quittent le stock ; refusé si l'un a été revendu.
+  if (plan.from === "CANCELLED" && doc.cancelReason === "WITHDRAWN") await stockWriter.releaseWithdrawnBottles(tx, doc.id);
   for (const line of plan.completed) {
     await tx.db.saleLine.update({ where: { id: line.id }, data: { deliveredQuantity: line.quantity }, select: { id: true } });
   }
@@ -933,7 +941,8 @@ async function writeStatusChange(tx: Tx, doc: StoredDocument, plan: StatusPlan, 
     { confirmedAt: doc.confirmedAt, deliveredAt: doc.deliveredAt, cancelledAt: doc.cancelledAt },
     tx.now,
   );
-  await tx.db.saleDocument.update({ where: { id: doc.id }, data: { status: plan.to, ...timestamps }, select: { id: true } });
+  const reason = plan.from === "CANCELLED" ? { cancelReason: null } : {};
+  await tx.db.saleDocument.update({ where: { id: doc.id }, data: { status: plan.to, ...reason, ...timestamps }, select: { id: true } });
 }
 
 // ── T6 : supprimer un document sans paiement ───────────────────────────────────
@@ -1296,6 +1305,24 @@ export async function deliverAndCollect(tx: Tx, input: DeliverAndCollectData): P
  * `VALIDATION` avant toute écriture (03 §4.3). Déjà annulé : succès sans écriture si c'est un renvoi.
  */
 export async function cancelDocument(tx: Tx, input: CancelDocumentData): Promise<CancellationResult> {
+  const { document, refunds } = await cancelWith(tx, input, null);
+  return { document, refunds };
+}
+
+export const WITHDRAW_ORDER_ONLY = "Seule une commande peut être désistée : annule plutôt cette vente.";
+export const WITHDRAW_DELIVERED = "Cette commande est déjà livrée, en tout ou en partie : annule-la plutôt.";
+export const ALREADY_CANCELLED = "Cette commande est déjà annulée : réactive-la d'abord pour la marquer désistée.";
+
+/**
+ * « Le client se désiste » (docs/admin/desistements.md) : T5 avec le motif `WITHDRAWN`, sur une commande ni
+ * livrée ni annulée. L'argent versé reste acquis sauf remboursements choisis ; une commande confirmée passe ses
+ * flacons en stock (le flacon a été commandé au fournisseur), une En attente n'en crée aucun.
+ */
+export async function withdrawDocument(tx: Tx, input: WithdrawDocumentData): Promise<WithdrawalResult> {
+  return cancelWith(tx, input, "WITHDRAWN");
+}
+
+async function cancelWith(tx: Tx, input: CancelDocumentData, reason: CancelReason | null): Promise<WithdrawalResult> {
   const refunds = input.refunds ?? [];
   const pockets: string[] = [];
   for (const refund of refunds) pockets.push(await treasuryWriter.resolvePocketId(tx, refund.pocketId));
@@ -1308,8 +1335,10 @@ export async function cancelDocument(tx: Tx, input: CancelDocumentData): Promise
     refunds.map((refund) => refund.id),
   );
   if (doc.status === "CANCELLED") {
+    // Renvoi du même geste : succès sans écriture. Désister une annulée ordinaire est refusé.
+    if (reason && doc.cancelReason !== reason) throw new DomainError("CONFLICT", ALREADY_CANCELLED);
     if (existing.length === refunds.length && existing.every((payment) => payment.documentId === doc.id)) {
-      return { document: await documentState(tx, doc.id), refunds: existing.map(paymentsWriter.paymentReceipt) };
+      return { document: await documentState(tx, doc.id), refunds: existing.map(paymentsWriter.paymentReceipt), bottles: 0 };
     }
     throw new DomainError("CONFLICT", `Cette ${noun(doc.origin)} est déjà annulée : rembourse depuis sa fiche.`);
   }
@@ -1318,6 +1347,12 @@ export async function cancelDocument(tx: Tx, input: CancelDocumentData): Promise
   }
 
   const lines = await readLines(tx, doc.id);
+  if (reason === "WITHDRAWN") {
+    if (doc.origin !== "ORDER") throw new DomainError("CONFLICT", WITHDRAW_ORDER_ONLY);
+    if (doc.status === "DELIVERED" || lines.some((line) => line.deliveredQuantity > 0)) {
+      throw new DomainError("CONFLICT", WITHDRAW_DELIVERED);
+    }
+  }
   const paid = await readPaid(tx, doc.id);
   const refundable = eur.clampZero(paid);
   const refundTotal = eur.sum(refunds.map((refund) => eurFromWire(refund.amount)));
@@ -1345,7 +1380,11 @@ export async function cancelDocument(tx: Tx, input: CancelDocumentData): Promise
     { confirmedAt: doc.confirmedAt, deliveredAt: doc.deliveredAt, cancelledAt: doc.cancelledAt },
     tx.now,
   );
-  await tx.db.saleDocument.update({ where: { id: doc.id }, data: { status: "CANCELLED", ...timestamps }, select: { id: true } });
+  await tx.db.saleDocument.update({ where: { id: doc.id }, data: { status: "CANCELLED", cancelReason: reason, ...timestamps }, select: { id: true } });
+  const bottles =
+    reason === "WITHDRAWN" && doc.status === "CONFIRMED"
+      ? await stockWriter.stockWithdrawnLines(tx, { documentId: doc.id, customer: doc.customerName, lines })
+      : 0;
 
   const written: paymentsWriter.StoredPayment[] = [];
   for (const [index, refund] of refunds.entries()) {
@@ -1360,7 +1399,7 @@ export async function cancelDocument(tx: Tx, input: CancelDocumentData): Promise
       }),
     );
   }
-  return { document: await documentState(tx, doc.id), refunds: written.map(paymentsWriter.paymentReceipt) };
+  return { document: await documentState(tx, doc.id), refunds: written.map(paymentsWriter.paymentReceipt), bottles };
 }
 
 // ── T4b : défaire un geste ─────────────────────────────────────────────────────

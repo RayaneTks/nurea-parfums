@@ -416,6 +416,16 @@ export const cancelDocumentInput = z
 export type CancelDocumentInput = z.input<typeof cancelDocumentInput>;
 export type CancelDocumentData = z.output<typeof cancelDocumentInput>;
 
+/**
+ * « Le client se désiste » (docs/admin/desistements.md) : une annulation motivée d'une commande pas encore
+ * livrée. Mêmes remboursements que T5 — aucun par défaut : l'acompte est gardé. Une confirmée passe ses
+ * flacons en stock.
+ */
+export const withdrawDocumentInput = cancelDocumentInput;
+
+export type WithdrawDocumentInput = CancelDocumentInput;
+export type WithdrawDocumentData = CancelDocumentData;
+
 // ── A-5 : livrer et encaisser ──────────────────────────────────────────────────
 
 /**
@@ -509,6 +519,11 @@ export type CancellationResult = {
   refunds: PaymentReceipt[];
 };
 
+export type WithdrawalResult = CancellationResult & {
+  /** Flacons passés en stock (0 pour une commande En attente). */
+  bottles: number;
+};
+
 export type DeliveryAndCollection = {
   document: DocumentState;
   payment: PaymentReceipt;
@@ -595,6 +610,10 @@ export type DocumentSheetDTO = {
   confirmedAt: string | null;
   deliveredAt: string | null;
   cancelledAt: string | null;
+  /** `WITHDRAWN` : « Désistée » (docs/admin/desistements.md) ; null : annulée ordinaire, ou pas annulée. */
+  cancelReason: "WITHDRAWN" | null;
+  /** Flacons passés en stock au désistement ; `soldTo` : nom de l'acheteur une fois revendu. */
+  bottles: { id: string; perfumeName: string; volumeMl: number | null; createdAt: string; soldTo: string | null; soldAt: string | null }[];
   notes: string | null;
   lines: DocumentLineDTO[];
   payments: DocumentPaymentDTO[];

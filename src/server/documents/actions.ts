@@ -4,6 +4,7 @@ import {
   assignDocumentsToBatchInput,
   attachLineToCatalogueInput,
   cancelDocumentInput,
+  withdrawDocumentInput,
   changeDocumentStatusInput,
   createDocumentInput,
   deleteDocumentInput,
@@ -64,6 +65,11 @@ export const revertDocumentChangeAction = defineAction("documents.revertChange",
 /** T5 — Annuler un document, avec les remboursements choisis (S03). */
 export const cancelDocumentAction = defineAction("documents.cancel", cancelDocumentInput, (input) =>
   inTransaction((tx) => documentsWriter.cancelDocument(tx, input)),
+);
+
+/** « Le client se désiste » — annulation motivée, acompte gardé sauf remboursement choisi, flacons en stock. */
+export const withdrawDocumentAction = defineAction("documents.withdraw", withdrawDocumentInput, (input) =>
+  inTransaction((tx) => documentsWriter.withdrawDocument(tx, input)),
 );
 
 /** A-5 — « Encaisser et livrer » (S02 variante Livrer) : T7 puis T4 en une transaction. Renvoie le jeton de T4b. */

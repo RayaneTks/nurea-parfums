@@ -32,6 +32,8 @@ function doc(overrides: Partial<Omit<DocumentSheetDTO, "balance">> & { balance?:
     confirmedAt: "2026-09-12T10:00:00.000Z",
     deliveredAt: null,
     cancelledAt: null,
+    cancelReason: null,
+    bottles: [],
     notes: null,
     lines: [],
     payments: [],

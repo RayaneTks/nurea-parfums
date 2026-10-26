@@ -29,6 +29,9 @@ import { periodStart } from "./periods";
 export type DocumentStatus = "PENDING" | "CONFIRMED" | "DELIVERED" | "CANCELLED";
 export const DOCUMENT_STATUSES = ["PENDING", "CONFIRMED", "DELIVERED", "CANCELLED"] as const;
 
+/** Motif d'une annulation (docs/admin/desistements.md). `null` : annulée ordinaire. */
+export type CancelReason = "WITHDRAWN";
+
 export type DocumentOrigin = "ORDER" | "DIRECT_SALE";
 export const DOCUMENT_ORIGINS = ["ORDER", "DIRECT_SALE"] as const;
 
