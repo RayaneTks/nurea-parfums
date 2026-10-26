@@ -130,7 +130,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
             Laisser un message
           </h2>
           <p className="t-body mb-6 mt-2">
-            Précisez la marque et le nom du parfum : la réponse n&apos;en sera que plus précise.
+            Dites-nous quel parfum vous aimez porter : on vous répond avec le bon.
           </p>
           <ContactForm parfum={parfum} marque={marque} />
         </section>

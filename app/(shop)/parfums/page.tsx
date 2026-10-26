@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Toutes les marques de parfum à Marseille",
-  description: `Toutes les marques de parfum du catalogue ${SITE_NAME}, de A à Z : grandes maisons et parfumerie de niche, au meilleur prix à Marseille. Remise en main propre ou envoi en France.`,
+  description: `Toutes les marques de parfum du catalogue ${SITE_NAME}, de A à Z : grandes maisons et parfumerie de niche. Remise en main propre ou envoi en France.`,
   alternates: { canonical: CATALOGUE_PATH },
   openGraph: pageOg(CATALOGUE_PATH),
 };
@@ -84,8 +84,7 @@ export default async function BrandsIndexPage() {
           {brands.length > 0
             ? `${brands.length} marques au catalogue ${SITE_NAME}, des grandes maisons à la parfumerie de niche. `
             : ""}
-          Au meilleur prix à Marseille, avec remise en main propre sur place ou envoi partout en
-          France. Votre marque n&apos;y figure pas ? Demandez-la nous : les arrivages sont fréquents.
+          Envoi partout en France, ou remise en main propre à Marseille. Votre marque n&apos;y figure pas ? Demandez-la nous : les arrivages sont fréquents.
         </p>
       </section>
 

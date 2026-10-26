@@ -4,7 +4,6 @@ import { MENTION_FLACONS } from "@/lib/mentions";
 import { contactHref, orderMessage, whatsappOrderUrl } from "@/lib/catalog/perfumePresentation";
 import { buttonClass } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
-import { ChannelSoon } from "@/components/ui/ChannelSoon";
 import { WhatsAppIcon } from "@/components/ui/Icons";
 import { SnapchatOrderButton } from "./SnapchatOrderButton";
 
@@ -25,6 +24,7 @@ interface OrderChannelsProps {
 
 /**
  * Les moyens de commander un parfum : Snapchat, WhatsApp s'il est ouvert, le formulaire.
+ * Fermé, WhatsApp n'est pas annoncé sur la fiche (gérant, 26/10/2026) : le « bientôt » vit sur Contact.
  *
  * Un seul composant pour le détail en surimpression ET la fiche parfum indexable. Ces appels à
  * l'action avaient déjà été recopiés trois fois, et les trois copies avaient divergé (voir
@@ -51,9 +51,7 @@ export const OrderChannels: FC<OrderChannelsProps> = ({ perfume, brand, classNam
           <WhatsAppIcon className="h-4 w-4 shrink-0" aria-hidden />
           WhatsApp
         </a>
-      ) : (
-        <ChannelSoon />
-      )}
+      ) : null}
 
       <Link href={contactHref(perfume, brand)} className={buttonClass("link")}>
         Passer par le formulaire

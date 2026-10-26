@@ -25,7 +25,7 @@ const NEIGHBOURS = 12;
 /** La marque en tête — c'est le mot cherché —, puis ce qu'on en propose, puis comment l'obtenir. */
 function description(brand: SeoBrand): string {
   const offre = "les références répertoriées au catalogue et d'autres références à vérifier sur demande";
-  return `Parfums ${brand.name} au meilleur prix à Marseille chez ${SITE_NAME} : ${offre}. Remise en main propre à Marseille ou envoi en France, commande directe sur Snapchat.`;
+  return `Parfums ${brand.name} à Marseille chez ${SITE_NAME} : ${offre}. Remise en main propre à Marseille ou envoi en France, commande directe sur Snapchat.`;
 }
 
 export async function generateMetadata({ params }: BrandPageProps): Promise<Metadata> {
@@ -111,7 +111,7 @@ export default async function BrandPage({ params }: BrandPageProps) {
         >
           <h1 className="t-title">Parfums {brand.name}</h1>
           <p className="t-body t-measure hyphens-manual">
-            {`Les parfums ${brand.name} du catalogue ${SITE_NAME}, au meilleur prix. Le prix et la disponibilité se confirment en message privé, avant toute commande.`}{" "}
+            {`Les parfums ${brand.name} du catalogue ${SITE_NAME}. Le prix et la disponibilité se confirment en message privé, avant toute commande.`}{" "}
             Remise en main propre à Marseille, ou envoi partout en France.
           </p>
           <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
