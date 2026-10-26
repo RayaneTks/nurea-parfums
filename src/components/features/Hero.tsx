@@ -70,11 +70,11 @@ export const Hero: FC = () => {
         </picture>
       </div>
 
-      {/* Accroche du gérant (21/10), précédée du nom : le H1 porte « Nuréa » pour Google (et contre la confusion avec
-          Nurae), et « Nuréa, votre parfum » dit que le parfum est le nôtre, pas celui d'une marque vendu moins cher.
+      {/* Accroche du gérant (21/10), précédée du nom : le H1 porte « Nuréa Parfums » (nom complet, gérant 26/10) pour Google (et contre la confusion avec
+          Nurae), et « …, votre parfum » dit que le parfum est le nôtre, pas celui d'une marque vendu moins cher.
           Avis juridique attendu : elle compare le prix aux grandes marques. */}
       <h1 id="accueil-titre" className="hero-titre t-title enter">
-        <span className="text-accent">Nuréa</span>, votre parfum <br />
+        <span className="text-accent">Nuréa Parfums</span>, votre parfum <br />
         sans le prix des <span className="hero-insecable">grandes marques.</span>
       </h1>
       <div className="hero-entrees enter">
