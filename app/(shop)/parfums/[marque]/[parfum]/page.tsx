@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PerfumePageProps): Promise<Me
   const full = fullPerfumeName(brand.name, perfume.name);
   return {
     title: `${perfume.line ? `${full} (${perfume.line})` : full} à Marseille`,
-    description: `${perfume.name} de ${brand.name}${perfume.line ? `, gamme ${perfume.line},` : ""} chez ${SITE_NAME}, parfumerie à Marseille : au meilleur prix, remise en main propre à Marseille ou envoi en France. Prix et disponibilité sur Snapchat.`,
+    description: `${perfume.name} de ${brand.name}${perfume.line ? `, gamme ${perfume.line},` : ""} chez ${SITE_NAME}, parfumerie à Marseille : remise en main propre à Marseille ou envoi en France. Prix et disponibilité sur Snapchat.`,
     alternates: { canonical: path },
     // L'image vient d'`opengraph-image.tsx` (visuel entier sur son ambiance) : c'est ce lien qu'on partage en story.
     openGraph: pageOg(path),

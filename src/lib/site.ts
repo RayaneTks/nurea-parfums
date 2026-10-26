@@ -63,7 +63,6 @@ export const SEO_KEYWORDS: string[] = [
   "parfums pas cher",
   "parfums de luxe",
   "parfumerie marseille",
-  "meilleur prix parfum",
   "catalogue parfum",
 ];
 

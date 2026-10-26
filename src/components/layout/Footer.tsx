@@ -45,8 +45,7 @@ export const Footer: FC = () => (
           <BrandLogo className="h-10" />
         </Link>
         <p className="t-body t-measure">
-          Une sélection tenue à la main, pour homme et pour femme, sans intermédiaire entre vous et
-          le flacon.
+          Vous payez le parfum, pas la pub.
         </p>
         <p className="t-caption t-measure">{MENTION_FLACONS}</p>
         <ul className="flex gap-2">
@@ -84,7 +83,7 @@ export const Footer: FC = () => (
             {CONTACT.email.split("@")[1]}
           </a>
         </li>
-        <li>{CONTACT.location}. Envoi possible sur demande.</li>
+        <li>Envoi partout en France. Remise en main propre à Marseille.</li>
       </FooterColumn>
 
       <FooterColumn title="Légal">

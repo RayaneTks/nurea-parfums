@@ -13,7 +13,7 @@ Tout ce qui est écrit ici est vérifiable : chaque ligne renvoie à son fichier
 |---|---|
 | Le site **ne vend pas en ligne** : ni panier, ni paiement, ni compte client. | `PRODUCT.md` |
 | **Jamais de prix en grille.** Le prix se donne dans l'échange. | `PRODUCT.md` |
-| Le seul canal ouvert est **Snapchat**. WhatsApp est « bientôt » : jamais présenté comme cliquable tant que le numéro n'existe pas. Le formulaire de contact reste. | `ChannelSoon`, `OrderChannels` |
+| Le seul canal ouvert est **Snapchat**. WhatsApp est « bientôt » : jamais présenté comme cliquable tant que le numéro n'existe pas, et annoncé sur la seule page Contact (pas sur les fiches, gérant 26/10/2026). Le formulaire de contact reste. | `ChannelSoon`, `OrderChannels` |
 | Le bouton « Commander sur Snapchat » **copie le nom du parfum** et reste visible sans défiler (fiche, contact). | `SnapchatOrderButton` |
 | Fiche produit : **marque / nom**, dans cet ordre. **Aucune contenance affichée sur la vitrine** (décision du gérant, 20/10/2026) : le volume se discute sur Snapchat. Une donnée absente est **omise**, jamais inventée. | `perfumePresentation.ts` |
 | Un parfum ou une marque **sans visuel sombre est masqué** (statut brouillon). Un parfum masqué reste trouvable en recherche, avec invitation à écrire. | `catalogue-service.ts` |
