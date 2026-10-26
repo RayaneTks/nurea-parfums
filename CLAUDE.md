@@ -9,7 +9,7 @@ visuels, gestion), ce que chacune peut toucher, contrats entre chantiers, format
 journal commun. Le tenir à jour : une ligne au journal par événement qui touche un autre chantier.
 
 Lire et appliquer `AGENTS.md` à la racine : boucle de travail, exigences de tests, et la table
-**« quel skill pour quelle tâche »**. Les 24 skills sont dans `.agents/skills/` (versionnés, texte
+**« quel skill pour quelle tâche »**. Les 30 skills sont dans `.agents/skills/` (versionnés, texte
 seulement ; versions et empreintes : `.agents/skills/PROVENANCE.md`). On en lit **un seul, à la
 demande**.
 

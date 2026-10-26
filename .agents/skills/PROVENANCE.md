@@ -33,9 +33,17 @@ Ne jamais installer ces projets par leur installeur (`npx …`) : il ajoute des 
 | `ponytail-audit` | DietrichGebert/ponytail | `09c434a` | MIT | Audit de tout le dépôt | `2b3223a02c386d12` |
 | `ponytail-debt` | DietrichGebert/ponytail | `09c434a` | MIT | Registre des raccourcis différés | `b5ec2762f6ba8c4a` |
 | `caveman` | JuliusBrussee/caveman | `bad48a0` | voir LICENSE amont | Style de réponse très bref | `415d43518f2b1a94` |
+| `mobile-native` | emilkowalski/skills | `2d22863` | MIT | Sur téléphone, ôter ce qui trahit « un site » (zoom des champs, flash au toucher, hauteur d'écran, encoche) — ajouté le 26/10/2026 | `888b7651d66d66db` |
+| `apple-design` | emilkowalski/skills | `2d22863` | MIT | Gestes, ressorts, feuilles glissées, mouvement interrompable (WWDC traduit pour le web) — ajouté le 26/10/2026 | `77bb63b7043bb93a` |
+| `prototype` | emilkowalski/skills | `2d22863` | MIT | Plusieurs versions vraiment différentes d'un écran, à comparer avant de choisir — ajouté le 26/10/2026 | `bba39c955eb1871c` |
+| `interview-me` | addyosmani/agent-skills | `aeac41d` | MIT | Demande floue : une question à la fois jusqu'au vrai besoin — ajouté le 26/10/2026 | `ace4b675999bb504` |
+| `planning-and-task-breakdown` | addyosmani/agent-skills | `aeac41d` | MIT | Cadrage : découper en tâches vérifiables — ajouté le 26/10/2026 | `ed0f90cc5951ddd4` |
+| `deprecation-and-migration` | addyosmani/agent-skills | `aeac41d` | MIT | Changer la base ou retirer une fonction sans casser la prod — ajouté le 26/10/2026 | `6a624f942e09c698` |
 | `graphify` | installation locale ~/.claude/skills/graphify | `(copie du 20/10/2026)` | voir graphifyy amont | Carte du code : requêtes, chemins, explications | `c97cb41e68a3c63a` |
 
 ## Non repris, volontairement
+
+- Tri du 26/10/2026 (mêmes versions) : `doubt-driven-development` (fait relire chaque décision par un autre agent → coût doublé), `git-workflow-and-versioning` (pousse aux PR, contraire à la méthode Nuréa), `browser-testing-with-devtools` (MCP Chrome écarté), `pick-ui-library` (ajoute des dépendances), `write-swift`, `animate-expo`, `ask-sonner` (hors pile), et les skills d'Addy qui doublonnent CLAUDE.md, AGENTS.md et les tests. Gardés hors dépôt, sur demande seulement : `find-animation-opportunities`, `improve-animations` (sous-agents), `shipping-and-launch`, `idea-refine`.
 
 - `web-quality-audit` : scripts\analyze.sh
 - `vercel-react-best-practices` : AGENTS.md, metadata.json, README.md, rules\_sections.md, rules\_template.md
