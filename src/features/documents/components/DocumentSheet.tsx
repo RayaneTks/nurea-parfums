@@ -37,6 +37,7 @@ import { Text } from "@/ui/primitives/Text";
 import { Textarea } from "@/ui/primitives/Textarea";
 import { BatchPicker } from "./BatchPicker";
 import { CancelSheet } from "./CancelSheet";
+import { WithdrawSheet } from "./WithdrawSheet";
 import { CollectSheet, type CollectTarget, type CollectVariant } from "./CollectSheet";
 import { CorrectPaymentSheet } from "./CorrectPaymentSheet";
 import { CustomerPicker } from "./CustomerPicker";
@@ -50,6 +51,7 @@ import {
   documentDescription,
   documentTitle,
   footerPlan,
+  isWithdrawn,
   lineCaption,
   marginLabel,
   moneyView,
@@ -116,6 +118,7 @@ function DocumentView({ doc, pockets, batches, pickerVersion, onEdit }: Document
   const closeSheet = useCloseDocumentSheet();
   const collect = useTransientSheet<CollectVariant>();
   const cancel = useTransientSheet<"cancel" | "refund">();
+  const withdrawal = useTransientSheet<"withdraw">();
   const correct = useTransientSheet<PaymentRowView>();
   const [menuOpen, setMenuOpen] = useState(false);
   const [paymentMenu, setPaymentMenu] = useState<PaymentRowView | null>(null);
@@ -258,6 +261,9 @@ function DocumentView({ doc, pockets, batches, pickerVersion, onEdit }: Document
   const rows = paymentRows(doc.payments, doc.origin);
   const delivered = deliveredSummary(doc.lines);
   const trackDelivery = doc.origin === "ORDER" && doc.status !== "CANCELLED";
+  const withdrawn = isWithdrawn(doc);
+  const canWithdraw =
+    doc.origin === "ORDER" && (doc.status === "PENDING" || doc.status === "CONFIRMED") && delivered.delivered === 0;
 
   return (
     <div className="flex flex-col gap-5 pb-2" data-document-sheet={doc.id}>
@@ -277,9 +283,11 @@ function DocumentView({ doc, pockets, batches, pickerVersion, onEdit }: Document
       <ListSection
         title={trackDelivery ? `Articles · Livré ${delivered.delivered}/${delivered.quantity}` : "Articles"}
         action={
-          <Button variant="text" size="sm" onClick={() => onEdit()}>
-            Modifier
-          </Button>
+          withdrawn ? undefined : (
+            <Button variant="text" size="sm" onClick={() => onEdit()}>
+              Modifier
+            </Button>
+          )
         }
       >
         {doc.lines.map((line) => (
@@ -328,6 +336,22 @@ function DocumentView({ doc, pockets, batches, pickerVersion, onEdit }: Document
           </div>
         ))}
       </ListSection>
+
+      {doc.bottles.length > 0 ? (
+        <ListSection title={doc.bottles.length === 1 ? "Son flacon" : "Ses flacons"}>
+          {doc.bottles.map((bottle) => (
+            <ListRow
+              key={bottle.id}
+              primary={[bottle.perfumeName, bottle.volumeMl ? `${bottle.volumeMl} ml` : null].filter(Boolean).join(" · ")}
+              secondary={
+                bottle.soldTo
+                  ? `Revendu à ${bottle.soldTo}${bottle.soldAt ? ` le ${formatDate(new Date(bottle.soldAt), "short")}` : ""}`
+                  : `En stock depuis le ${formatDate(new Date(bottle.createdAt), "short")}, prêt à revendre`
+              }
+            />
+          ))}
+        </ListSection>
+      ) : null}
 
       {rows.length > 0 ? (
         <ListSection title="Paiements">
@@ -394,6 +418,9 @@ function DocumentView({ doc, pockets, batches, pickerVersion, onEdit }: Document
           }}
         />
       ) : null}
+      {withdrawal.subject ? (
+        <WithdrawSheet key={withdrawal.key} open={withdrawal.open} onClose={withdrawal.hide} doc={doc} pockets={pockets} />
+      ) : null}
       {cancel.subject ? (
         <CancelSheet key={cancel.key} open={cancel.open} onClose={cancel.hide} mode={cancel.subject} doc={doc} pockets={pockets} />
       ) : null}
@@ -430,7 +457,7 @@ function DocumentView({ doc, pockets, batches, pickerVersion, onEdit }: Document
 
       <Sheet open={menuOpen} onOpenChange={setMenuOpen} nested size="auto" title="Actions" description={`${title} · ${name}`}>
         <Card padding={0}>
-          <ListRow primary="Modifier les lignes" onClick={() => (setMenuOpen(false), onEdit())} />
+          {withdrawn ? null : <ListRow primary="Modifier les lignes" onClick={() => (setMenuOpen(false), onEdit())} />}
           {/* A-9 : « Refaire » pré-remplit le composeur (lignes, client, lot encore ouvert) pour relecture avant validation. */}
           <ListRow primary="Refaire" onClick={() => (setMenuOpen(false), navigate(routes.vendre({ depuis: doc.id })))} />
           {doc.status !== "CANCELLED" ? (
@@ -445,8 +472,22 @@ function DocumentView({ doc, pockets, batches, pickerVersion, onEdit }: Document
               }}
             />
           ) : null}
+          {canWithdraw ? (
+            <ListRow
+              primary="Le client se désiste"
+              secondary="Il ne prend plus sa commande"
+              onClick={() => (setMenuOpen(false), withdrawal.show("withdraw"))}
+            />
+          ) : null}
+          {withdrawn && eur.compare(eurFromWire(doc.balance.paid), eur.zero) > 0 ? (
+            <ListRow primary="Lui rendre tout ou partie de l'acompte" onClick={() => (setMenuOpen(false), cancel.show("refund"))} />
+          ) : null}
           {doc.status !== "CANCELLED" ? (
-            <ListRow primary={`Annuler la ${n}`} onClick={() => (setMenuOpen(false), cancel.show("cancel"))} />
+            <ListRow
+              primary={`Annuler la ${n}`}
+              secondary={doc.origin === "ORDER" ? "Erreur de saisie, rupture" : undefined}
+              onClick={() => (setMenuOpen(false), cancel.show("cancel"))}
+            />
           ) : null}
           {!hasPayments ? (
             <ListRow primary={<span className="admin-type-body block font-medium text-[var(--admin-danger)]">Supprimer</span>} onClick={() => void deleteDocument()} />
@@ -560,7 +601,7 @@ function CancelledBanner({ doc, onValidation }: { doc: DocumentSheetDTO; onValid
         <div className="flex min-w-0 items-center gap-2">
           <Ban size={18} aria-hidden className="shrink-0 text-[var(--admin-text-muted)]" />
           <Text variant="bodyEm" truncate>
-            Annulée le {doc.cancelledAt ? formatDate(new Date(doc.cancelledAt), "short") : "—"}
+            {isWithdrawn(doc) ? "Désistée" : "Annulée"} le {doc.cancelledAt ? formatDate(new Date(doc.cancelledAt), "short") : "—"}
           </Text>
         </div>
         <Button

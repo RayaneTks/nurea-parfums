@@ -47,7 +47,8 @@ crée aucun flacon en stock.
 | Une désistée est une annulée **avec un motif** : `CANCELLED` + `cancelReason = WITHDRAWN`. Elle sort de tous les chiffres comme toute annulée ; ses paiements restent dans l'Encaissé. | colonne `SaleDocument.cancelReason`, CHECK motif ⇒ statut `CANCELLED` |
 | Se désister n'est possible que sur une commande (`ORDER`) **En attente** ou **Confirmée**, jamais livrée, même en partie | writer `withdrawDocument`, `canTransition` |
 | Se désister demande ce qu'on fait de l'acompte : **garder** (choix d'office), **rendre tout**, ou **rendre une partie** (montant ≤ payé net). Un remboursement est un `REFUND` ordinaire : il sort d'une poche, se voit en compta et sur la fiche client. Seul le reste est l'acompte gardé | feuille de désistement, writer `withdrawDocument` (mêmes plafonds que `cancelDocument`) |
-| Une confirmée désistée crée **un flacon en stock par unité** de chaque ligne non offerte du catalogue ; une En attente n'en crée aucun | writer `withdrawDocument` |
+| Une confirmée désistée crée **un flacon en stock par unité** de chaque ligne non offerte (catalogue ou hors catalogue) ; une En attente n'en crée aucun | writer `withdrawDocument`, `src/server/stock/writer.ts` |
+| Les articles d'une désistée ne se modifient plus (ses flacons en sont nés) ; réactiver d'abord | writer `updateDocument` |
 | Un flacon en stock garde son parfum, sa contenance, son coût d'achat (DA, taux, €), son prix prévu et sa provenance (commande et ligne d'origine) | table `StockBottle` |
 | Un flacon est **disponible** tant qu'aucune ligne de vente ne le reprend ; une ligne reprend **au plus un** flacon par unité | `StockBottle.soldLineId` unique ; disponibilité dérivée, jamais un drapeau |
 | Supprimer ou annuler la vente qui reprenait un flacon le rend disponible ; le flacon ne disparaît jamais en silence | FK `soldLineId ON DELETE SET NULL`, writer d'annulation |
@@ -62,7 +63,7 @@ crée aucun flacon en stock.
 
 ## Données (phase 2 et 4, migrations additives)
 
-- `SaleDocument.cancelReason` — enum `CancelReason` (`ERROR`, `WITHDRAWN`), NULL. Les annulées
+- `SaleDocument.cancelReason` — enum `CancelReason` (`WITHDRAWN` seul), NULL ; CHECK `doc_cancel_reason_ck`. Les annulées
   existantes restent NULL et s'affichent « Annulée ».
 - `StockBottle` — `id`, `perfumeId` (SetNull), `perfumeName`, `brandName`, `volumeMl`, `unitCostDzd`,
   `exchangeRate`, `unitCostEur`, `plannedPriceEur`, `sourceDocumentId` (Restrict), `sourceLineId`
@@ -92,6 +93,14 @@ jamais le jargon de nos échanges). « Acompte gardé » est un mot de travail ;
 - **Remise** : dans le récapitulatif d'une vente ou commande, « Faire une remise » : montant, motif
   prérempli quand le client a un acompte gardé.
 - **Compta** : libellé « Acompte gardé » pour l'argent d'une désistée.
+
+## État
+
+- **Phase 2 faite le 26/10/2026** (branche `claude/project-thread-b8ia5e`, pas en ligne) : migration
+  `20261026090000_withdrawal_stock`, `withdrawDocumentAction`, `src/server/stock/*`, feuille
+  `WithdrawSheet`, écran E23 `/admin/catalogue/stock` (rangée « En stock » en tête du Catalogue),
+  tests `tests/db/transactions/withdraw-document.test.ts`, captures `e2e/captures/phase2-desistement.spec.ts`.
+- En attendant la phase 3, la feuille d'un flacon dit : créer la vente dans Vendre, puis le retirer du stock.
 
 ## Phases
 

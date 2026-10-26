@@ -79,6 +79,7 @@ const DOCUMENT_SHEET_CASES: ScreenCase[] = ([
   { label: "commande livrée soldée", url: withSheet(routes.commandes({ vue: "livrees" }), { doc: DOCS.deliveredPaid }) },
   { label: "vente directe avec dû", url: withSheet(routes.encaisser(), { doc: DOCS.saleDue }) },
   { label: "document annulé avec paiements", url: withSheet(routes.commandes({ vue: "annulees" }), { doc: DOCS.cancelled }) },
+  { label: "commande désistée, acompte gardé et flacon en stock", url: withSheet(routes.commandes({ vue: "annulees" }), { doc: DOCS.withdrawn }) },
   { label: "document au coût à compléter", url: withSheet(routes.commandes(), { doc: DOCS.unknownCost }) },
   {
     label: "édition en place des articles",
@@ -324,6 +325,9 @@ export const SCREENS: ScreenCase[] = [
   // J15 — Réglages (06 E08) : les cinq sections, clavier ouvert sur le taux (07 J15, `test:layout` E08).
   { screen: "E08", route: "reglages", label: "réglages", url: routes.reglages(), shell: true, keyboardFields: ["Taux DZD par défaut"] },
 
+  // J18 — En stock (E23, docs/admin/desistements.md) : le flacon de la commande désistée du jeu.
+  { screen: "E23", route: "stock", label: "un flacon en stock", url: routes.stock(), shell: true },
+
   // J17 — Fournisseur (E22, docs/admin/dettes-fournisseur.md) : carnet plein, et S22 adressable par `?ligne=`.
   // Le carnet vide s'éprouve sur la base vide de PC-12 (`parcours/premiere-utilisation.spec.ts`).
   { screen: "E22", route: "fournisseur", label: "carnet plein, Reste à payer dû", url: routes.fournisseur(), shell: true },
@@ -424,8 +428,14 @@ export const SHEETS: SheetCase[] = [
     sheet: "S03",
     label: "Annuler une commande payée, remboursement proposé",
     url: withSheet(routes.commandes(), { doc: DOCS.partial }),
-    open: { tap: ["Plus d'actions", "Annuler la commande"], layer: "drawer" },
+    open: { tap: ["Plus d'actions", /^Annuler la commande/], layer: "drawer" },
     keyboardFields: ["Montant remboursé"],
+  },
+  {
+    sheet: "S03",
+    label: "Le client se désiste : acompte gardé, flacon en stock",
+    url: withSheet(routes.commandes(), { doc: DOCS.unknownCost }),
+    open: { tap: ["Plus d'actions", /^Le client se désiste/], layer: "drawer" },
   },
   {
     sheet: "S04",

@@ -54,7 +54,12 @@ export type MoneyView = {
 };
 
 /** Zone 3 de S01 : trois chiffres pour un document engagé, deux et une phrase sinon. */
-export function moneyView(doc: Pick<DocumentSheetDTO, "status" | "balance">): MoneyView {
+/** Désistée (docs/admin/desistements.md) : une annulée dont le client a renoncé ; son acompte est gardé. */
+export function isWithdrawn(doc: { status: DocumentSheetDTO["status"]; cancelReason?: DocumentSheetDTO["cancelReason"] }): boolean {
+  return doc.status === "CANCELLED" && doc.cancelReason === "WITHDRAWN";
+}
+
+export function moneyView(doc: Pick<DocumentSheetDTO, "status" | "balance"> & { cancelReason?: DocumentSheetDTO["cancelReason"] }): MoneyView {
   const { total, paid, due, overpaid } = doc.balance;
   const base: MoneyTile[] = [
     { label: "Total", value: total, tone: "default" },
@@ -65,7 +70,13 @@ export function moneyView(doc: Pick<DocumentSheetDTO, "status" | "balance">): Mo
   }
   if (doc.status === "CANCELLED") {
     const kept = eurFromWire(paid);
-    return { tiles: base, note: eur.compare(kept, eur.zero) > 0 ? `${formatEur(kept)} encaissés conservés` : null };
+    if (eur.compare(kept, eur.zero) <= 0) return { tiles: base, note: null };
+    return {
+      tiles: base,
+      note: isWithdrawn(doc)
+        ? `Acompte de ${formatEur(kept)} gardé : il est déjà dans ton Encaissé. Plus rien à encaisser sur cette commande.`
+        : `${formatEur(kept)} encaissés conservés`,
+    };
   }
   const over = eurFromWire(overpaid);
   return {
@@ -96,11 +107,15 @@ type PrimaryAction =
 export type FooterPlan = { primary: PrimaryAction; share: "recap" | "recu" | null };
 
 /** Tableau des actions du pied de S01 (06 S01) : l'argent et le partage, jamais un changement de statut. */
-export function footerPlan(doc: Pick<DocumentSheetDTO, "origin" | "status" | "balance">): FooterPlan {
+export function footerPlan(
+  doc: Pick<DocumentSheetDTO, "origin" | "status" | "balance"> & { cancelReason?: DocumentSheetDTO["cancelReason"] },
+): FooterPlan {
   const due = eurFromWire(doc.balance.due);
   const paid = eurFromWire(doc.balance.paid);
   const overpaid = eurFromWire(doc.balance.overpaid);
   const positive = (value: Eur) => eur.compare(value, eur.zero) > 0;
+  // L'acompte d'une désistée est gardé : le rendre reste possible depuis le menu, jamais proposé en premier.
+  if (isWithdrawn(doc)) return { primary: null, share: null };
   if (doc.status === "CANCELLED") {
     return { primary: positive(paid) ? { kind: "rembourser", amount: doc.balance.paid } : null, share: null };
   }

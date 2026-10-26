@@ -705,6 +705,8 @@ function lineColumns(line: TargetLine) {
  */
 export async function updateDocument(tx: Tx, input: UpdateDocumentData): Promise<DocumentSummary> {
   const doc = await lockDocument(tx, input.documentId);
+  // Les flacons d'une désistée sont nés de ses lignes : les changer les désaccorderait.
+  if (input.lines && doc.cancelReason === "WITHDRAWN") throw new DomainError("CONFLICT", WITHDRAWN_LINES_LOCKED);
   const current = await readLines(tx, doc.id);
   const plan = input.lines ? await planLines(tx, doc, current, input.lines) : null;
 
@@ -1309,6 +1311,8 @@ export async function cancelDocument(tx: Tx, input: CancelDocumentData): Promise
   return { document, refunds };
 }
 
+export const WITHDRAWN_LINES_LOCKED =
+  "Cette commande est désistée : ses articles ne se modifient plus. Réactive-la d'abord si c'était une erreur.";
 export const WITHDRAW_ORDER_ONLY = "Seule une commande peut être désistée : annule plutôt cette vente.";
 export const WITHDRAW_DELIVERED = "Cette commande est déjà livrée, en tout ou en partie : annule-la plutôt.";
 export const ALREADY_CANCELLED = "Cette commande est déjà annulée : réactive-la d'abord pour la marquer désistée.";

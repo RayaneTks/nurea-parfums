@@ -123,6 +123,7 @@ const PARENTS: readonly ParentRule[] = [
   { pattern: "/admin/clients/nouveau", href: "/admin/clients", label: "Clients" },
   { pattern: "/admin/clients/:id/modifier", href: "/admin/clients/:id", label: "Fiche client" },
   { pattern: "/admin/clients/:id", href: "/admin/clients", label: "Clients" },
+  { pattern: "/admin/catalogue/stock", href: "/admin/catalogue", label: "Catalogue" },
   { pattern: "/admin/catalogue/parfums/nouveau", href: "/admin/catalogue?tab=parfums", label: "Catalogue" },
   { pattern: "/admin/catalogue/parfums/:id/modifier", href: "/admin/catalogue/parfums/:id", label: "Parfum" },
   { pattern: "/admin/catalogue/parfums/:id", href: "/admin/catalogue?tab=parfums", label: "Catalogue" },

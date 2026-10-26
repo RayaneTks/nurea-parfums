@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Block } from "@/app-shell/Block";
 import { DocumentSheetSlot } from "@/features/documents";
+import { StockCatalogueRow } from "@/features/stock";
 import { PageScaffold } from "@/ui/patterns/PageScaffold";
 import { CatalogueBlock } from "../blocks/CatalogueBlock";
 import { CatalogueSkeleton } from "../blocks/skeletons";
@@ -23,6 +24,10 @@ export function CataloguePage({ docId }: { docId?: string }) {
         </Suspense>
       }
     >
+      {/* « En stock » (E23) : seulement quand des flacons désistés attendent d'être revendus. */}
+      <Block fallback={null} errorMessage="Stock indisponible.">
+        <StockCatalogueRow />
+      </Block>
       <Block fallback={<CatalogueSkeleton />} errorMessage="Catalogue indisponible.">
         <CatalogueBlock />
       </Block>

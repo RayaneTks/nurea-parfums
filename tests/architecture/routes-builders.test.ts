@@ -52,6 +52,7 @@ describe("constructeurs d'URL (04 §2.2)", () => {
       statistiques: routes.statistiques({ periode: "annee", ref: "2026-01-01", pages: 2 }),
       reglages: routes.reglages(),
       fournisseur: routes.fournisseur({ ligne: "se_1", selection: true }),
+      stock: routes.stock(),
       commandes: routes.commandes({ vue: "livrees", filtre: "retard", q: "fa" }),
       vendre: routes.vendre({ mode: "commande", client: "cus_1", parfum: 12, depuis: "doc_1" }),
       clients: routes.clients({ q: "06 12", pages: 2 }),

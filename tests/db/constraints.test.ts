@@ -111,6 +111,12 @@ const cases: readonly TableCase[] = [
       { constraint: "doc_delivered_at_ck", why: "en attente avec deliveredAt", row: { deliveredAt: NOW } },
       { constraint: "doc_cancelled_at_ck", why: "annulé sans cancelledAt", row: { status: "CANCELLED" } },
       { constraint: "doc_cancelled_at_ck", why: "en attente avec cancelledAt", row: { cancelledAt: NOW } },
+      { constraint: "doc_cancel_reason_ck", why: "motif de désistement sur une commande en attente", row: { cancelReason: "WITHDRAWN" } },
+      {
+        constraint: "doc_cancel_reason_ck",
+        why: "vente directe désistée",
+        row: { origin: "DIRECT_SALE", status: "CANCELLED", cancelledAt: NOW, cancelReason: "WITHDRAWN" },
+      },
     ],
   },
   {
@@ -190,6 +196,16 @@ const cases: readonly TableCase[] = [
       { constraint: "supplier_entry_label_ck", why: "nom fait d'espaces", row: { label: "  " } },
       { constraint: "supplier_entry_note_ck", why: "note vide", row: { note: "" } },
       { constraint: "supplier_entry_settles_ck", why: "une dette qui en rembourse une autre", row: { kind: "DEBT", settlesEntryId: SUPPLIER_ENTRY_ID } },
+    ],
+  },
+  {
+    table: "StockBottle",
+    valid: (id) => ({ id, perfumeName: "Sauvage", volumeMl: 80, plannedPriceEur: "120.00", unitCostDzd: "22000.00", exchangeRate: "277.0000", unitCostEur: "79.42" }),
+    violations: [
+      { constraint: "bottle_price_ck", why: "prix prévu négatif", row: { plannedPriceEur: "-1.00" } },
+      { constraint: "bottle_cost_ck", why: "coût en dinars négatif", row: { unitCostDzd: "-1.00" } },
+      { constraint: "bottle_cost_ck", why: "coût en euros négatif", row: { unitCostEur: "-1.00" } },
+      { constraint: "bottle_rate_ck", why: "taux nul", row: { exchangeRate: "0" } },
     ],
   },
   {

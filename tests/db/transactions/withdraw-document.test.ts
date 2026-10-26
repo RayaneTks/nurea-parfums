@@ -86,7 +86,7 @@ describe("désistement d'une commande confirmée", () => {
     expect(bottles[0]).toMatchObject({ perfumeId: yara.id, volumeMl: 80, sourceCustomer: "Faycal", soldLineId: null });
     expect(bottles[0]!.plannedPriceEur.toString()).toBe("45");
     expect(bottles[0]!.unitCostEur?.toString()).toBe("10");
-    expect((await viewBalance(server.prisma, id)).paid).toBe("20.00");
+    expect((await viewBalance(server.prisma, id))?.paid).toBe("20.00");
   });
 
   it("acompte rendu en partie : un REFUND ordinaire, le reste gardé", async () => {
@@ -171,6 +171,20 @@ describe("réactivation et stock", () => {
     expect(expectOk(await stock.removeStockBottleAction({ id: listed!.id }))).toEqual({ id: listed!.id, removed: true });
     expect(expectOk(await stock.removeStockBottleAction({ id: listed!.id }))).toEqual({ id: listed!.id, removed: false });
     expect(await stockQueries.availableBottles()).toEqual([]);
+  });
+
+  it("les articles d'une désistée ne se modifient plus", async () => {
+    const perfume = await seedPerfume(server.prisma, { name: "Libre" });
+    const id = await createDocument(server, { origin: "ORDER", perfumeId: perfume.id, received: [{ amount: "20", pocketId: null }] });
+    expectOk(await withdraw(id));
+    const [line] = await server.prisma.saleLine.findMany({ where: { documentId: id } });
+    const result = await server.documents.updateDocumentAction({
+      documentId: id,
+      lines: [{ id: line!.id, volumeMl: 50, quantity: 2, unitPriceEur: "120" }],
+    });
+    expect(expectError(result, "CONFLICT").message).toBe(
+      "Cette commande est désistée : ses articles ne se modifient plus. Réactive-la d'abord si c'était une erreur.",
+    );
   });
 
   it("supprimer la commande d'origine garde le flacon et sa provenance copiée", async () => {

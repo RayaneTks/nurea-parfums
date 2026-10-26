@@ -84,6 +84,7 @@ export const ROUTE_SPECS = {
     jalon: "J11",
     etat: "livree",
   }),
+  stock: spec({ screen: "E23", pattern: "/admin/catalogue/stock", params: [], shell: true, jalon: "J18", etat: "livree" }),
   parfum: spec({ screen: "E16", pattern: "/admin/catalogue/parfums/[id]", params: [], shell: true, jalon: "J11", etat: "livree" }),
   modifierParfum: spec({
     screen: "E19",
@@ -188,6 +189,8 @@ export const routes = {
     /** Onglet Marques : filtre les marques qui ont un visuel de collection. */
     gamme?: "complete";
   }) => build("/admin/catalogue", q),
+  /** E23 — flacons en stock (docs/admin/desistements.md). */
+  stock: () => "/admin/catalogue/stock",
   parfum: (id: string | number) => `/admin/catalogue/parfums/${segment(id)}`,
   modifierParfum: (id: string | number) => `/admin/catalogue/parfums/${segment(id)}/modifier`,
   nouveauParfum: (q?: { dupliquer?: string | number }) => build("/admin/catalogue/parfums/nouveau", q),

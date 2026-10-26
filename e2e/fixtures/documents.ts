@@ -30,6 +30,8 @@ export const DOCS = {
   unknownCost: uuid(6),
   late: uuid(7),
   undated: uuid(8),
+  /** Désistée (docs/admin/desistements.md) : acompte gardé, un flacon en stock. */
+  withdrawn: uuid(9),
   // ── Un document par parcours ─────────────────────────────────────────────────
   acompte: uuid(20),
   readyPaid: uuid(21),
@@ -112,6 +114,8 @@ type DocumentSpec = {
   recent?: boolean;
   /** Rattaché au lot ouvert du jeu. */
   batch?: boolean;
+  /** Désistée (`cancelReason = WITHDRAWN`) : chaque unité non offerte passe en stock, comme le ferait le writer. */
+  withdrawn?: boolean;
 };
 
 const cost = (value: string) => ({ cost: value });
@@ -173,6 +177,17 @@ const DOCUMENT_SPECS: DocumentSpec[] = [
     expected: -1,
     lines: [{ perfume: "Coco Mademoiselle", volumeMl: 50, quantity: 1, price: "90", ...cost("16000") }],
     payments: [{ kind: "DEPOSIT", amount: "40", pocket: "cash", day: -5 }],
+  },
+  {
+    id: DOCS.withdrawn,
+    origin: "ORDER",
+    status: "CANCELLED",
+    withdrawn: true,
+    customer: { passing: "Faycal Amri" },
+    ordered: -9,
+    cancelled: -4,
+    lines: [{ perfume: "Sauvage", volumeMl: 80, quantity: 1, price: "120", ...cost("22000") }],
+    payments: [{ kind: "DEPOSIT", amount: "20", pocket: "cash", day: -9 }],
   },
   {
     id: DOCS.unknownCost,
@@ -477,6 +492,7 @@ export async function seedDocuments(db: PrismaClient, ctx: SeedDocumentsContext)
           confirmedAt: spec.confirmed === undefined ? null : at(spec.confirmed),
           deliveredAt: spec.delivered === undefined ? null : at(spec.delivered),
           cancelledAt: spec.cancelled === undefined ? null : at(spec.cancelled),
+          cancelReason: spec.withdrawn ? "WITHDRAWN" : null,
           notes: spec.notes ?? null,
           lines: {
             create: spec.lines.map((line, position) => {
@@ -506,6 +522,28 @@ export async function seedDocuments(db: PrismaClient, ctx: SeedDocumentsContext)
           data: { pocketId: ctx.pockets[payment.pocket], amount: payment.amount, kind: "PAYMENT", occurredAt: at(payment.day) },
         });
         await tx.payment.create({ data: { documentId: spec.id, kind: payment.kind, movementId: movement.id } });
+      }
+      if (spec.withdrawn) {
+        const lines = await tx.saleLine.findMany({ where: { documentId: spec.id, isGift: false } });
+        await tx.stockBottle.createMany({
+          data: lines.flatMap((line) =>
+            Array.from({ length: line.quantity }, () => ({
+              perfumeId: line.perfumeId,
+              perfumeName: line.perfumeName,
+              brandName: line.brandName,
+              imageUrl: line.imageUrl,
+              volumeMl: line.volumeMl,
+              unitCostDzd: line.unitCostDzd,
+              exchangeRate: line.exchangeRate,
+              unitCostEur: line.unitCostEur,
+              plannedPriceEur: line.unitPriceEur,
+              sourceDocumentId: spec.id,
+              sourceLineId: line.id,
+              sourceCustomer: "passing" in spec.customer ? spec.customer.passing : null,
+              createdAt: at(spec.cancelled ?? spec.ordered),
+            })),
+          ),
+        });
       }
     });
   }
