@@ -62,6 +62,9 @@ de zéro — le dossier pilote de la refonte est `docs/refonte/` (`00-README.md`
   partir d'une base ; ne jamais toucher les fichiers en cours d'une autre session ; `git add`
   fichier par fichier, jamais `git add -A`. Un chantier long se fait dans un worktree
   (`.claude/worktrees/<nom>`), pas en changeant la branche du dossier partagé.
+- **Commits sans attribution d'outil** : aucune ligne `Co-Authored-By`, `Claude-Session` ou
+  « Generated with » dans les commits ni dans les descriptions ; l'auteur est RayaneTks. Le dépôt
+  est public et l'historique a été nettoyé le 26/10/2026 : ne pas y remettre ces mentions.
 - **Mettre en ligne** = pousser sur `main` (Vercel déploie la production). Une branche poussée
   donne un aperçu Vercel : sans base, il montre l'instantané `src/lib/catalog/demo-catalogue.json`.
 
