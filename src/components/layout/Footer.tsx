@@ -45,7 +45,7 @@ export const Footer: FC = () => (
           <BrandLogo className="h-10" />
         </Link>
         <p className="t-body t-measure">
-          Vous payez le parfum, pas la pub.
+          Payez le parfum, pas la marque.
         </p>
         <p className="t-caption t-measure">{MENTION_FLACONS}</p>
         <ul className="flex gap-2">
