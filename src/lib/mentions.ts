@@ -17,7 +17,7 @@ import { SITE_NAME } from "@/lib/site";
  * photographié.
  */
 export const MENTION_FLACONS =
-  "Photo : le flacon d'origine de la marque, pour reconnaître la référence. Votre parfum vous est remis dans un flacon Nuréa personnalisé.";
+  "Photo : le flacon d'origine de la marque, pour reconnaître la référence. Votre parfum vous est remis dans notre flacon personnalisé.";
 
 
 /** Les photographies du site sont l'œuvre de la marque. */
