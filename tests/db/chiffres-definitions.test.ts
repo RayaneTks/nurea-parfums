@@ -339,6 +339,7 @@ describe("Créance ancienne (03 §5.8)", () => {
     const detail = await server.chiffres.aEncaisserDetail();
     expect(detail.find((row) => row.documentId === recent)).toMatchObject({ ageDays: 30, isOld: false });
     expect(detail.filter((row) => row.isOld)).toEqual(old);
-    expect((await server.chiffres.tableauDeBord()).clientsARelancer).toBe(2);
+    // « À relancer » compte TOUS les clients qui doivent (gérant, 26/10/2026) : Yanis, Nadia et Fares (récente).
+    expect((await server.chiffres.tableauDeBord()).clientsARelancer).toBe(3);
   });
 });

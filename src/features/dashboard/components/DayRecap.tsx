@@ -159,7 +159,7 @@ export function DayRecap({ recap, relances, previousHref, nextHref, sheetBase, n
               count={relances.clients.length}
               amount={relances.total}
               amountTone="warning"
-              description={`Créances de plus de 30 j · ${plural(relances.clients.length, "client")}`}
+              description={`Ce qu'on nous doit, les plus anciens d'abord · ${plural(relances.clients.length, "client")}`}
             >
               {relances.clients.map((client) =>
                 client.href ? (

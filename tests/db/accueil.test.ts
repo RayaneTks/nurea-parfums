@@ -141,11 +141,12 @@ describe("E01 — chaque alerte ouvre exactement l'ensemble qu'elle compte (05 �
     expect(new Set(retardIds)).toEqual(new Set([retard1, retard2]));
     expect(new Set(retardIds)).toEqual(new Set(enRetard.documentIds));
 
-    // « n clients à relancer » → /admin/encaisser?anciennete=30 : le nombre de GROUPES de E13 (03 §5.8).
-    const anciennes = await server.chiffres.creancesAnciennes();
-    const groupes = new Set(anciennes.map((row) => row.customerKey));
+    // « n clients à relancer » → /admin/encaisser : le nombre de GROUPES de E13 à dû > 0 (gérant, 26/10/2026 :
+    // toutes les créances, plus seulement celles de plus de 30 jours).
+    const creances = await server.chiffres.aEncaisserDetail();
+    const groupes = new Set(creances.filter((row) => Number(row.due) > 0).map((row) => row.customerKey));
     expect(figures.clientsARelancer).toBe(groupes.size);
-    expect(figures.clientsARelancer).toBe(2);
+    expect(figures.clientsARelancer).toBeGreaterThanOrEqual(2);
 
     // « n coûts d'achat à compléter » → Compta « Tout » + filtre : exactement `coutACompleter("all")`.
     const coutACompleter = await server.chiffres.coutACompleter("all");

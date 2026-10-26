@@ -445,7 +445,7 @@ async function verify(): Promise<void> {
     aEncaisser: total,
     tresorerie: { total: tresorerie.total, unassigned: tresorerie.unassigned },
     enRetard: enRetard.count,
-    clientsARelancer: new Set((await chiffres.creancesAnciennes()).map((row) => row.customerKey)).size,
+    clientsARelancer: new Set((await chiffres.aEncaisserDetail()).filter((row) => Number(row.due) > 0).map((row) => row.customerKey)).size,
     coutACompleter: (await chiffres.coutACompleter("all")).count,
     commandes: {
       enAttente: await prisma.saleDocument.count({ where: { origin: "ORDER", status: "PENDING" } }),

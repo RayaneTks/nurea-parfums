@@ -400,10 +400,11 @@ export function tableauDeBordSql(now: Date): Prisma.Sql {
       FROM (${tresorerieRowsSql()}) t
     ),
     en_retard AS (SELECT count(*)::int AS n FROM (${enRetardRowsSql(now)}) r),
+    -- « À relancer » (gérant, 26/10/2026) : TOUS les clients qui doivent de l'argent, plus seulement après 30 jours.
     a_relancer AS (
       SELECT count(DISTINCT r."customerKey")::int AS n
       FROM (${aEncaisserRowsSql({ now })}) r
-      WHERE r.due > 0 AND r."isOld"
+      WHERE r.due > 0
     ),
     cout_a_completer AS (SELECT count(*)::int AS n FROM (${coutsRowsSql({ period: all, now })}) c WHERE c."hasUnknownCost"),
     commandes AS (

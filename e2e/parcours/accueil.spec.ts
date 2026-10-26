@@ -70,7 +70,7 @@ test("E01 : chaque rangée de « À faire » ouvre exactement l'ensemble qu'elle
     return orderRows(p);
   });
 
-  // « n clients à relancer » → À encaisser, filtre « Plus de 30 jours » : n GROUPES de clients (03 §5.8).
+  // « n clients à relancer » → À encaisser, sans filtre : n GROUPES de clients à dû > 0 (gérant, 26/10/2026).
   await openAndCount("a-relancer", async (p) => {
     await expect(p.getByRole("heading", { level: 1, name: "À encaisser" })).toBeVisible();
     await expect(p.locator("[data-receivables]")).toBeVisible();

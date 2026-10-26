@@ -1,6 +1,5 @@
 import { isNavigable, routes } from "@/app-shell/routes";
 import { periodFromParams, type PeriodKey } from "@/contracts/chiffres";
-import { OLD_RECEIVABLE_DAYS } from "@/domain/document-balance";
 import { periodLabel } from "@/domain/periods";
 import { formatDate } from "@/ui/patterns/date-format";
 import type { AlertKind } from "./components/home-model";
@@ -13,8 +12,8 @@ import type { AlertKind } from "./components/home-model";
  *
  *  - « en retard » → `commandes?filtre=retard` : même prédicat que `enRetard()` (section « retard » de la
  *    liste, `src/server/documents/sql.ts`) ;
- *  - « clients à relancer » → `encaisser?anciennete=30` : les groupes de E13 filtrés par
- *    `creancesAnciennes()` (03 §5.8) ;
+ *  - « clients à relancer » → `encaisser` : tous les groupes de E13 à dû > 0 (gérant, 26/10/2026 : plus
+ *    seulement les créances de plus de 30 jours) ;
  *  - « coût à compléter » → Compta période « Tout » + filtre : exactement `coutACompleter("all")` ;
  *  - « rupture » et « stock bas » → deux filtres distincts du catalogue, comptés séparément (06 §1.7).
  */
@@ -53,7 +52,7 @@ export function homeLinks(now: Date = new Date()): HomeLinks {
     todayLabel: formatDate(now, "long", now),
     alerts: {
       retard: routes.commandes({ filtre: "retard" }),
-      "a-relancer": routes.encaisser({ anciennete: OLD_RECEIVABLE_DAYS }),
+      "a-relancer": routes.encaisser(),
       "cout-a-completer": routes.compta({ periode: "tout", filtre: "cout-a-completer" }),
       rupture: routes.catalogue({ tab: "parfums", stock: "rupture" }),
       "stock-bas": routes.catalogue({ tab: "parfums", stock: "bas" }),

@@ -8,7 +8,6 @@
 import type { DashboardFiguresDTO } from "@/contracts/chiffres";
 import type { DayRecapDTO, TodayDTO, TopPerfumeDTO } from "@/contracts/stats";
 import { eur, eurFromWire, formatEur, type MoneyString } from "@/domain/money";
-import { OLD_RECEIVABLE_DAYS } from "@/domain/document-balance";
 
 const isZero = (value: MoneyString) => eur.isZero(eurFromWire(value));
 
@@ -54,7 +53,7 @@ export function alertRows(figures: DashboardFiguresDTO): AlertRow[] {
     add("non-attribue", `${formatEur(eurFromWire(figures.tresorerie.unassigned), { compact: true })} non attribués`, null, figures.tresorerie.unassigned, true);
   }
   if (figures.clientsARelancer > 0) {
-    add("a-relancer", `${plural(figures.clientsARelancer, "client")} à relancer · plus de ${OLD_RECEIVABLE_DAYS} j`, figures.clientsARelancer);
+    add("a-relancer", `${plural(figures.clientsARelancer, "client")} à relancer`, figures.clientsARelancer);
   }
   if (figures.coutACompleter > 0) {
     add("cout-a-completer", `${plural(figures.coutACompleter, "coût d'achat", "coûts d'achat")} à compléter`, figures.coutACompleter);
