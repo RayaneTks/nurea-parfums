@@ -89,6 +89,13 @@ Détail : [`docs/catalog-database.md`](docs/catalog-database.md) et
 - Filtres du catalogue : choisir un onglet de catégorie remet à zéro les filtres de marque ; l'état
   vit dans l'URL (`cat`, `maison`, `brands`).
 
+## Désistements et flacons en stock (décidé le 26/10/2026, à coder)
+
+- Voir [`docs/admin/desistements.md`](docs/admin/desistements.md) : une désistée est une annulée avec
+  le motif `WITHDRAWN` ; l'acompte gardé est dérivé ; un flacon en stock par unité (`StockBottle`),
+  revendu en vente directe avec son coût d'achat ; la remise vit sur le document. `Perfume.stock`
+  n'est pas touché. Phases 2 à 4 en attente de la planche validée.
+
 ## Carnet fournisseur
 
 - Voir [`docs/admin/dettes-fournisseur.md`](docs/admin/dettes-fournisseur.md) : règles, tables,

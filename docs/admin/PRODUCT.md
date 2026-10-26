@@ -174,6 +174,11 @@ ici : deux listes divergent toujours.
   il n'écrit rien dans la Trésorerie ; le « Paiement fournisseur » de la Trésorerie reste
   un geste séparé. « Marquer remboursée » sur une dette note un versement du même montant,
   lié à elle (25/10/2026).
+- **Désistements** (`docs/admin/desistements.md`, décidé le 26/10/2026) : « Le client se
+  désiste » passe la commande « Désistée » (annulée avec motif), l'acompte est **gardé**, jamais
+  proposé au remboursement, et se voit sur la fiche client quand il revient ; une remise au
+  montant choisi reste possible. Le flacon d'une confirmée passe **En stock** et se revend en
+  vente directe avec son coût d'achat. On ne change plus jamais le nom d'une commande pour revendre.
 - **Pas de rôle, pas de journal d'audit** : un seul compte, partagé par le gérant et son
   associé (gérant, 25/10/2026 : aucune fonction retirée ni masquée à l'un d'eux). Une garde
   de session unique, invisible.
