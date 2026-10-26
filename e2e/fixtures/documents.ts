@@ -65,6 +65,9 @@ export const DOCS = {
   rechercheEncaisser: uuid(53),
 } as const;
 
+/** Flacon en stock de la commande désistée du jeu : adresse fixe pour `?flacon=` (Vendre). */
+export const STOCK_BOTTLE_ID = "e2e0b0c0-0000-4000-8000-000000000001";
+
 /** Noms des clients de passage des parcours : chacun désigne une seule ligne dans les listes. */
 export const PASSING = {
   acompte: "Mehdi Larbi",
@@ -527,7 +530,8 @@ export async function seedDocuments(db: PrismaClient, ctx: SeedDocumentsContext)
         const lines = await tx.saleLine.findMany({ where: { documentId: spec.id, isGift: false } });
         await tx.stockBottle.createMany({
           data: lines.flatMap((line) =>
-            Array.from({ length: line.quantity }, () => ({
+            Array.from({ length: line.quantity }, (_, unit) => ({
+              ...(unit === 0 && spec.id === DOCS.withdrawn ? { id: STOCK_BOTTLE_ID } : {}),
               perfumeId: line.perfumeId,
               perfumeName: line.perfumeName,
               brandName: line.brandName,

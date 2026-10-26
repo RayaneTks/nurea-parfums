@@ -46,6 +46,10 @@ export type LineDraft = {
   cost: string;
   rate: string;
   note: string;
+  /** Flacon en stock repris par la ligne (Vendre) : une seule unité, prix et coût du flacon. */
+  bottleId?: string;
+  /** « En stock · de Faycal Amri » : d'où vient le flacon, sous le nom de la ligne. */
+  bottleNote?: string;
   /**
    * Ligne posée avant l'arrivée du sélecteur (tuile récente, `?parfum=`) : sa mémoire de prix la complète dès
    * qu'elle est lue, tant que la ligne n'a pas été retouchée.
@@ -290,5 +294,6 @@ export function lineFields(line: LineDraft) {
     unitCostDzd: line.cost.trim() || null,
     exchangeRate: line.rate.trim() || null,
     note: line.note.trim() || null,
+    ...(line.bottleId ? { bottleId: line.bottleId } : {}),
   };
 }

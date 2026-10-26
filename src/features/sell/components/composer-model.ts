@@ -5,6 +5,7 @@
 import type { BatchSummary } from "@/contracts/batches";
 import type { PickerPerfume } from "@/contracts/catalogue";
 import type { ComposerPrefillDTO, CreateDocumentInput, DocumentSummary, RecentlySoldDTO } from "@/contracts/documents";
+import type { StockBottleDTO } from "@/contracts/stock";
 import type { PocketSummary } from "@/contracts/treasury";
 import { isTextId, newId } from "@/domain/ids";
 import { eur, eurFromWire, formatEur, parseEurInput, toWire, type Eur, type MoneyString } from "@/domain/money";
@@ -446,7 +447,8 @@ export function withPerfume(
   sources: LineSources,
   lineId: string = newId(),
 ): ComposerDraft {
-  const existing = draft.lines.find((line) => line.perfumeId === perfume.id);
+  // Une ligne de flacon en stock compte un seul flacon : retaper le parfum ouvre une ligne à part.
+  const existing = draft.lines.find((line) => line.perfumeId === perfume.id && !line.bottleId);
   if (existing) {
     return { ...draft, lines: draft.lines.map((line) => (line === existing ? { ...line, quantity: Math.min(line.quantity + 1, 999) } : line)) };
   }
@@ -458,6 +460,36 @@ export function withPerfume(
     defaultRate: sources.defaultRate,
   });
   return { ...draft, lines: [...draft.lines, sources.perfumes ? line : { ...line, awaitingPricing: true }] };
+}
+
+/**
+ * « Déjà en stock » (docs/admin/desistements.md) : le flacon devient une ligne d'une unité, au prix prévu, avec son
+ * coût d'achat et son taux tels qu'ils étaient. Un flacon déjà au ticket n'est pas ajouté deux fois.
+ */
+export function withBottle(draft: ComposerDraft, bottle: StockBottleDTO, lineId: string = newId()): ComposerDraft {
+  if (draft.lines.some((line) => line.bottleId === bottle.id)) return draft;
+  const price = amountToInputText(eurFromWire(bottle.plannedPriceEur));
+  const line: LineDraft = {
+    id: lineId,
+    isNew: true,
+    perfumeId: bottle.perfumeId,
+    isOffCatalog: bottle.perfumeId === null,
+    perfumeName: bottle.perfumeName,
+    brandName: bottle.brandName,
+    imageUrl: bottle.imageUrl,
+    volumeMl: bottle.volumeMl,
+    quantity: 1,
+    deliveredQuantity: 0,
+    price,
+    lastPrice: price,
+    isGift: false,
+    cost: decimalText(bottle.unitCostDzd),
+    rate: decimalText(bottle.exchangeRate),
+    note: "",
+    bottleId: bottle.id,
+    bottleNote: bottle.sourceCustomer ? `Flacon en stock · de ${bottle.sourceCustomer}` : "Flacon en stock",
+  };
+  return { ...draft, lines: [...draft.lines, line] };
 }
 
 export function withOffCatalogLine(draft: ComposerDraft, name: string, brandName: string | null, defaultRate: string, lineId: string = newId()): ComposerDraft {

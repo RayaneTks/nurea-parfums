@@ -3,6 +3,7 @@ import { openBatches } from "@/server/batches/queries";
 import { pickerCatalogue } from "@/server/catalogue/queries";
 import { composerPrefill, recentlySold } from "@/server/documents/queries";
 import { getSettings } from "@/server/settings/queries";
+import { availableBottles } from "@/server/stock/queries";
 import { activePockets } from "@/server/treasury/queries";
 import { Composer } from "../components/Composer";
 import { RecentlySold, RecentlySoldSkeleton } from "../components/RecentlySold";
@@ -15,12 +16,13 @@ import type { SellParams } from "../pages/params";
  */
 export async function ComposerBlock({ params }: { params: SellParams }) {
   const withPrefill = params.client !== null || params.parfum !== null || params.depuis !== null;
-  const [pockets, batches, settings, picker, prefill] = await Promise.all([
+  const [pockets, batches, settings, picker, prefill, bottles] = await Promise.all([
     activePockets(),
     openBatches(),
     getSettings(),
     pickerCatalogue(),
     withPrefill ? composerPrefill(params.client, params.parfum, params.depuis) : null,
+    availableBottles(),
   ]);
   return (
     <Composer
@@ -30,6 +32,8 @@ export async function ComposerBlock({ params }: { params: SellParams }) {
       pickerVersion={picker.version}
       catalogueCount={picker.perfumes.length}
       params={{ mode: params.mode, prefill }}
+      bottles={bottles}
+      flacon={params.flacon}
       recent={
         <Block fallback={<RecentlySoldSkeleton />} errorMessage="Récents indisponibles.">
           <RecentBlock />

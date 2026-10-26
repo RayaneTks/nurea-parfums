@@ -14,6 +14,7 @@ export default async function Page({ searchParams }: { searchParams: PageSearchP
         client: firstParam(params.client),
         parfum: firstParam(params.parfum),
         depuis: firstParam(params.depuis),
+        flacon: firstParam(params.flacon),
       })}
       docId={firstParam(params.doc)}
     />

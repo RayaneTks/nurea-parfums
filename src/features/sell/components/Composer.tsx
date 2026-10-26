@@ -11,6 +11,7 @@ import { useReadRoute } from "@/app-shell/hooks/useReadRoute";
 import type { BatchSummary } from "@/contracts/batches";
 import type { PickerCatalogue, PickerPerfume } from "@/contracts/catalogue";
 import type { RecentlySoldDTO } from "@/contracts/documents";
+import type { StockBottleDTO } from "@/contracts/stock";
 import type { SettingsSummary } from "@/contracts/settings";
 import type { PocketSummary } from "@/contracts/treasury";
 import { eur, formatEur, halfForCash, parseEurInput, type Eur } from "@/domain/money";
@@ -37,11 +38,12 @@ import { Sheet } from "@/ui/primitives/Sheet";
 import { StickyAction } from "@/ui/primitives/StickyAction";
 import { Text } from "@/ui/primitives/Text";
 import { Textarea } from "@/ui/primitives/Textarea";
-import { applyParams, articlesLabel, chosenPocket, confirmationOf, createInput, ctaPlan, hasParams, isDraftEmpty, marginText, paymentsOf, pocketsLabel, quantitiesByPerfume, receivedOf, receivedText, resolveBatch, total as totalOf, withMode, withOffCatalogLine, withPerfume, withReceived, type ComposerDraft, type ComposerParams, type Confirmation, type LineSources } from "./composer-model";
+import { applyParams, articlesLabel, chosenPocket, confirmationOf, createInput, ctaPlan, hasParams, isDraftEmpty, marginText, paymentsOf, pocketsLabel, quantitiesByPerfume, receivedOf, receivedText, resolveBatch, total as totalOf, withMode, withOffCatalogLine, withPerfume, withReceived, withBottle, type ComposerDraft, type ComposerParams, type Confirmation, type LineSources } from "./composer-model";
 import { ConfirmationCard } from "./ConfirmationCard";
 import { CustomerNameField } from "./CustomerNameField";
 import { RecentProvider, type RecentContextValue } from "./RecentlySold";
 import { SplitSheet } from "./SplitSheet";
+import { StockStrip } from "./StockStrip";
 import { useComposerDraft } from "./useComposerDraft";
 
 export type ComposerProps = {
@@ -56,6 +58,10 @@ export type ComposerProps = {
   params: ComposerParams;
   /** Bloc streamé « Vendus récemment » (seule la grille a un squelette). */
   recent: ReactNode;
+  /** Flacons en stock, proposés en tête des articles (docs/admin/desistements.md). */
+  bottles: readonly StockBottleDTO[];
+  /** `?flacon=` : flacon à poser au ticket à l'ouverture (« Vendre ce flacon » de E23). */
+  flacon: string | null;
 };
 
 const MODES = [
@@ -73,7 +79,7 @@ type Given = { kind: "bill"; amount: number } | { kind: "other"; text: string } 
  * de document généré ici : un renvoi n'écrit jamais deux fois. Après l'écriture, on reste ici, vidé, avec la carte
  * de confirmation.
  */
-export function Composer({ pockets, batches, settings, pickerVersion, catalogueCount, params, recent }: ComposerProps) {
+export function Composer({ pockets, batches, settings, pickerVersion, catalogueCount, params, recent, bottles, flacon }: ComposerProps) {
   const router = useRouter();
   const { showToast } = useToast();
   const confirm = useConfirm();
@@ -136,6 +142,19 @@ export function Composer({ pockets, batches, settings, pickerVersion, catalogueC
     // Les paramètres sont lus une fois par clé : `params` change d'identité à chaque rendu du serveur.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paramsKey]);
+
+  // `?flacon=` : le flacon choisi dans E23 rejoint le ticket une fois, puis l'adresse est nettoyée.
+  const flaconApplied = useRef<string | null>(null);
+  useEffect(() => {
+    if (flacon === null || flaconApplied.current === flacon) return;
+    flaconApplied.current = flacon;
+    const bottle = bottles.find((candidate) => candidate.id === flacon);
+    if (bottle) {
+      setConfirmation(null);
+      update((d) => withBottle(d, bottle));
+    }
+    window.history.replaceState(null, "", routes.vendre());
+  }, [flacon, bottles, update]);
 
   // La mémoire de prix arrive après une ligne posée trop tôt (tuile tapée avant la lecture du sélecteur).
   useEffect(() => {
@@ -359,7 +378,7 @@ export function Composer({ pockets, batches, settings, pickerVersion, catalogueC
               line={line}
               pricing={perfumeOf(line.perfumeId)?.pricing.find((row) => row.volumeMl === line.volumeMl)}
               badge={stockBadgeOf(perfumeOf(line.perfumeId))}
-              caption={line.brandName ?? undefined}
+              caption={line.bottleNote ?? line.brandName ?? undefined}
               errors={lineErrors.get(line.id)}
               costOpen={openCost === line.id}
               onChange={replaceLine}
@@ -371,6 +390,15 @@ export function Composer({ pockets, batches, settings, pickerVersion, catalogueC
               cardRef={(el) => void cardRefs.current.set(line.id, el)}
             />
           ))}
+
+          <StockStrip
+            bottles={bottles}
+            taken={draft.lines}
+            onPick={(bottle) => {
+              setConfirmation(null);
+              update((d) => withBottle(d, bottle));
+            }}
+          />
 
           <button
             type="button"

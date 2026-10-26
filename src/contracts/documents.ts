@@ -153,8 +153,18 @@ function normalizeLine<L extends RawLine>(line: L, ctx: z.RefinementCtx): Omit<L
 export const PROPOSED_VOLUME_ML = DEFAULT_VOLUME_ML;
 
 /** Ligne d'un document neuf : le parfum et la contenance sont exigés, l'identifiant est posé par le serveur. */
+export const BOTTLE_UNIT_MESSAGE = "Un flacon en stock se vend à l'unité : ajoute un autre flacon pour en vendre deux.";
+
 export const createLineInput = z
-  .object({ ...lineShape, item: lineItem })
+  .object({
+    ...lineShape,
+    item: lineItem,
+    /** Flacon en stock repris par cette ligne (docs/admin/desistements.md) : la ligne compte un seul flacon. */
+    bottleId: entityId.optional(),
+  })
+  .superRefine((line, ctx) => {
+    if (line.bottleId && line.quantity !== 1) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["quantity"], message: BOTTLE_UNIT_MESSAGE });
+  })
   .transform(normalizeLine);
 
 /**

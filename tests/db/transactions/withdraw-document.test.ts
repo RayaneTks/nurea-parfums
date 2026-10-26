@@ -196,3 +196,60 @@ describe("réactivation et stock", () => {
     expect(bottle).toMatchObject({ sourceCustomer: "khali.khali", sourceDocumentId: null, sourceOrderedAt: null });
   });
 });
+
+describe("revendre un flacon en stock (Vendre)", () => {
+  const stockedBottle = async () => {
+    const perfume = await seedPerfume(server.prisma, { name: "Yara" });
+    const order = await createDocument(server, {
+      origin: "ORDER",
+      customer: { kind: "passing", name: "Faycal" },
+      lines: [catalogueLine(perfume.id, { volumeMl: 80, unitPriceEur: "45", unitCostDzd: "2770", exchangeRate: "277" })],
+      received: [{ amount: "20", pocketId: null }],
+    });
+    expectOk(await withdraw(order));
+    const [bottle] = await stockQueries.availableBottles();
+    return { perfume, bottle: bottle!, order };
+  };
+
+  const sellBottle = (perfumeId: number, bottleId: string, quantity = 1) =>
+    server.documents.createDocumentAction({
+      id: newId(),
+      origin: "DIRECT_SALE",
+      customer: { kind: "passing", name: "Sarah" },
+      lines: [{ ...catalogueLine(perfumeId, { volumeMl: 80, unitPriceEur: "45", unitCostDzd: "2770", exchangeRate: "277", quantity }), bottleId }],
+      payments: [{ id: newId(), amount: "45", pocketId: null }],
+      confirm: true,
+    });
+
+  it("la vente reprend le flacon : il quitte le stock, la commande d'origine dit à qui il a été revendu", async () => {
+    const { perfume, bottle, order } = await stockedBottle();
+    const sale = expectOk(await sellBottle(perfume.id, bottle.id));
+    expect(await stockQueries.availableBottles()).toEqual([]);
+    const { documentSheet } = await import("@/server/documents/queries");
+    const sheet = await documentSheet(order);
+    expect(sheet?.bottles).toEqual([expect.objectContaining({ id: bottle.id, soldTo: "Sarah" })]);
+    expect(sale.id).toBeTruthy();
+  });
+
+  it("un flacon déjà revendu refuse une seconde vente, sans rien écrire", async () => {
+    const { perfume, bottle } = await stockedBottle();
+    expectOk(await sellBottle(perfume.id, bottle.id));
+    const before = await server.prisma.saleDocument.count();
+    expect(expectError(await sellBottle(perfume.id, bottle.id), "CONFLICT").message).toBe(
+      "Ce flacon vient d'être vendu ou retiré du stock : retire-le de la vente, puis choisis-en un autre dans « Déjà en stock ».",
+    );
+    expect(await server.prisma.saleDocument.count()).toBe(before);
+  });
+
+  it("une ligne de flacon compte une seule unité", async () => {
+    const { perfume, bottle } = await stockedBottle();
+    expectError(await sellBottle(perfume.id, bottle.id, 2), "VALIDATION");
+  });
+
+  it("annuler la vente rend le flacon au stock", async () => {
+    const { perfume, bottle } = await stockedBottle();
+    const sale = expectOk(await sellBottle(perfume.id, bottle.id));
+    expectOk(await server.documents.cancelDocumentAction({ documentId: sale.id, refunds: [], confirm: true }));
+    expect((await stockQueries.availableBottles()).map((b) => b.id)).toEqual([bottle.id]);
+  });
+});

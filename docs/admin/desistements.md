@@ -100,7 +100,14 @@ jamais le jargon de nos échanges). « Acompte gardé » est un mot de travail ;
   `20261026090000_withdrawal_stock`, `withdrawDocumentAction`, `src/server/stock/*`, feuille
   `WithdrawSheet`, écran E23 `/admin/catalogue/stock` (rangée « En stock » en tête du Catalogue),
   tests `tests/db/transactions/withdraw-document.test.ts`, captures `e2e/captures/phase2-desistement.spec.ts`.
-- En attendant la phase 3, la feuille d'un flacon dit : créer la vente dans Vendre, puis le retirer du stock.
+- **Phase 3 faite le 26/10/2026** (même branche) : une ligne de vente porte `bottleId` (une unité, contenance
+  du flacon) ; `stockWriter.sellBottles` lie le flacon à sa ligne ou refuse toute la vente s'il vient d'être pris ;
+  annuler la vente le rend au stock (la réactiver ne le reprend pas) ; supprimer la vente ou sa ligne aussi (FK).
+  Vendre : bande « Déjà en stock » en tête des articles, `?flacon=<id>` depuis « Vendre ce flacon » (E23).
+  Rangée « En stock » aussi sur l'Accueil, sous les commandes à livrer.
+- **Le stock n'est pas réservé aux désistements** (gérant, 26/10/2026 : « on n'est pas fermés au stock »). Un
+  `StockBottle` peut n'avoir aucune commande d'origine : un geste « Mettre un flacon en stock » s'ajoutera le jour
+  où Nuréa achète pour le stock, sans changer la table.
 
 ## Phases
 

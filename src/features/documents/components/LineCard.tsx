@@ -82,8 +82,9 @@ export function LineCard({
 
         <div className="flex flex-col gap-1" role="group" aria-label={`Volume de ${line.perfumeName}`}>
           <div className="flex flex-wrap gap-2">
-            {VOLUMES_ML.map((volume) => (
-              <Chip key={volume} active={line.volumeMl === volume} onClick={() => onVolume(volume)}>
+            {/* Un flacon en stock a sa contenance : elle ne se choisit plus. */}
+            {(line.bottleId && isVolumeMl(line.volumeMl) ? [line.volumeMl] : VOLUMES_ML).map((volume) => (
+              <Chip key={volume} active={line.volumeMl === volume} onClick={line.bottleId ? undefined : () => onVolume(volume)}>
                 {volume} ml
               </Chip>
             ))}
@@ -103,7 +104,7 @@ export function LineCard({
           <Stepper
             value={line.quantity}
             min={1}
-            max={MAX_LINE_QUANTITY}
+            max={line.bottleId ? 1 : MAX_LINE_QUANTITY}
             onChange={(quantity) => onChange(withQuantity(line, quantity))}
             ariaLabel={`Quantité de ${line.perfumeName}`}
             decrementAtMin={onRemove ? { icon: <Trash2 size={16} />, ariaLabel: `Retirer ${line.perfumeName}`, onPress: onRemove } : undefined}

@@ -1,6 +1,7 @@
 import { Settings } from "lucide-react";
 import { Block } from "@/app-shell/Block";
 import { DocumentSheetSlot } from "@/features/documents";
+import { StockRow } from "@/features/stock";
 import { SupplierHomeRow } from "@/features/supplier";
 import { PageScaffold } from "@/ui/patterns/PageScaffold";
 import { SectionHeader } from "@/ui/patterns/SectionHeader";
@@ -42,6 +43,10 @@ export function AccueilPage({ docId }: { docId?: string }) {
           </Block>
           <Block fallback={null} errorMessage="Commandes indisponibles.">
             <HomePipelineBlock links={links} />
+          </Block>
+          {/* « En stock » (E23) : les flacons libres à vendre, juste sous les commandes, seulement quand il y en a. */}
+          <Block fallback={null} errorMessage="Stock indisponible.">
+            <StockRow />
           </Block>
           <Block fallback={null} errorMessage="Lots indisponibles.">
             <HomeBatchesBlock links={links} />

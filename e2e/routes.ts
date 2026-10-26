@@ -7,7 +7,7 @@ import { COMPTA_DOCS, COMPTA_MONTH, EMPTY_DAY, JOURNAL_MONTH } from "./fixtures/
 import { composerDraft, storedDraft } from "./fixtures/composer";
 
 import { BATCHES } from "./fixtures/batches";
-import { DOCS, PASSING } from "./fixtures/documents";
+import { DOCS, PASSING, STOCK_BOTTLE_ID } from "./fixtures/documents";
 import { SEED, seedEntityId, seedPerfumeId } from "./fixtures/seed";
 import { SUPPLIER } from "./fixtures/supplier";
 
@@ -222,6 +222,14 @@ export const SCREENS: ScreenCase[] = [
 
   // J9 — Composeur Vendre (06 E11 ; §1.8 : brouillon d'une ligne en mode Vente puis Commande, clavier sur le prix).
   { screen: "E11", route: "vendre", label: "composeur vide, grille des récents", url: routes.vendre(), shell: true, waitFor: "[data-recent-tile]" },
+  {
+    screen: "E11",
+    route: "vendre",
+    label: "« Vendre ce flacon » : le flacon en stock au ticket",
+    url: routes.vendre({ flacon: STOCK_BOTTLE_ID }),
+    shell: true,
+    waitFor: "[data-composer-cta]",
+  },
   {
     screen: "E11",
     route: "vendre",

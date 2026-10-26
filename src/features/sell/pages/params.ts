@@ -4,6 +4,8 @@ export type SellParams = {
   client: string | null;
   parfum: string | null;
   depuis: string | null;
+  /** Flacon en stock à vendre (« Vendre ce flacon » de E23). */
+  flacon: string | null;
 };
 
 const clip = (value: string | undefined) => {
@@ -12,11 +14,12 @@ const clip = (value: string | undefined) => {
 };
 
 /** `?mode=commande&client=…&parfum=12&depuis=…` → paramètres ; une valeur inconnue de `mode` est ignorée. */
-export function parseSellParams(params: { mode?: string; client?: string; parfum?: string; depuis?: string }): SellParams {
+export function parseSellParams(params: { mode?: string; client?: string; parfum?: string; depuis?: string; flacon?: string }): SellParams {
   return {
     mode: params.mode === "vente" || params.mode === "commande" ? params.mode : null,
     client: clip(params.client),
     parfum: clip(params.parfum),
     depuis: clip(params.depuis),
+    flacon: clip(params.flacon),
   };
 }

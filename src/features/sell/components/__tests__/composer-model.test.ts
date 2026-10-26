@@ -21,6 +21,7 @@ import {
   withMode,
   withOffCatalogLine,
   withPerfume,
+  withBottle,
   withReceived,
   type ComposerDraft,
   type LineSources,
@@ -164,6 +165,42 @@ describe("CTA qui dit l'effet complet (06 E11)", () => {
     expect(ctaPlan(withLine, ctx)).toMatchObject({ kind: "submit", label: "Créer la commande", summary: "lot Commande de mars" });
     const deposit = withReceived(withLine, "60", parseEurInput("60"));
     expect(ctaPlan(deposit, ctx)).toEqual({ kind: "submit", label: `Créer la commande · acompte ${euros("60")}`, summary: "Espèces · lot Commande de mars" });
+  });
+});
+
+describe("flacon en stock (docs/admin/desistements.md)", () => {
+  const bottle = {
+    id: "cbottle00000000000000000a",
+    perfumeId: 1,
+    perfumeName: "Yara",
+    brandName: "Lattafa",
+    imageUrl: null,
+    volumeMl: 80,
+    plannedPriceEur: m("45.00"),
+    unitCostEur: m("10.00"),
+    unitCostDzd: "2770.00",
+    exchangeRate: "277.0000",
+    sourceCustomer: "Faycal",
+    sourceDocumentId: null,
+    sourceOrderedAt: null,
+    createdAt: "2026-10-20T10:00:00.000Z",
+  };
+
+  it("une ligne d'une unité, au prix prévu, avec coût, taux et flacon ; jamais deux fois", () => {
+    const draft = withBottle(freshDraft(), bottle, "cline000000000000000000001");
+    expect(draft.lines).toEqual([
+      expect.objectContaining({ perfumeId: 1, volumeMl: 80, quantity: 1, price: "45", cost: "2770", rate: "277", bottleId: bottle.id, bottleNote: "Flacon en stock · de Faycal" }),
+    ]);
+    expect(withBottle(draft, bottle).lines).toHaveLength(1);
+    expect(createInput(draft, ctx).lines[0]).toMatchObject({ bottleId: bottle.id, quantity: 1 });
+  });
+
+  it("retaper le même parfum ouvre une ligne à part : la ligne du flacon reste à 1", () => {
+    const draft = withPerfume(withBottle(freshDraft(), bottle), { id: 1, name: "Yara", brandName: "Lattafa", image: "" }, sources);
+    expect(draft.lines.map((line) => [line.quantity, line.bottleId ?? null])).toEqual([
+      [1, bottle.id],
+      [1, null],
+    ]);
   });
 });
 

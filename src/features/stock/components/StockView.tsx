@@ -20,7 +20,7 @@ import { bottleDetail, bottleName, bottleOrigin, bottleShortOrigin, stockCount }
 
 /**
  * E23 — les flacons déjà achetés d'une commande désistée. Toucher un flacon ouvre sa feuille : d'où il vient,
- * son prix prévu, « Retirer du stock » (filet « Annuler » de 5 s). La revente depuis Vendre arrive en phase 3.
+ * son prix prévu, « Vendre ce flacon » (Vendre préremplie) et « Retirer du stock » (filet « Annuler » de 5 s).
  */
 export function StockView({ bottles }: { bottles: StockBottleDTO[] }) {
   const confirm = useConfirm();
@@ -102,10 +102,19 @@ export function StockView({ bottles }: { bottles: StockBottleDTO[] }) {
         {open ? (
           <div className="flex flex-col gap-4">
             <Text variant="body">{bottleDetail(open)}</Text>
-            <Text variant="caption" tone="muted">
-              {"Pour le revendre, crée une vente dans Vendre, puis retire-le d'ici."}
-            </Text>
             <div className="flex flex-col gap-2">
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                onClick={() => {
+                  const id = open.id;
+                  setOpenId(null);
+                  navigate(routes.vendre({ flacon: id }));
+                }}
+              >
+                Vendre ce flacon
+              </Button>
               {open.sourceDocumentId ? (
                 <Button
                   variant="secondary"

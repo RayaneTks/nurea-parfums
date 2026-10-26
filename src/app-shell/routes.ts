@@ -66,7 +66,7 @@ export const ROUTE_SPECS = {
   vendre: spec({
     screen: "E11",
     pattern: "/admin/vendre",
-    params: ["mode", "client", "parfum", "depuis"],
+    params: ["mode", "client", "parfum", "depuis", "flacon"],
     shell: true,
     jalon: "J9",
     etat: "livree",
@@ -170,7 +170,7 @@ export const routes = {
     /** « Afficher plus » (Livrées, Annulées) : nombre de pages de 50 affichées ; 1 ne s'écrit pas. */
     pages?: number;
   }) => build("/admin/commandes", q ? { ...q, pages: q.pages && q.pages > 1 ? q.pages : undefined } : q),
-  vendre: (q?: { mode?: "vente" | "commande"; client?: string; parfum?: string | number; depuis?: string }) =>
+  vendre: (q?: { mode?: "vente" | "commande"; client?: string; parfum?: string | number; depuis?: string; flacon?: string }) =>
     build("/admin/vendre", q),
   /** « Afficher plus » : `pages` pages de 50 fiches affichées ; 1 ne s'écrit pas. */
   clients: (q?: { q?: string; pages?: number }) =>

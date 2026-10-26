@@ -65,6 +65,29 @@ export async function stockWithdrawnLines(
   return data.length;
 }
 
+export const BOTTLE_TAKEN =
+  "Ce flacon vient d'être vendu ou retiré du stock : retire-le de la vente, puis choisis-en un autre dans « Déjà en stock ».";
+
+/**
+ * Une vente reprend des flacons en stock : chaque flacon est lié à sa ligne, en un ordre SQL conditionné à sa
+ * disponibilité. Un flacon déjà repris (autre vente simultanée) ou retiré refuse toute la vente.
+ */
+export async function sellBottles(tx: Tx, sales: readonly { bottleId: string; lineId: string }[]): Promise<void> {
+  for (const sale of sales) {
+    const { count } = await tx.db.stockBottle.updateMany({
+      where: { id: sale.bottleId, soldLineId: null },
+      data: { soldLineId: sale.lineId },
+    });
+    if (count !== 1) throw new DomainError("CONFLICT", BOTTLE_TAKEN);
+  }
+}
+
+/** Annuler une vente rend ses flacons au stock ; la réactiver ne les reprend pas (ils ont pu être revendus). */
+export async function releaseSoldBottles(tx: Tx, lineIds: readonly string[]): Promise<void> {
+  if (lineIds.length === 0) return;
+  await tx.db.stockBottle.updateMany({ where: { soldLineId: { in: [...lineIds] } }, data: { soldLineId: null } });
+}
+
 /**
  * Réactiver une désistée : ses flacons encore disponibles quittent le stock. Refusé si l'un d'eux a été
  * revendu — la commande et la revente se disputeraient le même flacon. Le document est verrouillé par

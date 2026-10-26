@@ -479,7 +479,8 @@ export async function createDocument(
     },
     select: { id: true },
   });
-  await tx.db.saleLine.createMany({
+  const created = await tx.db.saleLine.createManyAndReturn({
+    select: { id: true, position: true },
     data: lines.map(({ line, position, snapshot, amounts }) => ({
       documentId: input.id,
       position,
@@ -493,6 +494,11 @@ export async function createDocument(
       note: line.note ?? null,
     })),
   });
+  const bottleSales = lines.flatMap(({ line, position }) => {
+    const lineId = created.find((row) => row.position === position)?.id;
+    return line.bottleId && lineId ? [{ bottleId: line.bottleId, lineId }] : [];
+  });
+  if (bottleSales.length > 0) await stockWriter.sellBottles(tx, bottleSales);
   if (deltas.length > 0) await catalogueStock.applyDeliveredDeltas(tx, deltas, { confirm: input.confirm });
   await learnPricing(
     tx,
@@ -1385,6 +1391,8 @@ async function cancelWith(tx: Tx, input: CancelDocumentData, reason: CancelReaso
     tx.now,
   );
   await tx.db.saleDocument.update({ where: { id: doc.id }, data: { status: "CANCELLED", cancelReason: reason, ...timestamps }, select: { id: true } });
+  // Une vente annulée rend au stock les flacons qu'elle avait repris.
+  await stockWriter.releaseSoldBottles(tx, lines.map((line) => line.id));
   const bottles =
     reason === "WITHDRAWN" && doc.status === "CONFIRMED"
       ? await stockWriter.stockWithdrawnLines(tx, { documentId: doc.id, customer: doc.customerName, lines })

@@ -5,8 +5,8 @@ import { Card } from "@/ui/primitives/Card";
 import { ListRow } from "@/ui/primitives/ListRow";
 import { stockCount } from "../components/stock-model";
 
-/** Rangée « En stock » en tête du Catalogue, seulement quand des flacons attendent d'être revendus. */
-export async function StockCatalogueRow() {
+/** Rangée « En stock » (Catalogue, Accueil), seulement quand des flacons attendent d'être revendus. */
+export async function StockRow() {
   const bottles = await availableBottles();
   if (bottles.length === 0) return null;
   return (

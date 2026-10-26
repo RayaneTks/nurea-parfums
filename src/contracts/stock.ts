@@ -23,6 +23,9 @@ export type StockBottleDTO = {
   plannedPriceEur: MoneyString;
   /** Coût d'achat en euros, repris à la revente ; null = inconnu. */
   unitCostEur: MoneyString | null;
+  /** Coût d'achat en dinars et son taux (chaînes décimales exactes), repris tels quels sur la ligne de revente. */
+  unitCostDzd: string | null;
+  exchangeRate: string | null;
   /** Nom du client désisté, copié au désistement. */
   sourceCustomer: string | null;
   sourceDocumentId: string | null;
