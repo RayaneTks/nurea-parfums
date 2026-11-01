@@ -46,11 +46,13 @@ test("marquer une dette remboursée, puis annuler le remboursement", async ({ pa
   expect(payment?.amountDzd.toString()).toBe("12500");
   expect(await withE2eDb((db) => db.cashMovement.count())).toBe(movements);
 
-  // Le carnet le dit en toutes lettres : la dette remboursée, et la ligne de remboursement.
+  // Le carnet la range dans « Dettes remboursées », replié par défaut ; son remboursement ne s'affiche pas.
   await page.keyboard.press("Escape");
-  const ledger = page.locator("[data-supplier-ledger]");
-  await expect(ledger.getByRole("button").filter({ hasText: LABEL })).toContainText("Dette remboursée");
-  await expect(ledger.getByRole("button").filter({ hasText: "Remboursement" }).first()).toBeVisible();
+  const settled = page.locator("[data-supplier-settled-list]");
+  await expect(settled.getByRole("button").filter({ hasText: LABEL })).toHaveCount(0);
+  await settled.getByRole("button", { name: /Dettes remboursées/ }).click();
+  await expect(settled.getByRole("button").filter({ hasText: LABEL })).toContainText("Remboursée le");
+  await expect(page.locator("[data-supplier-ledger]").getByRole("button").filter({ hasText: "Remboursement" })).toHaveCount(0);
 
   // Annuler le remboursement : le versement part au bout du filet, la dette redevient à payer.
   await page.goto(routes.fournisseur({ ligne: DEBT_ID }));

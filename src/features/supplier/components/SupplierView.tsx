@@ -5,9 +5,10 @@ import { useToast } from "@/app-shell/FeedbackProvider";
 import { useUndo } from "@/app-shell/UndoProvider";
 import { useUrlState } from "@/app-shell/hooks/useUrlState";
 import type { SupplierEntryDTO, SupplierLedgerDTO, SupplierPickerDTO } from "@/contracts/supplier";
-import { dzd, dzdFromDb, rateFromDb, type Rate } from "@/domain/money";
+import { dzd, dzdFromDb, formatDzd, rateFromDb, type Rate } from "@/domain/money";
 import { deleteSupplierEntryAction } from "@/server/supplier/actions";
 import { DateLabel } from "@/ui/patterns/DateLabel";
+import { ListSection } from "@/ui/patterns/ListSection";
 import { Button } from "@/ui/primitives/Button";
 import { Card } from "@/ui/primitives/Card";
 import { EmptyState } from "@/ui/primitives/EmptyState";
@@ -17,7 +18,7 @@ import { EntrySheet, type EntryRequest } from "./EntrySheet";
 import { LineSheet } from "./LineSheet";
 import { PickerSheet } from "./PickerSheet";
 import { RateSheet } from "./RateSheet";
-import { balanceHeadline, entryAmountText, entryCaption, entryKindLabel, entryTitle, eurReading, rateLabel, remainingWithout } from "./supplier-model";
+import { balanceHeadline, entryAmountText, entryKindLabel, entryTitle, eurReading, groupByMonth, rateLabel, remainingWithout, splitLedger } from "./supplier-model";
 
 type SupplierViewProps = {
   ledger: SupplierLedgerDTO;
@@ -30,7 +31,9 @@ type SupplierViewProps = {
 /**
  * E22 — Fournisseur (docs/admin/dettes-fournisseur.md). L'en-tête dit le Reste à payer en dinars et en
  * euros (au taux du carnet, modifiable d'un tap), puis deux gestes — « Noter une dette » (le seul bouton
- * primaire) et « Noter un versement » — et le carnet, du plus récent au plus ancien.
+ * primaire) et « Noter un versement » — et le carnet, du plus récent au plus ancien, rangé par mois.
+ * Seul ce qui compte encore s'y lit : les dettes remboursées se rangent dans un bloc replié, fermé par défaut
+ * (leur remboursement ne s'affiche pas, il s'annule avec elles).
  *
  * Aucune ligne n'est un mouvement d'argent : rien ici ne touche la Trésorerie ni la compta.
  * Une suppression se masque aussitôt (le Reste à payer suit) et s'écrit au bout des 5 s du filet « Annuler ».
@@ -50,6 +53,7 @@ export function SupplierView({ ledger, entry, picker }: SupplierViewProps) {
   const remaining = remainingWithout(ledger.remainingDzd, ledger.entries, hidden);
   const headline = balanceHeadline(remaining);
   const entries = ledger.entries.filter((row) => !hidden.has(row.id));
+  const { open, settled } = splitLedger(entries);
 
   const hide = (id: string, on: boolean) =>
     setHidden((current) => {
@@ -59,6 +63,7 @@ export function SupplierView({ ledger, entry, picker }: SupplierViewProps) {
       return next;
     });
 
+  const openLine = (id: string) => url.set({ ligne: id }, { history: "push" });
   const closeLine = () => url.set({ ligne: null });
   const openPicker = () => url.set({ selection: true }, { history: "push" });
   const closePicker = () => url.set({ selection: null });
@@ -135,35 +140,54 @@ export function SupplierView({ ledger, entry, picker }: SupplierViewProps) {
           }
         />
       ) : (
-        <div data-supplier-ledger>
-          <Card padding={0}>
-            {entries.map((row) => {
-              const amount = dzdFromDb(row.amountDzd);
-              return (
+        <div data-supplier-ledger className="flex flex-col gap-5">
+          {groupByMonth(open).map((group) => (
+            <ListSection key={group.month} title={group.month}>
+              {group.rows.map((row) => (
                 <ListRow
                   key={row.id}
-                  onClick={() => url.set({ ligne: row.id }, { history: "push" })}
+                  onClick={() => openLine(row.id)}
                   primary={entryTitle(row)}
                   secondary={
                     <>
-                      {entryCaption(row)} · <DateLabel date={row.occurredAt} />
+                      {entryKindLabel(row.kind)} · <DateLabel date={row.occurredAt} />
                     </>
                   }
                   trailing={
-                    <span className="flex flex-col items-end">
-                      <Text as="span" variant="bodyEm" tone={row.kind === "PAYMENT" ? "success" : "default"} className="tnum">
-                        {entryAmountText(row.kind, row.amountDzd)}
-                      </Text>
-                      <Text as="span" variant="caption" tone="muted" className="tnum">
-                        {eurReading(amount, rate)}
-                      </Text>
-                    </span>
+                    <Text as="span" variant="bodyEm" tone={row.kind === "PAYMENT" ? "success" : "default"} className="tnum">
+                      {entryAmountText(row.kind, row.amountDzd)}
+                    </Text>
                   }
                   chevron
                 />
-              );
-            })}
-          </Card>
+              ))}
+            </ListSection>
+          ))}
+
+          {settled.length > 0 ? (
+            <div data-supplier-settled-list>
+              <ListSection collapsible title="Dettes remboursées" count={settled.length}>
+                {settled.map((row) => (
+                  <ListRow
+                    key={row.id}
+                    onClick={() => openLine(row.id)}
+                    primary={entryTitle(row)}
+                    secondary={
+                      <>
+                        Remboursée le <DateLabel date={row.settledBy?.occurredAt ?? row.occurredAt} format="short" />
+                      </>
+                    }
+                    trailing={
+                      <Text as="span" variant="body" tone="muted" className="tnum">
+                        {formatDzd(dzdFromDb(row.amountDzd))}
+                      </Text>
+                    }
+                    chevron
+                  />
+                ))}
+              </ListSection>
+            </div>
+          ) : null}
         </div>
       )}
 

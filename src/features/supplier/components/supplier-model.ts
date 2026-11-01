@@ -1,5 +1,6 @@
 import type { SupplierEntrySummary } from "@/contracts/supplier";
 import { dzd, dzdFromDb, dzdToEur, formatDzd, formatEur, formatRate, type Dzd, type Rate } from "@/domain/money";
+import { capitalizeFirst, formatDate } from "@/ui/patterns/date-format";
 import { supplierBalanceState, type SupplierBalanceState, type SupplierEntryKind } from "@/domain/supplier-debt";
 
 /** Le texte « ≈ 334,65 € » d'un montant en dinars, relu au taux affiché à l'écran. */
@@ -57,11 +58,33 @@ export function entryTitle(entry: Pick<SupplierEntrySummary, "kind" | "label"> &
   return entry.label?.trim() || (entry.settlesEntryId ? "Remboursement" : entryKindLabel(entry.kind));
 }
 
-/** Sous le nom, dans le carnet : « Dette », « Dette remboursée », « Versement » ou « Remboursement ». */
-export function entryCaption(entry: Pick<SupplierEntrySummary, "kind" | "settlesEntryId" | "settledBy">): string {
-  if (entry.settledBy) return "Dette remboursée";
-  if (entry.settlesEntryId) return "Remboursement";
-  return entryKindLabel(entry.kind);
+type LedgerRow = Pick<SupplierEntrySummary, "settlesEntryId" | "settledBy" | "occurredAt">;
+
+/**
+ * Le carnet en deux : ce qui compte encore (dettes non remboursées et versements libres, dont la somme
+ * fait le Reste à payer) et les dettes remboursées. Le versement d'un remboursement ne s'affiche pas :
+ * il s'annule avec sa dette et se relit dans la sheet de celle-ci.
+ */
+export function splitLedger<T extends LedgerRow>(entries: readonly T[]): { open: T[]; settled: T[] } {
+  const open: T[] = [];
+  const settled: T[] = [];
+  for (const entry of entries) {
+    if (entry.settlesEntryId) continue;
+    (entry.settledBy ? settled : open).push(entry);
+  }
+  return { open, settled };
+}
+
+/** Lignes consécutives d'un même mois (« octobre 2026 »), dans l'ordre reçu : du plus récent au plus ancien. */
+export function groupByMonth<T extends Pick<LedgerRow, "occurredAt">>(entries: readonly T[]): { month: string; rows: T[] }[] {
+  const groups: { month: string; rows: T[] }[] = [];
+  for (const entry of entries) {
+    const month = capitalizeFirst(formatDate(new Date(entry.occurredAt), "month"));
+    const last = groups.at(-1);
+    if (last && last.month === month) last.rows.push(entry);
+    else groups.push({ month, rows: [entry] });
+  }
+  return groups;
 }
 
 /** Montant de base → texte de champ : « 92700.00 » devient « 92700 », « 92700.50 » devient « 92700,50 ». */

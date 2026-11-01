@@ -89,8 +89,13 @@ rangée de l'Accueil « Fournisseur · Reste à payer 48 300 DA », à côté de
    « Rien à payer ». Avance : « Avance de 500 DA ».
 2. Deux boutons : « Noter une dette » (→ S25 le sélecteur, avec le raccourci « Saisir à la main »
    → S23) et « Noter un versement » (→ S24). Un seul bouton primaire : « Noter une dette ».
-3. Le carnet, du plus récent au plus ancien : date, nom, montant en DA et en €. Dettes et versements
-   bien distincts (sens et libellé, pas seulement la couleur). Toucher une ligne → S22.
+3. Le carnet, du plus récent au plus ancien, **rangé par mois** : nom, sens et date, montant en DA
+   (l'euro se lit dans S22). Dettes et versements bien distincts (sens et libellé, pas seulement la
+   couleur). Toucher une ligne → S22.
+4. **Dettes remboursées** (gérant, 01/11/2026 : « voir ce qu'il reste facilement ») : rangées dans un
+   bloc replié « Dettes remboursées · N », fermé par défaut, « Remboursée le 7 oct. ». Leur versement
+   de remboursement ne s'affiche pas dans le carnet : il s'annule avec la dette et se relit dans S22.
+   Le carnet visible fait donc exactement le Reste à payer (`splitLedger`, `supplier-model.ts`).
 
 **Sheets.** Adressables : S22 et S25 (paramètres `ligne`, `selection`), à déclarer dans
 `SHEET_PARAMS` de `src/app-shell/routes.ts`. Les autres sont transitoires.
@@ -125,7 +130,8 @@ Dans S22, une dette non remboursée porte le bouton primaire **« Marquer rembou
 **Aucun `CashMovement`**, aucune poche : le gérant reflète lui-même le paiement en Trésorerie s'il le
 veut (`tests/db/supplier.test.ts` le prouve).
 
-- Le carnet affiche la dette « Dette remboursée » et le versement « Remboursement » (nom par défaut).
+- Le carnet range la dette dans « Dettes remboursées » (replié) et tait le versement « Remboursement »
+  (nom par défaut), relu depuis S22 (depuis le 01/11/2026).
 - S22 d'une dette remboursée : « Remboursée le 25 octobre 2026 », puis **« Annuler le
   remboursement »** (supprime le versement, filet « Annuler » 5 s).
 - S22 d'un remboursement : la dette remboursée, touchable ; son montant est en lecture seule.
