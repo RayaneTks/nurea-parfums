@@ -80,6 +80,25 @@ describe("supplier-model", () => {
     expect(done.map((row) => row.id)).toEqual(["v", "visee", "payee"]);
   });
 
+  it("une dette notée en retard passe en premier : une plus récente peut redevenir à payer", () => {
+    const row = (id: string, kind: "DEBT" | "PAYMENT", amountDzd: string, day: string) => ({
+      id,
+      kind,
+      amountDzd,
+      settlesEntryId: null,
+      settledBy: null,
+      occurredAt: `2026-10-${day}T10:00:00Z`,
+    });
+    const before = [row("v", "PAYMENT", "1000.00", "20"), row("recente", "DEBT", "1000.00", "15")];
+    expect(splitLedger(before, ledgerAllocation(before)).open).toEqual([]);
+
+    const after = [...before, row("retard", "DEBT", "400.00", "01")];
+    const allocation = ledgerAllocation(after);
+    expect(splitLedger(after, allocation).open.map((line) => line.id)).toEqual(["recente"]);
+    expect(allocation.debts.get("retard")?.paidAt).not.toBeNull();
+    expect(allocation.debts.get("recente")?.remaining.toString()).toBe("400");
+  });
+
   it("garde en vue un versement qui laisse une avance", () => {
     const rows = [
       { id: "v", kind: "PAYMENT" as const, amountDzd: "1500.00", settlesEntryId: null, settledBy: null, occurredAt: "2026-10-20T10:00:00Z" },
