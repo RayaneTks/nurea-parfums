@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useToast } from "@/app-shell/FeedbackProvider";
 import { useUndo } from "@/app-shell/UndoProvider";
 import { useUrlState } from "@/app-shell/hooks/useUrlState";
-import type { SupplierEntryDTO, SupplierLedgerDTO, SupplierPickerDTO } from "@/contracts/supplier";
-import { dzd, dzdFromDb, formatDzd, rateFromDb, type Rate } from "@/domain/money";
+import type { SupplierEntryDTO, SupplierEntryRowDTO, SupplierLedgerDTO, SupplierPickerDTO } from "@/contracts/supplier";
+import { dzd, dzdFromDb, formatDzd, rateFromDb, toDb, type Rate } from "@/domain/money";
+import type { SupplierAllocation } from "@/domain/supplier-debt";
 import { deleteSupplierEntryAction } from "@/server/supplier/actions";
 import { DateLabel } from "@/ui/patterns/DateLabel";
 import { ListSection } from "@/ui/patterns/ListSection";
@@ -18,7 +19,7 @@ import { EntrySheet, type EntryRequest } from "./EntrySheet";
 import { LineSheet } from "./LineSheet";
 import { PickerSheet } from "./PickerSheet";
 import { RateSheet } from "./RateSheet";
-import { balanceHeadline, entryAmountText, entryKindLabel, entryTitle, eurReading, groupByMonth, rateLabel, remainingWithout, splitLedger } from "./supplier-model";
+import { balanceHeadline, entryAmountText, entryKindLabel, entryTitle, eurReading, groupByMonth, ledgerAllocation, rateLabel, remainingWithout, splitLedger } from "./supplier-model";
 
 type SupplierViewProps = {
   ledger: SupplierLedgerDTO;
@@ -28,12 +29,69 @@ type SupplierViewProps = {
   picker: SupplierPickerDTO | null;
 };
 
+type RowProps = { row: SupplierEntryRowDTO; allocation: SupplierAllocation; onOpen: (id: string) => void };
+
+/** Une ligne qui compte encore : une dette (avec son reste si elle est entamée) ou un versement en avance. */
+function OpenRow({ row, allocation, onOpen }: RowProps) {
+  const amount = dzdFromDb(row.amountDzd);
+  const debt = allocation.debts.get(row.id);
+  const advance = allocation.payments.get(row.id)?.unallocated;
+  const started = debt !== undefined && dzd.compare(debt.paid, dzd.zero) > 0;
+  const partial = advance !== undefined && dzd.compare(advance, amount) < 0;
+  return (
+    <ListRow
+      onClick={() => onOpen(row.id)}
+      primary={entryTitle(row)}
+      secondary={
+        <>
+          {started ? `sur ${formatDzd(amount)}` : advance ? (partial ? `Avance, sur ${formatDzd(amount)}` : "Avance") : "Dette"} · <DateLabel date={row.occurredAt} />
+        </>
+      }
+      trailing={
+        <Text as="span" variant="bodyEm" tone={advance ? "success" : "default"} className="tnum">
+          {started ? `Reste ${formatDzd(debt.remaining)}` : advance ? entryAmountText("PAYMENT", toDb(advance)) : entryAmountText("DEBT", row.amountDzd)}
+        </Text>
+      }
+      chevron
+    />
+  );
+}
+
+/** Une ligne réglée : une dette remboursée (geste « Marquer remboursée » ou versements) ou un versement entièrement utilisé. */
+function DoneRow({ row, allocation, onOpen }: RowProps) {
+  const paidAt = row.settledBy?.occurredAt ?? allocation.debts.get(row.id)?.paidAt;
+  return (
+    <ListRow
+      onClick={() => onOpen(row.id)}
+      primary={entryTitle(row)}
+      secondary={
+        row.kind === "DEBT" && paidAt ? (
+          <>
+            Remboursée le <DateLabel date={paidAt} format="short" />
+          </>
+        ) : (
+          <>
+            {row.label?.trim() ? "Versement · " : null}
+            <DateLabel date={row.occurredAt} format="short" />
+          </>
+        )
+      }
+      trailing={
+        <Text as="span" variant="body" tone="muted" className="tnum">
+          {row.kind === "DEBT" ? formatDzd(dzdFromDb(row.amountDzd)) : entryAmountText("PAYMENT", row.amountDzd)}
+        </Text>
+      }
+      chevron
+    />
+  );
+}
+
 /**
  * E22 — Fournisseur (docs/admin/dettes-fournisseur.md). L'en-tête dit le Reste à payer en dinars et en
  * euros (au taux du carnet, modifiable d'un tap), puis deux gestes — « Noter une dette » (le seul bouton
  * primaire) et « Noter un versement » — et le carnet, du plus récent au plus ancien, rangé par mois.
- * Seul ce qui compte encore s'y lit : les dettes remboursées se rangent dans un bloc replié, fermé par défaut
- * (leur remboursement ne s'affiche pas, il s'annule avec elles).
+ * Les versements paient les dettes de la plus ancienne à la plus récente. Seul ce qui compte encore s'y lit :
+ * dettes avec un reste, versements avec une avance. Le reste va dans « Déjà réglé », replié par défaut.
  *
  * Aucune ligne n'est un mouvement d'argent : rien ici ne touche la Trésorerie ni la compta.
  * Une suppression se masque aussitôt (le Reste à payer suit) et s'écrit au bout des 5 s du filet « Annuler ».
@@ -53,7 +111,8 @@ export function SupplierView({ ledger, entry, picker }: SupplierViewProps) {
   const remaining = remainingWithout(ledger.remainingDzd, ledger.entries, hidden);
   const headline = balanceHeadline(remaining);
   const entries = ledger.entries.filter((row) => !hidden.has(row.id));
-  const { open, settled } = splitLedger(entries);
+  const allocation = ledgerAllocation(entries);
+  const { open, done } = splitLedger(entries, allocation);
 
   const hide = (id: string, on: boolean) =>
     setHidden((current) => {
@@ -144,46 +203,16 @@ export function SupplierView({ ledger, entry, picker }: SupplierViewProps) {
           {groupByMonth(open).map((group) => (
             <ListSection key={group.month} title={group.month}>
               {group.rows.map((row) => (
-                <ListRow
-                  key={row.id}
-                  onClick={() => openLine(row.id)}
-                  primary={entryTitle(row)}
-                  secondary={
-                    <>
-                      {entryKindLabel(row.kind)} · <DateLabel date={row.occurredAt} />
-                    </>
-                  }
-                  trailing={
-                    <Text as="span" variant="bodyEm" tone={row.kind === "PAYMENT" ? "success" : "default"} className="tnum">
-                      {entryAmountText(row.kind, row.amountDzd)}
-                    </Text>
-                  }
-                  chevron
-                />
+                <OpenRow key={row.id} row={row} allocation={allocation} onOpen={openLine} />
               ))}
             </ListSection>
           ))}
 
-          {settled.length > 0 ? (
-            <div data-supplier-settled-list>
-              <ListSection collapsible title="Dettes remboursées" count={settled.length}>
-                {settled.map((row) => (
-                  <ListRow
-                    key={row.id}
-                    onClick={() => openLine(row.id)}
-                    primary={entryTitle(row)}
-                    secondary={
-                      <>
-                        Remboursée le <DateLabel date={row.settledBy?.occurredAt ?? row.occurredAt} format="short" />
-                      </>
-                    }
-                    trailing={
-                      <Text as="span" variant="body" tone="muted" className="tnum">
-                        {formatDzd(dzdFromDb(row.amountDzd))}
-                      </Text>
-                    }
-                    chevron
-                  />
+          {done.length > 0 ? (
+            <div data-supplier-done>
+              <ListSection collapsible title="Déjà réglé" count={done.length}>
+                {done.map((row) => (
+                  <DoneRow key={row.id} row={row} allocation={allocation} onOpen={openLine} />
                 ))}
               </ListSection>
             </div>
@@ -211,16 +240,19 @@ export function SupplierView({ ledger, entry, picker }: SupplierViewProps) {
             setForm(null);
             if (picker) closePicker();
           }}
-          nested={form.mode === "edit" || picker !== null}
+          nested={form.mode === "edit" || picker !== null || entry !== null}
         />
       ) : null}
 
       {entry && !hidden.has(entry.id) ? (
         <LineSheet
           entry={entry}
+          lines={entries}
+          allocation={allocation}
           rate={rate}
           onClose={closeLine}
           onEdit={() => setForm({ mode: "edit", entry })}
+          onPayRest={(remainingDzd) => setForm({ mode: "new", kind: "PAYMENT", suggestedDzd: remainingDzd })}
           onDelete={() => remove(entry)}
           onUnsettle={(paymentId) => schedule([paymentId], "Remboursement annulé")}
         />

@@ -10,6 +10,7 @@ import {
 import { valueDateOf } from "@/contracts/treasury";
 import { DomainError } from "@/domain/errors";
 import { dzd, dzdFromDb } from "@/domain/money";
+import { allocateSupplierPayments } from "@/domain/supplier-debt";
 import type { Tx } from "@/server/db/transaction";
 import { ENTRY_SUMMARY_SELECT, entrySummary } from "@/server/supplier/dto";
 import { batchCostsByIdSql, documentCostsByIdSql, type PickerBatchRow, type PickerDocumentRow } from "@/server/supplier/sql";
@@ -22,7 +23,8 @@ import { batchCostsByIdSql, documentCostsByIdSql, type PickerBatchRow, type Pick
  * que les désigner. Le « Paiement fournisseur » de la Trésorerie reste un geste séparé, à la main.
  *
  * Un versement peut rembourser une dette précise (`settlesEntryId`, « Marquer remboursée ») : il porte
- * toujours le montant de la dette, et disparaît avec elle (cascade).
+ * toujours le montant de la dette, et disparaît avec elle (cascade). Les autres versements paient les dettes
+ * de la plus ancienne à la plus récente : c'est dérivé à la lecture (`allocateSupplierPayments`), rien n'est écrit.
  */
 
 export const SUPPLIER_ENTRY_NOT_FOUND = "Cette ligne du carnet n'existe plus. Recharge l'écran pour voir le carnet à jour.";
@@ -30,6 +32,7 @@ const ITEM_TARGET_GONE =
   "Un élément coché n'existe plus ou a été annulé depuis un autre écran. Recharge la liste et recoche.";
 
 const NOT_A_DEBT = "Seule une dette se marque remboursée.";
+const DEBT_ALREADY_STARTED = "Tes versements ont déjà payé une partie de cette dette. Recharge l'écran et note un versement du reste.";
 const SETTLEMENT_AMOUNT_LOCKED =
   "Ce versement rembourse une dette : son montant suit celui de la dette. Modifie la dette, ou annule le remboursement.";
 
@@ -100,6 +103,20 @@ export async function settleDebt(tx: Tx, input: SettleSupplierDebtInput): Promis
     const payment = await tx.db.supplierEntry.findUniqueOrThrow({ where: { id: debt.settledBy.id }, select: SELECT });
     return entrySummary(payment);
   }
+  // Un écran en retard : noter le montant entier d'une dette déjà entamée ferait une avance par erreur.
+  const lines = await tx.db.supplierEntry.findMany({ orderBy: [{ occurredAt: "asc" }, { createdAt: "asc" }, { id: "asc" }], select: SELECT });
+  const { debts } = allocateSupplierPayments(
+    lines.map((line) => ({
+      id: line.id,
+      kind: line.kind,
+      amountDzd: dzdFromDb(line.amountDzd),
+      occurredAt: line.occurredAt.toISOString(),
+      settlesEntryId: line.settlesEntryId,
+      settled: line.settledBy !== null,
+    })),
+  );
+  const owed = debts.get(debt.id);
+  if (owed && dzd.compare(owed.paid, dzd.zero) > 0) throw new DomainError("VALIDATION", DEBT_ALREADY_STARTED);
   return entrySummary(
     await tx.db.supplierEntry.create({
       data: { id: input.id, kind: "PAYMENT", amountDzd: debt.amountDzd, settlesEntryId: debt.id, occurredAt: tx.now },

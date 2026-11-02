@@ -7,6 +7,7 @@ import {
   entryTitle,
   eurReading,
   groupByMonth,
+  ledgerAllocation,
   rateLabel,
   remainingWithout,
   splitLedger,
@@ -56,16 +57,37 @@ describe("supplier-model", () => {
     expect(dzdInputText("92700.50")).toBe("92700,50");
   });
 
-  it("range les dettes remboursées à part et tait leur remboursement", () => {
+  it("range ce qui est réglé à part et tait le remboursement lié", () => {
+    const line = (id: string, kind: "DEBT" | "PAYMENT", amountDzd: string, day: string, extra = {}) => ({
+      id,
+      kind,
+      amountDzd,
+      settlesEntryId: null,
+      settledBy: null,
+      occurredAt: `2026-10-${day}T10:00:00Z`,
+      ...extra,
+    });
+    // Du plus récent au plus ancien, comme le serveur le rend.
     const rows = [
-      { id: "r", settlesEntryId: "d1", settledBy: null, occurredAt: "2026-10-25T10:00:00Z" },
-      { id: "v", settlesEntryId: null, settledBy: null, occurredAt: "2026-10-20T10:00:00Z" },
-      { id: "d1", settlesEntryId: null, settledBy: { id: "r", occurredAt: "2026-10-25T10:00:00Z" }, occurredAt: "2026-10-10T10:00:00Z" },
-      { id: "d2", settlesEntryId: null, settledBy: null, occurredAt: "2026-09-30T10:00:00Z" },
+      line("lien", "PAYMENT", "500.00", "25", { settlesEntryId: "visee" }),
+      line("v", "PAYMENT", "1200.00", "20"),
+      line("entamee", "DEBT", "800.00", "12"),
+      line("visee", "DEBT", "500.00", "11", { settledBy: { id: "lien", occurredAt: "2026-10-25T10:00:00Z" } }),
+      line("payee", "DEBT", "1000.00", "10"),
     ];
-    const { open, settled } = splitLedger(rows);
-    expect(open.map((row) => row.id)).toEqual(["v", "d2"]);
-    expect(settled.map((row) => row.id)).toEqual(["d1"]);
+    const { open, done } = splitLedger(rows, ledgerAllocation(rows));
+    expect(open.map((row) => row.id)).toEqual(["entamee"]);
+    expect(done.map((row) => row.id)).toEqual(["v", "visee", "payee"]);
+  });
+
+  it("garde en vue un versement qui laisse une avance", () => {
+    const rows = [
+      { id: "v", kind: "PAYMENT" as const, amountDzd: "1500.00", settlesEntryId: null, settledBy: null, occurredAt: "2026-10-20T10:00:00Z" },
+      { id: "d", kind: "DEBT" as const, amountDzd: "1000.00", settlesEntryId: null, settledBy: null, occurredAt: "2026-10-10T10:00:00Z" },
+    ];
+    const { open, done } = splitLedger(rows, ledgerAllocation(rows));
+    expect(open.map((row) => row.id)).toEqual(["v"]);
+    expect(done.map((row) => row.id)).toEqual(["d"]);
   });
 
   it("groupe les lignes par mois, à l'heure de Paris", () => {

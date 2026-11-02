@@ -369,6 +369,15 @@ describe("marquer une dette remboursée (25/10/2026)", () => {
     expect(await server.prisma.supplierEntry.count()).toBe(0);
   });
 
+  it("refus : une dette entamée par un versement ne se marque pas remboursée, le reste se paie par un versement", async () => {
+    const debtId = newId();
+    expectOk(await server.supplier.recordSupplierEntryAction({ id: debtId, kind: "DEBT", amountDzd: "19000", occurredAt: new Date(Date.now() - DAY) }));
+    expectOk(await server.supplier.recordSupplierEntryAction({ id: newId(), kind: "PAYMENT", amountDzd: "14200" }));
+    expectError(await server.supplier.settleSupplierDebtAction({ id: newId(), debtId }), "VALIDATION");
+    expect(await server.prisma.supplierEntry.count()).toBe(2);
+    expect(await server.supplierQueries.getSupplierBalance()).toMatchObject({ remainingDzd: "4800.00", state: "due" });
+  });
+
   it("refus : un versement ne se marque pas remboursé, une dette absente non plus", async () => {
     const paymentId = newId();
     expectOk(await server.supplier.recordSupplierEntryAction({ id: paymentId, kind: "PAYMENT", amountDzd: "1000" }));

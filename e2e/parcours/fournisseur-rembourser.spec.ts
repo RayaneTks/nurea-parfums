@@ -46,11 +46,11 @@ test("marquer une dette remboursée, puis annuler le remboursement", async ({ pa
   expect(payment?.amountDzd.toString()).toBe("12500");
   expect(await withE2eDb((db) => db.cashMovement.count())).toBe(movements);
 
-  // Le carnet la range dans « Dettes remboursées », replié par défaut ; son remboursement ne s'affiche pas.
+  // Le carnet la range dans « Déjà réglé », replié par défaut ; son remboursement ne s'affiche pas.
   await page.keyboard.press("Escape");
-  const settled = page.locator("[data-supplier-settled-list]");
+  const settled = page.locator("[data-supplier-done]");
   await expect(settled.getByRole("button").filter({ hasText: LABEL })).toHaveCount(0);
-  await settled.getByRole("button", { name: /Dettes remboursées/ }).click();
+  await settled.getByRole("button", { name: /Déjà réglé/ }).click();
   await expect(settled.getByRole("button").filter({ hasText: LABEL })).toContainText("Remboursée le");
   await expect(page.locator("[data-supplier-ledger]").getByRole("button").filter({ hasText: "Remboursement" })).toHaveCount(0);
 

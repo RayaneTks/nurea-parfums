@@ -1,7 +1,7 @@
 import type { SupplierEntrySummary } from "@/contracts/supplier";
 import { dzd, dzdFromDb, dzdToEur, formatDzd, formatEur, formatRate, type Dzd, type Rate } from "@/domain/money";
 import { capitalizeFirst, formatDate } from "@/ui/patterns/date-format";
-import { supplierBalanceState, type SupplierBalanceState, type SupplierEntryKind } from "@/domain/supplier-debt";
+import { allocateSupplierPayments, supplierBalanceState, type SupplierAllocation, type SupplierBalanceState, type SupplierEntryKind } from "@/domain/supplier-debt";
 
 /** Le texte « ≈ 334,65 € » d'un montant en dinars, relu au taux affiché à l'écran. */
 export function eurReading(amountDzd: Dzd, rate: Rate): string {
@@ -58,21 +58,36 @@ export function entryTitle(entry: Pick<SupplierEntrySummary, "kind" | "label"> &
   return entry.label?.trim() || (entry.settlesEntryId ? "Remboursement" : entryKindLabel(entry.kind));
 }
 
-type LedgerRow = Pick<SupplierEntrySummary, "settlesEntryId" | "settledBy" | "occurredAt">;
+type LedgerRow = Pick<SupplierEntrySummary, "id" | "kind" | "amountDzd" | "settlesEntryId" | "settledBy" | "occurredAt">;
+
+/** Répartit les versements du carnet affiché (du plus récent au plus ancien, comme le serveur le rend). */
+export function ledgerAllocation(entries: readonly LedgerRow[]): SupplierAllocation {
+  return allocateSupplierPayments(
+    [...entries].reverse().map((entry) => ({
+      id: entry.id,
+      kind: entry.kind,
+      amountDzd: dzdFromDb(entry.amountDzd),
+      occurredAt: entry.occurredAt,
+      settlesEntryId: entry.settlesEntryId,
+      settled: entry.settledBy !== null,
+    })),
+  );
+}
 
 /**
- * Le carnet en deux : ce qui compte encore (dettes non remboursées et versements libres, dont la somme
- * fait le Reste à payer) et les dettes remboursées. Le versement d'un remboursement ne s'affiche pas :
+ * Le carnet en deux : ce qui compte encore (dettes avec un reste, versements avec une avance, dont la somme
+ * fait le Reste à payer) et ce qui est déjà réglé. Le versement d'un « Marquer remboursée » ne s'affiche pas :
  * il s'annule avec sa dette et se relit dans la sheet de celle-ci.
  */
-export function splitLedger<T extends LedgerRow>(entries: readonly T[]): { open: T[]; settled: T[] } {
+export function splitLedger<T extends LedgerRow>(entries: readonly T[], allocation: SupplierAllocation): { open: T[]; done: T[] } {
   const open: T[] = [];
-  const settled: T[] = [];
+  const done: T[] = [];
   for (const entry of entries) {
     if (entry.settlesEntryId) continue;
-    (entry.settledBy ? settled : open).push(entry);
+    const owed = entry.kind === "DEBT" ? allocation.debts.get(entry.id)?.remaining : allocation.payments.get(entry.id)?.unallocated;
+    (owed && dzd.compare(owed, dzd.zero) > 0 ? open : done).push(entry);
   }
-  return { open, settled };
+  return { open, done };
 }
 
 /** Lignes consécutives d'un même mois (« octobre 2026 »), dans l'ordre reçu : du plus récent au plus ancien. */

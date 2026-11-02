@@ -175,7 +175,8 @@ export function EntrySheet({ request, rate, onClose, nested = false, onSaved = o
 
         {kind === "PAYMENT" && !editing ? (
           <p className="admin-type-caption text-[var(--admin-text-muted)]">
-            Ce {entryKindLabel(kind).toLowerCase()} est noté dans le carnet seulement : il ne sort rien de la Trésorerie.
+            Il paie tes dettes, de la plus ancienne à la plus récente. Ce {entryKindLabel(kind).toLowerCase()} est noté dans le
+            carnet seulement : il ne sort rien de la Trésorerie.
           </p>
         ) : null}
         {/* Sheet de saisie courte : le CTA dans le corps, après la saisie (règle de S20 ; un pied écrasait le montant à 320 px). */}

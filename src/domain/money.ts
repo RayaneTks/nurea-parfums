@@ -203,6 +203,7 @@ export const dzd: {
   times(a: Dzd, quantity: number): Dzd; // quantité entière ≥ 0, sinon exception
   sum(values: readonly Dzd[]): Dzd;
   compare(a: Dzd, b: Dzd): -1 | 0 | 1;
+  min(a: Dzd, b: Dzd): Dzd;
 } = {
   zero: wrap<Dzd>(new D(0)),
   sub: (a, b) => wrap<Dzd>(raw(a).minus(raw(b))),
@@ -214,6 +215,7 @@ export const dzd: {
   },
   sum: (values) => wrap<Dzd>(values.reduce<Dec>((acc, v) => acc.plus(raw(v)), new D(0))),
   compare: (a, b) => raw(a).comparedTo(raw(b)),
+  min: (a, b) => (raw(a).lte(raw(b)) ? a : b),
 };
 
 /** Deux taux égaux à la décimale près (277 et 277,0000) : même groupe d'achat. */

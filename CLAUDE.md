@@ -241,7 +241,8 @@ dérivé (`src/domain/supplier-debt.ts`). Tables `SupplierEntry` et `SupplierEnt
 `src/server/supplier/writer.ts` ; taux du carnet `Setting.supplierExchangeRate`, distinct du taux de
 vente. **Indépendant de l'argent** : aucun `CashMovement`, aucune poche, aucun chiffre ne le lit. En ligne
 depuis le 25/10/2026 (E22 `/admin/fournisseur`). « Marquer remboursée » (25/10) : un versement du
-montant de la dette, lié à elle (`settlesEntryId`), supprimé avec elle.
+montant de la dette, lié à elle (`settlesEntryId`), supprimé avec elle. Les autres versements paient les
+dettes de la plus ancienne à la plus récente (02/11, `allocateSupplierPayments`, dérivé, rien de stocké).
 
 **Désistements** (`docs/admin/desistements.md`, décidé et en ligne le 26/10/2026) :
 désistée = `CANCELLED` + `cancelReason = WITHDRAWN` ; acompte **gardé** (pas un avoir), dérivé,

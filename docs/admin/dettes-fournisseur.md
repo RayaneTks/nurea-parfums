@@ -92,10 +92,10 @@ rangée de l'Accueil « Fournisseur · Reste à payer 48 300 DA », à côté de
 3. Le carnet, du plus récent au plus ancien, **rangé par mois** : nom, sens et date, montant en DA
    (l'euro se lit dans S22). Dettes et versements bien distincts (sens et libellé, pas seulement la
    couleur). Toucher une ligne → S22.
-4. **Dettes remboursées** (gérant, 01/11/2026 : « voir ce qu'il reste facilement ») : rangées dans un
-   bloc replié « Dettes remboursées · N », fermé par défaut, « Remboursée le 7 oct. ». Leur versement
-   de remboursement ne s'affiche pas dans le carnet : il s'annule avec la dette et se relit dans S22.
-   Le carnet visible fait donc exactement le Reste à payer (`splitLedger`, `supplier-model.ts`).
+4. **Déjà réglé** (gérant, 01/11 et 02/11/2026 : « voir ce qu'il reste facilement ») : dettes remboursées
+   et versements entièrement utilisés, dans un bloc replié « Déjà réglé · N », fermé par défaut. Le versement
+   d'un « Marquer remboursée » ne s'affiche pas : il s'annule avec la dette et se relit dans S22. Le carnet
+   visible fait donc exactement le Reste à payer (`splitLedger`, `supplier-model.ts`).
 
 **Sheets.** Adressables : S22 et S25 (paramètres `ligne`, `selection`), à déclarer dans
 `SHEET_PARAMS` de `src/app-shell/routes.ts`. Les autres sont transitoires.
@@ -137,10 +137,30 @@ veut (`tests/db/supplier.test.ts` le prouve).
 - S22 d'un remboursement : la dette remboursée, touchable ; son montant est en lecture seule.
 - Second geste (double tap, deux écrans) : le versement existant est rendu, jamais deux.
 
+## Les versements paient les dettes (décidé le 02/11/2026)
+
+Un versement libre paie les dettes **de la plus ancienne à la plus récente, par date**
+(`allocateSupplierPayments`, `src/domain/supplier-debt.ts`). **Dérivé à chaque lecture, rien n'est stocké,
+aucune migration** : le Reste à payer ne change pas de définition, la répartition dit seulement quelles
+dettes il reste.
+
+| Cas | Résultat |
+|---|---|
+| 54 800 DA de dettes, versement de 50 000 DA | Les plus anciennes passent en « Déjà réglé », il reste « Reste 4 800 DA, sur 19 000 DA » sur la dernière |
+| Dette entamée | S22 propose « Payer le reste (4 800 DA) », un versement pré-rempli. « Marquer remboursée » y est refusé, écran **et** serveur : son montant entier ferait une avance par erreur |
+| Dette couverte par des versements | « Remboursée par tes versements, le… », liste « Payée par ». Pour la rouvrir : supprimer ou corriger le versement |
+| Versement | S22 liste « A payé » : ses dettes et les montants |
+| Versé plus que dû | Le surplus reste visible (« Avance ») et paie la dette notée ensuite |
+| Supprimer ou corriger une ligne | Tout se recalcule |
+| Dette notée avec une date ancienne | Elle passe en premier par sa date : une dette plus récente peut redevenir à payer, le total reste juste |
+| « Marquer remboursée » sur une dette non entamée | Permis, même si une plus ancienne reste due : ce versement vise cette dette, il reste hors répartition |
+
+Limite assumée : un paiement **partiel** ne vise pas une dette précise.
+
 ## Choix à reprendre si le besoin change
 
-- Remboursement **entier** seulement : un versement partiel reste un versement libre, sans lien. Si un
-  jour le gérant veut suivre dette par dette avec des acomptes, il faudra une table de lettrage.
+- Remboursement **entier** seulement : un versement partiel reste un versement libre, réparti par date. Si un
+  jour le gérant veut viser une dette précise avec un acompte, il faudra une table de lettrage.
 - Le montant de la dette reste celui que le gérant valide (pré-rempli par la somme, modifiable) : la
   somme des éléments cochés n'est pas imposée, elle aide.
 - Carnet non paginé (`shortcut` dans `queries.ts`) : à paginer au-delà de quelques centaines de lignes.

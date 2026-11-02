@@ -103,6 +103,9 @@ Détail : [`docs/catalog-database.md`](docs/catalog-database.md) et
 - « Marquer remboursée » (`settleSupplierDebtAction`) : un versement lié à la dette par
   `SupplierEntry.settlesEntryId` (migration `20261025090000_supplier_settlement`), même montant,
   supprimé avec elle. Parcours : `e2e/parcours/fournisseur-rembourser.spec.ts` (projet des réglages).
+- Les versements libres paient les dettes de la plus ancienne à la plus récente : `allocateSupplierPayments`
+  (`src/domain/supplier-debt.ts`), dérivé à la lecture, rien de stocké. Une dette entamée refuse « Marquer
+  remboursée » (écran et `settleDebt`) : son reste se paie par un versement.
 - Le carnet ne touche jamais l'argent de la gestion : ne pas le brancher sur `CashMovement`, une
   poche ou `src/server/chiffres`. `tests/db/supplier.test.ts` vérifie qu'aucun mouvement n'est écrit.
 - Montants en dinars ; l'euro se calcule à l'affichage (`dzdToEur`) au taux du carnet, jamais figé.
