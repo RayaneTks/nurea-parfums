@@ -25,7 +25,7 @@
 
 ## Conventions de lecture
 
-- **Identifiants.** Écrans `E01`…`E22` (E09 est une page statique, les autres des routes), sheets et dialogues `S01`…`S26` (E22 et S22–S26 : carnet fournisseur, `docs/admin/dettes-fournisseur.md`), parcours `PC-01`…`PC-12`, frictions `F-4.1-01`… (numéro de section de l'audit + rang dans sa liste « Frictions UX »).
+- **Identifiants.** Écrans `E01`…`E22` (E09 est une page statique, les autres des routes), sheets et dialogues `S01`…`S27` (E22 et S22–S27 : carnet fournisseur, `docs/admin/dettes-fournisseur.md`), parcours `PC-01`…`PC-12`, frictions `F-4.1-01`… (numéro de section de l'audit + rang dans sa liste « Frictions UX »).
 - **Compter les taps.** Tous les comptes partent de **l'app ouverte sur l'Accueil**, mémoires pré-remplies (02 §2). Un *tap* est un toucher qui déclenche quelque chose. Un **glissement de ligne compte 1** et le tap sur l'action qu'il révèle compte 1 de plus (aucune action ne s'exécute au seul glissement, §4.2). Une *saisie* (clavier) est notée « + saisie » et comptée en secondes, pas en taps.
 - **Chronométrer.** Hypothèses fixes, pour que 07 puisse mesurer : tap sur une cible connue ≈ 1,2 s ; tap après lecture d'une liste ou d'une grille ≈ 2 s ; saisie de 3–4 lettres ou d'un montant ≈ 3 s ; écriture serveur perçue ≈ 1 s (l'écran se met à jour sans attendre, 05 §5.2) ; import d'une photo ≈ 5 s. Les chiffres « avant » viennent des parcours décrits par l'audit (01 §4.x) : ce sont des **estimations**, pas des mesures.
 - **Libellés.** Entre « guillemets » : texte exact affiché. Le tutoiement de l'existant est conservé (« Rends d'abord la marque visible »).

@@ -107,6 +107,7 @@ rangée de l'Accueil « Fournisseur · Reste à payer 48 300 DA », à côté de
 | S24 Versement | Montant DA pré-rempli avec le Reste à payer (paiement complet en un tap), date, note |
 | S25 Sélecteur · `?selection=1` | Documents non annulés (en attente compris) et lots ; recherche (client, parfum, nom du lot — c'est elle qui filtre par lot) ; cocher un lot coche ses documents ; bandeau fixe « 3 éléments · 92 700 DA · ≈ 334,65 € » ; déjà notés grisés avec le nom de leur dette, cochables quand même ; lignes sans coût signalées et comptées à part (« dont 2 lignes sans coût ») ; « Noter cette dette » → montant modifiable, nom pré-rempli « Dette du 24 oct. » |
 | S26 Taux du carnet | Un champ taux ; enregistre par `setSupplierRateAction` |
+| S27 Détail du reste à payer | Ouvert par « Voir le détail, parfum par parfum » sous le Reste à payer (seulement s'il reste à payer). Parfums des dettes qui ont encore un reste, par client, coût en DA ; un seul bouton, « Copier le détail ». Voir § Détail du reste à payer |
 
 **Coût d'un élément (S25).** Σ `quantity` × `unitCostDzd` des lignes du document, lignes sans coût
 exclues et comptées ; un lot = Σ de ses documents non annulés. Une requête, `src/server/supplier/sql.ts`,
@@ -156,6 +157,42 @@ dettes il reste.
 | « Marquer remboursée » sur une dette non entamée | Permis, même si une plus ancienne reste due : ce versement vise cette dette, il reste hors répartition |
 
 Limite assumée : un paiement **partiel** ne vise pas une dette précise.
+
+## Détail du reste à payer (décidé le 09/11/2026)
+
+Le gérant envoie au fournisseur ce qu'il a noté, parfum par parfum, pour comparer leurs comptes et
+corriger un prix compté en plus ou en moins. S27 rend ce texte, copié tel quel (WhatsApp) :
+
+```
+Kais
+- L'Heure Bleue GUERLAIN 80ML 2500DA
+
+Badis
+- The One D&G 80ML x2 2800DA
+
+Autres
+- Transport 3000DA
+
+2500+2800+3000 = 8300 DA
+Déjà versé : 1000 DA
+Reste à payer : 7300 DA
+```
+
+| Cas | Règle |
+|---|---|
+| Quelles dettes | Celles qui ont encore un reste (`openDebtIds`, même répartition que l'écran), **entamées comprises, en entier**. Les dettes réglées n'y sont pas |
+| Total | Σ des montants de ces dettes. « Déjà versé » (ce que les versements ont payé dessus) le ramène au **Reste à payer de l'en-tête** ; les deux lignes n'apparaissent que si une dette est entamée |
+| Un client | Ses parfums de toutes les dettes regroupés sous son nom (nom vivant de la fiche) ; deux clients de passage ne se rejoignent pas |
+| Un lot coché | Ses commandes et ventes non annulées, client par client |
+| Commande annulée après avoir été notée | Gardée, signalée « (commande annulée) » : elle est dans la dette |
+| Quantité | `x2`, montant = quantité × coût unitaire |
+| Ligne sans coût | « (coût manquant) », comptée 0, avertissement en tête de S27 |
+| Dette notée à la main | Sous « Autres », avec son nom (à défaut « Dette du 3 nov. ») et son montant : aucun parfum à inventer |
+| Coûts relus ≠ montant noté | Les coûts se relisent **au présent** sur les lignes ; l'écart avec le montant de la dette va sous « Autres », signé (« Écart sur Lot d'octobre 300DA »). Le total reste celui du carnet |
+
+Code : `getSupplierDetail` (`src/server/supplier/queries.ts`), `supplierDetail` et `detailMessage`
+(`src/features/supplier/components/detail-model.ts`, testés), `DetailSheet.tsx`. Lecture seule, rien n'est
+stocké. Sheet transitoire (pas de paramètre d'URL).
 
 ## Choix à reprendre si le besoin change
 

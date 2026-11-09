@@ -1,6 +1,8 @@
 import "server-only";
+import type { Prisma } from "@prisma/client";
 import type {
   SupplierBalanceDTO,
+  SupplierDetailDebtDTO,
   SupplierEntryDTO,
   SupplierEntryItemDTO,
   SupplierLedgerDTO,
@@ -109,6 +111,78 @@ export const getSupplierEntry = defineQuery(async (id: string): Promise<Supplier
       return item.batch ? [{ kind: "batch", id: item.id, batchId: item.batch.id, name: item.batch.name, amountDzd }] : [];
     }),
   };
+});
+
+const DETAIL_DOCUMENT_SELECT = {
+  id: true,
+  status: true,
+  orderedAt: true,
+  customerName: true,
+  customer: { select: { fullName: true } },
+  lines: {
+    orderBy: [{ position: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+    select: { perfumeName: true, brandName: true, volumeMl: true, quantity: true, unitCostDzd: true },
+  },
+} satisfies Prisma.SaleDocumentSelect;
+
+/**
+ * « Détail du reste à payer » : les dettes demandées (celles qui ont encore un reste, calculé par l'écran),
+ * avec les lignes de parfum de ce qu'elles ont coché. Un lot rend ses commandes et ventes non annulées (même
+ * périmètre que son coût au sélecteur) ; une commande cochée directement reste, même annulée depuis, signalée.
+ * Coûts relus sur les lignes, au présent : l'écart avec le montant de la dette est montré par l'écran.
+ */
+export const getSupplierDetail = defineQuery(async (debtIds: readonly string[]): Promise<SupplierDetailDebtDTO[]> => {
+  const ids = debtIds.filter(isTextId);
+  if (ids.length === 0) return [];
+  const rows = await db.supplierEntry.findMany({
+    where: { id: { in: ids }, kind: "DEBT" },
+    orderBy: [{ occurredAt: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+    select: {
+      id: true,
+      label: true,
+      amountDzd: true,
+      occurredAt: true,
+      items: {
+        orderBy: { id: "asc" },
+        select: {
+          document: { select: DETAIL_DOCUMENT_SELECT },
+          batch: {
+            select: {
+              documents: {
+                where: { status: { not: "CANCELLED" } },
+                orderBy: [{ orderedAt: "asc" }, { id: "asc" }],
+                select: DETAIL_DOCUMENT_SELECT,
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+  return rows.map((row) => {
+    const documents = row.items
+      .flatMap((item) => (item.document ? [item.document] : (item.batch?.documents ?? [])))
+      .sort((a, b) => a.orderedAt.getTime() - b.orderedAt.getTime() || a.id.localeCompare(b.id));
+    return {
+      id: row.id,
+      label: row.label,
+      amountDzd: toDb(dzdFromDb(row.amountDzd)),
+      occurredAt: row.occurredAt.toISOString(),
+      hasItems: row.items.length > 0,
+      lines: documents.flatMap((document) =>
+        document.lines.map((line) => ({
+          documentId: document.id,
+          customerName: document.customer?.fullName ?? document.customerName,
+          cancelled: document.status === "CANCELLED",
+          perfumeName: line.perfumeName,
+          brandName: line.brandName,
+          volumeMl: line.volumeMl,
+          quantity: line.quantity,
+          unitCostDzd: line.unitCostDzd === null ? null : toDb(dzdFromDb(line.unitCostDzd)),
+        })),
+      ),
+    };
+  });
 });
 
 function notedOf(row: { notedEntryId: string | null; notedLabel: string | null; notedAt: Date | null }): SupplierNotedDTO | null {

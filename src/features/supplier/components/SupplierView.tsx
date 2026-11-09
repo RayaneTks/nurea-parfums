@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useToast } from "@/app-shell/FeedbackProvider";
 import { useUndo } from "@/app-shell/UndoProvider";
 import { useUrlState } from "@/app-shell/hooks/useUrlState";
-import type { SupplierEntryDTO, SupplierEntryRowDTO, SupplierLedgerDTO, SupplierPickerDTO } from "@/contracts/supplier";
+import type { SupplierDetailDebtDTO, SupplierEntryDTO, SupplierEntryRowDTO, SupplierLedgerDTO, SupplierPickerDTO } from "@/contracts/supplier";
 import { dzd, dzdFromDb, formatDzd, rateFromDb, toDb, type Rate } from "@/domain/money";
 import type { SupplierAllocation } from "@/domain/supplier-debt";
 import { deleteSupplierEntryAction } from "@/server/supplier/actions";
@@ -15,6 +15,8 @@ import { Card } from "@/ui/primitives/Card";
 import { EmptyState } from "@/ui/primitives/EmptyState";
 import { ListRow } from "@/ui/primitives/ListRow";
 import { Text } from "@/ui/primitives/Text";
+import { DetailSheet } from "./DetailSheet";
+import { supplierDetail } from "./detail-model";
 import { EntrySheet, type EntryRequest } from "./EntrySheet";
 import { LineSheet } from "./LineSheet";
 import { PickerSheet } from "./PickerSheet";
@@ -27,6 +29,8 @@ type SupplierViewProps = {
   entry: SupplierEntryDTO | null;
   /** Le sélecteur de `?selection=1` (S25), servi par la page ; `null` : pas de sheet. */
   picker: SupplierPickerDTO | null;
+  /** Les dettes qui ont encore un reste, avec leurs parfums (S27), de la plus ancienne à la plus récente. */
+  detail: SupplierDetailDebtDTO[];
 };
 
 type RowProps = { row: SupplierEntryRowDTO; allocation: SupplierAllocation; onOpen: (id: string) => void };
@@ -96,13 +100,14 @@ function DoneRow({ row, allocation, onOpen }: RowProps) {
  * Aucune ligne n'est un mouvement d'argent : rien ici ne touche la Trésorerie ni la compta.
  * Une suppression se masque aussitôt (le Reste à payer suit) et s'écrit au bout des 5 s du filet « Annuler ».
  */
-export function SupplierView({ ledger, entry, picker }: SupplierViewProps) {
+export function SupplierView({ ledger, entry, picker, detail }: SupplierViewProps) {
   const url = useUrlState();
   const { showToast } = useToast();
   const { scheduleDelete } = useUndo();
 
   const [form, setForm] = useState<EntryRequest | null>(null);
   const [rateOpen, setRateOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
   // Le taux choisi à l'instant, tant que la page n'a pas relu le sien.
   const [chosen, setChosen] = useState<{ from: string; rate: Rate } | null>(null);
@@ -113,6 +118,11 @@ export function SupplierView({ ledger, entry, picker }: SupplierViewProps) {
   const entries = ledger.entries.filter((row) => !hidden.has(row.id));
   const allocation = ledgerAllocation(entries);
   const { open, done } = splitLedger(entries, allocation);
+  // Une dette dont la suppression est en cours sort aussi du détail.
+  const detailView = supplierDetail(
+    detail.filter((debt) => !hidden.has(debt.id)),
+    allocation,
+  );
 
   const hide = (id: string, on: boolean) =>
     setHidden((current) => {
@@ -170,6 +180,16 @@ export function SupplierView({ ledger, entry, picker }: SupplierViewProps) {
             </Text>
           ) : null}
         </div>
+        {headline.state === "due" ? (
+          <button
+            type="button"
+            onClick={() => setDetailOpen(true)}
+            className="admin-type-body-em admin-row-press -mx-2 -my-2 flex min-h-[44px] items-center self-start rounded-[var(--admin-radius-md)] px-2 text-[var(--admin-accent)]"
+            data-supplier-detail-open
+          >
+            Voir le détail, parfum par parfum
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={() => setRateOpen(true)}
@@ -257,6 +277,8 @@ export function SupplierView({ ledger, entry, picker }: SupplierViewProps) {
           onUnsettle={(paymentId) => schedule([paymentId], "Remboursement annulé")}
         />
       ) : null}
+
+      {detailOpen && headline.state === "due" ? <DetailSheet detail={detailView} onClose={() => setDetailOpen(false)} /> : null}
 
       {rateOpen ? (
         <RateSheet

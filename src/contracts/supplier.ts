@@ -167,6 +167,33 @@ export type SupplierEntryDTO = SupplierEntrySummary & {
   items: SupplierEntryItemDTO[];
 };
 
+/** Une ligne de parfum d'une dette, relue dans la commande ou la vente cochée (directement ou par son lot). */
+export type SupplierDetailLineDTO = {
+  documentId: string;
+  /** Nom vivant de la fiche, à défaut le nom saisi ; null : « Client de passage ». */
+  customerName: string | null;
+  /** La commande a été annulée après avoir été notée : la ligne reste, signalée. */
+  cancelled: boolean;
+  perfumeName: string;
+  brandName: string | null;
+  volumeMl: number | null;
+  quantity: number;
+  /** Coût unitaire en DA ; null : coût pas encore saisi. */
+  unitCostDzd: string | null;
+};
+
+/** « Détail du reste à payer » : une dette avec ses parfums (aucun pour une dette notée à la main). */
+export type SupplierDetailDebtDTO = {
+  id: string;
+  label: string | null;
+  amountDzd: string;
+  /** ISO 8601. */
+  occurredAt: string;
+  /** Dette notée en cochant des commandes, des ventes ou des lots. */
+  hasItems: boolean;
+  lines: SupplierDetailLineDTO[];
+};
+
 export type SupplierEntryDeletion = { id: string; deleted: boolean };
 
 /** La dette la plus récente qui a déjà coché un élément (directement, ou par son lot pour un document). */

@@ -24,7 +24,7 @@ import {
  */
 
 /** Parcours qui écrivent la ligne `Setting` unique (réglages de E08) ou le Reste à payer du carnet : exécutés seuls, voir les projets. */
-const GLOBAL_SETTING_SPECS = /parcours[\\/](reglages|fournisseur-rembourser)\.spec\.ts$/;
+const GLOBAL_SETTING_SPECS = /parcours[\\/](reglages|fournisseur-rembourser|fournisseur-detail)\.spec\.ts$/;
 
 /**
  * PC-12 « Première utilisation » : le seul parcours qui exige une base VIDE. Il a son harnais à lui

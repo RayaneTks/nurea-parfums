@@ -243,6 +243,8 @@ vente. **Indépendant de l'argent** : aucun `CashMovement`, aucune poche, aucun 
 depuis le 25/10/2026 (E22 `/admin/fournisseur`). « Marquer remboursée » (25/10) : un versement du
 montant de la dette, lié à elle (`settlesEntryId`), supprimé avec elle. Les autres versements paient les
 dettes de la plus ancienne à la plus récente (02/11, `allocateSupplierPayments`, dérivé, rien de stocké).
+« Voir le détail » (09/11, S27) : les parfums des dettes qui ont encore un reste, par client, coût en DA,
+puis l'addition, à copier pour le fournisseur ; dette à la main et écarts sous « Autres ».
 
 **Désistements** (`docs/admin/desistements.md`, décidé et en ligne le 26/10/2026) :
 désistée = `CANCELLED` + `cancelReason = WITHDRAWN` ; acompte **gardé** (pas un avoir), dérivé,

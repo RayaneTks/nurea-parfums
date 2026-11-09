@@ -227,6 +227,27 @@ describe("sélecteur S25 : coût d'achat en dinars", () => {
     expect(detail.unknown).toBe(1);
   });
 
+  it("détail du reste à payer (S27) : lignes des documents cochés, directement ou par lot ; annulé depuis signalé ; dette à la main vide", async () => {
+    const lot = await seedBatch(server.prisma, { name: "Lot de juin" });
+    const kais = await documentOf({ batchId: lot.id, customer: "Kais", lines: [{ quantity: 2, unitCostDzd: "2500" }] });
+    const badis = await documentOf({ batchId: lot.id, customer: "Badis", lines: [{ quantity: 1 }] });
+    const direct = newId();
+    const byLot = newId();
+    const manual = newId();
+    expectOk(await server.supplier.recordSupplierEntryAction({ id: direct, kind: "DEBT", amountDzd: "5000", items: [{ kind: "document", documentId: kais }] }));
+    expectOk(await server.supplier.recordSupplierEntryAction({ id: byLot, kind: "DEBT", amountDzd: "5000", items: [{ kind: "batch", batchId: lot.id }] }));
+    expectOk(await server.supplier.recordSupplierEntryAction({ id: manual, kind: "DEBT", amountDzd: "3000", label: "Transport" }));
+    expectOk(await server.documents.cancelDocumentAction({ documentId: kais, confirm: true }));
+
+    const detail = await server.supplierQueries.getSupplierDetail([direct, byLot, manual, "../fabrique"]);
+    const byId = new Map(detail.map((debt) => [debt.id, debt]));
+    expect(byId.get(direct)?.lines).toEqual([expect.objectContaining({ documentId: kais, customerName: "Kais", cancelled: true, quantity: 2, unitCostDzd: "2500.00" })]);
+    // Le lot ne rend que ses documents non annulés.
+    expect(byId.get(byLot)?.lines).toEqual([expect.objectContaining({ documentId: badis, customerName: "Badis", unitCostDzd: null })]);
+    expect(byId.get(manual)).toMatchObject({ hasItems: false, lines: [], label: "Transport", amountDzd: "3000.00" });
+    expect(await server.supplierQueries.getSupplierDetail([])).toEqual([]);
+  });
+
   it("le serveur recalcule le coût coché ; « déjà noté » remonte avec la dette, directement ou par le lot", async () => {
     const lot = await seedBatch(server.prisma, { name: "Lot d'avril" });
     const fares = await documentOf({ batchId: lot.id, customer: "Farès", lines: [{ quantity: 1, unitCostDzd: "27700" }] });
