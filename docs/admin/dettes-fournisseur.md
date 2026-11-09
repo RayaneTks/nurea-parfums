@@ -173,22 +173,30 @@ Badis
 Autres
 - Transport 3000DA
 
-2500+2800+3000 = 8300 DA
-Déjà versé : 1000 DA
-Reste à payer : 7300 DA
+Lina
+- Rouge Trafalgar 80ML reste 2000DA (sur 4000DA)
+
+Autres
+- Transport 3000DA
+
+2500+2800+2000+3000 = 10300 DA
 ```
+
+**L'addition finale vaut toujours le Reste à payer** (gérant, 09/11/2026 : « que ça m'affiche ce que je dois
+payer »). Seul ce qui reste dû est listé.
 
 | Cas | Règle |
 |---|---|
-| Quelles dettes | Celles qui ont encore un reste (`openDebtIds`, même répartition que l'écran), **entamées comprises, en entier**. Les dettes réglées n'y sont pas |
-| Total | Σ des montants de ces dettes. « Déjà versé » (ce que les versements ont payé dessus) le ramène au **Reste à payer de l'en-tête** ; les deux lignes n'apparaissent que si une dette est entamée |
+| Quelles dettes | Celles qui ont encore un reste (`openDebtIds`, même répartition que l'écran). Les dettes réglées n'y sont pas |
+| Dette entamée | Ce qu'elle a reçu paie ses parfums **dans l'ordre de la liste** : les parfums payés disparaissent, celui payé en partie s'écrit « reste 2000DA (sur 4000DA) », les suivants restent entiers |
+| Total | Σ des restes listés = **Reste à payer de l'en-tête** |
 | Un client | Ses parfums de toutes les dettes regroupés sous son nom (nom vivant de la fiche) ; deux clients de passage ne se rejoignent pas |
 | Un lot coché | Ses commandes et ventes non annulées, client par client |
 | Commande annulée après avoir été notée | Gardée, signalée « (commande annulée) » : elle est dans la dette |
 | Quantité | `x2`, montant = quantité × coût unitaire |
 | Ligne sans coût | « (coût manquant) », comptée 0, avertissement en tête de S27 |
-| Dette notée à la main | Sous « Autres », avec son nom (à défaut « Dette du 3 nov. ») et son montant : aucun parfum à inventer |
-| Coûts relus ≠ montant noté | Les coûts se relisent **au présent** sur les lignes ; l'écart avec le montant de la dette va sous « Autres », signé (« Écart sur Lot d'octobre 300DA »). Le total reste celui du carnet |
+| Dette notée à la main | Sous « Autres », avec son nom (à défaut « Dette du 3 nov. ») et ce qu'il en reste : aucun parfum à inventer |
+| Coûts relus ≠ montant noté | Les coûts se relisent **au présent** sur les lignes. Écart positif : sous « Autres » (« Écart sur Lot d'octobre 300DA »), payé en dernier. Écart négatif (dette notée en dessous) : compté comme déjà payé, en premier. Le total reste celui du carnet |
 
 Code : `getSupplierDetail` (`src/server/supplier/queries.ts`), `supplierDetail` et `detailMessage`
 (`src/features/supplier/components/detail-model.ts`, testés), `DetailSheet.tsx`. Lecture seule, rien n'est

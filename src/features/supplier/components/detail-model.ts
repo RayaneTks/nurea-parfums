@@ -9,36 +9,39 @@ import { dzdInputText } from "./supplier-model";
  * « Détail du reste à payer » (gérant, 09/11/2026) : ce qu'on doit encore au fournisseur, parfum par parfum,
  * rangé par client, pour comparer avec ses comptes à lui. Pur et testé.
  *
- * Périmètre : les dettes qui ont encore un reste, entamées comprises, **en entier**. Le total des lignes vaut
- * donc la somme de ces dettes ; « Déjà versé » (la part que les versements ont déjà payée sur elles) le ramène
- * au Reste à payer de l'en-tête. Rien n'est inventé :
- * - une dette notée à la main n'a aucun parfum : elle va sous « Autres », avec son nom et son montant ;
+ * Seul ce qui reste dû est listé, et l'addition finale vaut le Reste à payer de l'en-tête. Les versements
+ * paient déjà les dettes de la plus ancienne à la plus récente (`allocateSupplierPayments`) ; dans une dette
+ * entamée, ce qu'elle a reçu paie ses parfums dans l'ordre de la liste : les parfums payés disparaissent, celui
+ * qui est payé en partie montre son reste (« reste 2000DA (sur 4000DA) »), les suivants restent entiers.
+ * Rien n'est inventé :
+ * - une dette notée à la main n'a aucun parfum : elle va sous « Autres », avec son nom et ce qu'il en reste ;
  * - une ligne sans coût est montrée « coût manquant » et compte 0 ;
  * - quand les coûts relus aujourd'hui ne font pas le montant noté (coût corrigé depuis, montant retouché),
- *   l'écart va sous « Autres », signé : le total reste celui du carnet.
+ *   l'écart va sous « Autres », payé en dernier ; un écart négatif (dette notée en dessous) compte comme déjà
+ *   payé, en premier. Le total reste celui du carnet.
  */
 
 export type DetailLine = {
   label: string;
   quantity: number;
-  /** Quantité × coût unitaire ; null : coût manquant. */
+  /** Ce qu'il reste à payer sur ce parfum ; null : coût manquant. */
   amount: Dzd | null;
+  /** Le coût entier, quand le parfum est payé en partie ; null sinon. */
+  partialOf: Dzd | null;
   cancelled: boolean;
 };
 
 export type DetailGroup = { key: string; customer: string; lines: DetailLine[] };
 
-export type DetailOther = { label: string; amount: Dzd };
+export type DetailOther = { label: string; amount: Dzd; partialOf: Dzd | null };
 
 export type SupplierDetail = {
   groups: DetailGroup[];
   others: DetailOther[];
   /** Chaque montant dans l'ordre du texte : ce que la ligne « 2500+1400 = … » additionne. */
   terms: Dzd[];
+  /** Σ des restes : le Reste à payer. */
   total: Dzd;
-  /** Ce que les versements ont déjà payé sur ces dettes. */
-  paid: Dzd;
-  remaining: Dzd;
   missingCosts: number;
 };
 
@@ -61,57 +64,88 @@ function debtName(debt: Pick<SupplierDetailDebtDTO, "label" | "occurredAt">): st
   return debt.label?.trim() || `dette du ${formatDate(new Date(debt.occurredAt), "short")}`;
 }
 
+/** Ce qu'un versement laisse sur un montant : le reste, et le crédit qu'il n'a pas pris. */
+function pay(amount: Dzd, credit: Dzd): { due: Dzd; credit: Dzd } {
+  const covered = dzd.min(amount, credit);
+  return { due: dzd.sub(amount, covered), credit: dzd.sub(credit, covered) };
+}
+
+const positive = (amount: Dzd) => dzd.compare(amount, dzd.zero) > 0;
+
 /** `oldestFirst` : les dettes à détailler, de la plus ancienne à la plus récente. */
 export function supplierDetail(oldestFirst: readonly SupplierDetailDebtDTO[], allocation: SupplierAllocation): SupplierDetail {
   const groups = new Map<string, DetailGroup>();
   const others: DetailOther[] = [];
   let missingCosts = 0;
-  const paid: Dzd[] = [];
 
   for (const debt of oldestFirst) {
     const amount = dzdFromDb(debt.amountDzd);
-    paid.push(allocation.debts.get(debt.id)?.paid ?? dzd.zero);
+    let credit = allocation.debts.get(debt.id)?.paid ?? dzd.zero;
 
     if (!debt.hasItems) {
-      others.push({ label: debt.label?.trim() || `Dette du ${formatDate(new Date(debt.occurredAt), "short")}`, amount });
+      const { due } = pay(amount, credit);
+      if (positive(due)) {
+        const label = debt.label?.trim() || `Dette du ${formatDate(new Date(debt.occurredAt), "short")}`;
+        others.push({ label, amount: due, partialOf: dzd.compare(due, amount) < 0 ? amount : null });
+      }
       continue;
     }
 
-    const counted: Dzd[] = [];
-    for (const line of debt.lines) {
+    const costs = debt.lines.map((line) => (line.unitCostDzd === null ? null : dzd.times(dzdFromDb(line.unitCostDzd), line.quantity)));
+    const gap = dzd.sub(amount, dzd.sum(costs.filter((cost): cost is Dzd => cost !== null)));
+    // Dette notée en dessous des coûts : la différence est comme déjà payée.
+    if (dzd.compare(gap, dzd.zero) < 0) credit = dzd.sum([credit, dzd.sub(dzd.zero, gap)]);
+
+    debt.lines.forEach((line, index) => {
+      const cost = costs[index] ?? null;
+      let due: Dzd | null = null;
+      if (cost !== null) {
+        ({ due, credit } = pay(cost, credit));
+        if (!positive(due) && positive(cost)) return; // déjà payé
+      } else {
+        missingCosts += 1;
+      }
       const name = line.customerName?.trim() ?? "";
       // Deux clients de passage ne se rejoignent pas : sans nom, rien ne dit que c'est la même personne.
       const key = name ? `nom:${normalized(name)}` : `doc:${line.documentId}`;
       const group = groups.get(key) ?? { key, customer: name || PASSING_CUSTOMER, lines: [] };
       groups.set(key, group);
-      const lineAmount = line.unitCostDzd === null ? null : dzd.times(dzdFromDb(line.unitCostDzd), line.quantity);
-      if (lineAmount === null) missingCosts += 1;
-      else counted.push(lineAmount);
-      group.lines.push({ label: detailLineLabel(line), quantity: line.quantity, amount: lineAmount, cancelled: line.cancelled });
-    }
+      group.lines.push({
+        label: detailLineLabel(line),
+        quantity: line.quantity,
+        amount: due,
+        partialOf: cost !== null && due !== null && dzd.compare(due, cost) < 0 ? cost : null,
+        cancelled: line.cancelled,
+      });
+    });
 
-    const gap = dzd.sub(amount, dzd.sum(counted));
-    if (dzd.compare(gap, dzd.zero) !== 0) others.push({ label: `Écart sur ${debtName(debt)}`, amount: gap });
+    if (positive(gap)) {
+      const { due } = pay(gap, credit);
+      if (positive(due)) others.push({ label: `Écart sur ${debtName(debt)}`, amount: due, partialOf: dzd.compare(due, gap) < 0 ? gap : null });
+    }
   }
 
   const list = [...groups.values()];
   const terms = [
-    ...list.flatMap((group) => group.lines.flatMap((line) => (line.amount ? [line.amount] : []))),
+    ...list.flatMap((group) => group.lines.flatMap((line) => (line.amount && positive(line.amount) ? [line.amount] : []))),
     ...others.map((other) => other.amount),
   ];
-  const total = dzd.sum(oldestFirst.map((debt) => dzdFromDb(debt.amountDzd)));
-  const paidSum = dzd.sum(paid);
-  return { groups: list, others, terms, total, paid: paidSum, remaining: dzd.sub(total, paidSum), missingCosts };
+  return { groups: list, others, terms, total: dzd.sum(terms), missingCosts };
+}
+
+/** « 2500DA », ou « reste 2000DA (sur 4000DA) » pour un parfum payé en partie. */
+function dueText(amount: Dzd, partialOf: Dzd | null): string {
+  return partialOf ? `reste ${plainDzd(amount)}DA (sur ${plainDzd(partialOf)}DA)` : `${plainDzd(amount)}DA`;
 }
 
 /** « - The One D&G 80ML x2 2800DA » ; « coût manquant » quand le coût n'est pas saisi. */
 function lineText(line: DetailLine): string {
   const quantity = line.quantity > 1 ? ` x${line.quantity}` : "";
-  const amount = line.amount ? ` ${plainDzd(line.amount)}DA` : " (coût manquant)";
+  const amount = line.amount ? ` ${dueText(line.amount, line.partialOf)}` : " (coût manquant)";
   return `- ${line.label}${quantity}${amount}${line.cancelled ? " (commande annulée)" : ""}`;
 }
 
-/** « 2500+1400-300 » : les montants à la suite, le signe d'un écart négatif gardé. */
+/** « 2500+1400+2000 » : les montants à la suite. */
 export function sumText(terms: readonly Dzd[]): string {
   return terms
     .map((term, index) => {
@@ -130,20 +164,18 @@ export function sumText(terms: readonly Dzd[]): string {
  *   Badis
  *   - The One D&G 80ML 1400DA
  *
- *   2500+1400 = 3900 DA
- *   Déjà versé : 1000 DA
- *   Reste à payer : 2900 DA
+ *   Lina
+ *   - Rouge Trafalgar 80ML reste 2000DA (sur 4000DA)
+ *
+ *   2500+1400+2000 = 5900 DA
  */
 export function detailMessage(detail: SupplierDetail): string {
   const blocks = detail.groups.map((group) => [group.customer, ...group.lines.map(lineText)].join("\n"));
   if (detail.others.length > 0) {
-    blocks.push(["Autres", ...detail.others.map((other) => `- ${other.label} ${plainDzd(other.amount)}DA`)].join("\n"));
+    blocks.push(["Autres", ...detail.others.map((other) => `- ${other.label} ${dueText(other.amount, other.partialOf)}`)].join("\n"));
   }
-  const totals = [`${detail.terms.length > 0 ? sumText(detail.terms) : "0"} = ${plainDzd(detail.total)} DA`];
-  if (dzd.compare(detail.paid, dzd.zero) > 0) {
-    totals.push(`Déjà versé : ${plainDzd(detail.paid)} DA`, `Reste à payer : ${plainDzd(detail.remaining)} DA`);
-  }
-  return [...blocks, totals.join("\n")].join("\n\n");
+  blocks.push(`${detail.terms.length > 0 ? sumText(detail.terms) : "0"} = ${plainDzd(detail.total)} DA`);
+  return blocks.join("\n\n");
 }
 
 /** Les dettes qui ont encore un reste, d'après la répartition des versements de l'écran. */

@@ -2,7 +2,7 @@
 
 import { useToast } from "@/app-shell/FeedbackProvider";
 import { useShellSheet } from "@/app-shell/SheetRegistry";
-import { dzd, formatDzd } from "@/domain/money";
+import { formatDzd } from "@/domain/money";
 import { ListSection } from "@/ui/patterns/ListSection";
 import { shareOrCopy } from "@/ui/patterns/ShareButton";
 import { Button } from "@/ui/primitives/Button";
@@ -36,7 +36,6 @@ export function DetailSheet({ detail, onClose }: { detail: SupplierDetail; onClo
   const message = detailMessage(detail);
   const feedback = (msg: string, type: "success" | "error") => showToast({ type, message: msg });
   const perfumes = detail.groups.reduce((sum, group) => sum + group.lines.length, 0);
-  const started = dzd.compare(detail.paid, dzd.zero) > 0;
 
   return (
     <Sheet
@@ -75,7 +74,15 @@ export function DetailSheet({ detail, onClose }: { detail: SupplierDetail; onClo
               <ListRow
                 key={index}
                 primary={`${line.label}${line.quantity > 1 ? ` ×${line.quantity}` : ""}`}
-                secondary={line.cancelled ? "Commande annulée depuis" : line.amount ? undefined : "Coût manquant"}
+                secondary={
+                  line.cancelled
+                    ? "Commande annulée depuis"
+                    : !line.amount
+                      ? "Coût manquant"
+                      : line.partialOf
+                        ? `Reste, sur ${formatDzd(line.partialOf)}`
+                        : undefined
+                }
                 trailing={
                   <Text as="span" variant="body" tone={line.amount ? "default" : "muted"} className="tnum">
                     {line.amount ? formatDzd(line.amount) : "—"}
@@ -92,6 +99,7 @@ export function DetailSheet({ detail, onClose }: { detail: SupplierDetail; onClo
               <ListRow
                 key={index}
                 primary={other.label}
+                secondary={other.partialOf ? `Reste, sur ${formatDzd(other.partialOf)}` : undefined}
                 trailing={
                   <Text as="span" variant="body" className="tnum">
                     {formatDzd(other.amount)}
@@ -103,13 +111,7 @@ export function DetailSheet({ detail, onClose }: { detail: SupplierDetail; onClo
         ) : null}
 
         <div className="flex flex-col gap-1" data-supplier-detail-total>
-          <TotalRow label="Total" amount={formatDzd(detail.total)} strong={!started} />
-          {started ? (
-            <>
-              <TotalRow label="Déjà versé" amount={`− ${formatDzd(detail.paid)}`} />
-              <TotalRow label="Reste à payer" amount={formatDzd(detail.remaining)} strong />
-            </>
-          ) : null}
+          <TotalRow label="Reste à payer" amount={formatDzd(detail.total)} strong />
         </div>
       </div>
     </Sheet>

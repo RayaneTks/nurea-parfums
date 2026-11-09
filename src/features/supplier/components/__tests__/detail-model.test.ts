@@ -77,15 +77,45 @@ describe("détail du reste à payer", () => {
     ]);
   });
 
-  it("dette entamée : listée en entier, puis déjà versé et reste", () => {
+  it("dette entamée : les parfums payés disparaissent, celui payé en partie montre son reste ; l'addition vaut le Reste à payer", async () => {
     const ledger = [
-      row("p", "PAYMENT", "1000.00", "2026-11-05T10:00:00.000Z"),
-      row("a", "DEBT", "2500.00", "2026-11-01T10:00:00.000Z"),
+      row("p", "PAYMENT", "4500.00", "2026-11-05T10:00:00.000Z"),
+      row("b", "DEBT", "1400.00", "2026-11-02T10:00:00.000Z"),
+      row("a", "DEBT", "8500.00", "2026-11-01T10:00:00.000Z"),
     ];
     const allocation = ledgerAllocation(ledger);
-    expect(openDebtIds(allocation)).toEqual(["a"]);
-    const detail = supplierDetail([debt({ id: "a", amountDzd: "2500.00", lines: [line({})] })], allocation);
-    expect(detailMessage(detail).split("\n\n").at(-1)).toBe("2500 = 2500 DA\nDéjà versé : 1000 DA\nReste à payer : 1500 DA");
+    expect(openDebtIds(allocation).sort()).toEqual(["a", "b"]);
+    const debts = [
+      debt({
+        id: "a",
+        amountDzd: "8500.00",
+        lines: [
+          line({}),
+          line({ documentId: "d3", customerName: "Lina", perfumeName: "Rouge Trafalgar", brandName: null, unitCostDzd: "4000.00" }),
+          line({ documentId: "d4", customerName: "Lina", perfumeName: "Libre", brandName: "YSL", unitCostDzd: "2000.00" }),
+        ],
+      }),
+      debt({ id: "b", amountDzd: "1400.00", lines: [line({ documentId: "d2", customerName: "Badis", perfumeName: "The One", brandName: "D&G", unitCostDzd: "1400.00" })] }),
+    ];
+    const detail = supplierDetail(debts, allocation);
+    // 4500 payés sur la dette a : L'Heure Bleue (2500) puis 2000 sur le Rouge Trafalgar.
+    expect(detailMessage(detail)).toBe(
+      [
+        "Lina\n- Rouge Trafalgar 80ML reste 2000DA (sur 4000DA)\n- Libre YSL 80ML 2000DA",
+        "Badis\n- The One D&G 80ML 1400DA",
+        "2000+2000+1400 = 5400 DA",
+      ].join("\n\n"),
+    );
+    expect(detail.total.toString()).toBe("5400");
+  });
+
+  it("dette à la main entamée : son reste sous « Autres »", () => {
+    const allocation = ledgerAllocation([
+      row("p", "PAYMENT", "1000.00", "2026-11-05T10:00:00.000Z"),
+      row("m", "DEBT", "3000.00", "2026-11-01T10:00:00.000Z"),
+    ]);
+    const detail = supplierDetail([debt({ id: "m", label: "Transport", amountDzd: "3000.00", hasItems: false })], allocation);
+    expect(detailMessage(detail)).toBe("Autres\n- Transport reste 2000DA (sur 3000DA)\n\n2000 = 2000 DA");
   });
 
   it("une dette payée en entier sort du détail", () => {

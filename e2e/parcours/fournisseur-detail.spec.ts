@@ -35,12 +35,14 @@ test.afterEach(async () => {
 
 test("voir le détail du reste à payer et le copier", async ({ page }, testInfo) => {
   await openFresh(page, routes.fournisseur());
+  const header = (await page.locator('[data-supplier-header="due"]').innerText()).split("\n").find((text) => /DA$/.test(text.trim())) ?? "";
+  const remaining = header.replace(/\D/g, "");
   await page.getByRole("button", { name: "Voir le détail, parfum par parfum" }).click();
 
   const sheet = page.getByRole("dialog", { name: "Détail du reste à payer" });
   await expect(sheet.locator("[data-supplier-detail]")).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("detail-haut.png") });
-  await sheet.getByText("Transport du détail", { exact: true }).scrollIntoViewIfNeeded();
+  await sheet.locator("[data-supplier-detail-total]").scrollIntoViewIfNeeded();
   await expect(sheet.getByText("Transport du détail", { exact: true })).toBeVisible();
   await expect(sheet.getByText("Autres", { exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("detail-bas.png") });
@@ -59,5 +61,6 @@ test("voir le détail du reste à payer et le copier", async ({ page }, testInfo
   expect(copied).toContain("Autres\n");
   expect(copied).toContain("- Transport du détail 3000DA");
   await testInfo.attach("texte-copie", { body: copied, contentType: "text/plain" });
-  expect(copied).toMatch(/\d+(\+-?\d+)* = \d+ DA/);
+  // L'addition finale vaut le Reste à payer de l'en-tête.
+  expect(copied).toMatch(new RegExp(`^\\d+(\\+\\d+)* = ${remaining} DA$`, "m"));
 });
